@@ -97,7 +97,7 @@ export class ExtHostTerminalService implements ExtHostTerminalServiceShape {
 
 	constructor(threadService: IThreadService) {
 		this._onDidCloseTerminal = new Emitter<vscode.Terminal>();
-		this._proxy = threadService.get(MainContext.MainThreadTerminalService);
+		// this._proxy = threadService.get(MainContext.MainThreadTerminalService);
 		this._terminals = [];
 	}
 

@@ -775,15 +775,15 @@ export class ChangeModeAction extends Action {
 
 		// Offer action to configure via settings
 		let configureModeAssociations: IPickOpenEntry;
-		let galleryAction: Action;
+		// let galleryAction: Action;
 		if (fileinput) {
 			const resource = fileinput.getResource();
 			const ext = paths.extname(resource.fsPath) || paths.basename(resource.fsPath);
 
-			galleryAction = this.instantiationService.createInstance(ShowLanguageExtensionsAction, ext);
-			if (galleryAction.enabled) {
-				picks.unshift(galleryAction);
-			}
+			// galleryAction = this.instantiationService.createInstance(ShowLanguageExtensionsAction, ext);
+			// if (galleryAction.enabled) {
+			// 	picks.unshift(galleryAction);
+			// }
 
 			configureModeAssociations = { label: nls.localize('configureAssociationsExt', "Configure File Association for '{0}'...", ext) };
 			picks.unshift(configureModeAssociations);
@@ -802,10 +802,10 @@ export class ChangeModeAction extends Action {
 				return;
 			}
 
-			if (pick === galleryAction) {
-				galleryAction.run();
-				return;
-			}
+			// if (pick === galleryAction) {
+			// 	galleryAction.run();
+			// 	return;
+			// }
 
 			// User decided to permanently configure associations, return right after
 			if (pick === configureModeAssociations) {
