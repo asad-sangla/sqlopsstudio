@@ -25,12 +25,7 @@ const extensions = [
 	'json',
 	'configuration-editing',
 	'extension-editing',
-	'markdown',
-	'typescript',
-	'php',
-	'javascript',
-	'css',
-	'html'
+	'javascript'
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));
