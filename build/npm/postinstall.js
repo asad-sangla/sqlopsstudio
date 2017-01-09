@@ -25,7 +25,8 @@ const extensions = [
 	'json',
 	'configuration-editing',
 	'extension-editing',
-	'javascript'
+	'javascript',
+	'vscode-mssql'
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));
