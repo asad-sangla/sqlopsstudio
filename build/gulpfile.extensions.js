@@ -25,7 +25,7 @@ const extensionsPath = path.join(path.dirname(__dirname), 'extensions');
 
 const compilations = glob.sync('**/tsconfig.json', {
 	cwd: extensionsPath,
-	ignore: ['**/out/**', '**/node_modules/**']
+	ignore: ['**/vscode-mssql*/**', '**/out/**', '**/node_modules/**']
 });
 
 const getBaseUrl = out => `https://ticino.blob.core.windows.net/sourcemaps/${commit}/${out}`;

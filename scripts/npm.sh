@@ -13,6 +13,12 @@ else
 	# fi
 fi
 
+pushd $ROOT/extensions/vscode-mssql/src/views/htmlcontent
+npm install
+cd $ROOT/extensions/vscode-mssql
+npm install
+popd
+
 ELECTRON_VERSION=$(
 	cat $ROOT/package.json |
 	grep electronVersion |

@@ -30,6 +30,10 @@ function code() {
 	# Build
 	test -d out || ./node_modules/.bin/gulp compile
 
+	pushd extensions/vscode-mssql
+	test -d out || ./node_modules/.bin/gulp build
+	popd
+
 	# Configuration
 	export NODE_ENV=development
 	export VSCODE_DEV=1
