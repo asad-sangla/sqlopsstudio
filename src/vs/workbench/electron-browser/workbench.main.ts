@@ -60,6 +60,9 @@ import 'vs/workbench/parts/markers/browser/markersPanel'; // can be packaged sep
 
 import 'vs/workbench/parts/html/browser/html.contribution';
 
+import 'sql/parts/connection/electron-browser/connection.contribution';
+import 'sql/parts/connection/electron-browser/connectionViewlet';
+
 // import 'vs/workbench/parts/extensions/electron-browser/extensions.contribution';
 // import 'vs/workbench/parts/extensions/browser/extensionsQuickOpen';
 // import 'vs/workbench/parts/extensions/electron-browser/extensionsViewlet'; // can be packaged separately
