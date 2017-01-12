@@ -17,7 +17,7 @@ import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/action
 import { IQuickOpenService, IPickOpenEntry } from 'vs/workbench/services/quickopen/common/quickOpenService';
 import { IThemeService } from 'vs/workbench/services/themes/common/themeService';
 import { VIEWLET_ID, IExtensionsViewlet } from 'vs/workbench/parts/extensions/common/extensions';
-// import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionManagement';
+import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { Delayer } from 'vs/base/common/async';
 
@@ -32,7 +32,7 @@ export class SelectColorThemeAction extends Action {
 		@IQuickOpenService private quickOpenService: IQuickOpenService,
 		@IMessageService private messageService: IMessageService,
 		@IThemeService private themeService: IThemeService,
-		// @IExtensionGalleryService private extensionGalleryService: IExtensionGalleryService,
+		@IExtensionGalleryService private extensionGalleryService: IExtensionGalleryService,
 		@IViewletService private viewletService: IViewletService
 	) {
 		super(id, label);
@@ -61,9 +61,9 @@ export class SelectColorThemeAction extends Action {
 			const autoFocusIndex = firstIndex(picks, p => p.id === currentThemeId);
 			const delayer = new Delayer<void>(100);
 
-			// if (this.extensionGalleryService.isEnabled()) {
-			// 	picks.push(pickInMarketPlace);
-			// }
+			if (this.extensionGalleryService.isEnabled()) {
+				picks.push(pickInMarketPlace);
+			}
 
 			return this.quickOpenService.pick(picks, { placeHolder, autoFocus: { autoFocusIndex } })
 				.then(
@@ -86,7 +86,7 @@ class SelectIconThemeAction extends Action {
 		@IQuickOpenService private quickOpenService: IQuickOpenService,
 		@IMessageService private messageService: IMessageService,
 		@IThemeService private themeService: IThemeService,
-		// @IExtensionGalleryService private extensionGalleryService: IExtensionGalleryService,
+		@IExtensionGalleryService private extensionGalleryService: IExtensionGalleryService,
 		@IViewletService private viewletService: IViewletService
 	) {
 		super(id, label);
@@ -118,9 +118,9 @@ class SelectIconThemeAction extends Action {
 			const delayer = new Delayer<void>(100);
 
 
-			// if (this.extensionGalleryService.isEnabled()) {
-			// 	picks.push(pickInMarketPlace);
-			// }
+			if (this.extensionGalleryService.isEnabled()) {
+				picks.push(pickInMarketPlace);
+			}
 
 			return this.quickOpenService.pick(picks, { placeHolder, autoFocus: { autoFocusIndex } })
 				.then(

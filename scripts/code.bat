@@ -3,7 +3,6 @@ setlocal
 
 title VSCode Dev
 
-SET ROOTDIR=%~dp0\..
 pushd %~dp0\..
 
 :: Node modules
@@ -25,10 +24,6 @@ if not "%INSTALLEDVERSION%" == "%DESIREDVERSION%" node .\node_modules\gulp\bin\g
 
 :: Build
 if not exist out node .\node_modules\gulp\bin\gulp.js compile
-
-pushd extensions\vscode-mssql
-if not exist out cmd /c node .\node_modules\gulp\bin\gulp.js build
-popd
 
 :: Configuration
 set NODE_ENV=development

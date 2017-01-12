@@ -10,9 +10,3 @@ set HOME=~\.electron-gyp
 npm %*
 
 endlocal
-
-pushd %~dp0..\extensions\vscode-mssql
-cmd /c npm install
-cd %~dp0..\extensions\vscode-mssql\src\views\htmlcontent
-cmd /c npm install
-popd

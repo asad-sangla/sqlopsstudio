@@ -20,7 +20,7 @@ export class MainThreadTerminalService extends MainThreadTerminalServiceShape {
 		@ITerminalService private terminalService: ITerminalService
 	) {
 		super();
-		// this._proxy = threadService.get(ExtHostContext.ExtHostTerminalService);
+		this._proxy = threadService.get(ExtHostContext.ExtHostTerminalService);
 		this._toDispose = [];
 		this._toDispose.push(terminalService.onInstanceDisposed((terminalInstance) => this._onTerminalDisposed(terminalInstance)));
 		this._toDispose.push(terminalService.onInstanceProcessIdReady((terminalInstance) => this._onTerminalProcessIdReady(terminalInstance)));
