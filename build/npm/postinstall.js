@@ -20,7 +20,6 @@ function npmInstall(location) {
 npmInstall('extensions'); // node modules shared by all extensions
 
 const extensions = [
-	'vscode-api-tests',
 	'vscode-colorize-tests',
 	'json',
 	'configuration-editing',
