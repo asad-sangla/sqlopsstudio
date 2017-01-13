@@ -1,16 +1,16 @@
 {
-	"nameShort": "Code - OSS",
-	"nameLong": "Code - OSS",
-	"applicationName": "code-oss",
-	"dataFolderName": ".vscode-oss",
-	"win32MutexName": "vscodeoss",
+	"nameShort": "mssql-admin",
+	"nameLong": "mssql-admin",
+	"applicationName": "mssql-admin",
+	"dataFolderName": ".mssql-admin",
+	"win32MutexName": "mssql-admin",
 	"licenseUrl": "https://github.com/Microsoft/vscode/blob/master/LICENSE.txt",
-	"win32DirName": "Microsoft Code OSS",
-	"win32NameVersion": "Microsoft Code OSS",
-	"win32RegValueName": "CodeOSS",
-	"win32AppId": "{{E34003BB-9E10-4501-8C11-BE3FAA83F23F}",
-	"win32AppUserModelId": "Microsoft.CodeOSS",
-	"darwinBundleIdentifier": "com.visualstudio.code.oss",
+	"win32DirName": "mssql-admin",
+	"win32NameVersion": "mssql-admin",
+	"win32RegValueName": "mssql-admin",
+	"win32AppId": "{{E34003BB-9E10-4501-8C11-1234AA83F23F}",
+	"win32AppUserModelId": "Microsoft.mssql-admin",
+	"darwinBundleIdentifier": "com.mssql-admin.oss",
 	"reportIssueUrl": "https://github.com/Microsoft/vscode/issues/new",
-	"urlProtocol": "code-oss"
+	"urlProtocol": "mssql-admin"
 }
