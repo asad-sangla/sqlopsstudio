@@ -90,6 +90,9 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
+import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
+import { RegisteredServersService } from 'sql/parts/connection/node/registeredServersService';
+
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
 export const InZenModeContext = new RawContextKey<boolean>('inZenMode', false);
@@ -498,6 +501,9 @@ export class Workbench implements IPartService {
 		this.toDispose.push(this.quickOpen);
 		this.toShutdown.push(this.quickOpen);
 		serviceCollection.set(IQuickOpenService, this.quickOpen);
+
+		// Registered Servers service
+		serviceCollection.set(IRegisteredServersService, this.instantiationService.createInstance(RegisteredServersService));
 
 		// Contributed services
 		const contributedServices = getServices();

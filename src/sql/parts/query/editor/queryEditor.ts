@@ -39,12 +39,15 @@ import { IThemeService } from 'vs/workbench/services/themes/common/themeService'
 
 export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareEditorVisible', false);
 
+
+
+
 /**
  * The text editor that leverages the diff text editor for the editing experience.
  */
 export class QueryEditor extends BaseTextEditor {
 
-	public static ID = TEXT_DIFF_EDITOR_ID;
+	static ID: string = 'workbench.editor.query';
 
 	private diffNavigator: DiffNavigator;
 	private nextDiffAction: NavigateAction;

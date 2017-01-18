@@ -112,17 +112,13 @@ const noFolderEntries = [
 	openFileNonMacOnly,
 	openFolderNonMacOnly,
 	openFileOrFolderMacOnly,
-	openRecent,
-	newUntitledFileMacOnly,
-	toggleTerminal
+	newUntitledFileMacOnly
 ];
 
 const folderEntries = [
 	showCommands,
 	quickOpen,
-	findInFiles,
-	startDebugging,
-	toggleTerminal
+	findInFiles
 ];
 
 const UNBOUND = nls.localize('watermark.unboundCommand', "unbound");
