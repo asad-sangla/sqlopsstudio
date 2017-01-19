@@ -55,9 +55,6 @@ import 'vs/workbench/parts/markers/browser/markersPanel'; // can be packaged sep
 
 import 'vs/workbench/parts/html/browser/html.contribution';
 
-import 'sql/parts/connection/electron-browser/connection.contribution';
-import 'sql/parts/connection/electron-browser/connectionViewlet';
-
 import 'vs/workbench/parts/explorers/browser/treeExplorer.contribution';
 import 'vs/workbench/parts/explorers/browser/treeExplorerViewlet'; // can be packaged separately
 
@@ -100,3 +97,8 @@ import 'vs/workbench/parts/themes/test/electron-browser/themes.test.contribution
 import 'vs/workbench/parts/watermark/electron-browser/watermark';
 
 import 'vs/workbench/parts/viewpicker/browser/viewpicker.contribution';
+
+// SQL
+import 'sql/parts/connection/electron-browser/connection.contribution';
+import 'sql/parts/connection/electron-browser/connectionViewlet';
+import 'sql/parts/query/electron-browser/query.contribution';

@@ -10,12 +10,14 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput } from 'vs/workbench/common/editor';
 import { IExtension } from 'vs/workbench/parts/extensions/common/extensions';
 
+import { IConnection } from 'sql/parts/connection/common/registeredServers';
+
 export class QueryInput extends EditorInput {
 
 	static get ID() { return 'workbench.query.input2'; }
-	get extension(): IExtension { return this._extension; }
+	get extension(): IConnection { return this._extension; }
 
-	constructor(private _extension: IExtension) {
+	constructor(private _extension: IConnection) {
 		super();
 	}
 

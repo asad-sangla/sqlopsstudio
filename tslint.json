@@ -54,7 +54,7 @@
 			},
 			{
 				"target": "**/{common,browser,workbench}/**",
-				"restrictions": "**/vs/**"
+				"restrictions": "**/*"
 			}
 		],
 		"duplicate-imports": true

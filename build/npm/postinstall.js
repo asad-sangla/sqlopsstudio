@@ -23,13 +23,7 @@ const extensions = [
 	'vscode-colorize-tests',
 	'json',
 	'configuration-editing',
-	'extension-editing',
-	'markdown',
-	'typescript',
-	'php',
-	'javascript',
-	'css',
-	'html'
+	'extension-editing'
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));

@@ -4,13 +4,13 @@
 	"applicationName": "mssql-admin",
 	"dataFolderName": ".mssql-admin",
 	"win32MutexName": "mssql-admin",
-	"licenseUrl": "https://github.com/Microsoft/vscode/blob/master/LICENSE.txt",
+	"licenseUrl": "https://github.com/Microsoft/mssql-admin/blob/master/LICENSE.txt",
 	"win32DirName": "mssql-admin",
 	"win32NameVersion": "mssql-admin",
 	"win32RegValueName": "mssql-admin",
 	"win32AppId": "{{E34003BB-9E10-4501-8C11-1234AA83F23F}",
 	"win32AppUserModelId": "Microsoft.mssql-admin",
 	"darwinBundleIdentifier": "com.mssql-admin.oss",
-	"reportIssueUrl": "https://github.com/Microsoft/vscode/issues/new",
+	"reportIssueUrl": "https://github.com/Microsoft/mssql-admin/issues/new",
 	"urlProtocol": "mssql-admin"
 }

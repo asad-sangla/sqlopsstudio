@@ -23,6 +23,9 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { PagedList } from 'vs/base/browser/ui/list/listPaging';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { Delegate } from 'vs/workbench/parts/extensions/browser/extensionsList';
+import { IMessageService } from 'vs/platform/message/common/message';
+import { isPromiseCanceledError, onUnexpectedError, create as createError } from 'vs/base/common/errors';
+import Severity from 'vs/base/common/severity';
 
 import { IConnection, IConnectionsViewlet, IRegisteredServersService, VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
 import { Renderer } from 'sql/parts/connection/electron-browser/connectionList';
@@ -41,7 +44,8 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IRegisteredServersService private registeredServersService: IRegisteredServersService,
 		@IInstantiationService private instantiationService: IInstantiationService,
-		@IViewletService private viewletService: IViewletService
+		@IViewletService private viewletService: IViewletService,
+		@IMessageService private messageService: IMessageService
 	) {
 		super(VIEWLET_ID, telemetryService);
 		this.searchDelayer = new ThrottledDelayer(500);
@@ -76,6 +80,11 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		onKeyDown.filter(e => e.keyCode === KeyCode.PageUp).on(this.onPageUpArrow, this, this.disposables);
 		onKeyDown.filter(e => e.keyCode === KeyCode.PageDown).on(this.onPageDownArrow, this, this.disposables);
 
+		chain(this.list.onSelectionChange)
+			.map(e => e.elements[0])
+			.filter(e => !!e)
+			.on(this.openDatabase, this, this.disposables);
+
 		return TPromise.as(null);
 	}
 
@@ -108,6 +117,10 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	getOptimalWidth(): number {
 		return 400;
+	}
+
+	private openDatabase(connection: IConnection): void {
+		this.registeredServersService.open(connection, false).done(null, err => this.onError(err));
 	}
 
 	private setModel(model: IPagedModel<IConnection>) {
@@ -155,5 +168,13 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	private onPageDownArrow(): void {
 		this.list.focusNextPage();
 		this.list.reveal(this.list.getFocus()[0]);
+	}
+
+	private onError(err: any): void {
+		if (isPromiseCanceledError(err)) {
+			return;
+		}
+
+		this.messageService.show(Severity.Error, err);
 	}
 }

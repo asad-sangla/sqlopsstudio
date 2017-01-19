@@ -1,5 +1,5 @@
 {
-  "name": "code-oss-dev",
+  "name": "mssql-admin-dev",
   "version": "1.8.1",
   "electronVersion": "1.4.6",
   "distro": "8c3e97e3425cc9814496472ab73e076de2ba99ee",
@@ -99,10 +99,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/vscode.git"
+    "url": "https://github.com/Microsoft/mssql-admin.git"
   },
   "bugs": {
-    "url": "https://github.com/Microsoft/vscode/issues"
+    "url": "https://github.com/Microsoft/mssql-admin/issues"
   },
   "config": {
     "ghooks": {

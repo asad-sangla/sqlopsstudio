@@ -23,5 +23,8 @@ export const SERVICE_ID = 'registeredServersService';
 export const IRegisteredServersService = createDecorator<IRegisteredServersService>(SERVICE_ID);
 
 export interface IRegisteredServersService {
+
+	open(connection: IConnection, sideByside: boolean): TPromise<any>;
+
 	getConnections(): TPromise<IConnection[]>;
 }
