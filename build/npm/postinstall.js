@@ -22,8 +22,18 @@ npmInstall('extensions'); // node modules shared by all extensions
 const extensions = [
 	'vscode-colorize-tests',
 	'json',
+	'mssql',
 	'configuration-editing',
 	'extension-editing'
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));
+
+const protocol = [
+	'jsonrpc',
+	'types',
+	'client',
+	'server'
+];
+
+protocol.forEach(item => npmInstall(`dataprotocol-node/${item}`));

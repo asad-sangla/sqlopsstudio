@@ -380,7 +380,7 @@ export class VSCodeMenu {
 		const preferences = this.getPreferencesMenu();
 
 		const newWindow = new MenuItem(this.likeAction('workbench.action.newWindow', { label: mnemonicLabel(nls.localize({ key: 'miNewWindow', comment: ['&& denotes a mnemonic'] }, "&&New Window")), click: () => this.windowsService.openNewWindow() }));
-		const revertFile = this.createMenuItem(nls.localize({ key: 'miRevert', comment: ['&& denotes a mnemonic'] }, "Revert F&&ile"), 'workbench.action.files.revert', this.windowsService.getWindowCount() > 0);
+		// const revertFile = this.createMenuItem(nls.localize({ key: 'miRevert', comment: ['&& denotes a mnemonic'] }, "Revert F&&ile"), 'workbench.action.files.revert', this.windowsService.getWindowCount() > 0);
 		const closeWindow = new MenuItem(this.likeAction('workbench.action.closeWindow', { label: mnemonicLabel(nls.localize({ key: 'miCloseWindow', comment: ['&& denotes a mnemonic'] }, "Close &&Window")), click: () => this.windowsService.getLastActiveWindow().win.close(), enabled: this.windowsService.getWindowCount() > 0 }));
 
 		const closeFolder = this.createMenuItem(nls.localize({ key: 'miCloseFolder', comment: ['&& denotes a mnemonic'] }, "Close &&Folder"), 'workbench.action.closeFolder');
@@ -405,7 +405,7 @@ export class VSCodeMenu {
 			__separator__(),
 			!platform.isMacintosh ? preferences : null,
 			!platform.isMacintosh ? __separator__() : null,
-			revertFile,
+			// revertFile,
 			closeEditor,
 			closeFolder,
 			!platform.isMacintosh ? closeWindow : null,
@@ -518,8 +518,8 @@ export class VSCodeMenu {
 
 		// const emmetExpandAbbreviation = this.createMenuItem(nls.localize({ key: 'miEmmetExpandAbbreviation', comment: ['&& denotes a mnemonic'] }, "Emmet: E&&xpand Abbreviation"), 'editor.emmet.action.expandAbbreviation');
 		// const showEmmetCommands = this.createMenuItem(nls.localize({ key: 'miShowEmmetCommands', comment: ['&& denotes a mnemonic'] }, "E&&mmet..."), 'workbench.action.showEmmetCommands');
-		const toggleLineComment = this.createMenuItem(nls.localize({ key: 'miToggleLineComment', comment: ['&& denotes a mnemonic'] }, "&&Toggle Line Comment"), 'editor.action.commentLine');
-		const toggleBlockComment = this.createMenuItem(nls.localize({ key: 'miToggleBlockComment', comment: ['&& denotes a mnemonic'] }, "Toggle &&Block Comment"), 'editor.action.blockComment');
+		// const toggleLineComment = this.createMenuItem(nls.localize({ key: 'miToggleLineComment', comment: ['&& denotes a mnemonic'] }, "&&Toggle Line Comment"), 'editor.action.commentLine');
+		// const toggleBlockComment = this.createMenuItem(nls.localize({ key: 'miToggleBlockComment', comment: ['&& denotes a mnemonic'] }, "Toggle &&Block Comment"), 'editor.action.blockComment');
 
 		[
 			undo,
@@ -534,9 +534,9 @@ export class VSCodeMenu {
 			__separator__(),
 			findInFiles,
 			replaceInFiles,
-			__separator__(),
-			toggleLineComment,
-			toggleBlockComment
+			// __separator__(),
+			// toggleLineComment,
+			// toggleBlockComment
 			// emmetExpandAbbreviation,
 			// showEmmetCommands
 		].forEach(item => winLinuxEditMenu.append(item));
@@ -584,6 +584,8 @@ export class VSCodeMenu {
 	// }
 
 	private setViewMenu(viewMenu: Electron.Menu): void {
+
+		const servers = this.createMenuItem(nls.localize({ key: 'miViewRegisteredServers', comment: ['&& denotes a mnemonic'] }, "&&Registered Servers"), 'workbench.view.connections');
 		const explorer = this.createMenuItem(nls.localize({ key: 'miViewExplorer', comment: ['&& denotes a mnemonic'] }, "&&Explorer"), 'workbench.view.explorer');
 		const search = this.createMenuItem(nls.localize({ key: 'miViewSearch', comment: ['&& denotes a mnemonic'] }, "&&Search"), 'workbench.view.search');
 		const git = this.createMenuItem(nls.localize({ key: 'miViewGit', comment: ['&& denotes a mnemonic'] }, "&&Git"), 'workbench.view.git');
@@ -592,7 +594,7 @@ export class VSCodeMenu {
 		const output = this.createMenuItem(nls.localize({ key: 'miToggleOutput', comment: ['&& denotes a mnemonic'] }, "&&Output"), 'workbench.action.output.toggleOutput');
 		// const debugConsole = this.createMenuItem(nls.localize({ key: 'miToggleDebugConsole', comment: ['&& denotes a mnemonic'] }, "De&&bug Console"), 'workbench.debug.action.toggleRepl');
 		// const integratedTerminal = this.createMenuItem(nls.localize({ key: 'miToggleIntegratedTerminal', comment: ['&& denotes a mnemonic'] }, "&&Integrated Terminal"), 'workbench.action.terminal.toggleTerminal');
-		// const problems = this.createMenuItem(nls.localize({ key: 'miMarker', comment: ['&& denotes a mnemonic'] }, "&&Problems"), 'workbench.actions.view.problems');
+		const problems = this.createMenuItem(nls.localize({ key: 'miMarker', comment: ['&& denotes a mnemonic'] }, "&&Problems"), 'workbench.actions.view.problems');
 
 		let additionalViewlets: Electron.MenuItem;
 		if (this.extensionViewlets.length) {
@@ -623,7 +625,7 @@ export class VSCodeMenu {
 
 		const moveSidebar = this.createMenuItem(moveSideBarLabel, 'workbench.action.toggleSidebarPosition');
 
-		const togglePanel = this.createMenuItem(nls.localize({ key: 'miTogglePanel', comment: ['&& denotes a mnemonic'] }, "Toggle &&Panel"), 'workbench.action.togglePanel');
+		// const togglePanel = this.createMenuItem(nls.localize({ key: 'miTogglePanel', comment: ['&& denotes a mnemonic'] }, "Toggle &&Panel"), 'workbench.action.togglePanel');
 
 		let statusBarLabel: string;
 		if (this.currentStatusbarVisible) {
@@ -652,6 +654,7 @@ export class VSCodeMenu {
 		arrays.coalesce([
 			commands,
 			__separator__(),
+			servers,
 			explorer,
 			search,
 			git,
@@ -660,7 +663,7 @@ export class VSCodeMenu {
 			additionalViewlets,
 			__separator__(),
 			output,
-			// problems,
+			problems,
 			// debugConsole,
 			// integratedTerminal,
 			__separator__(),
@@ -672,7 +675,7 @@ export class VSCodeMenu {
 			toggleEditorLayout,
 			moveSidebar,
 			toggleSidebar,
-			togglePanel,
+			// togglePanel,
 			toggleStatusbar,
 			toggleActivtyBar,
 			// __separator__(),
@@ -727,9 +730,9 @@ export class VSCodeMenu {
 		const switchGroup = new MenuItem({ label: mnemonicLabel(nls.localize({ key: 'miSwitchGroup', comment: ['&& denotes a mnemonic'] }, "Switch &&Group")), submenu: switchGroupMenu, enabled: true });
 
 		const gotoFile = this.createMenuItem(nls.localize({ key: 'miGotoFile', comment: ['&& denotes a mnemonic'] }, "Go to &&File..."), 'workbench.action.quickOpen');
-		const gotoSymbolInFile = this.createMenuItem(nls.localize({ key: 'miGotoSymbolInFile', comment: ['&& denotes a mnemonic'] }, "Go to &&Symbol in File..."), 'workbench.action.gotoSymbol');
-		const gotoSymbolInWorkspace = this.createMenuItem(nls.localize({ key: 'miGotoSymbolInWorkspace', comment: ['&& denotes a mnemonic'] }, "Go to Symbol in &&Workspace..."), 'workbench.action.showAllSymbols');
-		const gotoDefinition = this.createMenuItem(nls.localize({ key: 'miGotoDefinition', comment: ['&& denotes a mnemonic'] }, "Go to &&Definition"), 'editor.action.goToDeclaration');
+		// const gotoSymbolInFile = this.createMenuItem(nls.localize({ key: 'miGotoSymbolInFile', comment: ['&& denotes a mnemonic'] }, "Go to &&Symbol in File..."), 'workbench.action.gotoSymbol');
+		// const gotoSymbolInWorkspace = this.createMenuItem(nls.localize({ key: 'miGotoSymbolInWorkspace', comment: ['&& denotes a mnemonic'] }, "Go to Symbol in &&Workspace..."), 'workbench.action.showAllSymbols');
+		// const gotoDefinition = this.createMenuItem(nls.localize({ key: 'miGotoDefinition', comment: ['&& denotes a mnemonic'] }, "Go to &&Definition"), 'editor.action.goToDeclaration');
 		const gotoLine = this.createMenuItem(nls.localize({ key: 'miGotoLine', comment: ['&& denotes a mnemonic'] }, "Go to &&Line..."), 'workbench.action.gotoLine');
 
 		[
@@ -740,9 +743,9 @@ export class VSCodeMenu {
 			switchGroup,
 			__separator__(),
 			gotoFile,
-			gotoSymbolInFile,
-			gotoSymbolInWorkspace,
-			gotoDefinition,
+			// gotoSymbolInFile,
+			// gotoSymbolInWorkspace,
+			// gotoDefinition,
 			gotoLine
 		].forEach(item => gotoMenu.append(item));
 	}

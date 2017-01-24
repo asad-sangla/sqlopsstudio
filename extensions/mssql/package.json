@@ -1,5 +1,5 @@
 {
-  "name": "json",
+  "name": "mssql-server",
   "version": "0.1.0",
   "publisher": "vscode",
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
@@ -7,42 +7,34 @@
     "vscode": "0.10.x"
   },
   "activationEvents": [
-    "onLanguage:json"
+    "onLanguage:ttt"
   ],
-  "main": "./client/out/jsonMain",
+  "main": "./client/out/mssqlMain",
   "scripts": {
-    "compile": "gulp compile-extension:json-client && gulp compile-extension:json-server",
-    "postinstall": "cd server && npm install",
-    "install-client-next": "npm install vscode-languageclient@next -f -S",
-    "install-client-local": "npm install ../../../vscode-languageserver-node/client -f -S"
+    "compile": "gulp compile-extension:mssql-client && gulp compile-extension:mssql-server",
+    "postinstall": "cd server && npm install"
   },
   "contributes": {
     "languages": [
       {
-        "id": "json",
+        "id": "ttt",
         "aliases": [
-          "JSON",
-          "json"
+          "TTT",
+          "Ttt"
         ],
         "extensions": [
-          ".json",
-          ".bowerrc",
-          ".jshintrc",
-          ".jscsrc",
-          ".eslintrc",
-          ".babelrc",
-          ".webmanifest"
+          ".ttt"
         ],
         "mimetypes": [
-          "application/json",
-          "application/manifest+json"
+          "application/tt",
+          "application/manifest+tt"
         ],
         "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
-        "language": "json",
+        "language": "ttt",
         "scopeName": "source.json",
         "path": "./syntaxes/JSON.tmLanguage"
       }
@@ -54,7 +46,7 @@
       }
     ],
     "configuration": {
-      "id": "json",
+      "id": "ttt",
       "order": 20,
       "type": "object",
       "title": "JSON",
@@ -113,8 +105,8 @@
   },
   "dependencies": {
     "vscode-extension-telemetry": "^0.0.5",
-    "vscode-languageclient": "3.0.1-alpha.3",
-    "vscode-nls": "^1.0.7"
+    "vscode-nls": "^1.0.7",
+    "dataprotocol-client": "file:../../dataprotocol-node/client"
   },
   "devDependencies": {
     "@types/node": "^6.0.61"
