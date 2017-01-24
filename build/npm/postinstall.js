@@ -17,6 +17,15 @@ function npmInstall(location) {
 	}
 }
 
+const protocol = [
+	'jsonrpc',
+	'types',
+	'client',
+	'server'
+];
+
+protocol.forEach(item => npmInstall(`dataprotocol-node/${item}`));
+
 npmInstall('extensions'); // node modules shared by all extensions
 
 const extensions = [
@@ -28,12 +37,3 @@ const extensions = [
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));
-
-const protocol = [
-	'jsonrpc',
-	'types',
-	'client',
-	'server'
-];
-
-protocol.forEach(item => npmInstall(`dataprotocol-node/${item}`));
