@@ -11,8 +11,8 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IConnection, IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
-
 import { QueryInput } from 'sql/parts/query/common/queryInput';
+import Event, { Emitter } from 'vs/base/common/event';
 
 class Connection implements IConnection {
 
@@ -31,15 +31,23 @@ class Connection implements IConnection {
 }
 
 export class RegisteredServersService implements IRegisteredServersService {
+
+	_serviceBrand: any;
+
 	private disposables: IDisposable[] = [];
+
+	private _onConnectionSwitched: Emitter<IConnection>;
 
 	constructor(
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService
 	) {
+
+		this._onConnectionSwitched = new Emitter<IConnection>();
+
 	}
 
-	getConnections(): TPromise<IConnection[]> {
+	public getConnections(): TPromise<IConnection[]> {
 		let connections = [];
 
 		for (var i = 0; i < 25; ++i) {
@@ -49,11 +57,16 @@ export class RegisteredServersService implements IRegisteredServersService {
 		return TPromise.as(connections);
 	}
 
-	open(connection: IConnection, sideByside: boolean): TPromise<any> {
+	public open(connection: IConnection, sideByside: boolean): TPromise<any> {
+		this._onConnectionSwitched.fire(connection);
 		return this.editorService.openEditor(this.instantiationService.createInstance(QueryInput, connection), null, sideByside);
 	}
 
-	dispose(): void {
+	public get onConnectionSwitched(): Event<IConnection> {
+		return this._onConnectionSwitched.event;
+	}
+
+	public dispose(): void {
 		this.disposables = dispose(this.disposables);
 	}
 }

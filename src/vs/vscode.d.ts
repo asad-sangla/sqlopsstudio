@@ -11,6 +11,16 @@ declare module 'vscode' {
 	export const version: string;
 
 	/**
+	 * Namespace for dealing with the current window of the editor. That is visible
+	 * and active editors, as well as, UI elements to show messages, selections, and
+	 * asking for user input.
+	 */
+	export namespace connections {
+		//export function registerConnectionProvider(command: string, callback: (...args: any[]) => any, thisArg?: any): Disposable;
+		export function registerConnectionProvider(name: string): void;
+	}
+
+	/**
 	 * Represents a reference to a command. Provides a title which
 	 * will be used to represent a command in the UI and, optionally,
 	 * an array of arguments which will be passed to the command handler

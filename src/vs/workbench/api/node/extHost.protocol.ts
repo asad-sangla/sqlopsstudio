@@ -38,6 +38,8 @@ import { IApplyEditsOptions, TextEditorRevealType, ITextEditorConfigurationUpdat
 
 import { InternalTreeExplorerNodeContent } from 'vs/workbench/parts/explorers/common/treeExplorerViewModel';
 
+import * as connection from 'sql/parts/connection/common/registeredServers';
+
 export interface IEnvironment {
 	enableProposedApi: boolean;
 	appSettingsHome: string;
@@ -100,6 +102,10 @@ export class InstanceCollection {
 function ni() { return new Error('Not implemented'); }
 
 // --- main thread
+
+export abstract class MainThreadDataManagementShape {
+	$getLanguages(): TPromise<string[]> { throw ni(); }
+}
 
 export abstract class MainThreadCommandsShape {
 	$registerCommand(id: string): TPromise<any> { throw ni(); }
@@ -323,6 +329,14 @@ export abstract class ExtHostHeapServiceShape {
 	$onGarbageCollection(ids: number[]): void { throw ni(); }
 }
 
+
+export abstract class ExtHostDataManagementShape {
+	$provideConnections(): TPromise<connection.IConnection> { throw ni(); }
+
+	$connect(): void { throw ni(); }
+}
+
+
 export abstract class ExtHostLanguageFeaturesShape {
 	$provideDocumentSymbols(handle: number, resource: URI): TPromise<modes.SymbolInformation[]> { throw ni(); }
 	$provideCodeLenses(handle: number, resource: URI): TPromise<modes.ICodeLensSymbol[]> { throw ni(); }
@@ -360,6 +374,7 @@ export abstract class ExtHostTerminalServiceShape {
 export const MainContext = {
 	MainThreadCommands: createMainId<MainThreadCommandsShape>('MainThreadCommands', MainThreadCommandsShape),
 	MainThreadConfiguration: createMainId<MainThreadConfigurationShape>('MainThreadConfiguration', MainThreadConfigurationShape),
+	MainThreadDataManagement: createMainId<MainThreadDataManagementShape>('MainThreadDataManagement', MainThreadDataManagementShape),
 	MainThreadDiagnostics: createMainId<MainThreadDiagnosticsShape>('MainThreadDiagnostics', MainThreadDiagnosticsShape),
 	MainThreadDocuments: createMainId<MainThreadDocumentsShape>('MainThreadDocuments', MainThreadDocumentsShape),
 	MainThreadEditors: createMainId<MainThreadEditorsShape>('MainThreadEditors', MainThreadEditorsShape),
@@ -373,7 +388,6 @@ export const MainContext = {
 	MainThreadStatusBar: createMainId<MainThreadStatusBarShape>('MainThreadStatusBar', MainThreadStatusBarShape),
 	MainThreadStorage: createMainId<MainThreadStorageShape>('MainThreadStorage', MainThreadStorageShape),
 	MainThreadTelemetry: createMainId<MainThreadTelemetryShape>('MainThreadTelemetry', MainThreadTelemetryShape),
-	// MainThreadTerminalService: createMainId<MainThreadTerminalServiceShape>('MainThreadTerminalService', MainThreadTerminalServiceShape),
 	MainThreadWorkspace: createMainId<MainThreadWorkspaceShape>('MainThreadWorkspace', MainThreadWorkspaceShape),
 	MainProcessExtensionService: createMainId<MainProcessExtensionServiceShape>('MainProcessExtensionService', MainProcessExtensionServiceShape),
 };
@@ -381,6 +395,7 @@ export const MainContext = {
 export const ExtHostContext = {
 	ExtHostCommands: createExtId<ExtHostCommandsShape>('ExtHostCommands', ExtHostCommandsShape),
 	ExtHostConfiguration: createExtId<ExtHostConfigurationShape>('ExtHostConfiguration', ExtHostConfigurationShape),
+	ExtHostDataManagement: createExtId<ExtHostDataManagementShape>('ExtHostDataManagement', ExtHostDataManagementShape),
 	ExtHostDiagnostics: createExtId<ExtHostDiagnosticsShape>('ExtHostDiagnostics', ExtHostDiagnosticsShape),
 	ExtHostDocuments: createExtId<ExtHostDocumentsShape>('ExtHostDocuments', ExtHostDocumentsShape),
 	ExtHostDocumentSaveParticipant: createExtId<ExtHostDocumentSaveParticipantShape>('ExtHostDocumentSaveParticipant', ExtHostDocumentSaveParticipantShape),
@@ -391,5 +406,4 @@ export const ExtHostContext = {
 	ExtHostLanguageFeatures: createExtId<ExtHostLanguageFeaturesShape>('ExtHostLanguageFeatures', ExtHostLanguageFeaturesShape),
 	ExtHostQuickOpen: createExtId<ExtHostQuickOpenShape>('ExtHostQuickOpen', ExtHostQuickOpenShape),
 	ExtHostExtensionService: createExtId<ExtHostExtensionServiceShape>('ExtHostExtensionService', ExtHostExtensionServiceShape)
-	// ExtHostTerminalService: createExtId<ExtHostTerminalServiceShape>('ExtHostTerminalService', ExtHostTerminalServiceShape)
 };

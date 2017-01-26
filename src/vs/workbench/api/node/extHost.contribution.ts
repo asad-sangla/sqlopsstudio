@@ -15,6 +15,7 @@ import { IExtensionService } from 'vs/platform/extensions/common/extensions';
 // --- addressable
 import { MainThreadCommands } from './mainThreadCommands';
 import { MainThreadConfiguration } from './mainThreadConfiguration';
+import { MainThreadDataManagement } from './mainThreadDataManagement';
 import { MainThreadDiagnostics } from './mainThreadDiagnostics';
 import { MainThreadDocuments } from './mainThreadDocuments';
 import { MainThreadEditors } from './mainThreadEditors';
@@ -66,6 +67,7 @@ export class ExtHostContribution implements IWorkbenchContribution {
 		const col = new InstanceCollection();
 		col.define(MainContext.MainThreadCommands).set(create(MainThreadCommands));
 		col.define(MainContext.MainThreadConfiguration).set(create(MainThreadConfiguration));
+		col.define(MainContext.MainThreadDataManagement).set(create(MainThreadDataManagement));
 		col.define(MainContext.MainThreadDiagnostics).set(create(MainThreadDiagnostics));
 		col.define(MainContext.MainThreadDocuments).set(create(MainThreadDocuments));
 		col.define(MainContext.MainThreadEditors).set(create(MainThreadEditors));
@@ -79,7 +81,6 @@ export class ExtHostContribution implements IWorkbenchContribution {
 		col.define(MainContext.MainThreadStatusBar).set(create(MainThreadStatusBar));
 		col.define(MainContext.MainThreadStorage).set(create(MainThreadStorage));
 		col.define(MainContext.MainThreadTelemetry).set(create(MainThreadTelemetry));
-		// col.define(MainContext.MainThreadTerminalService).set(create(MainThreadTerminalService));
 		col.define(MainContext.MainThreadWorkspace).set(create(MainThreadWorkspace));
 		if (this.extensionService instanceof MainProcessExtensionService) {
 			col.define(MainContext.MainProcessExtensionService).set(<MainProcessExtensionService>this.extensionService);

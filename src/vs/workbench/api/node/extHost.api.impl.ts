@@ -13,6 +13,7 @@ import * as errors from 'vs/base/common/errors';
 import product from 'vs/platform/product';
 import pkg from 'vs/platform/package';
 import { ExtHostFileSystemEventService } from 'vs/workbench/api/node/extHostFileSystemEventService';
+import { ExtHostDataManagement } from 'vs/workbench/api/node/extHostDataManagement';
 import { ExtHostDocuments } from 'vs/workbench/api/node/extHostDocuments';
 import { ExtHostDocumentSaveParticipant } from 'vs/workbench/api/node/extHostDocumentSaveParticipant';
 import { ExtHostConfiguration } from 'vs/workbench/api/node/extHostConfiguration';
@@ -24,7 +25,6 @@ import { ExtHostHeapService } from 'vs/workbench/api/node/extHostHeapService';
 import { ExtHostStatusBar } from 'vs/workbench/api/node/extHostStatusBar';
 import { ExtHostCommands } from 'vs/workbench/api/node/extHostCommands';
 import { ExtHostOutputService } from 'vs/workbench/api/node/extHostOutputService';
-// import { ExtHostTerminalService } from 'vs/workbench/api/node/extHostTerminalService';
 import { ExtHostMessageService } from 'vs/workbench/api/node/extHostMessageService';
 import { ExtHostEditors } from 'vs/workbench/api/node/extHostEditors';
 import { ExtHostLanguages } from 'vs/workbench/api/node/extHostLanguages';
@@ -67,6 +67,7 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 	// Addressable instances
 	const col = new InstanceCollection();
 	const extHostHeapService = col.define(ExtHostContext.ExtHostHeapService).set<ExtHostHeapService>(new ExtHostHeapService());
+	const extHostDataManagement = col.define(ExtHostContext.ExtHostDataManagement).set<ExtHostDataManagement>(new ExtHostDataManagement(threadService));
 	const extHostDocuments = col.define(ExtHostContext.ExtHostDocuments).set<ExtHostDocuments>(new ExtHostDocuments(threadService));
 	const extHostDocumentSaveParticipant = col.define(ExtHostContext.ExtHostDocumentSaveParticipant).set<ExtHostDocumentSaveParticipant>(new ExtHostDocumentSaveParticipant(extHostDocuments, threadService.get(MainContext.MainThreadWorkspace)));
 	const extHostEditors = col.define(ExtHostContext.ExtHostEditors).set<ExtHostEditors>(new ExtHostEditors(threadService, extHostDocuments));
@@ -77,7 +78,6 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 	const languageFeatures = col.define(ExtHostContext.ExtHostLanguageFeatures).set<ExtHostLanguageFeatures>(new ExtHostLanguageFeatures(threadService, extHostDocuments, extHostCommands, extHostHeapService, extHostDiagnostics));
 	const extHostFileSystemEvent = col.define(ExtHostContext.ExtHostFileSystemEventService).set<ExtHostFileSystemEventService>(new ExtHostFileSystemEventService());
 	const extHostQuickOpen = col.define(ExtHostContext.ExtHostQuickOpen).set<ExtHostQuickOpen>(new ExtHostQuickOpen(threadService));
-	//const extHostTerminalService = col.define(ExtHostContext.ExtHostTerminalService).set<ExtHostTerminalService>(new ExtHostTerminalService(threadService));
 	col.define(ExtHostContext.ExtHostExtensionService).set(extensionService);
 	col.finish(false, threadService);
 
@@ -104,6 +104,13 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 				console.warn(`${extension.name} (${extension.id}) uses PROPOSED API which is subject to change and removal without notice`);
 			}
 		}
+
+		// namespace: connections
+		const connections: typeof vscode.connections = {
+			registerConnectionProvider(name: string): void {
+				let connection = extHostDataManagement.$provideConnections();
+			}
+		};
 
 		// namespace: commands
 		const commands: typeof vscode.commands = {
@@ -364,6 +371,7 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 			version: pkg.version,
 			// namespaces
 			commands,
+			connections,
 			env,
 			extensions,
 			languages,

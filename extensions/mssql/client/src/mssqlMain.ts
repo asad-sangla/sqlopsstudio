@@ -6,7 +6,7 @@
 
 import * as path from 'path';
 
-import { workspace, languages, ExtensionContext, extensions, Uri, window } from 'vscode';
+import { workspace, languages, ExtensionContext, extensions, Uri, window, connections } from 'vscode';
 import { LanguageClient, LanguageClientOptions, RequestType, ServerOptions, TransportKind, NotificationType } from 'dataprotocol-client';
 import TelemetryReporter from 'vscode-extension-telemetry';
 
@@ -34,6 +34,8 @@ interface IPackageInfo {
 export function activate(context: ExtensionContext) {
 
 	window.showErrorMessage("mssql extension has been activated");
+
+	connections.registerConnectionProvider("mssql");
 
 	let packageInfo = getPackageInfo(context);
 	let telemetryReporter: TelemetryReporter = packageInfo && new TelemetryReporter(packageInfo.name, packageInfo.version, packageInfo.aiKey);
