@@ -1,6 +1,6 @@
-# mssql-admin Database Management Tool
+# carbon Database Management Tool
 
-mssql-admin is a multi-OS, multi-database management tool.
+carbon is a multi-OS, multi-database management tool.
 
 ## Contributing
 If you are interested in fixing issues and contributing directly to the code base,
