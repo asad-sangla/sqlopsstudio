@@ -7,10 +7,20 @@
       "from": "applicationinsights@0.15.6",
       "resolved": "https://registry.npmjs.org/applicationinsights/-/applicationinsights-0.15.6.tgz"
     },
-    "dataprotocol-client": {
+   "dataprotocol-client": {
       "version": "3.0.2-beta.5",
       "from": "../../dataprotocol-node/client",
       "resolved": "file:../../dataprotocol-node/client"
+    },
+    "dataprotocol-jsonrpc": {
+      "version": "3.0.2-beta.5",
+      "from": "../../dataprotocol-node/jsonrpc",
+      "resolved": "file:../../dataprotocol-node/jsonrpc"
+    },
+    "dataprotocol-languageserver-types": {
+      "version": "3.0.2-beta.5",
+      "from": "../../dataprotocol-node/types",
+      "resolved": "file:../../dataprotocol-node/types"
     },
     "vscode-nls": {
       "version": "1.0.7",
