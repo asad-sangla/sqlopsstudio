@@ -1,116 +1,302 @@
 {
-  "name": "mssql-server",
+  "name": "mssql",
   "version": "0.1.0",
-  "publisher": "vscode",
-  "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+  "publisher": "Microsoft",
+  "aiKey": "AIF-5574968e-856d-40d2-af67-c89a14e76412",
   "engines": {
     "vscode": "0.10.x"
   },
   "activationEvents": [
-    "onLanguage:ttt"
+    "onLanguage:sql"
   ],
   "main": "./client/out/mssqlMain",
+  "extensionDependencies": [
+    "vscode.sql"
+  ],
   "scripts": {
-    "compile": "gulp compile-extension:mssql-client && gulp compile-extension:mssql-server",
-    "postinstall": "cd server && npm install"
+    "compile": "gulp compile-extension:mssql-client",
+		"postinstall": "node ./node_modules/vscode/bin/install"
   },
   "contributes": {
     "languages": [
       {
-        "id": "ttt",
-        "aliases": [
-          "TTT",
-          "Ttt"
-        ],
+        "id": "sql",
         "extensions": [
-          ".ttt"
+          ".sql"
         ],
-        "mimetypes": [
-          "application/tt",
-          "application/manifest+tt"
+        "aliases": [
+          "SQL"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./syntaxes/sql.configuration.json"
       }
     ],
     "grammars": [
       {
-        "language": "ttt",
-        "scopeName": "source.json",
-        "path": "./syntaxes/JSON.tmLanguage"
+        "language": "sql",
+        "scopeName": "source.sql",
+        "path": "./syntaxes/SQL.plist"
       }
     ],
-    "jsonValidation": [
+    "outputChannels": [
+      "MSSQL"
+    ],
+    "snippets": [
       {
-        "fileMatch": "*.schema.json",
-        "url": "http://json-schema.org/draft-04/schema#"
+        "language": "sql",
+        "path": "./snippets/mssql.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "extension.connect",
+        "title": "Connect",
+        "category": "MS SQL"
+      },
+      {
+        "command": "extension.disconnect",
+        "title": "Disconnect",
+        "category": "MS SQL"
+      },
+      {
+        "command": "extension.manageProfiles",
+        "title": "Manage Connection Profiles",
+        "category": "MS SQL"
+      },
+      {
+        "command": "extension.chooseDatabase",
+        "title": "Use Database",
+        "category": "MS SQL"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.connect",
+        "key": "ctrl+shift+c",
+        "mac": "cmd+shift+c",
+        "when": "editorTextFocus && editorLangId == 'sql'"
+      },
+      {
+        "command": "extension.disconnect",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d",
+        "when": "editorTextFocus && editorLangId == 'sql'"
       }
     ],
     "configuration": {
-      "id": "ttt",
-      "order": 20,
       "type": "object",
-      "title": "JSON",
+      "title": "MSSQL configuration",
       "properties": {
-        "json.schemas": {
+        "mssql.logDebugInfo": {
+          "type": "boolean",
+          "default": false,
+          "description": "[Optional] Log debug output to the VS Code console (Help -> Toggle Developer Tools)"
+        },
+        "mssql.maxRecentConnections": {
+          "type": "number",
+          "default": 5,
+          "description": "The maximum number of recently used connections to store in the connection list."
+        },
+        "mssql.connections": {
           "type": "array",
-          "description": "%json.schemas.desc%",
+          "default": [
+            {
+              "server": "{{put-server-name-here}}",
+              "database": "{{put-database-name-here}}",
+              "user": "{{put-username-here}}",
+              "password": "{{put-password-here}}"
+            }
+          ],
+          "description": "Connection profiles defined in 'User Settings' are shown under 'MS SQL: Connect' command in the command palette.",
           "items": {
             "type": "object",
-            "default": {
-              "fileMatch": [
-                "/myfile"
-              ],
-              "url": "schemaURL"
-            },
             "properties": {
-              "url": {
+              "server": {
                 "type": "string",
-                "default": "/user.schema.json",
-                "description": "%json.schemas.url.desc%"
+                "default": "{{put-server-name-here}}",
+                "description": "[Required] Specify the server name to connect to. Use 'hostname\\instance' or '<server>.database.windows.net' for Azure SQL Database."
               },
-              "fileMatch": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "default": "MyFile.json",
-                  "description": "%json.schemas.fileMatch.item.desc%"
-                },
-                "minItems": 1,
-                "description": "%json.schemas.fileMatch.desc%"
+              "database": {
+                "type": "string",
+                "default": "{{put-database-name-here}}",
+                "description": "[Optional] Specify the database name to connect to. If database is not specified, the default user database setting is used, typically 'master'."
               },
-              "schema": {
-                "$ref": "http://json-schema.org/draft-04/schema#",
-                "description": "%json.schemas.schema.desc%"
+              "user": {
+                "type": "string",
+                "default": "{{put-username-here}}",
+                "description": "[Optional] Specify the user name for SQL Server authentication. If user name is not specified, when you connect, you will be asked again."
+              },
+              "password": {
+                "type": "string",
+                "default": "{{put-password-here}}",
+                "description": "[Optional] Specify the password for SQL Server authentication. If password is not specified or already saved, when you connect, you will be asked again."
+              },
+              "authenticationType": {
+                "type": "string",
+                "default": "SqlLogin",
+                "enum": [
+                  "Integrated",
+                  "SqlLogin"
+                ],
+                "description": "[Optional] Specify the SQL Server authentication type."
+              },
+              "port": {
+                "type": "number",
+                "default": 1433,
+                "description": "[Optional] Specify the port number to connect to."
+              },
+              "encrypt": {
+                "type": "boolean",
+                "default": false,
+                "description": "[Optional] When set to 'true', SQL Server uses SSL encryption for data sent between the client and the server if the server has a certificate installed. Set 'true' for Azure SQL Database connection."
+              },
+              "trustServerCertificate": {
+                "type": "boolean",
+                "default": false,
+                "description": "[Optional] When set to 'true', the SQL Server SSL certificate is automatically trusted when the communication layer is encrypted using SSL. Set 'false' for Azure SQL Database connection."
+              },
+              "persistSecurityInfo": {
+                "type": "boolean",
+                "default": false,
+                "description": "[Optional] When set to false, security-sensitive information, such as the password, is not returned as part of the connection if the connection is open or has ever been in an open state."
+              },
+              "connectTimeout": {
+                "type": "number",
+                "default": 15,
+                "description": "[Optional] Specify the length of time in seconds to wait for a connection to the server before it times out. The default timeout value for Azure SQL Database is 30."
+              },
+              "connectRetryCount": {
+                "type": "number",
+                "default": 1,
+                "description": "[Optional] Specify the number of attempts to restore connection."
+              },
+              "connectRetryInterval": {
+                "type": "number",
+                "default": 10,
+                "description": "[Optional] Specify the delay between attempts to restore connection."
+              },
+              "applicationName": {
+                "type": "string",
+                "default": "vscode-mssql",
+                "description": "[Optional] Specify the name of the application used for SQL Server to log (default: 'vscode-mssql')."
+              },
+              "workstationId": {
+                "type": "string",
+                "default": "",
+                "description": "[Optional] Specify the name of the workstation connecting to SQL Server."
+              },
+              "applicationIntent": {
+                "type": "string",
+                "default": "ReadWrite",
+                "enum": [
+                  "ReadWrite",
+                  "ReadOnly"
+                ],
+                "description": "[Optional] Declares the application workload type when connecting to SQL Server such as ReadWrite or ReadOnly. Refer to SQL Server AlwaysOn for more detail."
+              },
+              "currentLanguage": {
+                "type": "string",
+                "default": "",
+                "description": "[Optional] Indicates the SQL Server language settings."
+              },
+              "pooling": {
+                "type": "boolean",
+                "default": false,
+                "description": "[Optional] When set to 'true', the connection object is drawn from the appropriate pool, or if necessary, is created and added to the appropriate pool."
+              },
+              "maxPoolSize": {
+                "type": "number",
+                "default": 100,
+                "description": "[Optional] Specify the maximum number of connections allowed in the pool."
+              },
+              "minPoolSize": {
+                "type": "number",
+                "default": 0,
+                "description": "[Optional] Specify the minimum number of connections allowed in the pool."
+              },
+              "loadBalanceTimeout": {
+                "type": "number",
+                "default": 0,
+                "description": "[Optional] Specify the minimum amount of time in seconds for this connection to live in the pool before being removed/deleted."
+              },
+              "replication": {
+                "type": "boolean",
+                "default": true,
+                "description": "[Optional] Used by SQL Server in replication."
+              },
+              "attachDbFilename": {
+                "type": "string",
+                "default": "",
+                "description": "[Optional] Specify the name of the primary file, including the full path name, of an attachable database."
+              },
+              "failoverPartner": {
+                "type": "string",
+                "default": "",
+                "description": "[Optional] Specify the name or network address of the instance of SQL Server that acts as a failover partner."
+              },
+              "multiSubnetFailover": {
+                "type": "boolean",
+                "default": true,
+                "description": "[Optional] When set to 'true', the detection and connection to the active server is faster if AlwaysOn Availability Group is configured on different subnets."
+              },
+              "multipleActiveResultSets": {
+                "type": "boolean",
+                "default": false,
+                "description": "[Optional] When set to 'true', multiple result sets can be returned and read from on connection."
+              },
+              "packetSize": {
+                "type": "number",
+                "default": 8192,
+                "description": "[Optional] Specify the size in bytes of the network packets to communicate with SQL Server."
+              },
+              "typeSystemVersion": {
+                "type": "string",
+                "enum": [
+                  "Latest"
+                ],
+                "description": "[Optional] Indicates which server type the provider will expose through the DataReader."
+              },
+              "profileName": {
+                "type": "string",
+                "description": "[Optional] Specify a custom name for this connection profile to easily browse and search in the command palette of Visual Studio Code."
+              },
+              "savePassword": {
+                "type": "boolean",
+                "description": "[Optional] When set to 'true', the password for SQL Server authentication is saved in the secure store of your operating system such as KeyChain in MacOS or Secure Store in Windows."
               }
             }
           }
-        },
-        "json.format.enable": {
-          "type": "boolean",
-          "default": true,
-          "description": "%json.format.enable.desc%"
-        },
-        "json.trace.server": {
-          "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
-          "default": "off",
-          "description": "Traces the communication between VS Code and the JSON language server."
         }
       }
     }
   },
+
+
   "dependencies": {
     "vscode-extension-telemetry": "^0.0.5",
     "vscode-nls": "^1.0.7",
     "dataprotocol-client": "file:../../dataprotocol-node/client",
     "dataprotocol-languageserver-types": "file:../../dataprotocol-node/types",
-	  "dataprotocol-jsonrpc": "file:../../dataprotocol-node/jsonrpc"
+    "dataprotocol-jsonrpc": "file:../../dataprotocol-node/jsonrpc",
+    "body-parser": "^1.15.2",
+    "comment-json": "^1.1.3",
+    "copy-paste": "^1.3.0",
+    "decompress": "^4.0.0",
+    "ejs": "^2.4.2",
+    "error-ex": "^1.3.0",
+    "express": "^4.13.3",
+    "figures": "^1.4.0",
+    "fs-extra-promise": "^0.3.1",
+    "getmac": "1.2.1",
+    "http-proxy-agent": "^1.0.0",
+    "https-proxy-agent": "^1.0.0",
+    "opener": "1.4.2",
+    "pretty-data": "^0.40.0",
+    "request": "^2.73.0",
+    "underscore": "^1.8.3",
+    "ws": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^6.0.61"
+    "@types/node": "^6.0.61",
+    "vscode": "1.0.1"
   }
 }
