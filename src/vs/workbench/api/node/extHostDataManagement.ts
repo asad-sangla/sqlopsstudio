@@ -71,7 +71,7 @@ export class ExtHostDataManagement extends ExtHostDataManagementShape  {
 	}
 
 	$connect(): void {
-		this.$provideConnections(0);
+		// this.$provideConnections(0);
 	}
 
 }

@@ -4,19 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import EditorCommon = require('vs/editor/common/editorCommon');
 import Event, { Emitter } from 'vs/base/common/event';
-import { IEditor } from 'vs/platform/editor/common/editor';
-import { ICodeEditorService } from 'vs/editor/common/services/codeEditorService';
-import { IModelService } from 'vs/editor/common/services/modelService';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { RunOnceScheduler } from 'vs/base/common/async';
-import { IdGenerator } from 'vs/base/common/idGenerator';
-import { Range } from 'vs/editor/common/core/range';
-import { Selection } from 'vs/editor/common/core/selection';
-import { EndOfLine, TextEditorLineNumbersStyle } from 'vs/workbench/api/node/extHostTypes';
+import vscode = require('vscode');
 
-import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers'
+import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
 
 export class MainThreadConnectionTracker {
 

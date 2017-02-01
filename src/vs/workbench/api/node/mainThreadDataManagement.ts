@@ -9,7 +9,7 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { ExtHostContext, ExtHostDataManagementShape, MainThreadDataManagementShape } from './extHost.protocol';
 import { MainThreadConnectionTracker } from 'vs/workbench/api/node/mainThreadConnectionTracker';
-import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
+import { IRegisteredServersService, IConnection } from 'sql/parts/connection/common/registeredServers';
 
 export class MainThreadDataManagement extends MainThreadDataManagementShape {
 
@@ -21,9 +21,12 @@ export class MainThreadDataManagement extends MainThreadDataManagementShape {
 
 	private _registrations: { [handle: number]: IDisposable; } = Object.create(null);
 
+	private _registeredServersService: IRegisteredServersService;
+
 	constructor(
 		@IThreadService threadService: IThreadService,
-		@IRegisteredServersService registeredServersService: IRegisteredServersService,
+		@IRegisteredServersService registeredServersService: IRegisteredServersService
+
 	) {
 		super();
 		this._proxy = threadService.get(ExtHostContext.ExtHostDataManagement);
@@ -32,6 +35,8 @@ export class MainThreadDataManagement extends MainThreadDataManagementShape {
 
 		this._tracker = new MainThreadConnectionTracker(registeredServersService);
 		this._toDispose.push(this._tracker.onConnection(() => this._onConnection()));
+
+		this._registeredServersService = registeredServersService;
 	}
 
 	public dispose(): void {
@@ -43,16 +48,14 @@ export class MainThreadDataManagement extends MainThreadDataManagementShape {
 	}
 
 	$registerConnectionProvider(handle: number): TPromise<any> {
-		//this._registrations[handle] =
+		let self = this;
 
-		// modes.LinkProviderRegistry.register(selector, <modes.LinkProvider>{
-		// 	provideLinks: (model, token) => {
-		// 		return wireCancellationToken(token, this._proxy.$provideDocumentLinks(handle, model.uri));
-		// 	},
-		// 	resolveLink: (link, token) => {
-		// 		return wireCancellationToken(token, this._proxy.$resolveDocumentLink(handle, link));
-		// 	}
-		// });
+		this._registrations[handle] = this._registeredServersService.registerConnectionProvider(handle, {
+			onConnectionSwitched(connection: IConnection): void {
+				self._proxy.$provideConnections(handle);
+			}
+		});
+
 		return undefined;
 	}
 
