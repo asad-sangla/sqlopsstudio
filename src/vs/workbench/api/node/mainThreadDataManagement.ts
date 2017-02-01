@@ -7,20 +7,19 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { IModeService } from 'vs/editor/common/services/modeService';
 import { ExtHostContext, ExtHostDataManagementShape, MainThreadDataManagementShape } from './extHost.protocol';
 import { MainThreadConnectionTracker } from 'vs/workbench/api/node/mainThreadConnectionTracker';
-import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers'
+import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
 
 export class MainThreadDataManagement extends MainThreadDataManagementShape {
 
 	private _proxy: ExtHostDataManagementShape;
 
-	private _modeService: IModeService;
-
 	private _toDispose: IDisposable[];
 
 	private _tracker: MainThreadConnectionTracker;
+
+	private _registrations: { [handle: number]: IDisposable; } = Object.create(null);
 
 	constructor(
 		@IThreadService threadService: IThreadService,
@@ -35,11 +34,34 @@ export class MainThreadDataManagement extends MainThreadDataManagementShape {
 		this._toDispose.push(this._tracker.onConnection(() => this._onConnection()));
 	}
 
+	public dispose(): void {
+		this._toDispose = dispose(this._toDispose);
+	}
+
 	private _onConnection(): void {
 		this._proxy.$connect();
 	}
 
-	$getLanguages(): TPromise<string[]> {
-		return TPromise.as([ 'lang']);
+	$registerConnectionProvider(handle: number): TPromise<any> {
+		//this._registrations[handle] =
+
+		// modes.LinkProviderRegistry.register(selector, <modes.LinkProvider>{
+		// 	provideLinks: (model, token) => {
+		// 		return wireCancellationToken(token, this._proxy.$provideDocumentLinks(handle, model.uri));
+		// 	},
+		// 	resolveLink: (link, token) => {
+		// 		return wireCancellationToken(token, this._proxy.$resolveDocumentLink(handle, link));
+		// 	}
+		// });
+		return undefined;
+	}
+
+	$unregisterConnectionProvider(handle: number): TPromise<any> {
+		let registration = this._registrations[handle];
+		if (registration) {
+			registration.dispose();
+			delete this._registrations[handle];
+		}
+		return undefined;
 	}
 }

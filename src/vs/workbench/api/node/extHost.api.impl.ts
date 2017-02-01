@@ -107,8 +107,8 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 
 		// namespace: connections
 		const connections: typeof vscode.connections = {
-			registerConnectionProvider(name: string): void {
-				let connection = extHostDataManagement.$provideConnections();
+			registerConnectionProvider(provider: vscode.IConnectionProvider): vscode.Disposable  {
+				return extHostDataManagement.$registerConnectionProvider(provider);
 			}
 		};
 
