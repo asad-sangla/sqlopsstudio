@@ -14,7 +14,7 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink, IConnectionProvider, IDataConnection, connections
+		DocumentLink as VDocumentLink, IConnectionProvider, DataConnection, connections
 } from 'vscode';
 
 import {
@@ -60,7 +60,8 @@ import {
 		DocumentFormattingRequest, DocumentFormattingParams, DocumentRangeFormattingRequest, DocumentRangeFormattingParams,
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
-		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams
+		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
+		ListConnectionRequest, ListConnectionParams
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -83,7 +84,7 @@ declare var v8debug;
 
 
 class ConnectionProvider implements IConnectionProvider {
-    $provideConnections(): Thenable<IDataConnection> {
+    $provideConnections(): Thenable<DataConnection> {
         return new Promise(() => {
             return undefined;
         });
@@ -1229,7 +1230,7 @@ export class LanguageClient {
 					type: FileChangeType.Deleted
 				}
 			), null, this._listeners);
-		})
+		});
 	}
 
 	private hookCapabilities(connection: IConnection): void {
@@ -1261,9 +1262,24 @@ export class LanguageClient {
 	}
 
 	private hookConnectionProvider(connection: IConnection): void {
-		this._providers.push(connections.registerConnectionProvider(	{
-			$provideConnections(): Thenable<IDataConnection> {
-				return undefined;
+		let self = this;
+		this._providers.push(connections.registerConnectionProvider({
+			$provideConnections(): Thenable<DataConnection> {
+
+				let conn = {
+					connectionInfo: {
+						serverName: "server name",
+    					databaseName: "database name"
+					}
+				};
+
+				return self.doSendRequest(connection, ListConnectionRequest.type, conn, undefined).then(
+					self._p2c.asDataConnection,
+					(error) => {
+						this.logFailedRequest(ListConnectionRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
 			}
 		}));
 	}

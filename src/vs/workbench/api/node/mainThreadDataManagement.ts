@@ -52,7 +52,10 @@ export class MainThreadDataManagement extends MainThreadDataManagementShape {
 
 		this._registrations[handle] = this._registeredServersService.registerConnectionProvider(handle, {
 			onConnectionSwitched(connection: IConnection): void {
-				self._proxy.$provideConnections(handle);
+				self._proxy.$provideConnections(handle).then(conn => {
+					conn.displayName = conn.displayName + conn.name;
+				});
+
 			}
 		});
 

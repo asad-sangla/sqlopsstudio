@@ -334,7 +334,7 @@ export abstract class ExtHostDataManagementShape {
 
 	$registerConnectionProvider(provider: vscode.IConnectionProvider): vscode.Disposable { throw ni(); }
 
-	$provideConnections(handle: number): Thenable<vscode.IDataConnection> { throw ni(); }
+	$provideConnections(handle: number): Thenable<vscode.DataConnection> { throw ni(); }
 
 	$connect(): void { throw ni(); }
 }

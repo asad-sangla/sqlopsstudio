@@ -19,7 +19,7 @@ class ConnectionAdapter {
 		this._provider = provider;
 	}
 
-	provideConnections(): Thenable<vscode.IDataConnection> {
+	provideConnections(): Thenable<vscode.DataConnection> {
 		return this._provider.$provideConnections();
 	}
 }
@@ -66,7 +66,7 @@ export class ExtHostDataManagement extends ExtHostDataManagementShape  {
 		return this._createDisposable(handle);
 	}
 
-	$provideConnections(handle: number): Thenable<vscode.IDataConnection> {
+	$provideConnections(handle: number): Thenable<vscode.DataConnection> {
 		return this._withAdapter(handle, ConnectionAdapter, adapter => adapter.provideConnections());
 	}
 

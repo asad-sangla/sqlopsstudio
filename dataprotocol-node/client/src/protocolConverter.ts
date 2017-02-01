@@ -12,6 +12,8 @@ import ProtocolCodeLens from './protocolCodeLens';
 
 export interface Converter {
 
+	asDataConnection(connInfo: ls.ConnectionInfo) : code.DataConnection;
+
 	asUri(value: string): code.Uri;
 
 	asDiagnostics(diagnostics: ls.Diagnostic[]): code.Diagnostic[];
@@ -87,6 +89,16 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 
 	function asUri(value: string): code.Uri {
 		return _uriConverter(value);
+	}
+
+	function asDataConnection(item: ls.ConnectionInfo): code.DataConnection {
+			let result = {
+				name: '',
+				displayName: ''
+			};
+			set(item.databaseName, () => result.name = item.databaseName);
+			set(item.serverName, () => result.displayName = item.serverName);
+			return result;
 	}
 
 	function asDiagnostics(diagnostics: ls.Diagnostic[]): code.Diagnostic[] {
@@ -377,6 +389,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 
 	return {
 		asUri,
+		asDataConnection,
 		asDiagnostics,
 		asDiagnostic,
 		asRange,

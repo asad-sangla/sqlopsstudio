@@ -10,13 +10,13 @@ declare module 'vscode' {
 	 */
 	export const version: string;
 
-	export interface IDataConnection {
+	export interface DataConnection {
 		name: string;
 		displayName: string;
 	}
 
 	export interface IConnectionProvider {
-		$provideConnections(): Thenable<IDataConnection>;
+		$provideConnections(): Thenable<DataConnection>;
 	}
 
 	export namespace connections {

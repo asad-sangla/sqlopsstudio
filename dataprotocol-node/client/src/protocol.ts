@@ -929,5 +929,5 @@ export interface ListConnectionParams {
 }
 
 export namespace ListConnectionRequest {
-	export const type: RequestType<ListConnectionParams, ConnectionInfo[], void> = { get method() { return 'connection/listConnections'; } };
+	export const type: RequestType<ListConnectionParams, ConnectionInfo, void> = { get method() { return 'connection/listConnections'; } };
 }
