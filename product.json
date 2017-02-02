@@ -1,0 +1,16 @@
+{
+	"nameShort": "carbon",
+	"nameLong": "carbon",
+	"applicationName": "carbon",
+	"dataFolderName": ".carbon",
+	"win32MutexName": "carbon",
+	"licenseUrl": "https://github.com/Microsoft/carbon/blob/master/LICENSE.txt",
+	"win32DirName": "carbon",
+	"win32NameVersion": "carbon",
+	"win32RegValueName": "carbon",
+	"win32AppId": "{{E34003BB-9E10-4501-8C11-1234AA83F23F}",
+	"win32AppUserModelId": "Microsoft.carbon",
+	"darwinBundleIdentifier": "com.carbon.oss",
+	"reportIssueUrl": "https://github.com/Microsoft/carbon/issues/new",
+	"urlProtocol": "carbon"
+}

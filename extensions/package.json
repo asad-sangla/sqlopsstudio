@@ -1,0 +1,13 @@
+{
+  "name": "vscode-extensions",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Dependencies shared by all extensions",
+  "dependencies": {
+    "typescript": "2.0.3",
+    "@types/node": "^6.0.61"
+  },
+  "scripts": {
+    "postinstall": "node ./postinstall"
+  }
+}
