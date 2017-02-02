@@ -1,0 +1,43 @@
+{
+  "build": {
+    "content": [  
+      {
+        "cwd":  ".",
+        "files": [
+          "toc.yml",
+          "index.md",
+          "dmp/**.md",
+          "carbon/**.md"
+        ],
+        "exclude": [
+          "metadata/**",
+          "_site/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ],
+        "exclude": [
+          "obj/**",
+          "_site/**"
+        ]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": [
+          "apidoc/**.md"
+        ],
+        "exclude": [
+          "obj/**",
+          "_site/**"
+        ]
+      }
+    ],
+    "dest": "_site",
+    "template": [ "default", "template" ]
+  }
+}
