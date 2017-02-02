@@ -1,2 +1,2 @@
-# [Introduction](index.md)
-# [Protocol Specification](protocol.md)
+# [Protocol Overview](index.md)
+# [Connection Protocol](connection.md)
