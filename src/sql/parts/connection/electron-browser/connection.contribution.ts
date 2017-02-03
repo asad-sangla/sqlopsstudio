@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/extensions';
+import 'vs/css!./media/serverTree';
 import { localize } from 'vs/nls';
 import { Registry } from 'vs/platform/platform';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
@@ -15,7 +16,7 @@ import { ExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/node/e
 import { ViewletRegistry, Extensions as ViewletExtensions, ViewletDescriptor, ToggleViewletAction } from 'vs/workbench/browser/viewlet';
 import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/workbench/common/actionRegistry';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
-import { VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
+import { VIEWLET_ID, TREEVIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
@@ -41,8 +42,27 @@ export class OpenRegisteredServersViewletAction extends ToggleViewletAction {
 	}
 }
 
+// Viewlet Action
+export class TreeOpenRegisteredServersViewletAction extends ToggleViewletAction {
+	public static ID = TREEVIEWLET_ID;
+	public static LABEL = "Show Tree Registered Servers";
+
+	constructor(
+		id: string,
+		label: string,
+		@IViewletService viewletService: IViewletService,
+		@IWorkbenchEditorService editorService: IWorkbenchEditorService
+	) {
+		super(id, label, TREEVIEWLET_ID, viewletService, editorService);
+	}
+}
+
 const openViewletKb: IKeybindings = {
 	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_C
+};
+
+const treeOpenViewletKb: IKeybindings = {
+	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_T
 };
 
 // Viewlet
@@ -52,6 +72,16 @@ const viewletDescriptor = new ViewletDescriptor(
 	VIEWLET_ID,
 	"Registered Servers",
 	'extensions',
+	0
+);
+
+// Tree Viewlet
+const treeViewletDescriptor = new ViewletDescriptor(
+	'sql/parts/connection/electron-browser/treeConnectionViewlet',
+	'TreeConnectionViewlet',
+	TREEVIEWLET_ID,
+	"Registered Servers Tree",
+	'serverTree',
 	0
 );
 
@@ -69,3 +99,20 @@ registry.registerWorkbenchAction(
 	'View: Show Registered Servers',
 	localize('view', "View")
 );
+
+
+//Tree viewlet
+Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).registerViewlet(treeViewletDescriptor);
+
+Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).setDefaultViewletId(TREEVIEWLET_ID);
+
+registry.registerWorkbenchAction(
+	new SyncActionDescriptor(
+		TreeOpenRegisteredServersViewletAction,
+		TreeOpenRegisteredServersViewletAction.ID,
+		TreeOpenRegisteredServersViewletAction.LABEL,
+		treeOpenViewletKb),
+	'View: Show Registered Servers',
+	localize('view', "View")
+);
+
