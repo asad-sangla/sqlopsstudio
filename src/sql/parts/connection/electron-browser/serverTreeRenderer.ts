@@ -24,14 +24,14 @@ export class ServerTreeRenderer implements IRenderer {
 
 	public renderTemplate(tree: ITree, templateId: string, container: HTMLElement): any {
 
-		const editorTemplate: IServerTemplateData = Object.create(null);
-		editorTemplate.root = dom.append(container, $('.editor-group'));
-		editorTemplate.name = dom.append(editorTemplate.root, $('span.name'));
-		editorTemplate.type = dom.append(editorTemplate.root, $('.description.ellipsis'));
-		editorTemplate.footer = dom.append(editorTemplate.root, $('.footer'));
-		editorTemplate.info = dom.append(editorTemplate.footer, $('.author.ellipsis'));
+		const serverTemplate: IServerTemplateData = Object.create(null);
+		serverTemplate.root = dom.append(container, $('.editor-group'));
+		serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
+		serverTemplate.type = dom.append(serverTemplate.root, $('.description.ellipsis'));
+		serverTemplate.footer = dom.append(serverTemplate.root, $('.footer'));
+		serverTemplate.info = dom.append(serverTemplate.footer, $('.author.ellipsis'));
 
-		return editorTemplate;
+		return serverTemplate;
 	}
 
 	public renderElement(tree: ITree, element: any, templateId: string, templateData: any): void {

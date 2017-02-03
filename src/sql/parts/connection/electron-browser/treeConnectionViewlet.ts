@@ -24,24 +24,6 @@ import { IConnectionsViewlet, IRegisteredServersService, TREEVIEWLET_ID } from '
 import { ServerTreeView } from 'sql/parts/connection/electron-browser/serverTreeView';
 import { SplitView} from 'vs/base/browser/ui/splitview/splitview';
 
-class TreeDataSource1 implements IDataSource {
-	public getId(tree, element): string {
-		return element.id;
-	}
-
-	public hasChildren(tree, element): boolean {
-		return !!element.children;
-	}
-
-	public getChildren(tree, element): Promise {
-		return TPromise.as(element.children);
-	}
-
-	public getParent(tree, element): Promise {
-		throw new Error('Not implemented');
-	}
-}
-
 export class TreeConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	private searchDelayer: ThrottledDelayer<any>;
@@ -98,6 +80,7 @@ export class TreeConnectionViewlet extends Viewlet implements IConnectionsViewle
 	}
 
 	search(value: string): void {
+		//TODO
 	}
 
 	setVisible(visible: boolean): TPromise<void> {
