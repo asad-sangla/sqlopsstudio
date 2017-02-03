@@ -9,26 +9,48 @@ import { IThreadService } from 'vs/workbench/services/thread/common/threadServic
 import { MainContext, MainThreadDataManagementShape, ExtHostDataManagementShape } from './extHost.protocol';
 import * as vscode from 'vscode';
 import * as connection from 'sql/parts/connection/common/registeredServers';
+import { Disposable } from 'vs/workbench/api/node/extHostTypes';
 
-class Connection implements connection.IConnection {
 
-	public disabledGlobally = false;
-	public disabledForWorkspace = false;
+class ConnectionAdapter {
+	private _provider: vscode.IConnectionProvider;
 
-	constructor() { }
-
-	get name(): string {
-		return "Ext Connection Name";
+	constructor(provider: vscode.IConnectionProvider) {
+		this._provider = provider;
 	}
 
-	get displayName(): string {
-		return "Ext Connection Display Name";
+	provideConnections(): Thenable<vscode.DataConnection> {
+		return this._provider.$provideConnections();
 	}
 }
+
+type Adapter = ConnectionAdapter;
 
 export class ExtHostDataManagement extends ExtHostDataManagementShape  {
 
 	private _proxy: MainThreadDataManagementShape;
+
+	private static _handlePool: number = 0;
+	private _adapter: { [handle: number]: Adapter } = Object.create(null);
+
+	private _createDisposable(handle: number): Disposable {
+		return new Disposable(() => {
+			delete this._adapter[handle];
+			this._proxy.$unregisterConnectionProvider(handle);
+		});
+	}
+
+	private _nextHandle(): number {
+		return ExtHostDataManagement._handlePool++;
+	}
+
+	private _withAdapter<A, R>(handle: number, ctor: { new (...args: any[]): A }, callback: (adapter: A) => Thenable<R>): Thenable<R> {
+		let adapter = this._adapter[handle];
+		if (!(adapter instanceof ctor)) {
+			return TPromise.wrapError(new Error('no adapter found'));
+		}
+		return callback(<any>adapter);
+	}
 
 	constructor(
 		threadService: IThreadService
@@ -37,18 +59,19 @@ export class ExtHostDataManagement extends ExtHostDataManagementShape  {
 		this._proxy = threadService.get(MainContext.MainThreadDataManagement);
 	}
 
-	$provideConnections(): TPromise<connection.IConnection> {
-		this._proxy.$getLanguages().then(e => {
-			let f = e + ' then';
-		})
+	$registerConnectionProvider(provider: vscode.IConnectionProvider): vscode.Disposable {
+		const handle = this._nextHandle();
+		this._adapter[handle] = new ConnectionAdapter(provider);
+		this._proxy.$registerConnectionProvider(handle);
+		return this._createDisposable(handle);
+	}
 
-		return new TPromise<connection.IConnection>(() =>
-		{
-			return new Connection();
-		});
+	$provideConnections(handle: number): Thenable<vscode.DataConnection> {
+		return this._withAdapter(handle, ConnectionAdapter, adapter => adapter.provideConnections());
 	}
 
 	$connect(): void {
-		let g = 'abc';
+		// this.$provideConnections(0);
 	}
+
 }

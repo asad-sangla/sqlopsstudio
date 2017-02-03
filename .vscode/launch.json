@@ -57,7 +57,7 @@
 		{
 			"type": "extensionHost",
 			"request": "launch",
-			"name": "VS Code API Tests",
+			"name": "Carbon API Tests",
 			"runtimeExecutable": "${execPath}",
 			"args": [
 				"${workspaceRoot}/extensions/vscode-api-tests/testWorkspace",
@@ -70,7 +70,7 @@
 		{
 			"type": "extensionHost",
 			"request": "launch",
-			"name": "VS Code Tokenizer Tests",
+			"name": "Carbon Tokenizer Tests",
 			"runtimeExecutable": "${execPath}",
 			"args": [
 				"${workspaceRoot}/extensions/vscode-colorize-tests/test",
@@ -83,14 +83,14 @@
 		{
 			"type": "chrome",
 			"request": "attach",
-			"name": "Attach to VS Code",
+			"name": "Attach to Carbon",
 			"port": 9222,
 			"sourceMaps": true
 		},
 		{
 			"type": "chrome",
 			"request": "launch",
-			"name": "Launch VS Code",
+			"name": "Launch Carbon",
 			"windows": {
 				"runtimeExecutable": "${workspaceRoot}/scripts/sql.bat"
 			},

@@ -18,7 +18,9 @@ import {
 		DocumentHighlight, DocumentHighlightKind,
 		SymbolInformation, SymbolKind,
 		CodeLens, CodeActionContext,
-		FormattingOptions, DocumentLink
+		FormattingOptions, DocumentLink,
+		ConnectionInfo
+
 	} from 'dataprotocol-languageserver-types';
 
 /**
@@ -200,6 +202,8 @@ export interface ServerCapabilities {
 	 * The server provides document link support.
 	 */
 	documentLinkProvider?: DocumentLinkOptions;
+
+	connectionProvider?: boolean;
 }
 
 /**
@@ -916,4 +920,14 @@ export namespace DocumentLinkRequest {
  */
 export namespace DocumentLinkResolveRequest {
 	export const type: RequestType<DocumentLink, DocumentLink, void> = { get method() { return 'documentLink/resolve'; } };
+}
+
+//---- Connection ----------------------------------------------
+
+export interface ListConnectionParams {
+	connectionInfo: ConnectionInfo;
+}
+
+export namespace ListConnectionRequest {
+	export const type: RequestType<ListConnectionParams, ConnectionInfo, void> = { get method() { return 'connection/listConnections'; } };
 }

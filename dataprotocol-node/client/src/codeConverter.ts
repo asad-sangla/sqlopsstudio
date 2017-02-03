@@ -220,7 +220,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		set(item.detail, () => result.detail = item.detail);
 		set(item.documentation, () => result.documentation = item.documentation);
 		set(item.filterText, () => result.filterText = item.filterText);
-		set(item.insertText, () => result.insertText = item.insertText);
+		set(item.insertText, () => result.insertText = String(item.insertText));
 		// Protocol item kind is 1 based, codes item kind is zero based.
 		set(item.kind, () => result.kind = item.kind + 1);
 		set(item.sortText, () => result.sortText = item.sortText);

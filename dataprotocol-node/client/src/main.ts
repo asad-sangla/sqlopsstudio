@@ -14,7 +14,7 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink
+		DocumentLink as VDocumentLink, IConnectionProvider, DataConnection, connections
 } from 'vscode';
 
 import {
@@ -60,7 +60,8 @@ import {
 		DocumentFormattingRequest, DocumentFormattingParams, DocumentRangeFormattingRequest, DocumentRangeFormattingParams,
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
-		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams
+		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
+		ListConnectionRequest, ListConnectionParams
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -80,6 +81,15 @@ export {
 }
 
 declare var v8debug;
+
+
+class ConnectionProvider implements IConnectionProvider {
+    $provideConnections(): Thenable<DataConnection> {
+        return new Promise(() => {
+            return undefined;
+        });
+    }
+}
 
 interface IConnection {
 
@@ -539,7 +549,7 @@ export class LanguageClient {
 				this.error(`Sending request ${type.method} failed.`, error);
 			}
 		} else {
-			return Promise.reject<R>(new ResponseError(ErrorCodes.InternalError, 'Connection is closed.'));
+			return Promise.reject(new ResponseError(ErrorCodes.InternalError, 'Connection is closed.'));
 		}
 	}
 
@@ -1022,7 +1032,7 @@ export class LanguageClient {
 				}
 				let process = cp.spawn(node.runtime, args, execOptions);
 				if (!process || !process.pid) {
-					return Promise.reject<IConnection>(`Launching server using runtime ${node.runtime} failed.`);
+					return Promise.reject(`Launching server using runtime ${node.runtime} failed.`);
 				}
 				this._childProcess = process;
 				process.stderr.on('data', data => this.outputChannel.append(data.toString(encoding)));
@@ -1065,13 +1075,13 @@ export class LanguageClient {
 			options.cwd = options.cwd || Workspace.rootPath;
 			let process = cp.spawn(command.command, command.args, command.options);
 			if (!process || !process.pid) {
-				return Promise.reject<IConnection>(`Launching server using command ${command.command} failed.`);
+				return Promise.reject(`Launching server using command ${command.command} failed.`);
 			}
 			process.stderr.on('data', data => this.outputChannel.append(data.toString(encoding)));
 			this._childProcess = process;
 			return Promise.resolve(createConnection(process.stdout, process.stdin, errorHandler, closeHandler));
 		}
-		return Promise.reject<IConnection>(new Error(`Unsupported server configuartion ` + JSON.stringify(server, null, 4)));
+		return Promise.reject(new Error(`Unsupported server configuartion ` + JSON.stringify(server, null, 4)));
 	}
 
 	private handleConnectionClosed() {
@@ -1220,7 +1230,7 @@ export class LanguageClient {
 					type: FileChangeType.Deleted
 				}
 			), null, this._listeners);
-		})
+		});
 	}
 
 	private hookCapabilities(connection: IConnection): void {
@@ -1243,10 +1253,35 @@ export class LanguageClient {
 		this.hookDocumentOnTypeFormattingProvider(documentSelector, connection);
 		this.hookRenameProvider(documentSelector, connection);
 		this.hookDocumentLinkProvider(documentSelector, connection);
+
+		this.hookConnectionProvider(connection);
 	}
 
 	private logFailedRequest(type: RequestType<any, any, any>, error: any): void {
 		this.error(`Request ${type.method} failed.`, error);
+	}
+
+	private hookConnectionProvider(connection: IConnection): void {
+		let self = this;
+		this._providers.push(connections.registerConnectionProvider({
+			$provideConnections(): Thenable<DataConnection> {
+
+				let conn = {
+					connectionInfo: {
+						serverName: "server name",
+    					databaseName: "database name"
+					}
+				};
+
+				return self.doSendRequest(connection, ListConnectionRequest.type, conn, undefined).then(
+					self._p2c.asDataConnection,
+					(error) => {
+						this.logFailedRequest(ListConnectionRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			}
+		}));
 	}
 
 	private hookCompletionProvider(documentSelector: DocumentSelector, connection: IConnection): void {
@@ -1327,7 +1362,7 @@ export class LanguageClient {
 					}
 				);
 			}
-		}))
+		}));
 	}
 
 	private hookReferencesProvider(documentSelector: DocumentSelector, connection: IConnection): void {

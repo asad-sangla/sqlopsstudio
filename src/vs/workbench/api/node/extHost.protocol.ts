@@ -104,7 +104,8 @@ function ni() { return new Error('Not implemented'); }
 // --- main thread
 
 export abstract class MainThreadDataManagementShape {
-	$getLanguages(): TPromise<string[]> { throw ni(); }
+	$registerConnectionProvider(handle: number): TPromise<any> { throw ni(); }
+	$unregisterConnectionProvider(handle: number): TPromise<any> { throw ni(); }
 }
 
 export abstract class MainThreadCommandsShape {
@@ -329,9 +330,11 @@ export abstract class ExtHostHeapServiceShape {
 	$onGarbageCollection(ids: number[]): void { throw ni(); }
 }
 
-
 export abstract class ExtHostDataManagementShape {
-	$provideConnections(): TPromise<connection.IConnection> { throw ni(); }
+
+	$registerConnectionProvider(provider: vscode.IConnectionProvider): vscode.Disposable { throw ni(); }
+
+	$provideConnections(handle: number): Thenable<vscode.DataConnection> { throw ni(); }
 
 	$connect(): void { throw ni(); }
 }

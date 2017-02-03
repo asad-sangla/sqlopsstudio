@@ -4,6 +4,14 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+export interface ConnectionInfo {
+
+	serverName: string;
+
+	databaseName: string;
+
+}
+
 /**
  * Position in a text document expressed as zero-based line and character offset.
  */

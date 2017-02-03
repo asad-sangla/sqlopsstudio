@@ -29,7 +29,6 @@ import { MainThreadQuickOpen } from './mainThreadQuickOpen';
 import { MainThreadStatusBar } from './mainThreadStatusBar';
 import { MainThreadStorage } from './mainThreadStorage';
 import { MainThreadTelemetry } from './mainThreadTelemetry';
-// import { MainThreadTerminalService } from './mainThreadTerminalService';
 import { MainThreadWorkspace } from './mainThreadWorkspace';
 import { MainProcessExtensionService } from './mainThreadExtensionService';
 import { MainThreadFileSystemEventService } from './mainThreadFileSystemEventService';

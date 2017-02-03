@@ -10,9 +10,10 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnection, IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
+import { IConnection, IRegisteredServersService, RegisteredServersEvents } from 'sql/parts/connection/common/registeredServers';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Event, { Emitter } from 'vs/base/common/event';
+import vscode = require('vscode');
 
 class Connection implements IConnection {
 
@@ -36,15 +37,17 @@ export class RegisteredServersService implements IRegisteredServersService {
 
 	private disposables: IDisposable[] = [];
 
+	private _providers: RegisteredServersEvents[] = [];
+
+	private _serverEvents: { [handle: number]: RegisteredServersEvents; } = Object.create(null);
+
 	private _onConnectionSwitched: Emitter<IConnection>;
 
 	constructor(
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService
 	) {
-
 		this._onConnectionSwitched = new Emitter<IConnection>();
-
 	}
 
 	public getConnections(): TPromise<IConnection[]> {
@@ -59,6 +62,11 @@ export class RegisteredServersService implements IRegisteredServersService {
 
 	public open(connection: IConnection, sideByside: boolean): TPromise<any> {
 		this._onConnectionSwitched.fire(connection);
+
+		for (var key in this._serverEvents) {
+			this._serverEvents[key].onConnectionSwitched(connection);
+		}
+
 		return this.editorService.openEditor(this.instantiationService.createInstance(QueryInput, connection), null, sideByside);
 	}
 
@@ -68,5 +76,20 @@ export class RegisteredServersService implements IRegisteredServersService {
 
 	public dispose(): void {
 		this.disposables = dispose(this.disposables);
+	}
+
+	public registerConnectionProvider(handle: number, serverEvents: RegisteredServersEvents): IDisposable {
+		this._providers.push(serverEvents);
+
+		this._serverEvents[handle] = serverEvents;
+
+		return {
+			dispose: () => {
+			}
+		};
+	}
+
+	public getConnectionProviders(): RegisteredServersEvents[] {
+		return this._providers;
 	}
 }

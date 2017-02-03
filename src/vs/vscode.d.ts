@@ -10,14 +10,17 @@ declare module 'vscode' {
 	 */
 	export const version: string;
 
-	/**
-	 * Namespace for dealing with the current window of the editor. That is visible
-	 * and active editors, as well as, UI elements to show messages, selections, and
-	 * asking for user input.
-	 */
+	export interface DataConnection {
+		name: string;
+		displayName: string;
+	}
+
+	export interface IConnectionProvider {
+		$provideConnections(): Thenable<DataConnection>;
+	}
+
 	export namespace connections {
-		//export function registerConnectionProvider(command: string, callback: (...args: any[]) => any, thisArg?: any): Disposable;
-		export function registerConnectionProvider(name: string): void;
+		export function registerConnectionProvider(provider: IConnectionProvider): Disposable;
 	}
 
 	/**

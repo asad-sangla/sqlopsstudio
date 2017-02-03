@@ -1,0 +1,6 @@
+- name: Data Management Protocol
+  href: dmp/
+  homepage: dmp/index.md
+- name: Carbon
+  href: carbon/
+  homepage: carbon/index.md
