@@ -41,7 +41,6 @@ export class OpenRegisteredServersViewletAction extends ToggleViewletAction {
 	}
 }
 
-
 const openViewletKb: IKeybindings = {
 	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_C
 };
@@ -55,7 +54,6 @@ const viewletDescriptor = new ViewletDescriptor(
 	'extensions',
 	0
 );
-
 
 Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).registerViewlet(viewletDescriptor);
 
@@ -71,4 +69,3 @@ registry.registerWorkbenchAction(
 	'View: Show Registered Servers',
 	localize('view', "View")
 );
-
