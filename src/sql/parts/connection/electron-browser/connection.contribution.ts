@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/extensions';
-import 'vs/css!./media/serverTree';
 import { localize } from 'vs/nls';
 import { Registry } from 'vs/platform/platform';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
@@ -42,27 +41,9 @@ export class OpenRegisteredServersViewletAction extends ToggleViewletAction {
 	}
 }
 
-// Viewlet Action
-export class TreeOpenRegisteredServersViewletAction extends ToggleViewletAction {
-	public static ID = TREEVIEWLET_ID;
-	public static LABEL = "Show Tree Registered Servers";
-
-	constructor(
-		id: string,
-		label: string,
-		@IViewletService viewletService: IViewletService,
-		@IWorkbenchEditorService editorService: IWorkbenchEditorService
-	) {
-		super(id, label, TREEVIEWLET_ID, viewletService, editorService);
-	}
-}
 
 const openViewletKb: IKeybindings = {
 	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_C
-};
-
-const treeOpenViewletKb: IKeybindings = {
-	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_T
 };
 
 // Viewlet
@@ -75,15 +56,6 @@ const viewletDescriptor = new ViewletDescriptor(
 	0
 );
 
-// Tree Viewlet
-const treeViewletDescriptor = new ViewletDescriptor(
-	'sql/parts/connection/electron-browser/treeConnectionViewlet',
-	'TreeConnectionViewlet',
-	TREEVIEWLET_ID,
-	"Registered Servers Tree",
-	'serverTree',
-	0
-);
 
 Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).registerViewlet(viewletDescriptor);
 
@@ -96,22 +68,6 @@ registry.registerWorkbenchAction(
 		OpenRegisteredServersViewletAction.ID,
 		OpenRegisteredServersViewletAction.LABEL,
 		openViewletKb),
-	'View: Show Registered Servers',
-	localize('view', "View")
-);
-
-
-//Tree viewlet
-Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).registerViewlet(treeViewletDescriptor);
-
-Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).setDefaultViewletId(TREEVIEWLET_ID);
-
-registry.registerWorkbenchAction(
-	new SyncActionDescriptor(
-		TreeOpenRegisteredServersViewletAction,
-		TreeOpenRegisteredServersViewletAction.ID,
-		TreeOpenRegisteredServersViewletAction.LABEL,
-		treeOpenViewletKb),
 	'View: Show Registered Servers',
 	localize('view', "View")
 );

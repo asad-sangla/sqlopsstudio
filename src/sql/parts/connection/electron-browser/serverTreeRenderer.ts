@@ -7,6 +7,7 @@
 import dom = require('vs/base/browser/dom');
 import { ITree, IDataSource, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
+import { IConnection } from 'sql/parts/connection/common/registeredServers';
 const $ = dom.$;
 
 export class ServerTreeRenderer implements IRenderer {
@@ -66,9 +67,20 @@ interface IEditorGroupTemplateData {
 	name: HTMLSpanElement;
 }
 
-export class Server {
-	constructor(private id: string, private name: string, private type: string, private children: Server[])
-	{}
+export class Server implements IConnection {
+
+	name: string;
+	displayName: string;
+
+	constructor(private id: string,
+				name: string,
+				displayName: string,
+				private type: string,
+				private children: Server[])
+	{
+		this.name = name;
+		this.displayName = displayName;
+	}
 
 	public getId(): string {
 		return this.id;

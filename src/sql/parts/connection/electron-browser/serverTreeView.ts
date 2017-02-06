@@ -15,21 +15,26 @@ import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ServerTreeRenderer, ServerTreeDataSource, Server } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { DefaultController, DefaultDragAndDrop, DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
+import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
 import * as builder from 'vs/base/browser/builder';
+import { IMessageService } from 'vs/platform/message/common/message';
+import Severity from 'vs/base/common/severity';
 const $ = builder.$;
+
 export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 
 	private fullRefreshNeeded: boolean;
 	private viewletState: TreeExplorerViewletState;
 
 	constructor(actionRunner: IActionRunner, settings: any,
+		@IRegisteredServersService private registeredServersService: IRegisteredServersService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
+		@IMessageService private messageService: IMessageService
 	) {
-		//TODO: remove height values
 		super(actionRunner, 22 * 15, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
-	}
+}
 
 	public renderHeader(container: HTMLElement): void {
 		const titleDiv = $('div.title').appendTo(container);
@@ -58,30 +63,48 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 				twistiePixels: 20,
 				ariaLabel: nls.localize({ key: 'treeAriaLabel', comment: ['Registered Servers'] }, "Registered Servers")
 			});
-
+		this.toDispose.push(this.tree.addListener2('selection', () => this.onSelected()));
 		this.fullRefreshNeeded = true;
 		this.structuralTreeUpdate();
 	}
 
 	private getServerGroups(): Server[] {
 		// Stub method to generate input
-		var s3: Server = new Server('3', 'Server name B', 'Azure', null);
-		var s2: Server = new Server('2', 'Server name A', 'OnPrem', [s3]);
-		var s5: Server = new Server('5', 'Server name D', 'Azure', null);
-		var s6: Server = new Server('6', 'Server name E', 'OnPrem', null);
-		var s4: Server = new Server('4', 'Server name C', 'Azure', [s5, s6]);
+		var s3: Server = new Server('3', 'Server name B', 'Server name B','Azure', null);
+		var s2: Server = new Server('2', 'Server name A','Server name A', 'OnPrem', [s3]);
+		var s5: Server = new Server('5', 'Server name D', 'Server name D', 'Azure', null);
+		var s6: Server = new Server('6', 'Server name E', 'Server name E', 'OnPrem', null);
+		var s4: Server = new Server('4', 'Server name C', 'Server name C', 'Azure', [s5, s6]);
 		return [s2, s4];
+	}
+
+	private onSelected(): void {
+		let selection = this.tree.getSelection();
+		if (selection && selection.length > 0) {
+			this.openDatabase(selection[0]);
+		}
+	}
+
+	private openDatabase(connection: Server): void {
+		this.registeredServersService.open(connection, false).done(null, err => this.onError(err));
 	}
 
 	private structuralTreeUpdate(): void {
 		const self = this;
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
 		this.fullRefreshNeeded = true;
-		var root: Server = new Server('root', '', '', this.getServerGroups());
+		var root: Server = new Server('root', 'root', '', '', this.getServerGroups());
 		const treeInput= root;
 		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh(root)).done(() => {
 			self.fullRefreshNeeded = false;
 			self.tree.getFocus();
 		}, errors.onUnexpectedError);
+	}
+
+	private onError(err: any): void {
+		if (errors.isPromiseCanceledError(err)) {
+			return;
+		}
+		this.messageService.show(Severity.Error, err);
 	}
 }
