@@ -11,7 +11,6 @@ import Event from 'vs/base/common/event';
 import vscode = require('vscode');
 
 export const VIEWLET_ID = 'workbench.view.connections';
-export const TREEVIEWLET_ID = 'workbench.view.treeConnections';
 
 export interface IConnectionsViewlet extends IViewlet {
 	search(text: string): void;

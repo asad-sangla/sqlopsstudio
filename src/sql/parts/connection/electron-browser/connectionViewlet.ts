@@ -19,7 +19,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IMessageService } from 'vs/platform/message/common/message';
 import { isPromiseCanceledError } from 'vs/base/common/errors';
 import Severity from 'vs/base/common/severity';
-import { IConnectionsViewlet, IRegisteredServersService, TREEVIEWLET_ID, VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
+import { IConnectionsViewlet, IRegisteredServersService, VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
 import { ServerTreeView } from 'sql/parts/connection/electron-browser/serverTreeView';
 import { SplitView} from 'vs/base/browser/ui/splitview/splitview';
 

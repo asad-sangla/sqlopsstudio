@@ -586,7 +586,6 @@ export class VSCodeMenu {
 	private setViewMenu(viewMenu: Electron.Menu): void {
 
 		const servers = this.createMenuItem(nls.localize({ key: 'miViewRegisteredServers', comment: ['&& denotes a mnemonic'] }, "&&Registered Servers"), 'workbench.view.connections');
-		const treeservers = this.createMenuItem(nls.localize({ key: 'miViewRegisteredServers', comment: ['&& denotes a mnemonic'] }, "&&Registered Servers"), 'workbench.view.treeConnections');
 		const explorer = this.createMenuItem(nls.localize({ key: 'miViewExplorer', comment: ['&& denotes a mnemonic'] }, "&&Explorer"), 'workbench.view.explorer');
 		const search = this.createMenuItem(nls.localize({ key: 'miViewSearch', comment: ['&& denotes a mnemonic'] }, "&&Search"), 'workbench.view.search');
 		const git = this.createMenuItem(nls.localize({ key: 'miViewGit', comment: ['&& denotes a mnemonic'] }, "&&Git"), 'workbench.view.git');
@@ -656,7 +655,6 @@ export class VSCodeMenu {
 			commands,
 			__separator__(),
 			servers,
-			treeservers,
 			explorer,
 			search,
 			git,
