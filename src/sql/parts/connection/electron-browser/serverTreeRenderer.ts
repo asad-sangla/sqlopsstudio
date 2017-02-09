@@ -14,37 +14,61 @@ const $ = dom.$;
 
 export class ServerTreeRenderer implements IRenderer {
 
-	public static ITEM_HEIGHT = 62;
-	private static OPEN_EDITOR_TEMPLATE_ID = 'openeditor';
+	public static SERVER_HEIGHT = 62;
+	public static SERVER_GROUP_HEIGHT = 32;
+	private static SERVER_TEMPLATE_ID = 'server';
+	private static SERVER_GROUP_TEMPLATE_ID = 'servergroup';
 
 	public getHeight(tree: ITree, element: any): number {
-		return ServerTreeRenderer.ITEM_HEIGHT;
+		if (element instanceof ServerGroup) {
+			return ServerTreeRenderer.SERVER_GROUP_HEIGHT;
+		}
+		return ServerTreeRenderer.SERVER_HEIGHT;
 	}
 
 	public getTemplateId(tree: ITree, element: any): string {
-		return ServerTreeRenderer.OPEN_EDITOR_TEMPLATE_ID;
+		if (element instanceof ServerGroup) {
+			return ServerTreeRenderer.SERVER_GROUP_TEMPLATE_ID;
+		}
+		return ServerTreeRenderer.SERVER_TEMPLATE_ID;
 	}
 
 	public renderTemplate(tree: ITree, templateId: string, container: HTMLElement): any {
 
-		const serverTemplate: IServerTemplateData = Object.create(null);
-		serverTemplate.root = dom.append(container, $('.editor-group'));
-		serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
-		serverTemplate.type = dom.append(serverTemplate.root, $('.description.ellipsis'));
-		serverTemplate.footer = dom.append(serverTemplate.root, $('.footer'));
-		serverTemplate.info = dom.append(serverTemplate.footer, $('.author.ellipsis'));
-
-		return serverTemplate;
+		if (templateId === ServerTreeRenderer.SERVER_TEMPLATE_ID) {
+			const serverTemplate: IServerTemplateData = Object.create(null);
+			serverTemplate.root = dom.append(container, $('.editor-group'));
+			serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
+			serverTemplate.type = dom.append(serverTemplate.root, $('.description.ellipsis'));
+			serverTemplate.footer = dom.append(serverTemplate.root, $('.footer'));
+			serverTemplate.info = dom.append(serverTemplate.footer, $('.author.ellipsis'));
+			return serverTemplate;
+		}
+		else {
+			const serverTemplate: IServerGroupTemplateData = Object.create(null);
+			serverTemplate.root = dom.append(container, $('.server-group'));
+			serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
+			return serverTemplate;
+		}
 	}
 
 	public renderElement(tree: ITree, element: any, templateId: string, templateData: any): void {
-		this.renderServer(tree, element, templateData);
+		if (templateId === ServerTreeRenderer.SERVER_TEMPLATE_ID) {
+			this.renderServer(tree, element, templateData);
+		}
+		else {
+			this.renderServerGroup(tree, element, templateData);
+		}
 	}
 
 	private renderServer(tree: ITree, server: Server, templateData: IServerTemplateData): void {
 		templateData.name.textContent = server.getName();
 		templateData.info.textContent = 'server';
 		templateData.type.textContent = server.getType();
+	}
+
+	private renderServerGroup(tree: ITree, serverGroup: ServerGroup, templateData: IServerGroupTemplateData): void {
+		templateData.name.textContent = serverGroup.getName();
 	}
 
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {
@@ -64,7 +88,7 @@ interface IServerTemplateData {
 	headerContainer: HTMLElement;
 }
 
-interface IEditorGroupTemplateData {
+interface IServerGroupTemplateData {
 	root: HTMLElement;
 	name: HTMLSpanElement;
 }
@@ -76,11 +100,10 @@ export class Server implements IConnection {
 	parent: ServerGroup = null;
 
 	constructor(private id: string,
-				name: string,
-				displayName: string,
-				private type: string
-				)
-	{
+		name: string,
+		displayName: string,
+		private type: string
+	) {
 		this.name = name;
 		this.displayName = displayName;
 	}
@@ -98,14 +121,13 @@ export class Server implements IConnection {
 	}
 
 	public equals(other: Server): boolean {
-     return other.getId() === this.id && other.getName() === this.name;
+		return other.getId() === this.id && other.getName() === this.name;
 	}
 
 	public getParent(): ServerGroup {
 		return this.parent;
 	}
 }
-
 
 export class ServerGroup implements IConnection {
 
@@ -114,23 +136,21 @@ export class ServerGroup implements IConnection {
 	parent: ServerGroup = null;
 
 	constructor(private id: string,
-				name: string,
-				displayName: string,
-				private type: string,
-				private children: Server[] | ServerGroup[],
-				)
-	{
+		name: string,
+		displayName: string,
+		private type: string,
+		private children: Server[] | ServerGroup[],
+	) {
 		this.name = name;
 		this.displayName = displayName;
-		if ( children[0] instanceof Server) {
+		if (children[0] instanceof Server) {
 			if (children !== null) {
-			this.children = children as Array<Server>;
-			this.children.forEach((ser) => {
-				ser.parent = this;
-			});
+				this.children = children as Array<Server>;
+				this.children.forEach((ser) => {
+					ser.parent = this;
+				});
+			}
 		}
-		}
-
 	}
 
 	public getId(): string {
@@ -155,19 +175,18 @@ export class ServerGroup implements IConnection {
 		}
 		return false;
 	}
+
 	public equals(other: Server): boolean {
-     return other.getId() === this.id && other.getName() === this.name;
+		return other.getId() === this.id && other.getName() === this.name;
 	}
 
 	public addServerToGroup(child: Server): void {
 		var servers = this.children as Array<Server>;
-		if (this.children === null)
-		{
+		if (this.children === null) {
 			this.children = [child];
 			child.parent = this;
 		}
-		else if (!servers.some(x => x.equals(child)))
-		{
+		else if (!servers.some(x => x.equals(child))) {
 			servers.push(child);
 			child.parent = this;
 			this.children = servers;
@@ -182,16 +201,16 @@ export class ServerGroup implements IConnection {
 		}
 	}
 
-	public removeServerFromGroup(child: Server) {
+	public removeServerFromGroup(child: Server): void {
 		var servers = this.children as Array<Server>;
-		servers.forEach((val,i)=> {
+		servers.forEach((val, i) => {
 			if (val.equals(child)) {
-				servers.splice(i,1);
+				servers.splice(i, 1);
 			}
 		});
 		this.children = servers;
 		child.parent = null;
-		if ( this.children.length === 0) {
+		if (this.children.length === 0) {
 			this.children = null;
 		}
 	}
@@ -267,36 +286,43 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	}
 
 	public onDragOver(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): IDragOverReaction {
-		if (targetElement instanceof ServerGroup)
-		{
+		if (targetElement instanceof Server || targetElement instanceof ServerGroup) {
 			return DRAG_OVER_ACCEPT_BUBBLE_DOWN;
 		}
 		return DRAG_OVER_REJECT;
 	}
 
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
-		const source: Server = data.getData()[0];
-		var targetServerGroup = <ServerGroup>targetElement;
-		// let promise: TPromise<void> = TPromise.as(null);
-		console.log('drop ' + source.getName() + ' to ' + targetServerGroup.getName());
+		var targetServerGroup;
+		if (targetElement instanceof Server) {
+			targetServerGroup = (<Server>targetElement).getParent();
+		}
+		else {
+			targetServerGroup = <ServerGroup>targetElement;
+		}
 
+		if (targetServerGroup !== null && targetServerGroup.getName() !== 'root') {
+			const source: Server = data.getData()[0];
+			// let promise: TPromise<void> = TPromise.as(null);
+			console.log('drop ' + source.getName() + ' to ' + targetServerGroup.getName());
 
-		var root: ServerGroup = tree.getInput();
-		var oldParent = source.getParent();
-		oldParent.removeServerFromGroup(source);
-		targetServerGroup.addServerToGroup(source);
-		root.updateGroup(oldParent);
-		root.updateGroup(targetServerGroup);
-		const treeInput= new ServerGroup('root', 'root', '', '', root.getChildren());
-		if (treeInput !== tree.getInput()) {
-			tree.setInput(treeInput).done(() => {
-				tree.getFocus();
-				tree.expandAll([targetServerGroup, oldParent]);
-			}, errors.onUnexpectedError);
-		} else {
-			tree.refresh(root).done(() => {
-				tree.getFocus();
-			}, errors.onUnexpectedError);
+			var root: ServerGroup = tree.getInput();
+			var oldParent = source.getParent();
+			oldParent.removeServerFromGroup(source);
+			targetServerGroup.addServerToGroup(source);
+			root.updateGroup(oldParent);
+			root.updateGroup(targetServerGroup);
+			const treeInput = new ServerGroup('root', 'root', '', '', root.getChildren());
+			if (treeInput !== tree.getInput()) {
+				tree.setInput(treeInput).done(() => {
+					tree.getFocus();
+					tree.expandAll([targetServerGroup, oldParent]);
+				}, errors.onUnexpectedError);
+			} else {
+				tree.refresh(root).done(() => {
+					tree.getFocus();
+				}, errors.onUnexpectedError);
+			}
 		}
 		return;
 	}
