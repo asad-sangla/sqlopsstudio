@@ -12,9 +12,12 @@ export class ConnectionDialogWidget  {
 	private builder: Builder;
 	//private container: HTMLElement;
 	private modelElement: HTMLElement;
-
+	private jQuery;
 	constructor(){
 		//this.container = container;
+		require(['jquery'], function(bootstrap2){
+			this.jQuery = require('jquery');
+		});
 	}
 
 	public create(container: HTMLElement): HTMLElement {
@@ -48,8 +51,8 @@ export class ConnectionDialogWidget  {
 	}
 
 	public open() {
-		require(['jquery', 'bootstrapUi'], function(bootstrap2){
-			   bootstrap2('#myModal').modal();
-			});
+		require(['jquery', 'bootstrapUi'], function(jQuery){
+			   jQuery('#myModal').modal();
+		});
 	}
 }
