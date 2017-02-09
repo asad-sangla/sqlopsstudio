@@ -15,11 +15,16 @@ import { ExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/node/e
 import { ViewletRegistry, Extensions as ViewletExtensions, ViewletDescriptor, ToggleViewletAction } from 'vs/workbench/browser/viewlet';
 import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/workbench/common/actionRegistry';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
-import { VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
+import { VIEWLET_ID, IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { IKeybindings } from 'vs/platform/keybinding/common/keybinding';
+
+import { CommandsRegistry } from 'vs/platform/commands/common/commands';
+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import * as errors from 'vs/base/common/errors';
+
 
 // Singletons
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService);
@@ -69,3 +74,10 @@ registry.registerWorkbenchAction(
 	'View: Show Registered Servers',
 	localize('view', "View")
 );
+
+// Register Commands
+CommandsRegistry.registerCommand('_connection.newregisteredserver', (accessor: ServicesAccessor) => {
+	// const registeredServersService = accessor.get(IRegisteredServersService);
+
+});
+

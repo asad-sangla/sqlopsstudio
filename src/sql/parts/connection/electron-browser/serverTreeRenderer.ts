@@ -67,7 +67,7 @@ interface IEditorGroupTemplateData {
 	name: HTMLSpanElement;
 }
 
-export class Server implements IConnection {
+export class Server {
 
 	name: string;
 	displayName: string;

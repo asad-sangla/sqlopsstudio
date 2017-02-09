@@ -13,23 +13,7 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import { IConnection, IRegisteredServersService, RegisteredServersEvents, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Event, { Emitter } from 'vs/base/common/event';
-import vscode = require('vscode');
-
-class Connection implements IConnection {
-
-	public disabledGlobally = false;
-	public disabledForWorkspace = false;
-
-	constructor() { }
-
-	get name(): string {
-		return "Connection Name";
-	}
-
-	get displayName(): string {
-		return "Connection Display Name";
-	}
-}
+import { ITempConnectionDialogService } from 'sql/parts/connection/common/connectionDialogService';
 
 export class RegisteredServersService implements IRegisteredServersService {
 
@@ -43,27 +27,28 @@ export class RegisteredServersService implements IRegisteredServersService {
 
 	private _onConnectionSwitched: Emitter<IConnection>;
 
+	private useTempDialog: boolean = false;
 
 	constructor(
 		@IConnectionDialogService private connectionDialogService: IConnectionDialogService,
 		@IInstantiationService private instantiationService: IInstantiationService,
-		@IWorkbenchEditorService private editorService: IWorkbenchEditorService
+		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
+		@ITempConnectionDialogService private tempConnectionService: ITempConnectionDialogService
 	) {
 		this._onConnectionSwitched = new Emitter<IConnection>();
 	}
 
-	public getConnections(): TPromise<IConnection[]> {
-		let connections = [];
-
-		for (var i = 0; i < 25; ++i) {
-			connections[i] = new Connection();
-		}
-
-		return TPromise.as(connections);
-	}
 
 	public newConnection(): void {
-		this.connectionDialogService.open();
+
+		// temporary connection dialog
+		if (this.useTempDialog) {
+			this.tempConnectionService.showDialog(this);
+		} else {
+
+
+			this.connectionDialogService.open();
+		}
 	}
 
 	public open(connection: IConnection, sideByside: boolean): TPromise<any> {
@@ -74,6 +59,10 @@ export class RegisteredServersService implements IRegisteredServersService {
 		}
 
 		return this.editorService.openEditor(this.instantiationService.createInstance(QueryInput, connection), null, sideByside);
+	}
+
+	public addRegisteredServer(connection: IConnection): void {
+		let i = 0;
 	}
 
 	public get onConnectionSwitched(): Event<IConnection> {

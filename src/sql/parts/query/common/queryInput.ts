@@ -8,7 +8,6 @@
 import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput } from 'vs/workbench/common/editor';
-import { IExtension } from 'vs/workbench/parts/extensions/common/extensions';
 
 import { IConnection } from 'sql/parts/connection/common/registeredServers';
 
@@ -26,7 +25,7 @@ export class QueryInput extends EditorInput {
 	}
 
 	getName(): string {
-		return localize('extensionsInputName', "Extension: {0}", this.extension.displayName);
+		return localize('extensionsInputName', 'Extension');
 	}
 
 	matches(other: any): boolean {

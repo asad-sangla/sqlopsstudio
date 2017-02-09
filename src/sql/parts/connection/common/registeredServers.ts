@@ -8,7 +8,6 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import Event from 'vs/base/common/event';
-import vscode = require('vscode');
 
 export const VIEWLET_ID = 'workbench.view.connections';
 
@@ -17,8 +16,13 @@ export interface IConnectionsViewlet extends IViewlet {
 }
 
 export interface IConnection {
-	name: string;
-	displayName: string;
+	serverName: string;
+
+	databaseName: string;
+
+	userName: string;
+
+	password: string;
 }
 
 export const SERVICE_ID = 'registeredServersService';
@@ -36,13 +40,13 @@ export interface IRegisteredServersService {
 
 	open(connection: IConnection, sideByside: boolean): TPromise<any>;
 
-	getConnections(): TPromise<IConnection[]>;
-
 	onConnectionSwitched: Event<IConnection>;
 
 	registerConnectionProvider(handle: number, events: RegisteredServersEvents): IDisposable;
 
 	getConnectionProviders(): RegisteredServersEvents[];
+
+	addRegisteredServer(connection: IConnection): void;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

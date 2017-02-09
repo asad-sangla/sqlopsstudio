@@ -85,7 +85,13 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		}
 	}
 
-	private openDatabase(connection: Server): void {
+	private openDatabase(server: Server): void {
+		let connection = {
+			serverName: server.name,
+			databaseName: server.name,
+			userName: '',
+			password: ''
+		};
 		this.registeredServersService.open(connection, false).done(null, err => this.onError(err));
 	}
 
