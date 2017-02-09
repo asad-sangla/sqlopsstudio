@@ -32,6 +32,8 @@ export interface RegisteredServersEvents {
 export interface IRegisteredServersService {
 	_serviceBrand: any;
 
+	newConnection();
+
 	open(connection: IConnection, sideByside: boolean): TPromise<any>;
 
 	getConnections(): TPromise<IConnection[]>;
@@ -42,3 +44,10 @@ export interface IRegisteredServersService {
 
 	getConnectionProviders(): RegisteredServersEvents[];
 }
+
+export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
+export interface IConnectionDialogService {
+	_serviceBrand: any;
+	open();
+}
+

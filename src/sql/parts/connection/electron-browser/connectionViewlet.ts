@@ -19,6 +19,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IMessageService } from 'vs/platform/message/common/message';
 import { isPromiseCanceledError } from 'vs/base/common/errors';
 import Severity from 'vs/base/common/severity';
+import { Button } from 'vs/base/browser/ui/button/button';
 import { IConnectionsViewlet, IRegisteredServersService, VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
 import { ServerTreeView } from 'sql/parts/connection/electron-browser/serverTreeView';
 import { SplitView} from 'vs/base/browser/ui/splitview/splitview';
@@ -31,6 +32,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	private extensionsBox: HTMLElement;
 	private messageBox: HTMLElement;
 	private disposables: IDisposable[] = [];
+	private connectionButton: Button;
 	private views: IViewletView[];
 	private serverTreeView: ServerTreeView;
 	private viewletContainer: Builder;
@@ -53,6 +55,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		parent.addClass('extensions-viewlet');
 		this.root = parent.getHTMLElement();
 
+
 		const header = append(this.root, $('.header'));
 
 		this.searchBox = append(header, $<HTMLInputElement>('input.search-box'));
@@ -63,8 +66,14 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.extensionsBox = append(this.root, $('.extensions'));
 		this.messageBox = append(this.root, $('.message'));
 
-
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
+
+		this.connectionButton = new Button(this.viewletContainer);
+    	this.connectionButton.label = 'New Connection';
+    	this.connectionButton.addListener2('click', () => {
+       		this.newConnection();
+    	});
+
 		this.splitView = new SplitView(this.viewletContainer.getHTMLElement());
 		this.serverTreeView = this.instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
 		this.splitView.addView(this.serverTreeView, 10);
@@ -109,6 +118,10 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	getOptimalWidth(): number {
 		return 400;
+	}
+
+	private newConnection(): void {
+		this.registeredServersService.newConnection();
 	}
 
 	private setModel(model: number[]) {

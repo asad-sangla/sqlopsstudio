@@ -10,7 +10,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnection, IRegisteredServersService, RegisteredServersEvents } from 'sql/parts/connection/common/registeredServers';
+import { IConnection, IRegisteredServersService, RegisteredServersEvents, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Event, { Emitter } from 'vs/base/common/event';
 import vscode = require('vscode');
@@ -43,7 +43,9 @@ export class RegisteredServersService implements IRegisteredServersService {
 
 	private _onConnectionSwitched: Emitter<IConnection>;
 
+
 	constructor(
+		@IConnectionDialogService private connectionDialogService: IConnectionDialogService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService
 	) {
@@ -58,6 +60,10 @@ export class RegisteredServersService implements IRegisteredServersService {
 		}
 
 		return TPromise.as(connections);
+	}
+
+	public newConnection(): void {
+		this.connectionDialogService.open();
 	}
 
 	public open(connection: IConnection, sideByside: boolean): TPromise<any> {
