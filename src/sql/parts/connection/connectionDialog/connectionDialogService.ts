@@ -5,15 +5,18 @@
 
 'use strict';
 
-import { IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
+import { IConnectionDialogService, IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { withElementById } from 'vs/base/browser/builder';
-import { ConnectionDialogModel } from './ConnectionDialogModel';
+import { ConnectionDialogModel } from './connectionDialogModel';
+import * as vscode from 'vscode';
 
 export class ConnectionDialogService implements IConnectionDialogService {
 
     _serviceBrand: any;
+
+	private _registeredServersService: IRegisteredServersService;
 
 	constructor(
 		@IPartService private partService: IPartService
@@ -24,9 +27,21 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private handleOnConnect(): void {
 		alert(this.dialog.getModel().toString());
+
+		let model: ConnectionDialogModel = this.dialog.getModel();
+		let connInfo: vscode.ConnectionInfo = {
+			serverName: model.serverName,
+			databaseName: model.databaseName,
+			userName: model.userName,
+			password: model.password
+		};
+
+		this._registeredServersService.addRegisteredServer(connInfo);
 	}
 
-	public open(): void {
+	public open(registeredServersService: IRegisteredServersService): void {
+		this._registeredServersService = registeredServersService;
+
 		let model: ConnectionDialogModel = new ConnectionDialogModel(
 			'server name',
 			'database name',

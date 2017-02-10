@@ -46,6 +46,6 @@ export interface IRegisteredServersService {
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
 export interface IConnectionDialogService {
 	_serviceBrand: any;
-	open();
+	open(registeredServersService: IRegisteredServersService);
 }
 

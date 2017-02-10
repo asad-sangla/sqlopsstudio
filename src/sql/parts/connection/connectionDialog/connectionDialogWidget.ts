@@ -11,9 +11,9 @@ import 'vs/css!./connectionDialog';
 import { Dimension, Builder, $ } from 'vs/base/browser/builder';
 import DOM = require('vs/base/browser/dom');
 import { Button } from 'vs/base/browser/ui/button/button';
-import { SelectBox } from 'vs/base/browser/ui/selectbox/selectbox';
+import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import { ConnectionDialogModel } from './ConnectionDialogModel';
+import { ConnectionDialogModel } from './connectionDialogModel';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { Widget } from 'vs/base/browser/ui/widget';
 
