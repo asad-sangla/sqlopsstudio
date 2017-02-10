@@ -146,18 +146,6 @@
 	transform: none;
 }
 
-.monaco-workbench > .activitybar .monaco-action-bar .action-label.extensions {
-	background: url('icon.png') center center no-repeat;
-}
-
-/* Global action */
-
-.monaco-workbench > .activitybar .monaco-action-bar .action-label.extensions {
-	background-size: 22px;
-	background-repeat: no-repeat;
-	background-position: 50% !important;
-}
-
 .vs .monaco-workbench .quick-open-widget .quick-open-tree .quick-open-entry .quick-open-entry-icon.none,
 .vs-dark .monaco-workbench .quick-open-widget .quick-open-tree .quick-open-entry .quick-open-entry-icon.none {
 	width: 16px;

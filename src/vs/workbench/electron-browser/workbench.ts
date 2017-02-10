@@ -90,8 +90,11 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
-import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
+import { IRegisteredServersService, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
 import { RegisteredServersService } from 'sql/parts/connection/node/registeredServersService';
+import { ConnectionDialogController } from 'sql/parts/connection/electron-browser/connectionDialogController';
+import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
+import { ITempConnectionDialogService } from 'sql/parts/connection/common/connectionDialogService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -163,6 +166,7 @@ export class Workbench implements IPartService {
 	private editorPart: EditorPart;
 	private statusbarPart: StatusbarPart;
 	private quickOpen: QuickOpenController;
+	private connectionDialog: ConnectionDialogController;
 	private workbenchLayout: WorkbenchLayout;
 	private toDispose: IDisposable[];
 	private toShutdown: { shutdown: () => void; }[];
@@ -502,7 +506,15 @@ export class Workbench implements IPartService {
 		this.toShutdown.push(this.quickOpen);
 		serviceCollection.set(IQuickOpenService, this.quickOpen);
 
+
+		// Connection dialog
+		this.connectionDialog = this.instantiationService.createInstance(ConnectionDialogController);
+		this.toDispose.push(this.connectionDialog);
+		this.toShutdown.push(this.connectionDialog);
+		serviceCollection.set(ITempConnectionDialogService, this.connectionDialog);
+
 		// Registered Servers service
+		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(IRegisteredServersService, this.instantiationService.createInstance(RegisteredServersService));
 
 		// Contributed services
@@ -902,7 +914,8 @@ export class Workbench implements IPartService {
 				panel: this.panelPart,					// Panel Part
 				statusbar: this.statusbarPart,			// Statusbar
 			},
-			this.quickOpen								// Quickopen
+			this.quickOpen,								// Quickopen
+			this.connectionDialog
 		);
 
 		this.toDispose.push(this.workbenchLayout);

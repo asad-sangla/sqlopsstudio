@@ -16,29 +16,36 @@ export interface IConnectionsViewlet extends IViewlet {
 	search(text: string): void;
 }
 
-export interface IConnection {
-	name: string;
-	displayName: string;
-}
 
 export const SERVICE_ID = 'registeredServersService';
 
 export const IRegisteredServersService = createDecorator<IRegisteredServersService>(SERVICE_ID);
 
 export interface RegisteredServersEvents {
-	onConnectionSwitched(connection: IConnection): void;
+	onAddRegisteredServer(connection: vscode.ConnectionInfo): void;
+
+	onConnect(connection: vscode.ConnectionInfo): void;
 }
 
 export interface IRegisteredServersService {
 	_serviceBrand: any;
 
-	open(connection: IConnection, sideByside: boolean): TPromise<any>;
+	addEventListener(handle: number, events: RegisteredServersEvents): IDisposable;
 
-	getConnections(): TPromise<IConnection[]>;
+	newConnection();
 
-	onConnectionSwitched: Event<IConnection>;
+	addRegisteredServer(connection: vscode.ConnectionInfo): void;
 
-	registerConnectionProvider(handle: number, events: RegisteredServersEvents): IDisposable;
 
-	getConnectionProviders(): RegisteredServersEvents[];
+	// temporary interface entries for testing purposes
+	open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any>;
+
+	onConnectionSwitched: Event<vscode.ConnectionInfo>;
 }
+
+export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
+export interface IConnectionDialogService {
+	_serviceBrand: any;
+	open();
+}
+

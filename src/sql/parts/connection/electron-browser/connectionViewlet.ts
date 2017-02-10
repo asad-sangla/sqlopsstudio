@@ -9,26 +9,20 @@ import 'vs/css!./media/extensionsViewlet';
 import { localize } from 'vs/nls';
 import { ThrottledDelayer, always } from 'vs/base/common/async';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { IDisposable } from 'vs/base/common/lifecycle';
 import { Builder, Dimension } from 'vs/base/browser/builder';
-import EventOf, { mapEvent, chain } from 'vs/base/common/event';
-import { domEvent } from 'vs/base/browser/event';
-import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { KeyCode } from 'vs/base/common/keyCodes';
-import { Viewlet } from 'vs/workbench/browser/viewlet';
+import { Viewlet,  IViewletView } from 'vs/workbench/browser/viewlet';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { append, $, addStandardDisposableListener, EventType, addClass, removeClass, toggleClass } from 'vs/base/browser/dom';
-import { PagedModel, IPagedModel } from 'vs/base/common/paging';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { PagedList } from 'vs/base/browser/ui/list/listPaging';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { Delegate } from 'vs/workbench/parts/extensions/browser/extensionsList';
 import { IMessageService } from 'vs/platform/message/common/message';
-import { isPromiseCanceledError, onUnexpectedError, create as createError } from 'vs/base/common/errors';
+import { isPromiseCanceledError } from 'vs/base/common/errors';
 import Severity from 'vs/base/common/severity';
-
-import { IConnection, IConnectionsViewlet, IRegisteredServersService, VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
-import { Renderer } from 'sql/parts/connection/electron-browser/connectionList';
+import { Button } from 'vs/base/browser/ui/button/button';
+import { IConnectionsViewlet, IRegisteredServersService, VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
+import { ServerTreeView } from 'sql/parts/connection/electron-browser/serverTreeView';
+import { SplitView} from 'vs/base/browser/ui/splitview/splitview';
 
 export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
@@ -37,8 +31,12 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	private searchBox: HTMLInputElement;
 	private extensionsBox: HTMLElement;
 	private messageBox: HTMLElement;
-	private list: PagedList<IConnection>;
 	private disposables: IDisposable[] = [];
+	private connectionButton: Button;
+	private views: IViewletView[];
+	private serverTreeView: ServerTreeView;
+	private viewletContainer: Builder;
+	private splitView: SplitView;
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -49,12 +47,14 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	) {
 		super(VIEWLET_ID, telemetryService);
 		this.searchDelayer = new ThrottledDelayer(500);
+		this.views = [];
 	}
 
 	create(parent: Builder): TPromise<void> {
 		super.create(parent);
 		parent.addClass('extensions-viewlet');
 		this.root = parent.getHTMLElement();
+
 
 		const header = append(this.root, $('.header'));
 
@@ -66,29 +66,29 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.extensionsBox = append(this.root, $('.extensions'));
 		this.messageBox = append(this.root, $('.message'));
 
-		const delegate = new Delegate();
-		const renderer = this.instantiationService.createInstance(Renderer);
-		this.list = new PagedList(this.extensionsBox, delegate, [renderer]);
+		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
 
-		const onKeyDown = chain(domEvent(this.searchBox, 'keydown'))
-			.map(e => new StandardKeyboardEvent(e));
+		this.connectionButton = new Button(this.viewletContainer);
+    	this.connectionButton.label = 'New Connection';
+    	this.connectionButton.addListener2('click', () => {
+       		this.newConnection();
+    	});
 
-		onKeyDown.filter(e => e.keyCode === KeyCode.Enter).on(this.onEnter, this, this.disposables);
-		onKeyDown.filter(e => e.keyCode === KeyCode.Escape).on(this.onEscape, this, this.disposables);
-		onKeyDown.filter(e => e.keyCode === KeyCode.UpArrow).on(this.onUpArrow, this, this.disposables);
-		onKeyDown.filter(e => e.keyCode === KeyCode.DownArrow).on(this.onDownArrow, this, this.disposables);
-		onKeyDown.filter(e => e.keyCode === KeyCode.PageUp).on(this.onPageUpArrow, this, this.disposables);
-		onKeyDown.filter(e => e.keyCode === KeyCode.PageDown).on(this.onPageDownArrow, this, this.disposables);
+		this.splitView = new SplitView(this.viewletContainer.getHTMLElement());
+		this.serverTreeView = this.instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
+		this.splitView.addView(this.serverTreeView, 10);
+		this.views.push(this.serverTreeView);
 
-		chain(this.list.onSelectionChange)
-			.map(e => e.elements[0])
-			.filter(e => !!e)
-			.on(this.openDatabase, this, this.disposables);
-
+		this.serverTreeView.create().then(() => {
+			this.updateTitleArea();
+			this.setVisible(this.isVisible()).then(() => this.focus());
+		});
+		this.serverTreeView.setVisible(true);
 		return TPromise.as(null);
 	}
 
 	search(value: string): void {
+		//TODO
 	}
 
 	setVisible(visible: boolean): TPromise<void> {
@@ -96,22 +96,23 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 			if (visible) {
 				this.searchBox.focus();
 				this.searchBox.setSelectionRange(0, this.searchBox.value.length);
-
-				this.populateServerList().then(model => {
-					this.setModel(model);
-				});
+				this.serverTreeView.setVisible(visible);
+				//this.populateServerList().then(model => {
+				//	this.setModel(model);
+				//});
 			} else {
-				this.setModel(new PagedModel([]));
+				this.setModel([]);
 			}
 		});
 	}
 
 	focus(): void {
 		this.searchBox.focus();
+		this.serverTreeView.focus();
 	}
 
 	layout({ height, width }: Dimension): void {
-		this.list.layout(height - 38);
+		this.splitView.layout(height);
 		toggleClass(this.root, 'narrow', width <= 300);
 	}
 
@@ -119,14 +120,11 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		return 400;
 	}
 
-	private openDatabase(connection: IConnection): void {
-		this.registeredServersService.open(connection, false).done(null, err => this.onError(err));
+	private newConnection(): void {
+		this.registeredServersService.newConnection();
 	}
 
-	private setModel(model: IPagedModel<IConnection>) {
-		this.list.model = model;
-		this.list.scrollTop = 0;
-
+	private setModel(model: number[]) {
 		toggleClass(this.extensionsBox, 'hidden', model.length === 0);
 		toggleClass(this.messageBox, 'hidden', model.length > 0);
 
@@ -137,44 +135,10 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		}
 	}
 
-	private populateServerList(): TPromise<IPagedModel<IConnection>> {
-		return this.registeredServersService.getConnections()
-				.then(result => new PagedModel(result));
-	}
-
-	private onEnter(): void {
-		this.list.setSelection(...this.list.getFocus());
-	}
-
-	private onEscape(): void {
-		this.search('');
-	}
-
-	private onUpArrow(): void {
-		this.list.focusPrevious();
-		this.list.reveal(this.list.getFocus()[0]);
-	}
-
-	private onDownArrow(): void {
-		this.list.focusNext();
-		this.list.reveal(this.list.getFocus()[0]);
-	}
-
-	private onPageUpArrow(): void {
-		this.list.focusPreviousPage();
-		this.list.reveal(this.list.getFocus()[0]);
-	}
-
-	private onPageDownArrow(): void {
-		this.list.focusNextPage();
-		this.list.reveal(this.list.getFocus()[0]);
-	}
-
 	private onError(err: any): void {
 		if (isPromiseCanceledError(err)) {
 			return;
 		}
-
 		this.messageService.show(Severity.Error, err);
 	}
 }

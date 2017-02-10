@@ -45,9 +45,16 @@ function createScript(src, onload) {
 	const script = document.createElement('script');
 	script.src = src;
 	script.addEventListener('load', onload);
-
 	const head = document.getElementsByTagName('head')[0];
 	head.insertBefore(script, head.lastChild);
+}
+
+function createStyle(src) {
+	const style = document.createElement('link');
+	style.href = src;
+	style.rel = 'stylesheet';
+	const head = document.getElementsByTagName('head')[0];
+	head.insertBefore(style, head.lastChild);
 }
 
 function uriFromPath(_path) {
@@ -146,7 +153,10 @@ function main() {
 	}
 
 	// Load the loader and start loading the workbench
-	const rootUrl = uriFromPath(configuration.appRoot) + '/out';
+	const appRoot = uriFromPath(configuration.appRoot);
+	const rootUrl = appRoot + '/out';
+	createStyle(appRoot + '/node_modules/bootstrap/dist/css/bootstrap.min.css');
+	createStyle(appRoot + '/node_modules/bootstrap/dist/css/bootstrap-theme.min.css');
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation
@@ -159,6 +169,14 @@ function main() {
 		require.config({
 			baseUrl: rootUrl,
 			'vs/nls': nlsConfig,
+			paths: {
+				bootstrapUi: '../node_modules/bootstrap/dist/js/bootstrap',
+			},
+			shim: {
+				'bootstrapUi': {
+					deps: ['jquery']
+				}
+			},
 			recordStats: !!configuration.performance,
 			nodeCachedDataDir: configuration.nodeCachedDataDir,
 			onNodeCachedDataError: function (err) { nodeCachedDataErrors.push(err) },
@@ -194,8 +212,9 @@ function main() {
 				}, function (error) {
 					onError(error, enableDeveloperTools);
 				});
+			});
 		});
-	});
+
 }
 
 main();

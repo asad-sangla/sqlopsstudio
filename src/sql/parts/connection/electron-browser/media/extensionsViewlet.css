@@ -162,3 +162,189 @@
 .hc-black .monaco-workbench .extensions-viewlet > .header > .search-box {
 	border: 1px solid #6FC3DF;
 }
+
+/* --- Registered servers tree viewlet --- */
+.server-explorer-viewlet {
+	height: 100%;
+}
+
+.server-explorer-viewlet .explorer-item,
+.server-explorer-viewlet .open-editor,
+.server-explorer-viewlet .editor-group {
+	height: 66px;
+	line-height: 22px;
+}
+
+.server-explorer-viewlet .explorer-item {
+	display: flex; /* this helps showing the overflow ellipsis (...) even though we use display:inline-block for the labels */
+	flex-wrap: nowrap;
+}
+
+.server-explorer-viewlet .explorer-item > a,
+.server-explorer-viewlet .open-editor,
+.server-explorer-viewlet .editor-group {
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.server-explorer-viewlet .explorer-item,
+.server-explorer-viewlet .explorer-item .monaco-inputbox {
+	flex: 1;
+}
+
+.server-explorer-viewlet .explorer-item::before {
+	flex-shrink: 0; /* fix for https://github.com/Microsoft/vscode/issues/13787 */
+}
+
+.server-explorer-viewlet .explorer-item.explorer-item-edited .label-name {
+	flex: 0; /* do not steal space when label is hidden because we are in edit mode */
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content {
+	display: flex;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .monaco-action-bar {
+	visibility: hidden;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row:hover > .content .monaco-action-bar,
+.server-explorer-viewlet .explorer-servers .monaco-tree.focused .monaco-tree-row.focused > .content .monaco-action-bar,
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content.dirty > .monaco-action-bar {
+	visibility: visible;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content .monaco-action-bar .action-label {
+	display: block;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content .monaco-action-bar .close-editor-action {
+	width: 8px;
+	height: 22px;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content .monaco-action-bar .action-close-all-files,
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content .monaco-action-bar .save-all {
+	width: 23px;
+	height: 22px;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .open-editor {
+	flex: 1;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .editor-group {
+	flex: 1;
+}
+
+.server-explorer-viewlet .monaco-count-badge {
+	padding: 1px 6px;
+	margin-left: 6px;
+	border-radius: 0; /* goes better when ellipsis shows up on narrow sidebar */
+}
+
+.server-explorer-viewlet .explorer-empty-view {
+	padding: 0 20px 0 20px;
+}
+
+.server-explorer-viewlet .explorer-item .monaco-inputbox {
+	width: 100%;
+	line-height: normal;
+}
+
+.monaco-workbench.linux .server-explorer-viewlet .explorer-item .monaco-inputbox,
+.monaco-workbench.mac .server-explorer-viewlet .explorer-item .monaco-inputbox {
+	height: 22px;
+}
+
+.server-explorer-viewlet .explorer-item .monaco-inputbox.idle {
+	border: 1px solid rgba(128, 128, 128, 0.5);
+}
+
+.server-explorer-viewlet .explorer-item .monaco-inputbox > .wrapper > .input {
+	padding: 1px 2px;
+}
+
+.monaco-workbench.linux .server-explorer-viewlet .explorer-item .monaco-inputbox > .wrapper > .input,
+.monaco-workbench.mac .server-explorer-viewlet .explorer-item .monaco-inputbox > .wrapper > .input {
+	padding: 0;
+	height: 20px;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .editor-group {
+	font-size: 12px;
+	font-weight: bold;
+	text-transform: capitalize;
+	cursor: default;
+}
+
+/* Bold font style does not go well with CJK fonts */
+.server-explorer-viewlet:lang(zh-Hans) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
+.server-explorer-viewlet:lang(zh-Hant) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
+.server-explorer-viewlet:lang(ja) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
+.server-explorer-viewlet:lang(ko) .explorer-servers .monaco-tree .monaco-tree-row .editor-group { font-weight: normal; }
+
+/* High Contrast Theming */
+.hc-black .monaco-workbench .server-explorer-viewlet .explorer-item,
+.hc-black .monaco-workbench .server-explorer-viewlet .open-editor,
+.hc-black .monaco-workbench .server-explorer-viewlet .editor-group {
+	line-height: 20px;
+}
+
+.hc-black .monaco-workbench .server-explorer-viewlet .explorer-item .monaco-inputbox > .wrapper > .input:focus {
+	outline-offset: -2px !important;
+	outline: 1px solid #f38518 !important;
+	padding-left: 2px; /* push text by the width of the outline offset to prevent overlaying */
+}
+
+.hc-black .monaco-workbench .server-explorer-viewlet .explorer-item .monaco-inputbox.synthetic-focus {
+	outline: none !important;
+	border: none;
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content:before {
+	content: ' ';
+	position: absolute;
+	display: block;
+	/*background: url('collapsed.svg') 50% 50% no-repeat;*/
+	width: 16px;
+	height: 100%;
+	top: 0;
+	left: -16px;
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row.expanded > .content:before {
+	background-image: url('expanded.svg');
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row.has-children.loading > .content:before {
+	background-image: url('loading.svg');
+}
+
+
+.monaco-workbench > .activitybar .monaco-action-bar .action-label.serverTree {
+	background: url('icon.png') center center no-repeat;
+}
+
+/* Global action */
+
+.monaco-workbench > .activitybar .monaco-action-bar .action-label.serverTree {
+	background-size: 22px;
+	background-repeat: no-repeat;
+	background-position: 50% !important;
+}
+
+.server-explorer-viewlet .editor-group .description {
+	font-size: 11px;
+	font-style: italic;
+}
+.server-explorer-viewlet .footer > .author {
+	opacity: 0.5;
+	font-size: 11px
+}
+
+.server-explorer-viewlet .ellipsis {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}

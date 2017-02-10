@@ -19,8 +19,8 @@ import {
 		SymbolInformation, SymbolKind,
 		CodeLens, CodeActionContext,
 		FormattingOptions, DocumentLink,
-		ConnectionInfo
-
+		ConnectionInfo, // test-only
+		ConnectionDetails
 	} from 'dataprotocol-languageserver-types';
 
 /**
@@ -930,4 +930,27 @@ export interface ListConnectionParams {
 
 export namespace ListConnectionRequest {
 	export const type: RequestType<ListConnectionParams, ConnectionInfo, void> = { get method() { return 'connection/listConnections'; } };
+}
+
+
+/**
+ * Connection request message format
+ */
+export interface ConnectParams {
+    /**
+     * URI identifying the owner of the connection
+     */
+    ownerUri: string;
+
+    /**
+     * Details for creating the connection
+     */
+    connection: ConnectionDetails;
+}
+
+// ------------------------------- < Connect Request > ----------------------------------------------
+
+// Connection request message callback declaration
+export namespace ConnectionRequest {
+     export const type: RequestType<ConnectParams, boolean, void> = { get method(): string { return 'connection/connect'; } };
 }

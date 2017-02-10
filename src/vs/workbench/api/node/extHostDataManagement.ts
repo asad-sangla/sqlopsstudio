@@ -8,9 +8,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { MainContext, MainThreadDataManagementShape, ExtHostDataManagementShape } from './extHost.protocol';
 import * as vscode from 'vscode';
-import * as connection from 'sql/parts/connection/common/registeredServers';
 import { Disposable } from 'vs/workbench/api/node/extHostTypes';
-
 
 class ConnectionAdapter {
 	private _provider: vscode.IConnectionProvider;
@@ -21,6 +19,10 @@ class ConnectionAdapter {
 
 	provideConnections(): Thenable<vscode.DataConnection> {
 		return this._provider.$provideConnections();
+	}
+
+	connect(connection: vscode.ConnectionInfo): Thenable<any> {
+		return this._provider.$connect(connection);
 	}
 }
 
@@ -70,8 +72,13 @@ export class ExtHostDataManagement extends ExtHostDataManagementShape  {
 		return this._withAdapter(handle, ConnectionAdapter, adapter => adapter.provideConnections());
 	}
 
-	$connect(): void {
-		// this.$provideConnections(0);
+	$connect(handle:number, connection: vscode.ConnectionInfo): void {
+		this._withAdapter(handle, ConnectionAdapter, adapter => adapter.connect({
+			serverName: connection.serverName,
+			databaseName: connection.databaseName,
+			userName: connection.userName,
+			password: connection.password
+		}));
 	}
 
 }

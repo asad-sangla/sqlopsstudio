@@ -60,6 +60,8 @@ export interface Converter {
 	asDocumentLink(item: code.DocumentLink): ls.DocumentLink;
 
 	asDocumentLinkParams(textDocument: code.TextDocument): proto.DocumentLinkParams;
+
+	asConnectionParams(connectionInfo: code.ConnectionInfo) : proto.ConnectParams;
 }
 
 export interface URIConverter {
@@ -302,6 +304,40 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asConnectionParams(connInfo: code.ConnectionInfo) : proto.ConnectParams {
+		return {
+			ownerUri: 'connectionuri://' + connInfo.serverName + ':' + connInfo.databaseName,
+			connection: {
+					serverName: connInfo.serverName,
+					databaseName: connInfo.databaseName,
+					userName: connInfo.userName,
+					password: connInfo.password,
+					authenticationType: 'SqlLogin',
+					encrypt: false,
+					trustServerCertificate: true,
+					persistSecurityInfo: true,
+					connectTimeout: 30,
+					connectRetryCount: 1,
+					connectRetryInterval: 10,
+					applicationName: 'carbon',
+					workstationId: '',
+					applicationIntent: '',
+					currentLanguage: '',
+					pooling: true,
+					maxPoolSize: 10,
+					minPoolSize: 5,
+					loadBalanceTimeout: undefined,
+					replication: false,
+					attachDbFilename: '',
+					failoverPartner: '',
+					multiSubnetFailover: false,
+					multipleActiveResultSets: false,
+					packetSize: undefined,
+					typeSystemVersion: undefined
+			}
+		};
+	}
+
 	return {
 		asUri,
 		asTextDocumentIdentifier,
@@ -326,8 +362,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asDocumentSymbolParams,
 		asCodeLensParams,
 		asDocumentLink,
-		asDocumentLinkParams
-	}
+		asDocumentLinkParams,
+		asConnectionParams
+	};
 }
 
 // This for backward compatibility since we exported the converter functions as API.
