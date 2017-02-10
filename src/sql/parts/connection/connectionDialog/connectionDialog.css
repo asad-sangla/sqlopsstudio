@@ -1,0 +1,83 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Theming */
+
+.connection-dialog-widget {
+	background-color: #F6F6F6;
+	box-shadow: 0 5px 8px #A8A8A8;
+}
+
+.connection-dialog.no-shadow {
+	box-shadow: none;
+	border: 1px solid #E6E6E6;
+}
+
+.vs-dark .connection-dialog-widget {
+	background-color: #252526;
+	box-shadow: 0 5px 8px #000;
+}
+
+.l .connection-dialog-widget.no-shadow {
+	box-shadow: none;
+	border: 1px solid #000;
+}
+
+.vs-dark .connection-dialog-widget input {
+	background-color: #3C3C3C;
+	color: inherit;
+}
+
+.hc-black .connection-dialog-widget input {
+	background-color: #000;
+	color: inherit;
+}
+
+.monaco .connection-dialog-widget {
+	background-color: #F9F9F9;
+}
+
+.vs-dark modal-content {
+	background-color: #252526;
+}
+
+.modal-content {
+	background-color: #F6F6F6;
+}
+
+.footer-table {
+	align-self: right;
+	border-spacing: 10px;
+}
+
+.footer-button {
+	padding-right:10px;
+	width: 100px;
+}
+
+.connection-label {
+	width: 100px;
+	padding-bottom: 5px;
+}
+
+.connection-auth-label {
+	padding-left: 30px;
+	width: 100px;
+	padding-bottom: 5px;
+}
+
+.connection-input {
+	padding-right:8px;
+	width: 200px;
+	padding-bottom: 5px;
+}
+
+.connection-auth-input {
+	padding-right:8px;
+	padding-left: 40px;
+	width: 150px;
+	padding-bottom: 5px;
+}
+
