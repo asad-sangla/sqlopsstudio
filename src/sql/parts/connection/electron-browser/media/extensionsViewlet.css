@@ -319,11 +319,11 @@
 	content: ' ';
 	position: absolute;
 	display: block;
-	/*background: url('collapsed.svg') 50% 50% no-repeat;*/
-	width: 16px;
+	background: url('DatabaseEngine.svg') 50% 50% no-repeat;
+	width: 36px;
 	height: 100%;
 	top: 0;
-	left: -16px;
+	left: -30px;
 }
 
 .monaco-tree .monaco-tree-rows > .monaco-tree-row.expanded > .content:before {
