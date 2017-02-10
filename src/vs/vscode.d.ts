@@ -15,8 +15,20 @@ declare module 'vscode' {
 		displayName: string;
 	}
 
+	export interface ConnectionInfo {
+		serverName: string;
+
+		databaseName: string;
+
+		userName: string;
+
+		password: string;
+	}
+
 	export interface IConnectionProvider {
 		$provideConnections(): Thenable<DataConnection>;
+
+		$connect(connectionInfo: ConnectionInfo);
 	}
 
 	export namespace connections {

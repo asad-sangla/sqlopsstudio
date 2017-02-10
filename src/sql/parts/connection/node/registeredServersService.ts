@@ -10,10 +10,11 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnection, IRegisteredServersService, RegisteredServersEvents, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
+import { IRegisteredServersService, RegisteredServersEvents, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ITempConnectionDialogService } from 'sql/parts/connection/common/connectionDialogService';
+import * as vscode from 'vscode';
 
 export class RegisteredServersService implements IRegisteredServersService {
 
@@ -25,9 +26,9 @@ export class RegisteredServersService implements IRegisteredServersService {
 
 	private _serverEvents: { [handle: number]: RegisteredServersEvents; } = Object.create(null);
 
-	private _onConnectionSwitched: Emitter<IConnection>;
+	private _onConnectionSwitched: Emitter<vscode.ConnectionInfo>;
 
-	private useTempDialog: boolean = false;
+	private useTempDialog: boolean = true;
 
 	constructor(
 		@IConnectionDialogService private connectionDialogService: IConnectionDialogService,
@@ -35,37 +36,36 @@ export class RegisteredServersService implements IRegisteredServersService {
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
 		@ITempConnectionDialogService private tempConnectionService: ITempConnectionDialogService
 	) {
-		this._onConnectionSwitched = new Emitter<IConnection>();
+		this._onConnectionSwitched = new Emitter<vscode.ConnectionInfo>();
 	}
 
 
 	public newConnection(): void {
-
 		// temporary connection dialog
 		if (this.useTempDialog) {
 			this.tempConnectionService.showDialog(this);
 		} else {
 
-
 			this.connectionDialogService.open();
 		}
 	}
 
-	public open(connection: IConnection, sideByside: boolean): TPromise<any> {
-		this._onConnectionSwitched.fire(connection);
-
+	public open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any> {
 		for (var key in this._serverEvents) {
-			this._serverEvents[key].onConnectionSwitched(connection);
+			this._serverEvents[key].onConnect(connection);
 		}
 
 		return this.editorService.openEditor(this.instantiationService.createInstance(QueryInput, connection), null, sideByside);
 	}
 
-	public addRegisteredServer(connection: IConnection): void {
-		let i = 0;
+	public addRegisteredServer(connection: vscode.ConnectionInfo): void {
+		// notify event listeners that a new server was registered
+		for (var key in this._serverEvents) {
+			this._serverEvents[key].onAddRegisteredServer(connection);
+		}
 	}
 
-	public get onConnectionSwitched(): Event<IConnection> {
+	public get onConnectionSwitched(): Event<vscode.ConnectionInfo> {
 		return this._onConnectionSwitched.event;
 	}
 
@@ -73,7 +73,7 @@ export class RegisteredServersService implements IRegisteredServersService {
 		this.disposables = dispose(this.disposables);
 	}
 
-	public registerConnectionProvider(handle: number, serverEvents: RegisteredServersEvents): IDisposable {
+	public addEventListener(handle: number, serverEvents: RegisteredServersEvents): IDisposable {
 		this._providers.push(serverEvents);
 
 		this._serverEvents[handle] = serverEvents;
@@ -82,9 +82,5 @@ export class RegisteredServersService implements IRegisteredServersService {
 			dispose: () => {
 			}
 		};
-	}
-
-	public getConnectionProviders(): RegisteredServersEvents[] {
-		return this._providers;
 	}
 }

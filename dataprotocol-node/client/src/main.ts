@@ -14,7 +14,7 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink, IConnectionProvider, DataConnection, connections
+		DocumentLink as VDocumentLink, IConnectionProvider, DataConnection, ConnectionInfo, connections
 } from 'vscode';
 
 import {
@@ -61,7 +61,7 @@ import {
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
 		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
-		ListConnectionRequest, ListConnectionParams
+		ListConnectionRequest, ConnectionRequest, ConnectParams
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -82,14 +82,6 @@ export {
 
 declare var v8debug;
 
-
-class ConnectionProvider implements IConnectionProvider {
-    $provideConnections(): Thenable<DataConnection> {
-        return new Promise(() => {
-            return undefined;
-        });
-    }
-}
 
 interface IConnection {
 
@@ -1280,6 +1272,15 @@ export class LanguageClient {
 						return Promise.resolve([]);
 					}
 				);
+			},
+			$connect(connInfo: ConnectionInfo): Thenable<any> {
+				return self.doSendRequest(connection, ConnectionRequest.type, self._c2p.asConnectionParams(connInfo), undefined).then(
+					(result) => { },
+					(error) => {
+						this.logFailedRequest(ConnectionRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
 			}
 		}));
 	}
@@ -1567,7 +1568,7 @@ export class LanguageClient {
 						this.logFailedRequest(RenameRequest.type, error);
 						Promise.resolve(new Error(error.message));
 					}
-				)
+				);
 			}
 		}));
 	}
@@ -1584,7 +1585,7 @@ export class LanguageClient {
 						this.logFailedRequest(DocumentLinkRequest.type, error);
 						Promise.resolve(new Error(error.message));
 					}
-				)
+				);
 			},
 			resolveDocumentLink: this._capabilites.documentLinkProvider.resolveProvider
 				? (link: VDocumentLink, token: CancellationToken): Thenable<VDocumentLink> => {
@@ -1594,7 +1595,7 @@ export class LanguageClient {
 							this.logFailedRequest(DocumentLinkResolveRequest.type, error);
 							Promise.resolve(new Error(error.message));
 						}
-					)
+					);
 				}
 				: undefined
 		}));

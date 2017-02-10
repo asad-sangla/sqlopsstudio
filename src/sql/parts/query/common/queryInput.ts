@@ -8,15 +8,14 @@
 import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput } from 'vs/workbench/common/editor';
-
-import { IConnection } from 'sql/parts/connection/common/registeredServers';
+import * as vscode from 'vscode';
 
 export class QueryInput extends EditorInput {
 
 	static get ID() { return 'workbench.query.input2'; }
-	get extension(): IConnection { return this._extension; }
+	get extension(): vscode.ConnectionInfo { return this._extension; }
 
-	constructor(private _extension: IConnection) {
+	constructor(private _extension: vscode.ConnectionInfo) {
 		super();
 	}
 

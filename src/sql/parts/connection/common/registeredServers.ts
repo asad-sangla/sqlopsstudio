@@ -8,6 +8,7 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import Event from 'vs/base/common/event';
+import vscode = require('vscode');
 
 export const VIEWLET_ID = 'workbench.view.connections';
 
@@ -15,38 +16,31 @@ export interface IConnectionsViewlet extends IViewlet {
 	search(text: string): void;
 }
 
-export interface IConnection {
-	serverName: string;
-
-	databaseName: string;
-
-	userName: string;
-
-	password: string;
-}
 
 export const SERVICE_ID = 'registeredServersService';
 
 export const IRegisteredServersService = createDecorator<IRegisteredServersService>(SERVICE_ID);
 
 export interface RegisteredServersEvents {
-	onConnectionSwitched(connection: IConnection): void;
+	onAddRegisteredServer(connection: vscode.ConnectionInfo): void;
+
+	onConnect(connection: vscode.ConnectionInfo): void;
 }
 
 export interface IRegisteredServersService {
 	_serviceBrand: any;
 
+	addEventListener(handle: number, events: RegisteredServersEvents): IDisposable;
+
 	newConnection();
 
-	open(connection: IConnection, sideByside: boolean): TPromise<any>;
+	addRegisteredServer(connection: vscode.ConnectionInfo): void;
 
-	onConnectionSwitched: Event<IConnection>;
 
-	registerConnectionProvider(handle: number, events: RegisteredServersEvents): IDisposable;
+	// temporary interface entries for testing purposes
+	open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any>;
 
-	getConnectionProviders(): RegisteredServersEvents[];
-
-	addRegisteredServer(connection: IConnection): void;
+	onConnectionSwitched: Event<vscode.ConnectionInfo>;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

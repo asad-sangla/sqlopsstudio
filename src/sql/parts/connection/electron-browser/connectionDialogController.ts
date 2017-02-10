@@ -59,7 +59,7 @@ export class ConnectionDialogController extends WorkbenchComponent implements IT
 				withElementById(this.partService.getWorkbenchElementId()).getHTMLElement(),
 				{
 					onOk: () => {
-						registeredServersService.addRegisteredServer(this.connectionDialog.getConnection())
+						registeredServersService.addRegisteredServer(this.connectionDialog.getConnection());
 					},
 					onCancel: () => { /* ignore, handle later */ },
 					onType: (value: string) => { /* ignore, handle later */ },

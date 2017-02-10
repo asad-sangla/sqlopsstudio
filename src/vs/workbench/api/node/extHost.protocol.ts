@@ -38,8 +38,6 @@ import { IApplyEditsOptions, TextEditorRevealType, ITextEditorConfigurationUpdat
 
 import { InternalTreeExplorerNodeContent } from 'vs/workbench/parts/explorers/common/treeExplorerViewModel';
 
-import * as connection from 'sql/parts/connection/common/registeredServers';
-
 export interface IEnvironment {
 	enableProposedApi: boolean;
 	appSettingsHome: string;
@@ -336,7 +334,7 @@ export abstract class ExtHostDataManagementShape {
 
 	$provideConnections(handle: number): Thenable<vscode.DataConnection> { throw ni(); }
 
-	$connect(): void { throw ni(); }
+	$connect(handle:number, connection: vscode.ConnectionInfo): void { throw ni(); }
 }
 
 

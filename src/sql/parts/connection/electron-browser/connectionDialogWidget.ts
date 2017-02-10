@@ -15,7 +15,7 @@ import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import DOM = require('vs/base/browser/dom');
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { IConnection } from 'sql/parts/connection/common/registeredServers';
+import vscode = require('vscode');
 
 export interface IConnectionDialogCallbacks {
 	onOk: () => void;
@@ -148,10 +148,10 @@ export class ConnectionDialogWidget {
 		this.builder.domBlur();
 
 		// Clear input field and clear tree
-		this.serverName.value = '';
-		this.databaseName.value = '';
-		this.userName.value = '';
-		this.password.value = '';
+		// this.serverName.value = '';
+		// this.databaseName.value = '';
+		// this.userName.value = '';
+		// this.password.value = '';
 
 		if (this.serverName.hasFocus()) {
 			this.serverName.blur();
@@ -169,7 +169,9 @@ export class ConnectionDialogWidget {
 		}
 	}
 
-	public getConnection(): IConnection {
+	public getConnection(): vscode.ConnectionInfo {
+		this.serverName.validate();
+
 		return {
 			serverName: this.serverName.value,
 			databaseName: this.databaseName.value,

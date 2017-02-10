@@ -7,7 +7,6 @@
 import dom = require('vs/base/browser/dom');
 import { ITree, IDataSource, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IConnection } from 'sql/parts/connection/common/registeredServers';
 const $ = dom.$;
 
 export class ServerTreeRenderer implements IRenderer {

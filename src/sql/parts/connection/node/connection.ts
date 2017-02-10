@@ -2,11 +2,6 @@
 
 // ------------------------------- < Connect Request > ----------------------------------------------
 
-// Connection request message callback declaration
-// export namespace ConnectionRequest {
-//      export const type: RequestType<ConnectParams, boolean, void> = { get method(): string { return 'connection/connect'; } };
-// }
-
 /**
  * Parameters to initialize a connection to a database
  */
