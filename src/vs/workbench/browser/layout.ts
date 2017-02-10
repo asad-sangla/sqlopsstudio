@@ -19,8 +19,6 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { getZoomFactor } from 'vs/base/browser/browser';
 
-import { ConnectionDialogController } from 'sql/parts/connection/electron-browser/connectionDialogController';
-
 const DEFAULT_MIN_SIDEBAR_PART_WIDTH = 170;
 const DEFAULT_MIN_PANEL_PART_HEIGHT = 77;
 const DEFAULT_MIN_EDITOR_PART_HEIGHT = 70;
@@ -55,7 +53,6 @@ export class WorkbenchLayout implements IVerticalSashLayoutProvider, IHorizontal
 	private panel: Part;
 	private statusbar: Part;
 	private quickopen: QuickOpenController;
-	private connectionDialog: ConnectionDialogController
 	private toUnbind: IDisposable[];
 	private computedStyles: ComputedStyles;
 	private initialComputedStyles: ComputedStyles;
@@ -87,7 +84,6 @@ export class WorkbenchLayout implements IVerticalSashLayoutProvider, IHorizontal
 			statusbar: Part
 		},
 		quickopen: QuickOpenController,
-		connectionDialog: ConnectionDialogController,
 		@IStorageService private storageService: IStorageService,
 		@IEventService eventService: IEventService,
 		@IContextViewService private contextViewService: IContextViewService,
@@ -109,7 +105,6 @@ export class WorkbenchLayout implements IVerticalSashLayoutProvider, IHorizontal
 		this.toUnbind = [];
 		this.computedStyles = null;
 		this.panelHeightBeforeMaximized = 0;
-		this.connectionDialog = connectionDialog;
 
 		this.sashX = new Sash(this.workbenchContainer.getHTMLElement(), this, {
 			baseSize: 5
@@ -517,8 +512,6 @@ export class WorkbenchLayout implements IVerticalSashLayoutProvider, IHorizontal
 
 		// Quick open
 		this.quickopen.layout(this.workbenchSize);
-
-		this.connectionDialog.layout(this.workbenchSize);
 
 		// Sashes
 		this.sashX.layout();

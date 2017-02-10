@@ -92,9 +92,7 @@ import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
 import { IRegisteredServersService, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
 import { RegisteredServersService } from 'sql/parts/connection/node/registeredServersService';
-import { ConnectionDialogController } from 'sql/parts/connection/electron-browser/connectionDialogController';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
-import { ITempConnectionDialogService } from 'sql/parts/connection/common/connectionDialogService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -166,7 +164,6 @@ export class Workbench implements IPartService {
 	private editorPart: EditorPart;
 	private statusbarPart: StatusbarPart;
 	private quickOpen: QuickOpenController;
-	private connectionDialog: ConnectionDialogController;
 	private workbenchLayout: WorkbenchLayout;
 	private toDispose: IDisposable[];
 	private toShutdown: { shutdown: () => void; }[];
@@ -505,13 +502,6 @@ export class Workbench implements IPartService {
 		this.toDispose.push(this.quickOpen);
 		this.toShutdown.push(this.quickOpen);
 		serviceCollection.set(IQuickOpenService, this.quickOpen);
-
-
-		// Connection dialog
-		this.connectionDialog = this.instantiationService.createInstance(ConnectionDialogController);
-		this.toDispose.push(this.connectionDialog);
-		this.toShutdown.push(this.connectionDialog);
-		serviceCollection.set(ITempConnectionDialogService, this.connectionDialog);
 
 		// Registered Servers service
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
@@ -914,8 +904,7 @@ export class Workbench implements IPartService {
 				panel: this.panelPart,					// Panel Part
 				statusbar: this.statusbarPart,			// Statusbar
 			},
-			this.quickOpen,								// Quickopen
-			this.connectionDialog
+			this.quickOpen								// Quickopen
 		);
 
 		this.toDispose.push(this.workbenchLayout);

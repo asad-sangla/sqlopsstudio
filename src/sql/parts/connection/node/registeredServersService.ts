@@ -13,7 +13,6 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import { IRegisteredServersService, RegisteredServersEvents, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Event, { Emitter } from 'vs/base/common/event';
-import { ITempConnectionDialogService } from 'sql/parts/connection/common/connectionDialogService';
 import * as vscode from 'vscode';
 
 export class RegisteredServersService implements IRegisteredServersService {
@@ -28,26 +27,17 @@ export class RegisteredServersService implements IRegisteredServersService {
 
 	private _onConnectionSwitched: Emitter<vscode.ConnectionInfo>;
 
-	private useTempDialog: boolean = true;
-
 	constructor(
 		@IConnectionDialogService private connectionDialogService: IConnectionDialogService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
-		@ITempConnectionDialogService private tempConnectionService: ITempConnectionDialogService
 	) {
 		this._onConnectionSwitched = new Emitter<vscode.ConnectionInfo>();
 	}
 
 
 	public newConnection(): void {
-		// temporary connection dialog
-		if (this.useTempDialog) {
-			this.tempConnectionService.showDialog(this);
-		} else {
-
-			this.connectionDialogService.open();
-		}
+		this.connectionDialogService.open(this);
 	}
 
 	public open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any> {

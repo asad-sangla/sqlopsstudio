@@ -49,14 +49,6 @@ function createScript(src, onload) {
 	head.insertBefore(script, head.lastChild);
 }
 
-function createStyle(src) {
-	const style = document.createElement('link');
-	style.href = src;
-	style.rel = 'stylesheet';
-	const head = document.getElementsByTagName('head')[0];
-	head.insertBefore(style, head.lastChild);
-}
-
 function uriFromPath(_path) {
 	var pathName = path.resolve(_path).replace(/\\/g, '/');
 	if (pathName.length > 0 && pathName.charAt(0) !== '/') {
@@ -155,8 +147,6 @@ function main() {
 	// Load the loader and start loading the workbench
 	const appRoot = uriFromPath(configuration.appRoot);
 	const rootUrl = appRoot + '/out';
-	createStyle(appRoot + '/node_modules/bootstrap/dist/css/bootstrap.min.css');
-	createStyle(appRoot + '/node_modules/bootstrap/dist/css/bootstrap-theme.min.css');
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation

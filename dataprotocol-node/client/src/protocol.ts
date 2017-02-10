@@ -20,7 +20,7 @@ import {
 		CodeLens, CodeActionContext,
 		FormattingOptions, DocumentLink,
 		ConnectionInfo, // test-only
-		ConnectionDetails
+		ConnectionDetails, ServerInfo, ConnectionSummary
 	} from 'dataprotocol-languageserver-types';
 
 /**
@@ -933,6 +933,8 @@ export namespace ListConnectionRequest {
 }
 
 
+// ------------------------------- < Connect Request > ----------------------------------------------
+
 /**
  * Connection request message format
  */
@@ -948,9 +950,112 @@ export interface ConnectParams {
     connection: ConnectionDetails;
 }
 
-// ------------------------------- < Connect Request > ----------------------------------------------
 
 // Connection request message callback declaration
 export namespace ConnectionRequest {
      export const type: RequestType<ConnectParams, boolean, void> = { get method(): string { return 'connection/connect'; } };
+}
+
+// ------------------------------- < Connection Complete Event > ------------------------------------
+
+/**
+ * Connection response format.
+ */
+export class ConnectionCompleteParams {
+    /**
+     * URI identifying the owner of the connection
+     */
+    public ownerUri: string;
+
+    /**
+     * connection id returned from service host.
+     */
+    public connectionId: string;
+
+    /**
+     * any diagnostic messages return from the service host.
+     */
+    public messages: string;
+
+    /**
+     * Error message returned from the engine, if any.
+     */
+    public errorMessage: string;
+
+    /**
+     * Error number returned from the engine, if any.
+     */
+    public errorNumber: number;
+
+    /**
+     * Information about the connected server.
+     */
+    public serverInfo: ServerInfo;
+
+    /**
+     * information about the actual connection established
+     */
+    public connectionSummary: ConnectionSummary;
+}
+
+export namespace ConnectionCompleteNotification {
+    export const type: NotificationType<ConnectionCompleteParams> = { get method(): string { return 'connection/complete'; } };
+}
+
+// ------------------------------- < Connection Changed Event > -------------------------------------
+
+/**
+ * Parameters for the ConnectionChanged notification.
+ */
+export class ConnectionChangedParams {
+    /**
+     * Owner URI of the connection that changed.
+     */
+    public ownerUri: string;
+
+    /**
+     * Summary of details containing any connection changes.
+     */
+    public connection: ConnectionSummary;
+}
+
+/**
+ * Connection changed event callback declaration.
+ */
+export namespace ConnectionChangedNotification {
+    export const type: NotificationType<ConnectionChangedParams> = { get method(): string { return 'connection/connectionchanged'; } };
+}
+
+// ------------------------------- < Disconnect Request > -------------------------------------------
+
+// Disconnect request message format
+export class DisconnectParams {
+    // URI identifying the owner of the connection
+    public ownerUri: string;
+}
+
+// Disconnect response format
+export type DisconnectResult = boolean;
+
+// Disconnect request message callback declaration
+export namespace DisconnectRequest {
+    export const type: RequestType<DisconnectParams, DisconnectResult, void> = { get method(): string { return 'connection/disconnect'; } };
+}
+
+// ------------------------------- < List Databases Request > ---------------------------------------
+
+// List databases request format
+export class ListDatabasesParams {
+    // Connection information to use for querying master
+    public ownerUri: string;
+}
+
+// List databases response format
+export class ListDatabasesResult {
+    public databaseNames: Array<string>;
+}
+
+// List databases request callback declaration
+export namespace ListDatabasesRequest {
+    export const type: RequestType<ListDatabasesParams, ListDatabasesResult, void> = { get method(): string { return 'connection/listdatabases'; } };
 }
