@@ -278,9 +278,14 @@
 	height: 20px;
 }
 
-.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
-.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .server-group {
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .editor-group {
 	font-size: 12px;
+	font-weight: bold;
+	text-transform: capitalize;
+	cursor: default;
+}
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .server-group {
+	font-size: 13px;
 	font-weight: bold;
 	text-transform: capitalize;
 	cursor: default;
@@ -315,7 +320,7 @@
 	border: none;
 }
 
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content:before {
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .editor-group:before {
 	content: ' ';
 	position: absolute;
 	display: block;
@@ -326,6 +331,17 @@
 	left: -30px;
 }
 
+/*.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .server-group > .name:before {
+	content: ' ';
+	position: absolute;
+	display: block;
+	background: url('DatabaseEngine.svg') 50% 50% no-repeat;
+	width: 36px;
+	height: 100%;
+	top: 0;
+	left: 30px;
+}
+*/
 .monaco-tree .monaco-tree-rows > .monaco-tree-row.expanded > .content:before {
 	background-image: url('expanded.svg');
 }
