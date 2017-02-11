@@ -24,7 +24,7 @@ export const IRegisteredServersService = createDecorator<IRegisteredServersServi
 export interface RegisteredServersEvents {
 	onAddRegisteredServer(connection: vscode.ConnectionInfo): void;
 
-	onConnect(connection: vscode.ConnectionInfo): void;
+	onConnect(connectionUri: string, connection: vscode.ConnectionInfo): void;
 }
 
 export interface IRegisteredServersService {

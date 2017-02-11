@@ -61,7 +61,7 @@ export interface Converter {
 
 	asDocumentLinkParams(textDocument: code.TextDocument): proto.DocumentLinkParams;
 
-	asConnectionParams(connectionInfo: code.ConnectionInfo) : proto.ConnectParams;
+	asConnectionParams(connectionUri: string, connectionInfo: code.ConnectionInfo) : proto.ConnectParams;
 }
 
 export interface URIConverter {
@@ -304,9 +304,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
-	function asConnectionParams(connInfo: code.ConnectionInfo) : proto.ConnectParams {
+	function asConnectionParams(connUri: string, connInfo: code.ConnectionInfo) : proto.ConnectParams {
 		return {
-			ownerUri: 'connectionuri://' + connInfo.serverName + ':' + connInfo.databaseName,
+			ownerUri: connUri,
 			connection: {
 					serverName: connInfo.serverName,
 					databaseName: connInfo.databaseName,
@@ -320,16 +320,16 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 					connectRetryCount: 1,
 					connectRetryInterval: 10,
 					applicationName: 'carbon',
-					workstationId: '',
-					applicationIntent: '',
-					currentLanguage: '',
-					pooling: true,
-					maxPoolSize: 10,
-					minPoolSize: 5,
+					workstationId: undefined,
+					applicationIntent: undefined,
+					currentLanguage: undefined,
+					pooling: undefined,
+					maxPoolSize: undefined,
+					minPoolSize: undefined,
 					loadBalanceTimeout: undefined,
-					replication: false,
-					attachDbFilename: '',
-					failoverPartner: '',
+					replication: undefined,
+					attachDbFilename: undefined,
+					failoverPartner: undefined,
 					multiSubnetFailover: false,
 					multipleActiveResultSets: false,
 					packetSize: undefined,

@@ -7,7 +7,7 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { ExtHostContext, ExtHostDataManagementShape, MainThreadDataManagementShape } from './extHost.protocol';
+import { ExtHostContext, ExtHostDataManagementShape, MainThreadDataManagementShape } from 'vs/workbench/api/node/extHost.protocol';
 import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
 import * as vscode from 'vscode';
 
@@ -40,11 +40,12 @@ export class MainThreadDataManagement extends MainThreadDataManagementShape {
 		let self = this;
 
 		this._registrations[handle] = this._registeredServersService.addEventListener(handle, {
-			onConnect(connection: vscode.ConnectionInfo): void {
-				self._proxy.$connect(handle, connection);
+			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
+				return self._proxy.$connect(handle, connectionUri, connection);
 			},
-			onAddRegisteredServer(connection: vscode.ConnectionInfo): void {
-				self._proxy.$connect(handle, connection);
+			onAddRegisteredServer(connection: vscode.ConnectionInfo): Thenable<boolean> {
+				let uri: string = 'connection://' + connection.serverName + ':' + connection.databaseName;
+				return self._proxy.$connect(handle, uri, connection);
 			}
 		});
 

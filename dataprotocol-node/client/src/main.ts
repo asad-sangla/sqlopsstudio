@@ -14,7 +14,7 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink, IConnectionProvider, DataConnection, ConnectionInfo, connections
+		DocumentLink as VDocumentLink, ConnectionProvider, ConnectionInfo, connections
 } from 'vscode';
 
 import {
@@ -1256,26 +1256,11 @@ export class LanguageClient {
 	private hookConnectionProvider(connection: IConnection): void {
 		let self = this;
 		this._providers.push(connections.registerConnectionProvider({
-			$provideConnections(): Thenable<DataConnection> {
-
-				let conn = {
-					connectionInfo: {
-						serverName: "server name",
-    					databaseName: "database name"
-					}
-				};
-
-				return self.doSendRequest(connection, ListConnectionRequest.type, conn, undefined).then(
-					self._p2c.asDataConnection,
-					(error) => {
-						this.logFailedRequest(ListConnectionRequest.type, error);
-						return Promise.resolve([]);
-					}
-				);
-			},
-			$connect(connInfo: ConnectionInfo): Thenable<any> {
-				return self.doSendRequest(connection, ConnectionRequest.type, self._c2p.asConnectionParams(connInfo), undefined).then(
-					(result) => { },
+			$connect(connUri: string, connInfo: ConnectionInfo): Thenable<boolean> {
+				return self.doSendRequest(connection, ConnectionRequest.type, self._c2p.asConnectionParams(connUri, connInfo), undefined).then(
+					(result) => {
+						return result;
+					},
 					(error) => {
 						this.logFailedRequest(ConnectionRequest.type, error);
 						return Promise.resolve([]);

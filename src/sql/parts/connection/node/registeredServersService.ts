@@ -41,10 +41,6 @@ export class RegisteredServersService implements IRegisteredServersService {
 	}
 
 	public open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any> {
-		for (var key in this._serverEvents) {
-			this._serverEvents[key].onConnect(connection);
-		}
-
 		return this.editorService.openEditor(this.instantiationService.createInstance(QueryInput, connection), null, sideByside);
 	}
 

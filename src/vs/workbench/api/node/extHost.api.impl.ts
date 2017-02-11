@@ -13,7 +13,6 @@ import * as errors from 'vs/base/common/errors';
 import product from 'vs/platform/product';
 import pkg from 'vs/platform/package';
 import { ExtHostFileSystemEventService } from 'vs/workbench/api/node/extHostFileSystemEventService';
-import { ExtHostDataManagement } from 'vs/workbench/api/node/extHostDataManagement';
 import { ExtHostDocuments } from 'vs/workbench/api/node/extHostDocuments';
 import { ExtHostDocumentSaveParticipant } from 'vs/workbench/api/node/extHostDocumentSaveParticipant';
 import { ExtHostConfiguration } from 'vs/workbench/api/node/extHostConfiguration';
@@ -44,6 +43,8 @@ import * as paths from 'vs/base/common/paths';
 import { realpath } from 'fs';
 import { MainContext, ExtHostContext, InstanceCollection, IInitData } from './extHost.protocol';
 import * as languageConfiguration from 'vs/editor/common/modes/languageConfiguration';
+
+import { ExtHostDataManagement } from 'sql/workbench/api/node/extHostDataManagement';
 
 export interface IExtensionApiFactory {
 	(extension: IExtensionDescription): typeof vscode;
@@ -107,7 +108,7 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 
 		// namespace: connections
 		const connections: typeof vscode.connections = {
-			registerConnectionProvider(provider: vscode.IConnectionProvider): vscode.Disposable  {
+			registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable  {
 				return extHostDataManagement.$registerConnectionProvider(provider);
 			}
 		};

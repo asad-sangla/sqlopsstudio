@@ -10,11 +10,6 @@ declare module 'vscode' {
 	 */
 	export const version: string;
 
-	export interface DataConnection {
-		name: string;
-		displayName: string;
-	}
-
 	export interface ConnectionInfo {
 		serverName: string;
 
@@ -25,14 +20,12 @@ declare module 'vscode' {
 		password: string;
 	}
 
-	export interface IConnectionProvider {
-		$provideConnections(): Thenable<DataConnection>;
-
-		$connect(connectionInfo: ConnectionInfo);
+	export interface ConnectionProvider {
+		$connect(connectionUri: string, connectionInfo: ConnectionInfo);
 	}
 
 	export namespace connections {
-		export function registerConnectionProvider(provider: IConnectionProvider): Disposable;
+		export function registerConnectionProvider(provider: ConnectionProvider): Disposable;
 	}
 
 	/**

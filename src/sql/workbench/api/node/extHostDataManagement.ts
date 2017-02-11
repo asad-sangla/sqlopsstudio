@@ -6,23 +6,19 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { MainContext, MainThreadDataManagementShape, ExtHostDataManagementShape } from './extHost.protocol';
+import { MainContext, MainThreadDataManagementShape, ExtHostDataManagementShape } from 'vs/workbench/api/node/extHost.protocol';
 import * as vscode from 'vscode';
 import { Disposable } from 'vs/workbench/api/node/extHostTypes';
 
 class ConnectionAdapter {
-	private _provider: vscode.IConnectionProvider;
+	private _provider: vscode.ConnectionProvider;
 
-	constructor(provider: vscode.IConnectionProvider) {
+	constructor(provider: vscode.ConnectionProvider) {
 		this._provider = provider;
 	}
 
-	provideConnections(): Thenable<vscode.DataConnection> {
-		return this._provider.$provideConnections();
-	}
-
-	connect(connection: vscode.ConnectionInfo): Thenable<any> {
-		return this._provider.$connect(connection);
+	connect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
+		return this._provider.$connect(connectionUri, connection);
 	}
 }
 
@@ -61,24 +57,14 @@ export class ExtHostDataManagement extends ExtHostDataManagementShape  {
 		this._proxy = threadService.get(MainContext.MainThreadDataManagement);
 	}
 
-	$registerConnectionProvider(provider: vscode.IConnectionProvider): vscode.Disposable {
+	$registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable {
 		const handle = this._nextHandle();
 		this._adapter[handle] = new ConnectionAdapter(provider);
 		this._proxy.$registerConnectionProvider(handle);
 		return this._createDisposable(handle);
 	}
 
-	$provideConnections(handle: number): Thenable<vscode.DataConnection> {
-		return this._withAdapter(handle, ConnectionAdapter, adapter => adapter.provideConnections());
+	$connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
+		return this._withAdapter(handle, ConnectionAdapter, adapter => adapter.connect(connectionUri, connection));
 	}
-
-	$connect(handle:number, connection: vscode.ConnectionInfo): void {
-		this._withAdapter(handle, ConnectionAdapter, adapter => adapter.connect({
-			serverName: connection.serverName,
-			databaseName: connection.databaseName,
-			userName: connection.userName,
-			password: connection.password
-		}));
-	}
-
 }

@@ -15,7 +15,6 @@ import { IExtensionService } from 'vs/platform/extensions/common/extensions';
 // --- addressable
 import { MainThreadCommands } from './mainThreadCommands';
 import { MainThreadConfiguration } from './mainThreadConfiguration';
-import { MainThreadDataManagement } from './mainThreadDataManagement';
 import { MainThreadDiagnostics } from './mainThreadDiagnostics';
 import { MainThreadDocuments } from './mainThreadDocuments';
 import { MainThreadEditors } from './mainThreadEditors';
@@ -42,6 +41,9 @@ import { SaveParticipant } from './mainThreadSaveParticipant';
 
 // --- registers itself as service
 import './mainThreadHeapService';
+
+// --- SQL contributions
+import { MainThreadDataManagement } from 'sql/workbench/api/node/mainThreadDataManagement';
 
 export class ExtHostContribution implements IWorkbenchContribution {
 
