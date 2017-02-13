@@ -7,7 +7,7 @@
     "vscode": "0.10.x"
   },
   "activationEvents": [
-    "onLanguage:sql"
+    "*"
   ],
   "main": "./client/out/mssqlMain",
   "extensionDependencies": [

@@ -5,18 +5,17 @@
 
 'use strict';
 
-import { IConnectionDialogService, IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
+import { IConnectionDialogService, IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
-import * as vscode from 'vscode';
 
 export class ConnectionDialogService implements IConnectionDialogService {
 
     _serviceBrand: any;
 
-	private _registeredServersService: IRegisteredServersService;
+	private _connectionManagementService: IConnectionManagementService;
 
 	constructor(
 		@IPartService private partService: IPartService
@@ -26,11 +25,11 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private connectionDialog: ConnectionDialogWidget;
 
 	private handleOnConnect(): void {
-		this._registeredServersService.addRegisteredServer(this.connectionDialog.getConnection());
+		this._connectionManagementService.addConnectionProfile(this.connectionDialog.getConnection());
 	}
 
-	public showDialog(registeredServersService: IRegisteredServersService): TPromise<void> {
-		this._registeredServersService = registeredServersService;
+	public showDialog(connectionManagementService: IConnectionManagementService): TPromise<void> {
+		this._connectionManagementService = connectionManagementService;
 		return new TPromise<void>(() => {
 			this.doShowDialog();
 		});

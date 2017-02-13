@@ -8,7 +8,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { ExtHostContext, ExtHostConnectionManagementShape, MainThreadConnectionManagementShape } from 'vs/workbench/api/node/extHost.protocol';
-import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as vscode from 'vscode';
 
 export class MainThreadConnectionManagement extends MainThreadConnectionManagementShape {
@@ -19,11 +19,11 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 
 	private _registrations: { [handle: number]: IDisposable; } = Object.create(null);
 
-	private _registeredServersService: IRegisteredServersService;
+	private _registeredServersService: IConnectionManagementService;
 
 	constructor(
 		@IThreadService threadService: IThreadService,
-		@IRegisteredServersService registeredServersService: IRegisteredServersService
+		@IConnectionManagementService registeredServersService: IConnectionManagementService
 
 	) {
 		super();
@@ -43,7 +43,7 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
 				return self._proxy.$connect(handle, connectionUri, connection);
 			},
-			onAddRegisteredServer(connection: vscode.ConnectionInfo): Thenable<boolean> {
+			onAddConnectionProfile(connection: vscode.ConnectionInfo): Thenable<boolean> {
 				let uri: string = 'connection://' + connection.serverName + ':' + connection.databaseName;
 				return self._proxy.$connect(handle, uri, connection);
 			}

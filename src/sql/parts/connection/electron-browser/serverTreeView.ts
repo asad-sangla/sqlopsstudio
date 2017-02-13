@@ -15,7 +15,7 @@ import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ServerTreeRenderer, ServerTreeDataSource, Server } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { DefaultController, DefaultDragAndDrop, DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
-import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
@@ -27,7 +27,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	private viewletState: TreeExplorerViewletState;
 
 	constructor(actionRunner: IActionRunner, settings: any,
-		@IRegisteredServersService private registeredServersService: IRegisteredServersService,
+		@IConnectionManagementService private registeredServersService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,

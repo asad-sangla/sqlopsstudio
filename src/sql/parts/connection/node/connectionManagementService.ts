@@ -7,23 +7,25 @@
 
 import nls = require('vs/nls');
 import { TPromise } from 'vs/base/common/winjs.base';
+import URI from 'vs/base/common/uri';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IRegisteredServersService, RegisteredServersEvents, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
+import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Event, { Emitter } from 'vs/base/common/event';
+import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import * as vscode from 'vscode';
 
-export class RegisteredServersService implements IRegisteredServersService {
+export class ConnectionManagementService implements IConnectionManagementService {
 
 	_serviceBrand: any;
 
 	private disposables: IDisposable[] = [];
 
-	private _providers: RegisteredServersEvents[] = [];
+	private _providers: ConnectionManagementEvents[] = [];
 
-	private _serverEvents: { [handle: number]: RegisteredServersEvents; } = Object.create(null);
+	private _serverEvents: { [handle: number]: ConnectionManagementEvents; } = Object.create(null);
 
 	private _onConnectionSwitched: Emitter<vscode.ConnectionInfo>;
 
@@ -44,10 +46,22 @@ export class RegisteredServersService implements IRegisteredServersService {
 		return this.editorService.openEditor(this.instantiationService.createInstance(QueryInput, connection), null, sideByside);
 	}
 
-	public addRegisteredServer(connection: vscode.ConnectionInfo): void {
+	public addConnectionProfile(connection: vscode.ConnectionInfo): void {
 		// notify event listeners that a new server was registered
 		for (var key in this._serverEvents) {
-			this._serverEvents[key].onAddRegisteredServer(connection);
+
+			// connect using the active editor if available
+			let activeEditor = this.editorService.getActiveEditor();
+			if (activeEditor !== undefined) {
+				let uri = this.getActiveEditorInputResource().toString();
+				if (uri !== undefined) {
+					this._serverEvents[key].onConnect(uri, connection);
+					break;
+				}
+			}
+
+			// connect globally if no active editor
+			this._serverEvents[key].onAddConnectionProfile(connection);
 		}
 	}
 
@@ -59,7 +73,7 @@ export class RegisteredServersService implements IRegisteredServersService {
 		this.disposables = dispose(this.disposables);
 	}
 
-	public addEventListener(handle: number, serverEvents: RegisteredServersEvents): IDisposable {
+	public addEventListener(handle: number, serverEvents: ConnectionManagementEvents): IDisposable {
 		this._providers.push(serverEvents);
 
 		this._serverEvents[handle] = serverEvents;
@@ -68,5 +82,16 @@ export class RegisteredServersService implements IRegisteredServersService {
 			dispose: () => {
 			}
 		};
+	}
+
+	private getActiveEditorInputResource(): URI {
+
+		// Try with Editor Input
+		const input = this.editorService.getActiveEditorInput();
+		if (input && input instanceof FileEditorInput) {
+			return input.getResource();
+		}
+
+		return null;
 	}
 }

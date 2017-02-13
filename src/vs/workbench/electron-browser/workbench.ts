@@ -90,8 +90,8 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
-import { IRegisteredServersService, IConnectionDialogService } from 'sql/parts/connection/common/registeredServers';
-import { RegisteredServersService } from 'sql/parts/connection/node/registeredServersService';
+import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
@@ -505,7 +505,7 @@ export class Workbench implements IPartService {
 
 		// Registered Servers service
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
-		serviceCollection.set(IRegisteredServersService, this.instantiationService.createInstance(RegisteredServersService));
+		serviceCollection.set(IConnectionManagementService, this.instantiationService.createInstance(ConnectionManagementService));
 
 		// Contributed services
 		const contributedServices = getServices();

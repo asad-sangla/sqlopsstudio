@@ -20,7 +20,7 @@ import { IMessageService } from 'vs/platform/message/common/message';
 import { isPromiseCanceledError } from 'vs/base/common/errors';
 import Severity from 'vs/base/common/severity';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { IConnectionsViewlet, IRegisteredServersService, VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
+import { IConnectionsViewlet, IConnectionManagementService, VIEWLET_ID } from 'sql/parts/connection/common/connectionManagement';
 import { ServerTreeView } from 'sql/parts/connection/electron-browser/serverTreeView';
 import { SplitView} from 'vs/base/browser/ui/splitview/splitview';
 
@@ -40,7 +40,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IRegisteredServersService private registeredServersService: IRegisteredServersService,
+		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IViewletService private viewletService: IViewletService,
 		@IMessageService private messageService: IMessageService
@@ -121,7 +121,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	}
 
 	private newConnection(): void {
-		this.registeredServersService.newConnection();
+		this.connectionManagementService.newConnection();
 	}
 
 	private setModel(model: number[]) {
