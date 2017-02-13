@@ -5,46 +5,16 @@
 
 /* Theming */
 
-.connection-dialog-widget {
-	background-color: #F6F6F6;
-	box-shadow: 0 5px 8px #A8A8A8;
-}
-
-.connection-dialog.no-shadow {
-	box-shadow: none;
-	border: 1px solid #E6E6E6;
-}
-
-.vs-dark .connection-dialog-widget {
+.vs-dark.monaco-shell .modal-content{
 	background-color: #252526;
-	box-shadow: 0 5px 8px #000;
 }
 
-.l .connection-dialog-widget.no-shadow {
-	box-shadow: none;
-	border: 1px solid #000;
-}
-
-.vs-dark .connection-dialog-widget input {
-	background-color: #3C3C3C;
-	color: inherit;
-}
-
-.hc-black .connection-dialog-widget input {
+.hc-black.monaco-shell .modal-content{
 	background-color: #000;
-	color: inherit;
 }
 
-.monaco .connection-dialog-widget {
-	background-color: #F9F9F9;
-}
-
-.vs-dark modal-content {
-	background-color: #252526;
-}
-
-.modal-content {
-	background-color: #F6F6F6;
+.monaco-shell .modal-content{
+	background-color: #F3F3F3;
 }
 
 .footer-table {
@@ -80,4 +50,26 @@
 	width: 150px;
 	padding-bottom: 5px;
 }
+.vs-dark.monaco-shell .connection-dialog-widget .input {
+	background-color: #3C3C3C;
+}
 
+.vs-dark.monaco-shell .connection-dialog-widget input:disabled {
+	background-color: #E1E1E1;
+}
+
+.connection-dialog-widget .select-box {
+	width: 400px;
+	border: none;
+	height: 25px;
+}
+
+.connection-dialog-widget .modal-title {
+	font-size: 15px;
+
+}
+
+.vs-dark.monaco-shell .connection-dialog-widget .select-box {
+	background: #3C3C3C;
+	color: #BBB;
+}

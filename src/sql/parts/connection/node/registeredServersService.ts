@@ -37,7 +37,7 @@ export class RegisteredServersService implements IRegisteredServersService {
 
 
 	public newConnection(): void {
-		this.connectionDialogService.open(this);
+		this.connectionDialogService.showDialog(this);
 	}
 
 	public open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any> {

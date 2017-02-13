@@ -9,7 +9,7 @@ import { IConnectionDialogService, IRegisteredServersService } from 'sql/parts/c
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { withElementById } from 'vs/base/browser/builder';
-import { ConnectionDialogModel } from './connectionDialogModel';
+import { TPromise } from 'vs/base/common/winjs.base';
 import * as vscode from 'vscode';
 
 export class ConnectionDialogService implements IConnectionDialogService {
@@ -23,43 +23,32 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	) {
 	}
 
-	private dialog: ConnectionDialogWidget;
+	private connectionDialog: ConnectionDialogWidget;
 
 	private handleOnConnect(): void {
-		alert(this.dialog.getModel().toString());
-
-		let model: ConnectionDialogModel = this.dialog.getModel();
-		let connInfo: vscode.ConnectionInfo = {
-			serverName: model.serverName,
-			databaseName: model.databaseName,
-			userName: model.userName,
-			password: model.password
-		};
-
-		this._registeredServersService.addRegisteredServer(connInfo);
+		this._registeredServersService.addRegisteredServer(this.connectionDialog.getConnection());
 	}
 
-	public open(registeredServersService: IRegisteredServersService): void {
+	public showDialog(registeredServersService: IRegisteredServersService): TPromise<void> {
 		this._registeredServersService = registeredServersService;
+		return new TPromise<void>(() => {
+			this.doShowDialog();
+		});
+	}
 
-		let model: ConnectionDialogModel = new ConnectionDialogModel(
-			'server name',
-			'database name',
-			'user name',
-			'password'
-		);
-
-		if(!this.dialog) {
+	private doShowDialog(): TPromise<void> {
+		if(!this.connectionDialog) {
 			let container = withElementById(this.partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-			this.dialog  = new ConnectionDialogWidget(container, {
+			this.connectionDialog  = new ConnectionDialogWidget(container, {
 				onCancel: () => {},
 				onConnect: () => this.handleOnConnect()
 			});
-			this.dialog.create();
-
+			this.connectionDialog.create();
 		}
 
-		this.dialog.setModel(model);
-		this.dialog.open();
+		return new TPromise<void>(() => {
+			//this.dialog.setModel(model);
+			this.connectionDialog.open();
+		});
 	}
 }
