@@ -6,7 +6,7 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { MainContext, MainThreadDataManagementShape, ExtHostDataManagementShape } from 'vs/workbench/api/node/extHost.protocol';
+import { MainContext, MainThreadConnectionManagementShape, ExtHostConnectionManagementShape } from 'vs/workbench/api/node/extHost.protocol';
 import * as vscode from 'vscode';
 import { Disposable } from 'vs/workbench/api/node/extHostTypes';
 
@@ -18,15 +18,15 @@ class ConnectionAdapter {
 	}
 
 	connect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
-		return this._provider.$connect(connectionUri, connection);
+		return this._provider.connect(connectionUri, connection);
 	}
 }
 
 type Adapter = ConnectionAdapter;
 
-export class ExtHostDataManagement extends ExtHostDataManagementShape  {
+export class ExtHostDataManagement extends ExtHostConnectionManagementShape  {
 
-	private _proxy: MainThreadDataManagementShape;
+	private _proxy: MainThreadConnectionManagementShape;
 
 	private static _handlePool: number = 0;
 	private _adapter: { [handle: number]: Adapter } = Object.create(null);
@@ -54,7 +54,7 @@ export class ExtHostDataManagement extends ExtHostDataManagementShape  {
 		threadService: IThreadService
 	) {
 		super();
-		this._proxy = threadService.get(MainContext.MainThreadDataManagement);
+		this._proxy = threadService.get(MainContext.MainThreadConnectionManagement);
 	}
 
 	$registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable {

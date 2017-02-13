@@ -96,8 +96,6 @@ export default class ConnectionManager {
         this._connectionUI = new ConnectionUI(this, this._connectionStore, prompter, this.vscodeWrapper);
 
         if (this.client !== undefined) {
-            this.client.onNotification(ConnectionContracts.ConnectionChangedNotification.type, this.handleConnectionChangedNotification());
-            this.client.onNotification(ConnectionContracts.ConnectionCompleteNotification.type, this.handleConnectionCompleteNotification());
             this.client.onNotification(LanguageServiceContracts.IntelliSenseReadyNotification.type, this.handleLanguageServiceUpdateNotification());
         }
     }

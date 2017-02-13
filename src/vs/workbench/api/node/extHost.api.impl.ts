@@ -44,7 +44,7 @@ import { realpath } from 'fs';
 import { MainContext, ExtHostContext, InstanceCollection, IInitData } from './extHost.protocol';
 import * as languageConfiguration from 'vs/editor/common/modes/languageConfiguration';
 
-import { ExtHostDataManagement } from 'sql/workbench/api/node/extHostDataManagement';
+import { ExtHostDataManagement } from 'sql/workbench/api/node/extHostConnectionManagement';
 
 export interface IExtensionApiFactory {
 	(extension: IExtensionDescription): typeof vscode;
@@ -109,6 +109,12 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 		// namespace: connections
 		const connections: typeof vscode.connections = {
 			registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable  {
+
+				provider.registerOnConnectionComplete((connSummary: vscode.ConnectionInfoSummary) => {
+					let i = 0;
+
+				});
+
 				return extHostDataManagement.$registerConnectionProvider(provider);
 			}
 		};

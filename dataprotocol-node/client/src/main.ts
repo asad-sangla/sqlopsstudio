@@ -14,7 +14,7 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink, ConnectionProvider, ConnectionInfo, connections
+		DocumentLink as VDocumentLink, ConnectionInfo, ConnectionInfoSummary, connections
 } from 'vscode';
 
 import {
@@ -34,7 +34,8 @@ import {
 		DocumentHighlight, DocumentHighlightKind,
 		SymbolInformation, SymbolKind,
 		CodeLens,
-		FormattingOptions, DocumentLink
+		FormattingOptions, DocumentLink,
+		ConnectionCompleteParams
 } from 'dataprotocol-languageserver-types';
 
 
@@ -61,7 +62,9 @@ import {
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
 		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
-		ListConnectionRequest, ConnectionRequest, ConnectParams
+		ConnectionRequest, ConnectParams,
+		DisconnectRequest, DisconnectParams,
+		ConnectionCompleteNotification
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -70,7 +73,7 @@ import * as p2c from './protocolConverter';
 import * as is from './utils/is';
 import * as electron from './utils/electron';
 import { terminate } from './utils/processes';
-import { Delayer } from './utils/async'
+import { Delayer } from './utils/async';
 
 export {
 	RequestType, NotificationType, NotificationHandler, RequestHandler,
@@ -1256,7 +1259,7 @@ export class LanguageClient {
 	private hookConnectionProvider(connection: IConnection): void {
 		let self = this;
 		this._providers.push(connections.registerConnectionProvider({
-			$connect(connUri: string, connInfo: ConnectionInfo): Thenable<boolean> {
+			connect(connUri: string, connInfo: ConnectionInfo): Thenable<boolean> {
 				return self.doSendRequest(connection, ConnectionRequest.type, self._c2p.asConnectionParams(connUri, connInfo), undefined).then(
 					(result) => {
 						return result;
@@ -1266,6 +1269,37 @@ export class LanguageClient {
 						return Promise.resolve([]);
 					}
 				);
+			},
+			disconnect(connUri: string): Thenable<boolean> {
+				let params: DisconnectParams = {
+					ownerUri: connUri
+				};
+
+				return self.doSendRequest(connection, DisconnectRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						this.logFailedRequest(DisconnectRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any) {
+				let notification: NotificationHandler<ConnectionCompleteParams> = (params: ConnectionCompleteParams) => {
+					let connSummary: ConnectionInfoSummary = {
+						ownerUri: params.ownerUri,
+						connectionId: params.connectionId,
+						messages: params.messages,
+						errorMessage: params.errorMessage,
+						errorNumber: params.errorNumber
+					};
+
+					handler(connSummary);
+				};
+
+				connection.onNotification(ConnectionCompleteNotification.type, notification);
 			}
 		}));
 	}

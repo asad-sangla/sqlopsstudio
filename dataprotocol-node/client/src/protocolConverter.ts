@@ -73,6 +73,8 @@ export interface Converter {
 	asDocumentLink(item: ls.DocumentLink): code.DocumentLink;
 
 	asDocumentLinks(items: ls.DocumentLink[]): code.DocumentLink[];
+
+	asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary;
 }
 
 export interface URIConverter {
@@ -375,6 +377,17 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return items.map(asDocumentLink);
 	}
 
+	function asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary {
+		let connSummary: code.ConnectionInfoSummary = {
+			ownerUri: params.ownerUri,
+			connectionId: params.connectionId,
+			messages: params.messages,
+			errorMessage: params.errorMessage,
+			errorNumber: params.errorNumber
+		};
+		return connSummary;
+	}
+
 	return {
 		asUri,
 		asDiagnostics,
@@ -406,8 +419,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asCodeLenses,
 		asWorkspaceEdit,
 		asDocumentLink,
-		asDocumentLinks
-	}
+		asDocumentLinks,
+		asConnectionSummary
+	};
 }
 
 // This for backward compatibility since we exported the converter functions as API.

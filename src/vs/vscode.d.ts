@@ -20,8 +20,39 @@ declare module 'vscode' {
 		password: string;
 	}
 
+	export interface ConnectionInfoSummary {
+		/**
+		 * URI identifying the owner of the connection
+		 */
+		ownerUri: string;
+
+		/**
+		 * connection id returned from service host.
+		 */
+		connectionId: string;
+
+		/**
+		 * any diagnostic messages return from the service host.
+		 */
+		messages: string;
+
+		/**
+		 * Error message returned from the engine, if any.
+		 */
+		errorMessage: string;
+
+		/**
+		 * Error number returned from the engine, if any.
+		 */
+		errorNumber: number;
+	}
+
 	export interface ConnectionProvider {
-		$connect(connectionUri: string, connectionInfo: ConnectionInfo);
+		connect(connectionUri: string, connectionInfo: ConnectionInfo): Thenable<boolean>;
+
+		disconnect(connectionUri: string): Thenable<boolean>;
+
+		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any);
 	}
 
 	export namespace connections {

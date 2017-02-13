@@ -7,13 +7,13 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { ExtHostContext, ExtHostDataManagementShape, MainThreadDataManagementShape } from 'vs/workbench/api/node/extHost.protocol';
+import { ExtHostContext, ExtHostConnectionManagementShape, MainThreadConnectionManagementShape } from 'vs/workbench/api/node/extHost.protocol';
 import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
 import * as vscode from 'vscode';
 
-export class MainThreadDataManagement extends MainThreadDataManagementShape {
+export class MainThreadConnectionManagement extends MainThreadConnectionManagementShape {
 
-	private _proxy: ExtHostDataManagementShape;
+	private _proxy: ExtHostConnectionManagementShape;
 
 	private _toDispose: IDisposable[];
 

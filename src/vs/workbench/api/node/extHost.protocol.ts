@@ -38,6 +38,23 @@ import { IApplyEditsOptions, TextEditorRevealType, ITextEditorConfigurationUpdat
 
 import { InternalTreeExplorerNodeContent } from 'vs/workbench/parts/explorers/common/treeExplorerViewModel';
 
+/**
+ * Connection Management extension host class.
+ */
+export abstract class ExtHostConnectionManagementShape {
+
+	/**
+	 * Register a connection information provider.
+	 */
+	$registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable { throw ni(); }
+
+	/**
+	 * Establish a connection to a data source using the provided ConnectionInfo instance.
+	 */
+	$connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> { throw ni(); }
+}
+
+
 export interface IEnvironment {
 	enableProposedApi: boolean;
 	appSettingsHome: string;
@@ -101,7 +118,7 @@ function ni() { return new Error('Not implemented'); }
 
 // --- main thread
 
-export abstract class MainThreadDataManagementShape {
+export abstract class MainThreadConnectionManagementShape {
 	$registerConnectionProvider(handle: number): TPromise<any> { throw ni(); }
 	$unregisterConnectionProvider(handle: number): TPromise<any> { throw ni(); }
 }
@@ -328,14 +345,6 @@ export abstract class ExtHostHeapServiceShape {
 	$onGarbageCollection(ids: number[]): void { throw ni(); }
 }
 
-export abstract class ExtHostDataManagementShape {
-
-	$registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable { throw ni(); }
-
-	$connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> { throw ni(); }
-}
-
-
 export abstract class ExtHostLanguageFeaturesShape {
 	$provideDocumentSymbols(handle: number, resource: URI): TPromise<modes.SymbolInformation[]> { throw ni(); }
 	$provideCodeLenses(handle: number, resource: URI): TPromise<modes.ICodeLensSymbol[]> { throw ni(); }
@@ -373,7 +382,7 @@ export abstract class ExtHostTerminalServiceShape {
 export const MainContext = {
 	MainThreadCommands: createMainId<MainThreadCommandsShape>('MainThreadCommands', MainThreadCommandsShape),
 	MainThreadConfiguration: createMainId<MainThreadConfigurationShape>('MainThreadConfiguration', MainThreadConfigurationShape),
-	MainThreadDataManagement: createMainId<MainThreadDataManagementShape>('MainThreadDataManagement', MainThreadDataManagementShape),
+	MainThreadConnectionManagement: createMainId<MainThreadConnectionManagementShape>('MainThreadDataManagement', MainThreadConnectionManagementShape),
 	MainThreadDiagnostics: createMainId<MainThreadDiagnosticsShape>('MainThreadDiagnostics', MainThreadDiagnosticsShape),
 	MainThreadDocuments: createMainId<MainThreadDocumentsShape>('MainThreadDocuments', MainThreadDocumentsShape),
 	MainThreadEditors: createMainId<MainThreadEditorsShape>('MainThreadEditors', MainThreadEditorsShape),
@@ -394,7 +403,7 @@ export const MainContext = {
 export const ExtHostContext = {
 	ExtHostCommands: createExtId<ExtHostCommandsShape>('ExtHostCommands', ExtHostCommandsShape),
 	ExtHostConfiguration: createExtId<ExtHostConfigurationShape>('ExtHostConfiguration', ExtHostConfigurationShape),
-	ExtHostDataManagement: createExtId<ExtHostDataManagementShape>('ExtHostDataManagement', ExtHostDataManagementShape),
+	ExtHostDataManagement: createExtId<ExtHostConnectionManagementShape>('ExtHostDataManagement', ExtHostConnectionManagementShape),
 	ExtHostDiagnostics: createExtId<ExtHostDiagnosticsShape>('ExtHostDiagnostics', ExtHostDiagnosticsShape),
 	ExtHostDocuments: createExtId<ExtHostDocumentsShape>('ExtHostDocuments', ExtHostDocumentsShape),
 	ExtHostDocumentSaveParticipant: createExtId<ExtHostDocumentSaveParticipantShape>('ExtHostDocumentSaveParticipant', ExtHostDocumentSaveParticipantShape),

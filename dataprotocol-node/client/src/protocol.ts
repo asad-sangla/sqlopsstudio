@@ -20,7 +20,8 @@ import {
 		CodeLens, CodeActionContext,
 		FormattingOptions, DocumentLink,
 		ConnectionInfo, // test-only
-		ConnectionDetails, ServerInfo, ConnectionSummary
+		ConnectionDetails, ServerInfo,
+		ConnectionSummary, ConnectionCompleteParams
 	} from 'dataprotocol-languageserver-types';
 
 /**
@@ -922,16 +923,6 @@ export namespace DocumentLinkResolveRequest {
 	export const type: RequestType<DocumentLink, DocumentLink, void> = { get method() { return 'documentLink/resolve'; } };
 }
 
-//---- Connection ----------------------------------------------
-
-export interface ListConnectionParams {
-	connectionInfo: ConnectionInfo;
-}
-
-export namespace ListConnectionRequest {
-	export const type: RequestType<ListConnectionParams, ConnectionInfo, void> = { get method() { return 'connection/listConnections'; } };
-}
-
 
 // ------------------------------- < Connect Request > ----------------------------------------------
 
@@ -958,45 +949,6 @@ export namespace ConnectionRequest {
 
 // ------------------------------- < Connection Complete Event > ------------------------------------
 
-/**
- * Connection response format.
- */
-export class ConnectionCompleteParams {
-    /**
-     * URI identifying the owner of the connection
-     */
-    public ownerUri: string;
-
-    /**
-     * connection id returned from service host.
-     */
-    public connectionId: string;
-
-    /**
-     * any diagnostic messages return from the service host.
-     */
-    public messages: string;
-
-    /**
-     * Error message returned from the engine, if any.
-     */
-    public errorMessage: string;
-
-    /**
-     * Error number returned from the engine, if any.
-     */
-    public errorNumber: number;
-
-    /**
-     * Information about the connected server.
-     */
-    public serverInfo: ServerInfo;
-
-    /**
-     * information about the actual connection established
-     */
-    public connectionSummary: ConnectionSummary;
-}
 
 export namespace ConnectionCompleteNotification {
     export const type: NotificationType<ConnectionCompleteParams> = { get method(): string { return 'connection/complete'; } };
