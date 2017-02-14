@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "@angular/common": "npm:@angular/common/index.d.ts",
+    "@angular/compiler": "npm:@angular/compiler/index.d.ts",
+    "@angular/core": "npm:@angular/core/index.d.ts",
+    "@angular/forms": "npm:@angular/forms/index.d.ts",
+    "@angular/http": "npm:@angular/http/index.d.ts",
+    "@angular/platform-browser": "npm:@angular/platform-browser/index.d.ts",
+    "@angular/platform-browser-dynamic": "npm:@angular/platform-browser-dynamic/index.d.ts",
+    "@angular/router": "npm:@angular/router/index.d.ts",
+    "@angular/upgrade": "npm:@angular/upgrade/index.d.ts",
+    "angular-in-memory-web-api": "npm:angular-in-memory-web-api/index.d.ts",
+    "angular2-slickgrid": "npm:angular2-slickgrid/index.d.ts",
+    "reflect-metadata": "npm:reflect-metadata/index.d.ts",
+    "rxjs": "npm:rxjs/Rx.d.ts"
+  },
+  "globalDependencies": {
+    "core-js": "registry:dt/core-js#0.9.7+20161130133742",
+    "slickgrid": "registry:dt/slickgrid#2.1.0+20160818215330",
+    "systemjs": "registry:dt/systemjs#0.19.29+20161215140219",
+    "underscore": "registry:dt/underscore#1.8.3+20161123125004",
+    "zone.js": "npm:zone.js\\dist\\zone.js.d.ts"
+  }
+}
