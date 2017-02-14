@@ -19,7 +19,7 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 
 	private _registrations: { [handle: number]: IDisposable; } = Object.create(null);
 
-	private _registeredServersService: IConnectionManagementService;
+	private _connectionManagementService: IConnectionManagementService;
 
 	constructor(
 		@IThreadService threadService: IThreadService,
@@ -27,19 +27,19 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 
 	) {
 		super();
-		this._proxy = threadService.get(ExtHostContext.ExtHostDataManagement);
+		this._proxy = threadService.get(ExtHostContext.ExtHostConnectionManagement);
 
-		this._registeredServersService = registeredServersService;
+		this._connectionManagementService = registeredServersService;
 	}
 
 	public dispose(): void {
 		this._toDispose = dispose(this._toDispose);
 	}
 
-	$registerConnectionProvider(handle: number): TPromise<any> {
+	public $registerConnectionProvider(handle: number): TPromise<any> {
 		let self = this;
 
-		this._registrations[handle] = this._registeredServersService.addEventListener(handle, {
+		this._registrations[handle] = this._connectionManagementService.addEventListener(handle, {
 			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
 				return self._proxy.$connect(handle, connectionUri, connection);
 			},
@@ -52,7 +52,15 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 		return undefined;
 	}
 
-	$unregisterConnectionProvider(handle: number): TPromise<any> {
+	public $onConnectionComplete(handle: number, connectionUri: string): void {
+		this._connectionManagementService.onConnectionComplete(handle, connectionUri);
+	}
+
+	public $onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
+		this._connectionManagementService.onIntelliSenseCacheComplete(handle, connectionUri);
+	}
+
+	public $unregisterConnectionProvider(handle: number): TPromise<any> {
 		let registration = this._registrations[handle];
 		if (registration) {
 			registration.dispose();

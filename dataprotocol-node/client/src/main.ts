@@ -35,7 +35,7 @@ import {
 		SymbolInformation, SymbolKind,
 		CodeLens,
 		FormattingOptions, DocumentLink,
-		ConnectionCompleteParams
+		ConnectionCompleteParams, IntelliSenseReadyParams
 } from 'dataprotocol-languageserver-types';
 
 
@@ -64,7 +64,7 @@ import {
 		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
 		ConnectionRequest, ConnectParams,
 		DisconnectRequest, DisconnectParams,
-		ConnectionCompleteNotification
+		ConnectionCompleteNotification, IntelliSenseReadyNotification
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -1259,6 +1259,8 @@ export class LanguageClient {
 	private hookConnectionProvider(connection: IConnection): void {
 		let self = this;
 		this._providers.push(connections.registerConnectionProvider({
+			handle: -1,
+
 			connect(connUri: string, connInfo: ConnectionInfo): Thenable<boolean> {
 				return self.doSendRequest(connection, ConnectionRequest.type, self._c2p.asConnectionParams(connUri, connInfo), undefined).then(
 					(result) => {
@@ -1287,20 +1289,23 @@ export class LanguageClient {
 			},
 
 			registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any) {
-				let notification: NotificationHandler<ConnectionCompleteParams> = (params: ConnectionCompleteParams) => {
-					let connSummary: ConnectionInfoSummary = {
+				connection.onNotification(ConnectionCompleteNotification.type, (params: ConnectionCompleteParams) => {
+					handler({
 						ownerUri: params.ownerUri,
 						connectionId: params.connectionId,
 						messages: params.messages,
 						errorMessage: params.errorMessage,
 						errorNumber: params.errorNumber
-					};
+					});
+				});
+			},
 
-					handler(connSummary);
-				};
-
-				connection.onNotification(ConnectionCompleteNotification.type, notification);
+			registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any) {
+				connection.onNotification(IntelliSenseReadyNotification.type, (params: IntelliSenseReadyParams) => {
+					handler(params.ownerUri);
+				});
 			}
+
 		}));
 	}
 

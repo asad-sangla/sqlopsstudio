@@ -48,11 +48,15 @@ declare module 'vscode' {
 	}
 
 	export interface ConnectionProvider {
+		handle: number;
+
 		connect(connectionUri: string, connectionInfo: ConnectionInfo): Thenable<boolean>;
 
 		disconnect(connectionUri: string): Thenable<boolean>;
 
 		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any);
+
+		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);
 	}
 
 	export namespace connections {

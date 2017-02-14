@@ -214,6 +214,16 @@ export class ConnectionCompleteParams {
 }
 
 /**
+ * Update event parameters
+ */
+export class IntelliSenseReadyParams {
+    /**
+     * URI identifying the text document
+     */
+    public ownerUri: string;
+}
+
+/**
  * Information about a SQL Server instance.
  */
 export class ServerInfo {

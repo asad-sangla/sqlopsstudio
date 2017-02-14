@@ -24,7 +24,7 @@ class ConnectionAdapter {
 
 type Adapter = ConnectionAdapter;
 
-export class ExtHostDataManagement extends ExtHostConnectionManagementShape  {
+export class ExtHostConnectionManagement extends ExtHostConnectionManagementShape  {
 
 	private _proxy: MainThreadConnectionManagementShape;
 
@@ -39,7 +39,7 @@ export class ExtHostDataManagement extends ExtHostConnectionManagementShape  {
 	}
 
 	private _nextHandle(): number {
-		return ExtHostDataManagement._handlePool++;
+		return ExtHostConnectionManagement._handlePool++;
 	}
 
 	private _withAdapter<A, R>(handle: number, ctor: { new (...args: any[]): A }, callback: (adapter: A) => Thenable<R>): Thenable<R> {
@@ -58,13 +58,21 @@ export class ExtHostDataManagement extends ExtHostConnectionManagementShape  {
 	}
 
 	$registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable {
-		const handle = this._nextHandle();
-		this._adapter[handle] = new ConnectionAdapter(provider);
-		this._proxy.$registerConnectionProvider(handle);
-		return this._createDisposable(handle);
+		provider.handle = this._nextHandle();
+		this._adapter[provider.handle] = new ConnectionAdapter(provider);
+		this._proxy.$registerConnectionProvider(provider.handle);
+		return this._createDisposable(provider.handle);
 	}
 
 	$connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
 		return this._withAdapter(handle, ConnectionAdapter, adapter => adapter.connect(connectionUri, connection));
+	}
+
+	$onConnectComplete(handle:number, connectionUri: string): void{
+		this._proxy.$onConnectionComplete(handle, connectionUri);
+	}
+
+	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
+		this._proxy.$onIntelliSenseCacheComplete(handle, connectionUri);
 	}
 }

@@ -44,7 +44,7 @@ import { realpath } from 'fs';
 import { MainContext, ExtHostContext, InstanceCollection, IInitData } from './extHost.protocol';
 import * as languageConfiguration from 'vs/editor/common/modes/languageConfiguration';
 
-import { ExtHostDataManagement } from 'sql/workbench/api/node/extHostConnectionManagement';
+import { ExtHostConnectionManagement } from 'sql/workbench/api/node/extHostConnectionManagement';
 
 export interface IExtensionApiFactory {
 	(extension: IExtensionDescription): typeof vscode;
@@ -68,7 +68,7 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 	// Addressable instances
 	const col = new InstanceCollection();
 	const extHostHeapService = col.define(ExtHostContext.ExtHostHeapService).set<ExtHostHeapService>(new ExtHostHeapService());
-	const extHostDataManagement = col.define(ExtHostContext.ExtHostDataManagement).set<ExtHostDataManagement>(new ExtHostDataManagement(threadService));
+	const extHostConnectionManagement = col.define(ExtHostContext.ExtHostConnectionManagement).set<ExtHostConnectionManagement>(new ExtHostConnectionManagement(threadService));
 	const extHostDocuments = col.define(ExtHostContext.ExtHostDocuments).set<ExtHostDocuments>(new ExtHostDocuments(threadService));
 	const extHostDocumentSaveParticipant = col.define(ExtHostContext.ExtHostDocumentSaveParticipant).set<ExtHostDocumentSaveParticipant>(new ExtHostDocumentSaveParticipant(extHostDocuments, threadService.get(MainContext.MainThreadWorkspace)));
 	const extHostEditors = col.define(ExtHostContext.ExtHostEditors).set<ExtHostEditors>(new ExtHostEditors(threadService, extHostDocuments));
@@ -111,11 +111,14 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 			registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable  {
 
 				provider.registerOnConnectionComplete((connSummary: vscode.ConnectionInfoSummary) => {
-					let i = 0;
-
+					extHostConnectionManagement.$onConnectComplete(provider.handle, connSummary.ownerUri);
 				});
 
-				return extHostDataManagement.$registerConnectionProvider(provider);
+				provider.registerOnIntelliSenseCacheComplete((connectionUri: string) => {
+					extHostConnectionManagement.$onIntelliSenseCacheComplete(provider.handle, connectionUri);
+				});
+
+				return extHostConnectionManagement.$registerConnectionProvider(provider);
 			}
 		};
 

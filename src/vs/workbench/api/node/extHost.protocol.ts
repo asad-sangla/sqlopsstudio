@@ -52,6 +52,16 @@ export abstract class ExtHostConnectionManagementShape {
 	 * Establish a connection to a data source using the provided ConnectionInfo instance.
 	 */
 	$connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> { throw ni(); }
+
+	/**
+	 * Callback when a connection request has completed
+	 */
+	$onConnectComplete(handle:number, connectionUri: string): void { throw ni(); }
+
+	/**
+	 * Callback when a IntelliSense cache has been built
+	 */
+	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
 }
 
 
@@ -121,6 +131,8 @@ function ni() { return new Error('Not implemented'); }
 export abstract class MainThreadConnectionManagementShape {
 	$registerConnectionProvider(handle: number): TPromise<any> { throw ni(); }
 	$unregisterConnectionProvider(handle: number): TPromise<any> { throw ni(); }
+	$onConnectionComplete(handle: number, connectionUri: string): void { throw ni(); }
+	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
 }
 
 export abstract class MainThreadCommandsShape {
@@ -403,7 +415,7 @@ export const MainContext = {
 export const ExtHostContext = {
 	ExtHostCommands: createExtId<ExtHostCommandsShape>('ExtHostCommands', ExtHostCommandsShape),
 	ExtHostConfiguration: createExtId<ExtHostConfigurationShape>('ExtHostConfiguration', ExtHostConfigurationShape),
-	ExtHostDataManagement: createExtId<ExtHostConnectionManagementShape>('ExtHostDataManagement', ExtHostConnectionManagementShape),
+	ExtHostConnectionManagement: createExtId<ExtHostConnectionManagementShape>('ExtHostConnectionManagement', ExtHostConnectionManagementShape),
 	ExtHostDiagnostics: createExtId<ExtHostDiagnosticsShape>('ExtHostDiagnostics', ExtHostDiagnosticsShape),
 	ExtHostDocuments: createExtId<ExtHostDocumentsShape>('ExtHostDocuments', ExtHostDocumentsShape),
 	ExtHostDocumentSaveParticipant: createExtId<ExtHostDocumentSaveParticipantShape>('ExtHostDocumentSaveParticipant', ExtHostDocumentSaveParticipantShape),

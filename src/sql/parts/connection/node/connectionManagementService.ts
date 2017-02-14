@@ -15,6 +15,7 @@ import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDi
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Event, { Emitter } from 'vs/base/common/event';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
+import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import * as vscode from 'vscode';
 
 export class ConnectionManagementService implements IConnectionManagementService {
@@ -30,28 +31,32 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onConnectionSwitched: Emitter<vscode.ConnectionInfo>;
 
 	constructor(
-		@IConnectionDialogService private connectionDialogService: IConnectionDialogService,
-		@IInstantiationService private instantiationService: IInstantiationService,
-		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
+		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
+		@IStatusbarService private _statusService?: IStatusbarService
 	) {
 		this._onConnectionSwitched = new Emitter<vscode.ConnectionInfo>();
 	}
 
 
 	public newConnection(): void {
-		this.connectionDialogService.showDialog(this);
+		this._connectionDialogService.showDialog(this);
 	}
 
 	public open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any> {
-		return this.editorService.openEditor(this.instantiationService.createInstance(QueryInput, connection), null, sideByside);
+		return this._editorService.openEditor(this._instantiationService.createInstance(QueryInput, connection), null, sideByside);
 	}
 
 	public addConnectionProfile(connection: vscode.ConnectionInfo): void {
+
+		this._statusService.setStatusMessage('Connecting...');
+
 		// notify event listeners that a new server was registered
 		for (var key in this._serverEvents) {
 
 			// connect using the active editor if available
-			let activeEditor = this.editorService.getActiveEditor();
+			let activeEditor = this._editorService.getActiveEditor();
 			if (activeEditor !== undefined) {
 				let uri = this.getActiveEditorInputResource().toString();
 				if (uri !== undefined) {
@@ -65,8 +70,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 	}
 
-	public get onConnectionSwitched(): Event<vscode.ConnectionInfo> {
-		return this._onConnectionSwitched.event;
+	public onConnectionComplete(handle: number, connectionUri: string): void {
+		this._statusService.setStatusMessage('Updating IntelliSense cache');
+	}
+
+	public onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
+		this._statusService.setStatusMessage('Connection Complete ' + connectionUri);
 	}
 
 	public dispose(): void {
@@ -85,9 +94,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	private getActiveEditorInputResource(): URI {
-
-		// Try with Editor Input
-		const input = this.editorService.getActiveEditorInput();
+		const input = this._editorService.getActiveEditorInput();
 		if (input && input instanceof FileEditorInput) {
 			return input.getResource();
 		}

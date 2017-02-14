@@ -21,7 +21,7 @@ import {
 		FormattingOptions, DocumentLink,
 		ConnectionInfo, // test-only
 		ConnectionDetails, ServerInfo,
-		ConnectionSummary, ConnectionCompleteParams
+		ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams
 	} from 'dataprotocol-languageserver-types';
 
 /**
@@ -1011,3 +1011,11 @@ export class ListDatabasesResult {
 export namespace ListDatabasesRequest {
     export const type: RequestType<ListDatabasesParams, ListDatabasesResult, void> = { get method(): string { return 'connection/listdatabases'; } };
 }
+
+/**
+ * Event sent when the language service is finished updating after a connection
+ */
+export namespace IntelliSenseReadyNotification {
+    export const type: NotificationType<IntelliSenseReadyParams> = { get method(): string { return 'textDocument/intelliSenseReady'; } };
+}
+
