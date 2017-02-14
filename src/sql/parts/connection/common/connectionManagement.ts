@@ -39,9 +39,6 @@ export interface IConnectionManagementService {
 	onConnectionComplete(handle: number, connectionUri: string): void;
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
-
-	// temporary interface entries for testing purposes
-	open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any>;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

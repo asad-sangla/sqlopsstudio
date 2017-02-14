@@ -12,10 +12,13 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
-import Event, { Emitter } from 'vs/base/common/event';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
+// import { ConnectionStore } from './connectionStore';
+import { Memento } from 'vs/workbench/common/memento';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 import * as vscode from 'vscode';
 
 export class ConnectionManagementService implements IConnectionManagementService {
@@ -28,15 +31,26 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _serverEvents: { [handle: number]: ConnectionManagementEvents; } = Object.create(null);
 
-	private _onConnectionSwitched: Emitter<vscode.ConnectionInfo>;
+	// private _connectionStore: ConnectionStore;
+
+	private connectionMemento: Memento;
+
 
 	constructor(
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
-		@IStatusbarService private _statusService?: IStatusbarService
+		@IStatusbarService private _statusService: IStatusbarService,
+		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
+		@IStorageService private _storageService: IStorageService,
+		@ITelemetryService private _telemetryService: ITelemetryService
 	) {
-		this._onConnectionSwitched = new Emitter<vscode.ConnectionInfo>();
+
+		this.connectionMemento = new Memento('ConnectionManagement');
+
+		// this._connectionStore = new ConnectionStore(_storageService, this.connectionMemento);
+
+
 	}
 
 
@@ -44,30 +58,38 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._connectionDialogService.showDialog(this);
 	}
 
-	public open(connection: vscode.ConnectionInfo, sideByside: boolean): TPromise<any> {
-		return this._editorService.openEditor(this._instantiationService.createInstance(QueryInput, connection), null, sideByside);
-	}
-
 	public addConnectionProfile(connection: vscode.ConnectionInfo): void {
-
 		this._statusService.setStatusMessage('Connecting...');
 
-		// notify event listeners that a new server was registered
+		this.saveToSettings(connection);
+
+		this.connect(connection);
+	}
+
+	private connect(connection: vscode.ConnectionInfo): void {
 		for (var key in this._serverEvents) {
-
-			// connect using the active editor if available
-			let activeEditor = this._editorService.getActiveEditor();
-			if (activeEditor !== undefined) {
-				let uri = this.getActiveEditorInputResource().toString();
-				if (uri !== undefined) {
-					this._serverEvents[key].onConnect(uri, connection);
-					break;
-				}
+			let uri = this.getActiveEditorUri();
+			if (this.getActiveEditorUri() !== undefined) {
+				this._serverEvents[key].onConnect(uri, connection);
+			} else {
+				this._serverEvents[key].onAddConnectionProfile(connection);
 			}
-
-			// connect globally if no active editor
-			this._serverEvents[key].onAddConnectionProfile(connection);
 		}
+	}
+
+	private getActiveEditorUri(): string {
+		let uri: string = undefined;
+		let activeEditor = this._editorService.getActiveEditor();
+		if (activeEditor !== undefined) {
+			uri = this.getActiveEditorInputResource().toString();
+		}
+		return undefined;
+	}
+
+	private saveToSettings(connection: vscode.ConnectionInfo): boolean {
+
+
+		return true;
 	}
 
 	public onConnectionComplete(handle: number, connectionUri: string): void {
