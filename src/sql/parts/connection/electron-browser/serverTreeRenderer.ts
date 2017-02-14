@@ -7,6 +7,8 @@
 import dom = require('vs/base/browser/dom');
 import { ITree, IDataSource, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACCEPT_BUBBLE_DOWN, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
+import { Action } from 'vs/base/common/actions';
+import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IConnection } from 'sql/parts/connection/common/registeredServers';
@@ -300,14 +302,15 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 		else {
 			targetServerGroup = <ServerGroup>targetElement;
 		}
+		const source: Server = data.getData()[0];
+		var oldParent = source.getParent();
+		if (targetServerGroup !== null && targetServerGroup.getName() !== 'root' && oldParent) {
 
-		if (targetServerGroup !== null && targetServerGroup.getName() !== 'root') {
-			const source: Server = data.getData()[0];
 			// let promise: TPromise<void> = TPromise.as(null);
 			console.log('drop ' + source.getName() + ' to ' + targetServerGroup.getName());
 
 			var root: ServerGroup = tree.getInput();
-			var oldParent = source.getParent();
+
 			oldParent.removeServerFromGroup(source);
 			targetServerGroup.addServerToGroup(source);
 			root.updateGroup(oldParent);
@@ -325,5 +328,22 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 			}
 		}
 		return;
+	}
+}
+
+export class AddServerToGroupAction extends Action {
+	public static ID = 'registeredServers.addServer';
+	public static LABEL = nls.localize('addServer', "Add Server");
+	constructor(
+		id: string,
+		label: string
+	) {
+		super(id, label);
+	}
+
+	public run(element: ServerGroup): TPromise<boolean> {
+		console.log('Action run');
+		element.addServerToGroup(new Server('7', 'Server name F', 'Server name F', 'OnPrem'));
+		return TPromise.as(true);
 	}
 }

@@ -5,14 +5,15 @@
 
 import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
-import { IActionRunner } from 'vs/base/common/actions';
+import { IActionRunner, IAction } from 'vs/base/common/actions';
 import dom = require('vs/base/browser/dom');
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';;
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
-import { ServerTreeRenderer, ServerTreeDataSource, Server, ServerGroup, ServerTreeDragAndDrop } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ServerTreeRenderer, ServerTreeDataSource, Server, ServerGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/electron-browser/serverTreeController';
 import { DefaultController, DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
 import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
@@ -49,8 +50,9 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 
 		const dataSource = this.instantiationService.createInstance(ServerTreeDataSource);
 		this.viewletState = new TreeExplorerViewletState();
+		const actionProvider = this.instantiationService.createInstance(ServerTreeActionProvider);
 		const renderer = this.instantiationService.createInstance(ServerTreeRenderer);
-		const controller = new DefaultController();
+		const controller = this.instantiationService.createInstance(ServerTreeController,actionProvider);
 		const dnd = new ServerTreeDragAndDrop();
 		const filter = new DefaultFilter();
 		const sorter = null;
@@ -79,6 +81,12 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		return [s2, s4];
 	}
 
+	public getActions(): IAction[] {
+		return [
+			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
+		];
+	}
+
 	private onSelected(): void {
 		let selection = this.tree.getSelection();
 		if (selection && selection.length > 0) {
@@ -95,6 +103,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
 		this.fullRefreshNeeded = true;
 		var root = new ServerGroup('root', 'root', '', '', this.getServerGroups());
+		//var serverModel = this.instantiationService.createInstance(ServerTreeModel, false, this.getServerGroups());
 		const treeInput= root;
 		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh(root)).done(() => {
 			self.fullRefreshNeeded = false;
