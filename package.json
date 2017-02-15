@@ -48,6 +48,7 @@
     "jquery.event.drag": "2.2.2",
     "minimist": "1.2.0",
     "native-keymap": "0.3.0",
+    "os": "0.1.1",
     "pty.js": "https://github.com/Tyriar/pty.js/tarball/c75c2dcb6dcad83b0cb3ef2ae42d0448fb912642",
 	  "reflect-metadata": "^0.1.8",
     "rxjs": "5.0.0-beta.12",
