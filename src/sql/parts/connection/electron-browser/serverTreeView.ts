@@ -70,15 +70,18 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		this.structuralTreeUpdate();
 	}
 
-	private getServerGroups(): ServerGroup[] {
+	private getServerGroups(): [ServerGroup] {
 		// Stub method to generate input
 		var s3 = new Server('3', 'Server name B', 'Server name B','Azure');
-		var s2 = new ServerGroup('2', 'Server Group A','Server name A', 'OnPrem', [s3]);
+
 		var s5 = new Server('5', 'Server name D', 'Server name D', 'Azure');
 		var s6 = new Server('6', 'Server name E', 'Server name E', 'OnPrem');
+		var s7 = new Server('7', 'Server name F', 'Server name F', 'OnPrem');
+		var s8 = new ServerGroup('8', 'Server Group G','Server name G', 'OnPrem' , [s7]);
+		var s2 = new ServerGroup('2', 'Server Group A','Server name A', 'OnPrem', [s3, s8]);
 		var s4 = new ServerGroup('4', 'Server Group C', 'Server name C', 'Azure', [s5, s6]);
 		console.log('get data');
-		return [s2, s4];
+		return [s2, s4 ];
 	}
 
 	public getActions(): IAction[] {

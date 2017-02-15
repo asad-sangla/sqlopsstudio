@@ -122,7 +122,10 @@ export class Server {
 		return this.type;
 	}
 
-	public equals(other: Server): boolean {
+	public equals(other: any): boolean {
+		if (!(other instanceof Server)) {
+			return false;
+		}
 		return other.getId() === this.id && other.getName() === this.name;
 	}
 
@@ -141,17 +144,15 @@ export class ServerGroup implements IConnection {
 		name: string,
 		displayName: string,
 		private type: string,
-		private children: Server[] | ServerGroup[],
+		private children: [ Server | ServerGroup ],
 	) {
 		this.name = name;
 		this.displayName = displayName;
-		if (children[0] instanceof Server) {
-			if (children !== null) {
-				this.children = children as Array<Server>;
-				this.children.forEach((ser) => {
-					ser.parent = this;
-				});
-			}
+		// assign parent to each child
+		if (children !== null) {
+			this.children.forEach((connection) => {
+				connection.parent = this;
+		    });
 		}
 	}
 
@@ -167,7 +168,7 @@ export class ServerGroup implements IConnection {
 		return this.type;
 	}
 
-	public getChildren(): Server[] | ServerGroup[] {
+	public getChildren(): [ Server | ServerGroup ]{
 		return this.children;
 	}
 
@@ -178,12 +179,15 @@ export class ServerGroup implements IConnection {
 		return false;
 	}
 
-	public equals(other: Server): boolean {
+	public equals(other: any): boolean {
+		if (!(other instanceof ServerGroup)) {
+			return false;
+		}
 		return other.getId() === this.id && other.getName() === this.name;
 	}
 
-	public addServerToGroup(child: Server): void {
-		var servers = this.children as Array<Server>;
+	public addServerToGroup(child: Server | ServerGroup): void {
+		var servers = this.children;
 		if (this.children === null) {
 			this.children = [child];
 			child.parent = this;
@@ -204,13 +208,13 @@ export class ServerGroup implements IConnection {
 	}
 
 	public removeServerFromGroup(child: Server): void {
-		var servers = this.children as Array<Server>;
-		servers.forEach((val, i) => {
+		var connections = this.children;
+		connections.forEach((val, i) => {
 			if (val.equals(child)) {
-				servers.splice(i, 1);
+				connections.splice(i, 1);
 			}
 		});
-		this.children = servers;
+		this.children = connections;
 		child.parent = null;
 		if (this.children.length === 0) {
 			this.children = null;
@@ -319,7 +323,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 			if (treeInput !== tree.getInput()) {
 				tree.setInput(treeInput).done(() => {
 					tree.getFocus();
-					tree.expandAll([targetServerGroup, oldParent]);
+					tree.expandAll([targetServerGroup, oldParent]).done(() => {});
 				}, errors.onUnexpectedError);
 			} else {
 				tree.refresh(root).done(() => {
