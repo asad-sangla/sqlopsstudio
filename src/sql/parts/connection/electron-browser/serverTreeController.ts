@@ -86,16 +86,6 @@ export class ServerTreeController extends treedefaults.DefaultController {
 	}
 
 	public onClick(tree: ITree, element: any, event: IMouseEvent): boolean {
-
-		// Close opened editor on middle mouse click
-		//if (element instanceof OpenEditor && event.browserEvent && event.browserEvent.button === 1 /* Middle Button */) {
-		//	const position = this.model.positionOfGroup(element.editorGroup);
-
-		//	this.editorService.closeEditor(position, element.editorInput).done(null, errors.onUnexpectedError);
-
-		//	return true;
-	//}
-
 		return super.onClick(tree, element, event);
 	}
 
@@ -113,18 +103,6 @@ export class ServerTreeController extends treedefaults.DefaultController {
 	}
 
 	protected onEnter(tree: ITree, event: IKeyboardEvent): boolean {
-		const element = tree.getFocus();
-
-		/*// Editor groups should never get selected nor expanded/collapsed
-		if (element instanceof EditorGroup) {
-			event.preventDefault();
-			event.stopPropagation();
-
-			return true;
-		}
-
-		this.openEditor(element, false, event.ctrlKey || event.metaKey);
-		*/
 		return super.onEnter(tree, event);
 	}
 
@@ -148,8 +126,6 @@ export class ServerTreeController extends treedefaults.DefaultController {
 		else if (element instanceof Connection) {
 			parent = (<Connection>element).parent;
 		}
-		//const group = element instanceof EditorGroup ? element : (<OpenEditor>element).editorGroup;
-		//const editor = element instanceof OpenEditor ? (<OpenEditor>element).editorInput : undefined;
 
 		let anchor = { x: event.posx + 1, y: event.posy };
 		this.contextMenuService.showContextMenu({
