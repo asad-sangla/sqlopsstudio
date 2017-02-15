@@ -22,14 +22,14 @@ export class ServerTreeRenderer implements IRenderer {
 	private static SERVER_GROUP_TEMPLATE_ID = 'servergroup';
 
 	public getHeight(tree: ITree, element: any): number {
-		if (element instanceof ServerGroup) {
+		if (element instanceof ConnectionGroup) {
 			return ServerTreeRenderer.SERVER_GROUP_HEIGHT;
 		}
 		return ServerTreeRenderer.SERVER_HEIGHT;
 	}
 
 	public getTemplateId(tree: ITree, element: any): string {
-		if (element instanceof ServerGroup) {
+		if (element instanceof ConnectionGroup) {
 			return ServerTreeRenderer.SERVER_GROUP_TEMPLATE_ID;
 		}
 		return ServerTreeRenderer.SERVER_TEMPLATE_ID;
@@ -47,7 +47,7 @@ export class ServerTreeRenderer implements IRenderer {
 			return serverTemplate;
 		}
 		else {
-			const serverTemplate: IServerGroupTemplateData = Object.create(null);
+			const serverTemplate: IConnectionGroupTemplateData = Object.create(null);
 			serverTemplate.root = dom.append(container, $('.server-group'));
 			serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
 			return serverTemplate;
@@ -59,17 +59,17 @@ export class ServerTreeRenderer implements IRenderer {
 			this.renderServer(tree, element, templateData);
 		}
 		else {
-			this.renderServerGroup(tree, element, templateData);
+			this.renderConnectionGroup(tree, element, templateData);
 		}
 	}
 
-	private renderServer(tree: ITree, server: Server, templateData: IServerTemplateData): void {
+	private renderServer(tree: ITree, server: Connection, templateData: IServerTemplateData): void {
 		templateData.name.textContent = server.getName();
 		templateData.info.textContent = 'server';
 		templateData.type.textContent = server.getType();
 	}
 
-	private renderServerGroup(tree: ITree, serverGroup: ServerGroup, templateData: IServerGroupTemplateData): void {
+	private renderConnectionGroup(tree: ITree, serverGroup: ConnectionGroup, templateData: IConnectionGroupTemplateData): void {
 		templateData.name.textContent = serverGroup.getName();
 	}
 
@@ -90,16 +90,16 @@ interface IServerTemplateData {
 	headerContainer: HTMLElement;
 }
 
-interface IServerGroupTemplateData {
+interface IConnectionGroupTemplateData {
 	root: HTMLElement;
 	name: HTMLSpanElement;
 }
 
-export class Server {
+export class Connection {
 
 	name: string;
 	displayName: string;
-	parent: ServerGroup = null;
+	parent: ConnectionGroup = null;
 
 	constructor(private id: string,
 		name: string,
@@ -123,28 +123,28 @@ export class Server {
 	}
 
 	public equals(other: any): boolean {
-		if (!(other instanceof Server)) {
+		if (!(other instanceof Connection)) {
 			return false;
 		}
 		return other.getId() === this.id && other.getName() === this.name;
 	}
 
-	public getParent(): ServerGroup {
+	public getParent(): ConnectionGroup {
 		return this.parent;
 	}
 }
 
-export class ServerGroup implements IConnection {
+export class ConnectionGroup implements IConnection {
 
 	name: string;
 	displayName: string;
-	parent: ServerGroup = null;
+	parent: ConnectionGroup = null;
 
 	constructor(private id: string,
 		name: string,
 		displayName: string,
 		private type: string,
-		private children: [ Server | ServerGroup ],
+		private children: [ Connection | ConnectionGroup ],
 	) {
 		this.name = name;
 		this.displayName = displayName;
@@ -168,7 +168,7 @@ export class ServerGroup implements IConnection {
 		return this.type;
 	}
 
-	public getChildren(): [ Server | ServerGroup ]{
+	public getChildren(): [ Connection | ConnectionGroup ]{
 		return this.children;
 	}
 
@@ -180,13 +180,13 @@ export class ServerGroup implements IConnection {
 	}
 
 	public equals(other: any): boolean {
-		if (!(other instanceof ServerGroup)) {
+		if (!(other instanceof ConnectionGroup)) {
 			return false;
 		}
 		return other.getId() === this.id && other.getName() === this.name;
 	}
 
-	public addServerToGroup(child: Server | ServerGroup): void {
+	public addServerToGroup(child: Connection | ConnectionGroup): void {
 		var servers = this.children;
 		if (this.children === null) {
 			this.children = [child];
@@ -199,15 +199,15 @@ export class ServerGroup implements IConnection {
 		}
 	}
 
-	public updateGroup(child: ServerGroup): void {
-		var children = this.children as Array<ServerGroup>;
+	public updateGroup(child: ConnectionGroup): void {
+		var children = this.children as Array<ConnectionGroup>;
 		var index = children.indexOf(child);
 		if (index !== -1) {
 			this.children[index] = child;
 		}
 	}
 
-	public removeServerFromGroup(child: Server): void {
+	public removeServerFromGroup(child: Connection): void {
 		var connections = this.children;
 		connections.forEach((val, i) => {
 			if (val.equals(child)) {
@@ -221,7 +221,7 @@ export class ServerGroup implements IConnection {
 		}
 	}
 
-	public getParent(): ServerGroup {
+	public getParent(): ConnectionGroup {
 		return this.parent;
 	}
 }
@@ -229,39 +229,39 @@ export class ServerGroup implements IConnection {
 export class ServerTreeDataSource implements IDataSource {
 
 	public getId(tree: ITree, element: any): string {
-		if (element instanceof Server) {
-			return (<Server>element).getId();
+		if (element instanceof Connection) {
+			return (<Connection>element).getId();
 		}
-		else if (element instanceof ServerGroup) {
-			return (<ServerGroup>element).getId();
+		else if (element instanceof ConnectionGroup) {
+			return (<ConnectionGroup>element).getId();
 		}
 	}
 
 	public hasChildren(tree: ITree, element: any): boolean {
-		if (element instanceof Server) {
+		if (element instanceof Connection) {
 			return false;
 		}
-		else if (element instanceof ServerGroup) {
+		else if (element instanceof ConnectionGroup) {
 			return element.getChildren() ? true : false;
 		}
 		return false;
 	}
 
 	public getChildren(tree: ITree, element: any): TPromise<any> {
-		if (element instanceof Server) {
+		if (element instanceof Connection) {
 			return TPromise.as(null);
 		}
-		else if (element instanceof ServerGroup) {
-			return TPromise.as((<ServerGroup>element).getChildren());
+		else if (element instanceof ConnectionGroup) {
+			return TPromise.as((<ConnectionGroup>element).getChildren());
 		}
 	}
 
 	public getParent(tree: ITree, element: any): TPromise<any> {
-		if (element instanceof Server) {
-			return TPromise.as((<Server>element).getParent());
+		if (element instanceof Connection) {
+			return TPromise.as((<Connection>element).getParent());
 		}
-		else if (element instanceof ServerGroup) {
-			return TPromise.as((<ServerGroup>element).getParent());
+		else if (element instanceof ConnectionGroup) {
+			return TPromise.as((<ConnectionGroup>element).getParent());
 		}
 	}
 }
@@ -269,20 +269,20 @@ export class ServerTreeDataSource implements IDataSource {
 export class ServerTreeDragAndDrop implements IDragAndDrop {
 
 	public getDragURI(tree: ITree, element: any): string {
-		if (element instanceof Server) {
-			return (<Server>element).getId();
+		if (element instanceof Connection) {
+			return (<Connection>element).getId();
 		}
-		else if (element instanceof ServerGroup) {
-			return (<ServerGroup>element).getId();
+		else if (element instanceof ConnectionGroup) {
+			return (<ConnectionGroup>element).getId();
 		}
 	}
 
 	public getDragLabel(tree: ITree, elements: any[]): string {
-		if (elements[0] instanceof Server) {
-			return (<Server>elements[0]).getName();
+		if (elements[0] instanceof Connection) {
+			return (<Connection>elements[0]).getName();
 		}
-		else if (elements[0] instanceof ServerGroup) {
-			return (<ServerGroup>elements[0]).getName();
+		else if (elements[0] instanceof ConnectionGroup) {
+			return (<ConnectionGroup>elements[0]).getName();
 		}
 	}
 
@@ -292,38 +292,38 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	}
 
 	public onDragOver(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): IDragOverReaction {
-		if (targetElement instanceof Server || targetElement instanceof ServerGroup) {
+		if (targetElement instanceof Connection || targetElement instanceof ConnectionGroup) {
 			return DRAG_OVER_ACCEPT_BUBBLE_DOWN;
 		}
 		return DRAG_OVER_REJECT;
 	}
 
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
-		var targetServerGroup;
-		if (targetElement instanceof Server) {
-			targetServerGroup = (<Server>targetElement).getParent();
+		var targetConnectionGroup;
+		if (targetElement instanceof Connection) {
+			targetConnectionGroup = (<Connection>targetElement).getParent();
 		}
 		else {
-			targetServerGroup = <ServerGroup>targetElement;
+			targetConnectionGroup = <ConnectionGroup>targetElement;
 		}
-		const source: Server = data.getData()[0];
+		const source: Connection = data.getData()[0];
 		var oldParent = source.getParent();
-		if (targetServerGroup !== null && targetServerGroup.getName() !== 'root' && oldParent) {
+		if (targetConnectionGroup !== null && targetConnectionGroup.getName() !== 'root' && oldParent) {
 
 			// let promise: TPromise<void> = TPromise.as(null);
-			console.log('drop ' + source.getName() + ' to ' + targetServerGroup.getName());
+			console.log('drop ' + source.getName() + ' to ' + targetConnectionGroup.getName());
 
-			var root: ServerGroup = tree.getInput();
+			var root: ConnectionGroup = tree.getInput();
 
 			oldParent.removeServerFromGroup(source);
-			targetServerGroup.addServerToGroup(source);
+			targetConnectionGroup.addServerToGroup(source);
 			root.updateGroup(oldParent);
-			root.updateGroup(targetServerGroup);
-			const treeInput = new ServerGroup('root', 'root', '', '', root.getChildren());
+			root.updateGroup(targetConnectionGroup);
+			const treeInput = new ConnectionGroup('root', 'root', '', '', root.getChildren());
 			if (treeInput !== tree.getInput()) {
 				tree.setInput(treeInput).done(() => {
 					tree.getFocus();
-					tree.expandAll([targetServerGroup, oldParent]).done(() => {});
+					tree.expandAll([targetConnectionGroup, oldParent]).done(() => {});
 				}, errors.onUnexpectedError);
 			} else {
 				tree.refresh(root).done(() => {
@@ -337,7 +337,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 
 export class AddServerToGroupAction extends Action {
 	public static ID = 'registeredServers.addServer';
-	public static LABEL = nls.localize('addServer', "Add Server");
+	public static LABEL = nls.localize('addServer', "Add Connection");
 	constructor(
 		id: string,
 		label: string
@@ -345,9 +345,9 @@ export class AddServerToGroupAction extends Action {
 		super(id, label);
 	}
 
-	public run(element: ServerGroup): TPromise<boolean> {
+	public run(element: ConnectionGroup): TPromise<boolean> {
 		console.log('Action run');
-		element.addServerToGroup(new Server('7', 'Server name F', 'Server name F', 'OnPrem'));
+		element.addServerToGroup(new Connection('7', 'Connection name F', 'Connection name F', 'OnPrem'));
 		return TPromise.as(true);
 	}
 }

@@ -24,7 +24,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { DragMouseEvent, IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ServerTreeRenderer, ServerTreeDataSource, Server, ServerGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ServerTreeRenderer, ServerTreeDataSource, Connection, ConnectionGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { EditorStacksModel, EditorGroup } from 'vs/workbench/common/editor/editorStacksModel';
 import { keybindingForAction, SaveFileAction, RevertFileAction, SaveFileAsAction, OpenToSideAction, SelectResourceForCompareAction, CompareResourcesAction, SaveAllInGroupAction } from 'vs/workbench/parts/files/browser/fileActions';
 import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
@@ -39,15 +39,15 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	}
 
 	public hasActions(tree: ITree, element: any): boolean {
-		return element instanceof ServerGroup || (element instanceof Server);
+		return element instanceof ConnectionGroup || (element instanceof Connection);
 	}
 
 	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
-		if (element instanceof Server) {
+		if (element instanceof Connection) {
 			return TPromise.as(this.getServerActions());
 		}
-		if (element instanceof ServerGroup) {
-			return TPromise.as(this.getServerGroupActions());
+		if (element instanceof ConnectionGroup) {
+			return TPromise.as(this.getConnectionGroupActions());
 		}
 
 		return TPromise.as([]);
@@ -59,7 +59,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		];
 	}
 
-	public getServerGroupActions(): IAction[] {
+	public getConnectionGroupActions(): IAction[] {
 		return [
 			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
 		];
@@ -141,12 +141,12 @@ export class ServerTreeController extends treedefaults.DefaultController {
 		event.stopPropagation();
 
 		tree.setFocus(element);
-		var parent: ServerGroup = null;
-		if (element instanceof ServerGroup) {
-			parent = <ServerGroup>element;
+		var parent: ConnectionGroup = null;
+		if (element instanceof ConnectionGroup) {
+			parent = <ConnectionGroup>element;
 		}
-		else if (element instanceof Server) {
-			parent = (<Server>element).parent;
+		else if (element instanceof Connection) {
+			parent = (<Connection>element).parent;
 		}
 		//const group = element instanceof EditorGroup ? element : (<OpenEditor>element).editorGroup;
 		//const editor = element instanceof OpenEditor ? (<OpenEditor>element).editorInput : undefined;

@@ -12,7 +12,7 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
-import { ServerTreeRenderer, ServerTreeDataSource, Server, ServerGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ServerTreeRenderer, ServerTreeDataSource, Connection, ConnectionGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/electron-browser/serverTreeController';
 import { DefaultController, DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
@@ -70,16 +70,16 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		this.structuralTreeUpdate();
 	}
 
-	private getServerGroups(): [ServerGroup] {
+	private getConnectionGroups(): [ConnectionGroup] {
 		// Stub method to generate input
-		var s3 = new Server('3', 'Server name B', 'Server name B','Azure');
+		var s3 = new Connection('3', 'Server name B', 'Server name B','Azure');
 
-		var s5 = new Server('5', 'Server name D', 'Server name D', 'Azure');
-		var s6 = new Server('6', 'Server name E', 'Server name E', 'OnPrem');
-		var s7 = new Server('7', 'Server name F', 'Server name F', 'OnPrem');
-		var s8 = new ServerGroup('8', 'Server Group G','Server name G', 'OnPrem' , [s7]);
-		var s2 = new ServerGroup('2', 'Server Group A','Server name A', 'OnPrem', [s3, s8]);
-		var s4 = new ServerGroup('4', 'Server Group C', 'Server name C', 'Azure', [s5, s6]);
+		var s5 = new Connection('5', 'Server name D', 'Server name D', 'Azure');
+		var s6 = new Connection('6', 'Server name E', 'Server name E', 'OnPrem');
+		var s7 = new Connection('7', 'Server name F', 'Server name F', 'OnPrem');
+		var s8 = new ConnectionGroup('8', 'Server Group G','Server name G', 'OnPrem' , [s7]);
+		var s2 = new ConnectionGroup('2', 'Server Group A','Server name A', 'OnPrem', [s3, s8]);
+		var s4 = new ConnectionGroup('4', 'Server Group C', 'Server name C', 'Azure', [s5, s6]);
 		console.log('get data');
 		return [s2, s4 ];
 	}
@@ -97,7 +97,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		}
 	}
 
-	private openDatabase(server: Server): void {
+	private openDatabase(server: Connection): void {
 		// let connection = {
 		// 	serverName: server.name,
 		// 	databaseName: server.name,
@@ -111,8 +111,8 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		const self = this;
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
 		this.fullRefreshNeeded = true;
-		var root = new ServerGroup('root', 'root', '', '', this.getServerGroups());
-		//var serverModel = this.instantiationService.createInstance(ServerTreeModel, false, this.getServerGroups());
+		var root = new ConnectionGroup('root', 'root', '', '', this.getConnectionGroups());
+		//var serverModel = this.instantiationService.createInstance(ServerTreeModel, false, this.getConnectionGroups());
 		const treeInput= root;
 		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh(root)).done(() => {
 			self.fullRefreshNeeded = false;
