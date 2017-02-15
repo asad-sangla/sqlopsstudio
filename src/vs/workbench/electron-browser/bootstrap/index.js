@@ -9,10 +9,33 @@
 
 /*global window,document,define*/
 
+// Set globals used by vs
 const path = require('path');
 const electron = require('electron');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
+
+// Set globals needed by slickgrid and angular
+const _ = require('underscore')._;
+const jQuery = require('jquery');
+jQuery.fn.drag = require('jquery.event.drag');
+
+// Require modules that define their own globals
+require('reflect-metadata');
+require('zone.js');
+
+// Require slickgrid
+require('slickgrid/slick.core');
+const Slick = window.Slick;
+require('slickgrid/slick.grid');
+require('slickgrid/slick.editors');
+
+// Set temporary globals for angular relative path fix
+// TODO make it so these don't need to be globals
+const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
+const AngularCore = require('@angular/core');
+const AngularPlatformBrowser = require('@angular/platform-browser');
+
 
 function onError(error, enableDeveloperTools) {
 	if (enableDeveloperTools) {
@@ -45,7 +68,6 @@ function createScript(src, onload) {
 	const script = document.createElement('script');
 	script.src = src;
 	script.addEventListener('load', onload);
-
 	const head = document.getElementsByTagName('head')[0];
 	head.insertBefore(script, head.lastChild);
 }
@@ -146,7 +168,8 @@ function main() {
 	}
 
 	// Load the loader and start loading the workbench
-	const rootUrl = uriFromPath(configuration.appRoot) + '/out';
+	const appRoot = uriFromPath(configuration.appRoot);
+	const rootUrl = appRoot + '/out';
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation
@@ -159,6 +182,14 @@ function main() {
 		require.config({
 			baseUrl: rootUrl,
 			'vs/nls': nlsConfig,
+			paths: {
+				bootstrapUi: '../node_modules/bootstrap/dist/js/bootstrap',
+			},
+			shim: {
+				'bootstrapUi': {
+					deps: ['jquery']
+				}
+			},
 			recordStats: !!configuration.performance,
 			nodeCachedDataDir: configuration.nodeCachedDataDir,
 			onNodeCachedDataError: function (err) { nodeCachedDataErrors.push(err) },
@@ -194,8 +225,9 @@ function main() {
 				}, function (error) {
 					onError(error, enableDeveloperTools);
 				});
+			});
 		});
-	});
+
 }
 
 main();

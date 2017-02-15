@@ -10,17 +10,57 @@ declare module 'vscode' {
 	 */
 	export const version: string;
 
-	export interface DataConnection {
-		name: string;
-		displayName: string;
+	export interface ConnectionInfo {
+		serverName: string;
+
+		databaseName: string;
+
+		userName: string;
+
+		password: string;
 	}
 
-	export interface IConnectionProvider {
-		$provideConnections(): Thenable<DataConnection>;
+	export interface ConnectionInfoSummary {
+		/**
+		 * URI identifying the owner of the connection
+		 */
+		ownerUri: string;
+
+		/**
+		 * connection id returned from service host.
+		 */
+		connectionId: string;
+
+		/**
+		 * any diagnostic messages return from the service host.
+		 */
+		messages: string;
+
+		/**
+		 * Error message returned from the engine, if any.
+		 */
+		errorMessage: string;
+
+		/**
+		 * Error number returned from the engine, if any.
+		 */
+		errorNumber: number;
+	}
+
+	export interface ConnectionProvider {
+		handle: number;
+
+		connect(connectionUri: string, connectionInfo: ConnectionInfo): Thenable<boolean>;
+
+		disconnect(connectionUri: string): Thenable<boolean>;
+
+		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any);
+
+		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);
 	}
 
 	export namespace connections {
-		export function registerConnectionProvider(provider: IConnectionProvider): Disposable;
+		export function registerConnectionProvider(provider: ConnectionProvider): Disposable;
 	}
 
 	/**

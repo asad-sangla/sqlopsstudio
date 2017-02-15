@@ -41,6 +41,12 @@ import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 
+import { SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
+
+import { NgModule } from '@angular/core';
+
+import { DataGrid } from 'sql/parts/grid/dataGrid';
+
 export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareEditorVisible', false);
 
 export class QueryEditor extends BaseEditor {
@@ -76,6 +82,13 @@ export class QueryEditor extends BaseEditor {
 		let label = append(root, $('span.license.clickable'));
 		label.textContent = 'Query Editor';
 		label.style.display = 'block';
+
+		this.testGridSetup(root);
+	}
+
+	testGridSetup(root: HTMLElement): void {
+		append(root, $('slickgrid-container'));
+		DataGrid.initModules();
 	}
 
 	layout(): void {

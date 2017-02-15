@@ -15,11 +15,16 @@ import { ExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/node/e
 import { ViewletRegistry, Extensions as ViewletExtensions, ViewletDescriptor, ToggleViewletAction } from 'vs/workbench/browser/viewlet';
 import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/workbench/common/actionRegistry';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
-import { VIEWLET_ID } from 'sql/parts/connection/common/registeredServers';
+import { VIEWLET_ID, IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { IKeybindings } from 'vs/platform/keybinding/common/keybinding';
+
+import { CommandsRegistry } from 'vs/platform/commands/common/commands';
+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import * as errors from 'vs/base/common/errors';
+
 
 // Singletons
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService);
@@ -27,9 +32,9 @@ registerSingleton(IExtensionTipsService, ExtensionTipsService);
 registerSingleton(IExtensionsWorkbenchService, ExtensionsWorkbenchService);
 
 // Viewlet Action
-export class OpenRegisteredServersViewletAction extends ToggleViewletAction {
+export class OpenConnectionsViewletAction extends ToggleViewletAction {
 	public static ID = VIEWLET_ID;
-	public static LABEL = "Show Registered Servers";
+	public static LABEL = "Show Connections";
 
 	constructor(
 		id: string,
@@ -50,7 +55,7 @@ const viewletDescriptor = new ViewletDescriptor(
 	'sql/parts/connection/electron-browser/connectionViewlet',
 	'ConnectionViewlet',
 	VIEWLET_ID,
-	"Registered Servers",
+	"Connections",
 	'extensions',
 	0
 );
@@ -62,10 +67,16 @@ Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).setDefaultViewletId(VIE
 const registry = Registry.as<IWorkbenchActionRegistry>(ActionExtensions.WorkbenchActions);
 registry.registerWorkbenchAction(
 	new SyncActionDescriptor(
-		OpenRegisteredServersViewletAction,
-		OpenRegisteredServersViewletAction.ID,
-		OpenRegisteredServersViewletAction.LABEL,
+		OpenConnectionsViewletAction,
+		OpenConnectionsViewletAction.ID,
+		OpenConnectionsViewletAction.LABEL,
 		openViewletKb),
-	'View: Show Registered Servers',
+	'View: Show Connections',
 	localize('view', "View")
 );
+
+// Register Commands
+CommandsRegistry.registerCommand('_connection.newconnectionprofile', (accessor: ServicesAccessor) => {
+	// const registeredServersService = accessor.get(IRegisteredServersService);
+
+});

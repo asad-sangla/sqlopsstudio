@@ -16,7 +16,7 @@ import { ServerTreeRenderer, ServerTreeDataSource, Server, ServerGroup, ServerTr
 import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/electron-browser/serverTreeController';
 import { DefaultController, DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
-import { IRegisteredServersService } from 'sql/parts/connection/common/registeredServers';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
@@ -28,7 +28,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	private viewletState: TreeExplorerViewletState;
 
 	constructor(actionRunner: IActionRunner, settings: any,
-		@IRegisteredServersService private registeredServersService: IRegisteredServersService,
+		@IConnectionManagementService private registeredServersService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
@@ -94,8 +94,14 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		}
 	}
 
-	private openDatabase(connection: Server): void {
-		this.registeredServersService.open(connection, false).done(null, err => this.onError(err));
+	private openDatabase(server: Server): void {
+		// let connection = {
+		// 	serverName: server.name,
+		// 	databaseName: server.name,
+		// 	userName: '',
+		// 	password: ''
+		// };
+		// this.registeredServersService.open(connection, false).done(null, err => this.onError(err));
 	}
 
 	private structuralTreeUpdate(): void {

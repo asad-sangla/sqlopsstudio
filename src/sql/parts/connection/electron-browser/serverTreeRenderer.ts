@@ -11,7 +11,7 @@ import { Action } from 'vs/base/common/actions';
 import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
-import { IConnection } from 'sql/parts/connection/common/registeredServers';
+import { IConnection } from 'sql/parts/connection/common/connectionManagement';
 const $ = dom.$;
 
 export class ServerTreeRenderer implements IRenderer {
@@ -95,7 +95,7 @@ interface IServerGroupTemplateData {
 	name: HTMLSpanElement;
 }
 
-export class Server implements IConnection {
+export class Server {
 
 	name: string;
 	displayName: string;

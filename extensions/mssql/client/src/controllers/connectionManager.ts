@@ -94,12 +94,6 @@ export default class ConnectionManager {
         }
 
         this._connectionUI = new ConnectionUI(this, this._connectionStore, prompter, this.vscodeWrapper);
-
-        if (this.client !== undefined) {
-            this.client.onNotification(ConnectionContracts.ConnectionChangedNotification.type, this.handleConnectionChangedNotification());
-            this.client.onNotification(ConnectionContracts.ConnectionCompleteNotification.type, this.handleConnectionCompleteNotification());
-            this.client.onNotification(LanguageServiceContracts.IntelliSenseReadyNotification.type, this.handleLanguageServiceUpdateNotification());
-        }
     }
 
     /**
@@ -187,34 +181,6 @@ export default class ConnectionManager {
         return this._connections[fileUri];
     }
 
-    /**
-     * Public for testing purposes only.
-     */
-    public handleLanguageServiceUpdateNotification(): NotificationHandler<LanguageServiceContracts.IntelliSenseReadyParams> {
-        // Using a lambda here to perform variable capture on the 'this' reference
-        const self = this;
-        return (event: LanguageServiceContracts.IntelliSenseReadyParams): void => {
-            self._statusView.languageServiceStatusChanged(event.ownerUri, Constants.intelliSenseUpdatedStatus);
-            let connection = self.getConnectionInfo(event.ownerUri);
-            if (connection !== undefined) {
-                connection.intelliSenseTimer.end();
-                let duration = connection.intelliSenseTimer.getDuration();
-                let numberOfCharacters: number = 0;
-                if (this.vscodeWrapper.activeTextEditor !== undefined
-                && this.vscodeWrapper.activeTextEditor.document !== undefined) {
-                    let document = this.vscodeWrapper.activeTextEditor.document;
-                    numberOfCharacters = document.getText().length;
-                }
-                Telemetry.sendTelemetryEvent('IntelliSenseActivated',
-                {
-                    isAzure: connection.serverInfo && connection.serverInfo.isCloud ? '1' : '0'},
-                {
-                    duration: duration,
-                    fileSize: numberOfCharacters
-                });
-            }
-        };
-    }
 
     /**
      * Public for testing purposes only.

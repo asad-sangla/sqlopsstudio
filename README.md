@@ -1,6 +1,6 @@
 # carbon Database Management Tool
 
-carbon is a multi-OS, multi-database management tool.
+Carbon is a multi-OS, multi-database management tool.
 
 ## Contributing
 If you are interested in fixing issues and contributing directly to the code base,

@@ -222,6 +222,11 @@ export class ThemeService implements IThemeService {
 			this.storageService.store(COLOR_THEME_PREF, themeId, StorageScope.GLOBAL);
 		}
 		let iconThemeId = this.storageService.get(ICON_THEME_PREF, StorageScope.GLOBAL, null);
+		if (!iconThemeId) {
+			themeId = 'PKief.material-icon-theme-material-icon-theme';
+			this.storageService.store(ICON_THEME_PREF, themeId, StorageScope.GLOBAL);
+		}
+
 		return Promise.join([
 			this.setColorTheme(themeId, false),
 			this.setFileIconTheme(iconThemeId, false)

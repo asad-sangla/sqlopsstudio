@@ -1,0 +1,75 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Theming */
+
+.vs-dark.monaco-shell .modal-content{
+	background-color: #252526;
+}
+
+.hc-black.monaco-shell .modal-content{
+	background-color: #000;
+}
+
+.monaco-shell .modal-content{
+	background-color: #F3F3F3;
+}
+
+.footer-table {
+	align-self: right;
+	border-spacing: 10px;
+}
+
+.footer-button {
+	padding-right:10px;
+	width: 100px;
+}
+
+.connection-label {
+	width: 100px;
+	padding-bottom: 5px;
+}
+
+.connection-auth-label {
+	padding-left: 30px;
+	width: 100px;
+	padding-bottom: 5px;
+}
+
+.connection-input {
+	padding-right:8px;
+	width: 200px;
+	padding-bottom: 5px;
+}
+
+.connection-auth-input {
+	padding-right:8px;
+	padding-left: 40px;
+	width: 150px;
+	padding-bottom: 5px;
+}
+.vs-dark.monaco-shell .connection-dialog-widget .input {
+	background-color: #3C3C3C;
+}
+
+.vs-dark.monaco-shell .connection-dialog-widget input:disabled {
+	background-color: #E1E1E1;
+}
+
+.connection-dialog-widget .select-box {
+	width: 400px;
+	border: none;
+	height: 25px;
+}
+
+.connection-dialog-widget .modal-title {
+	font-size: 15px;
+
+}
+
+.vs-dark.monaco-shell .connection-dialog-widget .select-box {
+	background: #3C3C3C;
+	color: #BBB;
+}

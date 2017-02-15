@@ -14,7 +14,7 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink, IConnectionProvider, DataConnection, connections
+		DocumentLink as VDocumentLink, ConnectionInfo, ConnectionInfoSummary, connections
 } from 'vscode';
 
 import {
@@ -34,7 +34,8 @@ import {
 		DocumentHighlight, DocumentHighlightKind,
 		SymbolInformation, SymbolKind,
 		CodeLens,
-		FormattingOptions, DocumentLink
+		FormattingOptions, DocumentLink,
+		ConnectionCompleteParams, IntelliSenseReadyParams
 } from 'dataprotocol-languageserver-types';
 
 
@@ -61,7 +62,9 @@ import {
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
 		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
-		ListConnectionRequest, ListConnectionParams
+		ConnectionRequest, ConnectParams,
+		DisconnectRequest, DisconnectParams,
+		ConnectionCompleteNotification, IntelliSenseReadyNotification
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -70,7 +73,7 @@ import * as p2c from './protocolConverter';
 import * as is from './utils/is';
 import * as electron from './utils/electron';
 import { terminate } from './utils/processes';
-import { Delayer } from './utils/async'
+import { Delayer } from './utils/async';
 
 export {
 	RequestType, NotificationType, NotificationHandler, RequestHandler,
@@ -82,14 +85,6 @@ export {
 
 declare var v8debug;
 
-
-class ConnectionProvider implements IConnectionProvider {
-    $provideConnections(): Thenable<DataConnection> {
-        return new Promise(() => {
-            return undefined;
-        });
-    }
-}
 
 interface IConnection {
 
@@ -1264,23 +1259,53 @@ export class LanguageClient {
 	private hookConnectionProvider(connection: IConnection): void {
 		let self = this;
 		this._providers.push(connections.registerConnectionProvider({
-			$provideConnections(): Thenable<DataConnection> {
+			handle: -1,
 
-				let conn = {
-					connectionInfo: {
-						serverName: "server name",
-    					databaseName: "database name"
-					}
-				};
-
-				return self.doSendRequest(connection, ListConnectionRequest.type, conn, undefined).then(
-					self._p2c.asDataConnection,
+			connect(connUri: string, connInfo: ConnectionInfo): Thenable<boolean> {
+				return self.doSendRequest(connection, ConnectionRequest.type, self._c2p.asConnectionParams(connUri, connInfo), undefined).then(
+					(result) => {
+						return result;
+					},
 					(error) => {
-						this.logFailedRequest(ListConnectionRequest.type, error);
+						this.logFailedRequest(ConnectionRequest.type, error);
 						return Promise.resolve([]);
 					}
 				);
+			},
+			disconnect(connUri: string): Thenable<boolean> {
+				let params: DisconnectParams = {
+					ownerUri: connUri
+				};
+
+				return self.doSendRequest(connection, DisconnectRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						this.logFailedRequest(DisconnectRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any) {
+				connection.onNotification(ConnectionCompleteNotification.type, (params: ConnectionCompleteParams) => {
+					handler({
+						ownerUri: params.ownerUri,
+						connectionId: params.connectionId,
+						messages: params.messages,
+						errorMessage: params.errorMessage,
+						errorNumber: params.errorNumber
+					});
+				});
+			},
+
+			registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any) {
+				connection.onNotification(IntelliSenseReadyNotification.type, (params: IntelliSenseReadyParams) => {
+					handler(params.ownerUri);
+				});
 			}
+
 		}));
 	}
 
@@ -1567,7 +1592,7 @@ export class LanguageClient {
 						this.logFailedRequest(RenameRequest.type, error);
 						Promise.resolve(new Error(error.message));
 					}
-				)
+				);
 			}
 		}));
 	}
@@ -1584,7 +1609,7 @@ export class LanguageClient {
 						this.logFailedRequest(DocumentLinkRequest.type, error);
 						Promise.resolve(new Error(error.message));
 					}
-				)
+				);
 			},
 			resolveDocumentLink: this._capabilites.documentLinkProvider.resolveProvider
 				? (link: VDocumentLink, token: CancellationToken): Thenable<VDocumentLink> => {
@@ -1594,7 +1619,7 @@ export class LanguageClient {
 							this.logFailedRequest(DocumentLinkResolveRequest.type, error);
 							Promise.resolve(new Error(error.message));
 						}
-					)
+					);
 				}
 				: undefined
 		}));

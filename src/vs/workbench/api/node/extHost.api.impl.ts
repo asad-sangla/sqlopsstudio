@@ -13,7 +13,6 @@ import * as errors from 'vs/base/common/errors';
 import product from 'vs/platform/product';
 import pkg from 'vs/platform/package';
 import { ExtHostFileSystemEventService } from 'vs/workbench/api/node/extHostFileSystemEventService';
-import { ExtHostDataManagement } from 'vs/workbench/api/node/extHostDataManagement';
 import { ExtHostDocuments } from 'vs/workbench/api/node/extHostDocuments';
 import { ExtHostDocumentSaveParticipant } from 'vs/workbench/api/node/extHostDocumentSaveParticipant';
 import { ExtHostConfiguration } from 'vs/workbench/api/node/extHostConfiguration';
@@ -45,6 +44,8 @@ import { realpath } from 'fs';
 import { MainContext, ExtHostContext, InstanceCollection, IInitData } from './extHost.protocol';
 import * as languageConfiguration from 'vs/editor/common/modes/languageConfiguration';
 
+import { ExtHostConnectionManagement } from 'sql/workbench/api/node/extHostConnectionManagement';
+
 export interface IExtensionApiFactory {
 	(extension: IExtensionDescription): typeof vscode;
 }
@@ -67,7 +68,7 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 	// Addressable instances
 	const col = new InstanceCollection();
 	const extHostHeapService = col.define(ExtHostContext.ExtHostHeapService).set<ExtHostHeapService>(new ExtHostHeapService());
-	const extHostDataManagement = col.define(ExtHostContext.ExtHostDataManagement).set<ExtHostDataManagement>(new ExtHostDataManagement(threadService));
+	const extHostConnectionManagement = col.define(ExtHostContext.ExtHostConnectionManagement).set<ExtHostConnectionManagement>(new ExtHostConnectionManagement(threadService));
 	const extHostDocuments = col.define(ExtHostContext.ExtHostDocuments).set<ExtHostDocuments>(new ExtHostDocuments(threadService));
 	const extHostDocumentSaveParticipant = col.define(ExtHostContext.ExtHostDocumentSaveParticipant).set<ExtHostDocumentSaveParticipant>(new ExtHostDocumentSaveParticipant(extHostDocuments, threadService.get(MainContext.MainThreadWorkspace)));
 	const extHostEditors = col.define(ExtHostContext.ExtHostEditors).set<ExtHostEditors>(new ExtHostEditors(threadService, extHostDocuments));
@@ -107,8 +108,17 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 
 		// namespace: connections
 		const connections: typeof vscode.connections = {
-			registerConnectionProvider(provider: vscode.IConnectionProvider): vscode.Disposable  {
-				return extHostDataManagement.$registerConnectionProvider(provider);
+			registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable  {
+
+				provider.registerOnConnectionComplete((connSummary: vscode.ConnectionInfoSummary) => {
+					extHostConnectionManagement.$onConnectComplete(provider.handle, connSummary.ownerUri);
+				});
+
+				provider.registerOnIntelliSenseCacheComplete((connectionUri: string) => {
+					extHostConnectionManagement.$onIntelliSenseCacheComplete(provider.handle, connectionUri);
+				});
+
+				return extHostConnectionManagement.$registerConnectionProvider(provider);
 			}
 		};
 
