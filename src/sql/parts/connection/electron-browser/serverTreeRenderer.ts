@@ -16,28 +16,28 @@ const $ = dom.$;
 
 export class ServerTreeRenderer implements IRenderer {
 
-	public static SERVER_HEIGHT = 62;
-	public static SERVER_GROUP_HEIGHT = 32;
-	private static SERVER_TEMPLATE_ID = 'server';
-	private static SERVER_GROUP_TEMPLATE_ID = 'servergroup';
+	public static CONNECTION_HEIGHT = 62;
+	public static CONNECTION_GROUP_HEIGHT = 32;
+	private static CONNECTION_TEMPLATE_ID = 'server';
+	private static CONNECTION_GROUP_TEMPLATE_ID = 'servergroup';
 
 	public getHeight(tree: ITree, element: any): number {
 		if (element instanceof ConnectionGroup) {
-			return ServerTreeRenderer.SERVER_GROUP_HEIGHT;
+			return ServerTreeRenderer.CONNECTION_GROUP_HEIGHT;
 		}
-		return ServerTreeRenderer.SERVER_HEIGHT;
+		return ServerTreeRenderer.CONNECTION_HEIGHT;
 	}
 
 	public getTemplateId(tree: ITree, element: any): string {
 		if (element instanceof ConnectionGroup) {
-			return ServerTreeRenderer.SERVER_GROUP_TEMPLATE_ID;
+			return ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID;
 		}
-		return ServerTreeRenderer.SERVER_TEMPLATE_ID;
+		return ServerTreeRenderer.CONNECTION_TEMPLATE_ID;
 	}
 
 	public renderTemplate(tree: ITree, templateId: string, container: HTMLElement): any {
 
-		if (templateId === ServerTreeRenderer.SERVER_TEMPLATE_ID) {
+		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
 			const serverTemplate: IServerTemplateData = Object.create(null);
 			serverTemplate.root = dom.append(container, $('.editor-group'));
 			serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
@@ -55,15 +55,15 @@ export class ServerTreeRenderer implements IRenderer {
 	}
 
 	public renderElement(tree: ITree, element: any, templateId: string, templateData: any): void {
-		if (templateId === ServerTreeRenderer.SERVER_TEMPLATE_ID) {
-			this.renderServer(tree, element, templateData);
+		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
+			this.renderConnection(tree, element, templateData);
 		}
 		else {
 			this.renderConnectionGroup(tree, element, templateData);
 		}
 	}
 
-	private renderServer(tree: ITree, server: Connection, templateData: IServerTemplateData): void {
+	private renderConnection(tree: ITree, server: Connection, templateData: IServerTemplateData): void {
 		templateData.name.textContent = server.getName();
 		templateData.info.textContent = 'server';
 		templateData.type.textContent = server.getType();
