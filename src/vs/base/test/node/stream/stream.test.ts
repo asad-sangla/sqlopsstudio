@@ -61,7 +61,7 @@ suite('Stream', () => {
 	test('readToMatchingString - ANSI', function (done: () => void) {
 		const file = require.toUrl('./fixtures/file.css');
 
-		stream.readToMatchingString(file, os.EOL , 10, 100, (error: Error, result: string) => {
+		stream.readToMatchingString(file, '\r\n' , 10, 100, (error: Error, result: string) => {
 			assert.equal(error, null);
 			assert.equal(result, '/*---------------------------------------------------------------------------------------------');
 
