@@ -83,7 +83,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		if (activeEditor !== undefined) {
 			uri = this.getActiveEditorInputResource().toString();
 		}
-		return undefined;
+		return uri;
 	}
 
 	private saveToSettings(connection: vscode.ConnectionInfo): boolean {
