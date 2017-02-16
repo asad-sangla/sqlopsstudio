@@ -23,7 +23,7 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { Keybinding, KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { asFileEditorInput } from 'vs/workbench/common/editor';
+import { toResource } from 'vs/workbench/common/editor';
 
 export function isSearchViewletFocussed(viewletService: IViewletService): boolean {
 	let activeViewlet = viewletService.getActiveViewlet();
@@ -31,8 +31,8 @@ export function isSearchViewletFocussed(viewletService: IViewletService): boolea
 	return activeViewlet && activeViewlet.getId() === Constants.VIEWLET_ID && activeElement && DOM.isAncestor(activeElement, (<SearchViewlet>activeViewlet).getContainer().getHTMLElement());
 }
 
-export function appendKeyBindingLabel(label: string, keyBinding: Keybinding, keyBindingService2: IKeybindingService): string
-export function appendKeyBindingLabel(label: string, keyBinding: number, keyBindingService2: IKeybindingService): string
+export function appendKeyBindingLabel(label: string, keyBinding: Keybinding, keyBindingService2: IKeybindingService): string;
+export function appendKeyBindingLabel(label: string, keyBinding: number, keyBindingService2: IKeybindingService): string;
 export function appendKeyBindingLabel(label: string, keyBinding: any, keyBindingService2: IKeybindingService): string {
 	keyBinding = typeof keyBinding === 'number' ? new Keybinding(keyBinding) : keyBinding;
 	return keyBinding ? label + ' (' + keyBindingService2.getLabelFor(keyBinding) + ')' : label;
@@ -266,6 +266,36 @@ export class ClearSearchResultsAction extends Action {
 	}
 }
 
+export class FocusNextSearchResultAction extends Action {
+	public static ID = 'search.action.focusNextSearchResult';
+	public static LABEL = nls.localize('FocusNextSearchResult.label', "Focus next search result");
+
+	constructor(id: string, label: string, @IViewletService private viewletService: IViewletService) {
+		super(id, label);
+	}
+
+	public run(): TPromise<any> {
+		return this.viewletService.openViewlet(Constants.VIEWLET_ID).then((searchViewlet: SearchViewlet) => {
+			searchViewlet.selectNextResult();
+		});
+	}
+}
+
+export class FocusPreviousSearchResultAction extends Action {
+	public static ID = 'search.action.focusPreviousSearchResult';
+	public static LABEL = nls.localize('FocusPreviousSearchResult.label', "Focus previous search result");
+
+	constructor(id: string, label: string, @IViewletService private viewletService: IViewletService) {
+		super(id, label);
+	}
+
+	public run(): TPromise<any> {
+		return this.viewletService.openViewlet(Constants.VIEWLET_ID).then((searchViewlet: SearchViewlet) => {
+			searchViewlet.selectPreviousResult();
+		});
+	}
+}
+
 export abstract class AbstractSearchAndReplaceAction extends Action {
 
 	/**
@@ -391,7 +421,7 @@ export class ReplaceAction extends AbstractSearchAndReplaceAction {
 			if (!elementToShowReplacePreview || this.hasToOpenFile()) {
 				this.viewlet.open(this.element, true);
 			} else {
-				this.replaceService.openReplacePreviewEditor(elementToShowReplacePreview, true);
+				this.replaceService.openReplacePreview(elementToShowReplacePreview, true);
 			}
 		});
 	}
@@ -439,9 +469,9 @@ export class ReplaceAction extends AbstractSearchAndReplaceAction {
 	}
 
 	private hasToOpenFile(): boolean {
-		const editorInput = asFileEditorInput(this.editorService.getActiveEditorInput());
-		if (editorInput) {
-			return editorInput.getResource().fsPath === this.element.parent().resource().fsPath;
+		const file = toResource(this.editorService.getActiveEditorInput(), { filter: 'file' });
+		if (file) {
+			return file.fsPath === this.element.parent().resource().fsPath;
 		}
 		return false;
 	}

@@ -29,7 +29,6 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IEventService } from 'vs/platform/event/common/event';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
 import { IMessageService } from 'vs/platform/message/common/message';
@@ -40,6 +39,12 @@ import { append, $, addClass, removeClass, finalHandler, join } from 'vs/base/br
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 
 import { QueryInput } from 'sql/parts/query/common/queryInput';
+
+import { SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
+
+import { NgModule } from '@angular/core';
+
+import { DataGrid } from 'sql/parts/grid/dataGrid';
 
 export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareEditorVisible', false);
 
@@ -54,7 +59,6 @@ export class QueryEditor extends BaseEditor {
 		@IStorageService storageService: IStorageService,
 		@IMessageService messageService: IMessageService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IEventService eventService: IEventService,
 		@IWorkbenchEditorService editorService: IWorkbenchEditorService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService
@@ -76,6 +80,13 @@ export class QueryEditor extends BaseEditor {
 		let label = append(root, $('span.license.clickable'));
 		label.textContent = 'Query Editor';
 		label.style.display = 'block';
+
+		this.testGridSetup(root);
+	}
+
+	testGridSetup(root: HTMLElement): void {
+		append(root, $('slickgrid-container'));
+		DataGrid.initModules();
 	}
 
 	layout(): void {

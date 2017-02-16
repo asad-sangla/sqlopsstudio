@@ -30,6 +30,7 @@ npmInstall('extensions'); // node modules shared by all extensions
 
 const extensions = [
 	'vscode-colorize-tests',
+	'git',
 	'json',
 	'mssql',
 	'configuration-editing',

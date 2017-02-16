@@ -12,8 +12,6 @@ import ProtocolCodeLens from './protocolCodeLens';
 
 export interface Converter {
 
-	asDataConnection(connInfo: ls.ConnectionInfo) : code.DataConnection;
-
 	asUri(value: string): code.Uri;
 
 	asDiagnostics(diagnostics: ls.Diagnostic[]): code.Diagnostic[];
@@ -75,6 +73,8 @@ export interface Converter {
 	asDocumentLink(item: ls.DocumentLink): code.DocumentLink;
 
 	asDocumentLinks(items: ls.DocumentLink[]): code.DocumentLink[];
+
+	asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary;
 }
 
 export interface URIConverter {
@@ -89,16 +89,6 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 
 	function asUri(value: string): code.Uri {
 		return _uriConverter(value);
-	}
-
-	function asDataConnection(item: ls.ConnectionInfo): code.DataConnection {
-			let result = {
-				name: '',
-				displayName: ''
-			};
-			set(item.databaseName, () => result.name = item.databaseName);
-			set(item.serverName, () => result.displayName = item.serverName);
-			return result;
 	}
 
 	function asDiagnostics(diagnostics: ls.Diagnostic[]): code.Diagnostic[] {
@@ -387,9 +377,19 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return items.map(asDocumentLink);
 	}
 
+	function asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary {
+		let connSummary: code.ConnectionInfoSummary = {
+			ownerUri: params.ownerUri,
+			connectionId: params.connectionId,
+			messages: params.messages,
+			errorMessage: params.errorMessage,
+			errorNumber: params.errorNumber
+		};
+		return connSummary;
+	}
+
 	return {
 		asUri,
-		asDataConnection,
 		asDiagnostics,
 		asDiagnostic,
 		asRange,
@@ -419,8 +419,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asCodeLenses,
 		asWorkspaceEdit,
 		asDocumentLink,
-		asDocumentLinks
-	}
+		asDocumentLinks,
+		asConnectionSummary
+	};
 }
 
 // This for backward compatibility since we exported the converter functions as API.

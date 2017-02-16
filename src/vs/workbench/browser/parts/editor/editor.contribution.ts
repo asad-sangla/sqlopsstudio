@@ -14,7 +14,7 @@ import { StatusbarItemDescriptor, StatusbarAlignment, IStatusbarRegistry, Extens
 import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { EditorInput, IEditorRegistry, Extensions as EditorExtensions, IEditorInputFactory, SideBySideEditorInput } from 'vs/workbench/common/editor';
 import { StringEditorInput } from 'vs/workbench/common/editor/stringEditorInput';
-import { StringEditor } from 'vs/workbench/browser/parts/editor/stringEditor';
+import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
 import { SideBySideEditor } from 'vs/workbench/browser/parts/editor/sideBySideEditor';
 import { DiffEditorInput } from 'vs/workbench/common/editor/diffEditorInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
@@ -22,6 +22,7 @@ import { ResourceEditorInput } from 'vs/workbench/common/editor/resourceEditorIn
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry';
 import { TextDiffEditor } from 'vs/workbench/browser/parts/editor/textDiffEditor';
+import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { BinaryResourceDiffEditor } from 'vs/workbench/browser/parts/editor/binaryDiffEditor';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
@@ -43,10 +44,10 @@ import * as editorCommands from 'vs/workbench/browser/parts/editor/editorCommand
 // Register String Editor
 Registry.as<IEditorRegistry>(EditorExtensions.Editors).registerEditor(
 	new EditorDescriptor(
-		StringEditor.ID,
+		TextResourceEditor.ID,
 		nls.localize('textEditor', "Text Editor"),
-		'vs/workbench/browser/parts/editor/stringEditor',
-		'StringEditor'
+		'vs/workbench/browser/parts/editor/textResourceEditor',
+		'TextResourceEditor'
 	),
 	[
 		new SyncDescriptor(StringEditorInput),
@@ -95,18 +96,24 @@ Registry.as<IEditorRegistry>(EditorExtensions.Editors).registerEditor(
 
 interface ISerializedUntitledEditorInput {
 	resource: string;
-}
-
-let untitledEditorServiceAccessor: UntitledEditorServiceAccessor;
-class UntitledEditorServiceAccessor {
-	constructor( @IUntitledEditorService public untitledEditorService: IUntitledEditorService) {
-	}
+	resourceJSON: any;
+	modeId: string;
 }
 
 // Register Editor Input Factory
 class UntitledEditorInputFactory implements IEditorInputFactory {
 
+	constructor(
+		@IUntitledEditorService private untitledEditorService: IUntitledEditorService,
+		@ITextFileService private textFileService: ITextFileService
+	) {
+	}
+
 	public serialize(editorInput: EditorInput): string {
+		if (!this.textFileService.isHotExitEnabled) {
+			return null; // never restore untitled unless hot exit is enabled
+		}
+
 		const untitledEditorInput = <UntitledEditorInput>editorInput;
 
 		let resource = untitledEditorInput.getResource();
@@ -114,7 +121,11 @@ class UntitledEditorInputFactory implements IEditorInputFactory {
 			resource = URI.file(resource.fsPath); // untitled with associated file path use the file schema
 		}
 
-		const serialized: ISerializedUntitledEditorInput = { resource: resource.toString() };
+		const serialized: ISerializedUntitledEditorInput = {
+			resource: resource.toString(), // Keep for backwards compatibility
+			resourceJSON: resource.toJSON(),
+			modeId: untitledEditorInput.getModeId()
+		};
 
 		return JSON.stringify(serialized);
 	}
@@ -122,11 +133,7 @@ class UntitledEditorInputFactory implements IEditorInputFactory {
 	public deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): EditorInput {
 		const deserialized: ISerializedUntitledEditorInput = JSON.parse(serializedEditorInput);
 
-		if (!untitledEditorServiceAccessor) {
-			untitledEditorServiceAccessor = instantiationService.createInstance(UntitledEditorServiceAccessor);
-		}
-
-		return untitledEditorServiceAccessor.untitledEditorService.createOrGet(URI.parse(deserialized.resource));
+		return this.untitledEditorService.createOrGet(!!deserialized.resourceJSON ? URI.revive(deserialized.resourceJSON) : URI.parse(deserialized.resource), deserialized.modeId);
 	}
 }
 
@@ -258,6 +265,16 @@ Registry.as<IQuickOpenRegistry>(QuickOpenExtensions.Quickopen).registerQuickOpen
 				prefix: NAVIGATE_IN_GROUP_ONE_PREFIX,
 				needsEditor: false,
 				description: nls.localize('groupOnePicker', "Show Editors in First Group")
+			},
+			{
+				prefix: NAVIGATE_IN_GROUP_TWO_PREFIX,
+				needsEditor: false,
+				description: nls.localize('groupTwoPicker', "Show Editors in Second Group")
+			},
+			{
+				prefix: NAVIGATE_IN_GROUP_THREE_PREFIX,
+				needsEditor: false,
+				description: nls.localize('groupThreePicker', "Show Editors in Third Group")
 			}
 		]
 	)
@@ -268,13 +285,7 @@ Registry.as<IQuickOpenRegistry>(QuickOpenExtensions.Quickopen).registerQuickOpen
 		'vs/workbench/browser/parts/editor/editorPicker',
 		'GroupTwoPicker',
 		NAVIGATE_IN_GROUP_TWO_PREFIX,
-		[
-			{
-				prefix: NAVIGATE_IN_GROUP_TWO_PREFIX,
-				needsEditor: false,
-				description: nls.localize('groupTwoPicker', "Show Editors in Second Group")
-			}
-		]
+		[]
 	)
 );
 
@@ -283,13 +294,7 @@ Registry.as<IQuickOpenRegistry>(QuickOpenExtensions.Quickopen).registerQuickOpen
 		'vs/workbench/browser/parts/editor/editorPicker',
 		'GroupThreePicker',
 		NAVIGATE_IN_GROUP_THREE_PREFIX,
-		[
-			{
-				prefix: NAVIGATE_IN_GROUP_THREE_PREFIX,
-				needsEditor: false,
-				description: nls.localize('groupThreePicker', "Show Editors in Third Group")
-			}
-		]
+		[]
 	)
 );
 
@@ -318,8 +323,8 @@ registry.registerWorkbenchAction(new SyncActionDescriptor(ShowAllEditorsAction, 
 registry.registerWorkbenchAction(new SyncActionDescriptor(ShowEditorsInGroupOneAction, ShowEditorsInGroupOneAction.ID, ShowEditorsInGroupOneAction.LABEL), 'View: Show Editors in First Group', category);
 registry.registerWorkbenchAction(new SyncActionDescriptor(ShowEditorsInGroupTwoAction, ShowEditorsInGroupTwoAction.ID, ShowEditorsInGroupTwoAction.LABEL), 'View: Show Editors in Second Group', category);
 registry.registerWorkbenchAction(new SyncActionDescriptor(ShowEditorsInGroupThreeAction, ShowEditorsInGroupThreeAction.ID, ShowEditorsInGroupThreeAction.LABEL), 'View: Show Editors in Third Group', category);
-registry.registerWorkbenchAction(new SyncActionDescriptor(OpenNextEditor, OpenNextEditor.ID, OpenNextEditor.LABEL, { primary: KeyMod.CtrlCmd | KeyCode.PageDown, mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.RightArrow } }), 'View: Open Next Editor', category);
-registry.registerWorkbenchAction(new SyncActionDescriptor(OpenPreviousEditor, OpenPreviousEditor.ID, OpenPreviousEditor.LABEL, { primary: KeyMod.CtrlCmd | KeyCode.PageUp, mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.LeftArrow } }), 'View: Open Previous Editor', category);
+registry.registerWorkbenchAction(new SyncActionDescriptor(OpenNextEditor, OpenNextEditor.ID, OpenNextEditor.LABEL, { primary: KeyMod.CtrlCmd | KeyCode.PageDown, mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.RightArrow, secondary: [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.US_CLOSE_SQUARE_BRACKET] } }), 'View: Open Next Editor', category);
+registry.registerWorkbenchAction(new SyncActionDescriptor(OpenPreviousEditor, OpenPreviousEditor.ID, OpenPreviousEditor.LABEL, { primary: KeyMod.CtrlCmd | KeyCode.PageUp, mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.LeftArrow, secondary: [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.US_OPEN_SQUARE_BRACKET] } }), 'View: Open Previous Editor', category);
 registry.registerWorkbenchAction(new SyncActionDescriptor(ReopenClosedEditorAction, ReopenClosedEditorAction.ID, ReopenClosedEditorAction.LABEL, { primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_T }), 'View: Reopen Closed Editor', category);
 registry.registerWorkbenchAction(new SyncActionDescriptor(KeepEditorAction, KeepEditorAction.ID, KeepEditorAction.LABEL, { primary: KeyChord(KeyMod.CtrlCmd | KeyCode.KEY_K, KeyCode.Enter) }), 'View: Keep Editor', category);
 registry.registerWorkbenchAction(new SyncActionDescriptor(CloseAllEditorsAction, CloseAllEditorsAction.ID, CloseAllEditorsAction.LABEL, { primary: KeyChord(KeyMod.CtrlCmd | KeyCode.KEY_K, KeyMod.CtrlCmd | KeyCode.KEY_W) }), 'View: Close All Editors', category);

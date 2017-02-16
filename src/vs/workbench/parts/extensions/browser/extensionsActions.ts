@@ -18,7 +18,7 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IExtension, ExtensionState, IExtensionsWorkbenchService, VIEWLET_ID, IExtensionsViewlet } from 'vs/workbench/parts/extensions/common/extensions';
 import { ExtensionsConfigurationInitialContent } from 'vs/workbench/parts/extensions/common/extensionsFileTemplate';
 import { LocalExtensionType, IExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionManagement';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { ToggleViewletAction } from 'vs/workbench/browser/viewlet';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
@@ -29,7 +29,7 @@ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 import { IWindowService } from 'vs/platform/windows/common/windows';
 import { IExtensionService, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 import URI from 'vs/base/common/uri';
-
+import { CommandsRegistry } from 'vs/platform/commands/common/commands';
 
 export class InstallAction extends Action {
 
@@ -282,7 +282,9 @@ export class DropDownMenuActionItem extends ActionItem {
 	private disposables: IDisposable[] = [];
 	private _extension: IExtension;
 
-	constructor(action: IAction, private menuActionGroups: IExtensionAction[][], private contextMenuService: IContextMenuService) {
+	constructor(action: IAction, private menuActionGroups: IExtensionAction[][],
+		@IContextMenuService private contextMenuService: IContextMenuService
+	) {
 		super(null, action, { icon: true, label: true });
 		for (const menuActions of menuActionGroups) {
 			this.disposables = [...this.disposables, ...menuActions];
@@ -311,12 +313,10 @@ export class DropDownMenuActionItem extends ActionItem {
 	}
 
 	private getActions(): IAction[] {
-		let actions = [];
-		for (const menuActions of this.menuActionGroups) {
-			const filtered = menuActions.filter(a => a.enabled);
-			if (filtered.length > 0) {
-				actions = [...actions, ...filtered, new Separator()];
-			}
+		let actions: IAction[] = [];
+		const menuActionGroups = this.menuActionGroups.filter(group => group.some(action => action.enabled));
+		for (const menuActions of menuActionGroups) {
+			actions = [...actions, ...menuActions, new Separator()];
 		}
 		return actions.length ? actions.slice(0, actions.length - 1) : actions;
 	}
@@ -327,21 +327,6 @@ export class DropDownMenuActionItem extends ActionItem {
 	}
 }
 
-export class ManageExtensionActionItem extends DropDownMenuActionItem {
-	constructor(
-		action: IAction,
-		@IInstantiationService instantiationService: IInstantiationService,
-		@IContextMenuService contextMenuService: IContextMenuService) {
-		super(action, [
-			[instantiationService.createInstance(EnableForWorkspaceAction, localize('enableForWorkspaceAction.label', "Enable (Workspace)")),
-			instantiationService.createInstance(EnableGloballyAction, localize('enableAlwaysAction.label', "Enable")),
-			instantiationService.createInstance(DisableForWorkspaceAction, localize('disableForWorkspaceAction.label', "Disable (Workspace)")),
-			instantiationService.createInstance(DisableGloballyAction, localize('disableAlwaysAction.label', "Disable"))],
-			[instantiationService.createInstance(UninstallAction)]
-		], contextMenuService);
-	}
-}
-
 export class ManageExtensionAction extends Action {
 
 	static ID = 'extensions.manage';
@@ -349,7 +334,7 @@ export class ManageExtensionAction extends Action {
 	private static Class = 'extension-action manage';
 	private static NoExtensionClass = `${ManageExtensionAction.Class} no-extension`;
 
-	private _actionItem: EnableActionItem;
+	private _actionItem: DropDownMenuActionItem;
 	get actionItem(): IActionItem { return this._actionItem; }
 
 	private disposables: IDisposable[] = [];
@@ -365,7 +350,19 @@ export class ManageExtensionAction extends Action {
 	) {
 		super(ManageExtensionAction.ID);
 
-		this._actionItem = this.instantiationService.createInstance(ManageExtensionActionItem, this);
+		this._actionItem = this.instantiationService.createInstance(DropDownMenuActionItem, this, [
+			[
+				instantiationService.createInstance(EnableForWorkspaceAction, localize('enableForWorkspaceAction.label', "Enable (Workspace)")),
+				instantiationService.createInstance(EnableGloballyAction, localize('enableAlwaysAction.label', "Enable (Always)"))
+			],
+			[
+				instantiationService.createInstance(DisableForWorkspaceAction, localize('disableForWorkspaceAction.label', "Disable (Workspace)")),
+				instantiationService.createInstance(DisableGloballyAction, localize('disableAlwaysAction.label', "Disable (Always)"))
+			],
+			[
+				instantiationService.createInstance(UninstallAction)
+			]
+		]);
 		this.disposables.push(this._actionItem);
 
 		this.disposables.push(this.extensionsWorkbenchService.onChange(() => this.update()));
@@ -482,7 +479,7 @@ export class EnableAction extends Action {
 
 	private disposables: IDisposable[] = [];
 
-	private _actionItem: EnableActionItem;
+	private _actionItem: DropDownMenuActionItem;
 	get actionItem(): IActionItem { return this._actionItem; }
 
 	private _extension: IExtension;
@@ -497,7 +494,12 @@ export class EnableAction extends Action {
 	) {
 		super(EnableAction.ID, localize('enableAction', "Enable"), EnableAction.DisabledClass, false);
 
-		this._actionItem = this.instantiationService.createInstance(EnableActionItem, this);
+		this._actionItem = this.instantiationService.createInstance(DropDownMenuActionItem, this, [
+			[
+				instantiationService.createInstance(EnableForWorkspaceAction, EnableForWorkspaceAction.LABEL),
+				instantiationService.createInstance(EnableGloballyAction, EnableGloballyAction.LABEL)
+			]
+		]);
 		this.disposables.push(this._actionItem);
 
 		this.disposables.push(this.extensionsWorkbenchService.onChange(() => this.update()));
@@ -551,7 +553,7 @@ export class DisableForWorkspaceAction extends Action implements IExtensionActio
 
 	private update(): void {
 		this.enabled = false;
-		if (this.extension && this.workspaceContextService.getWorkspace()) {
+		if (this.extension && this.workspaceContextService.hasWorkspace()) {
 			this.enabled = this.extension.type !== LocalExtensionType.System && !this.extension.disabledGlobally && !this.extension.disabledForWorkspace;
 		}
 	}
@@ -612,7 +614,7 @@ export class DisableAction extends Action {
 	private static DisabledClass = `${DisableAction.EnabledClass} disabled`;
 
 	private disposables: IDisposable[] = [];
-	private _actionItem: DisableActionItem;
+	private _actionItem: DropDownMenuActionItem;
 	get actionItem(): IActionItem { return this._actionItem; }
 
 	private _extension: IExtension;
@@ -625,7 +627,12 @@ export class DisableAction extends Action {
 		@IExtensionsWorkbenchService private extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
 		super(DisableAction.ID, localize('disableAction', "Disable"), DisableAction.DisabledClass, false);
-		this._actionItem = this.instantiationService.createInstance(DisableActionItem, this);
+		this._actionItem = this.instantiationService.createInstance(DropDownMenuActionItem, this, [
+			[
+				instantiationService.createInstance(DisableForWorkspaceAction, DisableForWorkspaceAction.LABEL),
+				instantiationService.createInstance(DisableGloballyAction, DisableGloballyAction.LABEL)
+			]
+		]);
 		this.disposables.push(this._actionItem);
 
 		this.disposables.push(this.extensionsWorkbenchService.onChange(() => this.update()));
@@ -651,24 +658,6 @@ export class DisableAction extends Action {
 	dispose(): void {
 		super.dispose();
 		this.disposables = dispose(this.disposables);
-	}
-}
-
-export class EnableActionItem extends DropDownMenuActionItem {
-	constructor(
-		action: IAction,
-		@IInstantiationService instantiationService: IInstantiationService,
-		@IContextMenuService contextMenuService: IContextMenuService) {
-		super(action, [[instantiationService.createInstance(EnableForWorkspaceAction, EnableForWorkspaceAction.LABEL), instantiationService.createInstance(EnableGloballyAction, EnableGloballyAction.LABEL)]], contextMenuService);
-	}
-}
-
-export class DisableActionItem extends DropDownMenuActionItem {
-	constructor(
-		action: IAction,
-		@IInstantiationService instantiationService: IInstantiationService,
-		@IContextMenuService contextMenuService: IContextMenuService) {
-		super(action, [[instantiationService.createInstance(DisableForWorkspaceAction, DisableForWorkspaceAction.LABEL), instantiationService.createInstance(DisableGloballyAction, DisableGloballyAction.LABEL)]], contextMenuService);
 	}
 }
 
@@ -1012,7 +1001,7 @@ export class ShowWorkspaceRecommendedExtensionsAction extends Action {
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IViewletService private viewletService: IViewletService
 	) {
-		super(id, label, null, !!contextService.getWorkspace());
+		super(id, label, null, contextService.hasWorkspace());
 	}
 
 	run(): TPromise<void> {
@@ -1115,7 +1104,7 @@ export class ConfigureWorkspaceRecommendedExtensionsAction extends Action {
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
 		@IMessageService private messageService: IMessageService
 	) {
-		super(id, label, null, !!contextService.getWorkspace());
+		super(id, label, null, contextService.hasWorkspace());
 	}
 
 	public run(event: any): TPromise<any> {
@@ -1123,7 +1112,7 @@ export class ConfigureWorkspaceRecommendedExtensionsAction extends Action {
 	}
 
 	private openExtensionsFile(): TPromise<any> {
-		if (!this.contextService.getWorkspace()) {
+		if (!this.contextService.hasWorkspace()) {
 			this.messageService.show(severity.Info, localize('ConfigureWorkspaceRecommendations.noWorkspace', 'Recommendations are only available on a workspace folder.'));
 			return TPromise.as(undefined);
 		}
@@ -1227,7 +1216,7 @@ export class DisableAllWorkpsaceAction extends Action {
 	}
 
 	private update(): void {
-		this.enabled = !!this.workspaceContextService.getWorkspace() && this.extensionsWorkbenchService.local.some(e => e.type === LocalExtensionType.User && !e.disabledForWorkspace && !e.disabledGlobally);
+		this.enabled = this.workspaceContextService.hasWorkspace() && this.extensionsWorkbenchService.local.some(e => e.type === LocalExtensionType.User && !e.disabledForWorkspace && !e.disabledGlobally);
 	}
 
 	run(): TPromise<any> {
@@ -1290,7 +1279,7 @@ export class EnableAllWorkpsaceAction extends Action {
 	}
 
 	private update(): void {
-		this.enabled = !!this.workspaceContextService.getWorkspace() && this.extensionsWorkbenchService.local.some(e => this.extensionEnablementService.canEnable(e.identifier) && !e.disabledGlobally && e.disabledForWorkspace);
+		this.enabled = this.workspaceContextService.hasWorkspace() && this.extensionsWorkbenchService.local.some(e => this.extensionEnablementService.canEnable(e.identifier) && !e.disabledGlobally && e.disabledForWorkspace);
 	}
 
 	run(): TPromise<any> {
@@ -1302,3 +1291,14 @@ export class EnableAllWorkpsaceAction extends Action {
 		this.disposables = dispose(this.disposables);
 	}
 }
+
+CommandsRegistry.registerCommand('workbench.extensions.action.showLanguageExtensions', function (accessor: ServicesAccessor, fileExtension: string) {
+	const viewletService = accessor.get(IViewletService);
+
+	return viewletService.openViewlet(VIEWLET_ID, true)
+		.then(viewlet => viewlet as IExtensionsViewlet)
+		.then(viewlet => {
+			viewlet.search(`ext:${fileExtension.replace(/^\./, '')}`);
+			viewlet.focus();
+		});
+});

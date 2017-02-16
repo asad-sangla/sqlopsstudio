@@ -10,7 +10,7 @@ import { isFullWidthCharacter, removeAnsiEscapeCodes, endsWith } from 'vs/base/c
 import uri from 'vs/base/common/uri';
 import { isMacintosh } from 'vs/base/common/platform';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { IActionItem, Separator } from 'vs/base/browser/ui/actionbar/actionbar';
+import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import * as dom from 'vs/base/browser/dom';
 import * as errors from 'vs/base/common/errors';
 import severity from 'vs/base/common/severity';
@@ -18,16 +18,12 @@ import { IMouseEvent, StandardMouseEvent } from 'vs/base/browser/mouseEvent';
 import { ITree, IAccessibilityProvider, IDataSource, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { IActionProvider } from 'vs/base/parts/tree/browser/actionsRenderer';
 import { ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
-import { IExpressionContainer, IExpression, IDebugService } from 'vs/workbench/parts/debug/common/debug';
+import { IExpressionContainer, IExpression } from 'vs/workbench/parts/debug/common/debug';
 import { Model, OutputNameValueElement, Expression, OutputElement, Variable } from 'vs/workbench/parts/debug/common/debugModel';
 import { renderVariable, renderExpressionValue, IVariableTemplateData, BaseDebugController } from 'vs/workbench/parts/debug/electron-browser/debugViewer';
-import { AddToWatchExpressionsAction, ClearReplAction } from 'vs/workbench/parts/debug/browser/debugActions';
+import { ClearReplAction } from 'vs/workbench/parts/debug/browser/debugActions';
 import { CopyAction } from 'vs/workbench/parts/debug/electron-browser/electronDebugActions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { MenuId, IMenuService } from 'vs/platform/actions/common/actions';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 
 const $ = dom.$;
@@ -111,6 +107,13 @@ export class ReplExpressionsRenderer implements IRenderer {
 	}
 
 	public getHeight(tree: ITree, element: any): number {
+		if (element instanceof Variable && (element.hasChildren || (element.name !== null))) {
+			return ReplExpressionsRenderer.LINE_HEIGHT_PX;
+		}
+		if (element instanceof Expression && element.hasChildren) {
+			return 2 * ReplExpressionsRenderer.LINE_HEIGHT_PX;
+		}
+
 		return this.getHeightForString(element.value) + (element instanceof Expression ? this.getHeightForString(element.name) : 0);
 	}
 
@@ -142,13 +145,14 @@ export class ReplExpressionsRenderer implements IRenderer {
 	}
 
 	public getTemplateId(tree: ITree, element: any): string {
-		if (element instanceof Variable) {
+		if (element instanceof Variable && element.name) {
 			return ReplExpressionsRenderer.VARIABLE_TEMPLATE_ID;
 		}
 		if (element instanceof Expression) {
 			return ReplExpressionsRenderer.EXPRESSION_TEMPLATE_ID;
 		}
-		if (element instanceof OutputElement) {
+		if (element instanceof OutputElement || (element instanceof Variable && !element.name)) {
+			// Variable with no name is a top level variable which should be rendered like an output element #17404
 			return ReplExpressionsRenderer.VALUE_OUTPUT_TEMPLATE_ID;
 		}
 		if (element instanceof OutputNameValueElement) {
@@ -220,7 +224,7 @@ export class ReplExpressionsRenderer implements IRenderer {
 	private renderExpression(tree: ITree, expression: IExpression, templateData: IExpressionTemplateData): void {
 		templateData.input.textContent = expression.name;
 		renderExpressionValue(expression, templateData.value, {
-			preserveWhitespace: true,
+			preserveWhitespace: !expression.hasChildren,
 			showHover: false
 		});
 		if (expression.hasChildren) {
@@ -376,7 +380,7 @@ export class ReplExpressionsRenderer implements IRenderer {
 			pattern.lastIndex = 0; // the holy grail of software development
 
 			const match = pattern.exec(text);
-			let resource = null;
+			let resource: uri = null;
 			try {
 				resource = match && uri.file(match[1]);
 			} catch (e) { }
@@ -475,10 +479,6 @@ export class ReplExpressionsActionProvider implements IActionProvider {
 
 	public getSecondaryActions(tree: ITree, element: any): TPromise<IAction[]> {
 		const actions: IAction[] = [];
-		if (element instanceof Variable || element instanceof Expression) {
-			actions.push(this.instantiationService.createInstance(AddToWatchExpressionsAction, AddToWatchExpressionsAction.ID, AddToWatchExpressionsAction.LABEL, element));
-			actions.push(new Separator());
-		}
 		actions.push(new CopyAction(CopyAction.ID, CopyAction.LABEL));
 		actions.push(this.instantiationService.createInstance(ClearReplAction, ClearReplAction.ID, ClearReplAction.LABEL));
 
@@ -493,17 +493,7 @@ export class ReplExpressionsActionProvider implements IActionProvider {
 export class ReplExpressionsController extends BaseDebugController {
 
 	private lastSelectedString: string = null;
-
-	constructor(
-		private replInput: ICodeEditor,
-		actionProvider: IActionProvider,
-		@IDebugService debugService: IDebugService,
-		@IContextMenuService contextMenuService: IContextMenuService,
-		@IContextKeyService contextKeyService: IContextKeyService,
-		@IMenuService menuService: IMenuService
-	) {
-		super(actionProvider, MenuId.DebugConsoleContext, debugService, contextMenuService, contextKeyService, menuService);
-	}
+	public toFocusOnClick: { focus(): void };
 
 	protected onLeftClick(tree: ITree, element: any, eventish: ICancelableEvent, origin: string = 'mouse'): boolean {
 		const mouseEvent = <IMouseEvent>eventish;
@@ -517,7 +507,7 @@ export class ReplExpressionsController extends BaseDebugController {
 		const selection = window.getSelection();
 		if (selection.type !== 'Range' || this.lastSelectedString === selection.toString()) {
 			// only focus the input if the user is not currently selecting.
-			this.replInput.focus();
+			this.toFocusOnClick.focus();
 		}
 		this.lastSelectedString = selection.toString();
 

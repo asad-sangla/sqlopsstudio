@@ -7,7 +7,7 @@
     "vscode": "0.10.x"
   },
   "activationEvents": [
-    "onLanguage:sql"
+    "*"
   ],
   "main": "./client/out/mssqlMain",
   "extensionDependencies": [
@@ -44,28 +44,6 @@
       {
         "language": "sql",
         "path": "./snippets/mssql.json"
-      }
-    ],
-    "commands": [
-      {
-        "command": "extension.connect",
-        "title": "Connect",
-        "category": "MS SQL"
-      },
-      {
-        "command": "extension.disconnect",
-        "title": "Disconnect",
-        "category": "MS SQL"
-      },
-      {
-        "command": "extension.manageProfiles",
-        "title": "Manage Connection Profiles",
-        "category": "MS SQL"
-      },
-      {
-        "command": "extension.chooseDatabase",
-        "title": "Use Database",
-        "category": "MS SQL"
       }
     ],
     "keybindings": [

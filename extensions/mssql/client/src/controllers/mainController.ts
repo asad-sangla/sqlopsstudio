@@ -80,21 +80,7 @@ export default class MainController implements vscode.Disposable {
      * Initializes the extension
      */
     public activate():  Promise<boolean> {
-        const self = this;
-
         let activationTimer = new Utils.Timer();
-
-        // register VS Code commands
-        this.registerCommand(Constants.cmdConnect);
-        this._event.on(Constants.cmdConnect, () => { self.runAndLogErrors(self.onNewConnection(), 'onNewConnection'); });
-        this.registerCommand(Constants.cmdDisconnect);
-        this._event.on(Constants.cmdDisconnect, () => { self.runAndLogErrors(self.onDisconnect(), 'onDisconnect'); });
-        this.registerCommand(Constants.cmdManageConnectionProfiles);
-        this._event.on(Constants.cmdManageConnectionProfiles, () => { self.runAndLogErrors(self.onManageProfiles(), 'onManageProfiles'); });
-        this.registerCommand(Constants.cmdChooseDatabase);
-        this._event.on(Constants.cmdChooseDatabase, () => { self.runAndLogErrors(self.onChooseDatabase(), 'onChooseDatabase') ; } );
-        this.registerCommand(Constants.cmdNewQuery);
-        this._event.on(Constants.cmdNewQuery, () => { self.runAndLogErrors(self.onNewQuery(), 'onNewQuery'); });
 
         // Add handlers for VS Code generated commands
         this._vscodeWrapper.onDidCloseTextDocument(params => this.onDidCloseTextDocument(params));

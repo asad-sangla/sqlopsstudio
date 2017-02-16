@@ -15,7 +15,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { ISerializedFileMatch } from '../search';
 import * as baseMime from 'vs/base/common/mime';
 import { ILineMatch } from 'vs/platform/search/common/search';
-import { UTF16le, UTF16be, UTF8, UTF8_with_bom, encodingExists, decode } from 'vs/base/node/encoding';
+import { UTF16le, UTF16be, UTF8, UTF8_with_bom, encodingExists, decode, bomLength } from 'vs/base/node/encoding';
 import { detectMimeAndEncodingFromBuffer } from 'vs/base/node/mime';
 
 import { ISearchWorker, ISearchWorkerSearchArgs, ISearchWorkerSearchResult } from './searchWorkerIpc';
@@ -65,6 +65,9 @@ interface IFileSearchResult {
 	numMatches: number;
 	limitReached?: boolean;
 }
+
+const LF = 0x0a;
+const CR = 0x0d;
 
 export class SearchWorkerEngine {
 	private nextSearch = TPromise.wrap(null);
@@ -164,7 +167,7 @@ export class SearchWorkerEngine {
 		return new TPromise<void>((resolve, reject) => {
 			fs.open(filename, 'r', null, (error: Error, fd: number) => {
 				if (error) {
-					return reject(error);
+					return resolve(null);
 				}
 
 				let buffer = new Buffer(options.bufferLength);
@@ -174,7 +177,7 @@ export class SearchWorkerEngine {
 				let lineNumber = 0;
 				let lastBufferHadTraillingCR = false;
 
-				const decodeBuffer = (buffer: NodeBuffer, start, end): string => {
+				const decodeBuffer = (buffer: NodeBuffer, start: number, end: number): string => {
 					if (options.encoding === UTF8 || options.encoding === UTF8_with_bom) {
 						return buffer.toString(undefined, start, end); // much faster to use built in toString() when encoding is default
 					}
@@ -205,7 +208,7 @@ export class SearchWorkerEngine {
 
 						// Detect encoding and mime when this is the beginning of the file
 						if (isFirstRead) {
-							let mimeAndEncoding = detectMimeAndEncodingFromBuffer(buffer, bytesRead);
+							const mimeAndEncoding = detectMimeAndEncodingFromBuffer(buffer, bytesRead);
 							if (mimeAndEncoding.mimes[mimeAndEncoding.mimes.length - 1] !== baseMime.MIME_TEXT) {
 								return clb(null); // skip files that seem binary
 							}
@@ -213,23 +216,45 @@ export class SearchWorkerEngine {
 							// Check for BOM offset
 							switch (mimeAndEncoding.encoding) {
 								case UTF8:
-									pos = i = 3;
+									pos = i = bomLength(UTF8);
 									options.encoding = UTF8;
 									break;
 								case UTF16be:
-									pos = i = 2;
+									pos = i = bomLength(UTF16be);
 									options.encoding = UTF16be;
 									break;
 								case UTF16le:
-									pos = i = 2;
+									pos = i = bomLength(UTF16le);
 									options.encoding = UTF16le;
 									break;
 							}
 						}
 
+						// when we are running with UTF16le/be, LF and CR are encoded as
+						// two bytes, like 0A 00 (LF) / 0D 00 (CR) for LE or flipped around
+						// for BE. We need to account for this when splitting the buffer into
+						// newlines, and when detecting a CRLF combo.
+						let byteOffsetMultiplier = 1;
+						if (options.encoding === UTF16le || options.encoding === UTF16be) {
+							byteOffsetMultiplier = 2;
+						}
+
+						const peekSingleByteChar = (char: number, offset = 0) => {
+							const from = i + offset;
+							if (options.encoding === UTF16le) {
+								return buffer[from] === char && buffer[from + 1] === 0x00;
+							} else if (options.encoding === UTF16be) {
+								return buffer[from] === 0x00 && buffer[from + 1] === char;
+							} else {
+								return buffer[from] === char;
+							}
+						};
+						const peekLF = (offset?: number) => peekSingleByteChar(LF, offset);
+						const peekCR = (offset?: number) => peekSingleByteChar(CR, offset);
+
 						if (lastBufferHadTraillingCR) {
-							if (buffer[i] === 0x0a) { // LF (Line Feed)
-								lineFinished(1);
+							if (peekLF()) {
+								lineFinished(1 * byteOffsetMultiplier);
 								i++;
 							} else {
 								lineFinished(0);
@@ -239,16 +264,16 @@ export class SearchWorkerEngine {
 						}
 
 						for (; i < bytesRead; ++i) {
-							if (buffer[i] === 0x0a) { // LF (Line Feed)
-								lineFinished(1);
-							} else if (buffer[i] === 0x0d) { // CR (Carriage Return)
-								if (i + 1 === bytesRead) {
+							if (peekLF()) {
+								lineFinished(1 * byteOffsetMultiplier);
+							} else if (peekCR()) { // CR (Carriage Return)
+								if (i + byteOffsetMultiplier === bytesRead) {
 									lastBufferHadTraillingCR = true;
-								} else if (buffer[i + 1] === 0x0a) { // LF (Line Feed)
-									lineFinished(2);
-									i++;
+								} else if (peekLF(1 * byteOffsetMultiplier)) {
+									lineFinished(2 * byteOffsetMultiplier);
+									i += 2 * byteOffsetMultiplier - 1;
 								} else {
-									lineFinished(1);
+									lineFinished(1 * byteOffsetMultiplier);
 								}
 							}
 						}
@@ -261,7 +286,7 @@ export class SearchWorkerEngine {
 
 				readFile(/*isFirstRead=*/true, (error: Error) => {
 					if (error) {
-						return reject(error);
+						return resolve(null);
 					}
 
 					if (line.length) {
@@ -269,11 +294,7 @@ export class SearchWorkerEngine {
 					}
 
 					fs.close(fd, (error: Error) => {
-						if (error) {
-							reject(error);
-						} else {
-							resolve(null);
-						}
+						resolve(null);
 					});
 				});
 			});
@@ -339,7 +360,7 @@ export class LineMatch implements ILineMatch {
 	}
 
 	serialize(): ILineMatch {
-		let result = {
+		const result = {
 			preview: this.preview,
 			lineNumber: this.lineNumber,
 			offsetAndLengths: this.offsetAndLengths

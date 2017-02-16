@@ -10,6 +10,8 @@ import { ICredentialStore } from './icredentialstore';
 import { CredentialStore } from './credentialstore';
 import { IConnectionConfig } from './iconnectionconfig';
 import { ConnectionConfig } from './connectionconfig';
+import { Memento, Scope as MementoScope  } from 'vs/workbench/common/memento';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 
 /**
@@ -20,8 +22,11 @@ import { ConnectionConfig } from './connectionconfig';
  */
 export class ConnectionStore {
 
+    private _memento: any;
+
     constructor(
-        private _context: vscode.ExtensionContext,
+        private _storageService: IStorageService,
+        private _context: Memento,
         private _credentialStore?: ICredentialStore,
         private _connectionConfig?: IConnectionConfig) {
         if (!this._credentialStore) {
@@ -31,6 +36,8 @@ export class ConnectionStore {
         if (!this._connectionConfig) {
             this._connectionConfig = new ConnectionConfig();
         }
+
+        this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
     }
 
     public static get CRED_PREFIX(): string { return 'Microsoft.SqlTools'; }
@@ -181,7 +188,7 @@ export class ConnectionStore {
      * @returns {IConnectionCredentials[]} the array of connections, empty if none are found
      */
     public getRecentlyUsedConnections(): IConnectionCredentials[] {
-        let configValues = this._context.globalState.get<IConnectionCredentials[]>(Constants.configRecentConnections);
+        let configValues: IConnectionCredentials[] = this._memento['RECENT_CONNECTIONS'];
         if (!configValues) {
             configValues = [];
         }
@@ -196,6 +203,7 @@ export class ConnectionStore {
      * @returns {Promise<void>} a Promise that returns when the connection was saved
      */
     public addRecentlyUsed(conn: IConnectionCredentials): Promise<void> {
+
         const self = this;
         return new Promise<void>((resolve, reject) => {
             // Get all profiles
@@ -214,15 +222,8 @@ export class ConnectionStore {
                 configValues = configValues.slice(0, maxConnections);
             }
 
-            self._context.globalState.update(Constants.configRecentConnections, configValues)
-            .then(() => {
-                // Only save if we successfully added the profile
-                self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
-                // And resolve / reject at the end of the process
-                resolve(undefined);
-            }, err => {
-                reject(err);
-            });
+            this._memento['RECENT_CONNECTIONS'] = configValues;
+            self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
         });
     }
 
@@ -230,16 +231,8 @@ export class ConnectionStore {
      * Clear all recently used connections from the MRU list.
      */
     public clearRecentlyUsed(): Promise<void> {
-        const self = this;
         return new Promise<void>((resolve, reject) => {
-            // Update the MRU list to be empty
-            self._context.globalState.update(Constants.configRecentConnections, [])
-            .then(() => {
-                // And resolve / reject at the end of the process
-                resolve(undefined);
-            }, err => {
-                reject(err);
-            });
+            this._memento['RECENT_CONNECTIONS'] = [];
         });
     }
 
@@ -256,13 +249,7 @@ export class ConnectionStore {
             configValues = configValues.filter(value => !Utils.isSameProfile(<IConnectionProfile>value, conn));
 
             // Update the MRU list
-            self._context.globalState.update(Constants.configRecentConnections, configValues)
-            .then(() => {
-                // And resolve / reject at the end of the process
-                resolve(undefined);
-            }, err => {
-                reject(err);
-            });
+            this._memento['RECENT_CONNECTIONS'] = configValues;
         });
     }
 
@@ -385,7 +372,7 @@ export class ConnectionStore {
     private getConnectionsFromGlobalState<T extends IConnectionCredentials>(configName: string): T[] {
         let connections: T[] = [];
         // read from the global state
-        let configValues = this._context.globalState.get<T[]>(configName);
+        let configValues: T[] = this._memento['RECENT_CONNECTIONS'];
         this.addConnections(connections, configValues);
         return connections;
     }

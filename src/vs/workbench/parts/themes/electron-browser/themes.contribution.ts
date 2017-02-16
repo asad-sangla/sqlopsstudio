@@ -14,10 +14,10 @@ import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { Registry } from 'vs/platform/platform';
 import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
-import { IQuickOpenService, IPickOpenEntry } from 'vs/workbench/services/quickopen/common/quickOpenService';
+import { IQuickOpenService, IPickOpenEntry } from 'vs/platform/quickOpen/common/quickOpen';
 import { IThemeService } from 'vs/workbench/services/themes/common/themeService';
 import { VIEWLET_ID, IExtensionsViewlet } from 'vs/workbench/parts/extensions/common/extensions';
-// import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionManagement';
+import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { Delayer } from 'vs/base/common/async';
 
@@ -32,7 +32,7 @@ export class SelectColorThemeAction extends Action {
 		@IQuickOpenService private quickOpenService: IQuickOpenService,
 		@IMessageService private messageService: IMessageService,
 		@IThemeService private themeService: IThemeService,
-		// @IExtensionGalleryService private extensionGalleryService: IExtensionGalleryService,
+		@IExtensionGalleryService private extensionGalleryService: IExtensionGalleryService,
 		@IViewletService private viewletService: IViewletService
 	) {
 		super(id, label);
@@ -40,8 +40,7 @@ export class SelectColorThemeAction extends Action {
 
 	run(): TPromise<void> {
 		return this.themeService.getColorThemes().then(themes => {
-			const currentThemeId = this.themeService.getColorTheme();
-			const currentTheme = themes.filter(theme => theme.id === currentThemeId)[0];
+			const currentTheme = this.themeService.getColorTheme();
 
 			const pickInMarketPlace = findInMarketplacePick(this.viewletService, 'category:themes');
 
@@ -58,12 +57,12 @@ export class SelectColorThemeAction extends Action {
 			};
 
 			const placeHolder = localize('themes.selectTheme', "Select Color Theme");
-			const autoFocusIndex = firstIndex(picks, p => p.id === currentThemeId);
+			const autoFocusIndex = firstIndex(picks, p => p.id === currentTheme.id);
 			const delayer = new Delayer<void>(100);
 
-			// if (this.extensionGalleryService.isEnabled()) {
-			// 	picks.push(pickInMarketPlace);
-			// }
+			if (this.extensionGalleryService.isEnabled()) {
+				picks.push(pickInMarketPlace);
+			}
 
 			return this.quickOpenService.pick(picks, { placeHolder, autoFocus: { autoFocusIndex } })
 				.then(
@@ -86,7 +85,7 @@ class SelectIconThemeAction extends Action {
 		@IQuickOpenService private quickOpenService: IQuickOpenService,
 		@IMessageService private messageService: IMessageService,
 		@IThemeService private themeService: IThemeService,
-		// @IExtensionGalleryService private extensionGalleryService: IExtensionGalleryService,
+		@IExtensionGalleryService private extensionGalleryService: IExtensionGalleryService,
 		@IViewletService private viewletService: IViewletService
 	) {
 		super(id, label);
@@ -94,8 +93,7 @@ class SelectIconThemeAction extends Action {
 
 	run(): TPromise<void> {
 		return this.themeService.getFileIconThemes().then(themes => {
-			const currentThemeId = this.themeService.getFileIconTheme();
-			const currentTheme = themes.filter(theme => theme.id === currentThemeId)[0];
+			const currentTheme = this.themeService.getFileIconTheme();
 
 			const pickInMarketPlace = findInMarketplacePick(this.viewletService, 'tag:icon-theme');
 
@@ -114,13 +112,13 @@ class SelectIconThemeAction extends Action {
 			};
 
 			const placeHolder = localize('themes.selectIconTheme', "Select File Icon Theme");
-			const autoFocusIndex = firstIndex(picks, p => p.id === currentThemeId);
+			const autoFocusIndex = firstIndex(picks, p => p.id === currentTheme.id);
 			const delayer = new Delayer<void>(100);
 
 
-			// if (this.extensionGalleryService.isEnabled()) {
-			// 	picks.push(pickInMarketPlace);
-			// }
+			if (this.extensionGalleryService.isEnabled()) {
+				picks.push(pickInMarketPlace);
+			}
 
 			return this.quickOpenService.pick(picks, { placeHolder, autoFocus: { autoFocusIndex } })
 				.then(
