@@ -388,9 +388,10 @@ export function run(out:string): IMonacoDeclarationResult {
 	SOURCE_FILE_MAP = {};
 
 	let recipe = fs.readFileSync(RECIPE_PATH).toString();
-	let result = generateDeclarationFile(out, recipe);
 
-	let currentContent = fs.readFileSync(DECLARATION_PATH).toString();
+	let result = generateDeclarationFile(out, recipe).replace(' ','');
+
+	let currentContent = fs.readFileSync(DECLARATION_PATH).toString().replace(' ', '');
 	log('Finished monaco.d.ts generation');
 
 	return {
