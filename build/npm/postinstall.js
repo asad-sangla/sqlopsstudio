@@ -21,8 +21,7 @@ const protocol = [
 	'jsonrpc',
 	'types',
 	'client',
-	'server',
-	'git'
+	'server'
 ];
 
 protocol.forEach(item => npmInstall(`dataprotocol-node/${item}`));
@@ -31,6 +30,7 @@ npmInstall('extensions'); // node modules shared by all extensions
 
 const extensions = [
 	'vscode-colorize-tests',
+	'git',
 	'json',
 	'mssql',
 	'configuration-editing',
