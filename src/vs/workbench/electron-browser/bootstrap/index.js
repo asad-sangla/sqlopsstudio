@@ -29,16 +29,13 @@ const Slick = window.Slick;
 require('slickgrid/slick.grid');
 require('slickgrid/slick.editors');
 
-
-const bootstrap = require('bootstrap');
-
 // Set temporary globals for angular relative path fix
 // TODO make it so these don't need to be globals
 const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
 const AngularCore = require('@angular/core');
 const AngularPlatformBrowser = require('@angular/platform-browser');
 
-
+require('bootstrap');
 
 process.lazyEnv = new Promise(function (resolve) {
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {

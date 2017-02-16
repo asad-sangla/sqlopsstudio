@@ -16,8 +16,6 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import vscode = require('vscode');
 import * as platform from 'vs/base/common/platform';
 
-let bootstrap: any;
-
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
 	onCancel: () => void;
@@ -243,14 +241,7 @@ export class ConnectionDialogWidget  {
 	}
 
 	public open() {
-
-		bootstrap.jQuery('#connectionDialogModal').modal({backdrop:false});
-
-		//jQuery('#connectionDialogModal').modal({backdrop:false});
-
-		// require(['jquery', 'bootstrapUi'], function(jQuery){
-		// 	   jQuery('#connectionDialogModal').modal({backdrop:false});
-		// });
+		jQuery('#connectionDialogModal').modal({backdrop:false});
 	}
 
 	public dispose(): void {
