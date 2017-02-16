@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 'use strict';
-
+import * as vscode from 'vscode';
 import dom = require('vs/base/browser/dom');
 import { ITree, IDataSource, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACCEPT_BUBBLE_DOWN, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -11,7 +11,6 @@ import { Action } from 'vs/base/common/actions';
 import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
-import { IConnection } from 'sql/parts/connection/common/connectionManagement';
 const $ = dom.$;
 
 export class ServerTreeRenderer implements IRenderer {
@@ -38,7 +37,7 @@ export class ServerTreeRenderer implements IRenderer {
 	public renderTemplate(tree: ITree, templateId: string, container: HTMLElement): any {
 
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
-			const serverTemplate: IServerTemplateData = Object.create(null);
+			const serverTemplate: IConnectionTemplateData = Object.create(null);
 			serverTemplate.root = dom.append(container, $('.editor-group'));
 			serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
 			serverTemplate.type = dom.append(serverTemplate.root, $('.description.ellipsis'));
@@ -63,14 +62,14 @@ export class ServerTreeRenderer implements IRenderer {
 		}
 	}
 
-	private renderConnection(tree: ITree, server: Connection, templateData: IServerTemplateData): void {
-		templateData.name.textContent = server.getName();
+	private renderConnection(tree: ITree, connection: ConnectionDisplay, templateData: IConnectionTemplateData): void {
+		templateData.name.textContent = connection.getName();
 		templateData.info.textContent = 'server';
-		templateData.type.textContent = server.getType();
+		templateData.type.textContent = connection.getType();
 	}
 
-	private renderConnectionGroup(tree: ITree, serverGroup: ConnectionGroup, templateData: IConnectionGroupTemplateData): void {
-		templateData.name.textContent = serverGroup.getName();
+	private renderConnectionGroup(tree: ITree, connectionGroup: ConnectionGroup, templateData: IConnectionGroupTemplateData): void {
+		templateData.name.textContent = connectionGroup.getName();
 	}
 
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {
@@ -78,7 +77,7 @@ export class ServerTreeRenderer implements IRenderer {
 	}
 }
 
-interface IServerTemplateData {
+interface IConnectionTemplateData {
 	root: HTMLElement;
 	name: HTMLSpanElement;
 	type: HTMLElement;
@@ -95,19 +94,18 @@ interface IConnectionGroupTemplateData {
 	name: HTMLSpanElement;
 }
 
-export class Connection {
+export class ConnectionDisplay implements vscode.ConnectionInfo {
 
-	name: string;
-	displayName: string;
+	userName: string;
+	password: string;
 	parent: ConnectionGroup = null;
 
 	constructor(private id: string,
-		name: string,
-		displayName: string,
+		public serverName: string,
+		public databaseName: string,
 		private type: string
 	) {
-		this.name = name;
-		this.displayName = displayName;
+
 	}
 
 	public getId(): string {
@@ -115,7 +113,7 @@ export class Connection {
 	}
 
 	public getName(): string {
-		return this.name;
+		return this.serverName;
 	}
 
 	public getType(): string {
@@ -123,10 +121,10 @@ export class Connection {
 	}
 
 	public equals(other: any): boolean {
-		if (!(other instanceof Connection)) {
+		if (!(other instanceof ConnectionDisplay)) {
 			return false;
 		}
-		return other.getId() === this.id && other.getName() === this.name;
+		return other.getId() === this.id && other.getName() === this.serverName;
 	}
 
 	public getParent(): ConnectionGroup {
@@ -134,20 +132,17 @@ export class Connection {
 	}
 }
 
-export class ConnectionGroup implements IConnection {
+export class ConnectionGroup  {
 
-	name: string;
-	displayName: string;
+	groupName: string;
 	parent: ConnectionGroup = null;
 
 	constructor(private id: string,
-		name: string,
-		displayName: string,
+		groupName: string,
 		private type: string,
-		private children: [ Connection | ConnectionGroup ],
+		private children: [ ConnectionDisplay | ConnectionGroup ],
 	) {
-		this.name = name;
-		this.displayName = displayName;
+		this.groupName = groupName;
 		// assign parent to each child
 		if (children !== null) {
 			this.children.forEach((connection) => {
@@ -161,14 +156,14 @@ export class ConnectionGroup implements IConnection {
 	}
 
 	public getName(): string {
-		return this.name;
+		return this.groupName;
 	}
 
 	public getType(): string {
 		return this.type;
 	}
 
-	public getChildren(): [ Connection | ConnectionGroup ]{
+	public getChildren(): [ ConnectionDisplay | ConnectionGroup ]{
 		return this.children;
 	}
 
@@ -183,10 +178,10 @@ export class ConnectionGroup implements IConnection {
 		if (!(other instanceof ConnectionGroup)) {
 			return false;
 		}
-		return other.getId() === this.id && other.getName() === this.name;
+		return other.getId() === this.id && other.getName() === this.groupName;
 	}
 
-	public addServerToGroup(child: Connection | ConnectionGroup): void {
+	public addServerToGroup(child: ConnectionDisplay | ConnectionGroup): void {
 		var servers = this.children;
 		if (this.children === null) {
 			this.children = [child];
@@ -200,14 +195,13 @@ export class ConnectionGroup implements IConnection {
 	}
 
 	public updateGroup(child: ConnectionGroup): void {
-		var children = this.children as Array<ConnectionGroup>;
-		var index = children.indexOf(child);
+		var index = this.children.indexOf(child);
 		if (index !== -1) {
 			this.children[index] = child;
 		}
 	}
 
-	public removeServerFromGroup(child: Connection): void {
+	public removeServerFromGroup(child: ConnectionDisplay): void {
 		var connections = this.children;
 		connections.forEach((val, i) => {
 			if (val.equals(child)) {
@@ -229,8 +223,8 @@ export class ConnectionGroup implements IConnection {
 export class ServerTreeDataSource implements IDataSource {
 
 	public getId(tree: ITree, element: any): string {
-		if (element instanceof Connection) {
-			return (<Connection>element).getId();
+		if (element instanceof ConnectionDisplay) {
+			return (<ConnectionDisplay>element).getId();
 		}
 		else if (element instanceof ConnectionGroup) {
 			return (<ConnectionGroup>element).getId();
@@ -238,7 +232,7 @@ export class ServerTreeDataSource implements IDataSource {
 	}
 
 	public hasChildren(tree: ITree, element: any): boolean {
-		if (element instanceof Connection) {
+		if (element instanceof ConnectionDisplay) {
 			return false;
 		}
 		else if (element instanceof ConnectionGroup) {
@@ -248,7 +242,7 @@ export class ServerTreeDataSource implements IDataSource {
 	}
 
 	public getChildren(tree: ITree, element: any): TPromise<any> {
-		if (element instanceof Connection) {
+		if (element instanceof ConnectionDisplay) {
 			return TPromise.as(null);
 		}
 		else if (element instanceof ConnectionGroup) {
@@ -257,8 +251,8 @@ export class ServerTreeDataSource implements IDataSource {
 	}
 
 	public getParent(tree: ITree, element: any): TPromise<any> {
-		if (element instanceof Connection) {
-			return TPromise.as((<Connection>element).getParent());
+		if (element instanceof ConnectionDisplay) {
+			return TPromise.as((<ConnectionDisplay>element).getParent());
 		}
 		else if (element instanceof ConnectionGroup) {
 			return TPromise.as((<ConnectionGroup>element).getParent());
@@ -269,8 +263,8 @@ export class ServerTreeDataSource implements IDataSource {
 export class ServerTreeDragAndDrop implements IDragAndDrop {
 
 	public getDragURI(tree: ITree, element: any): string {
-		if (element instanceof Connection) {
-			return (<Connection>element).getId();
+		if (element instanceof ConnectionDisplay) {
+			return (<ConnectionDisplay>element).getId();
 		}
 		else if (element instanceof ConnectionGroup) {
 			return (<ConnectionGroup>element).getId();
@@ -278,8 +272,8 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	}
 
 	public getDragLabel(tree: ITree, elements: any[]): string {
-		if (elements[0] instanceof Connection) {
-			return (<Connection>elements[0]).getName();
+		if (elements[0] instanceof ConnectionDisplay) {
+			return (<ConnectionDisplay>elements[0]).getName();
 		}
 		else if (elements[0] instanceof ConnectionGroup) {
 			return (<ConnectionGroup>elements[0]).getName();
@@ -292,7 +286,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	}
 
 	public onDragOver(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): IDragOverReaction {
-		if (targetElement instanceof Connection || targetElement instanceof ConnectionGroup) {
+		if (targetElement instanceof ConnectionDisplay || targetElement instanceof ConnectionGroup) {
 			return DRAG_OVER_ACCEPT_BUBBLE_DOWN;
 		}
 		return DRAG_OVER_REJECT;
@@ -300,33 +294,26 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
 		var targetConnectionGroup;
-		if (targetElement instanceof Connection) {
-			targetConnectionGroup = (<Connection>targetElement).getParent();
+		if (targetElement instanceof ConnectionDisplay) {
+			targetConnectionGroup = (<ConnectionDisplay>targetElement).getParent();
 		}
 		else {
 			targetConnectionGroup = <ConnectionGroup>targetElement;
 		}
-		const source: Connection = data.getData()[0];
+		const source: ConnectionDisplay = data.getData()[0];
 		var oldParent = source.getParent();
-		if (targetConnectionGroup !== null && targetConnectionGroup.getName() !== 'root' && oldParent) {
 
-			// let promise: TPromise<void> = TPromise.as(null);
-			console.log('drop ' + source.getName() + ' to ' + targetConnectionGroup.getName());
+		if (targetConnectionGroup && targetConnectionGroup.getName() !== 'root' && oldParent && !oldParent.equals(targetConnectionGroup)) {
 
-			var root: ConnectionGroup = tree.getInput();
-
-			oldParent.removeServerFromGroup(source);
-			targetConnectionGroup.addServerToGroup(source);
-			root.updateGroup(oldParent);
-			root.updateGroup(targetConnectionGroup);
-			const treeInput = new ConnectionGroup('root', 'root', '', '', root.getChildren());
+			var treeModel : ServerTreeModel = ServerTreeModel.Instance;
+			const treeInput = treeModel.DragAndDrop(source, targetConnectionGroup);
 			if (treeInput !== tree.getInput()) {
 				tree.setInput(treeInput).done(() => {
 					tree.getFocus();
 					tree.expandAll([targetConnectionGroup, oldParent]).done(() => {});
 				}, errors.onUnexpectedError);
 			} else {
-				tree.refresh(root).done(() => {
+				tree.refresh().done(() => {
 					tree.getFocus();
 				}, errors.onUnexpectedError);
 			}
@@ -335,9 +322,75 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	}
 }
 
+export class ServerTreeModel {
+	private connectionGroups: [ConnectionGroup] = null;
+	private static _instance: ServerTreeModel = undefined;
+	private constructor() {
+		this.connectionGroups = this.getConnectionGroups();
+	}
+
+	public static get Instance(): ServerTreeModel {
+        if (this._instance === undefined) {
+			this._instance = new ServerTreeModel();
+        }
+        return this._instance;
+    }
+
+	private getConnectionGroups(): [ConnectionGroup] {
+		// Stub method to generate input
+		var s3 = new ConnectionDisplay('3', 'Server name B', 'Server name B','Azure');
+
+		var s5 = new ConnectionDisplay('5', 'Server name D', 'Server name D', 'Azure');
+		var s6 = new ConnectionDisplay('6', 'Server name E', 'Server name E', 'OnPrem');
+		var s7 = new ConnectionDisplay('7', 'Server name F', 'Server name F', 'OnPrem');
+		//var s10 = new ConnectionDisplay('10', 'Server name H', 'Server name F', 'OnPrem');
+		//var s9 = new ConnectionGroup('9', 'Server Group I', 'OnPrem' , [s10]);
+		var s8 = new ConnectionGroup('8', 'Server Group G', 'OnPrem' , [s7]);
+		var s2 = new ConnectionGroup('2', 'Server Group A','OnPrem', [s3, s8]);
+		var s4 = new ConnectionGroup('4', 'Server Group C',  'Azure', [s5, s6]);
+		console.log('get data');
+		return [s2, s4];
+	}
+
+	public DragAndDrop(source: ConnectionDisplay | ConnectionGroup, targetConnectionGroup: ConnectionGroup ): ConnectionGroup {
+		var targetElement;
+		if (source instanceof ConnectionDisplay) {
+			targetElement = <ConnectionDisplay>source;
+		}
+		else {
+			targetElement = <ConnectionGroup>source;
+		}
+		console.log('drop ' + source.getName() + ' to ' + targetConnectionGroup.getName());
+		var oldParent = targetElement.getParent();
+		oldParent.removeServerFromGroup(source);
+		targetConnectionGroup.addServerToGroup(source);
+		this.updateGroup(this.getTopParent(oldParent));
+		this.updateGroup(this.getTopParent(targetConnectionGroup));
+		return this.getTreeInput();
+	}
+
+	public getTreeInput(): ConnectionGroup {
+		return new ConnectionGroup('root', 'root', '', this.connectionGroups);
+	}
+
+	public getTopParent(element: ConnectionGroup): ConnectionGroup {
+		var current = element;
+		while (current.getParent() !== null && current.getParent().getId() !== 'root') {
+			current = current.getParent();
+		}
+		return current;
+	}
+
+	public updateGroup(child: ConnectionGroup): void {
+		var index = this.connectionGroups.indexOf(child);
+		if (index !== -1) {
+			this.connectionGroups[index] = child;
+		}
+	}
+}
 export class AddServerToGroupAction extends Action {
-	public static ID = 'registeredServers.addServer';
-	public static LABEL = nls.localize('addServer', "Add Connection");
+	public static ID = 'registeredServers.addConnection';
+	public static LABEL = nls.localize('addConnection', "Add Connection");
 	constructor(
 		id: string,
 		label: string
@@ -347,7 +400,6 @@ export class AddServerToGroupAction extends Action {
 
 	public run(element: ConnectionGroup): TPromise<boolean> {
 		console.log('Action run');
-		element.addServerToGroup(new Connection('7', 'Connection name F', 'Connection name F', 'OnPrem'));
 		return TPromise.as(true);
 	}
 }

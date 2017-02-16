@@ -24,7 +24,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { DragMouseEvent, IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ServerTreeRenderer, ServerTreeDataSource, Connection, ConnectionGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ServerTreeRenderer, ServerTreeDataSource, ConnectionDisplay, ConnectionGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { EditorStacksModel, EditorGroup } from 'vs/workbench/common/editor/editorStacksModel';
 import { keybindingForAction, SaveFileAction, RevertFileAction, SaveFileAsAction, OpenToSideAction, SelectResourceForCompareAction, CompareResourcesAction, SaveAllInGroupAction } from 'vs/workbench/parts/files/browser/fileActions';
 import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
@@ -39,11 +39,11 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	}
 
 	public hasActions(tree: ITree, element: any): boolean {
-		return element instanceof ConnectionGroup || (element instanceof Connection);
+		return element instanceof ConnectionGroup || (element instanceof ConnectionDisplay);
 	}
 
 	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
-		if (element instanceof Connection) {
+		if (element instanceof ConnectionDisplay) {
 			return TPromise.as(this.getServerActions());
 		}
 		if (element instanceof ConnectionGroup) {
@@ -123,8 +123,8 @@ export class ServerTreeController extends treedefaults.DefaultController {
 		if (element instanceof ConnectionGroup) {
 			parent = <ConnectionGroup>element;
 		}
-		else if (element instanceof Connection) {
-			parent = (<Connection>element).parent;
+		else if (element instanceof ConnectionDisplay) {
+			parent = (<ConnectionDisplay>element).parent;
 		}
 
 		let anchor = { x: event.posx + 1, y: event.posy };

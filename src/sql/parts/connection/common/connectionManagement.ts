@@ -16,11 +16,6 @@ export interface IConnectionsViewlet extends IViewlet {
 	search(text: string): void;
 }
 
-export interface IConnection {
-	name: string;
-	displayName: string;
-}
-
 export const SERVICE_ID = 'connectionManagementService';
 
 export const IConnectionManagementService = createDecorator<IConnectionManagementService>(SERVICE_ID);
