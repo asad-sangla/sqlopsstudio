@@ -175,6 +175,11 @@
 	line-height: 22px;
 }
 
+.server-explorer-viewlet .server-group {
+	height: 32px;
+	line-height: 32px;
+}
+
 .server-explorer-viewlet .explorer-item {
 	display: flex; /* this helps showing the overflow ellipsis (...) even though we use display:inline-block for the labels */
 	flex-wrap: nowrap;
@@ -182,7 +187,8 @@
 
 .server-explorer-viewlet .explorer-item > a,
 .server-explorer-viewlet .open-editor,
-.server-explorer-viewlet .editor-group {
+.server-explorer-viewlet .editor-group,
+.server-explorer-viewlet .server-group {
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
@@ -233,7 +239,8 @@
 	flex: 1;
 }
 
-.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .editor-group {
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .editor-group,
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .server-group {
 	flex: 1;
 }
 
@@ -277,17 +284,28 @@
 	text-transform: capitalize;
 	cursor: default;
 }
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .server-group {
+	font-size: 13px;
+	font-weight: bold;
+	text-transform: capitalize;
+	cursor: default;
+}
 
 /* Bold font style does not go well with CJK fonts */
 .server-explorer-viewlet:lang(zh-Hans) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
 .server-explorer-viewlet:lang(zh-Hant) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
 .server-explorer-viewlet:lang(ja) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
-.server-explorer-viewlet:lang(ko) .explorer-servers .monaco-tree .monaco-tree-row .editor-group { font-weight: normal; }
+.server-explorer-viewlet:lang(ko) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
+.server-explorer-viewlet:lang(zh-Hans) .explorer-servers .monaco-tree .monaco-tree-row .server-group,
+.server-explorer-viewlet:lang(zh-Hant) .explorer-servers .monaco-tree .monaco-tree-row .server-group,
+.server-explorer-viewlet:lang(ja) .explorer-servers .monaco-tree .monaco-tree-row .server-group,
+.server-explorer-viewlet:lang(ko) .explorer-servers .monaco-tree .monaco-tree-row .server-group { font-weight: normal; }
 
 /* High Contrast Theming */
 .hc-black .monaco-workbench .server-explorer-viewlet .explorer-item,
 .hc-black .monaco-workbench .server-explorer-viewlet .open-editor,
-.hc-black .monaco-workbench .server-explorer-viewlet .editor-group {
+.hc-black .monaco-workbench .server-explorer-viewlet .editor-group,
+.hc-black .monaco-workbench .server-explorer-viewlet .server-group {
 	line-height: 20px;
 }
 
@@ -302,17 +320,28 @@
 	border: none;
 }
 
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content:before {
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .editor-group:before {
 	content: ' ';
 	position: absolute;
 	display: block;
-	/*background: url('collapsed.svg') 50% 50% no-repeat;*/
-	width: 16px;
+	background: url('databaseEngine.svg') 50% 50% no-repeat;
+	width: 36px;
 	height: 100%;
 	top: 0;
-	left: -16px;
+	left: -30px;
 }
 
+/*.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .server-group > .name:before {
+	content: ' ';
+	position: absolute;
+	display: block;
+	background: url('databaseEngine.svg') 50% 50% no-repeat;
+	width: 36px;
+	height: 100%;
+	top: 0;
+	left: 30px;
+}
+*/
 .monaco-tree .monaco-tree-rows > .monaco-tree-row.expanded > .content:before {
 	background-image: url('expanded.svg');
 }
@@ -334,7 +363,8 @@
 	background-position: 50% !important;
 }
 
-.server-explorer-viewlet .editor-group .description {
+.server-explorer-viewlet .editor-group .description,
+.server-explorer-viewlet .server-group .description {
 	font-size: 11px;
 	font-style: italic;
 }

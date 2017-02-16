@@ -76,7 +76,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 		this.splitView = new SplitView(this.viewletContainer.getHTMLElement());
 		this.serverTreeView = this.instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
-		this.splitView.addView(this.serverTreeView, 10);
+		this.splitView.addView(this.serverTreeView, 20);
 		this.views.push(this.serverTreeView);
 
 		this.serverTreeView.create().then(() => {
