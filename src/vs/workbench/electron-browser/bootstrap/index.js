@@ -191,14 +191,6 @@ function main() {
 		require.config({
 			baseUrl: rootUrl,
 			'vs/nls': nlsConfig,
-			paths: {
-				bootstrapUi: '../node_modules/bootstrap/dist/js/bootstrap',
-			},
-			shim: {
-				'bootstrapUi': {
-					deps: ['jquery']
-				}
-			},
 			recordStats: !!configuration.performance,
 			nodeCachedDataDir: configuration.nodeCachedDataDir,
 			onNodeCachedDataError: function (err) { nodeCachedDataErrors.push(err) },

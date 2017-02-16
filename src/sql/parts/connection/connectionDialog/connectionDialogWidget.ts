@@ -48,10 +48,6 @@ export class ConnectionDialogWidget  {
 		} else {
 			this.authTypeSelectBox = new SelectBox( [this.SqlAuthTypeName], 0);
 		}
-
-		require(['jquery'], function(bootstrap2){
-			this.jQuery = require('jquery');
-		});
 	}
 
 	public create(): HTMLElement {
@@ -96,7 +92,7 @@ export class ConnectionDialogWidget  {
 		this.modelElement = this.builder.getHTMLElement();
 		this.serverNameInputBox.focus();
 
-		// TODO getSelected was remvoed from select box in VS Code 1.9.1
+		// TODO getSelected was removed from select box in VS Code 1.9.1
 		// this.authTypeSelected(this.authTypeSelectBox.getSelected());
 
 		return this.modelElement;
