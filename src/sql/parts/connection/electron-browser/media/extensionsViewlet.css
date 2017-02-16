@@ -324,7 +324,7 @@
 	content: ' ';
 	position: absolute;
 	display: block;
-	background: url('DatabaseEngine.svg') 50% 50% no-repeat;
+	background: url('databaseEngine.svg') 50% 50% no-repeat;
 	width: 36px;
 	height: 100%;
 	top: 0;
@@ -335,7 +335,7 @@
 	content: ' ';
 	position: absolute;
 	display: block;
-	background: url('DatabaseEngine.svg') 50% 50% no-repeat;
+	background: url('databaseEngine.svg') 50% 50% no-repeat;
 	width: 36px;
 	height: 100%;
 	top: 0;

@@ -310,7 +310,9 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 			if (treeInput !== tree.getInput()) {
 				tree.setInput(treeInput).done(() => {
 					tree.getFocus();
-					tree.expandAll([targetConnectionGroup, oldParent]).done(() => {});
+					//tree.expand(targetConnectionGroup).done((res) => {
+					//	console.log('res' + res);
+					//});
 				}, errors.onUnexpectedError);
 			} else {
 				tree.refresh().done(() => {
