@@ -8,72 +8,24 @@ import * as errors from 'vs/base/common/errors';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { ITree, ContextMenuEvent } from 'vs/base/parts/tree/browser/tree';
 import treedefaults = require('vs/base/parts/tree/browser/treeDefaults');
-import { MarkersModel, Marker } from 'vs/workbench/parts/markers/common/markersModel';
-import { RangeHighlightDecorations } from 'vs/workbench/common/editor/rangeDecorations';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IMenuService, IMenu, MenuId } from 'vs/platform/actions/common/actions';
 import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegistry';
 import { IAction } from 'vs/base/common/actions';
 import { Keybinding } from 'vs/base/common/keyCodes';
 import { IActionProvider } from 'vs/base/parts/tree/browser/actionsRenderer';
-import { ActionItem, Separator } from 'vs/base/browser/ui/actionbar/actionbar';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { DragMouseEvent, IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ServerTreeRenderer, ServerTreeDataSource, ConnectionDisplay, ConnectionGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
-import { EditorStacksModel, EditorGroup } from 'vs/workbench/common/editor/editorStacksModel';
-import { keybindingForAction, SaveFileAction, RevertFileAction, SaveFileAsAction, OpenToSideAction, SelectResourceForCompareAction, CompareResourcesAction, SaveAllInGroupAction } from 'vs/workbench/parts/files/browser/fileActions';
-import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
-import { CloseOtherEditorsInGroupAction, CloseEditorAction, CloseEditorsInGroupAction } from 'vs/workbench/browser/parts/editor/editorActions';
+import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 
-export class ServerTreeActionProvider extends ContributableActionProvider {
-
-	constructor(
-		@IInstantiationService private instantiationService: IInstantiationService
-	) {
-		super();
-	}
-
-	public hasActions(tree: ITree, element: any): boolean {
-		return element instanceof ConnectionGroup || (element instanceof ConnectionDisplay);
-	}
-
-	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
-		if (element instanceof ConnectionDisplay) {
-			return TPromise.as(this.getServerActions());
-		}
-		if (element instanceof ConnectionGroup) {
-			return TPromise.as(this.getConnectionGroupActions());
-		}
-
-		return TPromise.as([]);
-	}
-
-	public getServerActions(): IAction[] {
-				return [
-			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
-		];
-	}
-
-	public getConnectionGroupActions(): IAction[] {
-		return [
-			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
-		];
-	}
-
-	public hasSecondaryActions(tree: ITree, element: any): boolean {
-		return false;
-	}
-
-	public getSecondaryActions(tree: ITree, element: any): TPromise<IAction[]> {
-		return super.getSecondaryActions(tree, element);
-	}
-}
-
+/**
+ * Extends the tree controller to handle clicks on the tree elements
+ */
 export class ServerTreeController extends treedefaults.DefaultController {
 
 	constructor(private actionProvider: ServerTreeActionProvider,
@@ -106,6 +58,9 @@ export class ServerTreeController extends treedefaults.DefaultController {
 		return super.onEnter(tree, event);
 	}
 
+	/**
+	 * Return actions in the context menu
+	 */
 	public onContextMenu(tree: ITree, element: any, event: ContextMenuEvent): boolean {
 		if (event.target && event.target.tagName && event.target.tagName.toLowerCase() === 'input') {
 			return false;
@@ -141,5 +96,55 @@ export class ServerTreeController extends treedefaults.DefaultController {
 		});
 
 		return true;
+	}
+}
+
+/**
+ *  Provides actions for the server tree elements
+ */
+export class ServerTreeActionProvider extends ContributableActionProvider {
+
+	constructor(
+		@IInstantiationService private instantiationService: IInstantiationService
+	) {
+		super();
+	}
+
+	public hasActions(tree: ITree, element: any): boolean {
+		return element instanceof ConnectionGroup || (element instanceof ConnectionDisplay);
+	}
+
+	/**
+	 * Return actions given an element in the tree
+	 */
+	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
+		if (element instanceof ConnectionDisplay) {
+			return TPromise.as(this.getConnectionActions());
+		}
+		if (element instanceof ConnectionGroup) {
+			return TPromise.as(this.getConnectionGroupActions());
+		}
+
+		return TPromise.as([]);
+	}
+
+	private getConnectionActions(): IAction[] {
+				return [
+			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
+		];
+	}
+
+	private getConnectionGroupActions(): IAction[] {
+		return [
+			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
+		];
+	}
+
+	public hasSecondaryActions(tree: ITree, element: any): boolean {
+		return false;
+	}
+
+	public getSecondaryActions(tree: ITree, element: any): TPromise<IAction[]> {
+		return super.getSecondaryActions(tree, element);
 	}
 }

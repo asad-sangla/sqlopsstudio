@@ -22,6 +22,9 @@ import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 const $ = builder.$;
 
+/**
+ * SErverTreeview implements the dynamic tree view.
+ */
 export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 
 	private fullRefreshNeeded: boolean;
@@ -36,7 +39,9 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	) {
 		super(actionRunner, 22 * 15, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
 }
-
+	/**
+	 * Render header of the view
+	 */
 	public renderHeader(container: HTMLElement): void {
 		const titleDiv = $('div.title').appendTo(container);
 		$('span').text(nls.localize('registeredServers', "Registered Servers")).appendTo(titleDiv);
@@ -44,6 +49,9 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		super.renderHeader(container);
 	}
 
+	/**
+	 * Render the view body
+	 */
 	public renderBody(container: HTMLElement): void {
 		this.treeContainer = super.renderViewTree(container);
 		dom.addClass(this.treeContainer, 'explorer-servers');
@@ -70,6 +78,9 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		this.structuralTreeUpdate();
 	}
 
+	/**
+	 * Return actions for the view
+	 */
 	public getActions(): IAction[] {
 		return [
 			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
@@ -93,6 +104,9 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		// this.registeredServersService.open(connection, false).done(null, err => this.onError(err));
 	}
 
+	/**
+	 * Set input for the tree.
+	 */
 	private structuralTreeUpdate(): void {
 		const self = this;
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
