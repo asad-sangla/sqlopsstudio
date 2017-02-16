@@ -21,7 +21,8 @@ import { IKeybindingEvent, IKeybindingItem, IUserFriendlyKeybinding, KeybindingS
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IKeybindingRule, KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry';
 import { Registry } from 'vs/platform/platform';
-import { ITelemetryService, keybindingsTelemetry } from 'vs/platform/telemetry/common/telemetry';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { keybindingsTelemetry } from 'vs/platform/telemetry/common/telemetryUtils';
 import { getNativeLabelProvider, getNativeAriaLabelProvider } from 'vs/workbench/services/keybinding/electron-browser/nativeKeymap';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { ConfigWatcher } from 'vs/base/node/config';
@@ -123,7 +124,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 	private userKeybindings: ConfigWatcher<IUserFriendlyKeybinding[]>;
 
 	constructor(
-		domNode: HTMLElement,
+		windowElement: Window,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ICommandService commandService: ICommandService,
 		@ITelemetryService private telemetryService: ITelemetryService,
@@ -156,7 +157,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 			keybindings: event.config
 		})));
 
-		this.toDispose.push(dom.addDisposableListener(domNode, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+		this.toDispose.push(dom.addDisposableListener(windowElement, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let keyEvent = new StandardKeyboardEvent(e);
 			let shouldPreventDefault = this._dispatch(keyEvent.toKeybinding(), keyEvent.target);
 			if (shouldPreventDefault) {

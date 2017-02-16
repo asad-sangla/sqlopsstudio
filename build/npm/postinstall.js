@@ -21,7 +21,8 @@ const protocol = [
 	'jsonrpc',
 	'types',
 	'client',
-	'server'
+	'server',
+	'git'
 ];
 
 protocol.forEach(item => npmInstall(`dataprotocol-node/${item}`));

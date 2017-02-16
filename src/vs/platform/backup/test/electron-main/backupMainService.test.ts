@@ -13,13 +13,16 @@ import path = require('path');
 import extfs = require('vs/base/node/extfs');
 import pfs = require('vs/base/node/pfs');
 import Uri from 'vs/base/common/uri';
-import { TestEnvironmentService } from 'vs/test/utils/servicesTestUtils';
+import { EnvironmentService } from 'vs/platform/environment/node/environmentService';
+import { parseArgs } from 'vs/platform/environment/node/argv';
 import { BackupMainService } from 'vs/platform/backup/electron-main/backupMainService';
 import { IBackupWorkspacesFormat } from 'vs/platform/backup/common/backup';
+import { HotExitConfiguration } from 'vs/platform/files/common/files';
+import { TestConfigurationService } from 'vs/platform/configuration/test/common/testConfigurationService';
 
 class TestBackupMainService extends BackupMainService {
-	constructor(backupHome: string, backupWorkspacesPath: string) {
-		super(TestEnvironmentService);
+	constructor(backupHome: string, backupWorkspacesPath: string, configService: TestConfigurationService) {
+		super(new EnvironmentService(parseArgs(process.argv), process.execPath), configService);
 
 		this.backupHome = backupHome;
 		this.workspacesJsonPath = backupWorkspacesPath;
@@ -58,9 +61,11 @@ suite('BackupMainService', () => {
 	const barFile = Uri.file(platform.isWindows ? 'C:\\bar' : '/bar');
 
 	let service: TestBackupMainService;
+	let configService: TestConfigurationService;
 
 	setup(done => {
-		service = new TestBackupMainService(backupHome, backupWorkspacesPath);
+		configService = new TestConfigurationService();
+		service = new TestBackupMainService(backupHome, backupWorkspacesPath, configService);
 
 		// Delete any existing backups completely and then re-create it.
 		extfs.del(backupHome, os.tmpdir(), () => {
@@ -161,6 +166,14 @@ suite('BackupMainService', () => {
 			service.loadSync();
 			assert.deepEqual(service.getWorkspaceBackupPaths(), []);
 			fs.writeFileSync(backupWorkspacesPath, '{"folderWorkspaces":1}');
+			service.loadSync();
+			assert.deepEqual(service.getWorkspaceBackupPaths(), []);
+		});
+
+		test('getWorkspaceBackupPaths() should return [] when files.hotExit = "onExitAndWindowClose"', () => {
+			service.registerWindowForBackupsSync(1, false, null, fooFile.fsPath.toUpperCase());
+			assert.deepEqual(service.getWorkspaceBackupPaths(), [fooFile.fsPath.toUpperCase()]);
+			configService.setUserConfiguration('files.hotExit', HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE);
 			service.loadSync();
 			assert.deepEqual(service.getWorkspaceBackupPaths(), []);
 		});

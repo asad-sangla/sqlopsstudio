@@ -9,7 +9,6 @@
 
 /*global window,document,define*/
 
-// Set globals used by vs
 const path = require('path');
 const electron = require('electron');
 const remote = electron.remote;
@@ -30,12 +29,24 @@ const Slick = window.Slick;
 require('slickgrid/slick.grid');
 require('slickgrid/slick.editors');
 
+
+const bootstrap = require('bootstrap');
+
 // Set temporary globals for angular relative path fix
 // TODO make it so these don't need to be globals
 const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
 const AngularCore = require('@angular/core');
 const AngularPlatformBrowser = require('@angular/platform-browser');
 
+
+
+process.lazyEnv = new Promise(function (resolve) {
+	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
+		assign(process.env, shellEnv);
+		resolve(process.env);
+	});
+	ipc.send('vscode:fetchShellEnv', remote.getCurrentWindow().id);
+});
 
 function onError(error, enableDeveloperTools) {
 	if (enableDeveloperTools) {
@@ -68,6 +79,7 @@ function createScript(src, onload) {
 	const script = document.createElement('script');
 	script.src = src;
 	script.addEventListener('load', onload);
+
 	const head = document.getElementsByTagName('head')[0];
 	head.insertBefore(script, head.lastChild);
 }
@@ -193,6 +205,7 @@ function main() {
 			recordStats: !!configuration.performance,
 			nodeCachedDataDir: configuration.nodeCachedDataDir,
 			onNodeCachedDataError: function (err) { nodeCachedDataErrors.push(err) },
+			nodeModules: [/*BUILD->INSERT_NODE_MODULES*/]
 		});
 
 		if (nlsConfig.pseudo) {
@@ -203,12 +216,12 @@ function main() {
 
 		// Perf Counters
 		const timers = window.MonacoEnvironment.timers = {
-			start: new Date(configuration.isInitialStartup ? configuration.perfStartTime : configuration.perfWindowLoadTime),
 			isInitialStartup: !!configuration.isInitialStartup,
 			hasAccessibilitySupport: !!configuration.accessibilitySupport,
-			perfStartTime: new Date(configuration.perfStartTime),
-			perfWindowLoadTime: new Date(configuration.perfWindowLoadTime),
-			perfBeforeLoadWorkbenchMain: new Date()
+			start: new Date(configuration.perfStartTime),
+			appReady: new Date(configuration.perfAppReady),
+			windowLoad: new Date(configuration.perfWindowLoadTime),
+			beforeLoadWorkbenchMain: new Date()
 		};
 
 		require([
@@ -216,18 +229,21 @@ function main() {
 			'vs/nls!vs/workbench/electron-browser/workbench.main',
 			'vs/css!vs/workbench/electron-browser/workbench.main'
 		], function () {
-			timers.perfAfterLoadWorkbenchMain = new Date();
+			timers.afterLoadWorkbenchMain = new Date();
 
-			require('vs/workbench/electron-browser/main')
-				.startup(configuration)
-				.done(function () {
-					unbind(); // since the workbench is running, unbind our developer related listeners and let the workbench handle them
-				}, function (error) {
-					onError(error, enableDeveloperTools);
-				});
+			process.lazyEnv.then(function () {
+
+				require('vs/workbench/electron-browser/main')
+					.startup(configuration)
+					.done(function () {
+						unbind(); // since the workbench is running, unbind our developer related listeners and let the workbench handle them
+					}, function (error) {
+						onError(error, enableDeveloperTools);
+					});
 			});
-		});
 
+		});
+	});
 }
 
 main();

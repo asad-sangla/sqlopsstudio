@@ -9,7 +9,6 @@ import assert = require('assert');
 import fs = require('fs');
 
 import stream = require('vs/base/node/stream');
-var os = require('os');
 
 suite('Stream', () => {
 	test('readExactlyByFile - ANSI', function (done: () => void) {
@@ -61,9 +60,10 @@ suite('Stream', () => {
 	test('readToMatchingString - ANSI', function (done: () => void) {
 		const file = require.toUrl('./fixtures/file.css');
 
-		stream.readToMatchingString(file, '\r\n' , 10, 100, (error: Error, result: string) => {
+		stream.readToMatchingString(file, '\n', 10, 100, (error: Error, result: string) => {
 			assert.equal(error, null);
-			assert.equal(result, '/*---------------------------------------------------------------------------------------------');
+			// \r may be present on Windows
+			assert.equal(result.replace('\r', ''), '/*---------------------------------------------------------------------------------------------');
 
 			done();
 		});

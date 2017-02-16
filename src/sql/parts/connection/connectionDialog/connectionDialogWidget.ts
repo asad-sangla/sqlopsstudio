@@ -16,6 +16,8 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import vscode = require('vscode');
 import * as platform from 'vs/base/common/platform';
 
+let bootstrap: any;
+
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
 	onCancel: () => void;
@@ -95,7 +97,10 @@ export class ConnectionDialogWidget  {
 		this.registerListeners();
 		this.modelElement = this.builder.getHTMLElement();
 		this.serverNameInputBox.focus();
-		this.authTypeSelected(this.authTypeSelectBox.getSelected());
+
+		// TODO getSelected was remvoed from select box in VS Code 1.9.1
+		// this.authTypeSelected(this.authTypeSelectBox.getSelected());
+
 		return this.modelElement;
 	}
 
@@ -238,9 +243,14 @@ export class ConnectionDialogWidget  {
 	}
 
 	public open() {
-		require(['jquery', 'bootstrapUi'], function(jQuery){
-			   jQuery('#connectionDialogModal').modal({backdrop:false});
-		});
+
+		bootstrap.jQuery('#connectionDialogModal').modal({backdrop:false});
+
+		//jQuery('#connectionDialogModal').modal({backdrop:false});
+
+		// require(['jquery', 'bootstrapUi'], function(jQuery){
+		// 	   jQuery('#connectionDialogModal').modal({backdrop:false});
+		// });
 	}
 
 	public dispose(): void {

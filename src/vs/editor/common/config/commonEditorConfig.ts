@@ -11,49 +11,13 @@ import * as objects from 'vs/base/common/objects';
 import * as platform from 'vs/base/common/platform';
 import { Extensions, IConfigurationRegistry, IConfigurationNode } from 'vs/platform/configuration/common/configurationRegistry';
 import { Registry } from 'vs/platform/platform';
-import { DefaultConfig, DEFAULT_INDENTATION, DEFAULT_TRIM_AUTO_WHITESPACE, GOLDEN_LINE_HEIGHT_RATIO } from 'vs/editor/common/config/defaultConfig';
+import { DefaultConfig, DEFAULT_INDENTATION, DEFAULT_TRIM_AUTO_WHITESPACE } from 'vs/editor/common/config/defaultConfig';
 import * as editorCommon from 'vs/editor/common/editorCommon';
 import { EditorLayoutProvider } from 'vs/editor/common/viewLayout/editorLayoutProvider';
 import { ScrollbarVisibility } from 'vs/base/common/scrollable';
-
-// TODO@Alex: investigate if it is better to stick to 31 bits (see smi = SMall Integer)
-// See https://thibaultlaurens.github.io/javascript/2013/04/29/how-the-v8-engine-works/#tagged-values
-/**
- * MAX_INT that fits in 32 bits
- */
-const MAX_SAFE_INT = 0x7fffffff;
-/**
- * MIN_INT that fits in 32 bits
- */
-const MIN_SAFE_INT = -0x80000000;
-
-export interface IEditorZoom {
-	onDidChangeZoomLevel: Event<number>;
-	getZoomLevel(): number;
-	setZoomLevel(zoomLevel: number): void;
-}
-
-export const EditorZoom: IEditorZoom = new class {
-
-	private _zoomLevel: number = 0;
-
-	private _onDidChangeZoomLevel: Emitter<number> = new Emitter<number>();
-	public onDidChangeZoomLevel: Event<number> = this._onDidChangeZoomLevel.event;
-
-	public getZoomLevel(): number {
-		return this._zoomLevel;
-	}
-
-	public setZoomLevel(zoomLevel: number): void {
-		zoomLevel = Math.min(Math.max(-9, zoomLevel), 9);
-		if (this._zoomLevel === zoomLevel) {
-			return;
-		}
-
-		this._zoomLevel = zoomLevel;
-		this._onDidChangeZoomLevel.fire(this._zoomLevel);
-	}
-};
+import { FontInfo, BareFontInfo } from 'vs/editor/common/config/fontInfo';
+import { Constants } from 'vs/editor/common/core/uint';
+import { EditorZoom } from 'vs/editor/common/config/editorZoom';
 
 /**
  * Control what pressing Tab does.
@@ -141,7 +105,7 @@ class InternalEditorOptionsHelper {
 	public static createInternalEditorOptions(
 		outerWidth: number, outerHeight: number,
 		opts: editorCommon.IEditorOptions,
-		fontInfo: editorCommon.FontInfo,
+		fontInfo: FontInfo,
 		editorClassName: string,
 		isDominatedByLongLines: boolean,
 		maxLineNumber: number,
@@ -288,6 +252,7 @@ class InternalEditorOptionsHelper {
 		let viewInfo = new editorCommon.InternalEditorViewOptions({
 			theme: opts.theme,
 			canUseTranslate3d: canUseTranslate3d,
+			disableMonospaceOptimizations: (toBoolean(opts.disableMonospaceOptimizations) || toBoolean(opts.fontLigatures)),
 			experimentalScreenReader: toBoolean(opts.experimentalScreenReader),
 			rulers: toSortedIntegerArray(opts.rulers),
 			ariaLabel: String(opts.ariaLabel),
@@ -323,8 +288,10 @@ class InternalEditorOptionsHelper {
 			parameterHints: toBoolean(opts.parameterHints),
 			iconsInSuggestions: toBoolean(opts.iconsInSuggestions),
 			formatOnType: toBoolean(opts.formatOnType),
+			formatOnPaste: toBoolean(opts.formatOnPaste),
 			suggestOnTriggerCharacters: toBoolean(opts.suggestOnTriggerCharacters),
 			acceptSuggestionOnEnter: toBoolean(opts.acceptSuggestionOnEnter),
+			acceptSuggestionOnCommitCharacter: toBoolean(opts.acceptSuggestionOnCommitCharacter),
 			snippetSuggestions: opts.snippetSuggestions,
 			emptySelectionClipboard: opts.emptySelectionClipboard,
 			tabCompletion: opts.tabCompletion,
@@ -407,7 +374,7 @@ function toFloat(source: any, defaultValue: number): number {
 	return r;
 }
 
-function toInteger(source: any, minimum: number = MIN_SAFE_INT, maximum: number = MAX_SAFE_INT): number {
+function toInteger(source: any, minimum: number = Constants.MIN_SAFE_SMALL_INTEGER, maximum: number = Constants.MAX_SAFE_SMALL_INTEGER): number {
 	let r = parseInt(source, 10);
 	if (isNaN(r)) {
 		r = 0;
@@ -532,22 +499,6 @@ export abstract class CommonEditorConfiguration extends Disposable implements ed
 		let opts = this._configWithDefaults.getEditorOptions();
 
 		let editorClassName = this._getEditorClassName(opts.theme, toBoolean(opts.fontLigatures));
-		let fontFamily = String(opts.fontFamily) || DefaultConfig.editor.fontFamily;
-		let fontWeight = String(opts.fontWeight) || DefaultConfig.editor.fontWeight;
-		let fontSize = toFloat(opts.fontSize, DefaultConfig.editor.fontSize);
-		fontSize = Math.max(0, fontSize);
-		fontSize = Math.min(100, fontSize);
-		if (fontSize === 0) {
-			fontSize = DefaultConfig.editor.fontSize;
-		}
-
-		let lineHeight = toInteger(opts.lineHeight, 0, 150);
-		if (lineHeight === 0) {
-			lineHeight = Math.round(GOLDEN_LINE_HEIGHT_RATIO * fontSize);
-		}
-		let editorZoomLevelMultiplier = 1 + (EditorZoom.getZoomLevel() * 0.1);
-		fontSize *= editorZoomLevelMultiplier;
-		lineHeight *= editorZoomLevelMultiplier;
 
 		let disableTranslate3d = toBoolean(opts.disableTranslate3d);
 		let canUseTranslate3d = this._getCanUseTranslate3d();
@@ -555,16 +506,13 @@ export abstract class CommonEditorConfiguration extends Disposable implements ed
 			canUseTranslate3d = false;
 		}
 
+		let bareFontInfo = BareFontInfo.createFromRawSettings(opts);
+
 		return InternalEditorOptionsHelper.createInternalEditorOptions(
 			this.getOuterWidth(),
 			this.getOuterHeight(),
 			opts,
-			this.readConfiguration(new editorCommon.BareFontInfo({
-				fontFamily: fontFamily,
-				fontWeight: fontWeight,
-				fontSize: fontSize,
-				lineHeight: lineHeight
-			})),
+			this.readConfiguration(bareFontInfo),
 			editorClassName,
 			this._isDominatedByLongLines,
 			this._maxLineNumber,
@@ -595,53 +543,11 @@ export abstract class CommonEditorConfiguration extends Disposable implements ed
 
 	protected abstract _getCanUseTranslate3d(): boolean;
 
-	protected abstract readConfiguration(styling: editorCommon.BareFontInfo): editorCommon.FontInfo;
+	protected abstract readConfiguration(styling: BareFontInfo): FontInfo;
 }
 
-/**
- * Helper to update Monaco Editor Settings from configurations service.
- */
-export class EditorConfiguration {
-	public static EDITOR_SECTION = 'editor';
-	public static DIFF_EDITOR_SECTION = 'diffEditor';
-
-	/**
-	 * Ask the provided configuration service to apply its configuration to the provided editor.
-	 */
-	public static apply(config: any, editor: editorCommon.IEditor): void {
-		if (!config) {
-			return;
-		}
-
-		// Editor Settings (Code Editor, Diff, Terminal)
-		if (editor && typeof editor.updateOptions === 'function') {
-			let type = editor.getEditorType();
-			if (type !== editorCommon.EditorType.ICodeEditor && type !== editorCommon.EditorType.IDiffEditor) {
-				return;
-			}
-
-			let editorConfig = config[EditorConfiguration.EDITOR_SECTION];
-			if (type === editorCommon.EditorType.IDiffEditor) {
-				let diffEditorConfig = config[EditorConfiguration.DIFF_EDITOR_SECTION];
-				if (diffEditorConfig) {
-					if (!editorConfig) {
-						editorConfig = diffEditorConfig;
-					} else {
-						editorConfig = objects.mixin(editorConfig, diffEditorConfig);
-					}
-				}
-			}
-
-			if (editorConfig) {
-				delete editorConfig.readOnly; // Prevent someone from making editor readonly
-				editor.updateOptions(editorConfig);
-			}
-		}
-	}
-}
-
-let configurationRegistry = <IConfigurationRegistry>Registry.as(Extensions.Configuration);
-let editorConfiguration: IConfigurationNode = {
+const configurationRegistry = <IConfigurationRegistry>Registry.as(Extensions.Configuration);
+const editorConfiguration: IConfigurationNode = {
 	'id': 'editor',
 	'order': 5,
 	'type': 'object',
@@ -650,28 +556,33 @@ let editorConfiguration: IConfigurationNode = {
 		'editor.fontFamily': {
 			'type': 'string',
 			'default': DefaultConfig.editor.fontFamily,
+			'overridable': true,
 			'description': nls.localize('fontFamily', "Controls the font family.")
 		},
 		'editor.fontWeight': {
 			'type': 'string',
 			'enum': ['normal', 'bold', '100', '200', '300', '400', '500', '600', '700', '800', '900'],
 			'default': DefaultConfig.editor.fontWeight,
+			'overridable': true,
 			'description': nls.localize('fontWeight', "Controls the font weight.")
 		},
 		'editor.fontSize': {
 			'type': 'number',
 			'default': DefaultConfig.editor.fontSize,
+			'overridable': true,
 			'description': nls.localize('fontSize', "Controls the font size in pixels.")
 		},
 		'editor.lineHeight': {
 			'type': 'number',
 			'default': DefaultConfig.editor.lineHeight,
+			'overridable': true,
 			'description': nls.localize('lineHeight', "Controls the line height. Use 0 to compute the lineHeight from the fontSize.")
 		},
 		'editor.lineNumbers': {
 			'type': 'string',
 			'enum': ['off', 'on', 'relative'],
 			'default': DefaultConfig.editor.lineNumbers,
+			'overridable': true,
 			'description': nls.localize('lineNumbers', "Controls the display of line numbers. Possible values are 'on', 'off', and 'relative'. 'relative' shows the line count from the current cursor position.")
 		},
 		'editor.rulers': {
@@ -680,11 +591,13 @@ let editorConfiguration: IConfigurationNode = {
 				'type': 'number'
 			},
 			'default': DefaultConfig.editor.rulers,
+			'overridable': true,
 			'description': nls.localize('rulers', "Columns at which to show vertical rulers")
 		},
 		'editor.wordSeparators': {
 			'type': 'string',
 			'default': DefaultConfig.editor.wordSeparators,
+			'overridable': true,
 			'description': nls.localize('wordSeparators', "Characters that will be used as word separators when doing word related navigations or operations")
 		},
 		'editor.tabSize': {
@@ -708,181 +621,227 @@ let editorConfiguration: IConfigurationNode = {
 		'editor.roundedSelection': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.roundedSelection,
+			'overridable': true,
 			'description': nls.localize('roundedSelection', "Controls if selections have rounded corners")
 		},
 		'editor.scrollBeyondLastLine': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.scrollBeyondLastLine,
+			'overridable': true,
 			'description': nls.localize('scrollBeyondLastLine', "Controls if the editor will scroll beyond the last line")
 		},
 		'editor.wrappingColumn': {
 			'type': 'integer',
 			'default': DefaultConfig.editor.wrappingColumn,
 			'minimum': -1,
+			'overridable': true,
 			'description': nls.localize('wrappingColumn', "Controls after how many characters the editor will wrap to the next line. Setting this to 0 turns on viewport width wrapping (word wrapping). Setting this to -1 forces the editor to never wrap.")
 		},
 		'editor.wordWrap': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.wordWrap,
+			'overridable': true,
 			'description': nls.localize('wordWrap', "Controls if lines should wrap. The lines will wrap at min(editor.wrappingColumn, viewportWidthInColumns).")
 		},
 		'editor.wrappingIndent': {
 			'type': 'string',
 			'enum': ['none', 'same', 'indent'],
 			'default': DefaultConfig.editor.wrappingIndent,
+			'overridable': true,
 			'description': nls.localize('wrappingIndent', "Controls the indentation of wrapped lines. Can be one of 'none', 'same' or 'indent'.")
 		},
 		'editor.mouseWheelScrollSensitivity': {
 			'type': 'number',
 			'default': DefaultConfig.editor.mouseWheelScrollSensitivity,
+			'overridable': true,
 			'description': nls.localize('mouseWheelScrollSensitivity', "A multiplier to be used on the `deltaX` and `deltaY` of mouse wheel scroll events")
 		},
 		'editor.quickSuggestions': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.quickSuggestions,
+			'overridable': true,
 			'description': nls.localize('quickSuggestions', "Controls if quick suggestions should show up or not while typing")
 		},
 		'editor.quickSuggestionsDelay': {
 			'type': 'integer',
 			'default': DefaultConfig.editor.quickSuggestionsDelay,
 			'minimum': 0,
+			'overridable': true,
 			'description': nls.localize('quickSuggestionsDelay', "Controls the delay in ms after which quick suggestions will show up")
 		},
 		'editor.parameterHints': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.parameterHints,
+			'overridable': true,
 			'description': nls.localize('parameterHints', "Enables parameter hints")
 		},
 		'editor.autoClosingBrackets': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.autoClosingBrackets,
+			'overridable': true,
 			'description': nls.localize('autoClosingBrackets', "Controls if the editor should automatically close brackets after opening them")
 		},
 		'editor.formatOnType': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.formatOnType,
+			'overridable': true,
 			'description': nls.localize('formatOnType', "Controls if the editor should automatically format the line after typing")
+		},
+		'editor.formatOnPaste': {
+			'type': 'boolean',
+			'default': DefaultConfig.editor.formatOnPaste,
+			'overridable': true,
+			'description': nls.localize('formatOnPaste', "Controls if the editor should automatically format the pasted content. A formatter must be available and the formatter should be able to format a range in a document.")
 		},
 		'editor.suggestOnTriggerCharacters': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.suggestOnTriggerCharacters,
+			'overridable': true,
 			'description': nls.localize('suggestOnTriggerCharacters', "Controls if suggestions should automatically show up when typing trigger characters")
 		},
 		'editor.acceptSuggestionOnEnter': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.acceptSuggestionOnEnter,
-			'description': nls.localize('acceptSuggestionOnEnter', "Controls if suggestions should be accepted 'Enter' - in addition to 'Tab'. Helps to avoid ambiguity between inserting new lines or accepting suggestions.")
+			'overridable': true,
+			'description': nls.localize('acceptSuggestionOnEnter', "Controls if suggestions should be accepted on 'Enter' - in addition to 'Tab'. Helps to avoid ambiguity between inserting new lines or accepting suggestions.")
+		},
+		'editor.acceptSuggestionOnCommitCharacter': {
+			'type': 'boolean',
+			'default': DefaultConfig.editor.acceptSuggestionOnCommitCharacter,
+			'overridable': true,
+			'description': nls.localize('acceptSuggestionOnCommitCharacter', "Controls if suggestions should be accepted on commit characters. For instance in JavaScript the semi-colon (';') can be a commit character that accepts a suggestion and types that character.")
 		},
 		'editor.snippetSuggestions': {
 			'type': 'string',
 			'enum': ['top', 'bottom', 'inline', 'none'],
 			'default': DefaultConfig.editor.snippetSuggestions,
+			'overridable': true,
 			'description': nls.localize('snippetSuggestions', "Controls whether snippets are shown with other suggestions and how they are sorted.")
 		},
 		'editor.emptySelectionClipboard': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.emptySelectionClipboard,
+			'overridable': true,
 			'description': nls.localize('emptySelectionClipboard', "Controls whether copying without a selection copies the current line.")
 		},
 		'editor.wordBasedSuggestions': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.wordBasedSuggestions,
+			'overridable': true,
 			'description': nls.localize('wordBasedSuggestions', "Enable word based suggestions.")
 		},
 		'editor.suggestFontSize': {
 			'type': 'integer',
 			'default': 0,
 			'minimum': 0,
+			'overridable': true,
 			'description': nls.localize('suggestFontSize', "Font size for the suggest widget")
 		},
 		'editor.suggestLineHeight': {
 			'type': 'integer',
 			'default': 0,
 			'minimum': 0,
+			'overridable': true,
 			'description': nls.localize('suggestLineHeight', "Line height for the suggest widget")
 		},
 		'editor.tabCompletion': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.tabCompletion,
+			'overridable': true,
 			'description': nls.localize('tabCompletion', "Insert snippets when their prefix matches. Works best when 'quickSuggestions' aren't enabled.")
 		},
 		'editor.selectionHighlight': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.selectionHighlight,
+			'overridable': true,
 			'description': nls.localize('selectionHighlight', "Controls whether the editor should highlight similar matches to the selection")
 		},
 		'editor.overviewRulerLanes': {
 			'type': 'integer',
 			'default': 3,
+			'overridable': true,
 			'description': nls.localize('overviewRulerLanes', "Controls the number of decorations that can show up at the same position in the overview ruler")
 		},
 		'editor.cursorBlinking': {
 			'type': 'string',
 			'enum': ['blink', 'smooth', 'phase', 'expand', 'solid'],
 			'default': DefaultConfig.editor.cursorBlinking,
+			'overridable': true,
 			'description': nls.localize('cursorBlinking', "Control the cursor animation style, possible values are 'blink', 'smooth', 'phase', 'expand' and 'solid'")
 		},
 		'editor.mouseWheelZoom': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.mouseWheelZoom,
+			'overridable': true,
 			'description': nls.localize('mouseWheelZoom', "Zoom the font of the editor when using mouse wheel and holding Ctrl")
 		},
 		'editor.cursorStyle': {
 			'type': 'string',
 			'enum': ['block', 'line', 'underline'],
 			'default': DefaultConfig.editor.cursorStyle,
+			'overridable': true,
 			'description': nls.localize('cursorStyle', "Controls the cursor style, accepted values are 'block', 'line' and 'underline'")
 		},
 		'editor.fontLigatures': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.fontLigatures,
+			'overridable': true,
 			'description': nls.localize('fontLigatures', "Enables font ligatures")
 		},
 		'editor.hideCursorInOverviewRuler': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.hideCursorInOverviewRuler,
+			'overridable': true,
 			'description': nls.localize('hideCursorInOverviewRuler', "Controls if the cursor should be hidden in the overview ruler.")
 		},
 		'editor.renderWhitespace': {
 			'type': 'string',
 			'enum': ['none', 'boundary', 'all'],
 			default: DefaultConfig.editor.renderWhitespace,
+			'overridable': true,
 			description: nls.localize('renderWhitespace', "Controls how the editor should render whitespace characters, possibilities are 'none', 'boundary', and 'all'. The 'boundary' option does not render single spaces between words.")
 		},
 		'editor.renderControlCharacters': {
 			'type': 'boolean',
 			default: DefaultConfig.editor.renderControlCharacters,
+			'overridable': true,
 			description: nls.localize('renderControlCharacters', "Controls whether the editor should render control characters")
 		},
 		'editor.renderIndentGuides': {
 			'type': 'boolean',
 			default: DefaultConfig.editor.renderIndentGuides,
+			'overridable': true,
 			description: nls.localize('renderIndentGuides', "Controls whether the editor should render indent guides")
 		},
 		'editor.renderLineHighlight': {
 			'type': 'string',
 			'enum': ['none', 'gutter', 'line', 'all'],
 			default: DefaultConfig.editor.renderLineHighlight,
+			'overridable': true,
 			description: nls.localize('renderLineHighlight', "Controls how the editor should render the current line highlight, possibilities are 'none', 'gutter', 'line', and 'all'.")
 		},
 		'editor.codeLens': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.codeLens,
+			'overridable': true,
 			'description': nls.localize('codeLens', "Controls if the editor shows code lenses")
 		},
 		'editor.folding': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.folding,
+			'overridable': true,
 			'description': nls.localize('folding', "Controls whether the editor has code folding enabled")
 		},
 		'editor.glyphMargin': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.glyphMargin,
+			'overridable': true,
 			'description': nls.localize('glyphMargin', "Controls whether the editor should render the vertical glyph margin. Glyph margin is mostly used for debugging.")
 		},
 		'editor.useTabStops': {
 			'type': 'boolean',
 			'default': DefaultConfig.editor.useTabStops,
+			'overridable': true,
 			'description': nls.localize('useTabStops', "Inserting and deleting whitespace follows tab stops")
 		},
 		'editor.trimAutoWhitespace': {
@@ -893,21 +852,25 @@ let editorConfiguration: IConfigurationNode = {
 		'editor.stablePeek': {
 			'type': 'boolean',
 			'default': false,
+			'overridable': true,
 			'description': nls.localize('stablePeek', "Keep peek editors open even when double clicking their content or when hitting Escape.")
 		},
 		'diffEditor.renderSideBySide': {
 			'type': 'boolean',
 			'default': true,
+			'overridable': true,
 			'description': nls.localize('sideBySide', "Controls if the diff editor shows the diff side by side or inline")
 		},
 		'diffEditor.ignoreTrimWhitespace': {
 			'type': 'boolean',
 			'default': true,
+			'overridable': true,
 			'description': nls.localize('ignoreTrimWhitespace', "Controls if the diff editor shows changes in leading or trailing whitespace as diffs")
 		},
 		'diffEditor.renderIndicators': {
 			'type': 'boolean',
 			'default': true,
+			'overridable': true,
 			'description': nls.localize('renderIndicators', "Controls if the diff editor shows +/- indicators for added/removed changes")
 		}
 	}
