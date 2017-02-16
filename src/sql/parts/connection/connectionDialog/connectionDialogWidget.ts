@@ -235,9 +235,7 @@ export class ConnectionDialogWidget  {
 	}
 
 	public close() {
-		require(['jquery', 'bootstrapUi'], function(jQuery){
-			   jQuery('#connectionDialogModal').modal('hide');
-		});
+		jQuery('#connectionDialogModal').modal('hide');
 	}
 
 	public open() {
