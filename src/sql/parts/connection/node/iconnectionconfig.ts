@@ -5,6 +5,7 @@
 'use strict';
 
 import { IConnectionProfile } from './interfaces';
+import { IConnectionProfileGroup } from './connectionProfileGroup';
 
 /**
  * Interface for a configuration file that stores connection profiles.
@@ -16,4 +17,5 @@ export interface IConnectionConfig {
     addConnection(profile: IConnectionProfile): Promise<void>;
     getConnections(getWorkspaceConnections: boolean): IConnectionProfile[];
     removeConnection(profile: IConnectionProfile): Promise<boolean>;
+    getAllGroups(): IConnectionProfileGroup[];
 }

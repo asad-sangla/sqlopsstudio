@@ -2,7 +2,6 @@
 import * as getmac from 'getmac';
 import * as crypto from 'crypto';
 import * as os from 'os';
-import vscode = require('vscode');
 import Constants = require('./constants');
 import * as interfaces from './interfaces';
 import {ExtensionContext} from 'vscode';
@@ -78,6 +77,7 @@ export function generateUserId(): Promise<string> {
     });
 }
 
+/*
 // Return 'true' if the active editor window has a .sql file, false otherwise
 export function isEditingSqlFile(): boolean {
     let sqlFile = false;
@@ -108,6 +108,7 @@ export function getActiveTextEditorUri(): string {
     return '';
 }
 
+
 // Helper to log messages to "MSSQL" output channel
 export function logToOutputChannel(msg: any): void {
     let outputChannel = vscode.window.createOutputChannel(Constants.outputChannelName);
@@ -121,16 +122,7 @@ export function logToOutputChannel(msg: any): void {
     }
 }
 
-// Helper to log debug messages
-export function logDebug(msg: any): void {
-    let config = vscode.workspace.getConfiguration(Constants.extensionConfigSectionName);
-    let logDebugInfo = config[Constants.configLogDebugInfo];
-    if (logDebugInfo === true) {
-        let currentTime = new Date().toLocaleTimeString();
-        let outputMsg = '[' + currentTime + ']: ' + msg ? msg.toString() : '';
-        console.log(outputMsg);
-    }
-}
+
 
 // Helper to show an info message
 export function showInfoMsg(msg: string): void {
@@ -145,6 +137,18 @@ export function showWarnMsg(msg: string): void {
 // Helper to show an error message
 export function showErrorMsg(msg: string): void {
     vscode.window.showErrorMessage(Constants.extensionName + ': ' + msg );
+}
+*/
+
+// Helper to log debug messages
+export function logDebug(msg: any): void {
+    //let config = vscode.workspace.getConfiguration(Constants.extensionConfigSectionName);
+    let logDebugInfo = true; //config[Constants.configLogDebugInfo];
+    if (logDebugInfo === true) {
+        let currentTime = new Date().toLocaleTimeString();
+        let outputMsg = '[' + currentTime + ']: ' + msg ? msg.toString() : '';
+        console.log(outputMsg);
+    }
 }
 
 export function isEmpty(str: any): boolean {

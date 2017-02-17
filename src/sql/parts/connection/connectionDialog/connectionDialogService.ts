@@ -25,7 +25,14 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private connectionDialog: ConnectionDialogWidget;
 
 	private handleOnConnect(): void {
-		this._connectionManagementService.addConnectionProfile(this.connectionDialog.getConnection());
+		this._connectionManagementService.addConnectionProfile(this.connectionDialog.getConnection()).then(connected => {
+			if(connected) {
+				this.connectionDialog.close();
+			}
+
+		}).catch(err => {
+
+			});
 	}
 
 	public showDialog(connectionManagementService: IConnectionManagementService): TPromise<void> {

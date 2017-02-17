@@ -13,13 +13,23 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
+import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
-// import { ConnectionStore } from './connectionStore';
 import { Memento } from 'vs/workbench/common/memento';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import * as vscode from 'vscode';
+import { ConnectionStore } from './connectionStore';
+import { ConnectionProfile } from './connectionProfile';
+import { IConnectionProfile } from './interfaces';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
+import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
+import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
+import { ConnectionManagementInfo } from './connectionManagementInfo';
+import Utils = require('./utils');
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -31,9 +41,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _serverEvents: { [handle: number]: ConnectionManagementEvents; } = Object.create(null);
 
-	// private _connectionStore: ConnectionStore;
+    private _connectionStore: ConnectionStore;
 
 	private connectionMemento: Memento;
+
+	private _connections: { [fileUri: string]: ConnectionManagementInfo };
 
 
 	constructor(
@@ -43,38 +55,99 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IStatusbarService private _statusService: IStatusbarService,
 		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
 		@IStorageService private _storageService: IStorageService,
-		@ITelemetryService private _telemetryService: ITelemetryService
+		@ITelemetryService private _telemetryService: ITelemetryService,
+		@IConfigurationService private _configurationService: IConfigurationService,
+		@IEnvironmentService private _environmentService: IEnvironmentService,
+		@IConfigurationEditingService private _configurationEditService: IConfigurationEditingService,
+		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService
 	) {
 
 		this.connectionMemento = new Memento('ConnectionManagement');
 
-		// this._connectionStore = new ConnectionStore(_storageService, this.connectionMemento);
-
-
+		this._connectionStore = new ConnectionStore(_storageService, this.connectionMemento,
+		_configurationService, _configurationEditService, this._workspaceConfigurationService, this._environmentService);
+		this._connections = {};
 	}
 
 
 	public newConnection(): void {
+		//let allConn = this._connectionStore.getConnectionProfileGroups();
 		this._connectionDialogService.showDialog(this);
 	}
 
-	public addConnectionProfile(connection: vscode.ConnectionInfo): void {
+	public addConnectionProfile(connection: vscode.ConnectionInfo): Promise<boolean> {
+		let uri = this.getDocumentUri(connection);
+
+		return new Promise<boolean>((resolve, reject) => {
 		this._statusService.setStatusMessage('Connecting...');
-
-		this.saveToSettings(connection);
-
-		this.connect(connection);
+			return this.connect(uri, connection).then(connected => {
+				if(connected) {
+					let connectionInfo = this._connections[uri];
+					this.saveToSettings(connectionInfo.connectionProfile);
+				}
+				resolve(connected);
+			}).catch(err => {
+				reject(err);
+			});
+		});
 	}
 
-	private connect(connection: vscode.ConnectionInfo): void {
+	public getAllConnections(): ConnectionProfileGroup[] {
+		return this._connectionStore.getConnectionProfileGroups();
+	}
+
+	private connect(uri: string, connection: vscode.ConnectionInfo): Promise<boolean> {
+			const self = this;
+
+			return new Promise<boolean>((resolve, reject) => {
+				let newProfile = new ConnectionProfile();
+				newProfile.server = connection.serverName;
+				newProfile.database = connection.databaseName;
+				newProfile.user = connection.userName;
+				newProfile.password = connection.password;
+
+				let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
+				connectionInfo.extensionTimer = new Utils.Timer();
+				connectionInfo.intelliSenseTimer = new Utils.Timer();
+				connectionInfo.connectionProfile = newProfile;
+				connectionInfo.connecting = true;
+				this._connections[uri] = connectionInfo;
+
+				// Setup the handler for the connection complete notification to call
+				connectionInfo.connectHandler = ((connectResult, error) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve(connectResult);
+					}
+				});
+
+				connectionInfo.serviceTimer = new Utils.Timer();
+
+				// send connection request message to service host
+				self.sentConnectRequest(connection);
+        });
+	}
+
+	private sentConnectRequest(connection: vscode.ConnectionInfo): void {
 		for (var key in this._serverEvents) {
 			let uri = this.getActiveEditorUri();
 			if (this.getActiveEditorUri() !== undefined) {
 				this._serverEvents[key].onConnect(uri, connection);
 			} else {
-				this._serverEvents[key].onAddConnectionProfile(connection);
+				let uri: string = 'connection://' + connection.serverName + ':' + connection.databaseName;
+				this._serverEvents[key].onAddConnectionProfile(uri, connection);
 			}
 		}
+	}
+
+	private getDocumentUri(connection: vscode.ConnectionInfo): string {
+		let uri = this.getActiveEditorUri();
+		if(uri === undefined) {
+			let uri: string = 'connection://' + connection.serverName + ':' + connection.databaseName;
+		}
+
+		return uri;
 	}
 
 	private getActiveEditorUri(): string {
@@ -86,15 +159,46 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return uri;
 	}
 
-	private saveToSettings(connection: vscode.ConnectionInfo): boolean {
-
-
+	private saveToSettings(connection: IConnectionProfile): boolean {
+		this._connectionStore.saveProfile(connection);
 		return true;
 	}
 
-	public onConnectionComplete(handle: number, connectionUri: string): void {
+	private tryAddMruConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile): void {
+        if (newConnection) {
+
+            this._connectionStore.addRecentlyUsed(newConnection)
+			  .then(() => {
+                connectionManagementInfo.connectHandler(true);
+            }, err => {
+                connectionManagementInfo.connectHandler(false, err);
+            });
+        } else {
+            connectionManagementInfo.connectHandler(false);
+        }
+    }
+
+	public onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void {
+		const self = this;
+		let connection = this._connections[connectionInfoSummary.ownerUri];
+        connection.serviceTimer.end();
+        connection.connecting = false;
+
+        let mruConnection: IConnectionProfile = <any>{};
+
+        if (Utils.isNotEmpty(connectionInfoSummary.connectionId)) {
+            connection.connectHandler(true);
+            mruConnection = connection.connectionProfile;
+        } else {
+            connection.connectHandler(false);
+            mruConnection = undefined;
+        }
+
+        self.tryAddMruConnection(connection, mruConnection);
 		this._statusService.setStatusMessage('Updating IntelliSense cache');
 	}
+
+
 
 	public onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
 		this._statusService.setStatusMessage('Connection Complete ' + connectionUri);
@@ -117,7 +221,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private getActiveEditorInputResource(): URI {
 		const input = this._editorService.getActiveEditorInput();
-		if (input && input instanceof FileEditorInput) {
+		if (input && (input instanceof FileEditorInput || input instanceof UntitledEditorInput)) {
 			return input.getResource();
 		}
 

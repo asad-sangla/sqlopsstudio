@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import fs = require('fs');
-import os = require('os');
 import * as Constants from './constants';
- import * as Utils from './utils';
+import * as Utils from './utils';
 import { IConnectionProfile } from './interfaces';
 import { IConnectionConfig } from './iconnectionconfig';
-import vscode = require('vscode');
-const commentJson = require('comment-json');
+import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { IConfigurationEditingService, ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
+import { IWorkspaceConfigurationService, IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
 
 /**
  * Implements connection profile file storage.
@@ -21,30 +22,49 @@ export class ConnectionConfig implements IConnectionConfig {
     /**
      * Constructor.
      */
-    public constructor(private _fs?: any) {
-        if (!this._fs) {
-            this._fs = fs;
+    public constructor(
+        @IConfigurationService private _configurationService: IConfigurationService,
+        @IConfigurationEditingService private _configurationEditService: IConfigurationEditingService,
+        @IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
+        @IEnvironmentService private _environmentService: IEnvironmentService) {
+    }
+
+    public getAllGroups(): IConnectionProfileGroup[] {
+
+        let allGroups: IConnectionProfileGroup[] = [];
+        let userGroups = this.getConfiguration(Constants.connectionGroupsArrayName).user as IConnectionProfileGroup[];
+        let workSpaceGroups = this.getConfiguration(Constants.connectionGroupsArrayName).workspace as IConnectionProfileGroup[];
+        if(userGroups !== undefined) {
+            allGroups = allGroups.concat(userGroups);
         }
+        if(workSpaceGroups != undefined) {
+            allGroups = allGroups.concat(workSpaceGroups);
+        }
+        return allGroups;
     }
 
     /**
      * Add a new connection to the connection config.
      */
     public addConnection(profile: IConnectionProfile): Promise<void> {
-        let parsedSettingsFile = this.readAndParseSettingsFile(ConnectionConfig.configFilePath);
 
-        // No op if the settings file could not be parsed; we don't want to overwrite the corrupt file
-        if (!parsedSettingsFile) {
-            return Promise.reject(Utils.formatString(Constants.msgErrorReadingConfigFile, ConnectionConfig.configFilePath));
-        }
-
-        let profiles = this.getProfilesFromParsedSettingsFile(parsedSettingsFile);
+        this.addGroups(profile.groupName);
+        let profiles = this._workspaceConfigurationService.lookup<IConnectionProfile[]>(Constants.connectionsArrayName).user;
 
         // Remove the profile if already set
         profiles = profiles.filter(value => !Utils.isSameProfile(value, profile));
         profiles.push(profile);
 
-        return this.writeProfilesToSettingsFile(parsedSettingsFile, profiles);
+
+        return this.writeUserConfiguration(Constants.connectionsArrayName, profiles);
+    }
+
+    public addGroups(group: string): Promise<void> {
+
+       let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+       groups = this.saveGroup(groups, group);
+
+       return this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups);
     }
 
     /**
@@ -62,17 +82,21 @@ export class ConnectionConfig implements IConnectionConfig {
         };
 
         // Read from user settings
-        let parsedSettingsFile = this.readAndParseSettingsFile(ConnectionConfig.configFilePath);
-        let userProfiles = this.getProfilesFromParsedSettingsFile(parsedSettingsFile);
-        userProfiles.sort(compareProfileFunc);
-        profiles = profiles.concat(userProfiles);
+
+        let userProfiles = this.getConfiguration(Constants.connectionGroupsArrayName).user as IConnectionProfile[];
+        if(userProfiles !== undefined) {
+            userProfiles.sort(compareProfileFunc);
+            profiles = profiles.concat(userProfiles);
+        }
 
         if (getWorkspaceConnections) {
             // Read from workspace settings
-            parsedSettingsFile = this.readAndParseSettingsFile(this.workspaceSettingsFilePath);
-            let workspaceProfiles = this.getProfilesFromParsedSettingsFile(parsedSettingsFile);
-            workspaceProfiles.sort(compareProfileFunc);
-            profiles = profiles.concat(workspaceProfiles);
+
+            let workspaceProfiles = this.getConfiguration(Constants.connectionGroupsArrayName).workspace as IConnectionProfile[];
+            if(workspaceProfiles !== undefined) {
+                workspaceProfiles.sort(compareProfileFunc);
+                profiles = profiles.concat(workspaceProfiles);
+            }
         }
 
         if (profiles.length > 0) {
@@ -89,14 +113,8 @@ export class ConnectionConfig implements IConnectionConfig {
      * Remove an existing connection from the connection config.
      */
     public removeConnection(profile: IConnectionProfile): Promise<boolean> {
-        let parsedSettingsFile = this.readAndParseSettingsFile(ConnectionConfig.configFilePath);
 
-        // No op if the settings file could not be parsed; we don't want to overwrite the corrupt file
-        if (!parsedSettingsFile) {
-            return Promise.resolve(false);
-        }
-
-        let profiles = this.getProfilesFromParsedSettingsFile(parsedSettingsFile);
+        let profiles = this.getConfiguration(Constants.connectionGroupsArrayName).user as IConnectionProfile[];
 
         // Remove the profile if already set
         let found: boolean = false;
@@ -111,7 +129,7 @@ export class ConnectionConfig implements IConnectionConfig {
         });
 
         return new Promise<boolean>((resolve, reject) => {
-            this.writeProfilesToSettingsFile(parsedSettingsFile, profiles).then(() => {
+            this.writeUserConfiguration(Constants.connectionsArrayName, profiles).then(() => {
                 resolve(found);
             }).catch(err => {
                 reject(err);
@@ -119,100 +137,39 @@ export class ConnectionConfig implements IConnectionConfig {
         });
     }
 
-    /**
-     * Get the directory containing the connection config file.
-     */
-    private static get configFileDirectory(): string {
-        if (os.platform() === 'win32') {
-            // On Windows, settings are located in %APPDATA%\Code\User\
-            return process.env['APPDATA'] + '\\Code\\User\\';
-        } else if (os.platform() === 'darwin') {
-            // On OSX, settings are located in $HOME/Library/Application Support/Code/User/
-            return process.env['HOME'] + '/Library/Application Support/Code/User/';
-        } else {
-            // On Linux, settings are located in $HOME/.config/Code/User/
-            return process.env['HOME'] + '/.config/Code/User/';
+    private saveGroup(groups: IConnectionProfileGroup[], groupFullName: string): IConnectionProfileGroup[] {
+        if(groupFullName !== undefined && groupFullName !== '') {
+            let groupNames: string[] = groupFullName.split(ConnectionProfileGroup.GroupNameSeparator);
+            return this.saveGroupsInTreeIfNotExist(groups, groupNames, 0);
         }
+        return groups;
     }
 
-    /**
-     * Get the path of the file containing workspace settings.
-     */
-    private get workspaceSettingsFilePath(): string {
-        let workspacePath = vscode.workspace.rootPath;
-        const vscodeSettingsDir = '.vscode';
-
-        let dirSeparator = '/';
-        if (os.platform() === 'win32') {
-            dirSeparator = '\\';
+    private saveGroupsInTreeIfNotExist(groupTree: IConnectionProfileGroup[], groupNames: string[], index: number): IConnectionProfileGroup[] {
+        if(!groupTree) {
+            groupTree = [];
         }
-
-        if (workspacePath) {
-            return vscode.workspace.rootPath + dirSeparator +
-                vscodeSettingsDir + dirSeparator +
-                Constants.connectionConfigFilename;
-        } else {
-            return undefined;
-        }
-    }
-
-    /**
-     * Get the full path of the connection config filename.
-     */
-    private static get configFilePath(): string {
-        return this.configFileDirectory + Constants.connectionConfigFilename;
-    }
-    /**
-     * Public for testing purposes.
-     */
-    public createConfigFileDirectory(): Promise<void> {
-        const self = this;
-        const configFileDir: string = ConnectionConfig.configFileDirectory;
-        return new Promise<void>((resolve, reject) => {
-            self._fs.mkdir(configFileDir, err => {
-                // If the directory already exists, ignore the error
-                if (err && err.code !== 'EEXIST') {
-                    reject(err);
-                }
-                resolve();
-            });
-        });
-    }
-
-    /**
-     * Parse the vscode settings file into an object, preserving comments.
-     * This is public for testing only.
-     * @param filename the name of the file to read from
-     * @returns undefined if the settings file could not be read, or an empty object if the file did not exist/was empty
-     */
-    public readAndParseSettingsFile(filename: string): any {
-        if (!filename) {
-            return undefined;
-        }
-        try {
-            let fileBuffer: Buffer = this._fs.readFileSync(filename);
-            if (fileBuffer) {
-                let fileContents: string = fileBuffer.toString();
-                if (!Utils.isEmpty(fileContents)) {
-                    try {
-                        let fileObject: any = commentJson.parse(fileContents);
-                        return fileObject;
-                    } catch (e) { // Error parsing JSON
-                        vscode.window.showErrorMessage(Utils.formatString(Constants.msgErrorReadingConfigFile, filename));
-                    }
+        if(index < groupNames.length) {
+            let groupName: string = groupNames[index];
+            let found = groupTree.find(group => group.name === groupName);
+            if (found) {
+                if (index === groupNames.length - 1) {
+                    //Found the group full name
                 } else {
-                    return {};
+                    found.children = this.saveGroupsInTreeIfNotExist(found.children, groupNames, index + 1);
                 }
-            }
-        } catch (e) { // Error reading the file
-            if (e.code !== 'ENOENT') { // Ignore error if the file doesn't exist
-                vscode.window.showErrorMessage(Utils.formatString(Constants.msgErrorReadingConfigFile, filename));
+
             } else {
-                return {};
+                let newGroup: IConnectionProfileGroup = {
+                    name: groupName,
+                    children: undefined
+                };
+                newGroup.children = this.saveGroupsInTreeIfNotExist(newGroup.children, groupNames, index + 1);
+                groupTree.push(newGroup);
             }
         }
 
-        return undefined;
+        return groupTree;
     }
 
     /**
@@ -221,14 +178,10 @@ export class ConnectionConfig implements IConnectionConfig {
      * @param parsedSettingsFile an object representing the parsed contents of the settings file.
      * @returns the set of connection profiles found in the parsed settings file.
      */
-    public getProfilesFromParsedSettingsFile(parsedSettingsFile: any): IConnectionProfile[] {
-        let profiles: IConnectionProfile[] = [];
+    public getConfiguration(key: string): IWorkspaceConfigurationValue<IConnectionProfile[] | IConnectionProfileGroup[]> {
+        let profiles: IWorkspaceConfigurationValue<IConnectionProfile[] | IConnectionProfileGroup[]>;
 
-        // Find the profiles object in the parsed settings file
-        if (parsedSettingsFile && parsedSettingsFile.hasOwnProperty(Constants.connectionsArrayName)) {
-            profiles = parsedSettingsFile[Constants.connectionsArrayName];
-        }
-
+        profiles = this._workspaceConfigurationService.lookup<IConnectionProfile[] | IConnectionProfileGroup[]>(key);
         return profiles;
     }
 
@@ -237,24 +190,15 @@ export class ConnectionConfig implements IConnectionConfig {
      * @param parsedSettingsFile an object representing the parsed contents of the settings file.
      * @param profiles the set of profiles to insert into the settings file.
      */
-    private writeProfilesToSettingsFile(parsedSettingsFile: any, profiles: IConnectionProfile[]): Promise<void> {
-        // Insert the new set of profiles
-        parsedSettingsFile[Constants.connectionsArrayName] = profiles;
-
-        // Save the file
+    private writeUserConfiguration(key: string, profiles: IConnectionProfile[] | IConnectionProfileGroup[]): Promise<void> {
         const self = this;
         return new Promise<void>((resolve, reject) => {
-            self.createConfigFileDirectory().then(() => {
-                // Format the file using 4 spaces as indentation
-                self._fs.writeFile(ConnectionConfig.configFilePath, commentJson.stringify(parsedSettingsFile, undefined, 4), err => {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve();
-                });
-            }).catch(err => {
-                reject(err);
-            });
+            let configValue: IConfigurationValue = {
+            key: key,
+            value: profiles
+        };
+            this._configurationEditService.writeConfiguration(ConfigurationTarget.USER, configValue);
+            resolve();
         });
     }
 }

@@ -1,9 +1,9 @@
 'use strict';
-import vscode = require('vscode');
+
 import Constants = require('./constants');
 import ConnInfo = require('./connectionInfo');
 import Utils = require('./utils');
-import ValidationException from './validationException';
+//import ValidationException from './validationException';
 import { ConnectionCredentials } from './connectionCredentials';
 import { IConnectionCredentials, IConnectionProfile, IConnectionCredentialsQuickPickItem, CredentialsQuickPickItemType } from './interfaces';
 import { ICredentialStore } from './icredentialstore';
@@ -12,7 +12,11 @@ import { IConnectionConfig } from './iconnectionconfig';
 import { ConnectionConfig } from './connectionconfig';
 import { Memento, Scope as MementoScope  } from 'vs/workbench/common/memento';
 import { IStorageService } from 'vs/platform/storage/common/storage';
-
+import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
+import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 
 /**
  * Manages the connections list including saved profiles and the most recently used connections
@@ -27,17 +31,21 @@ export class ConnectionStore {
     constructor(
         private _storageService: IStorageService,
         private _context: Memento,
+        private _configurationService: IConfigurationService,
+        private _configurationEditService: IConfigurationEditingService,
+        private _workspaceConfigurationService: IWorkspaceConfigurationService,
+        private _environmentService: IEnvironmentService,
         private _credentialStore?: ICredentialStore,
         private _connectionConfig?: IConnectionConfig) {
         if (!this._credentialStore) {
             this._credentialStore = new CredentialStore();
         }
 
-        if (!this._connectionConfig) {
-            this._connectionConfig = new ConnectionConfig();
-        }
-
         this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
+
+        if (!this._connectionConfig) {
+            this._connectionConfig = new ConnectionConfig(this._configurationService, this._configurationEditService, this._workspaceConfigurationService, this._environmentService);
+        }
     }
 
     public static get CRED_PREFIX(): string { return 'Microsoft.SqlTools'; }
@@ -51,7 +59,7 @@ export class ConnectionStore {
 
     public static formatCredentialIdForCred(creds: IConnectionCredentials, itemType?: CredentialsQuickPickItemType): string {
         if (Utils.isEmpty(creds)) {
-            throw new ValidationException('Missing Connection which is required');
+            //throw new ValidationException('Missing Connection which is required');
         }
         let itemTypeString: string = ConnectionStore.CRED_PROFILE_USER;
         if (itemType) {
@@ -72,7 +80,7 @@ export class ConnectionStore {
      */
     public static formatCredentialId(server: string, database?: string, user?: string, itemType?: string): string {
         if (Utils.isEmpty(server)) {
-            throw new ValidationException('Missing Server Name, which is required');
+            //throw new ValidationException('Missing Server Name, which is required');
         }
         let cred: string[] = [ConnectionStore.CRED_PREFIX];
         if (!itemType) {
@@ -98,7 +106,7 @@ export class ConnectionStore {
      *
      * @returns {Promise<IConnectionCredentialsQuickPickItem[]>}
      */
-    public getPickListItems(): IConnectionCredentialsQuickPickItem[] {
+     public getPickListItems(): IConnectionCredentialsQuickPickItem[] {
         let pickListItems: IConnectionCredentialsQuickPickItem[] = this.loadAllConnections();
         pickListItems.push(<IConnectionCredentialsQuickPickItem> {
             label: Constants.CreateProfileFromConnectionsListLabel,
@@ -327,8 +335,32 @@ export class ConnectionStore {
         };
     }
 
+    public getConnectionProfileGroups(): ConnectionProfileGroup[] {
+        let profilesInConfiguration = this._connectionConfig.getConnections(true);
+        let groups = this._connectionConfig.getAllGroups();
+
+        let connectionProfileGroups = groups.map( group => {
+            return this.convertToConnectionGroup(group, profilesInConfiguration, undefined);
+        });
+        return connectionProfileGroups;
+    }
+
+    private convertToConnectionGroup(group: IConnectionProfileGroup, connections: IConnectionProfile[], parent: ConnectionProfileGroup = undefined): ConnectionProfileGroup {
+         let connectionGroup = new ConnectionProfileGroup(group.name, parent);
+         if(group.children) {
+            let children = group.children.map( (group) => {
+                return this.convertToConnectionGroup(group, connections, connectionGroup);
+            });
+            connectionGroup.Children = children;
+         }
+         let connectionsForGroup = connections.filter(conn => conn.groupName === connectionGroup.FullName);
+         connectionGroup.Connections = connectionsForGroup;
+
+         return connectionGroup;
+    }
+
     // Load connections from user preferences
-    private loadAllConnections(): IConnectionCredentialsQuickPickItem[] {
+     private loadAllConnections(): IConnectionCredentialsQuickPickItem[] {
         let quickPickItems: IConnectionCredentialsQuickPickItem[] = [];
 
         // Read recently used items from a memento
@@ -401,8 +433,9 @@ export class ConnectionStore {
         }
     }
 
+
     private getMaxRecentConnectionsCount(): number {
-        let config = vscode.workspace.getConfiguration(Constants.extensionConfigSectionName);
+        let config = this._configurationService.getConfiguration(Constants.extensionConfigSectionName);
 
         let maxConnections: number = config[Constants.configMaxRecentConnections];
         if (typeof(maxConnections) !== 'number' || maxConnections <= 0) {
@@ -410,4 +443,5 @@ export class ConnectionStore {
         }
         return maxConnections;
     }
+
 }

@@ -9,6 +9,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import Event from 'vs/base/common/event';
 import vscode = require('vscode');
+import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
 
 export const VIEWLET_ID = 'workbench.view.connections';
 
@@ -21,7 +22,7 @@ export const SERVICE_ID = 'connectionManagementService';
 export const IConnectionManagementService = createDecorator<IConnectionManagementService>(SERVICE_ID);
 
 export interface ConnectionManagementEvents {
-	onAddConnectionProfile(connection: vscode.ConnectionInfo): void;
+	onAddConnectionProfile(uri: string, connection: vscode.ConnectionInfo): void;
 
 	onConnect(connectionUri: string, connection: vscode.ConnectionInfo): void;
 }
@@ -33,11 +34,13 @@ export interface IConnectionManagementService {
 
 	newConnection();
 
-	addConnectionProfile(connection: vscode.ConnectionInfo): void;
+	addConnectionProfile(connection: vscode.ConnectionInfo): Promise<boolean>;
 
-	onConnectionComplete(handle: number, connectionUri: string): void;
+	onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void;
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
+
+	getAllConnections(): ConnectionProfileGroup[];
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

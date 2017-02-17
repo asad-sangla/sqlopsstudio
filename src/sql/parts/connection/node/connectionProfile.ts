@@ -14,6 +14,7 @@ import * as utils from './utils';
 export class ConnectionProfile extends ConnectionCredentials implements IConnectionProfile {
     public profileName: string;
     public savePassword: boolean;
+    public groupName: string;
 
     /**
      * Creates a new profile by prompting the user for information.

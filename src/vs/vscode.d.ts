@@ -18,6 +18,8 @@ declare module 'vscode' {
 		userName: string;
 
 		password: string;
+
+		authenticationType: string;
 	}
 
 	export interface ConnectionInfoSummary {

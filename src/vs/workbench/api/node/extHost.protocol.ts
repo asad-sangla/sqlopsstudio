@@ -56,7 +56,7 @@ export abstract class ExtHostConnectionManagementShape {
 	/**
 	 * Callback when a connection request has completed
 	 */
-	$onConnectComplete(handle:number, connectionUri: string): void { throw ni(); }
+	$onConnectComplete(handle:number, connectionInfoSummary: vscode.ConnectionInfoSummary): void { throw ni(); }
 
 	/**
 	 * Callback when a IntelliSense cache has been built
@@ -131,7 +131,7 @@ function ni() { return new Error('Not implemented'); }
 export abstract class MainThreadConnectionManagementShape {
 	$registerConnectionProvider(handle: number): TPromise<any> { throw ni(); }
 	$unregisterConnectionProvider(handle: number): TPromise<any> { throw ni(); }
-	$onConnectionComplete(handle: number, connectionUri: string): void { throw ni(); }
+	$onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void { throw ni(); }
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
 }
 

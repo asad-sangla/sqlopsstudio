@@ -38,6 +38,7 @@ export class ConnectionDialogWidget  {
 	private closeButton: Button;
 	private WindowsAuthTypeName: string = 'Windows Authentication';
 	private SqlAuthTypeName: string = 'SQL Server Authentication';
+	private selectedAuthType: string;
 
 	constructor(container: HTMLElement, callbacks: IConnectionDialogCallbacks){
 		this.container = container;
@@ -45,8 +46,10 @@ export class ConnectionDialogWidget  {
 		this.toDispose = [];
 		if(platform.isWindows) {
 			this.authTypeSelectBox = new SelectBox( [this.WindowsAuthTypeName, this.SqlAuthTypeName], 0);
+			this.selectedAuthType = this.WindowsAuthTypeName;
 		} else {
 			this.authTypeSelectBox = new SelectBox( [this.SqlAuthTypeName], 0);
+			this.selectedAuthType = this.SqlAuthTypeName;
 		}
 	}
 
@@ -92,8 +95,7 @@ export class ConnectionDialogWidget  {
 		this.modelElement = this.builder.getHTMLElement();
 		this.serverNameInputBox.focus();
 
-		// TODO getSelected was removed from select box in VS Code 1.9.1
-		// this.authTypeSelected(this.authTypeSelectBox.getSelected());
+		this.onAuthTypeSelected(this.selectedAuthType);
 
 		return this.modelElement;
 	}
@@ -117,7 +119,7 @@ export class ConnectionDialogWidget  {
 
 	private registerListeners(): void {
 		this.toDispose.push(this.authTypeSelectBox.onDidSelect(selectedAuthType => {
-			this.authTypeSelected(selectedAuthType);
+			this.onAuthTypeSelected(selectedAuthType);
 		}));
 
 		this.toDispose.push(this.serverNameInputBox.onDidChange(serverName => {
@@ -129,7 +131,8 @@ export class ConnectionDialogWidget  {
 		this.connectButton.enabled = !this.isEmptyString(serverName);
 	}
 
-	private authTypeSelected(selectedAuthType: string) {
+	private onAuthTypeSelected(selectedAuthType: string) {
+		this.selectedAuthType = selectedAuthType;
 		switch (selectedAuthType) {
 			case this.WindowsAuthTypeName:
                 this.userNameInputBox.disable();
@@ -154,20 +157,24 @@ export class ConnectionDialogWidget  {
 		this.passwordInputBox.value = model.password;
 	}
 
-	public getServerName(): string {
+	public get serverName(): string {
 		return this.serverNameInputBox.value;
 	}
 
-	public getDatabaseName(): string {
+	public get databaseName(): string {
 		return this.databaseNameInputBox.value;
 	}
 
-	public getUserName(): string {
+	public get userName(): string {
 		return this.userNameInputBox.value;
 	}
 
-	public getPassword(): string {
+	public get password(): string {
 		return this.passwordInputBox.value;
+	}
+
+	public get authenticationType(): string {
+		return this.selectedAuthType;
 	}
 
 	public setCallbacks(callbacks: IConnectionDialogCallbacks): void {
@@ -200,7 +207,7 @@ export class ConnectionDialogWidget  {
 	}
 
 	private validateInputs(): boolean {
-		return !this.isEmptyString(this.getServerName());
+		return !this.isEmptyString(this.serverName);
 	}
 
 	private isEmptyString(value: string): boolean {
@@ -211,15 +218,14 @@ export class ConnectionDialogWidget  {
 	public connect(): void {
 		if (this.validateInputs()) {
 			this.model = {
-				serverName: this.getServerName(),
-				databaseName: this.getDatabaseName(),
-				userName: this.getUserName(),
-				password: this.getPassword()
-
+				serverName: this.serverName,
+				databaseName: this.databaseName,
+				userName: this.userName,
+				password: this.password,
+				authenticationType: this.authenticationType
 			};
 
 			this.callbacks.onConnect();
-			this.close();
 		} else {
 			alert('invalid inputs'); //TODO: message box
 		}

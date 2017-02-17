@@ -194,6 +194,7 @@ export interface IConnectionCredentials {
 export interface IConnectionProfile extends IConnectionCredentials {
     profileName: string;
     savePassword: boolean;
+    groupName: string;
 }
 
 export enum CredentialsQuickPickItemType {

@@ -68,8 +68,8 @@ export class ExtHostConnectionManagement extends ExtHostConnectionManagementShap
 		return this._withAdapter(handle, ConnectionAdapter, adapter => adapter.connect(connectionUri, connection));
 	}
 
-	$onConnectComplete(handle:number, connectionUri: string): void{
-		this._proxy.$onConnectionComplete(handle, connectionUri);
+	$onConnectComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void{
+		this._proxy.$onConnectionComplete(handle, connectionInfoSummary);
 	}
 
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {

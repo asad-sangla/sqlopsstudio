@@ -144,7 +144,7 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 			registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable  {
 
 				provider.registerOnConnectionComplete((connSummary: vscode.ConnectionInfoSummary) => {
-					extHostConnectionManagement.$onConnectComplete(provider.handle, connSummary.ownerUri);
+					extHostConnectionManagement.$onConnectComplete(provider.handle, connSummary);
 				});
 
 				provider.registerOnIntelliSenseCacheComplete((connectionUri: string) => {
