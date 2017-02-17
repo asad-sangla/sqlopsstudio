@@ -345,7 +345,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 */
 	public onDragOver(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): IDragOverReaction {
 		if (targetElement instanceof ConnectionDisplay || targetElement instanceof ConnectionGroup) {
-			//return DRAG_OVER_ACCEPT_BUBBLE_DOWN;
+			return DRAG_OVER_ACCEPT_BUBBLE_DOWN(true);
 		}
 		return DRAG_OVER_REJECT;
 	}
