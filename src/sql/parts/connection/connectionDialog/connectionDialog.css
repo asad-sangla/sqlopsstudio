@@ -27,6 +27,12 @@
 	width: 100px;
 }
 
+.advanced-button {
+	width: 100px;
+	padding-right:8px;
+	padding-bottom: 5px;
+}
+
 .connection-label {
 	width: 100px;
 	padding-bottom: 5px;
@@ -36,6 +42,27 @@
 	padding-left: 30px;
 	width: 100px;
 	padding-bottom: 5px;
+}
+
+.custom-checkbox.connection-auth-checkbox {
+	Margin-right: 10px;
+}
+
+.custom-checkbox.connection-auth-checkbox.checked {
+	background-color: red;
+}
+
+.custom-checkbox.connection-auth-checkbox.unchecked {
+	border-color:#3C3C3C;
+}
+
+.vs-dark.monaco-shell .custom-checkbox.connection-auth-checkbox.checked {
+	background-color: yellow;
+}
+
+.vs-dark.monaco-shell .custom-checkbox.connection-auth-checkbox.unchecked {
+	background-color: #3C3C3C;
+	border-color: #E1E1E1;
 }
 
 .connection-input {

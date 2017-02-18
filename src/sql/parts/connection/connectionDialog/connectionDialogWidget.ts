@@ -10,6 +10,7 @@ import 'vs/css!./bootstrap-theme';
 import 'vs/css!./connectionDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
+import { Checkbox } from 'vs/base/browser/ui/CheckBox/CheckBox';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
@@ -25,15 +26,18 @@ export class ConnectionDialogWidget  {
 	private builder: Builder;
 	private container: HTMLElement;
 	private modelElement: HTMLElement;
+	private serverGroupInputBox: InputBox;
 	private serverNameInputBox: InputBox;
 	private databaseNameInputBox: InputBox;
 	private userNameInputBox: InputBox;
 	private passwordInputBox: InputBox;
+	private RememberPassword: Checkbox;
 	private jQuery;
 	private callbacks: IConnectionDialogCallbacks;
 	private model: vscode.ConnectionInfo;
 	private toDispose: lifecycle.IDisposable[];
 	private authTypeSelectBox: SelectBox;
+	private advancedButton: Button;
 	private connectButton: Button;
 	private closeButton: Button;
 	private WindowsAuthTypeName: string = 'Windows Authentication';
@@ -68,12 +72,15 @@ export class ConnectionDialogWidget  {
 						});
 						modelContent.div({class:'modal-body'}, (modelBody) => {
 							modelBody.element('table', {width:'100%'}, (tableContainer) => {
+								this.serverGroupInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Add to Server group', 'label', 'input'));
 								this.serverNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Server Name', 'label', 'input'));
-								this.databaseNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Database Name', 'label', 'input'));
 								this.appendInputSelectBox(this.appendRow(tableContainer, 'Authentication', 'auth-label', 'auth-input'), this.authTypeSelectBox);
 								this.userNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'User Name', 'auth-label', 'auth-input'));
 								this.passwordInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Password', 'auth-label', 'auth-input'));
 								this.passwordInputBox.inputElement.type = 'password';
+								this.RememberPassword = this.appendCheckbox(tableContainer, 'Remember Password', 'auth-checkbox', 'auth-input');
+								this.databaseNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Database Name', 'auth-label', 'auth-input'));
+								this.advancedButton = this.createAdvancedButton(tableContainer, 'Advanced...');
 							});
 						});
 						modelContent.div({class:'modal-footer'}, (modelFooter) => {
@@ -98,6 +105,45 @@ export class ConnectionDialogWidget  {
 		this.onAuthTypeSelected(this.selectedAuthType);
 
 		return this.modelElement;
+	}
+
+	private appendCheckbox(container: Builder, label: string, checkboxClass:string, cellContainerClass: string):Checkbox {
+		let checkbox: Checkbox;
+		container.element('tr', {}, (rowContainer) => {
+				rowContainer.element('td');
+				rowContainer.element('td', {class:'connection-' + cellContainerClass}, (inputCellContainer) => {
+					checkbox = new Checkbox({
+						actionClassName: 'connection-' + checkboxClass,
+						title: label,
+						isChecked: false,
+						onChange: (viaKeyboard) => {
+							//todo when the remember password checkbox is changed
+						}
+					});
+					inputCellContainer.getHTMLElement().appendChild(checkbox.domNode);
+					inputCellContainer.div({}, (labelContainer) => {
+						labelContainer.innerHtml(label);
+						});
+					});
+			});
+		return checkbox;
+	}
+
+	private createAdvancedButton(container: Builder, title: string): Button {
+		let button;
+		container.element('tr', {}, (rowContainer) => {
+				rowContainer.element('td');
+				rowContainer.element('td', {align:'right'}, (cellContainer) => {
+					cellContainer.div({class:'advanced-button'}, (divContainer) => {
+						button = new Button(divContainer);
+						button.label = title;
+						button.addListener2('click', () => {
+							//open advanced page
+						});
+					});
+				});
+		});
+		return button;
 	}
 
 	private createFooterButton(container: Builder, title: string): Button {
@@ -155,6 +201,10 @@ export class ConnectionDialogWidget  {
 		this.databaseNameInputBox.value = model.databaseName;
 		this.userNameInputBox.value = model.userName;
 		this.passwordInputBox.value = model.password;
+	}
+
+	public get serverGroup(): string {
+		return this.serverGroupInputBox.value;
 	}
 
 	public get serverName(): string {
