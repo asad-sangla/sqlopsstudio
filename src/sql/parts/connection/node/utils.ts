@@ -6,6 +6,7 @@ import Constants = require('./constants');
 import * as interfaces from './interfaces';
 import {ExtensionContext} from 'vscode';
 import fs = require('fs');
+import vscode = require('vscode');
 
 // CONSTANTS //////////////////////////////////////////////////////////////////////////////////////
 const msInH = 3.6e6;
@@ -219,21 +220,15 @@ function isSameAuthenticationType(currentAuthenticationType: string, expectedAut
  * @param {IConnectionProfile} expectedProfile the profile to try to match
  * @returns boolean that is true if the profiles match
  */
-export function isSameProfile(currentProfile: interfaces.IConnectionProfile, expectedProfile: interfaces.IConnectionProfile): boolean {
+export function isSameProfile(currentProfile: vscode.ConnectionInfo, expectedProfile: vscode.ConnectionInfo): boolean {
     if (currentProfile === undefined) {
         return false;
     }
-    if (expectedProfile.profileName) {
-        // Can match on profile name
-        return expectedProfile.profileName === currentProfile.profileName;
-    } else if (currentProfile.profileName) {
-        // This has a profile name but expected does not - can break early
-        return false;
-    }
-    return expectedProfile.server === currentProfile.server
-        && isSameDatabase(expectedProfile.database, currentProfile.database)
+   
+    return expectedProfile.serverName === currentProfile.serverName
+        && isSameDatabase(expectedProfile.databaseName, currentProfile.databaseName)
         && isSameAuthenticationType(expectedProfile.authenticationType, currentProfile.authenticationType)
-        && expectedProfile.user === currentProfile.user;
+        && expectedProfile.userName === currentProfile.userName;
 }
 
 /**

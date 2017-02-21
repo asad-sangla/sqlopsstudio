@@ -3,6 +3,7 @@ import Constants = require('./constants');
 import Interfaces = require('./interfaces');
 import * as ConnectionContracts from './connection';
 import * as Utils from './utils';
+import vscode = require('vscode');
 
 /**
  * Sets sensible defaults for key connection properties, especially
@@ -12,23 +13,24 @@ import * as Utils from './utils';
  * @param {Interfaces.IConnectionCredentials} connCreds connection to be fixed up
  * @returns {Interfaces.IConnectionCredentials} the updated connection
  */
-export function fixupConnectionCredentials(connCreds: Interfaces.IConnectionCredentials): Interfaces.IConnectionCredentials {
-    if (!connCreds.server) {
-        connCreds.server = '';
+export function fixupConnectionCredentials(connCreds: vscode.ConnectionInfo): vscode.ConnectionInfo {
+    if (!connCreds.serverName) {
+        connCreds.serverName = '';
     }
 
-    if (!connCreds.database) {
-        connCreds.database = '';
+    if (!connCreds.databaseName) {
+        connCreds.databaseName = '';
     }
 
-    if (!connCreds.user) {
-        connCreds.user = '';
+    if (!connCreds.userName) {
+        connCreds.userName = '';
     }
 
     if (!connCreds.password) {
         connCreds.password = '';
     }
 
+/*
     if (!connCreds.connectTimeout) {
         connCreds.connectTimeout = Constants.defaultConnectionTimeout;
     }
@@ -52,30 +54,13 @@ export function fixupConnectionCredentials(connCreds: Interfaces.IConnectionCred
             connCreds.connectTimeout = Constants.azureSqlDbConnectionTimeout;
         }
     }
+    */
     return connCreds;
 }
 
 // return true if server name ends with '.database.windows.net'
 function isAzureDatabase(server: string): boolean {
     return (server ? server.endsWith(Constants.sqlDbPrefix) : false);
-}
-
-/**
- * Gets a label describing a connection in the picklist UI
- *
- * @export connectionInfo/getPicklistLabel
- * @param {Interfaces.IConnectionCredentials} connCreds connection to create a label for
- * @param {Interfaces.CredentialsQuickPickItemType} itemType type of quickpick item to display - this influences the icon shown to the user
- * @returns {string} user readable label
- */
-export function getPicklistLabel(connCreds: Interfaces.IConnectionCredentials, itemType: Interfaces.CredentialsQuickPickItemType): string {
-    let profile: Interfaces.IConnectionProfile = <Interfaces.IConnectionProfile> connCreds;
-
-    if (profile.profileName) {
-        return profile.profileName;
-    } else {
-        return connCreds.server;
-    }
 }
 
 /**

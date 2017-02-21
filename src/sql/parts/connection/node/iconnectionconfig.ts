@@ -6,6 +6,7 @@
 
 import { IConnectionProfile } from './interfaces';
 import { IConnectionProfileGroup } from './connectionProfileGroup';
+import vscode = require('vscode');
 
 /**
  * Interface for a configuration file that stores connection profiles.

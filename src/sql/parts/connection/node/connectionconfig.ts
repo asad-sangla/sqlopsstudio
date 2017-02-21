@@ -9,10 +9,10 @@ import * as Utils from './utils';
 import { IConnectionProfile } from './interfaces';
 import { IConnectionConfig } from './iconnectionconfig';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { IConfigurationEditingService, ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService, IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
+import vscode = require('vscode');
 
 /**
  * Implements connection profile file storage.
@@ -23,10 +23,8 @@ export class ConnectionConfig implements IConnectionConfig {
      * Constructor.
      */
     public constructor(
-        @IConfigurationService private _configurationService: IConfigurationService,
-        @IConfigurationEditingService private _configurationEditService: IConfigurationEditingService,
-        @IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
-        @IEnvironmentService private _environmentService: IEnvironmentService) {
+        private _configurationEditService: IConfigurationEditingService,
+        private _workspaceConfigurationService: IWorkspaceConfigurationService) {
     }
 
     public getAllGroups(): IConnectionProfileGroup[] {
@@ -48,11 +46,12 @@ export class ConnectionConfig implements IConnectionConfig {
      */
     public addConnection(profile: IConnectionProfile): Promise<void> {
 
+        //TODO: get a copy without password
         this.addGroups(profile.groupName);
         let profiles = this._workspaceConfigurationService.lookup<IConnectionProfile[]>(Constants.connectionsArrayName).user;
 
         // Remove the profile if already set
-        profiles = profiles.filter(value => !Utils.isSameProfile(value, profile));
+        profiles = profiles.filter(value => !Utils.isSameProfile(value.connection, profile.connection));
         profiles.push(profile);
 
 
@@ -119,7 +118,7 @@ export class ConnectionConfig implements IConnectionConfig {
         // Remove the profile if already set
         let found: boolean = false;
         profiles = profiles.filter(value => {
-            if (Utils.isSameProfile(value, profile)) {
+            if (Utils.isSameProfile(value.connection, profile.connection)) {
                 // remove just this profile
                 found = true;
                 return false;

@@ -5,7 +5,8 @@
 
 'use strict';
 
-import { IConnectionCredentials } from './interfaces';
+import { IConnectionProfile } from './interfaces';
+import vscode = require('vscode');
 
 export interface IConnectionProfileGroup {
 	name: string,
@@ -15,7 +16,7 @@ export interface IConnectionProfileGroup {
 export class ConnectionProfileGroup implements IConnectionProfileGroup {
 
 	public children: ConnectionProfileGroup[];
-	private connections: IConnectionCredentials[];
+	private connections: IConnectionProfile[];
 
 	public constructor(
 		public name: string,
@@ -26,11 +27,11 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 
 	public static GroupNameSeparator: string = '/';
 
-	public set Connections(connection: IConnectionCredentials[]) {
+	public set Connections(connection: IConnectionProfile[]) {
 		this.connections = connection;
 	}
 
-	public get Connections(): IConnectionCredentials[] {
+	public get Connections(): IConnectionProfile[] {
 		return this.connections;
 	}
 

@@ -21,10 +21,7 @@ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import * as vscode from 'vscode';
 import { ConnectionStore } from './connectionStore';
-import { ConnectionProfile } from './connectionProfile';
 import { IConnectionProfile } from './interfaces';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
@@ -56,8 +53,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
 		@IStorageService private _storageService: IStorageService,
 		@ITelemetryService private _telemetryService: ITelemetryService,
-		@IConfigurationService private _configurationService: IConfigurationService,
-		@IEnvironmentService private _environmentService: IEnvironmentService,
 		@IConfigurationEditingService private _configurationEditService: IConfigurationEditingService,
 		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService
 	) {
@@ -65,13 +60,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this.connectionMemento = new Memento('ConnectionManagement');
 
 		this._connectionStore = new ConnectionStore(_storageService, this.connectionMemento,
-		_configurationService, _configurationEditService, this._workspaceConfigurationService, this._environmentService);
+		_configurationEditService, this._workspaceConfigurationService);
 		this._connections = {};
 	}
 
 
 	public newConnection(): void {
-		//let allConn = this._connectionStore.getConnectionProfileGroups();
 		this._connectionDialogService.showDialog(this);
 	}
 
@@ -100,11 +94,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 			const self = this;
 
 			return new Promise<boolean>((resolve, reject) => {
-				let newProfile = new ConnectionProfile();
-				newProfile.server = connection.serverName;
-				newProfile.database = connection.databaseName;
-				newProfile.user = connection.userName;
-				newProfile.password = connection.password;
+				let newProfile: IConnectionProfile = {
+					connection: connection,
+					savePassword: true,
+					groupName: undefined
+				}
 
 				let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
 				connectionInfo.extensionTimer = new Utils.Timer();
@@ -124,20 +118,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 				connectionInfo.serviceTimer = new Utils.Timer();
 
-				// send connection request message to service host
-				self.sentConnectRequest(connection);
+				// send connection request
+				self.sentConnectRequest(connection, uri);
         });
 	}
 
-	private sentConnectRequest(connection: vscode.ConnectionInfo): void {
+	private sentConnectRequest(connection: vscode.ConnectionInfo, uri: string): void {
 		for (var key in this._serverEvents) {
-			let uri = this.getActiveEditorUri();
-			if (this.getActiveEditorUri() !== undefined) {
-				this._serverEvents[key].onConnect(uri, connection);
-			} else {
-				let uri: string = 'connection://' + connection.serverName + ':' + connection.databaseName;
-				this._serverEvents[key].onAddConnectionProfile(uri, connection);
-			}
+			this._serverEvents[key].onConnect(uri, connection);
 		}
 	}
 
@@ -167,7 +155,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private tryAddMruConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile): void {
         if (newConnection) {
 
-            this._connectionStore.addRecentlyUsed(newConnection)
+            this._connectionStore.addRecentlyUsed(newConnection.connection)
 			  .then(() => {
                 connectionManagementInfo.connectHandler(true);
             }, err => {

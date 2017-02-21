@@ -3,6 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-'use strict';
-
-export default require('error-ex')('ValidationException');
+declare module 'error-ex' {
+	export function errorEx(name) : void;
+}

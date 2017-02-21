@@ -21,8 +21,6 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 
 	private _connectionManagementService: IConnectionManagementService;
 
-	private _connectionUrlMap: { [uri: string]: vscode.ConnectionInfo };
-
 	constructor(
 		@IThreadService threadService: IThreadService,
 		@IConnectionManagementService registeredServersService: IConnectionManagementService
@@ -32,7 +30,6 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 		this._proxy = threadService.get(ExtHostContext.ExtHostConnectionManagement);
 
 		this._connectionManagementService = registeredServersService;
-		this._connectionUrlMap = {};
 	}
 
 	public dispose(): void {
@@ -44,12 +41,9 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 
 		this._registrations[handle] = this._connectionManagementService.addEventListener(handle, {
 			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
-				self.addConnectionUriMap(connectionUri, connection);
 				return self._proxy.$connect(handle, connectionUri, connection);
 			},
 			onAddConnectionProfile(uri, connection: vscode.ConnectionInfo): Thenable<boolean> {
-				//let uri: string = 'connection://' + connection.serverName + ':' + connection.databaseName;
-				self.addConnectionUriMap(uri, connection);
 				return self._proxy.$connect(handle, uri, connection);
 			}
 		});
@@ -57,16 +51,7 @@ export class MainThreadConnectionManagement extends MainThreadConnectionManageme
 		return undefined;
 	}
 
-	private addConnectionUriMap(uri: string, connection: vscode.ConnectionInfo): void {
-		this._connectionUrlMap[uri] = connection;
-	}
-
 	public $onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void {
-		/*let connection: vscode.ConnectionInfo;
-		if(this._connectionUrlMap.hasOwnProperty(connectionUri)) {
-			connection = this._connectionUrlMap[connectionUri];
-		}
-		*/
 		this._connectionManagementService.onConnectionComplete(handle, connectionInfoSummary);
 	}
 

@@ -6,18 +6,19 @@
 'use strict';
 import Constants = require('./constants');
 import { ConnectionDetails } from './connection';
-import { IConnectionCredentials, IConnectionProfile, AuthenticationTypes } from './interfaces';
+import { IConnectionProfile, AuthenticationTypes } from './interfaces';
 import { ConnectionStore } from './connectionStore';
 import * as utils from './utils';
+import vscode = require('vscode');
 import { QuestionTypes, IQuestion, IPrompter, INameValueChoice } from './question';
 
 import os = require('os');
 
 // Concrete implementation of the IConnectionCredentials interface
-export class ConnectionCredentials implements IConnectionCredentials {
-    public server: string;
-    public database: string;
-    public user: string;
+export class ConnectionCredentials implements vscode.ConnectionInfo {
+    public serverName: string;
+    public databaseName: string;
+    public userName: string;
     public password: string;
     public port: number;
     public authenticationType: string;
@@ -46,17 +47,20 @@ export class ConnectionCredentials implements IConnectionCredentials {
     /**
      * Create a connection details contract from connection credentials.
      */
-    public static createConnectionDetails(credentials: IConnectionCredentials): ConnectionDetails {
+    public static createConnectionDetails(credentials: vscode.ConnectionInfo): ConnectionDetails {
         let details: ConnectionDetails = new ConnectionDetails();
-        details.serverName = credentials.server;
+        details.serverName = credentials.serverName;
+        /*
         if (credentials.port && details.serverName.indexOf(',') === -1) {
             // Port is appended to the server name in a connection string
             details.serverName += (',' + credentials.port);
         }
-        details.databaseName = credentials.database;
-        details.userName = credentials.user;
+        */
+        details.databaseName = credentials.databaseName;
+        details.userName = credentials.userName;
         details.password = credentials.password;
         details.authenticationType = credentials.authenticationType;
+        /*
         details.encrypt = credentials.encrypt;
         details.trustServerCertificate = credentials.trustServerCertificate;
         details.persistSecurityInfo = credentials.persistSecurityInfo;
@@ -78,20 +82,21 @@ export class ConnectionCredentials implements IConnectionCredentials {
         details.multipleActiveResultSets = credentials.multipleActiveResultSets;
         details.packetSize = credentials.packetSize;
         details.typeSystemVersion = credentials.typeSystemVersion;
-
+*/
         return details;
     }
 
+/*
     public static ensureRequiredPropertiesSet(
-        credentials: IConnectionCredentials,
+        credentials: vscode.ConnectionInfo,
         isProfile: boolean,
         isPasswordRequired: boolean,
         wasPasswordEmptyInConfigFile: boolean,
         prompter: IPrompter,
-        connectionStore: ConnectionStore): Promise<IConnectionCredentials> {
+        connectionStore: ConnectionStore): Promise<vscode.ConnectionInfo> {
 
         let questions: IQuestion[] = ConnectionCredentials.getRequiredCredentialValuesQuestions(credentials, false, isPasswordRequired);
-        let unprocessedCredentials: IConnectionCredentials = Object.create(credentials); //Object.assign({}, credentials);
+        let unprocessedCredentials: vscode.ConnectionInfo = Object.create(credentials); //Object.assign({}, credentials);
 
         // Potentially ask to save password
         questions.push({
@@ -142,13 +147,14 @@ export class ConnectionCredentials implements IConnectionCredentials {
             }
         });
     }
+    */
 
     // gets a set of questions that ensure all required and core values are set
     protected static getRequiredCredentialValuesQuestions(
-        credentials: IConnectionCredentials,
+        credentials: vscode.ConnectionInfo,
         promptForDbName: boolean,
         isPasswordRequired: boolean,
-        defaultProfileValues?: IConnectionCredentials): IQuestion[] {
+        defaultProfileValues?: vscode.ConnectionInfo): IQuestion[] {
 
         let authenticationChoices: INameValueChoice[] = ConnectionCredentials.getAuthenticationTypesChoice();
 
@@ -159,10 +165,10 @@ export class ConnectionCredentials implements IConnectionCredentials {
                 name: Constants.serverPrompt,
                 message: Constants.serverPrompt,
                 placeHolder: Constants.serverPlaceholder,
-                default: defaultProfileValues ? defaultProfileValues.server : undefined,
-                shouldPrompt: (answers) => utils.isEmpty(credentials.server),
+                default: defaultProfileValues ? defaultProfileValues.serverName : undefined,
+                shouldPrompt: (answers) => utils.isEmpty(credentials.serverName),
                 validate: (value) => ConnectionCredentials.validateRequiredString(Constants.serverPrompt, value),
-                onAnswered: (value) => credentials.server = value
+                onAnswered: (value) => credentials.serverName = value
             },
             // Database name is not required, prompt is optional
             {
@@ -170,9 +176,9 @@ export class ConnectionCredentials implements IConnectionCredentials {
                 name: Constants.databasePrompt,
                 message: Constants.databasePrompt,
                 placeHolder: Constants.databasePlaceholder,
-                default: defaultProfileValues ? defaultProfileValues.database : undefined,
+                default: defaultProfileValues ? defaultProfileValues.databaseName : undefined,
                 shouldPrompt: (answers) => promptForDbName,
-                onAnswered: (value) => credentials.database = value
+                onAnswered: (value) => credentials.databaseName = value
             },
             // AuthenticationType is required if there is more than 1 option on this platform
             {
@@ -191,10 +197,10 @@ export class ConnectionCredentials implements IConnectionCredentials {
                 name: Constants.usernamePrompt,
                 message: Constants.usernamePrompt,
                 placeHolder: Constants.usernamePlaceholder,
-                default: defaultProfileValues ? defaultProfileValues.user : undefined,
+                default: defaultProfileValues ? defaultProfileValues.userName : undefined,
                 shouldPrompt: (answers) => ConnectionCredentials.shouldPromptForUser(credentials),
                 validate: (value) => ConnectionCredentials.validateRequiredString(Constants.usernamePrompt, value),
-                onAnswered: (value) => credentials.user = value
+                onAnswered: (value) => credentials.userName = value
             },
             // Password may or may not be necessary
             {
@@ -215,15 +221,15 @@ export class ConnectionCredentials implements IConnectionCredentials {
         return questions;
     }
 
-    private static shouldPromptForUser(credentials: IConnectionCredentials): boolean {
-        return utils.isEmpty(credentials.user) && ConnectionCredentials.isPasswordBasedCredential(credentials);
+    private static shouldPromptForUser(credentials: vscode.ConnectionInfo): boolean {
+        return utils.isEmpty(credentials.userName) && ConnectionCredentials.isPasswordBasedCredential(credentials);
     }
 
-    private static shouldPromptForPassword(credentials: IConnectionCredentials): boolean {
+    private static shouldPromptForPassword(credentials: vscode.ConnectionInfo): boolean {
         return utils.isEmpty(credentials.password) && ConnectionCredentials.isPasswordBasedCredential(credentials);
     }
 
-    public static isPasswordBasedCredential(credentials: IConnectionCredentials): boolean {
+    public static isPasswordBasedCredential(credentials: vscode.ConnectionInfo): boolean {
         // TODO consider enum based verification and handling of AD auth here in the future
         let authenticationType = credentials.authenticationType;
         if (typeof credentials.authenticationType === 'undefined') {
