@@ -3,46 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-'use strict';
-
-import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { EditorInput } from 'vs/workbench/common/editor';
-import * as vscode from 'vscode';
+import { EditorInput,  EditorModel } from 'vs/workbench/common/editor';
+import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
+import { QueryResultsInput } from './queryResultsInput';
 
+/**
+ * Input for the QueryEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
+ * and a UntitledEditorInput for the SQL File Editor.
+ */
 export class QueryInput extends EditorInput {
 
-	static get ID() { return 'workbench.query.input2'; }
-	get extension(): vscode.ConnectionInfo { return this._extension; }
+	public static ID: string = 'workbench.editorinputs.queryEditorInput';
 
-	constructor(private _extension: vscode.ConnectionInfo) {
+	constructor(private name: string, private description: string, private _sql: UntitledEditorInput, private _results: QueryResultsInput) {
 		super();
+	}
+
+	get sql(): UntitledEditorInput {
+		return this._sql;
+	}
+
+	get results(): QueryResultsInput {
+		return this._results;
+	}
+
+	public resolve(refresh?: boolean): TPromise<EditorModel> {
+		return TPromise.as(null);
 	}
 
 	getTypeId(): string {
 		return QueryInput.ID;
 	}
 
-	getName(): string {
-		return localize('extensionsInputName', 'Extension');
+	public getName(): string {
+		return this.name;
 	}
 
-	matches(other: any): boolean {
-		if (!(other instanceof QueryInput)) {
+	public getDescription(): string {
+		return this.description;
+	}
+
+	public supportsSplitEditor(): boolean {
+		return false;
+	}
+
+	public matches(otherInput: any): boolean {
+		if (!otherInput || !(otherInput instanceof QueryInput)) {
 			return false;
 		}
+		else if (super.matches(otherInput)) {
+			return true;
+		}
 
-		const otherExtensionInput = other as QueryInput;
-
-		// TODO@joao is this correct?
-		return this.extension === otherExtensionInput.extension;
-	}
-
-	resolve(refresh?: boolean): TPromise<any> {
-		return TPromise.as(null);
-	}
-
-	supportsSplitEditor(): boolean {
-		return false;
+		const otherQueryInput: QueryInput = <QueryInput>otherInput;
+		return this.results.matches(otherQueryInput.results) && this.sql.matches(otherQueryInput.sql);
 	}
 }

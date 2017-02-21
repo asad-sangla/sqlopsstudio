@@ -34,7 +34,7 @@ registerSingleton(IExtensionsWorkbenchService, ExtensionsWorkbenchService);
 // Viewlet Action
 export class OpenConnectionsViewletAction extends ToggleViewletAction {
 	public static ID = VIEWLET_ID;
-	public static LABEL = "Show Connections";
+	public static LABEL = 'Show Connections';
 
 	constructor(
 		id: string,
@@ -55,7 +55,7 @@ const viewletDescriptor = new ViewletDescriptor(
 	'sql/parts/connection/electron-browser/connectionViewlet',
 	'ConnectionViewlet',
 	VIEWLET_ID,
-	"Connections",
+	'Connections',
 	'extensions',
 	0
 );

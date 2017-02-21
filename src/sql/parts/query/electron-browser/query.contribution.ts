@@ -10,15 +10,29 @@ import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/co
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
+import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
+import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 
 // Editor
-const editorDescriptor = new EditorDescriptor(
+const queryResultsEditorDescriptor = new EditorDescriptor(
+	QueryResultsEditor.ID,
+	'QueryResults',
+	'sql/parts/query/editor/queryResultsEditor',
+	'QueryResultsEditor'
+);
+
+Registry.as<IEditorRegistry>(EditorExtensions.Editors)
+	.registerEditor(queryResultsEditorDescriptor, [new SyncDescriptor(QueryResultsInput)]);
+
+
+// Editor
+const queryEditorDescriptor = new EditorDescriptor(
 	QueryEditor.ID,
-	"Query",
+	'Query',
 	'sql/parts/query/editor/queryEditor',
 	'QueryEditor'
 );
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
-	.registerEditor(editorDescriptor, [new SyncDescriptor(QueryInput)]);
+	.registerEditor(queryEditorDescriptor, [new SyncDescriptor(QueryInput)]);
