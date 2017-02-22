@@ -149,7 +149,7 @@ function main() {
 				coveragePath += '-single';
 				reportTypes = ['lcovonly'];
 			} else {
-				reportTypes = ['json', 'lcov', 'html'];
+				reportTypes = ['json', 'lcov', 'html', 'cobertura'];
 			}
 			var reporter = new istanbul.Reporter(null, coveragePath);
 			reporter.addAll(reportTypes);
