@@ -9,19 +9,24 @@
 
 /*global window,document,define*/
 
+// Set globals used by vs
 const path = require('path');
 const electron = require('electron');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
 
-// Set globals needed by slickgrid and angular
-const _ = require('underscore')._;
+// Set jQuery globals
 const jQuery = require('jquery');
 jQuery.fn.drag = require('jquery.event.drag');
+require('jquery-ui');
+const $ = jQuery;
 
-// Require modules that define their own globals
+// Set other globals
+const _ = require('underscore')._;
+const rangy = require('rangy');
 require('reflect-metadata');
 require('zone.js');
+require('bootstrap');
 
 // Require slickgrid
 require('slickgrid/slick.core');
@@ -34,8 +39,7 @@ require('slickgrid/slick.editors');
 const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
 const AngularCore = require('@angular/core');
 const AngularPlatformBrowser = require('@angular/platform-browser');
-
-require('bootstrap');
+const Rx = require('rxjs/Rx');
 
 process.lazyEnv = new Promise(function (resolve) {
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
@@ -44,6 +48,7 @@ process.lazyEnv = new Promise(function (resolve) {
 	});
 	ipc.send('vscode:fetchShellEnv', remote.getCurrentWindow().id);
 });
+
 
 function onError(error, enableDeveloperTools) {
 	if (enableDeveloperTools) {
@@ -75,7 +80,10 @@ function parseURLQueryArgs() {
 function createScript(src, onload) {
 	const script = document.createElement('script');
 	script.src = src;
-	script.addEventListener('load', onload);
+
+	if (onload) {
+		script.addEventListener('load', onload);
+	}
 
 	const head = document.getElementsByTagName('head')[0];
 	head.insertBefore(script, head.lastChild);
@@ -179,6 +187,11 @@ function main() {
 	// Load the loader and start loading the workbench
 	const appRoot = uriFromPath(configuration.appRoot);
 	const rootUrl = appRoot + '/out';
+
+	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
+	createScript(rootUrl + '/sql/parts/grid/views/slick.dragrowselector.js', undefined);
+	createScript(rootUrl + '/sql/parts/grid/views/slick.autosizecolumn.js', undefined);
+
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation

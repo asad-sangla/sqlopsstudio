@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from 'vs/nls';
 import { Registry } from 'vs/platform/platform';
 import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/common/editor';
@@ -24,7 +23,6 @@ const queryResultsEditorDescriptor = new EditorDescriptor(
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 	.registerEditor(queryResultsEditorDescriptor, [new SyncDescriptor(QueryResultsInput)]);
-
 
 // Editor
 const queryEditorDescriptor = new EditorDescriptor(

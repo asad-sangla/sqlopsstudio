@@ -1,3 +1,8 @@
+
+/////////////////////////////
+// Testing Constants
+export const testUri = 'testUri';
+
 // constants
 export const languageId = 'sql';
 export const extensionName = 'mssql';
@@ -253,3 +258,21 @@ export const definitionRequestedStatus = 'DefinitionRequested';
 export const definitionRequestCompletedStatus = 'DefinitionRequestCompleted';
 export const updatingIntelliSenseStatus = 'updatingIntelliSense';
 export const intelliSenseUpdatedStatus = 'intelliSenseUpdated';
+
+/** Results Pane Labels */
+export const maximizeLabel = 'Maximize';
+export const restoreLabel = 'Restore';
+export const saveCSVLabel = 'Save as CSV';
+export const saveJSONLabel = 'Save as JSON';
+export const resultPaneLabel = 'Results';
+export const selectAll = 'Select all';
+export const copyLabel = 'Copy';
+export const copyWithHeadersLabel = 'Copy with Headers';
+
+/** Messages Pane Labels */
+export const messagePaneLabel = 'Messages';
+export const lineSelectorFormatted = 'Line {0}';
+export const elapsedTimeLabel = 'Total execution time: {0}';
+
+/** Warning message for save icons */
+export const msgCannotSaveMultipleSelections = 'Save results command cannot be used with multiple selections.';

@@ -3,14 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-//import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+'use strict';
 
-import { AppModule } from './app.module';
-
-declare let AngularPlatformBrowserDynamic;
-
-export class DataGrid {
-	public static initModules() {
-		AngularPlatformBrowserDynamic.platformBrowserDynamic().bootstrapModule(AppModule);
-	}
-}
+import { IQueryModel, QueryModel } from 'sql/parts/query/execution/queryModel';
+export var QueryModelInstance: IQueryModel = new QueryModel();

@@ -13,14 +13,14 @@ import { Registry } from 'vs/platform/platform';
 import { IEditorRegistry, Extensions as EditorExtensions, EditorInput, EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor, EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { IEditorControl, Position, IEditor } from 'vs/platform/editor/common/editor';
-import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from '../view/flexibleSash';
+import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from '../views/flexibleSash';
 import { Orientation} from 'vs/base/browser/ui/sash/sash';
 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-import { QueryResultsInput } from '../common/queryResultsInput';
-import { QueryInput } from '../common/queryInput';
+import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
+import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { QueryResultsEditor } from './queryResultsEditor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
@@ -34,7 +34,7 @@ export class QueryEditor extends BaseEditor {
 	// The height of the tabs above the editor
 	private readonly tabHeight: number = 35;
 
-	public static ID: string = 'workbench.editor.sidebysideEditor';
+	public static ID: string = 'workbench.editor.queryEditor';
 
 	private sash: IFlexibleSash;
 	private tabsOffset: number;

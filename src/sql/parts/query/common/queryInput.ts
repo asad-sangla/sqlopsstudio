@@ -6,7 +6,7 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput,  EditorModel } from 'vs/workbench/common/editor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
-import { QueryResultsInput } from './queryResultsInput';
+import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 
 /**
  * Input for the QueryEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
@@ -14,7 +14,7 @@ import { QueryResultsInput } from './queryResultsInput';
  */
 export class QueryInput extends EditorInput {
 
-	public static ID: string = 'workbench.editorinputs.queryEditorInput';
+	public static ID: string = 'workbench.editorinputs.queryInput';
 
 	constructor(private name: string, private description: string, private _sql: UntitledEditorInput, private _results: QueryResultsInput) {
 		super();

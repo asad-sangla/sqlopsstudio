@@ -20,6 +20,9 @@ import { IThemeService } from 'vs/workbench/services/themes/common/themeService'
 import { append, $ } from 'vs/base/browser/dom';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
+import { AppModule } from 'sql/parts/grid/views/app.module';
+
+declare let AngularPlatformBrowserDynamic;
 
 export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareEditorVisible', false);
 
@@ -28,7 +31,7 @@ export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareE
  */
 export class QueryResultsEditor extends BaseEditor {
 
-	static ID: string = 'workbench.editor.query';
+	static ID: string = 'workbench.editor.queryResultsEditor';
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -45,11 +48,8 @@ export class QueryResultsEditor extends BaseEditor {
 	}
 
 	createEditor(parent: Builder): void {
-		const container = parent.getHTMLElement();
-		const root = append(container, $('.extension-editor'));
-		let label = append(root, $('span.license.clickable'));
-		label.textContent = 'Query Editor';
-		label.style.display = 'block';
+		append(parent.getHTMLElement(), $('slickgrid-container'));
+		AngularPlatformBrowserDynamic.platformBrowserDynamic().bootstrapModule(AppModule);
 	}
 
 	layout(dimension: Dimension): void {

@@ -15,7 +15,7 @@ import { EditorInput } from 'vs/workbench/common/editor';
  */
 export class QueryResultsInput extends EditorInput {
 
-	static get ID() { return 'workbench.query.input'; }
+	static get ID() { return 'workbench.query.queryResultsInput'; }
 
 	constructor() {
 		super();

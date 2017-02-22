@@ -224,7 +224,7 @@ export function isSameProfile(currentProfile: vscode.ConnectionInfo, expectedPro
     if (currentProfile === undefined) {
         return false;
     }
-   
+
     return expectedProfile.serverName === currentProfile.serverName
         && isSameDatabase(expectedProfile.databaseName, currentProfile.databaseName)
         && isSameAuthenticationType(expectedProfile.authenticationType, currentProfile.authenticationType)
@@ -346,4 +346,21 @@ export function parseNumAsTimeString(value: number): string {
     let rs = hs + ':' + ms + ':' + ss;
 
     return tempVal > 0 ? rs + '.' + mss : rs;
+}
+
+/**
+ * Converts <, >, &, ", ', and any characters that are outside \u00A0 to numeric HTML entity values
+ * like &#123;
+ * (Adapted from http://stackoverflow.com/a/18750001)
+ * @param str String to convert
+ * @return String with characters replaced.
+ */
+export function htmlEntities(str: string): string {
+    return typeof(str) === 'string'
+        ? str.replace(/[\u00A0-\u9999<>\&"']/gim, (i) => { return `&#${i.charCodeAt(0)};`; })
+        : undefined;
+}
+
+export function isNumber(val: any): boolean {
+    return typeof(val) === 'number';
 }

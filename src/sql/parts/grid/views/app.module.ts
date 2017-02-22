@@ -3,10 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-//import { NgModule } from '@angular/core';
-//import { BrowserModule }  from '@angular/platform-browser';
-
-import { AppComponent } from './app.component';
+import { AppComponent } from 'sql/parts/grid/views/app.component';
 import { SlickGrid } from 'angular2-slickgrid';
 
 declare let AngularPlatformBrowser;
