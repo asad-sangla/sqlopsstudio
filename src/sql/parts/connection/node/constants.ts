@@ -11,8 +11,8 @@ export const connectionApplicationName = 'vscode-mssql';
 export const outputChannelName = 'MSSQL';
 
 export const connectionConfigFilename = 'settings.json';
-export const connectionsArrayName = 'mssql.connections';
-export const connectionGroupsArrayName = 'mssql.connectionGroups';
+export const connectionsArrayName = 'database.connections';
+export const connectionGroupsArrayName = 'database.connectionGroups';
 
 export const cmdRunQuery = 'extension.runQuery';
 export const cmdCancelQuery = 'extension.cancelQuery';

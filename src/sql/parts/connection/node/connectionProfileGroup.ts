@@ -6,12 +6,11 @@
 'use strict';
 
 import { IConnectionProfile } from './interfaces';
-import vscode = require('vscode');
 
 export interface IConnectionProfileGroup {
-	name: string,
-	children: IConnectionProfileGroup[]
-}
+	name: string;
+	children: IConnectionProfileGroup[];
+};
 
 export class ConnectionProfileGroup implements IConnectionProfileGroup {
 

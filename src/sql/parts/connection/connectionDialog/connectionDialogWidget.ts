@@ -14,8 +14,8 @@ import { Checkbox } from 'vs/base/browser/ui/CheckBox/CheckBox';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import vscode = require('vscode');
 import * as platform from 'vs/base/common/platform';
+import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
@@ -31,10 +31,9 @@ export class ConnectionDialogWidget  {
 	private databaseNameInputBox: InputBox;
 	private userNameInputBox: InputBox;
 	private passwordInputBox: InputBox;
-	private RememberPassword: Checkbox;
-	private jQuery;
+	private rememberPassword: Checkbox;
 	private callbacks: IConnectionDialogCallbacks;
-	private model: vscode.ConnectionInfo;
+	private model: IConnectionProfile;
 	private toDispose: lifecycle.IDisposable[];
 	private authTypeSelectBox: SelectBox;
 	private advancedButton: Button;
@@ -78,13 +77,13 @@ export class ConnectionDialogWidget  {
 								this.userNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'User Name', 'auth-label', 'auth-input'));
 								this.passwordInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Password', 'auth-label', 'auth-input'));
 								this.passwordInputBox.inputElement.type = 'password';
-								this.RememberPassword = this.appendCheckbox(tableContainer, 'Remember Password', 'auth-checkbox', 'auth-input');
+								this.rememberPassword = this.appendCheckbox(tableContainer, 'Remember Password', 'auth-checkbox', 'auth-input');
 								this.databaseNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Database Name', 'auth-label', 'auth-input'));
 								this.advancedButton = this.createAdvancedButton(tableContainer, 'Advanced...');
 							});
 						});
 						modelContent.div({class:'modal-footer'}, (modelFooter) => {
-							modelFooter.element('table', {align:'right'}, (tableContainer) => {
+							modelFooter.element('table', {class:'footer-buttons', align: 'right'}, (tableContainer) => {
 								tableContainer.element('tr', {}, (rowContainer) => {
 									this.connectButton = this.createFooterButton(rowContainer, 'Connect');
 									this.connectButton.enabled = false;
@@ -192,11 +191,11 @@ export class ConnectionDialogWidget  {
 		}
 	}
 
-	public getConnection(): vscode.ConnectionInfo {
+	public getConnection(): IConnectionProfile {
 		return this.model;
 	}
 
-	public setConnection(model: vscode.ConnectionInfo) {
+	public setConnection(model: IConnectionProfile) {
 		this.serverNameInputBox.value = model.serverName;
 		this.databaseNameInputBox.value = model.databaseName;
 		this.userNameInputBox.value = model.userName;
@@ -272,7 +271,9 @@ export class ConnectionDialogWidget  {
 				databaseName: this.databaseName,
 				userName: this.userName,
 				password: this.password,
-				authenticationType: this.authenticationType
+				authenticationType: this.authenticationType,
+				savePassword: this.rememberPassword.checked,
+				groupName: this.serverGroup
 			};
 
 			this.callbacks.onConnect();

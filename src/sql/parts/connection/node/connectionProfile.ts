@@ -1,9 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+*  Copyright (c) Microsoft Corporation. All rights reserved.
+*  Licensed under the MIT License. See License.txt in the project root for license information.
+*--------------------------------------------------------------------------------------------*/
 'use strict';
-// import vscode = require('vscode');
-import Constants = require('./constants');
+
 import { IConnectionProfile, AuthenticationTypes } from './interfaces';
 import { ConnectionCredentials } from './connectionCredentials';
-import { QuestionTypes, IQuestion, IPrompter, INameValueChoice } from './question';
 import * as utils from './utils';
 import vscode = require('vscode');
 

@@ -24,7 +24,7 @@ import { IKeybindings } from 'vs/platform/keybinding/common/keybinding';
 import { CommandsRegistry } from 'vs/platform/commands/common/commands';
 import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import * as errors from 'vs/base/common/errors';
-
+import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
 
 // Singletons
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService);
@@ -79,4 +79,21 @@ registry.registerWorkbenchAction(
 CommandsRegistry.registerCommand('_connection.newconnectionprofile', (accessor: ServicesAccessor) => {
 	// const registeredServersService = accessor.get(IRegisteredServersService);
 
+});
+
+let configurationRegistry = <IConfigurationRegistry>Registry.as(Extensions.Configuration);
+configurationRegistry.registerConfiguration({
+	'id': 'databaseConnections',
+	'title': 'Database Connections',
+	'type': 'object',
+	'properties': {
+		'database.connections': {
+			'description': 'mssql connections',
+			'type': 'array'
+		},
+		'database.connectionGroups': {
+			'description': 'mssql connections',
+			'type': 'array'
+		}
+	}
 });

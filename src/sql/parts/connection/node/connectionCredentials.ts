@@ -11,6 +11,7 @@ import { ConnectionStore } from './connectionStore';
 import * as utils from './utils';
 import vscode = require('vscode');
 import { QuestionTypes, IQuestion, IPrompter, INameValueChoice } from './question';
+import * as interfaces from 'sql/parts/connection/node/interfaces';
 
 import os = require('os');
 
@@ -233,9 +234,13 @@ export class ConnectionCredentials implements vscode.ConnectionInfo {
         // TODO consider enum based verification and handling of AD auth here in the future
         let authenticationType = credentials.authenticationType;
         if (typeof credentials.authenticationType === 'undefined') {
-            authenticationType = utils.authTypeToString(AuthenticationTypes.SqlLogin);
+            authenticationType = ConnectionCredentials.authTypeToString(AuthenticationTypes.SqlLogin);
         }
-        return authenticationType === utils.authTypeToString(AuthenticationTypes.SqlLogin);
+        return authenticationType === ConnectionCredentials.authTypeToString(AuthenticationTypes.SqlLogin);
+    }
+
+    public static authTypeToString(value: interfaces.AuthenticationTypes): string {
+        return interfaces.AuthenticationTypes[value];
     }
 
     // Validates a string is not empty, returning undefined if true and an error message if not
@@ -248,11 +253,11 @@ export class ConnectionCredentials implements vscode.ConnectionInfo {
 
     public static getAuthenticationTypesChoice(): INameValueChoice[] {
         let choices: INameValueChoice[] = [
-            { name: Constants.authTypeSql, value: utils.authTypeToString(AuthenticationTypes.SqlLogin) }
+            { name: Constants.authTypeSql, value: this.authTypeToString(AuthenticationTypes.SqlLogin) }
         ];
         // In the case of win32 support integrated. For all others only SqlAuth supported
         if ('win32' === os.platform()) {
-             choices.push({ name: Constants.authTypeIntegrated, value: utils.authTypeToString(AuthenticationTypes.Integrated) });
+             choices.push({ name: Constants.authTypeIntegrated, value: this.authTypeToString(AuthenticationTypes.Integrated) });
         }
         // TODO When Azure Active Directory is supported, add this here
 

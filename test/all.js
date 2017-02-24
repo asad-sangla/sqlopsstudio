@@ -50,6 +50,7 @@ function main() {
 		baseUrl: path.join(path.dirname(__dirname), 'src'),
 		paths: {
 			'vs': `../${ out }/vs`,
+			'sql': `../${ out }/sql`,
 			'lib': `../${ out }/lib`,
 			'bootstrap': `../${ out }/bootstrap`
 		},

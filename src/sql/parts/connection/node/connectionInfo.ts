@@ -29,40 +29,8 @@ export function fixupConnectionCredentials(connCreds: vscode.ConnectionInfo): vs
     if (!connCreds.password) {
         connCreds.password = '';
     }
-
-/*
-    if (!connCreds.connectTimeout) {
-        connCreds.connectTimeout = Constants.defaultConnectionTimeout;
-    }
-
-    // default value for encrypt
-    if (!connCreds.encrypt) {
-        connCreds.encrypt = false;
-    }
-
-    // default value for appName
-    if (!connCreds.applicationName) {
-        connCreds.applicationName = Constants.connectionApplicationName;
-    }
-
-    if (isAzureDatabase(connCreds.server)) {
-        // always encrypt connection if connecting to Azure SQL
-        connCreds.encrypt = true;
-
-        // Ensure minumum connection timeout if connecting to Azure SQL
-        if (connCreds.connectTimeout < Constants.azureSqlDbConnectionTimeout) {
-            connCreds.connectTimeout = Constants.azureSqlDbConnectionTimeout;
-        }
-    }
-    */
     return connCreds;
 }
-
-// return true if server name ends with '.database.windows.net'
-function isAzureDatabase(server: string): boolean {
-    return (server ? server.endsWith(Constants.sqlDbPrefix) : false);
-}
-
 /**
  * Gets a description for a connection to display in the picklist UI
  *

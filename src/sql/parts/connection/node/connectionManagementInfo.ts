@@ -5,7 +5,7 @@
 
 'use strict';
 
-import { IConnectionProfile } from './interfaces'
+import { IConnectionProfile } from './interfaces';
 import Utils = require('./utils');
 
 /**

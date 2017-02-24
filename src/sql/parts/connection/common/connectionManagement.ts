@@ -10,6 +10,7 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 import Event from 'vs/base/common/event';
 import vscode = require('vscode');
 import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
+import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 
 export const VIEWLET_ID = 'workbench.view.connections';
 
@@ -34,7 +35,7 @@ export interface IConnectionManagementService {
 
 	newConnection();
 
-	addConnectionProfile(connection: vscode.ConnectionInfo): Promise<boolean>;
+	addConnectionProfile(connection: IConnectionProfile): Promise<boolean>;
 
 	onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void;
 

@@ -22,7 +22,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import * as vscode from 'vscode';
 import { ConnectionStore } from './connectionStore';
 import { IConnectionProfile } from './interfaces';
-import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
+import { ConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionManagementInfo } from './connectionManagementInfo';
@@ -69,7 +69,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._connectionDialogService.showDialog(this);
 	}
 
-	public addConnectionProfile(connection: vscode.ConnectionInfo): Promise<boolean> {
+	public addConnectionProfile(connection: IConnectionProfile): Promise<boolean> {
 		let uri = this.getDocumentUri(connection);
 
 		return new Promise<boolean>((resolve, reject) => {
@@ -90,20 +90,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.getConnectionProfileGroups();
 	}
 
-	private connect(uri: string, connection: vscode.ConnectionInfo): Promise<boolean> {
+	private connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
 			const self = this;
 
 			return new Promise<boolean>((resolve, reject) => {
-				let newProfile: IConnectionProfile = {
-					connection: connection,
-					savePassword: true,
-					groupName: undefined
-				}
-
 				let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
 				connectionInfo.extensionTimer = new Utils.Timer();
 				connectionInfo.intelliSenseTimer = new Utils.Timer();
-				connectionInfo.connectionProfile = newProfile;
+				connectionInfo.connectionProfile = connection;
 				connectionInfo.connecting = true;
 				this._connections[uri] = connectionInfo;
 
@@ -132,7 +126,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private getDocumentUri(connection: vscode.ConnectionInfo): string {
 		let uri = this.getActiveEditorUri();
 		if(uri === undefined) {
-			let uri: string = 'connection://' + connection.serverName + ':' + connection.databaseName;
+			uri = 'connection://' + connection.serverName + ':' + connection.databaseName;
 		}
 
 		return uri;
@@ -155,7 +149,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private tryAddMruConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile): void {
         if (newConnection) {
 
-            this._connectionStore.addRecentlyUsed(newConnection.connection)
+            this._connectionStore.addRecentlyUsed(newConnection)
 			  .then(() => {
                 connectionManagementInfo.connectHandler(true);
             }, err => {

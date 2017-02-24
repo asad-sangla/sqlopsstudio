@@ -1,6 +1,6 @@
 'use strict';
 import vscode = require('vscode');
-import Constants = require('./constants');
+import * as Constants from 'sql/parts/connection/node/constants';
 
 // interfaces
 export enum ContentType {
@@ -191,11 +191,9 @@ export interface IConnectionCredentials {
 
 // A Connection Profile contains all the properties of connection credentials, with additional
 // optional name and details on whether password should be saved
-export interface IConnectionProfile {
-    //profileName: string;
+export interface IConnectionProfile extends vscode.ConnectionInfo {
     savePassword: boolean;
     groupName: string;
-    connection: vscode.ConnectionInfo;
 }
 
 export enum CredentialsQuickPickItemType {

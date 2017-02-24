@@ -27,6 +27,7 @@
 	width: 100px;
 }
 
+
 .advanced-button {
 	width: 100px;
 	padding-right:8px;
@@ -86,7 +87,7 @@
 }
 
 .connection-dialog-widget .select-box {
-	width: 400px;
+	width: 331px;
 	border: none;
 	height: 25px;
 }
@@ -99,4 +100,8 @@
 .vs-dark.monaco-shell .connection-dialog-widget .select-box {
 	background: #3C3C3C;
 	color: #BBB;
+}
+
+.connection-dialog-widget .footer-buttons {
+    width: 200px;
 }
