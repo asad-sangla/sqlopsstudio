@@ -10,7 +10,7 @@ import 'vs/css!./bootstrap-theme';
 import 'vs/css!./connectionDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { Checkbox } from 'vs/base/browser/ui/CheckBox/CheckBox';
+import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';

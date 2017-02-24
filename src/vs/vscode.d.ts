@@ -61,8 +61,35 @@ declare module 'vscode' {
 		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);
 	}
 
+	/**
+	 * Parameters to initialize a connection to a database
+	 */
+	export interface Credential {
+		/**
+		 * Unique ID identifying the credential
+		 */
+		credentialId: string;
+
+		/**
+		 * password
+		 */
+		password: string;
+	}
+
+	export interface CredentialProvider {
+		handle: number;
+
+		saveCredential(credentialId: string, password: string): Thenable<boolean>;
+
+		readCredential(credentialId: string): Thenable<Credential>;
+
+    	deleteCredential(credentialId: string): Thenable<boolean>;
+	}
+
 	export namespace connections {
 		export function registerConnectionProvider(provider: ConnectionProvider): Disposable;
+
+		export function registerCredentialProvider(provider: CredentialProvider): Disposable;
 	}
 
 	/**

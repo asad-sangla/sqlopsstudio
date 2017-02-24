@@ -93,6 +93,7 @@ import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
+import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -518,8 +519,9 @@ export class Workbench implements IPartService {
 		this.toShutdown.push(this.quickOpen);
 		serviceCollection.set(IQuickOpenService, this.quickOpen);
 
-		// Connection Management service
+		// SQL Tools services
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
+		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
 		serviceCollection.set(IConnectionManagementService, this.instantiationService.createInstance(ConnectionManagementService));
 
 		// Contributed services

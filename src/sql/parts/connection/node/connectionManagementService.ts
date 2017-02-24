@@ -27,6 +27,7 @@ import { IConfigurationEditingService } from 'vs/workbench/services/configuratio
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionManagementInfo } from './connectionManagementInfo';
 import Utils = require('./utils');
+import { ICredentialsService } from 'sql/parts/credentials/credentialsService'
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -54,7 +55,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IStorageService private _storageService: IStorageService,
 		@ITelemetryService private _telemetryService: ITelemetryService,
 		@IConfigurationEditingService private _configurationEditService: IConfigurationEditingService,
-		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService
+		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
+		@ICredentialsService private _credentialsService: ICredentialsService
 	) {
 
 		this.connectionMemento = new Memento('ConnectionManagement');
@@ -66,6 +68,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 
 	public newConnection(): void {
+		this._credentialsService.saveCredential('id', 'password1').then(r => {
+			this._credentialsService.readCredential('id').then(cr => {
+				this._credentialsService.deleteCredential('id');
+			});
+		});
+
 		this._connectionDialogService.showDialog(this);
 	}
 

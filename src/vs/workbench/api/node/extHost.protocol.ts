@@ -64,6 +64,29 @@ export abstract class ExtHostConnectionManagementShape {
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
 }
 
+/**
+ * Credential Management extension host class.
+ */
+export abstract class ExtHostCredentialManagementShape {
+	$saveCredential(credentialId: string, password: string): Thenable<boolean> { throw ni(); }
+
+	$readCredential(credentialId: string): Thenable<vscode.Credential> { throw ni(); }
+
+    $deleteCredential(credentialId: string): Thenable<boolean> { throw ni(); }
+}
+
+export abstract class MainThreadConnectionManagementShape {
+	$registerConnectionProvider(handle: number): TPromise<any> { throw ni(); }
+	$unregisterConnectionProvider(handle: number): TPromise<any> { throw ni(); }
+	$onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void { throw ni(); }
+	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
+}
+
+export abstract class MainThreadCredentialManagementShape {
+	$registerCredentialProvider(handle: number): TPromise<any> { throw ni(); }
+	$unregisterCredentialProvider(handle: number): TPromise<any> { throw ni(); }
+}
+
 
 export interface IEnvironment {
 	enableProposedApi: boolean;
@@ -127,13 +150,6 @@ export class InstanceCollection {
 function ni() { return new Error('Not implemented'); }
 
 // --- main thread
-
-export abstract class MainThreadConnectionManagementShape {
-	$registerConnectionProvider(handle: number): TPromise<any> { throw ni(); }
-	$unregisterConnectionProvider(handle: number): TPromise<any> { throw ni(); }
-	$onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void { throw ni(); }
-	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
-}
 
 export abstract class MainThreadCommandsShape {
 	$registerCommand(id: string): TPromise<any> { throw ni(); }
@@ -435,7 +451,8 @@ export abstract class ExtHostSCMShape {
 export const MainContext = {
 	MainThreadCommands: createMainId<MainThreadCommandsShape>('MainThreadCommands', MainThreadCommandsShape),
 	MainThreadConfiguration: createMainId<MainThreadConfigurationShape>('MainThreadConfiguration', MainThreadConfigurationShape),
-MainThreadConnectionManagement: createMainId<MainThreadConnectionManagementShape>('MainThreadDataManagement', MainThreadConnectionManagementShape),
+	MainThreadConnectionManagement: createMainId<MainThreadConnectionManagementShape>('MainThreadDataManagement', MainThreadConnectionManagementShape),
+	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement', MainThreadCredentialManagementShape),
 	MainThreadDiagnostics: createMainId<MainThreadDiagnosticsShape>('MainThreadDiagnostics', MainThreadDiagnosticsShape),
 	MainThreadDocuments: createMainId<MainThreadDocumentsShape>('MainThreadDocuments', MainThreadDocumentsShape),
 	MainThreadEditors: createMainId<MainThreadEditorsShape>('MainThreadEditors', MainThreadEditorsShape),
@@ -460,6 +477,7 @@ export const ExtHostContext = {
 	ExtHostCommands: createExtId<ExtHostCommandsShape>('ExtHostCommands', ExtHostCommandsShape),
 	ExtHostConfiguration: createExtId<ExtHostConfigurationShape>('ExtHostConfiguration', ExtHostConfigurationShape),
 	ExtHostConnectionManagement: createExtId<ExtHostConnectionManagementShape>('ExtHostConnectionManagement', ExtHostConnectionManagementShape),
+	ExtHostCredentialManagement: createExtId<ExtHostCredentialManagementShape>('ExtHostCredentialManagement', ExtHostCredentialManagementShape),
 	ExtHostDiagnostics: createExtId<ExtHostDiagnosticsShape>('ExtHostDiagnostics', ExtHostDiagnosticsShape),
 	ExtHostDocuments: createExtId<ExtHostDocumentsShape>('ExtHostDocuments', ExtHostDocumentsShape),
 	ExtHostDocumentSaveParticipant: createExtId<ExtHostDocumentSaveParticipantShape>('ExtHostDocumentSaveParticipant', ExtHostDocumentSaveParticipantShape),

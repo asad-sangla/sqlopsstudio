@@ -48,6 +48,7 @@ import { MainContext, ExtHostContext, InstanceCollection, IInitData } from './ex
 import * as languageConfiguration from 'vs/editor/common/modes/languageConfiguration';
 
 import { ExtHostConnectionManagement } from 'sql/workbench/api/node/extHostConnectionManagement';
+import { ExtHostCredentialManagement } from 'sql/workbench/api/node/extHostCredentialManagement';
 
 export interface IExtensionApiFactory {
 	(extension: IExtensionDescription): typeof vscode;
@@ -99,6 +100,8 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 	const col = new InstanceCollection();
 	const extHostHeapService = col.define(ExtHostContext.ExtHostHeapService).set<ExtHostHeapService>(new ExtHostHeapService());
 	const extHostConnectionManagement = col.define(ExtHostContext.ExtHostConnectionManagement).set<ExtHostConnectionManagement>(new ExtHostConnectionManagement(threadService));
+	const extHostCredentialManagement = col.define(ExtHostContext.ExtHostCredentialManagement).set<ExtHostCredentialManagement>(new ExtHostCredentialManagement(threadService));
+
 	const extHostDocuments = col.define(ExtHostContext.ExtHostDocuments).set<ExtHostDocuments>(new ExtHostDocuments(threadService));
 	const extHostDocumentSaveParticipant = col.define(ExtHostContext.ExtHostDocumentSaveParticipant).set<ExtHostDocumentSaveParticipant>(new ExtHostDocumentSaveParticipant(extHostDocuments, threadService.get(MainContext.MainThreadWorkspace)));
 	const extHostEditors = col.define(ExtHostContext.ExtHostEditors).set<ExtHostEditors>(new ExtHostEditors(threadService, extHostDocuments));
@@ -152,7 +155,11 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 				});
 
 				return extHostConnectionManagement.$registerConnectionProvider(provider);
-			}
+			},
+			registerCredentialProvider(provider: vscode.CredentialProvider): vscode.Disposable  {
+				return extHostCredentialManagement.$registerCredentialProvider(provider);
+			},
+
 		};
 
 		// namespace: commands
