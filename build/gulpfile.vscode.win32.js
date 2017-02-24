@@ -14,7 +14,7 @@ const pkg = require('../package.json');
 const product = require('../product.json');
 
 const repoPath = path.dirname(__dirname);
-const buildPath = path.join(path.dirname(repoPath), 'VSCode-win32');
+const buildPath = path.join(path.dirname(repoPath), 'carbon');
 const issPath = path.join(__dirname, 'win32', 'code.iss');
 const innoSetupPath = path.join(path.dirname(path.dirname(require.resolve('innosetup-compiler'))), 'bin', 'ISCC.exe');
 
