@@ -38,6 +38,7 @@ import { IProgressService } from 'vs/platform/progress/common/progress';
 import { EditorStacksModel, EditorGroup, EditorIdentifier, GroupEvent } from 'vs/workbench/common/editor/editorStacksModel';
 import Event, { Emitter } from 'vs/base/common/event';
 import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import QueryEditorService from 'sql/parts/editor/queryEditorService';
 
 class ProgressMonitor {
 
@@ -268,6 +269,9 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 		) {
 			return TPromise.as<BaseEditor>(null);
 		}
+
+		// SQL file check
+		input = QueryEditorService.queryEditorCheck(input, this.instantiationService);
 
 		// We need an editor descriptor for the input
 		const descriptor = Registry.as<IEditorRegistry>(EditorExtensions.Editors).getEditor(input);

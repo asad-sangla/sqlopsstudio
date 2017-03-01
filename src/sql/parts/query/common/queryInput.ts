@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TPromise } from 'vs/base/common/winjs.base';
-import { EditorInput,  EditorModel, ConfirmResult} from 'vs/workbench/common/editor';
+import { EditorInput,  EditorModel, ConfirmResult, EncodingMode } from 'vs/workbench/common/editor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import URI from 'vs/base/common/uri';
 import Event from 'vs/base/common/event';
+import URI from 'vs/base/common/uri';
 
 /**
  * Input for the QueryEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
@@ -17,6 +17,7 @@ import Event from 'vs/base/common/event';
 export class QueryInput extends EditorInput {
 
 	public static ID: string = 'workbench.editorinputs.queryInput';
+	public static SCHEMA: string = 'sql';
 
 	constructor(private name: string, private description: string, private _sql: UntitledEditorInput, private _results: QueryResultsInput) {
 		super();
@@ -31,13 +32,8 @@ export class QueryInput extends EditorInput {
 	}
 
 	public getTypeId(): string {
-		return QueryInput.ID;
+		return UntitledEditorInput.ID;
 	}
-
-	public getName(): string {
-		return this.name;
-	}
-
 	public getDescription(): string {
 		return this.description;
 	}
@@ -47,18 +43,22 @@ export class QueryInput extends EditorInput {
 	}
 
 	public matches(otherInput: any): boolean {
-		if (!otherInput || !(otherInput instanceof QueryInput)) {
-			return false;
-		}
-		else if (super.matches(otherInput)) {
-			return true;
+		if (otherInput instanceof QueryInput){
+			return this._sql.matches(otherInput.sql);
 		}
 
-		const otherQueryInput: QueryInput = <QueryInput>otherInput;
-		return this.results.matches(otherQueryInput.results) && this.sql.matches(otherQueryInput.sql);
+		return this._sql.matches(otherInput);
 	}
 
 	// Forwarding resource functions to the inline sql file editor
+	public get onDidModelChangeContent(): Event<void> {
+		return this._sql.onDidModelChangeContent;
+	}
+
+	public get onDidModelChangeEncoding(): Event<void> {
+		return this._sql.onDidModelChangeEncoding;
+	}
+
 	public resolve(refresh?: boolean): TPromise<EditorModel> {
 		return this._sql.resolve(refresh);
 	}
@@ -79,15 +79,31 @@ export class QueryInput extends EditorInput {
 		return this._sql.getResource();
 	}
 
-	public get hasAssociatedFilePath(): boolean {
+	public dispose(): void {
+		this._sql.dispose();
+	}
+
+	public getEncoding(): string {
+		return this._sql.getEncoding();
+	}
+
+	public suggestFileName(): string {
+		return this._sql.suggestFileName();
+	}
+
+	public setEncoding(encoding: string, mode: EncodingMode /* ignored, we only have Encode */): void {
+		this._sql.setEncoding(encoding, mode);
+	}
+
+	public getName(): string {
+		return this._sql.getName();
+	}
+
+	public hasAssociatedFilePath(): boolean {
 		return this._sql.hasAssociatedFilePath;
 	}
 
-	public get onDidModelChangeContent(): Event<void> {
-		return this._sql.onDidModelChangeContent;
-	}
-
-	public get onDidModelChangeEncoding(): Event<void> {
-		return this._sql.onDidModelChangeEncoding;
+	public getModelId(): string {
+		return this._sql.getModeId();
 	}
 }
