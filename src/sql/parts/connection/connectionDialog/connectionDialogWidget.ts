@@ -57,7 +57,7 @@ export class ConnectionDialogWidget  {
 
 	public create(): HTMLElement {
 		this.builder = $().div({}, (div: Builder) => {
-			div.div({class:'modal', id:'connectionDialogModal', 'role':'dialog'}, (dialogContainer) => {
+			div.div({class:'modal', id:'connectionDialogModal', 'role':'dialog', 'tabindex':'-1'}, (dialogContainer) => {
 				dialogContainer.div({class:'modal-dialog ', role:'document'}, (modalDialog) => {
 					modalDialog.div({class:'modal-content'}, (modelContent) => {
 						modelContent.div({class:'modal-header'}, (modalHeader) => {
@@ -222,7 +222,12 @@ export class ConnectionDialogWidget  {
 	}
 
 	public get authenticationType(): string {
-		return this.authTypeSelectBox.value;
+		switch (this.authTypeSelectBox.value) {
+			case this.SqlAuthTypeName:
+				return 'SqlLogin';
+			default:
+				return 'Integrated';
+		}
 	}
 
 	public setCallbacks(callbacks: IConnectionDialogCallbacks): void {
@@ -266,7 +271,7 @@ export class ConnectionDialogWidget  {
 	}
 
 	public open() {
-		jQuery('#connectionDialogModal').modal({backdrop:false});
+		jQuery('#connectionDialogModal').modal({backdrop: false, keyboard: true});
 	}
 
 	public dispose(): void {

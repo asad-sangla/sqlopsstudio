@@ -27,7 +27,7 @@ import { IConfigurationEditingService } from 'vs/workbench/services/configuratio
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionManagementInfo } from './connectionManagementInfo';
 import Utils = require('./utils');
-import { ICredentialsService } from 'sql/parts/credentials/credentialsService'
+import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -39,7 +39,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _serverEvents: { [handle: number]: ConnectionManagementEvents; } = Object.create(null);
 
-    private _connectionStore: ConnectionStore;
+	private _connectionStore: ConnectionStore;
 
 	private connectionMemento: Memento;
 
@@ -62,7 +62,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this.connectionMemento = new Memento('ConnectionManagement');
 
 		this._connectionStore = new ConnectionStore(_storageService, this.connectionMemento,
-		_configurationEditService, this._workspaceConfigurationService);
+			_configurationEditService, this._workspaceConfigurationService, this._credentialsService);
 		this._connections = {};
 	}
 
@@ -81,9 +81,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		let uri = this.getDocumentUri(connection);
 
 		return new Promise<boolean>((resolve, reject) => {
-		this._statusService.setStatusMessage('Connecting...');
+			this._statusService.setStatusMessage('Connecting...');
 			return this.connect(uri, connection).then(connected => {
-				if(connected) {
+				if (connected) {
 					let connectionInfo = this._connections[uri];
 					this.saveToSettings(connectionInfo.connectionProfile);
 				}
@@ -99,30 +99,30 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	private connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
-			const self = this;
+		const self = this;
 
-			return new Promise<boolean>((resolve, reject) => {
-				let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
-				connectionInfo.extensionTimer = new Utils.Timer();
-				connectionInfo.intelliSenseTimer = new Utils.Timer();
-				connectionInfo.connectionProfile = connection;
-				connectionInfo.connecting = true;
-				this._connections[uri] = connectionInfo;
+		return new Promise<boolean>((resolve, reject) => {
+			let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
+			connectionInfo.extensionTimer = new Utils.Timer();
+			connectionInfo.intelliSenseTimer = new Utils.Timer();
+			connectionInfo.connectionProfile = connection;
+			connectionInfo.connecting = true;
+			this._connections[uri] = connectionInfo;
 
-				// Setup the handler for the connection complete notification to call
-				connectionInfo.connectHandler = ((connectResult, error) => {
-					if (error) {
-						reject(error);
-					} else {
-						resolve(connectResult);
-					}
-				});
+			// Setup the handler for the connection complete notification to call
+			connectionInfo.connectHandler = ((connectResult, error) => {
+				if (error) {
+					reject(error);
+				} else {
+					resolve(connectResult);
+				}
+			});
 
-				connectionInfo.serviceTimer = new Utils.Timer();
+			connectionInfo.serviceTimer = new Utils.Timer();
 
-				// send connection request
-				self.sentConnectRequest(connection, uri);
-        });
+			// send connection request
+			self.sentConnectRequest(connection, uri);
+		});
 	}
 
 	public getAdvancedProperties(): vscode.ConnectionProperty[] {
@@ -205,7 +205,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private getDocumentUri(connection: vscode.ConnectionInfo): string {
 		let uri = this.getActiveEditorUri();
-		if(uri === undefined) {
+		if (uri === undefined) {
 			uri = 'connection://' + connection.serverName + ':' + connection.databaseName;
 		}
 
@@ -222,41 +222,41 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	private saveToSettings(connection: IConnectionProfile): boolean {
-		this._connectionStore.saveProfile(connection);
+		this._connectionStore.saveProfile(connection).then(result => {
+		});
 		return true;
 	}
 
 	private tryAddMruConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile): void {
-        if (newConnection) {
-
-            this._connectionStore.addRecentlyUsed(newConnection)
-			  .then(() => {
-                connectionManagementInfo.connectHandler(true);
-            }, err => {
-                connectionManagementInfo.connectHandler(false, err);
-            });
-        } else {
-            connectionManagementInfo.connectHandler(false);
-        }
-    }
+		if (newConnection) {
+			this._connectionStore.addRecentlyUsed(newConnection)
+				.then(() => {
+					connectionManagementInfo.connectHandler(true);
+				}, err => {
+					connectionManagementInfo.connectHandler(false, err);
+				});
+		} else {
+			connectionManagementInfo.connectHandler(false);
+		}
+	}
 
 	public onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void {
 		const self = this;
 		let connection = this._connections[connectionInfoSummary.ownerUri];
-        connection.serviceTimer.end();
-        connection.connecting = false;
+		connection.serviceTimer.end();
+		connection.connecting = false;
 
-        let mruConnection: IConnectionProfile = <any>{};
+		let mruConnection: IConnectionProfile = <any>{};
 
-        if (Utils.isNotEmpty(connectionInfoSummary.connectionId)) {
-            connection.connectHandler(true);
-            mruConnection = connection.connectionProfile;
-        } else {
-            connection.connectHandler(false);
-            mruConnection = undefined;
-        }
+		if (Utils.isNotEmpty(connectionInfoSummary.connectionId)) {
+			connection.connectHandler(true);
+			mruConnection = connection.connectionProfile;
+		} else {
+			connection.connectHandler(false);
+			mruConnection = undefined;
+		}
 
-        self.tryAddMruConnection(connection, mruConnection);
+		self.tryAddMruConnection(connection, mruConnection);
 		this._statusService.setStatusMessage('Updating IntelliSense cache');
 	}
 
