@@ -26,6 +26,7 @@ function loaderConfig(emptyPaths) {
     var result = {
         paths: {
             'vs': 'out-build/vs',
+            'sql': 'out-build/sql',
             'vscode': 'empty:'
         },
         nodeModules: emptyPaths || []
