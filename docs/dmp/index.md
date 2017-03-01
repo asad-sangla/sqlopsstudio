@@ -9,8 +9,9 @@ specification is split into various feature areas to group related functionality
 
 Feature Area | Notes
 --- | ---
-[Connection Management](connection.md)| Managing server connections to data sources.
-Query Execution| Executing queries, managing resultsets and editing resultsets.
+[Capabilities Protocol](capabilities.md)| Discover the capabilities provided by a DMP server.
+[Connection Protocol](connection.md)| Managing server connections to data sources.
+[Credentials Protocol](credentials.md)| Managing connection credentials.
 [Language Service](https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md)|Language service features such as auto-completions, diagnostics, go to definition and hover tooltips.
 
 Overview
