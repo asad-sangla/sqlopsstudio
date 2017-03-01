@@ -11,7 +11,7 @@ import URI from 'vs/base/common/uri';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService, ConnectionPropertyType } from 'sql/parts/connection/common/connectionManagement';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
@@ -123,6 +123,78 @@ export class ConnectionManagementService implements IConnectionManagementService
 				// send connection request
 				self.sentConnectRequest(connection, uri);
         });
+	}
+
+	public getAdvancedProperties(): vscode.ConnectionProperty[] {
+		var connectionProperties : vscode.ConnectionProperty[] = [
+			{
+			propertyName: 'Initial Catalog',
+			propertyType: ConnectionPropertyType.string,
+			propertyOptions: null,
+			propertyValue: 'db1'
+			},
+			{
+			propertyName: "Application Intent",
+			propertyType: ConnectionPropertyType.options,
+			propertyOptions: ['ReadWrite', 'ReadOnly'],
+			propertyValue: 0
+			},
+			{
+			propertyName: "Asynchronous Processing",
+			propertyType: ConnectionPropertyType.boolean,
+			propertyOptions: null,
+			propertyValue: false
+			},
+			{
+			propertyName: 'Connect Timeout',
+			propertyType: ConnectionPropertyType.number,
+			propertyOptions: null,
+			propertyValue: 100
+			},
+			{
+			propertyName: 'Current Language',
+			propertyType: ConnectionPropertyType.string,
+			propertyOptions: null,
+			propertyValue: null
+			},
+			{
+			propertyName: "Column Encrytion Setting",
+			propertyType: ConnectionPropertyType.options,
+			propertyOptions: ['Disable', 'Enabled'],
+			propertyValue: 0
+			},
+			{
+			propertyName: "Encrypt",
+			propertyType: ConnectionPropertyType.boolean,
+			propertyOptions: null,
+			propertyValue: true
+			},
+			{
+			propertyName: "Persist Security Info",
+			propertyType: ConnectionPropertyType.boolean,
+			propertyOptions: null,
+			propertyValue: false
+			},
+			{
+			propertyName: "Trust Server Certificate",
+			propertyType: ConnectionPropertyType.boolean,
+			propertyOptions: null,
+			propertyValue: false
+			},
+			{
+			propertyName: 'Attached DB File Name',
+			propertyType: ConnectionPropertyType.string,
+			propertyOptions: null,
+			propertyValue: null
+			},
+			{
+			propertyName: 'Context Connection',
+			propertyType: ConnectionPropertyType.boolean,
+			propertyOptions: null,
+			propertyValue: true
+			}
+		];
+		return connectionProperties;
 	}
 
 	private sentConnectRequest(connection: vscode.ConnectionInfo, uri: string): void {

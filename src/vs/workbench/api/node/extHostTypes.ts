@@ -889,6 +889,13 @@ export class CompletionList {
 	}
 }
 
+export enum ConnectionPropertyType {
+	string = 0,
+	number = 1,
+	options = 2,
+	boolean = 3
+}
+
 export enum ViewColumn {
 	One = 1,
 	Two = 2,

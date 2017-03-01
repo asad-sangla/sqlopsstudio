@@ -477,6 +477,7 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 			CompletionItem: extHostTypes.CompletionItem,
 			CompletionItemKind: extHostTypes.CompletionItemKind,
 			CompletionList: extHostTypes.CompletionList,
+			ConnectionPropertyType: extHostTypes.ConnectionPropertyType,
 			Diagnostic: extHostTypes.Diagnostic,
 			DiagnosticSeverity: extHostTypes.DiagnosticSeverity,
 			Disposable: extHostTypes.Disposable,

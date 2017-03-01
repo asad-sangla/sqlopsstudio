@@ -11,8 +11,9 @@ import 'vs/css!./connectionDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
-import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
+import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
+import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import * as platform from 'vs/base/common/platform';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
@@ -20,6 +21,7 @@ import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
 	onCancel: () => void;
+	onAdvancedProperties: () => void;
 }
 
 export class ConnectionDialogWidget  {
@@ -35,24 +37,21 @@ export class ConnectionDialogWidget  {
 	private callbacks: IConnectionDialogCallbacks;
 	private model: IConnectionProfile;
 	private toDispose: lifecycle.IDisposable[];
-	private authTypeSelectBox: SelectBox;
+	private authTypeSelectBox: ConnectionDialogSelectBox;
 	private advancedButton: Button;
 	private connectButton: Button;
 	private closeButton: Button;
 	private WindowsAuthTypeName: string = 'Windows Authentication';
 	private SqlAuthTypeName: string = 'SQL Server Authentication';
-	private selectedAuthType: string;
 
 	constructor(container: HTMLElement, callbacks: IConnectionDialogCallbacks){
 		this.container = container;
 		this.setCallbacks(callbacks);
 		this.toDispose = [];
 		if(platform.isWindows) {
-			this.authTypeSelectBox = new SelectBox( [this.WindowsAuthTypeName, this.SqlAuthTypeName], 0);
-			this.selectedAuthType = this.WindowsAuthTypeName;
+			this.authTypeSelectBox = new ConnectionDialogSelectBox( [this.WindowsAuthTypeName, this.SqlAuthTypeName], this.WindowsAuthTypeName);
 		} else {
-			this.authTypeSelectBox = new SelectBox( [this.SqlAuthTypeName], 0);
-			this.selectedAuthType = this.SqlAuthTypeName;
+			this.authTypeSelectBox = new ConnectionDialogSelectBox( [this.SqlAuthTypeName], this.WindowsAuthTypeName);
 		}
 	}
 
@@ -71,14 +70,14 @@ export class ConnectionDialogWidget  {
 						});
 						modelContent.div({class:'modal-body'}, (modelBody) => {
 							modelBody.element('table', {width:'100%'}, (tableContainer) => {
-								this.serverGroupInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Add to Server group', 'label', 'input'));
-								this.serverNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Server Name', 'label', 'input'));
-								this.appendInputSelectBox(this.appendRow(tableContainer, 'Authentication', 'auth-label', 'auth-input'), this.authTypeSelectBox);
-								this.userNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'User Name', 'auth-label', 'auth-input'));
-								this.passwordInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Password', 'auth-label', 'auth-input'));
+								this.serverGroupInputBox = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(tableContainer, 'Add to Server group', 'connection-label', 'connection-input'));
+								this.serverNameInputBox = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(tableContainer, 'Server Name', 'connection-label', 'connection-input'));
+								ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(tableContainer, 'Authentication', 'connection-auth-label', 'connection-auth-input'), this.authTypeSelectBox);
+								this.userNameInputBox = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(tableContainer, 'User Name', 'connection-auth-label', 'connection-auth-input'));
+								this.passwordInputBox = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(tableContainer, 'Password', 'connection-auth-label', 'connection-auth-input'));
 								this.passwordInputBox.inputElement.type = 'password';
 								this.rememberPassword = this.appendCheckbox(tableContainer, 'Remember Password', 'auth-checkbox', 'auth-input');
-								this.databaseNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Database Name', 'auth-label', 'auth-input'));
+								this.databaseNameInputBox = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(tableContainer, 'Database Name', 'connection-auth-label', 'connection-auth-input'));
 								this.advancedButton = this.createAdvancedButton(tableContainer, 'Advanced...');
 							});
 						});
@@ -101,7 +100,7 @@ export class ConnectionDialogWidget  {
 		this.modelElement = this.builder.getHTMLElement();
 		this.serverNameInputBox.focus();
 
-		this.onAuthTypeSelected(this.selectedAuthType);
+		this.onAuthTypeSelected(this.authTypeSelectBox.value);
 
 		return this.modelElement;
 	}
@@ -138,6 +137,7 @@ export class ConnectionDialogWidget  {
 						button.label = title;
 						button.addListener2('click', () => {
 							//open advanced page
+							this.callbacks.onAdvancedProperties();
 						});
 					});
 				});
@@ -177,10 +177,9 @@ export class ConnectionDialogWidget  {
 	}
 
 	private onAuthTypeSelected(selectedAuthType: string) {
-		this.selectedAuthType = selectedAuthType;
 		switch (selectedAuthType) {
 			case this.WindowsAuthTypeName:
-                this.userNameInputBox.disable();
+				this.userNameInputBox.disable();
 				this.passwordInputBox.disable();
 				break;
             case this.SqlAuthTypeName:
@@ -223,36 +222,11 @@ export class ConnectionDialogWidget  {
 	}
 
 	public get authenticationType(): string {
-		return this.selectedAuthType;
+		return this.authTypeSelectBox.value;
 	}
 
 	public setCallbacks(callbacks: IConnectionDialogCallbacks): void {
 		this.callbacks = callbacks;
-	}
-
-	private appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
-		let cellContainer: Builder;
-		container.element('tr', {}, (rowContainer) => {
-				rowContainer.element('td', {class:'connection-' + labelClass}, (labelCellContainer) => {
-						labelCellContainer.div({}, (labelContainer) => {
-								labelContainer.innerHtml(label);
-						});
-				});
-				rowContainer.element('td', {class:'connection-' + cellContainerClass}, (inputCellContainer) => {
-					cellContainer = inputCellContainer;
-				});
-		});
-
-		return cellContainer;
-	}
-
-	private appendInputBox(container: Builder): InputBox {
-		return new InputBox(container.getHTMLElement(), null, {});
-	}
-
-	private appendInputSelectBox(container: Builder, selectBox: SelectBox): SelectBox {
-		selectBox.render(container.getHTMLElement());
-		return selectBox;
 	}
 
 	private validateInputs(): boolean {

@@ -8,6 +8,7 @@
 import { IConnectionDialogService, IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
+import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
 
@@ -17,22 +18,33 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private _connectionManagementService: IConnectionManagementService;
 
+	private _container: HTMLElement;
+
 	constructor(
 		@IPartService private partService: IPartService
 	) {
 	}
 
-	private connectionDialog: ConnectionDialogWidget;
+	private _connectionDialog: ConnectionDialogWidget;
+	private _advancedcontroller: AdvancedPropertiesController;
 
 	private handleOnConnect(): void {
-		this._connectionManagementService.addConnectionProfile(this.connectionDialog.getConnection()).then(connected => {
+		this._connectionManagementService.addConnectionProfile(this._connectionDialog.getConnection()).then(connected => {
 			if(connected) {
-				this.connectionDialog.close();
+				this._connectionDialog.close();
 			}
 
 		}).catch(err => {
 
 			});
+	}
+
+	private handleOnAdvancedProperties(): void {
+		if(!this._advancedcontroller) {
+			this._advancedcontroller = new AdvancedPropertiesController();
+		}
+		var connectionProperties = this._connectionManagementService.getAdvancedProperties();
+		this._advancedcontroller.showDialog(connectionProperties, this._container);
 	}
 
 	public showDialog(connectionManagementService: IConnectionManagementService): TPromise<void> {
@@ -43,18 +55,19 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private doShowDialog(): TPromise<void> {
-		if(!this.connectionDialog) {
+		if(!this._connectionDialog) {
 			let container = withElementById(this.partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-			this.connectionDialog  = new ConnectionDialogWidget(container, {
+			this._container = container;
+			this._connectionDialog  = new ConnectionDialogWidget(container, {
 				onCancel: () => {},
-				onConnect: () => this.handleOnConnect()
+				onConnect: () => this.handleOnConnect(),
+				onAdvancedProperties: () => this.handleOnAdvancedProperties()
 			});
-			this.connectionDialog.create();
+			this._connectionDialog.create();
 		}
 
 		return new TPromise<void>(() => {
-			//this.dialog.setModel(model);
-			this.connectionDialog.open();
+			this._connectionDialog.open();
 		});
 	}
 }

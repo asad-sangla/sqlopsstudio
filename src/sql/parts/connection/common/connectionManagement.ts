@@ -42,10 +42,19 @@ export interface IConnectionManagementService {
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
 
 	getAllConnections(): ConnectionProfileGroup[];
+
+	getAdvancedProperties(): vscode.ConnectionProperty[];
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
 export interface IConnectionDialogService {
 	_serviceBrand: any;
 	showDialog(connectionManagementService: IConnectionManagementService): TPromise<void>;
+}
+
+export enum ConnectionPropertyType {
+	string = 0,
+	number = 1,
+	options = 2,
+	boolean = 3
 }

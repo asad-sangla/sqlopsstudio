@@ -22,6 +22,23 @@ declare module 'vscode' {
 		authenticationType: string;
 	}
 
+	export interface ConnectionProperty {
+		propertyName: string;
+
+		propertyType: ConnectionPropertyType;
+
+		propertyOptions: string[];
+
+		propertyValue: any;
+	}
+
+	export enum ConnectionPropertyType {
+		string = 0,
+		number = 1,
+		options = 2,
+		boolean = 3
+	}
+
 	export interface ConnectionInfoSummary {
 		/**
 		 * URI identifying the owner of the connection

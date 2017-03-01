@@ -1,0 +1,48 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.monaco-shell .advanced-dialog .modal-body{
+	height: 300px;
+	overflow-y: auto;
+}
+
+.advancedDialog-label {
+	width: 150px;
+	padding-bottom: 5px;
+}
+
+.advancedDialog-input {
+	padding-right:8px;
+	width: 200px;
+	padding-bottom: 5px;
+}
+
+.vs-dark.monaco-shell .advanced-dialog .input {
+	background-color: #3C3C3C;
+}
+
+.vs-dark.monaco-shell .advanced-dialog input:disabled {
+	background-color: #E1E1E1;
+}
+
+.advanced-dialog .select-box {
+	width: 308px;
+	border: none;
+	height: 25px;
+}
+
+.advanced-dialog .modal-title {
+	font-size: 15px;
+
+}
+
+.vs-dark.monaco-shell .advanced-dialog .select-box {
+	background: #3C3C3C;
+	color: #BBB;
+}
+
+.advanced-dialog .footer-buttons {
+    width: 200px;
+}
