@@ -6,7 +6,7 @@
 'use strict';
 
 import { testUri } from 'sql/parts/connection/node/constants';
-
+import { QueryCancelParams, QueryCancelResult } from 'sql/parts/query/execution/contracts/queryCancel';
 import { BatchSummary,
     QueryExecuteCompleteNotificationResult,
     QueryExecuteSubsetResult,
@@ -15,7 +15,6 @@ import { BatchSummary,
     QueryExecuteMessageParams,
     QueryExecuteBatchNotificationParams } from 'sql/parts/query/execution/contracts/queryExecute';
 import { EventEmitter } from 'events';
-import { QueryCancelResult } from 'sql/parts/query/execution/contracts/queryCancel';
 import { ISelectionData } from 'sql/parts/connection/node/interfaces';
 import * as Utils from 'sql/parts/connection/node/utils';
 
@@ -229,7 +228,9 @@ export default class QueryRunner {
      * Cancels the running query, if there is one
      */
     public cancelQuery(): Thenable<QueryCancelResult> {
-		return undefined;
+        let cancelParams: QueryCancelParams = { ownerUri: this._uri };
+		return new Promise<QueryCancelResult>((resolve, reject) => {
+		});
     }
 
     /**
@@ -242,8 +243,6 @@ export default class QueryRunner {
         this._resultLineOffset = selection ? selection.startLine : 0;
         this._isExecuting = true;
         this._totalElapsedMilliseconds = 0;
-
-		this.TEST_setupRunQuery();
 
         // Send the request to execute the query
 		return new Promise<void>((resolve, reject) => {

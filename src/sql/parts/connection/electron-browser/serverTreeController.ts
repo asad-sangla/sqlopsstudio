@@ -20,7 +20,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { DragMouseEvent, IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ServerTreeRenderer, ServerTreeDataSource, ConnectionDisplay, ConnectionGroup, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ServerTreeRenderer, ServerTreeDataSource, ConnectionDisplay, ConnectionGroup, ServerTreeDragAndDrop, AddServerToGroupAction, NewQueryAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 
 /**
@@ -130,7 +130,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 
 	private getConnectionActions(): IAction[] {
 				return [
-			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
+			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL),
+			this.instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL)
 		];
 	}
 

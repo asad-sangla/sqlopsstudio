@@ -20,10 +20,6 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
-import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
-import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
 const $ = builder.$;
 
 /**
@@ -39,9 +35,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IMessageService private messageService: IMessageService,
-		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
-		@IUntitledEditorService private untitledEditorService: IUntitledEditorService
+		@IMessageService private messageService: IMessageService
 	) {
 		super(actionRunner, 22 * 15, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
 }
@@ -95,24 +89,15 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 
 	private onSelected(): void {
 		let selection = this.tree.getSelection();
-		if (selection && selection.length > 0) {
+
+		// Open a connected sql file if a ConnectionDisplay was chosen
+		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionDisplay)) {
 			this.openDatabase(selection[0]);
 		}
 	}
 
 	private openDatabase(server: ConnectionDisplay): void {
-		// let connection = {
-		// 	serverName: server.name,
-		// 	databaseName: server.name,
-		// 	userName: '',
-		// 	password: ''
-		// };
-		// this.registeredServersService.open(connection, false).done(null, err => this.onError(err));
-
-		const fileInput = this.untitledEditorService.createOrGet();
-		const queryResultsInput: QueryResultsInput = this.instantiationService.createInstance(QueryResultsInput);
-		let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
-		this.editorService.openEditor(queryInput);
+		// open the database dashboard
 	}
 
 	/**

@@ -11,6 +11,8 @@ import { Action } from 'vs/base/common/actions';
 import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
+import UntitledSqlEditorService from 'sql/parts/editor/untitledSqlEditorService';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 const $ = dom.$;
 
 /**
@@ -468,7 +470,7 @@ export class ServerTreeModel {
 }
 
 /**
- * Action to add a server to the group
+ * Actions to add a server to the group
  */
 export class AddServerToGroupAction extends Action {
 	public static ID = 'registeredServers.addConnection';
@@ -482,6 +484,30 @@ export class AddServerToGroupAction extends Action {
 
 	public run(element: ConnectionGroup): TPromise<boolean> {
 		console.log('Action run');
+		return TPromise.as(true);
+	}
+}
+
+export class NewQueryAction extends Action {
+	public static ID = 'registeredServers.newQuery';
+	public static LABEL = nls.localize('newQuery', 'New Query');
+	private sqlDocService: UntitledSqlEditorService;
+	constructor(
+		id: string,
+		label: string,
+		@IInstantiationService private instantiationService: IInstantiationService
+	) {
+		super(id, label);
+		this.sqlDocService = this.instantiationService.createInstance(UntitledSqlEditorService);
+	}
+
+	public run(element: ConnectionDisplay): TPromise<boolean> {
+		// ask sqldoc service for an untitled sql sqldoc
+		this.sqlDocService.newDocument().then((newDocUri) => {
+			// TODO: implement the following components when serverTree is done
+			// get connection info from server
+			// add a connection to sql doc association to the connection service
+		});
 		return TPromise.as(true);
 	}
 }

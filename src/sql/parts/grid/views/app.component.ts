@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-//import 'vs/css!./css/color-theme-light';
 import 'vs/css!sql/parts/grid/media/color-theme-dark';
 import 'vs/css!sql/parts/grid/media/flexbox';
 import 'vs/css!sql/parts/grid/media/styles';
@@ -11,12 +10,13 @@ import 'vs/css!sql/parts/grid/media/styles.min';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import { ElementRef, QueryList } from '@angular/core';
+import { ElementRef, QueryList, ChangeDetectorRef } from '@angular/core';
 import { IGridDataRow, ISlickRange, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
 import * as Constants from 'sql/parts/connection/node/constants';
 import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/node/interfaces';
 import * as Utils from 'sql/parts/connection/node/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
+import { QueryModelInstance } from 'sql/parts/grid/gridGlobals';
 
 declare let AngularCore;
 declare let rangy;
@@ -101,7 +101,6 @@ const template = `
     selector: 'slickgrid-container',
     host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
     template: template,
-    providers: [DataService],
     styles: [`
     .errorMessage {
         color: var(--color-error);
@@ -233,6 +232,10 @@ export class AppComponent {
     private config;
 
     // FIELDS
+    // Service for interaction with the IQueryModel
+    private dataService: DataService;
+    // URI for this document
+    private uri: string;
     // All datasets
     private dataSets: IGridDataSet[] = [];
     // Place holder data sets to buffer between data sets and rendered data sets
@@ -275,10 +278,8 @@ export class AppComponent {
     }
 
     constructor(
-        @AngularCore.Inject(AngularCore.forwardRef(() => DataService)) public dataService: DataService,
-        //@AngularCore.Inject(AngularCore.forwardRef(() => ShortcutService)) private shortcuts: ShortcutService,
-        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef //,
-        //@AngularCore.Inject(AngularCore.forwardRef(() => ChangeDetectorRef)) private cd: ChangeDetectorRef
+        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
+        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private cd: ChangeDetectorRef
         ) {}
 
     /**
@@ -287,6 +288,9 @@ export class AppComponent {
     ngOnInit(): void {
         const self = this;
 
+        this.uri = Constants.testUri;
+
+        this.dataService = QueryModelInstance.getDataService(self.uri);
         this.dataService.dataEventObs.subscribe(event => {
             switch (event.type) {
                 case 'complete':
@@ -367,7 +371,9 @@ export class AppComponent {
                     console.error('Unexpected web socket event type "' + event.type + '" sent');
                     break;
             }
+            self.cd.detectChanges();
         });
+        QueryModelInstance.onAngularLoaded(this.uri);
     }
 
     ngAfterViewChecked(): void {
@@ -581,10 +587,16 @@ export class AppComponent {
                 }
             }
 
-            if (this.firstRender) {
-                this.firstRender = false;
+            if (self.firstRender) {
+                let setActive = function() {
+                    if (self.firstRender && self.slickgrids.toArray().length > 0) {
+                        self.slickgrids.toArray()[0].setActive();
+                        self.firstRender = false;
+                    }
+                };
+
                 setTimeout(() => {
-                    this.slickgrids.toArray()[0].setActive();
+                    setActive();
                 });
             }
         }, self.scrollTimeOutTime);

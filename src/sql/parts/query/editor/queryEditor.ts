@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!../editor/media/queryEditor';
+import 'vs/css!sql/parts/query/editor/media/queryEditor';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as strings from 'vs/base/common/strings';
 import * as DOM from 'vs/base/browser/dom';
@@ -12,7 +12,7 @@ import { Builder, Dimension } from 'vs/base/browser/builder';
 import { Registry } from 'vs/platform/platform';
 import { IEditorRegistry, Extensions as EditorExtensions, EditorInput, EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor, EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
-import { IEditorControl, Position, IEditor } from 'vs/platform/editor/common/editor';
+import { IEditorControl, Position } from 'vs/platform/editor/common/editor';
 import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from '../views/flexibleSash';
 import { Orientation} from 'vs/base/browser/ui/sash/sash';
 
@@ -75,7 +75,6 @@ export class QueryEditor extends BaseEditor {
 	public createEditor(parent: Builder): void {
 		const parentElement = parent.getHTMLElement();
 		DOM.addClass(parentElement, 'side-by-side-editor');
-		this._createSash(parentElement);
 	}
 
 	/**
@@ -129,11 +128,11 @@ export class QueryEditor extends BaseEditor {
 	}
 
 	/**
-	 * Sets focus on this editor. Specifically, it sets the focus on the hosted QueryResultsEditor.
+	 * Sets focus on this editor. Specifically, it sets the focus on the hosted text editor.
 	 */
 	public focus(): void {
-		if (this.resultsEditor) {
-			this.resultsEditor.focus();
+		if (this.sqlEditor) {
+			this.sqlEditor.focus();
 		}
 	}
 
@@ -143,24 +142,27 @@ export class QueryEditor extends BaseEditor {
 	 */
 	public layout(dimension: Dimension): void {
 		this.dimension = dimension;
-		this.sash.setDimenesion(this.dimension);
+
+		if (this.sash) {
+			this.sash.setDimenesion(this.dimension);
+		}
 	}
 
 	/**
-	 * Returns the editor control for the QueryResultsEditor.
+	 * Returns the editor control for the text editor.
 	 */
 	public getControl(): IEditorControl {
-		if (this.resultsEditor) {
-			return this.resultsEditor.getControl();
+		if (this.sqlEditor) {
+			return this.sqlEditor.getControl();
 		}
 		return null;
 	}
 
-	public getQueryResultsEditor(): IEditor {
+	public getQueryResultsEditor(): QueryResultsEditor {
 		return this.resultsEditor;
 	}
 
-	public getSqlEditor(): IEditor {
+	public getSqlEditor(): TextResourceEditor {
 		return this.sqlEditor;
 	}
 
@@ -169,28 +171,92 @@ export class QueryEditor extends BaseEditor {
 		super.dispose();
 	}
 
+	/**
+	 * Makes visible the QueryResultsEditor for the current QueryInput (if it is not
+	 * already visible).
+	 */
+	public showQueryResultsEditor(): void {
+		if (this._isResultsEditorVisible()) {
+			return;
+		}
+
+		this._createSash(this.getContainer().getHTMLElement());
+		this._createResultsEditorContainer();
+
+		let input = <QueryInput>this.input;
+
+		this._createEditor(<QueryResultsInput>input.results, this.resultsEditorContainer)
+		.then(result => {
+			this._onResultsEditorCreated(<QueryResultsEditor>result, input.results, this.options);
+			this._setResultsEditorVisible();
+			this._doLayout();
+		});
+	}
+
 	// PRIVATE METHODS ////////////////////////////////////////////////////////////
 
+	/**
+	 * Handles setting input for this editor. If this new input does not match the old input (e.g. a new file
+	 * has been opened with the same editor, or we are opening the editor for the first time).
+	 */
 	private _updateInput(oldInput: QueryInput, newInput: QueryInput, options?: EditorOptions): TPromise<void> {
+		let returnValue: TPromise<void>;
+
 		if (!newInput.matches(oldInput)) {
 			if (oldInput) {
 				this._disposeEditors();
 			}
-			this._createEditorContainers();
-			return this._setNewInput(newInput, options);
+
+			this._createSqlEditorContainer();
+			if (this._isResultsEditorVisible()) {
+				this._createResultsEditorContainer();
+			}
+
+			returnValue = this._setNewInput(newInput, options);
 		} else {
 			this.sqlEditor.setInput(newInput.sql, options);
-			this.resultsEditor.setInput(newInput.results, options);
+
+			if (this._isResultsEditorVisible()) {
+				this.resultsEditor.setInput(newInput.results, options);
+			}
+			returnValue = TPromise.as(null);
+		}
+
+		return returnValue;
+	}
+
+	/**
+	 * Handles setting input and creating editors when this QueryEditor is either:
+	 * - Opened for the first time
+	 * - Opened with a new QueryInput
+	 * This will create only the SQL editor if the results editor does not yet exist for the
+	 * given QueryInput.
+	 */
+	private _setNewInput(newInput: QueryInput, options?: EditorOptions): TPromise<void> {
+		// If both editors exist, create a joined promise and wait for both editors to be created
+		if (this._isResultsEditorVisible()) {
+			return TPromise.join([
+				this._createEditor(<QueryResultsInput>newInput.results, this.resultsEditorContainer),
+				this._createEditor(<UntitledEditorInput>newInput.sql, this.sqlEditorContainer)
+			]).then(result => {
+				this._onResultsEditorCreated(<QueryResultsEditor>result[0], newInput.results, options);
+				this._onSqlEditorCreated(<TextResourceEditor>result[1], newInput.sql, options);
+				this._doLayout();
+			});
+
+		// If only the sql editor exists, create a promise and wait for the sql editor to be created
+		} else {
+			this._createEditor(<UntitledEditorInput>newInput.sql, this.sqlEditorContainer)
+			.then(result => {
+				this._onSqlEditorCreated(<TextResourceEditor>result, newInput.sql, options);
+				this._doLayout();
+			});
 		}
 	}
 
-	private _setNewInput(newInput: QueryInput, options?: EditorOptions): TPromise<void> {
-		return TPromise.join([
-			this._createEditor(<QueryResultsInput>newInput.results, this.resultsEditorContainer),
-			this._createEditor(<UntitledEditorInput>newInput.sql, this.sqlEditorContainer)
-		]).then(result => this._onEditorsCreated(<QueryResultsEditor>result[0], <TextResourceEditor>result[1], newInput.results, newInput.sql, options));
-	}
-
+	/**
+	 * Create a single editor based on the type of the given EditorInput.
+	 */
 	private _createEditor(editorInput: EditorInput, container: HTMLElement): TPromise<BaseEditor> {
 		const descriptor = Registry.as<IEditorRegistry>(EditorExtensions.Editors).getEditor(editorInput);
 		if (!descriptor) {
@@ -205,27 +271,52 @@ export class QueryEditor extends BaseEditor {
 	}
 
 	/**
-	 * Sets class variables and performs initial layout after. To be called after the both sub-editors are created.
+	 * Sets input for the SQL editor after it has been created.
 	 */
-	private _onEditorsCreated(resultsEditor: QueryResultsEditor, sqlEditor: TextResourceEditor, resultsInput: QueryResultsInput, sqlInput: UntitledEditorInput, options: EditorOptions): TPromise<void> {
+	private _onSqlEditorCreated(sqlEditor: TextResourceEditor, sqlInput: UntitledEditorInput, options: EditorOptions): TPromise<void> {
 		this.sqlEditor = sqlEditor;
-		this.resultsEditor = resultsEditor;
-		this._doLayout();
-		return TPromise.join([this.sqlEditor.setInput(sqlInput, options), this.resultsEditor.setInput(resultsInput, options)]).then(() => this.focus());
+		return this.sqlEditor.setInput(sqlInput, options);
 	}
 
-	private _createEditorContainers(): void {
+	/**
+	 * Sets input for the results editor after it has been created.
+	 */
+	private _onResultsEditorCreated(resultsEditor: QueryResultsEditor, resultsInput: QueryResultsInput, options: EditorOptions): TPromise<void> {
+		this.resultsEditor = resultsEditor;
+		return this.resultsEditor.setInput(resultsInput, options);
+	}
+
+	/**
+	 * Appends the HTML for the SQL editor. Creates new HTML every time.
+	 */
+	private _createSqlEditorContainer() {
 		const parentElement = this.getContainer().getHTMLElement();
 		this.sqlEditorContainer = DOM.append(parentElement, DOM.$('.details-editor-container'));
 		this.sqlEditorContainer.style.position = 'absolute';
+	}
 
-		let cssClass: string = '.master-editor-container';
-		if(this.orientation === Orientation.HORIZONTAL) {
-			cssClass = '.master-editor-container-horizontal';
+	/**
+	 * Appends the HTML for the QueryResultsEditor to the QueryEditor. If the HTML has not yet been
+	 * created, it creates it and appends it. If it has already been created, it locates it and
+	 * appends it.
+	 */
+	private _createResultsEditorContainer() {
+		const parentElement = this.getContainer().getHTMLElement();
+		let input = <QueryInput>this.input;
+
+		if (!input.results.container) {
+			let cssClass: string = '.master-editor-container';
+			if(this.orientation === Orientation.HORIZONTAL) {
+				cssClass = '.master-editor-container-horizontal';
+			}
+
+			this.resultsEditorContainer = DOM.append(parentElement, DOM.$(cssClass));
+			this.resultsEditorContainer.style.position = 'absolute';
+
+			input.results.container = this.resultsEditorContainer;
+		} else {
+			this.resultsEditorContainer = DOM.append(parentElement, input.results.container);
 		}
-
-		this.resultsEditorContainer = DOM.append(parentElement, DOM.$(cssClass));
-		this.resultsEditorContainer.style.position = 'absolute';
 	}
 
 	/**
@@ -238,6 +329,9 @@ export class QueryEditor extends BaseEditor {
 			this.sash = this._register(new VerticalFlexibleSash(parentElement, 220));
 		}
 
+		if (this.dimension) {
+			this.sash.setDimenesion(this.dimension);
+		}
 		this._register(this.sash.onPositionChange(position => this._doLayout()));
 	}
 
@@ -247,7 +341,11 @@ export class QueryEditor extends BaseEditor {
 	 * and vertical sashes.
 	 */
 	private _doLayout(): void {
-		if (!this.sqlEditor || !this.resultsEditor || !this.dimension) {
+		if (!this._isResultsEditorVisible() && this.sqlEditor) {
+			this.sqlEditor.layout(this.dimension);
+			return;
+		}
+		if (!this.sqlEditor || !this.resultsEditor || !this.dimension || !this.sash) {
 			return;
 		}
 
@@ -292,5 +390,23 @@ export class QueryEditor extends BaseEditor {
 			parentContainer.removeChild(this.resultsEditorContainer);
 			this.resultsEditorContainer = null;
 		}
+	}
+
+	/**
+	 * Returns true if the QueryResultsInput has denoted that the results editor
+	 * should be visible.
+	 */
+	private _isResultsEditorVisible(): boolean {
+		let input: QueryInput = <QueryInput>this.input;
+
+		if (!input) {
+			return false;
+		}
+		return input.results.visible;
+	}
+
+	private _setResultsEditorVisible(): void {
+		let input: QueryInput = <QueryInput>this.input;
+		input.results.setVisibleTrue();
 	}
 }

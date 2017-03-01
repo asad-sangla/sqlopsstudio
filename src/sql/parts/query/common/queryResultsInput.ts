@@ -15,10 +15,21 @@ import { EditorInput } from 'vs/workbench/common/editor';
  */
 export class QueryResultsInput extends EditorInput {
 
+	// Tracks if the editor that holds this input should be visible (i.e. true if a query has been run)
+	private _visible: boolean;
+
+	// Tracks if the editor has holds this input has has bootstrapped angular yet
+	private _hasBootstrapped: boolean;
+
+	// Holds the HTML content for the editor when the editor discards this input and loads another
+	private _editorContainer: HTMLElement;
+
 	static get ID() { return 'workbench.query.queryResultsInput'; }
 
 	constructor() {
 		super();
+		this._visible = false;
+		this._hasBootstrapped = false;
 	}
 
 	getTypeId(): string {
@@ -43,5 +54,47 @@ export class QueryResultsInput extends EditorInput {
 
 	supportsSplitEditor(): boolean {
 		return false;
+	}
+
+	get visible(): boolean {
+		return this._visible;
+    }
+
+	public setVisibleTrue(): void {
+		this._visible = true;
+	}
+
+	public setBootstrappedTrue(): void {
+		this._hasBootstrapped = true;
+	}
+
+	set container(container: HTMLElement) {
+		this._disposeContainer();
+		this._editorContainer = container;
+    }
+
+	get container(): HTMLElement {
+		return this._editorContainer;
+    }
+
+	get hasBootstrapped(): boolean {
+		return this._hasBootstrapped;
+    }
+
+	public dispose(): void {
+		this._disposeContainer();
+		super.dispose();
+	}
+
+	private _disposeContainer() {
+		if (!this._editorContainer) {
+			return;
+		}
+
+		let parentContainer = this._editorContainer.parentNode;
+		if (parentContainer) {
+			parentContainer.removeChild(this._editorContainer);
+			this._editorContainer = null;
+		}
 	}
 }

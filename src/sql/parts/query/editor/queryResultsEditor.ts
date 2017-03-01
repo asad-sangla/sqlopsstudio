@@ -48,15 +48,29 @@ export class QueryResultsEditor extends BaseEditor {
 	}
 
 	createEditor(parent: Builder): void {
-		append(parent.getHTMLElement(), $('slickgrid-container'));
-		AngularPlatformBrowserDynamic.platformBrowserDynamic().bootstrapModule(AppModule);
 	}
 
 	layout(dimension: Dimension): void {
 	}
 
 	setInput(input: QueryResultsInput, options: EditorOptions): TPromise<void> {
-		return super.setInput(input, options);
+		super.setInput(input, options);
+		if (!input.hasBootstrapped) {
+			this._bootstrapAngular();
+		}
+		return TPromise.as<void>(null);
+	}
+
+	/**
+	 * Load the angular components and record for this input that we have done so
+	 */
+	private _bootstrapAngular(): void {
+		let input = <QueryResultsInput>this.input;
+		input.setBootstrappedTrue();
+
+		const parent = this.getContainer().getHTMLElement();
+		append(parent, $('slickgrid-container'));
+		AngularPlatformBrowserDynamic.platformBrowserDynamic().bootstrapModule(AppModule);
 	}
 
 	public dispose(): void {

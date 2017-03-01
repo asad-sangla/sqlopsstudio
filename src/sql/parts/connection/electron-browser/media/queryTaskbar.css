@@ -1,0 +1,7 @@
+.runQuery {
+		background-image: url('continue.svg');
+}
+
+.cancelQuery {
+		background-image: url('stop.svg');
+}

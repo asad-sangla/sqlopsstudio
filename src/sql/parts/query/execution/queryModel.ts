@@ -12,15 +12,28 @@ import { ISelectionData } from 'sql/parts/connection/node/interfaces';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+
+interface QueryEvent {
+    type: string;
+    data: any;
+}
 
 /**
  * Holds information about the state of a query runner
  */
-export class QueryRunnerState {
-    timeout: number;
-    flaggedForDeletion: boolean;
-    constructor (public queryRunner: QueryRunner) {
-        this.flaggedForDeletion = false;
+class QueryInfo {
+    public queryRunner: QueryRunner;
+    public dataService: DataService;
+    public queryEventQueue: QueryEvent[];
+
+    // Notes if the angular components have obtained the DataService. If not, all messages sent
+    // via the data service will be lost.
+    public dataServiceReady: boolean;
+
+    constructor () {
+        this.dataServiceReady = false;
+        this.queryEventQueue = [];
     }
 }
 
@@ -28,11 +41,14 @@ export class QueryRunnerState {
  * Interface for the logic of handling running queries and grid interactions for all URIs.
  */
 export interface IQueryModel {
-    registerDataService(uri: string, service: DataService): void;
-
     getConfig(): Promise<{[key: string]: any}>;
     getShortcuts(): Promise<any>;
     getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
+    runQuery(uri: string, selection: ISelectionData, title: string): void;
+    cancelQuery(input: QueryRunner | string): void;
+
+    getDataService(uri: string): DataService;
+    onAngularLoaded(uri: string): void;
 
     save(uri: string, batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void;
     openLink(uri: string, content: string, columnName: string, linkType: string): void;
@@ -40,7 +56,10 @@ export interface IQueryModel {
     setEditorSelection(uri: string, selection: ISelectionData): void;
     showWarning(uri: string, message: string): void;
     showError(uri: string, message: string): void;
+
+    TEST_sendDummyQueryEvents(uri: string): void;
 }
+export const IQueryModel = createDecorator<IQueryModel>('queryModel');
 
 /**
  * Handles running queries and grid interactions for all URIs. Interacts with each URI's results grid via a DataService instance
@@ -48,35 +67,39 @@ export interface IQueryModel {
 export class QueryModel implements IQueryModel {
 
     // MEMBER VARIABLES ////////////////////////////////////////////////////
-    private _queryResultsMap: Map<string, QueryRunnerState>;
-	private _serviceMap: Map<string, DataService>;
+    private _queryInfoMap: Map<string, QueryInfo>;
 
     // CONSTRUCTOR /////////////////////////////////////////////////////////
     constructor() {
-        this._queryResultsMap = new Map<string, QueryRunnerState>();
-        this._serviceMap = new Map<string, DataService>();
+        this._queryInfoMap = new Map<string, QueryInfo>();
     }
 
     // IQUERYMODEL /////////////////////////////////////////////////////////
 
-    /**
-     * Called by a DataService instance upon angular startup
-     */
-    public registerDataService(uri: string, service: DataService): void {
-        this._serviceMap.set(uri, service);
+    public TEST_sendDummyQueryEvents(uri: string): void {
+        this._queryInfoMap.get(uri).queryRunner.TEST_setupRunQuery();
+    }
 
-        // run a test query upon registration TODO remove this
-        const self = this;
-        setTimeout(function(){
-            self.runQuery(uri, undefined, Constants.testUri);
-        }, 500);
+    public getDataService(uri: string): DataService {
+        let dataService = this._queryInfoMap.get(uri).dataService;
+        if (!dataService) {
+            throw new Error('Could not find data service for uri: ' + uri);
+        }
+
+        return dataService;
+    }
+
+    public onAngularLoaded(uri: string) {
+        let info = this._queryInfoMap.get(uri);
+        info.dataServiceReady = true;
+        this._sendQueuedEvents(uri);
     }
 
     /**
      * Get more data rows from the current resultSets from the service layer
      */
     public getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset> {
-        return this._queryResultsMap.get(uri).queryRunner.getRows(rowStart, numberOfRows, batchId, resultId).then(results => {
+        return this._queryInfoMap.get(uri).queryRunner.getRows(rowStart, numberOfRows, batchId, resultId).then(results => {
             return results.resultSubset;
         });
     }
@@ -108,9 +131,9 @@ export class QueryModel implements IQueryModel {
     }
 
     public isRunningQuery(uri: string): boolean {
-        return !this._queryResultsMap.has(uri)
+        return !this._queryInfoMap.has(uri)
             ? false
-            : this._queryResultsMap.get(uri).queryRunner.isExecutingQuery;
+            : this._queryInfoMap.get(uri).queryRunner.isExecutingQuery;
     }
 
     /**
@@ -119,9 +142,11 @@ export class QueryModel implements IQueryModel {
     public runQuery(uri: string, selection: ISelectionData, title: string): void {
         // Reuse existing query runner if it exists
         let queryRunner: QueryRunner;
+        let info: QueryInfo;
 
-        if (this._queryResultsMap.has(uri)) {
-            let existingRunner: QueryRunner = this._queryResultsMap.get(uri).queryRunner;
+        if (this._queryInfoMap.has(uri)) {
+            info = this._queryInfoMap.get(uri);
+            let existingRunner: QueryRunner = info.queryRunner;
 
             // If the query is already in progress, don't attempt to send it
             if (existingRunner.isExecutingQuery) {
@@ -135,7 +160,7 @@ export class QueryModel implements IQueryModel {
             // and map it to the results uri
             queryRunner = new QueryRunner(uri, title);
             queryRunner.eventEmitter.on('resultSet', (resultSet) => {
-                this.fireQueryEvent(uri, 'resultSet', resultSet);
+                this._fireQueryEvent(uri, 'resultSet', resultSet);
             });
             queryRunner.eventEmitter.on('batchStart', (batch) => {
                 let message = {
@@ -148,34 +173,75 @@ export class QueryModel implements IQueryModel {
                         uri: ''
                     }
                 };
-                this.fireQueryEvent(uri, 'message', message);
+                this._fireQueryEvent(uri, 'message', message);
             });
             queryRunner.eventEmitter.on('message', (message) => {
-                this.fireQueryEvent(uri, 'message', message);
+                this._fireQueryEvent(uri, 'message', message);
             });
             queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
-                this.fireQueryEvent(uri, 'complete', totalMilliseconds);
+                this._fireQueryEvent(uri, 'complete', totalMilliseconds);
             });
             queryRunner.eventEmitter.on('start', () => {
             });
-            this._queryResultsMap.set(uri, new QueryRunnerState(queryRunner));
+
+            info = new QueryInfo();
+            info.queryRunner = queryRunner;
+            info.dataService = new DataService(this, uri);
+            this._queryInfoMap.set(uri, info);
         }
 
         queryRunner.runQuery(selection);
     }
 
     public cancelQuery(input: QueryRunner | string): void {
+        let queryRunner: QueryRunner;
+
+        if (typeof input === 'string') {
+            if (this._queryInfoMap.has(input)) {
+                queryRunner = this._queryInfoMap.get(input).queryRunner;
+            }
+        } else {
+            queryRunner = input;
+        }
+
+        if (queryRunner === undefined || !queryRunner.isExecutingQuery) {
+            // TODO: Cannot cancel query as no query is running.
+            return;
+        }
+
+        // Switch the spinner to canceling, which will be reset when the query execute sends back its completed event
+        // TODO indicate on the status bar that the query is being canceled
+
+        // Cancel the query
+        queryRunner.cancelQuery().then(success => undefined, error => {
+            // On error, show error message
+            // TODO: Canceling the query failed: {0}
+        });
+
     }
 
     // PRIVATE METHODS //////////////////////////////////////////////////////
 
-    private fireQueryEvent(uri: string, type: string, data: any) {
-        let service: DataService = this._serviceMap.get(uri);
-        if (service) {
+    private _fireQueryEvent(uri: string, type: string, data: any) {
+        let info: QueryInfo = this._queryInfoMap.get(uri);
+
+        if (info.dataServiceReady) {
+            let service: DataService = this.getDataService(uri);
             service.dataEventObs.next({
                 type: type,
                 data: data
             });
+        } else {
+            let queueItem: QueryEvent = { type: type, data: data };
+            info.queryEventQueue.push(queueItem);
+        }
+    }
+
+    private _sendQueuedEvents(uri: string): void {
+        let info: QueryInfo = this._queryInfoMap.get(uri);
+        while (info.queryEventQueue.length > 0) {
+            let event: QueryEvent = info.queryEventQueue.shift();
+            this._fireQueryEvent(uri, event.type, event.data);
         }
     }
 }

@@ -6,8 +6,9 @@
 'use strict';
 
 import 'vs/css!./media/extensionsViewlet';
+import 'vs/css!sql/parts/connection/electron-browser/media/queryTaskbar';
 import { localize } from 'vs/nls';
-import { ThrottledDelayer, always } from 'vs/base/common/async';
+import { ThrottledDelayer } from 'vs/base/common/async';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { Builder, Dimension } from 'vs/base/browser/builder';
@@ -22,7 +23,12 @@ import Severity from 'vs/base/common/severity';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { IConnectionsViewlet, IConnectionManagementService, VIEWLET_ID } from 'sql/parts/connection/common/connectionManagement';
 import { ServerTreeView } from 'sql/parts/connection/electron-browser/serverTreeView';
-import { SplitView} from 'vs/base/browser/ui/splitview/splitview';
+import { SplitView } from 'vs/base/browser/ui/splitview/splitview';
+import { IAction, Action } from 'vs/base/common/actions';
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem } from 'sql/parts/query/execution/queryActions';
+import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 
 export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
@@ -37,17 +43,51 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	private serverTreeView: ServerTreeView;
 	private viewletContainer: Builder;
 	private splitView: SplitView;
+	private actionRegistry: { [key: string]: Action; };
+	private listDatabasesActionItem: ListDatabasesActionItem;
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IViewletService private viewletService: IViewletService,
-		@IMessageService private messageService: IMessageService
+		@IMessageService private messageService: IMessageService,
+		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
+		@IEditorGroupService private editorGroupService: IEditorGroupService,
+
 	) {
 		super(VIEWLET_ID, telemetryService);
 		this.searchDelayer = new ThrottledDelayer(500);
 		this.views = [];
+		this.actionRegistry = {};
+
+		let actions: Action[] = [
+			new RunQueryAction(this.editorService, this.editorGroupService),
+			new CancelQueryAction(this.editorService, this.editorGroupService),
+			new ListDatabasesAction(this.editorService, this.editorGroupService)
+		];
+		actions.forEach((action) => {
+			this.actionRegistry[action.id] = action;
+		});
+	}
+
+	public getActions(): IAction[] {
+		return [
+			this.actionRegistry[RunQueryAction.ID],
+			this.actionRegistry[CancelQueryAction.ID],
+			this.actionRegistry[ListDatabasesAction.ID]
+		];
+	}
+
+	public getActionItem(action: IAction): IActionItem {
+		if (action.id === ListDatabasesAction.ID) {
+			if (!this.listDatabasesActionItem) {
+				this.listDatabasesActionItem = this.instantiationService.createInstance(ListDatabasesActionItem, null, action);
+			}
+			return this.listDatabasesActionItem;
+		}
+
+		return null;
 	}
 
 	create(parent: Builder): TPromise<void> {
@@ -59,7 +99,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		const header = append(this.root, $('.header'));
 
 		this.searchBox = append(header, $<HTMLInputElement>('input.search-box'));
-		this.searchBox.placeholder = "Find Server";
+		this.searchBox.placeholder = 'Find Server';
 		this.disposables.push(addStandardDisposableListener(this.searchBox, EventType.FOCUS, () => addClass(this.searchBox, 'synthetic-focus')));
 		this.disposables.push(addStandardDisposableListener(this.searchBox, EventType.BLUR, () => removeClass(this.searchBox, 'synthetic-focus')));
 
@@ -84,6 +124,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 			this.setVisible(this.isVisible()).then(() => this.focus());
 		});
 		this.serverTreeView.setVisible(true);
+
 		return TPromise.as(null);
 	}
 

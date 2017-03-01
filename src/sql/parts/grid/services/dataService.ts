@@ -7,28 +7,18 @@ declare let Rx;
 
 import { ISlickRange } from 'angular2-slickgrid';
 import { ISelectionData } from 'sql/parts/connection/node/interfaces';
-import { QueryModelInstance } from 'sql/parts/grid/gridGlobals';
 import { IQueryModel } from 'sql/parts/query/execution/queryModel';
 import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
-import Constants = require('sql/parts/connection/node/constants');
-
-declare let AngularCore;
 
 /**
  * DataService handles the interactions between QueryModel and app.component. Thus, it handles
  * query running and grid interaction communication for a single URI.
  */
-@AngularCore.Injectable()
 export class DataService {
-    private _uri: string;
-    private _queryModel: IQueryModel;
     public dataEventObs: Subject<any>;
 
-    constructor() {
-      this._queryModel = QueryModelInstance;
-      this._uri = Constants.testUri;
+    constructor(private _queryModel: IQueryModel, private _uri: string) {
       this.dataEventObs = new Rx.Subject();
-      this._queryModel.registerDataService(this._uri, this);
     }
 
     /**
