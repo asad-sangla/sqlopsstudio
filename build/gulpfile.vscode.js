@@ -322,11 +322,11 @@ function packageTask(platform, arch, opts) {
 
 const buildRoot = path.dirname(root);
 
-gulp.task('clean-vscode-win32', util.rimraf(path.join(buildRoot, 'VSCode-win32')));
-gulp.task('clean-vscode-darwin', util.rimraf(path.join(buildRoot, 'VSCode-darwin')));
-gulp.task('clean-vscode-linux-ia32', util.rimraf(path.join(buildRoot, 'VSCode-linux-ia32')));
-gulp.task('clean-vscode-linux-x64', util.rimraf(path.join(buildRoot, 'VSCode-linux-x64')));
-gulp.task('clean-vscode-linux-arm', util.rimraf(path.join(buildRoot, 'VSCode-linux-arm')));
+gulp.task('clean-vscode-win32', util.rimraf(path.join(buildRoot, 'carbon-win32')));
+gulp.task('clean-vscode-darwin', util.rimraf(path.join(buildRoot, 'carbon-darwin')));
+gulp.task('clean-vscode-linux-ia32', util.rimraf(path.join(buildRoot, 'carbon-linux-ia32')));
+gulp.task('clean-vscode-linux-x64', util.rimraf(path.join(buildRoot, 'carbon-linux-x64')));
+gulp.task('clean-vscode-linux-arm', util.rimraf(path.join(buildRoot, 'carbon-linux-arm')));
 
 gulp.task('vscode-win32', ['optimize-vscode', 'clean-vscode-win32'], packageTask('win32'));
 gulp.task('vscode-darwin', ['optimize-vscode', 'clean-vscode-darwin'], packageTask('darwin'));
