@@ -6,7 +6,6 @@
 'use strict';
 
 import nls = require('vs/nls');
-import { TPromise } from 'vs/base/common/winjs.base';
 import URI from 'vs/base/common/uri';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -22,13 +21,13 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import * as vscode from 'vscode';
 import { ConnectionStore } from './connectionStore';
 import { IConnectionProfile } from './interfaces';
-import { IConnectionProfileGroup, ConnectionProfileGroup } from './connectionProfileGroup';
+import { ConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionManagementInfo } from './connectionManagementInfo';
 import Utils = require('./utils');
-import { ConnectionProfile } from './connectionProfile';
-import { ICredentialsService } from 'sql/parts/credentials/credentialsService'
+import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
+import { QueryInput } from 'sql/parts/query/common/queryInput';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -135,13 +134,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 				propertyValue: 'db1'
 			},
 			{
-				propertyName: "Application Intent",
+				propertyName: 'Application Intent',
 				propertyType: ConnectionPropertyType.options,
 				propertyOptions: ['ReadWrite', 'ReadOnly'],
 				propertyValue: 0
 			},
 			{
-				propertyName: "Asynchronous Processing",
+				propertyName: 'Asynchronous Processing',
 				propertyType: ConnectionPropertyType.boolean,
 				propertyOptions: null,
 				propertyValue: false
@@ -159,25 +158,24 @@ export class ConnectionManagementService implements IConnectionManagementService
 				propertyValue: null
 			},
 			{
-				propertyName: "Column Encrytion Setting",
-				propertyType: ConnectionPropertyType.options,
-				propertyOptions: ['Disabled', 'Enabled'],
+				propertyName: 'Column Encrytion Setting',
+				propertyType: ConnectionPropertyType.options,				propertyOptions: ['Disabled', 'Enabled'],
 				propertyValue: 0
 			},
 			{
-				propertyName: "Encrypt",
+				propertyName: 'Encrypt',
 				propertyType: ConnectionPropertyType.boolean,
 				propertyOptions: null,
 				propertyValue: true
 			},
 			{
-				propertyName: "Persist Security Info",
+				propertyName: 'Persist Security Info',
 				propertyType: ConnectionPropertyType.boolean,
 				propertyOptions: null,
 				propertyValue: false
 			},
 			{
-				propertyName: "Trust Server Certificate",
+				propertyName: 'Trust Server Certificate',
 				propertyType: ConnectionPropertyType.boolean,
 				propertyOptions: null,
 				propertyValue: false
@@ -190,7 +188,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			},
 			{
 				propertyName: 'Context Connection',
-				propertyType: ConnectionPropertyType.boolean,
+ 				propertyType: ConnectionPropertyType.boolean,
 				propertyOptions: null,
 				propertyValue: true
 			}
@@ -214,14 +212,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	private getActiveEditorUri(): string {
-		let uri: string = undefined;
-		let activeEditor = this._editorService.getActiveEditor();
-		if (activeEditor !== undefined) {
-			let resource = this.getActiveEditorInputResource();
-
-			uri = resource ? resource.toString() : undefined;
+		try {
+			let activeEditor = this._editorService.getActiveEditor();
+			if (activeEditor !== undefined) {
+				return this.getActiveEditorInputResource();
+			}
+		} catch (e) {
+			return undefined;
 		}
-		return uri;
 	}
 
 	private saveToSettings(connection: IConnectionProfile): boolean {
@@ -284,10 +282,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 		};
 	}
 
-	private getActiveEditorInputResource(): URI {
+	private getActiveEditorInputResource(): string {
 		const input = this._editorService.getActiveEditorInput();
-		if (input && (input instanceof FileEditorInput || input instanceof UntitledEditorInput)) {
-			return input.getResource();
+		if (input &&
+			(input instanceof FileEditorInput
+			|| input instanceof UntitledEditorInput
+			|| input instanceof QueryInput)) {
+			return input.getResource().toString();
 		}
 
 		return null;
