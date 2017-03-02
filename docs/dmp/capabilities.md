@@ -4,6 +4,19 @@ which aspects of the DMP it implements.
 
 <img src='../images/capabilities.png' width='800px' />
 
+The diagram below shows how connection options flow from the Connection Dialog to the data provider service
+and then back to the host application.  The data provider service will fill in connection details once a
+connection is successfully established.
+
+<img src='../images/connectionflow.png' width='800px' />
+
+<br />
+
+The connection summary will provide version and tag details for the current connection.  This metadata will
+be filtered against the feature capabiltiies matrix that is built during service initialiation.
+
+<img src='../images/capmatch.png' width='475px' />
+
 ## Capabilities Messages
 
 Message | Notes
