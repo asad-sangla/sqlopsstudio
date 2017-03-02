@@ -122,7 +122,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			connectionInfo.serviceTimer = new Utils.Timer();
 
 			// send connection request
-			self.sentConnectRequest(connection, uri);
+			self.sendConnectRequest(connection, uri);
 		});
 	}
 
@@ -198,7 +198,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return connectionProperties;
 	}
 
-	private sentConnectRequest(connection: vscode.ConnectionInfo, uri: string): void {
+	private sendConnectRequest(connection: vscode.ConnectionInfo, uri: string): void {
 		for (var key in this._serverEvents) {
 			this._serverEvents[key].onConnect(uri, connection);
 		}
@@ -217,7 +217,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		let uri: string = undefined;
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor !== undefined) {
-			uri = this.getActiveEditorInputResource().toString();
+			let resource = this.getActiveEditorInputResource();
+
+			uri = resource ? resource.toString() : undefined;
 		}
 		return uri;
 	}

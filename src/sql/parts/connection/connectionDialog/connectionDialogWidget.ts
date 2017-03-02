@@ -5,9 +5,9 @@
 
 'use strict';
 
-import 'vs/css!./bootstrap';
-import 'vs/css!./bootstrap-theme';
-import 'vs/css!./connectionDialog';
+import 'vs/css!./media/bootstrap';
+import 'vs/css!./media/bootstrap-theme';
+import 'vs/css!./media/connectionDialog';
 import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
@@ -68,6 +68,7 @@ export class ConnectionDialogWidget {
 				recentTitle.innerHtml('Recent History');
 			});
 		});
+		this._dialog.addErrorMessage();
 		this._dialog.bodyContainer.div({class:'connection-table'}, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this.serverGroupInputBox = ConnectionDialogHelper.appendInputBox(
@@ -87,6 +88,7 @@ export class ConnectionDialogWidget {
 				this.advancedButton = this.createAdvancedButton(tableContainer, 'Advanced...');
 			});
 		});
+
 
 		this.connectButton = this.createFooterButton(this._dialog.footerContainer, 'Connect');
 		this.connectButton.enabled = false;
@@ -198,7 +200,7 @@ export class ConnectionDialogWidget {
 		this.passwordInputBox.value = model.password;
 		this.serverGroupInputBox.value = model.groupName;
 		this.authenticationType = model.authenticationType;
-		this.showError('');
+		this.initDialog();
 	}
 
 	public get serverGroup(): string {
@@ -263,9 +265,12 @@ export class ConnectionDialogWidget {
 				groupName: this.serverGroup
 			};
 
+			this.connectButton.enabled = false;
 			this.callbacks.onConnect();
+			this._dialog.showSpinner();
+
 		} else {
-			alert('invalid inputs'); //TODO: message box
+			this.showError('invalid input');
 		}
 	}
 
@@ -282,8 +287,15 @@ export class ConnectionDialogWidget {
 		jQuery('#connectionDialogModal').modal({ backdrop: true, keyboard: true });
 	}
 
+	private initDialog(): void {
+		this._dialog.showError('');
+		this._dialog.hideSpinner();
+	}
+
 	public showError(err: string) {
 		this._dialog.showError(err);
+		this._dialog.hideSpinner();
+		this.connectButton.enabled = true;
 	}
 
 	public dispose(): void {

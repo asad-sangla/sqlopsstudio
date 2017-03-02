@@ -5,9 +5,9 @@
 
 'use strict';
 
-import 'vs/css!./bootstrap';
-import 'vs/css!./bootstrap-theme';
-import 'vs/css!./advancedProperties';
+import 'vs/css!./media/bootstrap';
+import 'vs/css!./media/bootstrap-theme';
+import 'vs/css!./media/advancedProperties';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';

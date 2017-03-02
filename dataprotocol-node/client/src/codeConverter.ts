@@ -312,7 +312,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 					databaseName: connInfo.databaseName,
 					userName: connInfo.userName,
 					password: connInfo.password,
-					authenticationType: 'SqlLogin',
+					authenticationType: connInfo.authenticationType,
 					encrypt: false,
 					trustServerCertificate: true,
 					persistSecurityInfo: true,

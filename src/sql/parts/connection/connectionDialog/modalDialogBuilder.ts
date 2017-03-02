@@ -14,6 +14,7 @@ export class ModalDialogBuilder {
 	private _footerBuilder: Builder;
 	private _modelBody: Builder;
 	private _errorMessageLabel: IconLabel;
+	private _spinnerElement: HTMLElement;
 
 	constructor(private _id: string,
 		private _title: string,
@@ -38,15 +39,18 @@ export class ModalDialogBuilder {
 							});
 						});
 						modelContent.div({ class: 'modal-body', id: this._bodyId }, (modelBody) => {
-							modelBody.div({ class: 'dialogErrorMessage', id: 'dialogErrorMessage' }, (errorMessageContainer) => {
-								this._errorMessageLabel = new IconLabel(errorMessageContainer.getHTMLElement());
-							});
+
 							this._modelBody = modelBody;
 						});
 						modelContent.div({ class: 'modal-footer' }, (modelFooter) => {
 							modelFooter.element('table', { class: 'footer-buttons', align: 'right' }, (tableContainer) => {
 								tableContainer.element('tr', {}, (rowContainer) => {
 									this._footerBuilder = rowContainer;
+									rowContainer.element('td', { class: 'footer-spinner' }, (cellContainer) => {
+										cellContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {
+											this._spinnerElement = spinnerElement.getHTMLElement();
+										});
+									});
 								});
 							});
 						});
@@ -68,5 +72,19 @@ export class ModalDialogBuilder {
 
 	public showError(err: string) {
 		this._errorMessageLabel.setValue(err);
+	}
+
+	public showSpinner(): void {
+		this._spinnerElement.setAttribute('class', 'spinner');
+	}
+
+	public addErrorMessage(): void {
+		this._modelBody.div({ class: 'dialogErrorMessage', id: 'dialogErrorMessage' }, (errorMessageContainer) => {
+			this._errorMessageLabel = new IconLabel(errorMessageContainer.getHTMLElement());
+		});
+	}
+
+	public hideSpinner(): void {
+		this._spinnerElement.setAttribute('class', 'hiddenSpinner');
 	}
 }

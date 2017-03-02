@@ -15,9 +15,9 @@
 
 .monaco-shell .modal-dialog  {
 	margin: auto auto auto auto;
-    height: calc(100% - 23px);
+	height: calc(100% - 23px);
 	right: 0;
-    position: absolute;
+	position: absolute;
 }
 
 .monaco-shell .modal-content{
@@ -103,20 +103,37 @@
 }
 
 .connection-dialog-widget .footer-buttons {
-
-    width: 200px;
+	width: 100%;
 }
 
 .connection-dialog-widget .connection-recent {
-    height: calc(100% - 303px);
-    padding: 15px;
+	height: calc(100% - 303px);
+	padding: 15px;
 }
 
 .connection-dialog-widget .connection-table {
-    border-top: 1px solid #e5e5e5;
-    padding: 15px;
+	border-top: 1px solid #e5e5e5;
+	padding: 15px;
 }
 
 .connection-dialog-widget .dialogErrorMessage {
-	color: red
+	color: red;
+	overflow: hidden;
+}
+
+.connection-dialog-widget .hiddenSpinner {
+	content: url(progress_36x_animation.gif);
+	width: 30px;
+	visibility: hidden;
+}
+
+.connection-dialog-widget .spinner {
+	content: url(progress_36x_animation.gif);
+	width: 30px;
+	visibility: visible;
+}
+
+.connection-dialog-widget .footer-spinner {
+	width: 100%;
+	text-align: left;
 }
