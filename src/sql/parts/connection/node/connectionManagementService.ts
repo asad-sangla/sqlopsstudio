@@ -161,7 +161,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			{
 				propertyName: "Column Encrytion Setting",
 				propertyType: ConnectionPropertyType.options,
-				propertyOptions: ['Disable', 'Enabled'],
+				propertyOptions: ['Disabled', 'Enabled'],
 				propertyValue: 0
 			},
 			{

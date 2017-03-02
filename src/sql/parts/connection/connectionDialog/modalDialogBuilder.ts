@@ -24,7 +24,7 @@ export class ModalDialogBuilder {
 
 	public create(): Builder {
 		this._builder = $().div({}, (div: Builder) => {
-			div.div({ class: 'modal', id: this._id, 'role': 'dialog' }, (dialogContainer) => {
+			div.div({ class: 'modal fade', id: this._id, 'role': 'dialog' }, (dialogContainer) => {
 				dialogContainer.div({ class: 'modal-dialog ', role: 'document' }, (modalDialog) => {
 					modalDialog.div({ class: 'modal-content' }, (modelContent) => {
 						modelContent.div({ class: 'modal-header' }, (modalHeader) => {

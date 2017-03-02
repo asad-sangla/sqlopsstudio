@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 .monaco-shell .advanced-dialog .modal-body{
-	height: 300px;
+	height: calc(100% - 138px);
 	overflow-y: auto;
 }
 
@@ -28,7 +28,7 @@
 }
 
 .advanced-dialog .select-box {
-	width: 308px;
+	width: 318px;
 	border: none;
 	height: 25px;
 }
@@ -45,4 +45,8 @@
 
 .advanced-dialog .footer-buttons {
     width: 200px;
+}
+
+#propertiesContent {
+	padding: 15px;
 }

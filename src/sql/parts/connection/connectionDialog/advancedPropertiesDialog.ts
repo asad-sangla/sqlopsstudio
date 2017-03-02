@@ -39,13 +39,15 @@ export class AdvancedPropertiesDialog {
 	private _falseInputValue: string = 'False';
 	private _toDispose: lifecycle.IDisposable[];
 	private _connectionProperties: vscode.ConnectionProperty[];
-	private _advancedPropertiesMaps;
+	private _advancedPropertiesMaps: { [propertyName: string]: IAdvancedPropertyElement };
+	private _isDisposed: boolean;
 
 	constructor(container: HTMLElement, callbacks: IAdvancedDialogCallbacks) {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
-		this._advancedPropertiesMaps = new Array();
+		this._advancedPropertiesMaps = {};
+		this._isDisposed = false;
 	}
 
 	public create(): HTMLElement {
@@ -137,20 +139,28 @@ export class AdvancedPropertiesDialog {
 	}
 
 	public open(connectionProperties: vscode.ConnectionProperty[]) {
+		if(!this._isDisposed) {
+			jQuery('#propertiesContent').empty();
+			this.dispose();
+		}
 		this._connectionProperties = connectionProperties;
 		var propertiesContentbuilder = $().element('table', { width: '100%' }, (tableContainer: Builder) => {
 			this.fillInProperties(tableContainer);
 		});
 		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());
-		jQuery('#advancedDialogModal').modal({ backdrop: false });
+		jQuery('#advancedDialogModal').modal({ backdrop: true, keyboard: true });
+		this._isDisposed = false;
 	}
 
 	public dispose(): void {
-		this._toDispose = lifecycle.dispose(this._toDispose);
-		for (var key in this._advancedPropertiesMaps) {
-			var widget: Widget = this._advancedPropertiesMaps[key].advancedPropertyWidget;
-			widget.dispose();
+		if(!this._isDisposed) {
+			this._toDispose = lifecycle.dispose(this._toDispose);
+			for (var key in this._advancedPropertiesMaps) {
+				var widget: Widget = this._advancedPropertiesMaps[key].advancedPropertyWidget;
+				widget.dispose();
+				delete this._advancedPropertiesMaps[key];
+			}
+			this._isDisposed = true;
 		}
-		this._advancedPropertiesMaps.length = 0;
 	}
 }

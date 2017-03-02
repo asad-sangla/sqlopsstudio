@@ -63,24 +63,31 @@ export class ConnectionDialogWidget {
 	public create(): HTMLElement {
 		this._dialog = new ModalDialogBuilder('connectionDialogModal', 'Connection Dialog', 'connection-dialog-widget', 'connectionDialogBody');
 		this._builder = this._dialog.create();
-
-		this._dialog.bodyContainer.element('table', { width: '100%' }, (tableContainer) => {
-			this.serverGroupInputBox = ConnectionDialogHelper.appendInputBox(
-				ConnectionDialogHelper.appendRow(tableContainer, 'Add to Server group', 'connection-label', 'connection-input'));
-			this.serverNameInputBox = ConnectionDialogHelper.appendInputBox(
-				ConnectionDialogHelper.appendRow(tableContainer, 'Server Name', 'connection-label', 'connection-input'));
-			ConnectionDialogHelper.appendInputSelectBox(
-				ConnectionDialogHelper.appendRow(tableContainer, 'Authentication', 'connection-auth-label', 'connection-auth-input'), this.authTypeSelectBox);
-			this.userNameInputBox = ConnectionDialogHelper.appendInputBox(
-				ConnectionDialogHelper.appendRow(tableContainer, 'User Name', 'connection-auth-label', 'connection-auth-input'));
-			this.passwordInputBox = ConnectionDialogHelper.appendInputBox(
-				ConnectionDialogHelper.appendRow(tableContainer, 'Password', 'connection-auth-label', 'connection-auth-input'));
-			this.passwordInputBox.inputElement.type = 'password';
-			this.rememberPassword = this.appendCheckbox(tableContainer, 'Remember Password', 'auth-checkbox', 'auth-input');
-			this.databaseNameInputBox = ConnectionDialogHelper.appendInputBox(
-				ConnectionDialogHelper.appendRow(tableContainer, 'Database Name', 'connection-auth-label', 'connection-auth-input'));
-			this.advancedButton = this.createAdvancedButton(tableContainer, 'Advanced...');
+		this._dialog.bodyContainer.div({class:'connection-recent'}, (recentContainer) => {
+			recentContainer.div({class:'modal-title'}, (recentTitle) => {
+				recentTitle.innerHtml('Recent History');
+			});
 		});
+		this._dialog.bodyContainer.div({class:'connection-table'}, (modelTableContent) => {
+			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
+				this.serverGroupInputBox = ConnectionDialogHelper.appendInputBox(
+					ConnectionDialogHelper.appendRow(tableContainer, 'Add to Server group', 'connection-label', 'connection-input'));
+				this.serverNameInputBox = ConnectionDialogHelper.appendInputBox(
+					ConnectionDialogHelper.appendRow(tableContainer, 'Server Name', 'connection-label', 'connection-input'));
+				ConnectionDialogHelper.appendInputSelectBox(
+					ConnectionDialogHelper.appendRow(tableContainer, 'Authentication', 'connection-label', 'connection-input'), this.authTypeSelectBox);
+				this.userNameInputBox = ConnectionDialogHelper.appendInputBox(
+					ConnectionDialogHelper.appendRow(tableContainer, 'User Name', 'connection-label', 'connection-input'));
+				this.passwordInputBox = ConnectionDialogHelper.appendInputBox(
+					ConnectionDialogHelper.appendRow(tableContainer, 'Password', 'connection-label', 'connection-input'));
+				this.passwordInputBox.inputElement.type = 'password';
+				this.rememberPassword = this.appendCheckbox(tableContainer, 'Remember Password', 'checkbox', 'connection-input');
+				this.databaseNameInputBox = ConnectionDialogHelper.appendInputBox(
+					ConnectionDialogHelper.appendRow(tableContainer, 'Database Name', 'connection-label', 'connection-input'));
+				this.advancedButton = this.createAdvancedButton(tableContainer, 'Advanced...');
+			});
+		});
+
 		this.connectButton = this.createFooterButton(this._dialog.footerContainer, 'Connect');
 		this.connectButton.enabled = false;
 		this.closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
@@ -272,7 +279,7 @@ export class ConnectionDialogWidget {
 	}
 
 	public open() {
-		jQuery('#connectionDialogModal').modal({ backdrop: false, keyboard: true });
+		jQuery('#connectionDialogModal').modal({ backdrop: true, keyboard: true });
 	}
 
 	public showError(err: string) {

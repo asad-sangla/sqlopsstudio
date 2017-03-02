@@ -13,8 +13,20 @@
 	background-color: #000;
 }
 
+.monaco-shell .modal-dialog  {
+	margin: auto auto auto auto;
+    height: calc(100% - 23px);
+	right: 0;
+    position: absolute;
+}
+
 .monaco-shell .modal-content{
 	background-color: #F3F3F3;
+	height: 100%;
+}
+
+.monaco-shell .modal-body{
+	height: calc(100% - 108px);
 }
 
 .footer-table {
@@ -39,29 +51,23 @@
 	padding-bottom: 5px;
 }
 
-.connection-auth-label {
-	padding-left: 30px;
-	width: 100px;
-	padding-bottom: 5px;
-}
-
-.custom-checkbox.connection-auth-checkbox {
+.custom-checkbox.connection-checkbox {
 	Margin-right: 10px;
 }
 
-.custom-checkbox.connection-auth-checkbox.checked {
+.custom-checkbox.connection-checkbox.checked {
 	background: url('check.svg') center center no-repeat;
 }
 
-.custom-checkbox.connection-auth-checkbox.unchecked {
+.custom-checkbox.connection-checkbox.unchecked {
 	border-color:#3C3C3C;
 }
 
-.vs-dark.monaco-shell .custom-checkbox.connection-auth-checkbox.checked {
+.vs-dark.monaco-shell .custom-checkbox.connection-checkbox.checked {
 	background: url('check.svg') center center no-repeat;
 }
 
-.vs-dark.monaco-shell .custom-checkbox.connection-auth-checkbox.unchecked {
+.vs-dark.monaco-shell .custom-checkbox.connection-checkbox.unchecked {
 	background-color: #3C3C3C;
 	border-color: #E1E1E1;
 }
@@ -72,12 +78,6 @@
 	padding-bottom: 5px;
 }
 
-.connection-auth-input {
-	padding-right:8px;
-	padding-left: 40px;
-	width: 150px;
-	padding-bottom: 5px;
-}
 .vs-dark.monaco-shell .connection-dialog-widget .input {
 	background-color: #3C3C3C;
 }
@@ -87,7 +87,7 @@
 }
 
 .connection-dialog-widget .select-box {
-	width: 331px;
+	width: 371px;
 	border: none;
 	height: 25px;
 }
@@ -103,7 +103,18 @@
 }
 
 .connection-dialog-widget .footer-buttons {
-	width: 200px;
+
+    width: 200px;
+}
+
+.connection-dialog-widget .connection-recent {
+    height: calc(100% - 303px);
+    padding: 15px;
+}
+
+.connection-dialog-widget .connection-table {
+    border-top: 1px solid #e5e5e5;
+    padding: 15px;
 }
 
 .connection-dialog-widget .dialogErrorMessage {
