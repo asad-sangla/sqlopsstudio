@@ -50,7 +50,7 @@
 }
 
 .custom-checkbox.connection-auth-checkbox.checked {
-	background-color: red;
+	background: url('check.svg') center center no-repeat;
 }
 
 .custom-checkbox.connection-auth-checkbox.unchecked {
@@ -58,7 +58,7 @@
 }
 
 .vs-dark.monaco-shell .custom-checkbox.connection-auth-checkbox.checked {
-	background-color: yellow;
+	background: url('check.svg') center center no-repeat;
 }
 
 .vs-dark.monaco-shell .custom-checkbox.connection-auth-checkbox.unchecked {
@@ -103,5 +103,9 @@
 }
 
 .connection-dialog-widget .footer-buttons {
-    width: 200px;
+	width: 200px;
+}
+
+.connection-dialog-widget .dialogErrorMessage {
+	color: red
 }

@@ -127,72 +127,72 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public getAdvancedProperties(): vscode.ConnectionProperty[] {
-		var connectionProperties : vscode.ConnectionProperty[] = [
+		var connectionProperties: vscode.ConnectionProperty[] = [
 			{
-			propertyName: 'Initial Catalog',
-			propertyType: ConnectionPropertyType.string,
-			propertyOptions: null,
-			propertyValue: 'db1'
+				propertyName: 'Initial Catalog',
+				propertyType: ConnectionPropertyType.string,
+				propertyOptions: null,
+				propertyValue: 'db1'
 			},
 			{
-			propertyName: "Application Intent",
-			propertyType: ConnectionPropertyType.options,
-			propertyOptions: ['ReadWrite', 'ReadOnly'],
-			propertyValue: 0
+				propertyName: "Application Intent",
+				propertyType: ConnectionPropertyType.options,
+				propertyOptions: ['ReadWrite', 'ReadOnly'],
+				propertyValue: 0
 			},
 			{
-			propertyName: "Asynchronous Processing",
-			propertyType: ConnectionPropertyType.boolean,
-			propertyOptions: null,
-			propertyValue: false
+				propertyName: "Asynchronous Processing",
+				propertyType: ConnectionPropertyType.boolean,
+				propertyOptions: null,
+				propertyValue: false
 			},
 			{
-			propertyName: 'Connect Timeout',
-			propertyType: ConnectionPropertyType.number,
-			propertyOptions: null,
-			propertyValue: 100
+				propertyName: 'Connect Timeout',
+				propertyType: ConnectionPropertyType.number,
+				propertyOptions: null,
+				propertyValue: 100
 			},
 			{
-			propertyName: 'Current Language',
-			propertyType: ConnectionPropertyType.string,
-			propertyOptions: null,
-			propertyValue: null
+				propertyName: 'Current Language',
+				propertyType: ConnectionPropertyType.string,
+				propertyOptions: null,
+				propertyValue: null
 			},
 			{
-			propertyName: "Column Encrytion Setting",
-			propertyType: ConnectionPropertyType.options,
-			propertyOptions: ['Disable', 'Enabled'],
-			propertyValue: 0
+				propertyName: "Column Encrytion Setting",
+				propertyType: ConnectionPropertyType.options,
+				propertyOptions: ['Disable', 'Enabled'],
+				propertyValue: 0
 			},
 			{
-			propertyName: "Encrypt",
-			propertyType: ConnectionPropertyType.boolean,
-			propertyOptions: null,
-			propertyValue: true
+				propertyName: "Encrypt",
+				propertyType: ConnectionPropertyType.boolean,
+				propertyOptions: null,
+				propertyValue: true
 			},
 			{
-			propertyName: "Persist Security Info",
-			propertyType: ConnectionPropertyType.boolean,
-			propertyOptions: null,
-			propertyValue: false
+				propertyName: "Persist Security Info",
+				propertyType: ConnectionPropertyType.boolean,
+				propertyOptions: null,
+				propertyValue: false
 			},
 			{
-			propertyName: "Trust Server Certificate",
-			propertyType: ConnectionPropertyType.boolean,
-			propertyOptions: null,
-			propertyValue: false
+				propertyName: "Trust Server Certificate",
+				propertyType: ConnectionPropertyType.boolean,
+				propertyOptions: null,
+				propertyValue: false
 			},
 			{
-			propertyName: 'Attached DB File Name',
-			propertyType: ConnectionPropertyType.string,
-			propertyOptions: null,
-			propertyValue: null
+				propertyName: 'Attached DB File Name',
+				propertyType: ConnectionPropertyType.string,
+				propertyOptions: null,
+				propertyValue: null
 			},
 			{
-			propertyName: 'Context Connection',
-			propertyType: ConnectionPropertyType.boolean,
-			propertyOptions: null,
-			propertyValue: true
+				propertyName: 'Context Connection',
+				propertyType: ConnectionPropertyType.boolean,
+				propertyOptions: null,
+				propertyValue: true
 			}
 		];
 		return connectionProperties;
@@ -253,7 +253,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			connection.connectHandler(true);
 			mruConnection = connection.connectionProfile;
 		} else {
-			connection.connectHandler(false);
+			connection.connectHandler(false, connectionInfoSummary.messages);
 			mruConnection = undefined;
 		}
 

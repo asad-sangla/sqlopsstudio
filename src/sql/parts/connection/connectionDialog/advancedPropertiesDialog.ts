@@ -16,6 +16,7 @@ import { ConnectionPropertyType } from 'sql/parts/connection/common/connectionMa
 import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import vscode = require('vscode');
+import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
 
 export interface IAdvancedDialogCallbacks {
 	onOk: () => void;
@@ -27,7 +28,7 @@ interface IAdvancedPropertyElement {
 	advancedProperty: vscode.ConnectionProperty;
 }
 
-export class AdvancedPropertiesDialog  {
+export class AdvancedPropertiesDialog {
 	private _builder: Builder;
 	private _container: HTMLElement;
 	private _modelElement: HTMLElement;
@@ -40,7 +41,7 @@ export class AdvancedPropertiesDialog  {
 	private _connectionProperties: vscode.ConnectionProperty[];
 	private _advancedPropertiesMaps;
 
-	constructor(container: HTMLElement, callbacks: IAdvancedDialogCallbacks){
+	constructor(container: HTMLElement, callbacks: IAdvancedDialogCallbacks) {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
@@ -48,46 +49,24 @@ export class AdvancedPropertiesDialog  {
 	}
 
 	public create(): HTMLElement {
-		this._builder = $().div({}, (div: Builder) => {
-			div.div({class:'modal', id:'advancedDialogModal', 'role':'dialog'}, (dialogContainer) => {
-				dialogContainer.div({class:'modal-dialog ', role:'document'}, (modalDialog) => {
-					modalDialog.div({class:'modal-content'}, (modelContent) => {
-						modelContent.div({class:'modal-header'}, (modalHeader) => {
-							modalHeader.element('button', {type:'button', class:'close', 'data-dismiss':'modal', 'aria-label':'close', 'aria-hidden':'true'}, (menuCloseButton) => {
-									menuCloseButton.innerHtml('&times;');
-							});
-							modalHeader.div({class:'modal-title'}, (modalTitle) => {
-								modalTitle.innerHtml('Advanced Properties');
-							});
-						});
-						modelContent.div({class:'modal-body', id:'propertiesContent'});
-						modelContent.div({class:'modal-footer'}, (modelFooter) => {
-							modelFooter.element('table', {class:'footer-buttons', align: 'right'}, (tableContainer) => {
-								tableContainer.element('tr', {}, (rowContainer) => {
-									this._okButton = this.createFooterButton(rowContainer, 'OK');
-									this._closeButton = this.createFooterButton(rowContainer, 'Cancel');
-								});
-							});
-						});
-					});
-				});
-			});
-		})
-		.addClass('advanced-dialog')
-		.build(this._container);
+		let dialog = new ModalDialogBuilder('advancedDialogModal', 'Advanced Properties', 'advanced-dialog', 'propertiesContent');
+		this._builder = dialog.create();
+		this._okButton = this.createFooterButton(dialog.footerContainer, 'OK');
+		this._closeButton = this.createFooterButton(dialog.footerContainer, 'Cancel');
+
+		this._builder.build(this._container);
 		this._modelElement = this._builder.getHTMLElement();
 		return this._modelElement;
 	}
 
 	private fillInProperties(container: Builder): void {
-		for (var i = 0; i < this._connectionProperties.length; i++)
-		{
+		for (var i = 0; i < this._connectionProperties.length; i++) {
 
 			var property: vscode.ConnectionProperty = this._connectionProperties[i];
 			var propertyWidget: any;
 			switch (property.propertyType) {
 				case ConnectionPropertyType.boolean:
-					propertyWidget = new ConnectionDialogSelectBox( [this._trueInputValue, this._falseInputValue], property.propertyValue ? this._trueInputValue : this._falseInputValue );
+					propertyWidget = new ConnectionDialogSelectBox([this._trueInputValue, this._falseInputValue], property.propertyValue ? this._trueInputValue : this._falseInputValue);
 					ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(container, property.propertyName, 'advancedDialog-label', 'advancedDialog-input'), propertyWidget);
 					break;
 				case ConnectionPropertyType.number:
@@ -99,7 +78,7 @@ export class AdvancedPropertiesDialog  {
 					}));
 					break;
 				case ConnectionPropertyType.options:
-					propertyWidget = new ConnectionDialogSelectBox( property.propertyOptions, property.propertyValue);
+					propertyWidget = new ConnectionDialogSelectBox(property.propertyOptions, property.propertyValue);
 					ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(container, property.propertyName, 'advancedDialog-label', 'advancedDialog-input'), propertyWidget);
 					break;
 				case ConnectionPropertyType.string:
@@ -112,11 +91,11 @@ export class AdvancedPropertiesDialog  {
 
 	private createFooterButton(container: Builder, title: string): Button {
 		let button;
-		container.element('td', {class:'footer-button'}, (cellContainer) => {
+		container.element('td', { class: 'footer-button' }, (cellContainer) => {
 			button = new Button(cellContainer);
 			button.label = title;
 			button.addListener2('click', () => {
-				if(title === 'OK') {
+				if (title === 'OK') {
 					this.ok();
 				} else {
 					this.cancel();
@@ -159,11 +138,11 @@ export class AdvancedPropertiesDialog  {
 
 	public open(connectionProperties: vscode.ConnectionProperty[]) {
 		this._connectionProperties = connectionProperties;
-		var propertiesContentbuilder = $().element('table', {width:'100%'}, (tableContainer: Builder) => {
+		var propertiesContentbuilder = $().element('table', { width: '100%' }, (tableContainer: Builder) => {
 			this.fillInProperties(tableContainer);
 		});
 		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());
-		jQuery('#advancedDialogModal').modal({backdrop:false});
+		jQuery('#advancedDialogModal').modal({ backdrop: false });
 	}
 
 	public dispose(): void {
