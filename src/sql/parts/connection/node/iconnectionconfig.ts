@@ -5,7 +5,9 @@
 'use strict';
 
 import { IConnectionProfile } from './interfaces';
-import { IConnectionProfileGroup } from './connectionProfileGroup';
+import { ConnectionProfile } from './connectionProfile';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from './connectionProfileGroup';
+import vscode = require('vscode');
 
 /**
  * Interface for a configuration file that stores connection profiles.
@@ -18,4 +20,7 @@ export interface IConnectionConfig {
     getConnections(getWorkspaceConnections: boolean): IConnectionProfile[];
     removeConnection(profile: IConnectionProfile): Promise<boolean>;
     getAllGroups(): IConnectionProfileGroup[];
+    updateGroups(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void>;
+    changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void>;
+    changeGroupNameForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void>;
 }

@@ -20,7 +20,9 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { DragMouseEvent, IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ServerTreeRenderer, ServerTreeDataSource, ConnectionDisplay, ConnectionGroup, ServerTreeDragAndDrop, AddServerToGroupAction, NewQueryAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
+import { ConnectionProfile } from '../node/connectionProfile';
+import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop, AddServerToGroupAction, NewQueryAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 
 /**
@@ -74,12 +76,12 @@ export class ServerTreeController extends treedefaults.DefaultController {
 		event.stopPropagation();
 
 		tree.setFocus(element);
-		var parent: ConnectionGroup = null;
-		if (element instanceof ConnectionGroup) {
-			parent = <ConnectionGroup>element;
+		var parent: ConnectionProfileGroup = null;
+		if (element instanceof ConnectionProfileGroup) {
+			parent = <ConnectionProfileGroup>element;
 		}
-		else if (element instanceof ConnectionDisplay) {
-			parent = (<ConnectionDisplay>element).parent;
+		else if (element instanceof ConnectionProfile) {
+			parent = (<ConnectionProfile>element).parent;
 		}
 
 		let anchor = { x: event.posx + 1, y: event.posy };
@@ -111,18 +113,18 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	}
 
 	public hasActions(tree: ITree, element: any): boolean {
-		return element instanceof ConnectionGroup || (element instanceof ConnectionDisplay);
+		return element instanceof ConnectionProfileGroup || (element instanceof ConnectionProfile);
 	}
 
 	/**
 	 * Return actions given an element in the tree
 	 */
 	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
-		if (element instanceof ConnectionDisplay) {
+		if (element instanceof ConnectionProfile) {
 			return TPromise.as(this.getConnectionActions());
 		}
-		if (element instanceof ConnectionGroup) {
-			return TPromise.as(this.getConnectionGroupActions());
+		if (element instanceof ConnectionProfileGroup) {
+			return TPromise.as(this.getConnectionProfileGroupActions());
 		}
 
 		return TPromise.as([]);
@@ -135,7 +137,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		];
 	}
 
-	private getConnectionGroupActions(): IAction[] {
+	private getConnectionProfileGroupActions(): IAction[] {
 		return [
 			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
 		];

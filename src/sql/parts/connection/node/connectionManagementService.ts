@@ -22,12 +22,13 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import * as vscode from 'vscode';
 import { ConnectionStore } from './connectionStore';
 import { IConnectionProfile } from './interfaces';
-import { ConnectionProfileGroup } from './connectionProfileGroup';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionManagementInfo } from './connectionManagementInfo';
 import Utils = require('./utils');
-import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
+import { ConnectionProfile } from './connectionProfile';
+import { ICredentialsService } from 'sql/parts/credentials/credentialsService'
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -288,5 +289,17 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 
 		return null;
+	}
+
+	public updateGroups(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
+		return this._connectionStore.updateGroups(source, target);
+	}
+
+	public changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void> {
+		return this._connectionStore.changeGroupNameForGroup(sourceGroupName, targetGroupName);
+	}
+
+	public changeGroupNameForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void> {
+		return this._connectionStore.changeGroupNameForConnection(source, targetGroupName);
 	}
 }

@@ -9,6 +9,7 @@ import Constants = require('./constants');
 import ConnInfo = require('./connectionInfo');
 import Utils = require('./utils');
 import { ConnectionCredentials } from './connectionCredentials';
+import { ConnectionProfile } from '../node/connectionProfile';
 import { IConnectionProfile, CredentialsQuickPickItemType } from './interfaces';
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 import { IConnectionConfig } from './iconnectionconfig';
@@ -319,16 +320,20 @@ export class ConnectionStore {
 
 	private convertToConnectionGroup(group: IConnectionProfileGroup, connections: IConnectionProfile[], parent: ConnectionProfileGroup = undefined): ConnectionProfileGroup {
 		let connectionGroup = new ConnectionProfileGroup(group.name, parent);
-		if (group.children) {
-			let children = group.children.map((group) => {
-				return this.convertToConnectionGroup(group, connections, connectionGroup);
-			});
-			connectionGroup.Children = children;
-		}
-		let connectionsForGroup = connections.filter(conn => conn.groupName === connectionGroup.FullName);
-		connectionGroup.Connections = connectionsForGroup;
+         if(group.children) {
+            let children = group.children.map( (group) => {
+                return this.convertToConnectionGroup(group, connections, connectionGroup);
+            });
+            connectionGroup.addGroups(children);
+         }
+         let connectionsForGroup = connections.filter(conn => conn.groupName === connectionGroup.fullName);
+         var conns = [];
+         connectionsForGroup.forEach((conn) => {
+             conns.push(new ConnectionProfile(conn));
+         });
+         connectionGroup.addConnections(conns);
 
-		return connectionGroup;
+         return connectionGroup;
 	}
 
 	private loadProfiles(loadWorkspaceProfiles: boolean): IConnectionProfile[] {
@@ -345,5 +350,16 @@ export class ConnectionStore {
 		}
 		return maxConnections;
 	}
-}
 
+    public updateGroups(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
+        return this._connectionConfig.updateGroups(source, target);
+	}
+
+    public changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void> {
+        return this._connectionConfig.changeGroupNameForGroup(sourceGroupName, targetGroupName);
+    }
+
+    public changeGroupNameForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void> {
+        return this._connectionConfig.changeGroupNameForConnection(source, targetGroupName);
+    }
+}

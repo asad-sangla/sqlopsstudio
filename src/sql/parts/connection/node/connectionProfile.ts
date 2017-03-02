@@ -6,6 +6,8 @@
 
 import { IConnectionProfile, AuthenticationTypes } from './interfaces';
 import { ConnectionCredentials } from './connectionCredentials';
+import { ConnectionProfileGroup } from './connectionProfileGroup';
+import { QuestionTypes, IQuestion, IPrompter, INameValueChoice } from './question';
 import * as utils from './utils';
 import vscode = require('vscode');
 
@@ -18,7 +20,28 @@ export class ConnectionProfile extends ConnectionCredentials implements IConnect
     public profileName: string;
     public savePassword: boolean;
     public groupName: string;
-    public connection: vscode.ConnectionInfo;
+    public parent: ConnectionProfileGroup = null;
+    public serverName: string;
+	public databaseName: string;
+	public type: string;
+	public id: string;
+	public userName: string;
+	public authenticationType: string;
+
+	constructor(connectionProfile: IConnectionProfile) {
+		super();
+		this.savePassword = connectionProfile.savePassword;
+		this.groupName = connectionProfile.groupName;
+		this.serverName = connectionProfile.serverName;
+		this.databaseName = connectionProfile.databaseName;
+		this.userName = connectionProfile.userName;
+		this.authenticationType = connectionProfile.authenticationType;
+		this.id = this.groupName + ConnectionProfileGroup.GroupNameSeparator +
+					this.serverName + ConnectionProfileGroup.GroupNameSeparator +
+					this.databaseName + ConnectionProfileGroup.GroupNameSeparator +
+					this.userName;
+		this.type = 'SQL';
+	}
 
     // Assumption: having server + profile name indicates all requirements were met
     private isValidProfile(): boolean {
@@ -32,4 +55,23 @@ export class ConnectionProfile extends ConnectionCredentials implements IConnect
         }
         return false;
     }
+
+    public get fullName(): string {
+		let fullName: string = this.serverName + ConnectionProfileGroup.GroupNameSeparator ;
+		if(this.parent) {
+			fullName = this.parent.fullName + ConnectionProfileGroup.GroupNameSeparator + fullName;
+		}
+		return fullName;
+	}
+
+	public equals(other: any): boolean {
+		if (!(other instanceof ConnectionProfile)) {
+			return false;
+		}
+		return other.id === this.id && other.serverName === this.serverName;
+	}
+
+	public getParent(): ConnectionProfileGroup {
+		return this.parent;
+	}
 }

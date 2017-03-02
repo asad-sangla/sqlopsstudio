@@ -3,12 +3,13 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 'use strict';
-
-import * as Constants from 'sql/parts/connection/node/constants';
-import * as Utils from 'sql/parts/connection/node/utils';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import { IConnectionConfig } from 'sql/parts/connection/node/iconnectionconfig';
-import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
+import * as Constants from './constants';
+import * as Utils from './utils';
+import { IConnectionProfile } from './interfaces';
+import { IConnectionConfig } from './iconnectionconfig';
+import { ConnectionProfile } from './connectionProfile';
+import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { IConfigurationEditingService, ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService, IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
 import vscode = require('vscode');
@@ -138,8 +139,52 @@ export class ConnectionConfig implements IConnectionConfig {
         });
     }
 
+    public changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void> {
+        let profiles = this.getConnections(true);
+        // Modify groupName for the connections in selected group
+        profiles.forEach((value) => {
+            if (value.groupName.startsWith(sourceGroupName)) {
+                value.groupName = value.groupName.replace(sourceGroupName,targetGroupName);
+            }
+        });
+
+        // Write user config
+        return this.writeUserConfiguration(Constants.connectionsArrayName, profiles);
+
+    }
+
+    public changeGroupNameForConnection(profile: IConnectionProfile, groupName: string): Promise<void> {
+        let profiles = this.getConnections(true);
+        // Modify groupName for the selected connection
+        profiles.forEach((value) => {
+            if (Utils.isSameProfile(value, profile)) {
+                value.groupName = groupName;
+            }
+        });
+
+        // Write user config
+        return this.writeUserConfiguration(Constants.connectionsArrayName, profiles);
+
+    }
+
+
+
+    public updateGroups(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
+        let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+        var index = groups.map(function(grp) { return grp.name; }).indexOf(source.name);
+		if (index !== -1) {
+            groups[index] = source.toObject();
+		}
+
+        index = groups.map(function(grp) { return grp.name; }).indexOf(target.name);
+		if (index !== -1) {
+            groups[index] = target.toObject();
+		}
+        return this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups);
+	}
+
     private saveGroup(groups: IConnectionProfileGroup[], groupFullName: string): IConnectionProfileGroup[] {
-        if(groupFullName !== undefined && groupFullName !== '') {
+        if (groupFullName !== undefined && groupFullName !== '') {
             let groupNames: string[] = groupFullName.split(ConnectionProfileGroup.GroupNameSeparator);
             return this.saveGroupsInTreeIfNotExist(groups, groupNames, 0);
         }

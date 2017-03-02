@@ -12,7 +12,9 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
-import { ServerTreeRenderer, ServerTreeDataSource, ConnectionDisplay, ServerTreeDragAndDrop, ServerTreeModel, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
+import { ConnectionProfile } from '../node/connectionProfile';
+import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/electron-browser/serverTreeController';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
@@ -23,7 +25,7 @@ import Severity from 'vs/base/common/severity';
 const $ = builder.$;
 
 /**
- * SErverTreeview implements the dynamic tree view.
+ * ServerTreeview implements the dynamic tree view.
  */
 export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 
@@ -31,7 +33,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	private viewletState: TreeExplorerViewletState;
 
 	constructor(actionRunner: IActionRunner, settings: any,
-		@IConnectionManagementService private registeredServersService: IConnectionManagementService,
+		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
@@ -61,7 +63,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		const actionProvider = this.instantiationService.createInstance(ServerTreeActionProvider);
 		const renderer = this.instantiationService.createInstance(ServerTreeRenderer);
 		const controller = this.instantiationService.createInstance(ServerTreeController,actionProvider);
-		const dnd = new ServerTreeDragAndDrop();
+		const dnd = this.instantiationService.createInstance(ServerTreeDragAndDrop);
 		const filter = new DefaultFilter();
 		const sorter = null;
 		const accessibilityProvider = new DefaultAccessibilityProvider();
@@ -91,12 +93,12 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		let selection = this.tree.getSelection();
 
 		// Open a connected sql file if a ConnectionDisplay was chosen
-		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionDisplay)) {
+		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
 			this.openDatabase(selection[0]);
 		}
 	}
 
-	private openDatabase(server: ConnectionDisplay): void {
+	private openDatabase(server: ConnectionProfile): void {
 		// open the database dashboard
 	}
 
@@ -105,9 +107,11 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	 */
 	private structuralTreeUpdate(): void {
 		const self = this;
+		var groups = this.connectionManagementService.getAllConnections();
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
 		this.fullRefreshNeeded = true;
-		const treeInput =  (ServerTreeModel.Instance).getTreeInput();
+		const treeInput =  new ConnectionProfileGroup('root', null);
+		treeInput.addGroups(groups);
 		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
 			self.fullRefreshNeeded = false;
 			self.tree.getFocus();

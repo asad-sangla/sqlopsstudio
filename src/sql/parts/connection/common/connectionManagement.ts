@@ -9,7 +9,8 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import Event from 'vs/base/common/event';
 import vscode = require('vscode');
-import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from '../node/connectionProfileGroup';
+import { ConnectionProfile } from '../node/connectionProfile';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 
 export const VIEWLET_ID = 'workbench.view.connections';
@@ -42,6 +43,12 @@ export interface IConnectionManagementService {
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
 
 	getAllConnections(): ConnectionProfileGroup[];
+
+	updateGroups(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
+
+	changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void>;
+
+	changeGroupNameForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void>;
 
 	getAdvancedProperties(): vscode.ConnectionProperty[];
 }

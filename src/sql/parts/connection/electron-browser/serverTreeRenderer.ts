@@ -5,6 +5,13 @@
 'use strict';
 import * as vscode from 'vscode';
 import dom = require('vs/base/browser/dom');
+//import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
+import { IConnectionProfile } from '../node/interfaces';
+import { ConnectionCredentials } from '../node/connectionCredentials';
+import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
+import { ConnectionProfile } from '../node/connectionProfile';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ITree, IDataSource, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACCEPT_BUBBLE_DOWN, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
@@ -12,7 +19,6 @@ import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
 import QueryEditorService from 'sql/parts/editor/queryEditorService';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 const $ = dom.$;
 
 /**
@@ -24,13 +30,13 @@ export class ServerTreeRenderer implements IRenderer {
 	public static CONNECTION_HEIGHT = 62;
 	public static CONNECTION_GROUP_HEIGHT = 32;
 	private static CONNECTION_TEMPLATE_ID = 'connection';
-	private static CONNECTION_GROUP_TEMPLATE_ID = 'connectiongroup';
+	private static CONNECTION_GROUP_TEMPLATE_ID = 'ConnectionProfileGroup';
 
 	/**
 	 * Returns the element's height in the tree, in pixels.
 	 */
 	public getHeight(tree: ITree, element: any): number {
-		if (element instanceof ConnectionGroup) {
+		if (element instanceof ConnectionProfileGroup) {
 			return ServerTreeRenderer.CONNECTION_GROUP_HEIGHT;
 		}
 		return ServerTreeRenderer.CONNECTION_HEIGHT;
@@ -40,7 +46,7 @@ export class ServerTreeRenderer implements IRenderer {
 	 * Returns a template ID for a given element.
 	 */
 	public getTemplateId(tree: ITree, element: any): string {
-		if (element instanceof ConnectionGroup) {
+		if (element instanceof ConnectionProfileGroup) {
 			return ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID;
 		}
 		return ServerTreeRenderer.CONNECTION_TEMPLATE_ID;
@@ -54,14 +60,14 @@ export class ServerTreeRenderer implements IRenderer {
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
 			const serverTemplate: IConnectionTemplateData = Object.create(null);
 			serverTemplate.root = dom.append(container, $('.editor-group'));
-			serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
-			serverTemplate.type = dom.append(serverTemplate.root, $('.description.ellipsis'));
+			serverTemplate.serverName = dom.append(serverTemplate.root, $('span.name'));
+			serverTemplate.databaseName = dom.append(serverTemplate.root, $('.description.ellipsis'));
 			serverTemplate.footer = dom.append(serverTemplate.root, $('.footer'));
-			serverTemplate.info = dom.append(serverTemplate.footer, $('.author.ellipsis'));
+			serverTemplate.type = dom.append(serverTemplate.footer, $('.author.ellipsis'));
 			return serverTemplate;
 		}
 		else {
-			const serverTemplate: IConnectionGroupTemplateData = Object.create(null);
+			const serverTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
 			serverTemplate.root = dom.append(container, $('.server-group'));
 			serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
 			return serverTemplate;
@@ -76,18 +82,18 @@ export class ServerTreeRenderer implements IRenderer {
 			this.renderConnection(tree, element, templateData);
 		}
 		else {
-			this.renderConnectionGroup(tree, element, templateData);
+			this.renderConnectionProfileGroup(tree, element, templateData);
 		}
 	}
 
-	private renderConnection(tree: ITree, connection: ConnectionDisplay, templateData: IConnectionTemplateData): void {
-		templateData.name.textContent = connection.getName();
-		templateData.info.textContent = 'server';
-		templateData.type.textContent = connection.getType();
+	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
+		templateData.serverName.textContent = connection.serverName;
+		templateData.databaseName.textContent = connection.databaseName;
+		templateData.type.textContent = connection.type;
 	}
 
-	private renderConnectionGroup(tree: ITree, connectionGroup: ConnectionGroup, templateData: IConnectionGroupTemplateData): void {
-		templateData.name.textContent = connectionGroup.getName();
+	private renderConnectionProfileGroup(tree: ITree, ConnectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
+		templateData.name.textContent = ConnectionProfileGroup.name;
 	}
 
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {
@@ -97,152 +103,19 @@ export class ServerTreeRenderer implements IRenderer {
 
 interface IConnectionTemplateData {
 	root: HTMLElement;
-	name: HTMLSpanElement;
+	serverName: HTMLSpanElement;
 	type: HTMLElement;
 	footer: HTMLElement;
-	info: HTMLElement;
+	databaseName: HTMLElement;
 	icon: HTMLElement;
 	details: HTMLElement;
 	header: HTMLElement;
 	headerContainer: HTMLElement;
 }
 
-interface IConnectionGroupTemplateData {
+interface IConnectionProfileGroupTemplateData {
 	root: HTMLElement;
 	name: HTMLSpanElement;
-}
-
-/**
- * Class representing a connection to be displayed in the tree
- */
-export class ConnectionDisplay implements vscode.ConnectionInfo {
-
-	userName: string;
-	password: string;
-	parent: ConnectionGroup = null;
-	authenticationType: string;
-
-	constructor(private id: string,
-		public serverName: string,
-		public databaseName: string,
-		private type: string
-	) {
-
-	}
-
-	public getId(): string {
-		return this.id;
-	}
-
-	public getName(): string {
-		return this.serverName;
-	}
-
-	public getType(): string {
-		return this.type;
-	}
-
-	public equals(other: any): boolean {
-		if (!(other instanceof ConnectionDisplay)) {
-			return false;
-		}
-		return other.getId() === this.id && other.getName() === this.serverName;
-	}
-
-	public getParent(): ConnectionGroup {
-		return this.parent;
-	}
-}
-
-/**
- * Class representing a connection group to be displayed in the tree
- */
-export class ConnectionGroup {
-
-	groupName: string;
-	parent: ConnectionGroup = null;
-
-	constructor(private id: string,
-		groupName: string,
-		private type: string,
-		private children: [ConnectionDisplay | ConnectionGroup],
-	) {
-		this.groupName = groupName;
-		// assign parent to each child
-		if (children !== null) {
-			this.children.forEach((connection) => {
-				connection.parent = this;
-			});
-		}
-	}
-
-	public getId(): string {
-		return this.id;
-	}
-
-	public getName(): string {
-		return this.groupName;
-	}
-
-	public getType(): string {
-		return this.type;
-	}
-
-	public getChildren(): [ConnectionDisplay | ConnectionGroup] {
-		return this.children;
-	}
-
-	public hasChildren(): boolean {
-		if (this.children !== null && this.children.length > 0) {
-			return true;
-		}
-		return false;
-	}
-
-	public equals(other: any): boolean {
-		if (!(other instanceof ConnectionGroup)) {
-			return false;
-		}
-		return other.getId() === this.id && other.getName() === this.groupName;
-	}
-
-	public addServerToGroup(child: ConnectionDisplay | ConnectionGroup): void {
-		var servers = this.children;
-		if (this.children === null) {
-			this.children = [child];
-			child.parent = this;
-		}
-		else if (!servers.some(x => x.equals(child))) {
-			servers.push(child);
-			child.parent = this;
-			this.children = servers;
-		}
-	}
-
-	public updateGroup(child: ConnectionGroup): void {
-		var index = this.children.indexOf(child);
-		if (index !== -1) {
-			this.children[index] = child;
-		}
-	}
-
-	public removeServerFromGroup(child: ConnectionDisplay): void {
-		var connections = this.children;
-		connections.forEach((val, i) => {
-			if (val.equals(child)) {
-				connections.splice(i, 1);
-			}
-		});
-		this.children = connections;
-		child.parent = null;
-		if (this.children.length === 0) {
-			this.children = null;
-		}
-	}
-
-	public getParent(): ConnectionGroup {
-		return this.parent;
-	}
 }
 
 /**
@@ -255,11 +128,11 @@ export class ServerTreeDataSource implements IDataSource {
 	 * No more than one element may use a given identifier.
 	 */
 	public getId(tree: ITree, element: any): string {
-		if (element instanceof ConnectionDisplay) {
-			return (<ConnectionDisplay>element).getId();
+		if (element instanceof ConnectionProfile) {
+			return (<ConnectionProfile>element).id;
 		}
-		else if (element instanceof ConnectionGroup) {
-			return (<ConnectionGroup>element).getId();
+		else if (element instanceof ConnectionProfileGroup) {
+			return (<ConnectionProfileGroup>element).id;
 		}
 	}
 
@@ -267,11 +140,11 @@ export class ServerTreeDataSource implements IDataSource {
 	 * Returns a boolean value indicating whether the element has children.
 	 */
 	public hasChildren(tree: ITree, element: any): boolean {
-		if (element instanceof ConnectionDisplay) {
+		if (element instanceof ConnectionProfile) {
 			return false;
 		}
-		else if (element instanceof ConnectionGroup) {
-			return element.getChildren() ? true : false;
+		else if (element instanceof ConnectionProfileGroup) {
+			return element.hasChildren();
 		}
 		return false;
 	}
@@ -280,11 +153,11 @@ export class ServerTreeDataSource implements IDataSource {
 	 * Returns the element's children as an array in a promise.
 	 */
 	public getChildren(tree: ITree, element: any): TPromise<any> {
-		if (element instanceof ConnectionDisplay) {
+		if (element instanceof ConnectionProfile) {
 			return TPromise.as(null);
 		}
-		else if (element instanceof ConnectionGroup) {
-			return TPromise.as((<ConnectionGroup>element).getChildren());
+		else if (element instanceof ConnectionProfileGroup) {
+			return TPromise.as((<ConnectionProfileGroup>element).getChildren());
 		}
 	}
 
@@ -292,11 +165,11 @@ export class ServerTreeDataSource implements IDataSource {
 	 * Returns the element's parent in a promise.
 	 */
 	public getParent(tree: ITree, element: any): TPromise<any> {
-		if (element instanceof ConnectionDisplay) {
-			return TPromise.as((<ConnectionDisplay>element).getParent());
+		if (element instanceof ConnectionProfile) {
+			return TPromise.as((<ConnectionProfile>element).getParent());
 		}
-		else if (element instanceof ConnectionGroup) {
-			return TPromise.as((<ConnectionGroup>element).getParent());
+		else if (element instanceof ConnectionProfileGroup) {
+			return TPromise.as((<ConnectionProfileGroup>element).getParent());
 		}
 	}
 }
@@ -306,16 +179,21 @@ export class ServerTreeDataSource implements IDataSource {
  */
 export class ServerTreeDragAndDrop implements IDragAndDrop {
 
+	constructor(@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
+		@IInstantiationService private instantiationService: IInstantiationService
+	) {
+	}
+
 	/**
 	 * Returns a uri if the given element should be allowed to drag.
 	 * Returns null, otherwise.
 	 */
 	public getDragURI(tree: ITree, element: any): string {
-		if (element instanceof ConnectionDisplay) {
-			return (<ConnectionDisplay>element).getId();
+		if (element instanceof ConnectionProfile) {
+			return (<ConnectionProfile>element).id;
 		}
-		else if (element instanceof ConnectionGroup) {
-			return (<ConnectionGroup>element).getId();
+		else if (element instanceof ConnectionProfileGroup) {
+			return (<ConnectionProfileGroup>element).id;
 		}
 		return null;
 	}
@@ -324,11 +202,11 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Returns a label(name) to display when dragging the element.
 	 */
 	public getDragLabel(tree: ITree, elements: any[]): string {
-		if (elements[0] instanceof ConnectionDisplay) {
-			return (<ConnectionDisplay>elements[0]).getName();
+		if (elements[0] instanceof ConnectionProfile) {
+			return (<ConnectionProfile>elements[0]).serverName;
 		}
-		else if (elements[0] instanceof ConnectionGroup) {
-			return (<ConnectionGroup>elements[0]).getName();
+		else if (elements[0] instanceof ConnectionProfileGroup) {
+			return (<ConnectionProfileGroup>elements[0]).name;
 		}
 	}
 
@@ -346,7 +224,8 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Returns DRAG_OVER_ACCEPT_BUBBLE_DOWN when element is aconnection group or connection
 	 */
 	public onDragOver(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): IDragOverReaction {
-		if (targetElement instanceof ConnectionDisplay || targetElement instanceof ConnectionGroup) {
+		if (targetElement instanceof ConnectionProfile || targetElement instanceof ConnectionProfileGroup) {
+			console.log('drag accept');
 			return DRAG_OVER_ACCEPT_BUBBLE_DOWN(true);
 		}
 		return DRAG_OVER_REJECT;
@@ -356,116 +235,72 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Handle drop in the server tree.
 	 */
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
-		var targetConnectionGroup;
-		if (targetElement instanceof ConnectionDisplay) {
-			targetConnectionGroup = (<ConnectionDisplay>targetElement).getParent();
+		var targetConnectionProfileGroup;
+		if (targetElement instanceof ConnectionProfile) {
+			targetConnectionProfileGroup = (<ConnectionProfile>targetElement).getParent();
 		}
 		else {
-			targetConnectionGroup = <ConnectionGroup>targetElement;
+			targetConnectionProfileGroup = <ConnectionProfileGroup>targetElement;
 		}
-		const source: ConnectionDisplay = data.getData()[0];
+		const source = data.getData()[0];
 		var oldParent = source.getParent();
 
-		if (targetConnectionGroup && targetConnectionGroup.getName() !== 'root' && oldParent && !oldParent.equals(targetConnectionGroup)) {
+		if (targetConnectionProfileGroup && targetConnectionProfileGroup.name !== 'root' && oldParent && !oldParent.equals(targetConnectionProfileGroup)) {
 
-			var treeModel: ServerTreeModel = ServerTreeModel.Instance;
-			const treeInput = treeModel.DragAndDrop(source, targetConnectionGroup);
+			console.log('drop ' + source.serverName + ' to ' + targetConnectionProfileGroup.name);
+			if (source instanceof ConnectionProfile) {
+				// Change groupName of Profile
+				this.connectionManagementService.changeGroupNameForConnection(source, targetConnectionProfileGroup.fullName).then(() => {
+					this.renderTree(tree);
+				});
+			} else if (source instanceof ConnectionProfileGroup) {
+
+				// Change groupName of all children under this group
+				this.connectionManagementService.changeGroupNameForGroup(source.fullName, targetConnectionProfileGroup.fullName + '/' + source.name).then(() => {
+					// Move group to its new parent
+					oldParent.removeGroupFromGroup(source);
+					targetConnectionProfileGroup.addGroupToGroup(source);
+					this.connectionManagementService.updateGroups(this.getTopParent(oldParent), this.getTopParent(targetConnectionProfileGroup)).then(() => {
+						this.renderTree(tree);
+					});
+				});
+			}
+		}
+		return;
+	}
+
+	/**
+	 * Set tree input and render tree
+	 */
+	public renderTree(tree: ITree): void {
+		var treeInput = new ConnectionProfileGroup('root', null);
+			var groups = this.connectionManagementService.getAllConnections();
+			treeInput.addGroups(groups);
+			console.log('tree input');
 			if (treeInput !== tree.getInput()) {
 				tree.setInput(treeInput).done(() => {
 					tree.getFocus();
-					tree.expand(targetConnectionGroup).done((res) => {
-						console.log('res' + res);
-					});
+					//tree.expand(targetConnectionProfileGroup).done((res) => {
+					//	console.log('res' + res);
+					//);
 				}, errors.onUnexpectedError);
 			} else {
 				tree.refresh().done(() => {
 					tree.getFocus();
 				}, errors.onUnexpectedError);
 			}
-		}
-		return;
-	}
-}
 
-/**
- * Singleton than stores and manipulates the contents of the tree.
- */
-export class ServerTreeModel {
-	private connectionGroups: [ConnectionGroup] = null;
-	private static _instance: ServerTreeModel = undefined;
-	private constructor() {
-		this.connectionGroups = this.getConnectionGroups();
-	}
-
-	public static get Instance(): ServerTreeModel {
-		if (this._instance === undefined) {
-			this._instance = new ServerTreeModel();
-		}
-		return this._instance;
-	}
-
-	private getConnectionGroups(): [ConnectionGroup] {
-		// Stub method to generate input
-		var s3 = new ConnectionDisplay('3', 'Server name B', 'Server name B', 'Azure');
-
-		var s5 = new ConnectionDisplay('5', 'Server name D', 'Server name D', 'Azure');
-		var s6 = new ConnectionDisplay('6', 'Server name E', 'Server name E', 'OnPrem');
-		var s7 = new ConnectionDisplay('7', 'Server name F', 'Server name F', 'OnPrem');
-		//var s10 = new ConnectionDisplay('10', 'Server name H', 'Server name F', 'OnPrem');
-		//var s9 = new ConnectionGroup('9', 'Server Group I', 'OnPrem' , [s10]);
-		var s8 = new ConnectionGroup('8', 'Server Group G', 'OnPrem', [s7]);
-		var s2 = new ConnectionGroup('2', 'Server Group A', 'OnPrem', [s3, s8]);
-		var s4 = new ConnectionGroup('4', 'Server Group C', 'Azure', [s5, s6]);
-		console.log('get data');
-		return [s2, s4];
-	}
-
-	/**
-	 * Removes dragged element from its group and adds it to the target group.
-	 */
-	public DragAndDrop(source: ConnectionDisplay | ConnectionGroup, targetConnectionGroup: ConnectionGroup): ConnectionGroup {
-		var targetElement;
-		if (source instanceof ConnectionDisplay) {
-			targetElement = <ConnectionDisplay>source;
-		}
-		else {
-			targetElement = <ConnectionGroup>source;
-		}
-		console.log('drop ' + source.getName() + ' to ' + targetConnectionGroup.getName());
-		var oldParent = targetElement.getParent();
-		oldParent.removeServerFromGroup(source);
-		targetConnectionGroup.addServerToGroup(source);
-		this.updateGroup(this.getTopParent(oldParent));
-		this.updateGroup(this.getTopParent(targetConnectionGroup));
-		return this.getTreeInput();
-	}
-
-	/**
-	 * Returns current content of the tree
-	 */
-	public getTreeInput(): ConnectionGroup {
-		return new ConnectionGroup('root', 'root', '', this.connectionGroups);
 	}
 
 	/**
 	 * Returns the topmost parent of a tree item
 	 */
-	public getTopParent(element: ConnectionGroup): ConnectionGroup {
+	public getTopParent(element: ConnectionProfileGroup): ConnectionProfileGroup {
 		var current = element;
-		while (current.getParent() !== null && current.getParent().getId() !== 'root') {
+		while (current.getParent() !== null && current.getParent().id !== 'root') {
 			current = current.getParent();
 		}
 		return current;
-	}
-
-	/**
-	 * Updates(replaces) an element in the tree
-	 */
-	public updateGroup(child: ConnectionGroup): void {
-		var index = this.connectionGroups.indexOf(child);
-		if (index !== -1) {
-			this.connectionGroups[index] = child;
-		}
 	}
 }
 
@@ -482,7 +317,7 @@ export class AddServerToGroupAction extends Action {
 		super(id, label);
 	}
 
-	public run(element: ConnectionGroup): TPromise<boolean> {
+	public run(element: ConnectionProfileGroup): TPromise<boolean> {
 		console.log('Action run');
 		return TPromise.as(true);
 	}
@@ -502,7 +337,7 @@ export class NewQueryAction extends Action {
 		this.sqlDocService = this.instantiationService.createInstance(QueryEditorService);
 	}
 
-	public run(element: ConnectionDisplay): TPromise<boolean> {
+	public run(element: ConnectionProfile): TPromise<boolean> {
 		// ask sqldoc service for an untitled sql sqldoc
 		this.sqlDocService.newSqlEditor().then((newDocUri) => {
 			// TODO: implement the following components when serverTree is done
