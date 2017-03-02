@@ -89,11 +89,13 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
-
 import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
+import { IQueryModelService } from 'sql/parts/query/common/queryModel';
+import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
+import { IQueryParameterService, QueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -523,6 +525,8 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
 		serviceCollection.set(IConnectionManagementService, this.instantiationService.createInstance(ConnectionManagementService));
+		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
+		serviceCollection.set(IQueryParameterService, this.instantiationService.createInstance(QueryParameterService));
 
 		// Contributed services
 		const contributedServices = getServices();

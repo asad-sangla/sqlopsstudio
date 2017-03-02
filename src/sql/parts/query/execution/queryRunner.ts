@@ -5,7 +5,6 @@
 
 'use strict';
 
-import { testUri } from 'sql/parts/connection/node/constants';
 import { QueryCancelParams, QueryCancelResult } from 'sql/parts/query/execution/contracts/queryCancel';
 import { BatchSummary,
     QueryExecuteCompleteNotificationResult,
@@ -67,7 +66,7 @@ export default class QueryRunner {
 
 		setTimeout(function() {
 			let test = {
-				ownerUri: testUri,
+				ownerUri: this._uri,
 				batchSummary: {
 					hasError: false,
 					id: 0,
@@ -89,7 +88,7 @@ export default class QueryRunner {
 
 		setTimeout(function() {
 			let test = {
-				ownerUri: testUri,
+				ownerUri: this._uri,
 				message: {
 					isError: false,
                     batchId: 0,
@@ -103,7 +102,7 @@ export default class QueryRunner {
 
 		setTimeout(function() {
 			let test = {
-			    ownerUri: testUri,
+			    ownerUri: this._uri,
 		    	resultSetSummary: {
 					batchId: 0,
 					id: 0,
@@ -117,7 +116,7 @@ export default class QueryRunner {
 
         setTimeout(function() {
 			let test = {
-				ownerUri: testUri,
+				ownerUri: this._uri,
 				message: {
 					isError: false,
                     batchId: 0,
@@ -131,7 +130,7 @@ export default class QueryRunner {
 
 		setTimeout(function() {
 			let test = {
-			    ownerUri: testUri,
+			    ownerUri: this._uri,
 		    	resultSetSummary: {
 					batchId: 0,
 					id: 0,
@@ -145,7 +144,7 @@ export default class QueryRunner {
 
 		setTimeout(function() {
 			let test = {
-			    ownerUri: testUri,
+			    ownerUri: this._uri,
 				batchSummary: {
 					hasError: false,
 					id: 0,
@@ -167,7 +166,7 @@ export default class QueryRunner {
 
 		setTimeout(function() {
 			let test = {
-			    ownerUri: testUri,
+			    ownerUri: this._uri,
 				batchSummaries: [{
 					hasError: false,
 					id: 0,

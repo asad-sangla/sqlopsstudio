@@ -16,7 +16,7 @@ import * as Constants from 'sql/parts/connection/node/constants';
 import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/node/interfaces';
 import * as Utils from 'sql/parts/connection/node/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
-import { QueryModelInstance } from 'sql/parts/grid/gridGlobals';
+import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 
 declare let AngularCore;
 declare let rangy;
@@ -75,7 +75,7 @@ const template = `
                 <template ngFor let-message [ngForOf]="messages">
                     <tr class='messageRow'>
                         <td><span *ngIf="!Utils.isNumber(message.batchId)">[{{message.time}}]</span></td>
-                        <td class="messageValue" [class.errorMessage]="message.isError" [class.batchMessage]="Utils.isNumber(message.batchId)">{{message.message}} <a *ngIf="message.link" href="#" (click)="sendGetRequest(message.link.uri)">{{message.link.text}}</a>
+                        <td class="messageValue" [class.errorMessage]="message.isError" [class.batchMessage]="Utils.isNumber(message.batchId)">{{message.message}} <a *ngIf="message.link" href="#">{{message.link.text}}</a>
                         </td>
                     </tr>
                 </template>
@@ -229,13 +229,10 @@ export class AppComponent {
     ];
     // tslint:disable-next-line:no-unused-variable
     private startString = new Date().toLocaleTimeString();
-    private config;
 
     // FIELDS
     // Service for interaction with the IQueryModel
     private dataService: DataService;
-    // URI for this document
-    private uri: string;
     // All datasets
     private dataSets: IGridDataSet[] = [];
     // Place holder data sets to buffer between data sets and rendered data sets
@@ -245,8 +242,6 @@ export class AppComponent {
     private messages: IMessage[] = [];
     private scrollTimeOut: number;
     private messagesAdded = false;
-    private resizing = false;
-    private resizeHandleTop = 0;
     private scrollEnabled = true;
     // tslint:disable-next-line:no-unused-variable
     private resultActive = true;
@@ -258,8 +253,6 @@ export class AppComponent {
     private resultsScrollTop = 0;
     // tslint:disable-next-line:no-unused-variable
     private activeGrid = 0;
-    private messageShortcut;
-    private resultShortcut;
     private totalElapsedTimeSpan: number;
     private complete = false;
     //@AngularCore.ViewChild('contextmenu') contextMenu: ContextMenu;
@@ -279,101 +272,126 @@ export class AppComponent {
 
     constructor(
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
-        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private cd: ChangeDetectorRef
-        ) {}
+        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private cd: ChangeDetectorRef,
+        @AngularCore.Inject('ParameterService') parameterService: IQueryParameterService,
+        ) {
+            this.dataService = parameterService.dataService;
+        }
+
 
     /**
      * Called by Angular when the object is initialized
      */
     ngOnInit(): void {
         const self = this;
-
-        this.uri = Constants.testUri;
-
-        this.dataService = QueryModelInstance.getDataService(self.uri);
         this.dataService.dataEventObs.subscribe(event => {
             switch (event.type) {
+                case 'start':
+                    self.handleStart(self, event);
+                    break;
                 case 'complete':
-                    self.totalElapsedTimeSpan = event.data;
-                    self.complete = true;
-                    self.messagesAdded = true;
+                    self.handleComplete(self, event);
                     break;
                 case 'message':
-                    self.messages.push(event.data);
+                    self.handleMessage(self, event);
                     break;
                 case 'resultSet':
-                    let resultSet = event.data;
-
-                    // Setup a function for generating a promise to lookup result subsets
-                    let loadDataFunction = (offset: number, count: number): Promise<IGridDataRow[]> => {
-                        return new Promise<IGridDataRow[]>((resolve, reject) => {
-                            self.dataService.getRows(offset, count, resultSet.batchId, resultSet.id).subscribe(rows => {
-                                let gridData: IGridDataRow[] = [];
-                                for (let row = 0; row < rows.rows.length; row++) {
-                                    // Push row values onto end of gridData for slickgrid
-                                    gridData.push({
-                                        values: rows.rows[row]
-                                    });
-                                }
-                                resolve(gridData);
-                            });
-                        });
-                    };
-
-                    // Precalculate the max height and min height
-                    let maxHeight = resultSet.rowCount < self._defaultNumShowingRows
-                        ? Math.max((resultSet.rowCount + 1) * self._rowHeight, self.dataIcons.length * 30) + 10
-                        : 'inherit';
-                    let minHeight = resultSet.rowCount > self._defaultNumShowingRows
-                        ? (self._defaultNumShowingRows + 1) * self._rowHeight + 10
-                        : maxHeight;
-
-                    // Store the result set from the event
-                    let dataSet: IGridDataSet = {
-                        resized: undefined,
-                        batchId: resultSet.batchId,
-                        resultId: resultSet.id,
-                        totalRows: resultSet.rowCount,
-                        maxHeight: maxHeight,
-                        minHeight: minHeight,
-                        dataRows: new VirtualizedCollection(
-                            self.windowSize,
-                            resultSet.rowCount,
-                            loadDataFunction,
-                            index => { return { values: [] }; }
-                        ),
-                        columnDefinitions: resultSet.columnInfo.map((c, i) => {
-                            let isLinked = c.isXml || c.isJson;
-                            let linkType = c.isXml ? 'xml' : 'json';
-                            return {
-                                id: i.toString(),
-                                name: c.columnName === 'Microsoft SQL Server 2005 XML Showplan'
-                                    ? 'XML Showplan'
-                                    : c.columnName,
-                                type: self.stringToFieldType('string'),
-                                formatter: isLinked ? self.hyperLinkFormatter : self.textFormatter,
-                                asyncPostRender: isLinked ? self.linkHandler(linkType) : undefined
-                            };
-                        })
-                    };
-                    self.dataSets.push(dataSet);
-
-                    // Create a dataSet to render without rows to reduce DOM size
-                    let undefinedDataSet = JSON.parse(JSON.stringify(dataSet));
-                    undefinedDataSet.columnDefinitions = dataSet.columnDefinitions;
-                    undefinedDataSet.dataRows = undefined;
-                    undefinedDataSet.resized = new AngularCore.EventEmitter();
-                    self.placeHolderDataSets.push(undefinedDataSet);
-                    self.messagesAdded = true;
-                    self.onScroll(0);
+                    self.handleResultSet(self, event);
                     break;
                 default:
-                    console.error('Unexpected web socket event type "' + event.type + '" sent');
+                    console.error('Unexpected query event type "' + event.type + '" sent');
                     break;
             }
             self.cd.detectChanges();
         });
-        QueryModelInstance.onAngularLoaded(this.uri);
+        this.dataService.onAngularLoaded();
+    }
+
+    handleStart(self: AppComponent, event: any): void {
+        self.messages = [];
+        self.dataSets = [];
+        self.placeHolderDataSets =  [];
+        self.renderedDataSets = self.placeHolderDataSets;
+        self.totalElapsedTimeSpan = undefined;
+        self.complete = false;
+        self.messagesAdded = false;
+    }
+
+    handleComplete(self: AppComponent, event: any): void {
+        self.totalElapsedTimeSpan = event.data;
+        self.complete = true;
+        self.messagesAdded = true;
+    }
+
+    handleMessage(self: AppComponent, event: any): void {
+        self.messages.push(event.data);
+    }
+
+    handleResultSet(self: AppComponent, event: any): void {
+        let resultSet = event.data;
+
+        // Setup a function for generating a promise to lookup result subsets
+        let loadDataFunction = (offset: number, count: number): Promise<IGridDataRow[]> => {
+            return new Promise<IGridDataRow[]>((resolve, reject) => {
+                self.dataService.getRows(offset, count, resultSet.batchId, resultSet.id).subscribe(rows => {
+                    let gridData: IGridDataRow[] = [];
+                    for (let row = 0; row < rows.rows.length; row++) {
+                        // Push row values onto end of gridData for slickgrid
+                        gridData.push({
+                            values: rows.rows[row]
+                        });
+                    }
+                    resolve(gridData);
+                });
+            });
+        };
+
+        // Precalculate the max height and min height
+        let maxHeight = resultSet.rowCount < self._defaultNumShowingRows
+            ? Math.max((resultSet.rowCount + 1) * self._rowHeight, self.dataIcons.length * 30) + 10
+            : 'inherit';
+        let minHeight = resultSet.rowCount > self._defaultNumShowingRows
+            ? (self._defaultNumShowingRows + 1) * self._rowHeight + 10
+            : maxHeight;
+
+        // Store the result set from the event
+        let dataSet: IGridDataSet = {
+            resized: undefined,
+            batchId: resultSet.batchId,
+            resultId: resultSet.id,
+            totalRows: resultSet.rowCount,
+            maxHeight: maxHeight,
+            minHeight: minHeight,
+            dataRows: new VirtualizedCollection(
+                self.windowSize,
+                resultSet.rowCount,
+                loadDataFunction,
+                index => { return { values: [] }; }
+            ),
+            columnDefinitions: resultSet.columnInfo.map((c, i) => {
+                let isLinked = c.isXml || c.isJson;
+                let linkType = c.isXml ? 'xml' : 'json';
+                return {
+                    id: i.toString(),
+                    name: c.columnName === 'Microsoft SQL Server 2005 XML Showplan'
+                        ? 'XML Showplan'
+                        : c.columnName,
+                    type: self.stringToFieldType('string'),
+                    formatter: isLinked ? self.hyperLinkFormatter : self.textFormatter,
+                    asyncPostRender: isLinked ? self.linkHandler(linkType) : undefined
+                };
+            })
+        };
+        self.dataSets.push(dataSet);
+
+        // Create a dataSet to render without rows to reduce DOM size
+        let undefinedDataSet = JSON.parse(JSON.stringify(dataSet));
+        undefinedDataSet.columnDefinitions = dataSet.columnDefinitions;
+        undefinedDataSet.dataRows = undefined;
+        undefinedDataSet.resized = new AngularCore.EventEmitter();
+        self.placeHolderDataSets.push(undefinedDataSet);
+        self.messagesAdded = true;
+        self.onScroll(0);
     }
 
     ngAfterViewChecked(): void {
@@ -600,14 +618,6 @@ export class AppComponent {
                 });
             }
         }, self.scrollTimeOutTime);
-    }
-
-    /**
-     * Sends a get request to the provided uri without changing the active page
-     * @param uri The URI to send a get request to
-     */
-    sendGetRequest(uri: string): void {
-        this.dataService.sendGetRequest(uri);
     }
 
     /**

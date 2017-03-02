@@ -38,9 +38,9 @@ export default class QueryEditorService {
                 let docUri: URI = URI.parse(filePath);
 
 				// Create a sql document pane with accoutrements
-				let fileInput = this.untitledEditorService.createOrGet(docUri);
-				const queryResultsInput: QueryResultsInput = this.instantiationService.createInstance(QueryResultsInput);
-				let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
+				const fileInput = this.untitledEditorService.createOrGet(docUri);
+				const queryResultsInput: QueryResultsInput = this.instantiationService.createInstance(QueryResultsInput, docUri.toString());
+                let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
 				this.editorService.openEditor(queryInput, { pinned: true });
 
 				resolve(docUri);
@@ -75,29 +75,43 @@ export default class QueryEditorService {
 
     // These functions are static to reduce extra lines needed in editorService.ts (Vscode code base)
     public static queryEditorCheck(fileInput: EditorInput, instService: IInstantiationService): EditorInput {
-        if (!!fileInput && this.isQueryEditorFile(fileInput)) {
-            const queryResultsInput: QueryResultsInput = instService.createInstance(QueryResultsInput);
-            let queryInput: QueryInput = instService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
-            return queryInput;
+        if (!!fileInput) {
+
+            let uri: string = this.getQueryEditorFileUri(fileInput);
+            if (!!uri) {
+                const queryResultsInput: QueryResultsInput = instService.createInstance(QueryResultsInput, uri);
+                let queryInput: QueryInput = instService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
+                return queryInput;
+            }
         }
 
         return fileInput;
     }
 
-    private static isQueryEditorFile(fileInput: EditorInput): boolean {
+    /**
+     * If fileInput is a supported query editor file, return it's URI. Otherwise return undefined.
+     */
+    private static getQueryEditorFileUri(fileInput: EditorInput): string {
         let lastPeriodIndex = fileInput.getName().lastIndexOf('.');
 
         // if this editor is not already of type queryinput and there is a file extension
         if (!(fileInput instanceof QueryInput) && lastPeriodIndex > -1) {
+
             // parse the file extension
             let extension: string = fileInput.getName().substr(lastPeriodIndex+1).toUpperCase();
-            // if it is supported then return true
-            if(!!this.fileTypes.find(x => x === extension)){
-                return true;
+
+            // if it is supported and we can get the URI, return the URI
+            // there is no interface containing getResource, so we must do a typeof check
+            let fileInputCast: any = <any> fileInput;
+            if (!!this.fileTypes.find(x => x === extension) && typeof fileInputCast.getResource === 'function') {
+                let uri: URI = fileInputCast.getResource();
+                if (!!uri && !!uri.toString()) {
+                    return uri.toString();
+                }
             }
         }
 
-        return false;
+        return undefined;
     }
 
 }

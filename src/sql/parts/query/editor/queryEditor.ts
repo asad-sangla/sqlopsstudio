@@ -24,6 +24,7 @@ import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { QueryResultsEditor } from './queryResultsEditor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
+import URI from 'vs/base/common/uri';
 
 /**
  * Editor that hosts 2 sub-editors: A TextResourceEditor for SQL file editing, and a QueryResultsEditor
@@ -191,6 +192,11 @@ export class QueryEditor extends BaseEditor {
 			this._setResultsEditorVisible();
 			this._doLayout();
 		});
+	}
+
+	get uri(): string {
+		let input: QueryInput = <QueryInput> this.input;
+		return input.getResource().toString();
 	}
 
 	// PRIVATE METHODS ////////////////////////////////////////////////////////////

@@ -5,7 +5,7 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { QueryModelInstance } from 'sql/parts/grid/gridGlobals';
+import { IQueryModelService } from 'sql/parts/query/common/queryModel';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import nls = require('vs/nls');
@@ -20,7 +20,12 @@ export abstract class QueryActionBase extends Action {
 
 	private _toUnbind: IDisposable[];
 
-	constructor(id: string, protected _editorService: IWorkbenchEditorService, protected _editorGroupService: IEditorGroupService) {
+	constructor(
+		id: string,
+		protected _editorService: IWorkbenchEditorService,
+		protected _editorGroupService: IEditorGroupService,
+		protected _queryModelService: IQueryModelService
+	) {
 		super(id);
 		this._toUnbind = [];
 		this._toUnbind.push(this._editorGroupService.onEditorsChanged(() => this._onEditorsChanged()));
@@ -60,8 +65,8 @@ export class RunQueryAction extends QueryActionBase {
 	private static EnabledClass = 'runQuery';
 	public static ID = 'runQueryAction';
 
-	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService) {
-		super(RunQueryAction.ID, _editorService, _editorGroupService);
+	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService, _queryModelService: IQueryModelService) {
+		super(RunQueryAction.ID, _editorService, _editorGroupService, _queryModelService);
 
 		this.label = nls.localize('runQueryLabel', 'Run Query');
 		this.enabled = false;
@@ -73,9 +78,11 @@ export class RunQueryAction extends QueryActionBase {
 
 		if (activeEditor && activeEditor instanceof QueryEditor) {
 			let editor: QueryEditor = <QueryEditor>activeEditor;
+			let uri: string = editor.uri;
+
+			this._queryModelService.runQuery(uri, undefined, uri);
 			editor.showQueryResultsEditor();
-			QueryModelInstance.runQuery(Constants.testUri, undefined, Constants.testUri);
-			QueryModelInstance.TEST_sendDummyQueryEvents(Constants.testUri);
+			this._queryModelService.TEST_sendDummyQueryEvents(uri);
 		} else {
 			throw new Error('Run Query button activated but active editor is not of type QueryEditor');
 		}
@@ -92,8 +99,8 @@ export class CancelQueryAction extends QueryActionBase {
 	private static EnabledClass = 'cancelQuery';
 	public static ID = 'cancelQueryAction';
 
-	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService) {
-		super(CancelQueryAction.ID, _editorService, _editorGroupService);
+	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService, _queryModelService: IQueryModelService) {
+		super(CancelQueryAction.ID, _editorService, _editorGroupService, _queryModelService);
 
 		this.label = nls.localize('cancelQueryLabel', 'Cancel Query');
 		this.enabled = false;
@@ -104,7 +111,9 @@ export class CancelQueryAction extends QueryActionBase {
 		let activeEditor = this._editorService.getActiveEditor();
 
 		if (activeEditor && activeEditor instanceof QueryEditor) {
-			QueryModelInstance.cancelQuery(Constants.testUri);
+			let editor: QueryEditor = <QueryEditor>activeEditor;
+			let uri: string = editor.uri;
+			this._queryModelService.cancelQuery(uri);
 		}
 
 		return TPromise.as(null);
@@ -119,9 +128,8 @@ export class ListDatabasesAction extends QueryActionBase {
 	private static EnabledClass = '';
 	public static ID = 'listDatabaseQueryAction';
 
-	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService) {
-		super(ListDatabasesAction.ID, _editorService, _editorGroupService);
-
+	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService, _queryModelService: IQueryModelService) {
+		super(ListDatabasesAction.ID, _editorService, _editorGroupService, _queryModelService);
 		this.enabled = false;
 		this.class = ListDatabasesAction.EnabledClass;
 	}

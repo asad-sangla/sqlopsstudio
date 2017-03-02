@@ -29,6 +29,7 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem } from 'sql/parts/query/execution/queryActions';
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
+import { IQueryModelService } from 'sql/parts/query/common/queryModel';
 
 export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
@@ -54,7 +55,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		@IMessageService private messageService: IMessageService,
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
 		@IEditorGroupService private editorGroupService: IEditorGroupService,
-
+		@IQueryModelService private queryModelService: IQueryModelService
 	) {
 		super(VIEWLET_ID, telemetryService);
 		this.searchDelayer = new ThrottledDelayer(500);
@@ -62,9 +63,9 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.actionRegistry = {};
 
 		let actions: Action[] = [
-			new RunQueryAction(this.editorService, this.editorGroupService),
-			new CancelQueryAction(this.editorService, this.editorGroupService),
-			new ListDatabasesAction(this.editorService, this.editorGroupService)
+			new RunQueryAction(this.editorService, this.editorGroupService, this.queryModelService),
+			new CancelQueryAction(this.editorService, this.editorGroupService, this.queryModelService),
+			new ListDatabasesAction(this.editorService, this.editorGroupService, this.queryModelService)
 		];
 		actions.forEach((action) => {
 			this.actionRegistry[action.id] = action;

@@ -9,18 +9,13 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { Builder, Dimension } from 'vs/base/browser/builder';
 import { EditorOptions } from 'vs/workbench/common/editor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IMessageService } from 'vs/platform/message/common/message';
-import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { RawContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IThemeService } from 'vs/workbench/services/themes/common/themeService';
+import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { append, $ } from 'vs/base/browser/dom';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { AppModule } from 'sql/parts/grid/views/app.module';
+import { IQueryModelService } from 'sql/parts/query/common/queryModel';
+import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 
 declare let AngularPlatformBrowserDynamic;
 
@@ -35,14 +30,8 @@ export class QueryResultsEditor extends BaseEditor {
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IInstantiationService instantiationService: IInstantiationService,
-		@IWorkspaceContextService contextService: IWorkspaceContextService,
-		@IStorageService storageService: IStorageService,
-		@IMessageService messageService: IMessageService,
-		@IConfigurationService configurationService: IConfigurationService,
-		@IWorkbenchEditorService editorService: IWorkbenchEditorService,
-		@IContextKeyService contextKeyService: IContextKeyService,
-		@IThemeService themeService: IThemeService
+		@IQueryModelService private _queryModelService: IQueryModelService,
+		@IQueryParameterService private _angularParameterService: IQueryParameterService
 	) {
 		super(QueryResultsEditor.ID, telemetryService);
 	}
@@ -66,11 +55,23 @@ export class QueryResultsEditor extends BaseEditor {
 	 */
 	private _bootstrapAngular(): void {
 		let input = <QueryResultsInput>this.input;
+		let uri = input.uri;
+
+		// Pass the correct DataService to the new angular component
+		let dataService = this._queryModelService.getDataService(uri);
+		if (!dataService) {
+			throw new Error('DataService not found for URI: ' + uri);
+		}
+		this._angularParameterService.dataService = dataService;
+
 		input.setBootstrappedTrue();
 
 		const parent = this.getContainer().getHTMLElement();
 		append(parent, $('slickgrid-container'));
-		AngularPlatformBrowserDynamic.platformBrowserDynamic().bootstrapModule(AppModule);
+
+		// Bootstrap the angular content
+		let providers = [ {provide: 'ParameterService', useValue: this._angularParameterService } ];
+		AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
 	}
 
 	public dispose(): void {

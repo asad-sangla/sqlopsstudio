@@ -7,8 +7,8 @@ declare let Rx;
 
 import { ISlickRange } from 'angular2-slickgrid';
 import { ISelectionData } from 'sql/parts/connection/node/interfaces';
-import { IQueryModel } from 'sql/parts/query/execution/queryModel';
 import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
+import { IQueryModelService } from 'sql/parts/query/common/queryModel';
 
 /**
  * DataService handles the interactions between QueryModel and app.component. Thus, it handles
@@ -17,7 +17,7 @@ import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecut
 export class DataService {
     public dataEventObs: Subject<any>;
 
-    constructor(private _queryModel: IQueryModel, private _uri: string) {
+    constructor(private _queryModel: IQueryModelService, private _uri: string) {
       this.dataEventObs = new Rx.Subject();
     }
 
@@ -72,13 +72,6 @@ export class DataService {
     set editorSelection(selection: ISelectionData) {
     }
 
-    /**
-     * Sends a generic GET request without expecting anything in return
-     * @param uri The uri to send the GET request to
-     */
-    sendGetRequest(uri: string): void {
-    }
-
     showWarning(message: string): void {
     }
 
@@ -87,5 +80,9 @@ export class DataService {
 
     get config(): Promise<{[key: string]: any}> {
 		return undefined;
+    }
+
+    onAngularLoaded(): void {
+      this._queryModel.onAngularLoaded(this._uri);
     }
 }

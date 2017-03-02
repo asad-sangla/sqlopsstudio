@@ -24,9 +24,7 @@ export class QueryResultsInput extends EditorInput {
 	// Holds the HTML content for the editor when the editor discards this input and loads another
 	private _editorContainer: HTMLElement;
 
-	static get ID() { return 'workbench.query.queryResultsInput'; }
-
-	constructor() {
+	constructor(private _uri: string) {
 		super();
 		this._visible = false;
 		this._hasBootstrapped = false;
@@ -56,10 +54,6 @@ export class QueryResultsInput extends EditorInput {
 		return false;
 	}
 
-	get visible(): boolean {
-		return this._visible;
-    }
-
 	public setVisibleTrue(): void {
 		this._visible = true;
 	}
@@ -67,19 +61,6 @@ export class QueryResultsInput extends EditorInput {
 	public setBootstrappedTrue(): void {
 		this._hasBootstrapped = true;
 	}
-
-	set container(container: HTMLElement) {
-		this._disposeContainer();
-		this._editorContainer = container;
-    }
-
-	get container(): HTMLElement {
-		return this._editorContainer;
-    }
-
-	get hasBootstrapped(): boolean {
-		return this._hasBootstrapped;
-    }
 
 	public dispose(): void {
 		this._disposeContainer();
@@ -97,4 +78,32 @@ export class QueryResultsInput extends EditorInput {
 			this._editorContainer = null;
 		}
 	}
+
+	//// Properties
+
+	static get ID() {
+		return 'workbench.query.queryResultsInput';
+	}
+
+	set container(container: HTMLElement) {
+		this._disposeContainer();
+		this._editorContainer = container;
+    }
+
+	get container(): HTMLElement {
+		return this._editorContainer;
+    }
+
+	get hasBootstrapped(): boolean {
+		return this._hasBootstrapped;
+    }
+
+	get visible(): boolean {
+		return this._visible;
+    }
+
+	get uri(): string {
+		return this._uri;
+	}
+
 }

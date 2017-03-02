@@ -75,8 +75,8 @@ export class QueryInput extends EditorInput {
 		return this._sql.confirmSave();
 	}
 
-	public getResource(): URI {
-		return this._sql.getResource();
+	public getResource(): string {
+		return this._results.uri;
 	}
 
 	public dispose(): void {

@@ -12,7 +12,8 @@ import { ISelectionData } from 'sql/parts/connection/node/interfaces';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IQueryModelService } from 'sql/parts/query/common/queryModel';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 interface QueryEvent {
     type: string;
@@ -35,42 +36,21 @@ class QueryInfo {
         this.dataServiceReady = false;
         this.queryEventQueue = [];
     }
+
 }
-
-/**
- * Interface for the logic of handling running queries and grid interactions for all URIs.
- */
-export interface IQueryModel {
-    getConfig(): Promise<{[key: string]: any}>;
-    getShortcuts(): Promise<any>;
-    getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
-    runQuery(uri: string, selection: ISelectionData, title: string): void;
-    cancelQuery(input: QueryRunner | string): void;
-
-    getDataService(uri: string): DataService;
-    onAngularLoaded(uri: string): void;
-
-    save(uri: string, batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void;
-    openLink(uri: string, content: string, columnName: string, linkType: string): void;
-    copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void;
-    setEditorSelection(uri: string, selection: ISelectionData): void;
-    showWarning(uri: string, message: string): void;
-    showError(uri: string, message: string): void;
-
-    TEST_sendDummyQueryEvents(uri: string): void;
-}
-export const IQueryModel = createDecorator<IQueryModel>('queryModel');
 
 /**
  * Handles running queries and grid interactions for all URIs. Interacts with each URI's results grid via a DataService instance
  */
-export class QueryModel implements IQueryModel {
+export class QueryModelService implements IQueryModelService {
 
     // MEMBER VARIABLES ////////////////////////////////////////////////////
     private _queryInfoMap: Map<string, QueryInfo>;
 
     // CONSTRUCTOR /////////////////////////////////////////////////////////
-    constructor() {
+    constructor(
+		@IInstantiationService private _instantiationService: IInstantiationService,
+    ) {
         this._queryInfoMap = new Map<string, QueryInfo>();
     }
 
@@ -89,6 +69,12 @@ export class QueryModel implements IQueryModel {
         return dataService;
     }
 
+    /**
+     * To be called by an angular component's DataService when the component has finished loading.
+     * Sends all previously enqueued query events to the DataService and signals to stop enqueuing
+     * any further events. This prevents QueryEvents from getting lost if they are sent before
+     * angular is listening for them.
+     */
     public onAngularLoaded(uri: string) {
         let info = this._queryInfoMap.get(uri);
         info.dataServiceReady = true;
@@ -182,6 +168,7 @@ export class QueryModel implements IQueryModel {
                 this._fireQueryEvent(uri, 'complete', totalMilliseconds);
             });
             queryRunner.eventEmitter.on('start', () => {
+                this._fireQueryEvent(uri, 'start');
             });
 
             info = new QueryInfo();
@@ -222,7 +209,7 @@ export class QueryModel implements IQueryModel {
 
     // PRIVATE METHODS //////////////////////////////////////////////////////
 
-    private _fireQueryEvent(uri: string, type: string, data: any) {
+    private _fireQueryEvent(uri: string, type: string, data?: any) {
         let info: QueryInfo = this._queryInfoMap.get(uri);
 
         if (info.dataServiceReady) {
