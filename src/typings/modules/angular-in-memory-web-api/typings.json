@@ -1,8 +1,6 @@
 {
   "resolution": "main",
   "tree": {
-    "src": "D:\\repos\\carbon2\\carbon\\node_modules\\angular-in-memory-web-api\\index.d.ts",
-    "raw": "npm:angular-in-memory-web-api/index.d.ts",
-    "typings": "D:\\repos\\carbon2\\carbon\\node_modules\\angular-in-memory-web-api\\index.d.ts"
+    "src": "npm:angular-in-memory-web-api/index.d.ts"
   }
 }

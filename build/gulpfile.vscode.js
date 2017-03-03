@@ -75,6 +75,7 @@ const vscodeResources = [
 	'out-build/vs/workbench/parts/welcomePage/**/*.html',
 	'out-build/vs/workbench/services/files/**/*.exe',
 	'out-build/vs/workbench/services/files/**/*.md',
+	'out-build/sql/parts/grid/views/{slick.dragrowselector.js,slick.autosizecolumn.js}',
 	'!**/test/**'
 ];
 
@@ -189,7 +190,7 @@ function computeChecksum(filename) {
 function packageTask(platform, arch, opts) {
 	opts = opts || {};
 
-	const destination = path.join(path.dirname(root), 'VSCode') + (platform ? '-' + platform : '') + (arch ? '-' + arch : '');
+	const destination = path.join(path.dirname(root), 'carbon') + (platform ? '-' + platform : '') + (arch ? '-' + arch : '');
 	platform = platform || process.platform;
 	arch = platform === 'win32' ? 'ia32' : arch;
 
