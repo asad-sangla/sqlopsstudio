@@ -19,28 +19,25 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	public children: ConnectionProfileGroup[];
 	public connections: ConnectionProfile[];
 	private _id: string;
-	static idCount : number = 1;
 	public constructor(
 		public name: string,
 		private _parent: ConnectionProfileGroup
 	) {
-		//this._id = String(ConnectionProfileGroup.idCount);
-		//ConnectionProfileGroup.idCount++;
-		this._id = name;
+		this._id = this.fullName === undefined ? this.name : this.fullName;
 	}
 
 	public static GroupNameSeparator: string = '/';
 
 	public toObject(): IConnectionProfileGroup {
-		let ch = undefined;
+		let subgroups = undefined;
 		if (this.children) {
-			ch = [];
+			subgroups = [];
 			this.children.forEach((group) => {
-			ch.push(group.toObject());
+			subgroups.push(group.toObject());
 		});
 		}
 
-		return Object.assign({},{name: this.name, children: ch});
+		return Object.assign({},{name: this.name, children: subgroups});
 	}
 
 	public get groupName(): string {
@@ -125,7 +122,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 		}
 	}
 
-	public removeServerFromGroup(child: ConnectionProfile): void {
+	public removeConnection(child: ConnectionProfile): void {
 		var connections = this.connections;
 		connections.forEach((val, i) => {
 			if (val.equals(child)) {
@@ -139,7 +136,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 		}
 	}
 
-	public removeGroupFromGroup(child: ConnectionProfileGroup): void {
+	public removeGroup(child: ConnectionProfileGroup): void {
 		var groups = this.children;
 		groups.forEach((val, i) => {
 			if (val.equals(child)) {
@@ -153,7 +150,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 		}
 	}
 
-	public addGroupToGroup(child: ConnectionProfileGroup): void {
+	public addGroup(child: ConnectionProfileGroup): void {
 		var servers = this.children;
 		if (!this.children) {
 			this.children = [child];

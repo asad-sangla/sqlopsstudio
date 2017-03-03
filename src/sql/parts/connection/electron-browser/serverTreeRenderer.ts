@@ -235,7 +235,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Handle drop in the server tree.
 	 */
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
-		var targetConnectionProfileGroup;
+		var targetConnectionProfileGroup: ConnectionProfileGroup;
 		if (targetElement instanceof ConnectionProfile) {
 			targetConnectionProfileGroup = (<ConnectionProfile>targetElement).getParent();
 		}
@@ -243,11 +243,11 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 			targetConnectionProfileGroup = <ConnectionProfileGroup>targetElement;
 		}
 		const source = data.getData()[0];
-		var oldParent = source.getParent();
+		var oldParent: ConnectionProfileGroup = source.getParent();
 
 		if (targetConnectionProfileGroup && targetConnectionProfileGroup.name !== 'root' && oldParent && !oldParent.equals(targetConnectionProfileGroup)) {
 
-			console.log('drop ' + source.serverName + ' to ' + targetConnectionProfileGroup.name);
+			console.log('drop ' + source.serverName + ' to ' + targetConnectionProfileGroup.fullName);
 			if (source instanceof ConnectionProfile) {
 				// Change groupName of Profile
 				this.connectionManagementService.changeGroupNameForConnection(source, targetConnectionProfileGroup.fullName).then(() => {
@@ -258,8 +258,8 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 				// Change groupName of all children under this group
 				this.connectionManagementService.changeGroupNameForGroup(source.fullName, targetConnectionProfileGroup.fullName + '/' + source.name).then(() => {
 					// Move group to its new parent
-					oldParent.removeGroupFromGroup(source);
-					targetConnectionProfileGroup.addGroupToGroup(source);
+					oldParent.removeGroup(source);
+					targetConnectionProfileGroup.addGroup(source);
 					this.connectionManagementService.updateGroups(this.getTopParent(oldParent), this.getTopParent(targetConnectionProfileGroup)).then(() => {
 						this.renderTree(tree);
 					});
