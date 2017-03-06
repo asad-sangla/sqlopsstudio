@@ -121,7 +121,7 @@
     "typemoq": "^0.3.2",
     "typescript": "2.1.5",
     "typescript-formatter": "4.0.1",
-    "uglify-js": "github:mishoo/UglifyJS2#harmony",
+    "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
     "underscore": "^1.8.2",
     "vinyl": "^0.4.5",
     "vinyl-fs": "^2.4.3",
