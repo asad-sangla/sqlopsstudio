@@ -46,6 +46,7 @@
     "jquery": "^2.2.0",
     "jquery-ui": "^1.12.1",
     "jquery.event.drag": "2.2.2",
+    "make-error": "^1.1.1",
     "minimist": "1.2.0",
     "native-keymap": "0.3.0",
     "node-pty": "0.6.1",
