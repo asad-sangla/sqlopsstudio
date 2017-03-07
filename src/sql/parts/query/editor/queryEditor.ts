@@ -218,7 +218,7 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 
 	get uri(): string {
 		let input: QueryInput = <QueryInput> this.input;
-		return input ? input.getResource().toString() : undefined;
+		return input ? input.getQueryResultsInputResource() : undefined;
 	}
 
 	// PRIVATE METHODS ////////////////////////////////////////////////////////////

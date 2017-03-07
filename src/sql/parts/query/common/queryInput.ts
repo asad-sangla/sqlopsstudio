@@ -50,6 +50,10 @@ export class QueryInput extends EditorInput {
 		return this._sql.matches(otherInput);
 	}
 
+	public getQueryResultsInputResource(): string {
+		return this._results.uri;
+	}
+
 	// Forwarding resource functions to the inline sql file editor
 	public get onDidModelChangeContent(): Event<void> {
 		return this._sql.onDidModelChangeContent;
