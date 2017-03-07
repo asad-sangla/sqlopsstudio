@@ -277,6 +277,16 @@
       "from": "graceful-fs@4.1.11",
       "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.1.11.tgz"
     },
+    "gulp-uglify": {
+      "version": "^2.0.0",
+      "from": "gulp-uglify@2.0.0",
+      "resolved": "https://registry.npmjs.org/gulp-uglify/-/gulp-uglify-2.0.0.tgz",
+      "dependencies": {
+        "uglify-js": {
+          "resolved": "git+https://github.com/mishoo/UglifyJS2.git#3c2b3aeddb58848b076aacc05acc026b258e0110"
+        }
+      }
+    },
     "http-proxy-agent": {
       "version": "0.2.7",
       "from": "http-proxy-agent@0.2.7",
