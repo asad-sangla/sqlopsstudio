@@ -284,6 +284,34 @@
       "dependencies": {
         "uglify-js": {
           "resolved": "git+https://github.com/mishoo/UglifyJS2.git#3c2b3aeddb58848b076aacc05acc026b258e0110"
+        },
+        "uglify-save-license": {
+          "version": "0.4.1",
+          "resolved": "https://registry.npmjs.org/uglify-save-license/-/uglify-save-license-0.4.1.tgz"
+        },
+        "gulplog": {
+          "version": "^1.0.0",
+          "resolved": "https://registry.npmjs.org/gulplog/-/gulplog-1.0.0.tgz"
+        },
+        "has-gulplog": {
+          "version": "^0.1.0",
+          "resolved": "https://registry.npmjs.org/has-gulplog/-/has-gulplog-0.1.0.tgz"
+        },
+        "lodash" : {
+          "version": "^4.13.1",
+          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.13.1.tgz"
+        },
+        "make-error-cause": {
+          "version": "^1.1.1",
+          "resolved": "https://registry.npmjs.org/make-error-cause/-/make-error-cause-1.1.1.tgz"
+        },
+        "through2": {
+          "version": "^2.0.0",
+          "resolved": "https://registry.npmjs.org/through2/-/through2-2.0.0.tgz"
+        },
+        "vinyl-sourcemaps-apply": {
+          "version": "^0.2.0",
+          "resolved": "https://registry.npmjs.org/vinyl-sourcemaps-apply/-/vinyl-sourcemaps-apply-0.2.0.tgz"
         }
       }
     },
