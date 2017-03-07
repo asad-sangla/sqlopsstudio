@@ -12,8 +12,9 @@ import { ISelectionData } from 'sql/parts/connection/node/interfaces';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
-import { IQueryModelService } from 'sql/parts/query/common/queryModel';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import Event, { Emitter } from 'vs/base/common/event';
 
 interface QueryEvent {
     type: string;
@@ -46,12 +47,20 @@ export class QueryModelService implements IQueryModelService {
 
     // MEMBER VARIABLES ////////////////////////////////////////////////////
     private _queryInfoMap: Map<string, QueryInfo>;
+	private _onRunQueryStart: Emitter<string>;
+	private _onRunQueryComplete: Emitter<string>;
+
+    // EVENTS /////////////////////////////////////////////////////////////
+	public get onRunQueryStart(): Event<string> { return this._onRunQueryStart.event; }
+	public get onRunQueryComplete(): Event<string> { return this._onRunQueryComplete.event; }
 
     // CONSTRUCTOR /////////////////////////////////////////////////////////
     constructor(
 		@IInstantiationService private _instantiationService: IInstantiationService,
     ) {
         this._queryInfoMap = new Map<string, QueryInfo>();
+        this._onRunQueryStart = new Emitter<string>();
+        this._onRunQueryComplete = new Emitter<string>();
     }
 
     // IQUERYMODEL /////////////////////////////////////////////////////////
@@ -165,9 +174,11 @@ export class QueryModelService implements IQueryModelService {
                 this._fireQueryEvent(uri, 'message', message);
             });
             queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
+                this._onRunQueryComplete.fire(uri);
                 this._fireQueryEvent(uri, 'complete', totalMilliseconds);
             });
             queryRunner.eventEmitter.on('start', () => {
+                this._onRunQueryStart.fire(uri);
                 this._fireQueryEvent(uri, 'start');
             });
 

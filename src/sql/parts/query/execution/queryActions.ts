@@ -1,11 +1,14 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import { Action, IActionItem, IActionRunner } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
-import Constants = require('sql/parts/connection/node/constants');
-import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
+import { IShowQueryResultsEditor, isInstanceOfIQueryEditor } from 'sql/parts/query/editor/showQueryResultsEditor';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { IQueryModelService } from 'sql/parts/query/common/queryModel';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import nls = require('vs/nls');
@@ -16,19 +19,16 @@ const $ = dom.$;
  * Action class that query-based Actions will extend. This base class automatically handles activating and
  * deactivating the button when a SQL file is opened.
  */
-export abstract class QueryActionBase extends Action {
+export abstract class QueryTaskbarAction extends Action {
 
-	private _toUnbind: IDisposable[];
+	private static BaseClass = 'queryTaskbarIcon';
 
-	constructor(
-		id: string,
-		protected _editorService: IWorkbenchEditorService,
-		protected _editorGroupService: IEditorGroupService,
-		protected _queryModelService: IQueryModelService
-	) {
+	private _classes: string[];
+
+	constructor(id: string, enabledClass: string) {
 		super(id);
-		this._toUnbind = [];
-		this._toUnbind.push(this._editorGroupService.onEditorsChanged(() => this._onEditorsChanged()));
+		this.enabled = true;
+		this.setClass(enabledClass);
 	}
 
 	/**
@@ -36,48 +36,36 @@ export abstract class QueryActionBase extends Action {
 	 */
 	public abstract run(): TPromise<void>;
 
-	/**
-	 * Activates or deactivates the button when the active editor is changed.
-	 */
-	private _onEditorsChanged(): void {
-		let activeEditor = this._editorService.getActiveEditor();
-		if (activeEditor && activeEditor instanceof QueryEditor) {
-			this.enabled = true;
-		} else {
-			this.enabled = false;
-		}
-	}
+	protected setClass(enabledClass: string): void {
+		this._classes = [];
+		this._classes.push(QueryTaskbarAction.BaseClass);
 
-	public dispose() {
-		super.dispose();
-		if (this._toUnbind) {
-			dispose(this._toUnbind);
-			this._toUnbind = null;
+		if (enabledClass) {
+			this._classes.push(enabledClass);
 		}
+		this.class = this._classes.join(' ');
 	}
 }
 
 /**
  * Action class that runs a query in the active SQL text document.
  */
-export class RunQueryAction extends QueryActionBase {
+export class RunQueryAction extends QueryTaskbarAction {
 
 	private static EnabledClass = 'runQuery';
 	public static ID = 'runQueryAction';
 
-	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService, _queryModelService: IQueryModelService) {
-		super(RunQueryAction.ID, _editorService, _editorGroupService, _queryModelService);
 
+	constructor(private _editorService: IWorkbenchEditorService, private _queryModelService: IQueryModelService) {
+		super(RunQueryAction.ID, RunQueryAction.EnabledClass);
 		this.label = nls.localize('runQueryLabel', 'Run Query');
-		this.enabled = false;
-		this.class = RunQueryAction.EnabledClass;
 	}
 
 	public run(): TPromise<void> {
 		let activeEditor = this._editorService.getActiveEditor();
 
-		if (activeEditor && activeEditor instanceof QueryEditor) {
-			let editor: QueryEditor = <QueryEditor>activeEditor;
+		if (activeEditor && isInstanceOfIQueryEditor(activeEditor)) {
+			let editor: IShowQueryResultsEditor = <IShowQueryResultsEditor>activeEditor;
 			let uri: string = editor.uri;
 
 			this._queryModelService.runQuery(uri, undefined, uri);
@@ -94,24 +82,23 @@ export class RunQueryAction extends QueryActionBase {
 /**
  * Action class that cancels the running query in the current SQL text document.
  */
-export class CancelQueryAction extends QueryActionBase {
+export class CancelQueryAction extends QueryTaskbarAction {
 
 	private static EnabledClass = 'cancelQuery';
 	public static ID = 'cancelQueryAction';
 
-	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService, _queryModelService: IQueryModelService) {
-		super(CancelQueryAction.ID, _editorService, _editorGroupService, _queryModelService);
 
-		this.label = nls.localize('cancelQueryLabel', 'Cancel Query');
+	constructor(private _editorService: IWorkbenchEditorService, private _queryModelService: IQueryModelService) {
+		super(CancelQueryAction.ID, CancelQueryAction.EnabledClass);
 		this.enabled = false;
-		this.class = CancelQueryAction.EnabledClass;
+		this.label = nls.localize('cancelQueryLabel', 'Cancel Query');
 	}
 
 	public run(): TPromise<void> {
 		let activeEditor = this._editorService.getActiveEditor();
 
-		if (activeEditor && activeEditor instanceof QueryEditor) {
-			let editor: QueryEditor = <QueryEditor>activeEditor;
+		if (activeEditor && isInstanceOfIQueryEditor(activeEditor)) {
+			let editor: IShowQueryResultsEditor = <IShowQueryResultsEditor>activeEditor;
 			let uri: string = editor.uri;
 			this._queryModelService.cancelQuery(uri);
 		}
@@ -121,20 +108,77 @@ export class CancelQueryAction extends QueryActionBase {
 }
 
 /**
+ * Action class that disconnects the connection associated with the current query file.
+ */
+export class DisconnectDatabaseAction extends QueryTaskbarAction {
+
+	private static EnabledClass = 'disconnectDatabase';
+	public static ID = 'disconnectDatabaseAction';
+
+	constructor() {
+		super(CancelQueryAction.ID, DisconnectDatabaseAction.EnabledClass);
+		this.label = nls.localize('disconnectDatabaseLabel', 'Disconnect');
+	}
+
+	public run(): TPromise<void> {
+		return TPromise.as(null);
+	}
+}
+
+/**
+ * Action class that launches a connection dialogue for the current query file
+ */
+export class ConnectDatabaseAction extends QueryTaskbarAction {
+
+	private static EnabledClass = 'connectDatabase';
+	public static ID = 'connectDatabaseAction';
+
+	constructor() {
+		super(CancelQueryAction.ID, ConnectDatabaseAction.EnabledClass);
+		this.label = nls.localize('connectDatabaseLabel', 'Connect');
+	}
+
+	public run(): TPromise<void> {
+		// TODO hook this up
+		return TPromise.as(null);
+	}
+}
+
+/**
+ * Action class that launches a connection dialogue for the current query file
+ */
+export class ChangeConnectionAction extends QueryTaskbarAction {
+
+	private static EnabledClass = 'changeConnectionDatabase';
+	public static ID = 'changeConnectionDatabaseAction';
+
+	constructor() {
+		super(CancelQueryAction.ID, ChangeConnectionAction.EnabledClass);
+		this.label = nls.localize('changeConnectionDatabaseLabel', 'Change Connection');
+	}
+
+	public run(): TPromise<void> {
+		// TODO hook this up
+		return TPromise.as(null);
+	}
+}
+
+/**
  * Action class that is tied with ListDatabasesActionItem.
  */
-export class ListDatabasesAction extends QueryActionBase {
+export class ListDatabasesAction extends QueryTaskbarAction {
 
 	private static EnabledClass = '';
 	public static ID = 'listDatabaseQueryAction';
 
-	constructor(_editorService: IWorkbenchEditorService, _editorGroupService: IEditorGroupService, _queryModelService: IQueryModelService) {
-		super(ListDatabasesAction.ID, _editorService, _editorGroupService, _queryModelService);
+	constructor() {
+		super(ListDatabasesAction.ID, undefined);
 		this.enabled = false;
 		this.class = ListDatabasesAction.EnabledClass;
 	}
 
 	public run(): TPromise<void> {
+		// TODO hook this up
 		return TPromise.as(null);
 	}
 }
@@ -170,11 +214,6 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	public render(container: HTMLElement): void {
 		this.container = container;
-
-		// TODO change this when we find a home for the taskbar
-		container.style.top = '-17px';
-		this.start = dom.append(container, $('.icon'));
-		this.start.tabIndex = 0;
 		this.selectBox.render(dom.append(container, $('.configuration')));
 	}
 
@@ -204,7 +243,6 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	private _registerListeners(): void {
 		this.toDispose.push(this.selectBox.onDidSelect(databaseName => {
-			console.log('Selected database: ' + databaseName);
 			// TODO hook this up. We will need to inject services into this class
 		}));
 	}

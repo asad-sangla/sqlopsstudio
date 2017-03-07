@@ -14,7 +14,7 @@ import { append, $ } from 'vs/base/browser/dom';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { AppModule } from 'sql/parts/grid/views/app.module';
-import { IQueryModelService } from 'sql/parts/query/common/queryModel';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 
 declare let AngularPlatformBrowserDynamic;

@@ -95,7 +95,7 @@ import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/c
 
 import { ICapabilitiesService, CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
-import { IQueryModelService } from 'sql/parts/query/common/queryModel';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { IQueryParameterService, QueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';

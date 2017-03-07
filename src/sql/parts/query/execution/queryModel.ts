@@ -9,6 +9,7 @@ import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import Event from 'vs/base/common/event';
 
 export const SERVICE_ID = 'queryModelService';
 
@@ -33,6 +34,9 @@ export interface IQueryModelService {
     setEditorSelection(uri: string, selection: ISelectionData): void;
     showWarning(uri: string, message: string): void;
     showError(uri: string, message: string): void;
+
+	onRunQueryStart: Event<string>;
+	onRunQueryComplete: Event<string>;
 
     TEST_sendDummyQueryEvents(uri: string): void;
 }

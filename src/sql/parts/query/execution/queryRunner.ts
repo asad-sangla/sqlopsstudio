@@ -227,7 +227,6 @@ export default class QueryRunner {
      * Cancels the running query, if there is one
      */
     public cancelQuery(): Thenable<QueryCancelResult> {
-        let cancelParams: QueryCancelParams = { ownerUri: this._uri };
 		return new Promise<QueryCancelResult>((resolve, reject) => {
 		});
     }

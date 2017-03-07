@@ -8,7 +8,7 @@ declare let Rx;
 import { ISlickRange } from 'angular2-slickgrid';
 import { ISelectionData } from 'sql/parts/connection/node/interfaces';
 import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
-import { IQueryModelService } from 'sql/parts/query/common/queryModel';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 
 /**
  * DataService handles the interactions between QueryModel and app.component. Thus, it handles

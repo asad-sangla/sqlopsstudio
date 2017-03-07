@@ -21,24 +21,37 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
-import { QueryResultsEditor } from './queryResultsEditor';
+import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
-import URI from 'vs/base/common/uri';
+
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
+import { RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
+	DisconnectDatabaseAction, ConnectDatabaseAction, ChangeConnectionAction } from 'sql/parts/query/execution/queryActions';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
+import { IShowQueryResultsEditor } from 'sql/parts/query/editor/showQueryResultsEditor';
+import { Action } from 'vs/base/common/actions';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 
 /**
  * Editor that hosts 2 sub-editors: A TextResourceEditor for SQL file editing, and a QueryResultsEditor
  * for viewing and editing query results. This editor is based off SideBySideEditor.
  */
-export class QueryEditor extends BaseEditor {
+export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 
 	// The height of the tabs above the editor
 	private readonly tabHeight: number = 35;
 
+	// The height of the toolbar above the editor
+	private readonly toolbarHeight: number = 35;
+
 	public static ID: string = 'workbench.editor.queryEditor';
 
 	private sash: IFlexibleSash;
-	private tabsOffset: number;
+	private editorTopOffset: number;
 	private orientation: Orientation;
 	private dimension: Dimension;
 
@@ -48,9 +61,17 @@ export class QueryEditor extends BaseEditor {
 	private sqlEditor: TextResourceEditor;
 	private sqlEditorContainer: HTMLElement;
 
+	private toolbar: QueryTaskbar;
+	private toolbarContainer: HTMLElement;
+	private listDatabasesActionItem: ListDatabasesActionItem;
+
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService private instantiationService: IInstantiationService,
+		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
+		@IEditorGroupService private editorGroupService: IEditorGroupService,
+		@IContextMenuService protected contextMenuService: IContextMenuService,
+		@IQueryModelService protected queryModelService: IQueryModelService,
 		 editorOrientation?: Orientation
 	) {
 		super(QueryEditor.ID, telemetryService);
@@ -62,9 +83,9 @@ export class QueryEditor extends BaseEditor {
 		}
 
 		if (this.orientation === Orientation.HORIZONTAL) {
-			this.tabsOffset = this.tabHeight;
+			this.editorTopOffset = this.tabHeight + this.toolbarHeight;
 		} else {
-			this.tabsOffset = 0;
+			this.editorTopOffset = this.toolbarHeight;
 		}
 	}
 
@@ -76,6 +97,7 @@ export class QueryEditor extends BaseEditor {
 	public createEditor(parent: Builder): void {
 		const parentElement = parent.getHTMLElement();
 		DOM.addClass(parentElement, 'side-by-side-editor');
+		this._createToolbar(parentElement);
 	}
 
 	/**
@@ -196,10 +218,73 @@ export class QueryEditor extends BaseEditor {
 
 	get uri(): string {
 		let input: QueryInput = <QueryInput> this.input;
-		return input.getResource().toString();
+		return input ? input.getResource().toString() : undefined;
 	}
 
 	// PRIVATE METHODS ////////////////////////////////////////////////////////////
+
+	/**
+	 * Creates the query execution taskbar that appears at the top of the QueryEditor
+	 */
+	private _createToolbar(parentElement: HTMLElement): void {
+		// Create QueryTaskbar
+		this.toolbarContainer = DOM.append(parentElement, DOM.$('.queryTaskbar'));
+		this.toolbar = new QueryTaskbar(this.toolbarContainer, this.contextMenuService, {
+			actionItemProvider: (action: Action) => this._getListDatabasesActionItem(action),
+		});
+
+		// Create Actions for the toolbar
+		let runQueryAction = new RunQueryAction(this.editorService, this.queryModelService);
+		let cancelQueryAction = new CancelQueryAction(this.editorService, this.queryModelService);
+		let connectDatabaseAction = new ConnectDatabaseAction();
+		let disconnectDatabaseAction = new DisconnectDatabaseAction();
+		let changeConnectionAction = new ChangeConnectionAction();
+		let listDatabasesAction = new ListDatabasesAction();
+
+		// Create HTML Elements for the toolbar
+		let separator = QueryTaskbar.createTaskbarSeparator() ;
+
+		// Register callbacks for the Actions
+		this._register(this.queryModelService.onRunQueryStart(uri => {
+			if (this.uri === uri) {
+				cancelQueryAction.enabled = true;
+				runQueryAction.enabled = false;
+			}
+		}));
+		this._register(this.queryModelService.onRunQueryComplete(uri => {
+			if (this.uri === uri) {
+				cancelQueryAction.enabled = false;
+				runQueryAction.enabled = true;
+			}
+		}));
+
+		// Set the content in the order we desire
+		let content: ITaskbarContent[] = [
+			{ action: runQueryAction },
+			{ action: cancelQueryAction },
+			{ element: separator },
+			{ action: connectDatabaseAction },
+			{ action: disconnectDatabaseAction },
+			{ action: changeConnectionAction },
+			{ action: listDatabasesAction },
+		];
+		this.toolbar.setContent(content);
+	}
+
+	/**
+	 * Gets the IActionItem for the List Databases dropdown if provided the associated Action.
+	 * Otherwise returns null.
+	 */
+	private _getListDatabasesActionItem(action: Action): IActionItem {
+		if (action.id === ListDatabasesAction.ID) {
+			if (!this.listDatabasesActionItem) {
+				this.listDatabasesActionItem = this.instantiationService.createInstance(ListDatabasesActionItem, null, action);
+			}
+			return this.listDatabasesActionItem;
+		}
+
+		return null;
+	}
 
 	/**
 	 * Handles setting input for this editor. If this new input does not match the old input (e.g. a new file
@@ -364,11 +449,11 @@ export class QueryEditor extends BaseEditor {
 		let	majorPos: string = this.sash.getMajorPositionName();
 
 		const sqlEditorMajorDimension = this.dimension[majorDim] - splitPoint;
-		const queryResultsEditorMajorDimension = this.dimension[majorDim] - sqlEditorMajorDimension - this.tabsOffset;
+		const queryResultsEditorMajorDimension = this.dimension[majorDim] - sqlEditorMajorDimension - this.editorTopOffset;
 
 		this.sqlEditorContainer.style[majorDim] = `${queryResultsEditorMajorDimension}px`;
 		this.sqlEditorContainer.style[minorDim] = `${this.dimension[minorDim]}px`;
-		this.sqlEditorContainer.style[majorPos] = `${this.tabsOffset}px`;
+		this.sqlEditorContainer.style[majorPos] = `${this.editorTopOffset}px`;
 
 		this.resultsEditorContainer.style[majorDim] = `${sqlEditorMajorDimension}px`;
 		this.resultsEditorContainer.style[minorDim] = `${this.dimension[minorDim]}px`;
