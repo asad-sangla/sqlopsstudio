@@ -38,7 +38,7 @@ export default class QueryEditorService {
                 let docUri: URI = URI.parse(filePath);
 
 				// Create a sql document pane with accoutrements
-				const fileInput = this.untitledEditorService.createOrGet(docUri);
+				const fileInput = this.untitledEditorService.createOrGet(docUri, 'sql');
 				const queryResultsInput: QueryResultsInput = this.instantiationService.createInstance(QueryResultsInput, docUri.toString());
                 let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
 				this.editorService.openEditor(queryInput, { pinned: true });
@@ -52,8 +52,8 @@ export default class QueryEditorService {
 
     private createUntitledSqlFilePath(): string {
         let sqlFileName = (counter: number): string => {
-            return `SQLQuery${counter}.sql`;
-        }
+            return `SQLQuery${counter}`;
+        };
 
 		let counter = 1;
 		// Get document name and check if it exists
