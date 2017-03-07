@@ -107,7 +107,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	 */
 	private structuralTreeUpdate(): void {
 		const self = this;
-		var groups = this.connectionManagementService.getAllConnections();
+		var groups = this.connectionManagementService.getConnections();
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
 		this.fullRefreshNeeded = true;
 		const treeInput =  new ConnectionProfileGroup('root', null);

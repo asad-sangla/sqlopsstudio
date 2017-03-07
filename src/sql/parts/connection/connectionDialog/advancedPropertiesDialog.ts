@@ -53,11 +53,14 @@ export class AdvancedPropertiesDialog {
 	public create(): HTMLElement {
 		let dialog = new ModalDialogBuilder('advancedDialogModal', 'Advanced Properties', 'advanced-dialog', 'propertiesContent');
 		this._builder = dialog.create();
+		this.createBackButton(dialog.headerContainer);
+		dialog.addModalTitle();
 		this._okButton = this.createFooterButton(dialog.footerContainer, 'OK');
 		this._closeButton = this.createFooterButton(dialog.footerContainer, 'Cancel');
 
 		this._builder.build(this._container);
 		this._modelElement = this._builder.getHTMLElement();
+
 		return this._modelElement;
 	}
 
@@ -89,6 +92,16 @@ export class AdvancedPropertiesDialog {
 			}
 			this._advancedPropertiesMaps[property.propertyName] = { advancedPropertyWidget: propertyWidget, advancedProperty: property };
 		}
+	}
+
+	private createBackButton(container: Builder): void {
+		container.div({ class: 'modal-go-back' }, (cellContainer) => {
+			let button = new Button(cellContainer);
+			button.icon = 'backButtonIcon';
+			button.addListener2('click', () => {
+				this.cancel();
+			});
+		});
 	}
 
 	private createFooterButton(container: Builder, title: string): Button {
@@ -144,7 +157,7 @@ export class AdvancedPropertiesDialog {
 			this.dispose();
 		}
 		this._connectionProperties = connectionProperties;
-		var propertiesContentbuilder = $().element('table', { width: '100%' }, (tableContainer: Builder) => {
+		var propertiesContentbuilder = $().element('table', { class: 'advancedDialog-table' }, (tableContainer: Builder) => {
 			this.fillInProperties(tableContainer);
 		});
 		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());

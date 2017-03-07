@@ -77,7 +77,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				password: '',
 				savePassword: false
 			};
-			this._connectionDialog.open();
+			this._connectionDialog.open(this._connectionManagementService.getRecentConnections());
 			this._connectionDialog.setConnection(model);
 		});
 	}

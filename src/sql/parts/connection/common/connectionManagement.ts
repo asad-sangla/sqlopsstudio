@@ -42,7 +42,9 @@ export interface IConnectionManagementService {
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
 
-	getAllConnections(): ConnectionProfileGroup[];
+	getConnections(): ConnectionProfileGroup[];
+
+	getRecentConnections(): vscode.ConnectionInfo[];
 
 	updateGroups(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
 

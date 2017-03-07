@@ -35,7 +35,6 @@
 
 .advanced-dialog .modal-title {
 	font-size: 15px;
-
 }
 
 .vs-dark.monaco-shell .advanced-dialog .select-box {
@@ -49,4 +48,12 @@
 
 #propertiesContent {
 	padding: 15px;
+}
+
+.advanced-dialog .backButtonIcon {
+	content: url('back.svg');
+	width: 20px;
+	padding-right: 10px;
+	float: left;
+	cursor: pointer;
 }

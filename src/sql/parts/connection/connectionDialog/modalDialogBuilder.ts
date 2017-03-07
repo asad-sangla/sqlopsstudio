@@ -13,6 +13,7 @@ export class ModalDialogBuilder {
 	private _builder: Builder;
 	private _footerBuilder: Builder;
 	private _modelBody: Builder;
+	private _modalHeader: Builder;
 	private _errorMessageLabel: IconLabel;
 	private _spinnerElement: HTMLElement;
 
@@ -34,9 +35,7 @@ export class ModalDialogBuilder {
 								(menuCloseButton) => {
 									menuCloseButton.innerHtml('&times;');
 								});
-							modalHeader.div({ class: 'modal-title' }, (modalTitle) => {
-								modalTitle.innerHtml(this._title);
-							});
+							this._modalHeader = modalHeader;
 						});
 						modelContent.div({ class: 'modal-body', id: this._bodyId }, (modelBody) => {
 
@@ -66,6 +65,10 @@ export class ModalDialogBuilder {
 		return this._modelBody;
 	}
 
+	public get headerContainer(): Builder {
+		return this._modalHeader;
+	}
+
 	public get footerContainer(): Builder {
 		return this._footerBuilder;
 	}
@@ -76,6 +79,12 @@ export class ModalDialogBuilder {
 
 	public showSpinner(): void {
 		this._spinnerElement.setAttribute('class', 'spinner');
+	}
+
+	public addModalTitle() {
+		this._modalHeader.div({ class: 'modal-title' }, (modalTitle) => {
+			modalTitle.innerHtml(this._title);
+		});
 	}
 
 	public addErrorMessage(): void {

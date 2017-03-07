@@ -89,8 +89,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	public getAllConnections(): ConnectionProfileGroup[] {
+	public getConnections(): ConnectionProfileGroup[] {
 		return this._connectionStore.getConnectionProfileGroups();
+	}
+
+	public getRecentConnections(): vscode.ConnectionInfo[] {
+		return this._connectionStore.getRecentlyUsedConnections();
 	}
 
 	private connect(uri: string, connection: IConnectionProfile): Promise<boolean> {

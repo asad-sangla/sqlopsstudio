@@ -28,6 +28,10 @@ export class ConnectionDialogSelectBox extends SelectBox {
 		}));
 	}
 
+	public selectWithOptionName(optionName: string): void {
+		this.select(this._optionsDictionary[optionName]);
+	}
+
 	public select(index: number): void {
 		super.select(index);
 		if (this._dialogOptions !== undefined){
