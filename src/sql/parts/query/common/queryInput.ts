@@ -75,8 +75,8 @@ export class QueryInput extends EditorInput {
 		return this._sql.confirmSave();
 	}
 
-	public getResource(): string {
-		return this._results.uri;
+	public getResource(): URI {
+		return this._sql.getResource();
 	}
 
 	public dispose(): void {
@@ -101,9 +101,5 @@ export class QueryInput extends EditorInput {
 
 	public hasAssociatedFilePath(): boolean {
 		return this._sql.hasAssociatedFilePath;
-	}
-
-	public getModelId(): string {
-		return this._sql.getModeId();
 	}
 }
