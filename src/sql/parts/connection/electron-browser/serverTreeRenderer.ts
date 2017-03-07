@@ -5,9 +5,6 @@
 'use strict';
 import * as vscode from 'vscode';
 import dom = require('vs/base/browser/dom');
-//import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
-import { IConnectionProfile } from '../node/interfaces';
-import { ConnectionCredentials } from '../node/connectionCredentials';
 import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
 import { ConnectionProfile } from '../node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -18,7 +15,7 @@ import { Action } from 'vs/base/common/actions';
 import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
-import QueryEditorService from 'sql/parts/editor/queryEditorService';
+import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 const $ = dom.$;
 
 /**
@@ -326,20 +323,18 @@ export class AddServerToGroupAction extends Action {
 export class NewQueryAction extends Action {
 	public static ID = 'registeredServers.newQuery';
 	public static LABEL = nls.localize('newQuery', 'New Query');
-	private sqlDocService: QueryEditorService;
 
 	constructor(
 		id: string,
 		label: string,
-		@IInstantiationService private instantiationService: IInstantiationService
+		@IQueryEditorService private queryEditorService: IQueryEditorService
 	) {
 		super(id, label);
-		this.sqlDocService = this.instantiationService.createInstance(QueryEditorService);
 	}
 
 	public run(element: ConnectionProfile): TPromise<boolean> {
 		// ask sqldoc service for an untitled sql sqldoc
-		this.sqlDocService.newSqlEditor().then((newDocUri) => {
+		this.queryEditorService.newSqlEditor().then((newDocUri) => {
 			// TODO: implement the following components when serverTree is done
 			// get connection info from server
 			// add a connection to sql doc association to the connection service

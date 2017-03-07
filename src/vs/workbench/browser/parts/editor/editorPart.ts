@@ -38,7 +38,7 @@ import { IProgressService } from 'vs/platform/progress/common/progress';
 import { EditorStacksModel, EditorGroup, EditorIdentifier, GroupEvent } from 'vs/workbench/common/editor/editorStacksModel';
 import Event, { Emitter } from 'vs/base/common/event';
 import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import QueryEditorService from 'sql/parts/editor/queryEditorService';
+import { QueryEditorService } from 'sql/parts/editor/queryEditorService';
 
 class ProgressMonitor {
 

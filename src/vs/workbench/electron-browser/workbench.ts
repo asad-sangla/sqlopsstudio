@@ -98,6 +98,7 @@ import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/c
 import { IQueryModelService } from 'sql/parts/query/common/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { IQueryParameterService, QueryParameterService } from 'sql/parts/query/execution/queryParameterService';
+import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -530,6 +531,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IConnectionManagementService, this.instantiationService.createInstance(ConnectionManagementService));
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
 		serviceCollection.set(IQueryParameterService, this.instantiationService.createInstance(QueryParameterService));
+		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));
 
 		// Contributed services
 		const contributedServices = getServices();

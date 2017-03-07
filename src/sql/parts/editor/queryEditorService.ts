@@ -7,15 +7,31 @@ import { EditorInput } from 'vs/workbench/common/editor';
 import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import URI from 'vs/base/common/uri';
 const fs = require('fs');
 
+
+export const IQueryEditorService = createDecorator<QueryEditorService>('QueryEditorService');
+
+
+export interface IQueryEditorService {
+    _serviceBrand: any;
+
+    // opens a new sql editor and returns its URI
+    newSqlEditor(): Promise<URI>;
+
+    // opens a new data editor and returns its URI
+    newEditDataEditor(tableName: string): Promise<URI>;
+}
+
 /**
  * Service wrapper for opening and creating SQL documents as sql editor inputs
  */
-export default class QueryEditorService {
+export class QueryEditorService implements IQueryEditorService {
+	public _serviceBrand: any;
 
     constructor(
 		@IUntitledEditorService private untitledEditorService: IUntitledEditorService,
@@ -50,10 +66,57 @@ export default class QueryEditorService {
         });
     }
 
+    /**
+     * Creates new edit data session
+     */
+    public newEditDataEditor(tableName: string): Promise<URI> {
+
+        return new Promise<URI>((resolve, reject) => {
+            try {
+				// Create file path and file URI
+                let filePath = this.createEditDataFileName(tableName);
+                let docUri: URI = URI.parse(filePath);
+
+				// Create a sql document pane with accoutrements
+				const fileInput = this.untitledEditorService.createOrGet(docUri);
+				const queryResultsInput: QueryResultsInput = this.instantiationService.createInstance(QueryResultsInput, docUri.toString());
+                let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
+				this.editorService.openEditor(queryInput, { pinned: true });
+
+				resolve(docUri);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     private createUntitledSqlFilePath(): string {
         let sqlFileName = (counter: number): string => {
             return `SQLQuery${counter}`;
         };
+
+		let counter = 1;
+		// Get document name and check if it exists
+        let filePath = sqlFileName(counter);
+        while (fs.existsSync(filePath)) {
+            counter++;
+            filePath = sqlFileName(counter);
+        }
+
+		// check if this document name already exists in any open documents
+		let untitledEditors = this.untitledEditorService.getAll();
+        while (untitledEditors.find(x => x.getName().toUpperCase() === filePath.toUpperCase())) {
+            counter++;
+            filePath = sqlFileName(counter);
+        }
+
+        return filePath;
+    }
+
+    private createEditDataFileName(tableName: string): string {
+        let sqlFileName = (counter: number): string => {
+            return `${tableName} ${counter}`;
+        }
 
 		let counter = 1;
 		// Get document name and check if it exists

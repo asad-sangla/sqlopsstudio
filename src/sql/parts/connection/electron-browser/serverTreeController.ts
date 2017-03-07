@@ -22,6 +22,7 @@ import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
 import { ConnectionProfile } from '../node/connectionProfile';
+import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop, AddServerToGroupAction, NewQueryAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 
@@ -133,7 +134,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	private getConnectionActions(): IAction[] {
 				return [
 			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL),
-			this.instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL)
+			this.instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
+			this.instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL)
 		];
 	}
 
