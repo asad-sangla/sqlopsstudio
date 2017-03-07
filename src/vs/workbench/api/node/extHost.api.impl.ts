@@ -47,8 +47,9 @@ import { realpath } from 'fs';
 import { MainContext, ExtHostContext, InstanceCollection, IInitData } from './extHost.protocol';
 import * as languageConfiguration from 'vs/editor/common/modes/languageConfiguration';
 
-import { ExtHostConnectionManagement } from 'sql/workbench/api/node/extHostConnectionManagement';
 import { ExtHostCredentialManagement } from 'sql/workbench/api/node/extHostCredentialManagement';
+import { ExtHostDataProtocol } from 'sql/workbench/api/node/extHostDataProtocol';
+
 
 export interface IExtensionApiFactory {
 	(extension: IExtensionDescription): typeof vscode;
@@ -99,8 +100,8 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 	// Addressable instances
 	const col = new InstanceCollection();
 	const extHostHeapService = col.define(ExtHostContext.ExtHostHeapService).set<ExtHostHeapService>(new ExtHostHeapService());
-	const extHostConnectionManagement = col.define(ExtHostContext.ExtHostConnectionManagement).set<ExtHostConnectionManagement>(new ExtHostConnectionManagement(threadService));
 	const extHostCredentialManagement = col.define(ExtHostContext.ExtHostCredentialManagement).set<ExtHostCredentialManagement>(new ExtHostCredentialManagement(threadService));
+	const extHostDataProvider = col.define(ExtHostContext.ExtHostDataProtocol).set<ExtHostDataProtocol>(new ExtHostDataProtocol(threadService));
 
 	const extHostDocuments = col.define(ExtHostContext.ExtHostDocuments).set<ExtHostDocuments>(new ExtHostDocuments(threadService));
 	const extHostDocumentSaveParticipant = col.define(ExtHostContext.ExtHostDocumentSaveParticipant).set<ExtHostDocumentSaveParticipant>(new ExtHostDocumentSaveParticipant(extHostDocuments, threadService.get(MainContext.MainThreadWorkspace)));
@@ -142,24 +143,26 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 			}
 		}
 
-		// namespace: connections
-		const connections: typeof vscode.connections = {
-			registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable  {
-
-				provider.registerOnConnectionComplete((connSummary: vscode.ConnectionInfoSummary) => {
-					extHostConnectionManagement.$onConnectComplete(provider.handle, connSummary);
-				});
-
-				provider.registerOnIntelliSenseCacheComplete((connectionUri: string) => {
-					extHostConnectionManagement.$onIntelliSenseCacheComplete(provider.handle, connectionUri);
-				});
-
-				return extHostConnectionManagement.$registerConnectionProvider(provider);
-			},
-			registerCredentialProvider(provider: vscode.CredentialProvider): vscode.Disposable  {
+		// namespace: credentials
+		const credentials: typeof vscode.credentials = {
+			registerProvider(provider: vscode.CredentialProvider): vscode.Disposable  {
 				return extHostCredentialManagement.$registerCredentialProvider(provider);
 			},
+		};
 
+		// namespace: dataprotocol
+		const dataprotocol: typeof vscode.dataprotocol = {
+			registerProvider(provider: vscode.DataProtocolProvider): vscode.Disposable {
+				provider.connectionProvider.registerOnConnectionComplete((connSummary: vscode.ConnectionInfoSummary) => {
+					extHostDataProvider.$onConnectComplete(provider.handle, connSummary);
+				});
+
+				provider.connectionProvider.registerOnIntelliSenseCacheComplete((connectionUri: string) => {
+					extHostDataProvider.$onIntelliSenseCacheComplete(provider.handle, connectionUri);
+				});
+
+				return extHostDataProvider.$registerProvider(provider);
+			}
 		};
 
 		// namespace: commands
@@ -461,10 +464,13 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 		const scm: typeof vscode.scm = new SCM();
 
 		return {
+			// SQL definitions
+			credentials,
+			dataprotocol,
+
 			version: pkg.version,
 			// namespaces
 			commands,
-			connections,
 			env,
 			extensions,
 			languages,

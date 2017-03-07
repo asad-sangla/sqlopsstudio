@@ -14,7 +14,9 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink, ConnectionInfo, ConnectionInfoSummary, connections
+		DocumentLink as VDocumentLink, ConnectionInfo, ConnectionInfoSummary, dataprotocol,
+		DataProtocolProvider, ConnectionProvider, DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
+		DataProtocolClientCapabilities, CapabilitiesProvider
 } from 'vscode';
 
 import {
@@ -35,7 +37,8 @@ import {
 		SymbolInformation, SymbolKind,
 		CodeLens,
 		FormattingOptions, DocumentLink,
-		ConnectionCompleteParams, IntelliSenseReadyParams
+		ConnectionCompleteParams, IntelliSenseReadyParams,
+		ConnectionProviderOptions, DataProtocolServerCapabilities
 } from 'dataprotocol-languageserver-types';
 
 
@@ -62,6 +65,7 @@ import {
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
 		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
+		CapabiltiesDiscoveryRequest,
 		ConnectionRequest, ConnectParams,
 		DisconnectRequest, DisconnectParams,
 		ConnectionCompleteNotification, IntelliSenseReadyNotification
@@ -1249,16 +1253,30 @@ export class LanguageClient {
 		this.hookRenameProvider(documentSelector, connection);
 		this.hookDocumentLinkProvider(documentSelector, connection);
 
-		this.hookConnectionProvider(connection);
+		// hook-up SQL data protocol provider
+		this.hookDataProtocolProvider(connection);
 	}
 
 	private logFailedRequest(type: RequestType<any, any, any>, error: any): void {
 		this.error(`Request ${type.method} failed.`, error);
 	}
 
-	private hookConnectionProvider(connection: IConnection): void {
+	private hookDataProtocolProvider(connection: IConnection): void {
 		let self = this;
-		this._providers.push(connections.registerConnectionProvider({
+
+		let capabilitiesProvider: CapabilitiesProvider = {
+			getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<VDataProtocolServerCapabilities> {
+				return self.doSendRequest(connection, CapabiltiesDiscoveryRequest.type, self._c2p.asCapabilitiesParams(client), undefined).then(
+					self._p2c.asServerCapabilities,
+					(error) => {
+						this.logFailedRequest(ConnectionRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			}
+		};
+
+		let connectionProvider: ConnectionProvider = {
 			handle: -1,
 
 			connect(connUri: string, connInfo: ConnectionInfo): Thenable<boolean> {
@@ -1272,6 +1290,7 @@ export class LanguageClient {
 					}
 				);
 			},
+
 			disconnect(connUri: string): Thenable<boolean> {
 				let params: DisconnectParams = {
 					ownerUri: connUri
@@ -1305,7 +1324,14 @@ export class LanguageClient {
 					handler(params.ownerUri);
 				});
 			}
+		};
 
+		this._providers.push(dataprotocol.registerProvider({
+			handle: -1,
+
+			capabilitiesProvider: capabilitiesProvider,
+
+			connectionProvider: connectionProvider
 		}));
 	}
 

@@ -62,6 +62,8 @@ export interface Converter {
 	asDocumentLinkParams(textDocument: code.TextDocument): proto.DocumentLinkParams;
 
 	asConnectionParams(connectionUri: string, connectionInfo: code.ConnectionInfo) : proto.ConnectParams;
+
+	asCapabilitiesParams(client: code.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams;
 }
 
 export interface URIConverter {
@@ -304,6 +306,14 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asCapabilitiesParams(client: code.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams {
+		let params:  proto.CapabiltiesDiscoveryParams = {
+			hostName: client.hostName,
+			hostVersion: client.hostVersion
+		};
+		return params;
+	}
+
 	function asConnectionParams(connUri: string, connInfo: code.ConnectionInfo) : proto.ConnectParams {
 		return {
 			ownerUri: connUri,
@@ -363,6 +373,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asCodeLensParams,
 		asDocumentLink,
 		asDocumentLinkParams,
+		asCapabilitiesParams,
 		asConnectionParams
 	};
 }

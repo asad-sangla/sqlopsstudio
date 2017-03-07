@@ -4,15 +4,35 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-// test interface to be removed
-export interface ConnectionInfo {
+export interface ConnectionOption {
+	name: string;
 
-	serverName: string;
+	displayName: string;
 
-	databaseName: string;
+	valueType: string;
 
+	defaultValue: string;
+
+	categoryValues: string[];
+
+	isIdentity: boolean;
+
+	isRequired: boolean;
 }
 
+export interface ConnectionProviderOptions  {
+	options: ConnectionOption[];
+}
+
+export interface DataProtocolServerCapabilities  {
+	protocolVersion: string;
+
+	providerName: string;
+
+	providerDisplayName: string;
+
+	connectionProvider: ConnectionProviderOptions;
+}
 
 /**
  * Parameters to initialize a connection to a database
@@ -278,6 +298,9 @@ export class ServerInfo {
     public osVersion: string;
 }
 
+export class CapabiltiesDiscoveryResult {
+	public capabilities: DataProtocolServerCapabilities;
+}
 
 /**
  * Position in a text document expressed as zero-based line and character offset.

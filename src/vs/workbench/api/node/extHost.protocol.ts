@@ -38,10 +38,7 @@ import { IApplyEditsOptions, IUndoStopOptions, TextEditorRevealType, ITextEditor
 
 import { InternalTreeExplorerNodeContent } from 'vs/workbench/parts/explorers/common/treeExplorerViewModel';
 
-/**
- * Connection Management extension host class.
- */
-export abstract class ExtHostConnectionManagementShape {
+export abstract class ExtHostDataProtocolShape {
 
 	/**
 	 * Register a connection information provider.
@@ -62,6 +59,9 @@ export abstract class ExtHostConnectionManagementShape {
 	 * Callback when a IntelliSense cache has been built
 	 */
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
+
+
+	$getServerCapabilities(handle:number, client: vscode.DataProtocolClientCapabilities): Thenable<vscode.DataProtocolServerCapabilities> { throw ni(); }
 }
 
 /**
@@ -75,9 +75,9 @@ export abstract class ExtHostCredentialManagementShape {
     $deleteCredential(credentialId: string): Thenable<boolean> { throw ni(); }
 }
 
-export abstract class MainThreadConnectionManagementShape {
-	$registerConnectionProvider(handle: number): TPromise<any> { throw ni(); }
-	$unregisterConnectionProvider(handle: number): TPromise<any> { throw ni(); }
+export abstract class MainThreadDataProtocolShape {
+	$registerProvider(handle: number): TPromise<any> { throw ni(); }
+	$unregisterProvider(handle: number): TPromise<any> { throw ni(); }
 	$onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void { throw ni(); }
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
 }
@@ -86,7 +86,6 @@ export abstract class MainThreadCredentialManagementShape {
 	$registerCredentialProvider(handle: number): TPromise<any> { throw ni(); }
 	$unregisterCredentialProvider(handle: number): TPromise<any> { throw ni(); }
 }
-
 
 export interface IEnvironment {
 	enableProposedApi: boolean;
@@ -449,10 +448,13 @@ export abstract class ExtHostSCMShape {
 // --- proxy identifiers
 
 export const MainContext = {
+	// SQL entries
+	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement', MainThreadCredentialManagementShape),
+	MainThreadDataProtocol: createMainId<MainThreadDataProtocolShape>('MainThreadDataProtocol', MainThreadDataProtocolShape),
+
+	// VS Code entries
 	MainThreadCommands: createMainId<MainThreadCommandsShape>('MainThreadCommands', MainThreadCommandsShape),
 	MainThreadConfiguration: createMainId<MainThreadConfigurationShape>('MainThreadConfiguration', MainThreadConfigurationShape),
-	MainThreadConnectionManagement: createMainId<MainThreadConnectionManagementShape>('MainThreadDataManagement', MainThreadConnectionManagementShape),
-	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement', MainThreadCredentialManagementShape),
 	MainThreadDiagnostics: createMainId<MainThreadDiagnosticsShape>('MainThreadDiagnostics', MainThreadDiagnosticsShape),
 	MainThreadDocuments: createMainId<MainThreadDocumentsShape>('MainThreadDocuments', MainThreadDocumentsShape),
 	MainThreadEditors: createMainId<MainThreadEditorsShape>('MainThreadEditors', MainThreadEditorsShape),
@@ -476,8 +478,8 @@ export const MainContext = {
 export const ExtHostContext = {
 	ExtHostCommands: createExtId<ExtHostCommandsShape>('ExtHostCommands', ExtHostCommandsShape),
 	ExtHostConfiguration: createExtId<ExtHostConfigurationShape>('ExtHostConfiguration', ExtHostConfigurationShape),
-	ExtHostConnectionManagement: createExtId<ExtHostConnectionManagementShape>('ExtHostConnectionManagement', ExtHostConnectionManagementShape),
 	ExtHostCredentialManagement: createExtId<ExtHostCredentialManagementShape>('ExtHostCredentialManagement', ExtHostCredentialManagementShape),
+	ExtHostDataProtocol: createExtId<ExtHostDataProtocolShape>('ExtHostDataProtocol', ExtHostDataProtocolShape),
 	ExtHostDiagnostics: createExtId<ExtHostDiagnosticsShape>('ExtHostDiagnostics', ExtHostDiagnosticsShape),
 	ExtHostDocuments: createExtId<ExtHostDocumentsShape>('ExtHostDocuments', ExtHostDocumentsShape),
 	ExtHostDocumentSaveParticipant: createExtId<ExtHostDocumentSaveParticipantShape>('ExtHostDocumentSaveParticipant', ExtHostDocumentSaveParticipantShape),

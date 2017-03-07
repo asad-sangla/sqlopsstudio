@@ -75,6 +75,8 @@ export interface Converter {
 	asDocumentLinks(items: ls.DocumentLink[]): code.DocumentLink[];
 
 	asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary;
+
+	asServerCapabilities(params: ls.CapabiltiesDiscoveryResult): code.DataProtocolServerCapabilities;
 }
 
 export interface URIConverter {
@@ -388,6 +390,16 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return connSummary;
 	}
 
+	function asServerCapabilities(result: ls.CapabiltiesDiscoveryResult): code.DataProtocolServerCapabilities {
+		let capabilities: code.DataProtocolServerCapabilities = {
+			protocolVersion: result.capabilities.protocolVersion,
+			providerName: result.capabilities.providerName,
+			providerDisplayName: result.capabilities.providerDisplayName,
+			connectionProvider: result.capabilities.connectionProvider
+		};
+		return capabilities;
+	}
+
 	return {
 		asUri,
 		asDiagnostics,
@@ -420,7 +432,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asWorkspaceEdit,
 		asDocumentLink,
 		asDocumentLinks,
-		asConnectionSummary
+		asConnectionSummary,
+		asServerCapabilities
 	};
 }
 

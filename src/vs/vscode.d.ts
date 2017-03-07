@@ -78,6 +78,54 @@ declare module 'vscode' {
 		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);
 	}
 
+	export interface ConnectionOption {
+		name: string;
+
+		displayName: string;
+
+		valueType: string;
+
+		defaultValue: string;
+
+		categoryValues: string[];
+
+		isIdentity: boolean;
+
+		isRequired: boolean;
+	}
+
+	export interface ConnectionProviderOptions  {
+		options: ConnectionOption[];
+	}
+
+	export interface DataProtocolServerCapabilities {
+		protocolVersion: string;
+
+		providerName: string;
+
+		providerDisplayName: string;
+
+		connectionProvider: ConnectionProviderOptions;
+	}
+
+	export interface DataProtocolClientCapabilities {
+		hostName: string;
+
+		hostVersion: string;
+	}
+
+	export interface CapabilitiesProvider {
+		getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<DataProtocolServerCapabilities>
+	}
+
+	export interface DataProtocolProvider {
+		handle: number;
+
+		capabilitiesProvider: CapabilitiesProvider;
+
+		connectionProvider: ConnectionProvider;
+	}
+
 	/**
 	 * Parameters to initialize a connection to a database
 	 */
@@ -103,10 +151,18 @@ declare module 'vscode' {
     	deleteCredential(credentialId: string): Thenable<boolean>;
 	}
 
-	export namespace connections {
-		export function registerConnectionProvider(provider: ConnectionProvider): Disposable;
+	/**
+	 * Namespace for Data Management Protocol global methods
+	 */
+	export namespace dataprotocol {
+		export function registerProvider(provider: DataProtocolProvider): Disposable;
+	}
 
-		export function registerCredentialProvider(provider: CredentialProvider): Disposable;
+	/**
+	 * Namespace for credentials management global methods
+	 */
+	export namespace credentials {
+		export function registerProvider(provider: CredentialProvider): Disposable;
 	}
 
 	/**

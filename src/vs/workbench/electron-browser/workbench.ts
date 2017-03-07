@@ -92,6 +92,8 @@ import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
+
+import { ICapabilitiesService, CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
 import { IQueryModelService } from 'sql/parts/query/common/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
@@ -523,6 +525,7 @@ export class Workbench implements IPartService {
 
 		// SQL Tools services
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
+		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
 		serviceCollection.set(IConnectionManagementService, this.instantiationService.createInstance(ConnectionManagementService));
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));

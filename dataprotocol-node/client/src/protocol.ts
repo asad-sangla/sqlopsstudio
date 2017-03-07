@@ -19,9 +19,10 @@ import {
 		SymbolInformation, SymbolKind,
 		CodeLens, CodeActionContext,
 		FormattingOptions, DocumentLink,
-		ConnectionInfo, // test-only
 		ConnectionDetails, ServerInfo,
-		ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams
+		ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams,
+		ConnectionProviderOptions, DataProtocolServerCapabilities,
+		CapabiltiesDiscoveryResult
 	} from 'dataprotocol-languageserver-types';
 
 /**
@@ -1019,3 +1020,14 @@ export namespace IntelliSenseReadyNotification {
     export const type: NotificationType<IntelliSenseReadyParams> = { get method(): string { return 'textDocument/intelliSenseReady'; } };
 }
 
+// ------------------------------- < Capabilties Discovery Event > ------------------------------------
+
+export class CapabiltiesDiscoveryParams {
+	public hostName: string;
+
+	public hostVersion: string;
+}
+
+export namespace CapabiltiesDiscoveryRequest {
+    export const type: RequestType<CapabiltiesDiscoveryParams, CapabiltiesDiscoveryResult, void> = { get method(): string { return 'capabilities/list'; } };
+}

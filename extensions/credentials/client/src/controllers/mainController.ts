@@ -83,7 +83,7 @@ export default class MainController implements vscode.Disposable {
                     }
                 };
 
-                vscode.connections.registerCredentialProvider(provider);
+                vscode.credentials.registerProvider(provider);
 
                 SqlToolsServerClient.instance.initialize(self._context).then(serverResult => {
 

@@ -26,6 +26,7 @@ import { IConfigurationEditingService } from 'vs/workbench/services/configuratio
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionManagementInfo } from './connectionManagementInfo';
 import Utils = require('./utils');
+import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 
@@ -56,7 +57,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@ITelemetryService private _telemetryService: ITelemetryService,
 		@IConfigurationEditingService private _configurationEditService: IConfigurationEditingService,
 		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
-		@ICredentialsService private _credentialsService: ICredentialsService
+		@ICredentialsService private _credentialsService: ICredentialsService,
+		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService
 	) {
 
 		this.connectionMemento = new Memento('ConnectionManagement');
@@ -66,14 +68,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._connections = {};
 	}
 
-
 	public newConnection(): void {
-		this._credentialsService.saveCredential('id', 'password1').then(r => {
-			this._credentialsService.readCredential('id').then(cr => {
-				this._credentialsService.deleteCredential('id');
-			});
-		});
-
 		this._connectionDialogService.showDialog(this);
 	}
 
@@ -126,73 +121,46 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public getAdvancedProperties(): vscode.ConnectionProperty[] {
-		var connectionProperties: vscode.ConnectionProperty[] = [
-			{
-				propertyName: 'Initial Catalog',
-				propertyType: ConnectionPropertyType.string,
-				propertyOptions: null,
-				propertyValue: 'db1'
-			},
-			{
-				propertyName: 'Application Intent',
-				propertyType: ConnectionPropertyType.options,
-				propertyOptions: ['ReadWrite', 'ReadOnly'],
-				propertyValue: 0
-			},
-			{
-				propertyName: 'Asynchronous Processing',
-				propertyType: ConnectionPropertyType.boolean,
-				propertyOptions: null,
-				propertyValue: false
-			},
-			{
-				propertyName: 'Connect Timeout',
-				propertyType: ConnectionPropertyType.number,
-				propertyOptions: null,
-				propertyValue: 100
-			},
-			{
-				propertyName: 'Current Language',
-				propertyType: ConnectionPropertyType.string,
-				propertyOptions: null,
-				propertyValue: null
-			},
-			{
-				propertyName: 'Column Encrytion Setting',
-				propertyType: ConnectionPropertyType.options,				propertyOptions: ['Disabled', 'Enabled'],
-				propertyValue: 0
-			},
-			{
-				propertyName: 'Encrypt',
-				propertyType: ConnectionPropertyType.boolean,
-				propertyOptions: null,
-				propertyValue: true
-			},
-			{
-				propertyName: 'Persist Security Info',
-				propertyType: ConnectionPropertyType.boolean,
-				propertyOptions: null,
-				propertyValue: false
-			},
-			{
-				propertyName: 'Trust Server Certificate',
-				propertyType: ConnectionPropertyType.boolean,
-				propertyOptions: null,
-				propertyValue: false
-			},
-			{
-				propertyName: 'Attached DB File Name',
-				propertyType: ConnectionPropertyType.string,
-				propertyOptions: null,
-				propertyValue: null
-			},
-			{
-				propertyName: 'Context Connection',
- 				propertyType: ConnectionPropertyType.boolean,
-				propertyOptions: null,
-				propertyValue: true
+		let connectionProperties: vscode.ConnectionProperty[] = [];
+
+		let capabilities = this._capabilitiesService.getCapabilities();
+		if (capabilities !== undefined && capabilities.length > 0) {
+
+			// just grab the first registered provider for now, this needs to change
+			// to lookup based on currently select provider
+			let providerCapabilities = capabilities[0];
+			if (providerCapabilities.connectionProvider !== undefined
+				&& providerCapabilities.connectionProvider.options !== undefined) {}
+				let options = providerCapabilities.connectionProvider.options;
+				for (let i = 0; i < options.length; ++i) {
+
+					// copy from connection options to connection propertyName
+					// this is temporary conversion to bridge connection dialog and capabilities service
+					// object models.  these types should be merged in future change.
+					let connectionOption: vscode.ConnectionOption = options[i];
+					let connectionProperty: vscode.ConnectionProperty = {
+						propertyName: connectionOption.name,
+						propertyType: undefined,
+						propertyOptions: undefined,
+						propertyValue: connectionOption.defaultValue
+					};
+
+					if (connectionOption.valueType === 'string'
+						|| connectionOption.valueType === 'multistring'
+						|| connectionOption.valueType === 'password') {
+						connectionProperty.propertyType = ConnectionPropertyType.string;
+					} else if (connectionOption.valueType === 'number') {
+						connectionProperty.propertyType = ConnectionPropertyType.number;
+					} else if (connectionOption.valueType === 'boolean') {
+						connectionProperty.propertyType = ConnectionPropertyType.boolean;
+					} else if (connectionOption.valueType === 'category') {
+						connectionProperty.propertyType = ConnectionPropertyType.options;
+						connectionProperty.propertyOptions = connectionOption.categoryValues;
+					}
+
+					connectionProperties.push(connectionProperty);
+				}
 			}
-		];
 		return connectionProperties;
 	}
 
