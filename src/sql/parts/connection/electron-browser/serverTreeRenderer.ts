@@ -208,28 +208,26 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	}
 
 	/**
-	 * Sent when the drag operation is starting.
+	 * Called when the drag operation starts.
 	 */
 	public onDragStart(tree: ITree, data: IDragAndDropData, originalEvent: DragMouseEvent): void {
-		console.log('drag start');
 		return;
 	}
 
 	/**
 	 * Returns a DragOverReaction indicating whether sources can be
 	 * dropped into target or some parent of the target.
-	 * Returns DRAG_OVER_ACCEPT_BUBBLE_DOWN when element is aconnection group or connection
+	 * Returns DRAG_OVER_ACCEPT_BUBBLE_DOWN when element is a connection group or connection
 	 */
 	public onDragOver(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): IDragOverReaction {
 		if (targetElement instanceof ConnectionProfile || targetElement instanceof ConnectionProfileGroup) {
-			console.log('drag accept');
 			return DRAG_OVER_ACCEPT_BUBBLE_DOWN(true);
 		}
 		return DRAG_OVER_REJECT;
 	}
 
 	/**
-	 * Handle drop in the server tree.
+	 * Handle a drop in the server tree.
 	 */
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
 		var targetConnectionProfileGroup: ConnectionProfileGroup;
@@ -242,7 +240,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 		const source = data.getData()[0];
 		var oldParent: ConnectionProfileGroup = source.getParent();
 
-		if (targetConnectionProfileGroup && targetConnectionProfileGroup.name !== 'root' && oldParent && !oldParent.equals(targetConnectionProfileGroup)) {
+		if (this.isDropAllowed(targetConnectionProfileGroup, oldParent, source)) {
 
 			console.log('drop ' + source.serverName + ' to ' + targetConnectionProfileGroup.fullName);
 			if (source instanceof ConnectionProfile) {
@@ -266,8 +264,17 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 		return;
 	}
 
+	private isDropAllowed(targetConnectionProfileGroup: ConnectionProfileGroup,
+					oldParent:ConnectionProfileGroup,
+					source: ConnectionProfile | ConnectionProfileGroup): boolean {
+
+		var isDropToItself = source && targetConnectionProfileGroup && (source instanceof ConnectionProfileGroup) && source.name === targetConnectionProfileGroup.name;
+		var isDropToSameLevel = oldParent && oldParent.equals(targetConnectionProfileGroup);
+		return (targetConnectionProfileGroup && targetConnectionProfileGroup.name !== 'root' && !isDropToSameLevel && !isDropToItself);
+	}
+
 	/**
-	 * Set tree input and render tree
+	 * Sets tree input and renders tree
 	 */
 	public renderTree(tree: ITree): void {
 		var treeInput = new ConnectionProfileGroup('root', null, '');

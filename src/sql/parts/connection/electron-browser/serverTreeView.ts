@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import nls = require('vs/nls');
+import * as vscode from 'vscode';
 import errors = require('vs/base/common/errors');
 import { IActionRunner, IAction } from 'vs/base/common/actions';
 import dom = require('vs/base/browser/dom');
@@ -76,7 +77,19 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 				ariaLabel: nls.localize({ key: 'treeAriaLabel', comment: ['Registered Servers'] }, "Registered Servers")
 			});
 		this.toDispose.push(this.tree.addListener2('selection', () => this.onSelected()));
-		this.fullRefreshNeeded = true;
+		const self = this;
+		var handle = 199;
+		this.connectionManagementService.addEventListener(handle, {
+			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): void {
+				//no op
+			},
+			onAddConnectionProfile(uri, connection: vscode.ConnectionInfo): void {
+				self.structuralTreeUpdate();
+			},
+			onDeleteConnectionProfile(uri, connection: vscode.ConnectionInfo): void {
+				self.structuralTreeUpdate();
+			}
+		});
 		this.structuralTreeUpdate();
 	}
 

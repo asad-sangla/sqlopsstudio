@@ -49,6 +49,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			},
 			onAddConnectionProfile(uri, connection: vscode.ConnectionInfo): Thenable<boolean> {
 				return self._proxy.$connect(handle, uri, connection);
+			},
+			onDeleteConnectionProfile(uri, connection: vscode.ConnectionInfo): void {
+				//no op
 			}
 		});
 

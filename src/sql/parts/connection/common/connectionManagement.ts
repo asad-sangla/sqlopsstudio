@@ -26,6 +26,8 @@ export const IConnectionManagementService = createDecorator<IConnectionManagemen
 export interface ConnectionManagementEvents {
 	onAddConnectionProfile(uri: string, connection: vscode.ConnectionInfo): void;
 
+	onDeleteConnectionProfile(uri: string, connection: vscode.ConnectionInfo): void;
+
 	onConnect(connectionUri: string, connection: vscode.ConnectionInfo): void;
 }
 

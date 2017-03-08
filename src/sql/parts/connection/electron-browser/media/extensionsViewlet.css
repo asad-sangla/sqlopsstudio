@@ -281,13 +281,13 @@
 .server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .editor-group {
 	font-size: 12px;
 	font-weight: bold;
-	text-transform: capitalize;
+	text-transform: none;
 	cursor: default;
 }
 .server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .server-group {
 	font-size: 13px;
 	font-weight: bold;
-	text-transform: capitalize;
+	text-transform: none;
 	cursor: default;
 }
 

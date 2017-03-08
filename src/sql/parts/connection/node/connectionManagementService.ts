@@ -2,11 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 'use strict';
 
-import nls = require('vs/nls');
-import URI from 'vs/base/common/uri';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
@@ -46,7 +43,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _connections: { [fileUri: string]: ConnectionManagementInfo };
 
-
 	constructor(
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
@@ -80,7 +76,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 			return this.connect(uri, connection).then(connected => {
 				if (connected) {
 					let connectionInfo = this._connections[uri];
-					this.saveToSettings(connectionInfo.connectionProfile);
+					this.saveToSettings(connectionInfo.connectionProfile).then(value => {
+						if (value) {
+							for (var key in this._serverEvents) {
+								this._serverEvents[key].onAddConnectionProfile(uri, connectionInfo.connectionProfile);
+							}
+						}
+					});
 				}
 				resolve(connected);
 			}).catch(err => {
@@ -194,10 +196,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 	}
 
-	private saveToSettings(connection: IConnectionProfile): boolean {
-		this._connectionStore.saveProfile(connection).then(result => {
+	private saveToSettings(connection: IConnectionProfile): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			this._connectionStore.saveProfile(connection).then(result => {
+				return resolve(true);
+			});
 		});
-		return true;
+
 	}
 
 	private tryAddMruConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile): void {
@@ -258,8 +263,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		const input = this._editorService.getActiveEditorInput();
 		if (input &&
 			(input instanceof FileEditorInput
-			|| input instanceof UntitledEditorInput
-			|| input instanceof QueryInput)) {
+				|| input instanceof UntitledEditorInput
+				|| input instanceof QueryInput)) {
 			return input.getResource().toString();
 		}
 
