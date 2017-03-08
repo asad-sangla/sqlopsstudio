@@ -8,6 +8,24 @@ import URI from 'vs/base/common/uri';
 import { illegalArgument } from 'vs/base/common/errors';
 import * as vscode from 'vscode';
 
+// SQL added extension host types
+export enum ConnectionOptionType {
+	string = 0,
+	multistring = 1,
+	password = 2,
+	number = 3,
+	category = 4,
+	boolean = 5
+}
+
+export enum ConnectionOptionSpecialType {
+	serverName = 0,
+	databaseName = 1,
+	authType = 2,
+	userName = 3,
+	password = 4
+}
+
 export class Disposable {
 
 	static from(...disposables: { dispose(): any }[]): Disposable {
@@ -887,13 +905,6 @@ export class CompletionList {
 		this.items = items;
 		this.isIncomplete = isIncomplete;
 	}
-}
-
-export enum ConnectionPropertyType {
-	string = 0,
-	number = 1,
-	options = 2,
-	boolean = 3
 }
 
 export enum ViewColumn {

@@ -10,7 +10,7 @@ import vscode = require('vscode');
 
 export class AdvancedPropertiesController {
 	private _container: HTMLElement;
-	private _connectionProperties: vscode.ConnectionProperty[];
+	private _connectionOptions: vscode.ConnectionOption[];
 
 	private _advancedDialog: AdvancedPropertiesDialog;
 
@@ -18,8 +18,8 @@ export class AdvancedPropertiesController {
 		// Update advanced properties
 	}
 
-	public showDialog(connectionProperties: vscode.ConnectionProperty[], container: HTMLElement): void {
-		this._connectionProperties = connectionProperties;
+	public showDialog(connectionProperties: vscode.ConnectionOption[], container: HTMLElement): void {
+		this._connectionOptions = connectionProperties;
 		this._container = container;
 		this.doShowDialog();
 	}
@@ -33,6 +33,6 @@ export class AdvancedPropertiesController {
 			this._advancedDialog.create();
 		}
 
-		return this._advancedDialog.open(this._connectionProperties);
+		return this._advancedDialog.open(this._connectionOptions);
 	}
 }

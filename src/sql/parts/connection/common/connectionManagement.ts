@@ -54,7 +54,7 @@ export interface IConnectionManagementService {
 
 	changeGroupNameForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void>;
 
-	getAdvancedProperties(): vscode.ConnectionProperty[];
+	getAdvancedProperties(): vscode.ConnectionOption[];
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
@@ -63,9 +63,19 @@ export interface IConnectionDialogService {
 	showDialog(connectionManagementService: IConnectionManagementService): TPromise<void>;
 }
 
-export enum ConnectionPropertyType {
+export enum ConnectionOptionType {
 	string = 0,
-	number = 1,
-	options = 2,
-	boolean = 3
+	multistring = 1,
+	password = 2,
+	number = 3,
+	category = 4,
+	boolean = 5
+}
+
+export enum ConnectionOptionSpecialType {
+	serverName = 0,
+	databaseName = 1,
+	authType = 2,
+	userName = 3,
+	password = 4
 }

@@ -9,11 +9,15 @@ export interface ConnectionOption {
 
 	displayName: string;
 
+	description: string;
+
 	valueType: string;
 
 	defaultValue: string;
 
 	categoryValues: string[];
+
+	specialValueType: string;
 
 	isIdentity: boolean;
 

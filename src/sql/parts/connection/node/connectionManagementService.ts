@@ -7,7 +7,7 @@
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService, ConnectionPropertyType } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
@@ -137,48 +137,18 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	public getAdvancedProperties(): vscode.ConnectionProperty[] {
-		let connectionProperties: vscode.ConnectionProperty[] = [];
-
+	public getAdvancedProperties(): vscode.ConnectionOption[] {
 		let capabilities = this._capabilitiesService.getCapabilities();
 		if (capabilities !== undefined && capabilities.length > 0) {
-
 			// just grab the first registered provider for now, this needs to change
 			// to lookup based on currently select provider
 			let providerCapabilities = capabilities[0];
-			if (providerCapabilities.connectionProvider !== undefined
-				&& providerCapabilities.connectionProvider.options !== undefined) {}
-				let options = providerCapabilities.connectionProvider.options;
-				for (let i = 0; i < options.length; ++i) {
-
-					// copy from connection options to connection propertyName
-					// this is temporary conversion to bridge connection dialog and capabilities service
-					// object models.  these types should be merged in future change.
-					let connectionOption: vscode.ConnectionOption = options[i];
-					let connectionProperty: vscode.ConnectionProperty = {
-						propertyName: connectionOption.name,
-						propertyType: undefined,
-						propertyOptions: undefined,
-						propertyValue: connectionOption.defaultValue
-					};
-
-					if (connectionOption.valueType === 'string'
-						|| connectionOption.valueType === 'multistring'
-						|| connectionOption.valueType === 'password') {
-						connectionProperty.propertyType = ConnectionPropertyType.string;
-					} else if (connectionOption.valueType === 'number') {
-						connectionProperty.propertyType = ConnectionPropertyType.number;
-					} else if (connectionOption.valueType === 'boolean') {
-						connectionProperty.propertyType = ConnectionPropertyType.boolean;
-					} else if (connectionOption.valueType === 'category') {
-						connectionProperty.propertyType = ConnectionPropertyType.options;
-						connectionProperty.propertyOptions = connectionOption.categoryValues;
-					}
-
-					connectionProperties.push(connectionProperty);
-				}
+			if (!!providerCapabilities.connectionProvider) {
+				return providerCapabilities.connectionProvider.options;
 			}
-		return connectionProperties;
+		}
+
+		return undefined;
 	}
 
 	private sendConnectRequest(connection: vscode.ConnectionInfo, uri: string): void {

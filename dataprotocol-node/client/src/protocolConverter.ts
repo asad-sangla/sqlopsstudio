@@ -395,8 +395,59 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 			protocolVersion: result.capabilities.protocolVersion,
 			providerName: result.capabilities.providerName,
 			providerDisplayName: result.capabilities.providerDisplayName,
-			connectionProvider: result.capabilities.connectionProvider
+			connectionProvider: undefined
 		};
+
+		if (!!result.capabilities.connectionProvider
+				&& !!result.capabilities.connectionProvider.options
+				&& result.capabilities.connectionProvider.options.length > 0) {
+			capabilities.connectionProvider = <code.ConnectionProviderOptions>{
+				options: new Array<code.ConnectionOption>()
+			};
+			for (let i = 0; i < result.capabilities.connectionProvider.options.length; ++i) {
+				let srcOption: ls.ConnectionOption = result.capabilities.connectionProvider.options[i];
+				let descOption: code.ConnectionOption = {
+					name: srcOption.name,
+					displayName: !!srcOption.displayName ? srcOption.displayName : srcOption.name,
+					description: srcOption.description,
+					defaultValue: srcOption.defaultValue,
+					categoryValues: srcOption.categoryValues,
+					isIdentity: srcOption.isIdentity,
+					isRequired: srcOption.isRequired,
+					valueType: undefined,
+					specialValueType: undefined
+				};
+
+				if (srcOption.valueType === 'string') {
+					descOption.valueType = code.ConnectionOptionType.string;
+				} else if (srcOption.valueType === 'multistring') {
+					descOption.valueType = code.ConnectionOptionType.multistring;
+				} else if (srcOption.valueType === 'password') {
+					descOption.valueType = code.ConnectionOptionType.password;
+				} else if (srcOption.valueType === 'number') {
+					descOption.valueType = code.ConnectionOptionType.number;
+				} else if (srcOption.valueType === 'boolean') {
+					descOption.valueType = code.ConnectionOptionType.boolean;
+				} else if (srcOption.valueType === 'category') {
+					descOption.valueType = code.ConnectionOptionType.category;
+				}
+
+				if (srcOption.specialValueType === 'serverName') {
+					descOption.specialValueType = code.ConnectionOptionSpecialType.serverName;
+				} else if (srcOption.specialValueType === 'databaseName') {
+					descOption.specialValueType = code.ConnectionOptionSpecialType.databaseName;
+				} else if (srcOption.specialValueType === 'authType') {
+					descOption.specialValueType = code.ConnectionOptionSpecialType.authType;
+				} else if (srcOption.specialValueType === 'userName') {
+					descOption.specialValueType = code.ConnectionOptionSpecialType.userName;
+				} else if (srcOption.specialValueType === 'password') {
+					descOption.specialValueType = code.ConnectionOptionSpecialType.password;
+				}
+
+				capabilities.connectionProvider.options.push(descOption);
+			}
+		}
+
 		return capabilities;
 	}
 

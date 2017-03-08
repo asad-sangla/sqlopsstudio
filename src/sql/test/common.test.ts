@@ -58,7 +58,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return;
 	}
 
-	getAdvancedProperties(): vscode.ConnectionProperty[] {
+	getAdvancedProperties(): vscode.ConnectionOption[] {
 		return [];
 	}
 }

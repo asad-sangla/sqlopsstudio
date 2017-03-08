@@ -467,6 +467,8 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 			// SQL definitions
 			credentials,
 			dataprotocol,
+			ConnectionOptionType: extHostTypes.ConnectionOptionType,
+			ConnectionOptionSpecialType: extHostTypes.ConnectionOptionSpecialType,
 
 			version: pkg.version,
 			// namespaces
@@ -483,7 +485,6 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 			CompletionItem: extHostTypes.CompletionItem,
 			CompletionItemKind: extHostTypes.CompletionItemKind,
 			CompletionList: extHostTypes.CompletionList,
-			ConnectionPropertyType: extHostTypes.ConnectionPropertyType,
 			Diagnostic: extHostTypes.Diagnostic,
 			DiagnosticSeverity: extHostTypes.DiagnosticSeverity,
 			Disposable: extHostTypes.Disposable,

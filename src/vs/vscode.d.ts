@@ -22,23 +22,6 @@ declare module 'vscode' {
 		authenticationType: string;
 	}
 
-	export interface ConnectionProperty {
-		propertyName: string;
-
-		propertyType: ConnectionPropertyType;
-
-		propertyOptions: string[];
-
-		propertyValue: any;
-	}
-
-	export enum ConnectionPropertyType {
-		string = 0,
-		number = 1,
-		options = 2,
-		boolean = 3
-	}
-
 	export interface ConnectionInfoSummary {
 		/**
 		 * URI identifying the owner of the connection
@@ -78,12 +61,33 @@ declare module 'vscode' {
 		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);
 	}
 
+	export enum ConnectionOptionType {
+		string = 0,
+		multistring = 1,
+		password = 2,
+		number = 3,
+		category = 4,
+		boolean = 5
+	}
+
+	export enum ConnectionOptionSpecialType {
+		serverName = 0,
+		databaseName = 1,
+		authType = 2,
+		userName = 3,
+		password = 4
+	}
+
 	export interface ConnectionOption {
 		name: string;
 
 		displayName: string;
 
-		valueType: string;
+		description: string;
+
+		valueType: ConnectionOptionType;
+
+		specialValueType: ConnectionOptionSpecialType;
 
 		defaultValue: string;
 

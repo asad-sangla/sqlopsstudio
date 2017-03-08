@@ -12,7 +12,7 @@ import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { ConnectionPropertyType } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import vscode = require('vscode');
@@ -25,7 +25,7 @@ export interface IAdvancedDialogCallbacks {
 
 interface IAdvancedPropertyElement {
 	advancedPropertyWidget: any;
-	advancedProperty: vscode.ConnectionProperty;
+	advancedProperty: vscode.ConnectionOption;
 }
 
 export class AdvancedPropertiesDialog {
@@ -38,7 +38,7 @@ export class AdvancedPropertiesDialog {
 	private _trueInputValue: string = 'True';
 	private _falseInputValue: string = 'False';
 	private _toDispose: lifecycle.IDisposable[];
-	private _connectionProperties: vscode.ConnectionProperty[];
+	private _connectionOptions: vscode.ConnectionOption[];
 	private _advancedPropertiesMaps: { [propertyName: string]: IAdvancedPropertyElement };
 	private _isDisposed: boolean;
 
@@ -65,32 +65,32 @@ export class AdvancedPropertiesDialog {
 	}
 
 	private fillInProperties(container: Builder): void {
-		for (var i = 0; i < this._connectionProperties.length; i++) {
+		for (var i = 0; i < this._connectionOptions.length; i++) {
 
-			var property: vscode.ConnectionProperty = this._connectionProperties[i];
+			var property: vscode.ConnectionOption = this._connectionOptions[i];
 			var propertyWidget: any;
-			switch (property.propertyType) {
-				case ConnectionPropertyType.boolean:
-					propertyWidget = new ConnectionDialogSelectBox([this._trueInputValue, this._falseInputValue], property.propertyValue ? this._trueInputValue : this._falseInputValue);
-					ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(container, property.propertyName, 'advancedDialog-label', 'advancedDialog-input'), propertyWidget);
+			switch (property.valueType) {
+				case ConnectionOptionType.boolean:
+					propertyWidget = new ConnectionDialogSelectBox([this._trueInputValue, this._falseInputValue], property.defaultValue ? this._trueInputValue : this._falseInputValue);
+					ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input'), propertyWidget);
 					break;
-				case ConnectionPropertyType.number:
-					propertyWidget = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(container, property.propertyName, 'advancedDialog-label', 'advancedDialog-input'));
-					propertyWidget.value = property.propertyValue;
+				case ConnectionOptionType.number:
+					propertyWidget = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input'));
+					propertyWidget.value = property.defaultValue;
 					this._toDispose.push(propertyWidget.onDidChange(newInput => {
 						// TODO input validation
 						this.numberInputBoxChanged(newInput);
 					}));
 					break;
-				case ConnectionPropertyType.options:
-					propertyWidget = new ConnectionDialogSelectBox(property.propertyOptions, property.propertyValue);
-					ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(container, property.propertyName, 'advancedDialog-label', 'advancedDialog-input'), propertyWidget);
+				case ConnectionOptionType.category:
+					propertyWidget = new ConnectionDialogSelectBox(property.categoryValues, property.defaultValue);
+					ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input'), propertyWidget);
 					break;
-				case ConnectionPropertyType.string:
-					propertyWidget = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(container, property.propertyName, 'advancedDialog-label', 'advancedDialog-input'));
-					propertyWidget.value = property.propertyValue;
+				case ConnectionOptionType.string:
+					propertyWidget = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input'));
+					propertyWidget.value = property.defaultValue;
 			}
-			this._advancedPropertiesMaps[property.propertyName] = { advancedPropertyWidget: propertyWidget, advancedProperty: property };
+			this._advancedPropertiesMaps[property.name] = { advancedPropertyWidget: propertyWidget, advancedProperty: property };
 		}
 	}
 
@@ -124,7 +124,7 @@ export class AdvancedPropertiesDialog {
 	private updateProperties(): void {
 		for (var key in this._advancedPropertiesMaps) {
 			var propertyElement: IAdvancedPropertyElement = this._advancedPropertiesMaps[key];
-			propertyElement.advancedProperty.propertyValue = propertyElement.advancedPropertyWidget.value;
+			propertyElement.advancedProperty.defaultValue = propertyElement.advancedPropertyWidget.value;
 		}
 	}
 
@@ -151,12 +151,12 @@ export class AdvancedPropertiesDialog {
 		jQuery('#advancedDialogModal').modal('hide');
 	}
 
-	public open(connectionProperties: vscode.ConnectionProperty[]) {
+	public open(connectionOptions: vscode.ConnectionOption[]) {
 		if(!this._isDisposed) {
 			jQuery('#propertiesContent').empty();
 			this.dispose();
 		}
-		this._connectionProperties = connectionProperties;
+		this._connectionOptions = connectionOptions;
 		var propertiesContentbuilder = $().element('table', { class: 'advancedDialog-table' }, (tableContainer: Builder) => {
 			this.fillInProperties(tableContainer);
 		});
