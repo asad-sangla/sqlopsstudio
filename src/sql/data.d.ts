@@ -332,4 +332,72 @@ declare module 'data' {
 	export interface QueryCancelResult {
 		messages: string;
 	}
+
+	// Edit Data ==================================================================================
+	// Shared Interfaces --------------------------------------------------------------------------
+	export interface IEditSessionOperationParams {
+		ownerUri: string;
+	}
+
+	export interface IEditRowOperationParams extends IEditSessionOperationParams {
+		rowId: number;
+	}
+
+	// edit/commit --------------------------------------------------------------------------------
+	export interface EditCommitParams extends IEditSessionOperationParams {	}
+	export interface EditCommitResult {}
+
+	// edit/createRow -----------------------------------------------------------------------------
+	export interface EditCreateRowParams extends IEditSessionOperationParams { }
+	export interface EditCreateRowResult {
+		defaultValues: string[];
+		newRowId: number;
+	}
+
+	// edit/deleteRow -----------------------------------------------------------------------------
+	export interface EditDeleteRowParams extends IEditRowOperationParams { }
+	export interface EditDeleteRowResult { }
+
+	// edit/dispose -------------------------------------------------------------------------------
+	export interface EditDisposeParams extends IEditSessionOperationParams { }
+	export interface EditDisposeResult { }
+
+	// edit/initialize ----------------------------------------------------------------------------
+	export interface EditInitializeParams extends IEditSessionOperationParams {
+		objectName: string;
+		objectType: string;
+	}
+
+	export interface EditInitializeResult { }
+
+	// edit/revertCell ----------------------------------------------------------------------------
+	export interface EditRevertCellParams extends IEditRowOperationParams {
+		columnId: number;
+	}
+	export interface EditRevertCellResult {
+		newValue: string;
+	}
+
+	// edit/revertRow -----------------------------------------------------------------------------
+	export interface EditRevertRowParams extends IEditRowOperationParams { }
+	export interface EditRevertRowResult { }
+
+	// edit/sessionReady Event --------------------------------------------------------------------
+	export interface EditSessionReadyParams {
+		ownerUri: string;
+		success: boolean;
+	}
+
+	// edit/updateCell ----------------------------------------------------------------------------
+	export interface EditUpdateCellParams extends IEditRowOperationParams {
+		columnId: number;
+		newValue: string;
+	}
+
+	export interface EditUpdateCellResult {
+		hasCorrections: boolean;
+		isNull: boolean;
+		isRevert: boolean;
+		newValue: string;
+	}
 }

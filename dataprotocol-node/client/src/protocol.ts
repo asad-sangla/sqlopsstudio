@@ -1157,3 +1157,93 @@ export namespace ScriptingSelectRequest {
     export const type: RequestType<ScriptingSelectParams, ScriptingSelectResult, void> = { get method(): string { return 'scripting/select'; } };
 
 }
+
+// Edit Data ======================================================================================
+// Shared Interfaces --------------------------------------------------------------------------
+export interface IEditSessionOperationParams {
+	ownerUri: string;
+}
+
+export interface IEditRowOperationParams extends IEditSessionOperationParams {
+	rowId: number;
+}
+
+// edit/commit --------------------------------------------------------------------------------
+export namespace EditCommitRequest {
+	export const type: RequestType<EditCommitParams, EditCommitResult, void> = {get method(): string {return 'edit/commit';}};
+}
+export interface EditCommitParams extends IEditSessionOperationParams {	}
+export interface EditCommitResult {}
+
+// edit/createRow -----------------------------------------------------------------------------
+export namespace EditCreateRowRequest {
+	export const type: RequestType<EditCreateRowParams, EditCreateRowResult, void> = {get method(): string {return 'edit/createRow';}};
+}
+export interface EditCreateRowParams extends IEditSessionOperationParams { }
+export interface EditCreateRowResult {
+	defaultValues: string[];
+	newRowId: number;
+}
+
+// edit/deleteRow -----------------------------------------------------------------------------
+export namespace EditDeleteRowRequest {
+	export const type: RequestType<EditDeleteRowParams, EditDeleteRowResult, void> = {get method(): string {return 'edit/deleteRow'}};
+}
+export interface EditDeleteRowParams extends IEditRowOperationParams { }
+export interface EditDeleteRowResult { }
+
+// edit/dispose -------------------------------------------------------------------------------
+export namespace EditDisposeRequest {
+	export const type: RequestType<EditDisposeParams, EditDisposeResult, void> = {get method(): string {return 'edit/dispose';}};
+}
+export interface EditDisposeParams extends IEditSessionOperationParams { }
+export interface EditDisposeResult { }
+
+// edit/initialize ----------------------------------------------------------------------------
+export namespace EditInitializeRequest {
+	export const type: RequestType<EditInitializeParams, EditInitializeResult, void> = {get method(): string {return 'edit/initialize';}};
+}
+export interface EditInitializeParams extends IEditSessionOperationParams {
+	objectName: string;
+	objectType: string;
+}
+export interface EditInitializeResult { }
+
+// edit/revertCell --------------------------------------------------------------------------------
+export namespace EditRevertCellRequest {
+	export const type: RequestType<EditRevertCellParams, EditRevertCellResult, void> = {get method(): string {return 'edit/revertCell';}};
+}
+export interface EditRevertCellParams extends IEditRowOperationParams {
+	columnId: number;
+}
+export interface EditRevertCellResult {
+	newValue: string;
+}
+
+// edit/revertRow -----------------------------------------------------------------------------
+export namespace EditRevertRowRequest {
+	export const type: RequestType<EditRevertRowParams, EditRevertRowResult, void> = {get method(): string {return 'edit/revertRow';}};
+}
+export interface EditRevertRowParams extends IEditRowOperationParams { }
+export interface EditRevertRowResult { }
+
+// edit/sessionReady Event --------------------------------------------------------------------
+export namespace EditSessionReadyNotification {
+    export const type: NotificationType<QueryExecuteMessageParams> = { get method(): string { return 'edit/sessionReady'; } };
+}
+export interface EditSessionReadyParams {
+	ownerUri: string;
+	success: boolean;
+}
+
+// edit/updateCell ----------------------------------------------------------------------------
+export interface EditUpdateCellParams extends IEditRowOperationParams {
+	columnId: number;
+	newValue: string;
+}
+export interface EditUpdateCellResult {
+	hasCorrections: boolean;
+	isNull: boolean;
+	isRevert: boolean;
+	newValue: string;
+}
