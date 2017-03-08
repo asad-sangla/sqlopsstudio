@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TPromise } from 'vs/base/common/winjs.base';
-import { EditorInput,  EditorModel, ConfirmResult, EncodingMode } from 'vs/workbench/common/editor';
+import { EditorInput,  EditorModel, ConfirmResult, EncodingMode, IEncodingSupport } from 'vs/workbench/common/editor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import Event from 'vs/base/common/event';
@@ -14,13 +14,15 @@ import URI from 'vs/base/common/uri';
  * Input for the QueryEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
  * and a UntitledEditorInput for the SQL File Editor.
  */
-export class QueryInput extends EditorInput {
+export class QueryInput extends EditorInput implements IEncodingSupport{
 
 	public static ID: string = 'workbench.editorinputs.queryInput';
 	public static SCHEMA: string = 'sql';
 
 	constructor(private name: string, private description: string, private _sql: UntitledEditorInput, private _results: QueryResultsInput) {
 		super();
+		// re-emit sql editor events through this editor
+		this._sql.onDidChangeDirty(() => this._onDidChangeDirty.fire());
 	}
 
 	get sql(): UntitledEditorInput {
@@ -34,6 +36,7 @@ export class QueryInput extends EditorInput {
 	public getTypeId(): string {
 		return UntitledEditorInput.ID;
 	}
+
 	public getDescription(): string {
 		return this.description;
 	}
