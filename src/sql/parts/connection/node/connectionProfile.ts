@@ -20,6 +20,7 @@ export class ConnectionProfile extends ConnectionCredentials implements IConnect
     public profileName: string;
     public savePassword: boolean;
     public groupName: string;
+    public groupId: string;
     public parent: ConnectionProfileGroup = null;
     public serverName: string;
 	public databaseName: string;
@@ -36,6 +37,7 @@ export class ConnectionProfile extends ConnectionCredentials implements IConnect
 		this.databaseName = connectionProfile.databaseName;
 		this.userName = connectionProfile.userName;
 		this.authenticationType = connectionProfile.authenticationType;
+		this.groupId = connectionProfile.groupId;
 		this.id = this.groupName + ConnectionProfileGroup.GroupNameSeparator +
 					this.serverName + ConnectionProfileGroup.GroupNameSeparator +
 					this.databaseName + ConnectionProfileGroup.GroupNameSeparator +

@@ -87,12 +87,12 @@ configurationRegistry.registerConfiguration({
 	'title': 'Database Connections',
 	'type': 'object',
 	'properties': {
-		'database.connections': {
-			'description': 'mssql connections',
+		'datasource.connections': {
+			'description': 'data source connections',
 			'type': 'array'
 		},
-		'database.connectionGroups': {
-			'description': 'mssql connections',
+		'datasource.connectionGroups': {
+			'description': 'data source connections',
 			'type': 'array'
 		}
 	}

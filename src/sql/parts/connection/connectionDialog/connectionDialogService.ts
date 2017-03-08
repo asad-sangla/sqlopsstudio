@@ -75,7 +75,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				groupName: '',
 				userName: '',
 				password: '',
-				savePassword: false
+				savePassword: false,
+				groupId: undefined
 			};
 			this._connectionDialog.open(this._connectionManagementService.getRecentConnections());
 			this._connectionDialog.setConnection(model);

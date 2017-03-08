@@ -247,17 +247,17 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 			console.log('drop ' + source.serverName + ' to ' + targetConnectionProfileGroup.fullName);
 			if (source instanceof ConnectionProfile) {
 				// Change groupName of Profile
-				this.connectionManagementService.changeGroupNameForConnection(source, targetConnectionProfileGroup.fullName).then(() => {
+				this.connectionManagementService.changeGroupNameForConnection(source, targetConnectionProfileGroup.id).then(() => {
 					this.renderTree(tree);
 				});
 			} else if (source instanceof ConnectionProfileGroup) {
 
 				// Change groupName of all children under this group
-				this.connectionManagementService.changeGroupNameForGroup(source.fullName, targetConnectionProfileGroup.fullName + '/' + source.name).then(() => {
+				this.connectionManagementService.changeGroupNameForGroup(source.fullName, targetConnectionProfileGroup.fullName + ConnectionProfileGroup.GroupNameSeparator + source.name).then(() => {
 					// Move group to its new parent
 					oldParent.removeGroup(source);
 					targetConnectionProfileGroup.addGroup(source);
-					this.connectionManagementService.updateGroups(this.getTopParent(oldParent), this.getTopParent(targetConnectionProfileGroup)).then(() => {
+					this.connectionManagementService.updateGroups(source, targetConnectionProfileGroup).then(() => {
 						this.renderTree(tree);
 					});
 				});
@@ -270,7 +270,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Set tree input and render tree
 	 */
 	public renderTree(tree: ITree): void {
-		var treeInput = new ConnectionProfileGroup('root', null);
+		var treeInput = new ConnectionProfileGroup('root', null, '');
 			var groups = this.connectionManagementService.getConnections();
 			treeInput.addGroups(groups);
 			console.log('tree input');

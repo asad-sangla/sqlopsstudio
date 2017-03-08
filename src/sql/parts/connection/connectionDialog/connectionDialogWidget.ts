@@ -265,7 +265,8 @@ export class ConnectionDialogWidget {
 				password: this.password,
 				authenticationType: this.authenticationType,
 				savePassword: this.rememberPassword.checked,
-				groupName: this.serverGroup
+				groupName: this.serverGroup,
+				groupId: undefined
 			};
 
 			this.connectButton.enabled = false;

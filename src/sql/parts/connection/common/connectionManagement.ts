@@ -46,7 +46,7 @@ export interface IConnectionManagementService {
 
 	getRecentConnections(): vscode.ConnectionInfo[];
 
-	updateGroups(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
+	updateGroups(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void>;
 
 	changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void>;
 

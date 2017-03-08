@@ -36,10 +36,11 @@ suite('SQL Actions Tests', () => {
 			databaseName: 'testDatabaseName',
 			authenticationType: 'inetgrated',
 			password: 'test',
-			userName: 'testUsername'
+			userName: 'testUsername',
+			groupId: undefined
 		});
 		connection.id = 'testID';
-		conProfGroup = new ConnectionProfileGroup('testGroup', undefined);
+		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
 		conProfGroup.connections = [connection];
 
 		// Setting up our test table name

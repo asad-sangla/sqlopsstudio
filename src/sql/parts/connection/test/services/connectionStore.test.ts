@@ -35,7 +35,8 @@ suite('ConnectionStore tests', () => {
 			userName: 'cde',
 			password: 'asdf!@#$',
 			savePassword: true,
-			groupName: ''
+			groupId: '',
+			groupName:''
 		});
 
 		defaultUnnamedProfile = Object.assign({}, {
@@ -45,7 +46,8 @@ suite('ConnectionStore tests', () => {
 			userName: 'aUser',
 			password: 'asdf!@#$',
 			savePassword: true,
-			groupName: ''
+			groupId: '',
+			groupName:''
 
 		});
 

@@ -10,20 +10,22 @@ import { ConnectionProfile } from './connectionProfile';
 import vscode = require('vscode');
 
 export interface IConnectionProfileGroup {
+	id: string;
+	parentId: string;
 	name: string;
-	children: IConnectionProfileGroup[];
 }
 
 export class ConnectionProfileGroup implements IConnectionProfileGroup {
 
 	public children: ConnectionProfileGroup[];
 	public connections: ConnectionProfile[];
-	private _id: string;
+	public parentId: string;
 	public constructor(
 		public name: string,
-		private _parent: ConnectionProfileGroup
+		private _parent: ConnectionProfileGroup,
+		public id: string
 	) {
-		this._id = this.fullName === undefined ? this.name : this.fullName;
+		this.parentId = _parent ? _parent.id : undefined;
 	}
 
 	public static GroupNameSeparator: string = '/';
@@ -37,7 +39,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 		});
 		}
 
-		return Object.assign({},{name: this.name, children: subgroups});
+		return Object.assign({},{name: this.name, id: this.id, parentId: this.parentId, children: subgroups});
 	}
 
 	public get groupName(): string {
@@ -53,10 +55,6 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 			}
 		}
 		return fullName;
-	}
-
-	public get id(): string {
-		return this._id;
 	}
 
 	public get serverName(): string {

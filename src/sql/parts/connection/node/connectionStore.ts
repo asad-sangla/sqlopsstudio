@@ -176,8 +176,8 @@ export class ConnectionStore {
 	 *
 	 * @returns {vscode.ConnectionInfo} the array of connections, empty if none are found
 	 */
-	public getRecentlyUsedConnections(): vscode.ConnectionInfo[] {
-		let configValues: vscode.ConnectionInfo[] = this._memento['RECENT_CONNECTIONS'];
+	public getRecentlyUsedConnections(): IConnectionProfile[] {
+		let configValues: IConnectionProfile[] = this._memento['RECENT_CONNECTIONS'];
 		if (!configValues) {
 			configValues = [];
 		}
@@ -191,7 +191,7 @@ export class ConnectionStore {
 	 * @param {IConnectionCredentials} conn the connection to add
 	 * @returns {Promise<void>} a Promise that returns when the connection was saved
 	 */
-	public addRecentlyUsed(conn: vscode.ConnectionInfo): Promise<void> {
+	public addRecentlyUsed(conn: IConnectionProfile): Promise<void> {
 
 		const self = this;
 		return new Promise<void>((resolve, reject) => {
@@ -203,7 +203,7 @@ export class ConnectionStore {
 			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
 
 			// Add the connection to the front of the list, taking care to clear out the password field
-			let savedConn: vscode.ConnectionInfo = Object.assign({}, conn, { password: '' });
+			let savedConn: IConnectionProfile = Object.assign({}, conn, { password: '' });
 			configValues.unshift(savedConn);
 
 			// Remove last element if needed
@@ -312,28 +312,32 @@ export class ConnectionStore {
 		let profilesInConfiguration = this._connectionConfig.getConnections(true);
 		let groups = this._connectionConfig.getAllGroups();
 
-		let connectionProfileGroups = groups.map(group => {
-			return this.convertToConnectionGroup(group, profilesInConfiguration, undefined);
-		});
+		let connectionProfileGroups = this.convertToConnectionGroup(groups, profilesInConfiguration, undefined);
 		return connectionProfileGroups;
 	}
 
-	private convertToConnectionGroup(group: IConnectionProfileGroup, connections: IConnectionProfile[], parent: ConnectionProfileGroup = undefined): ConnectionProfileGroup {
-		let connectionGroup = new ConnectionProfileGroup(group.name, parent);
-         if(group.children) {
-            let children = group.children.map( (group) => {
-                return this.convertToConnectionGroup(group, connections, connectionGroup);
-            });
-            connectionGroup.addGroups(children);
-         }
-         let connectionsForGroup = connections.filter(conn => conn.groupName === connectionGroup.fullName);
-         var conns = [];
-         connectionsForGroup.forEach((conn) => {
-             conns.push(new ConnectionProfile(conn));
-         });
-         connectionGroup.addConnections(conns);
+	private convertToConnectionGroup(groups: IConnectionProfileGroup[], connections: IConnectionProfile[], parent: ConnectionProfileGroup = undefined): ConnectionProfileGroup[] {
+		let result : ConnectionProfileGroup[] = [];
+		let children = groups.filter(g => g.parentId === (parent ? parent.id : undefined));
+		if(children) {
+			children.map( group => {
+				let connectionGroup = new ConnectionProfileGroup(group.name, parent, group.id);
+				let connectionsForGroup = connections.filter(conn => conn.groupId === connectionGroup.id);
+				var conns = [];
+				connectionsForGroup.forEach((conn) => {
+					conns.push(new ConnectionProfile(conn));
+				});
+				connectionGroup.addConnections(conns);
 
-         return connectionGroup;
+				let childrenGroups = this.convertToConnectionGroup(groups, connections, connectionGroup);
+				connectionGroup.addGroups(childrenGroups);
+				result.push(connectionGroup);
+			});
+			if(parent) {
+				parent.addGroups(result);
+			}
+		}
+        return result;
 	}
 
 	private loadProfiles(loadWorkspaceProfiles: boolean): IConnectionProfile[] {
