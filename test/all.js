@@ -15,7 +15,7 @@ var jsdom = require('jsdom-no-contextify');
 var minimatch = require('minimatch');
 var fs = require('fs');
 var vm = require('vm');
-var TEST_GLOB = '**/test/**/*.test.js';
+var TEST_GLOB = '**/*test*/**/*.test.js';
 
 var optimist = require('optimist')
 	.usage('Run the Code tests. All mocha options apply.')
@@ -50,6 +50,7 @@ function main() {
 		baseUrl: path.join(path.dirname(__dirname), 'src'),
 		paths: {
 			'vs': `../${ out }/vs`,
+			'sqltest': `../${ out }/sqltest`,
 			'sql': `../${ out }/sql`,
 			'lib': `../${ out }/lib`,
 			'bootstrap': `../${ out }/bootstrap`

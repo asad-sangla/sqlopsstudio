@@ -4,14 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { TestConnectionManagementService } from 'sql/test/common.test';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { TestConnectionManagementService } from 'sqltest/stubs/connectionManagementService.test';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
 import { QueryEditorService } from 'sql/parts/editor/queryEditorService';
-import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
-import { TestQuickOpenService } from 'vs/workbench/test/browser/quickopen.test'
-import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
+import { TestQuickOpenService } from 'vs/workbench/test/browser/quickopen.test';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as Utils from 'sql/parts/connection/node/utils';
