@@ -466,7 +466,7 @@ export class GitService extends EventEmitter
 
 					if (major && major < 2) {
 						messageService.show(severity.Warning, {
-							message: localize('updateGit', "You seem to have git {0} installed. Code works best with git >=2.0.0.", version),
+							message: localize('updateGit', "You seem to have git {0} installed. Carbon works best with git >=2.0.0.", version),
 							actions: [
 								new Action('downloadLatest', localize('download', "Download"), '', true, () => {
 									window.open('https://git-scm.com/');

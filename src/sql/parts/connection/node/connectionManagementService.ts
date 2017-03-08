@@ -15,7 +15,6 @@ import { Memento } from 'vs/workbench/common/memento';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IStorageService } from 'vs/platform/storage/common/storage';
-import * as vscode from 'vscode';
 import { ConnectionStore } from './connectionStore';
 import { IConnectionProfile } from './interfaces';
 import { ConnectionProfileGroup } from './connectionProfileGroup';
@@ -26,6 +25,8 @@ import Utils = require('./utils');
 import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
+import * as vscode from 'vscode';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -83,11 +84,21 @@ export class ConnectionManagementService implements IConnectionManagementService
 							}
 						}
 					});
+					this.showDashboard(connection);
 				}
 				resolve(connected);
 			}).catch(err => {
 				reject(err);
 			});
+		});
+	}
+
+	private showDashboard(connection: IConnectionProfile): Promise<boolean> {
+		const self = this;
+		return new Promise<boolean>((resolve, reject) => {
+			let dashboardInput: DashboardInput = self._instantiationService.createInstance(DashboardInput, connection);
+			self._editorService.openEditor(dashboardInput, null, false);
+			resolve(true);
 		});
 	}
 
