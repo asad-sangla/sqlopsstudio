@@ -6,31 +6,38 @@
 
 import * as errors from 'vs/base/common/errors';
 import { TPromise } from 'vs/base/common/winjs.base';
+import WinJS = require('vs/base/common/winjs.base');
+import nls = require('vs/nls');
 import { ITree, ContextMenuEvent } from 'vs/base/parts/tree/browser/tree';
 import treedefaults = require('vs/base/parts/tree/browser/treeDefaults');
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegistry';
 import { IAction } from 'vs/base/common/actions';
 import { Keybinding } from 'vs/base/common/keyCodes';
 import { IActionProvider } from 'vs/base/parts/tree/browser/actionsRenderer';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { DragMouseEvent, IMouseEvent } from 'vs/base/browser/mouseEvent';
+import { IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
-import { ConnectionProfile } from '../node/connectionProfile';
+import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
-import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
+import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
+import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
+import { ServerTreeDataSource, AddServerToGroupAction, NewQueryAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { RecentConnectionsRenderer, RecentConnectionsDragAndDrop } from 'sql/parts/connection/electron-browser/recentConnectionsRenderer';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 
 /**
  * Extends the tree controller to handle clicks on the tree elements
  */
-export class ServerTreeController extends treedefaults.DefaultController {
+export class ConnectionTreeController extends treedefaults.DefaultController {
 
-	constructor(private actionProvider: ServerTreeActionProvider,
+	constructor(private actionProvider: ConnectionTreeActionProvider,
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
 		@IContextMenuService private contextMenuService: IContextMenuService,
 		@ITelemetryService private telemetryService: ITelemetryService,
@@ -76,14 +83,7 @@ export class ServerTreeController extends treedefaults.DefaultController {
 		event.stopPropagation();
 
 		tree.setFocus(element);
-		let parent: ConnectionProfileGroup = undefined;
-		if (element instanceof ConnectionProfileGroup) {
-			parent = <ConnectionProfileGroup>element;
-		}
-		else if (element instanceof ConnectionProfile) {
-			parent = (<ConnectionProfile>element).parent;
-		}
-
+		let parent: ConnectionProfileGroup = element.parent;
 		let anchor = { x: event.posx + 1, y: event.posy };
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => anchor,
@@ -104,7 +104,7 @@ export class ServerTreeController extends treedefaults.DefaultController {
 /**
  *  Provides actions for the server tree elements
  */
-export class ServerTreeActionProvider extends ContributableActionProvider {
+export class ConnectionTreeActionProvider extends ContributableActionProvider {
 
 	constructor(
 		@IInstantiationService private instantiationService: IInstantiationService
@@ -116,18 +116,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		return element instanceof ConnectionProfileGroup || (element instanceof ConnectionProfile);
 	}
 
-	/**
-	 * Return actions given an element in the tree
-	 */
 	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
-		if (element instanceof ConnectionProfile) {
-			return TPromise.as(TreeUtils.getConnectionActions(this.instantiationService));
-		}
-		if (element instanceof ConnectionProfileGroup) {
-			return TPromise.as(TreeUtils.getConnectionProfileGroupActions(this.instantiationService));
-		}
-
-		return TPromise.as([]);
+		return TPromise.as(TreeUtils.getConnectionActions(this.instantiationService));
 	}
 
 	public hasSecondaryActions(tree: ITree, element: any): boolean {
@@ -137,4 +127,73 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	public getSecondaryActions(tree: ITree, element: any): TPromise<IAction[]> {
 		return super.getSecondaryActions(tree, element);
 	}
+}
+
+
+export class TreeUtils {
+
+	/**
+	 * Create a recent/active connections tree
+	 */
+	public static createConnectionTree(treeContainer: HTMLElement, instantiationService: IInstantiationService): Tree {
+		const dataSource = instantiationService.createInstance(ServerTreeDataSource);
+		const actionProvider = instantiationService.createInstance(ConnectionTreeActionProvider);
+		const renderer = instantiationService.createInstance(RecentConnectionsRenderer);
+		const controller = instantiationService.createInstance(ConnectionTreeController, actionProvider);
+		const dnd = instantiationService.createInstance(RecentConnectionsDragAndDrop);
+		const filter = new DefaultFilter();
+		const sorter = null;
+		const accessibilityProvider = new DefaultAccessibilityProvider();
+
+		return new Tree(treeContainer, {
+			dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider
+		}, {
+				indentPixels: 10,
+				twistiePixels: 20,
+				ariaLabel: nls.localize({ key: 'treeAriaLabel', comment: ['Recent Connections'] }, 'Recent Connections')
+			});
+
+	}
+
+	/**
+	 * Set input for the tree.
+	 */
+	public static structuralTreeUpdate(tree: Tree, viewKey: string, connectionManagementService: IConnectionManagementService): WinJS.Promise {
+		let groups;
+		if (viewKey === 'recent') {
+			groups = connectionManagementService.getRecentConnections();
+		} else if (viewKey === 'active') {
+			// TODO: Call active API after implementation
+			groups = connectionManagementService.getRecentConnections();
+		}
+		const treeInput = new ConnectionProfileGroup('root', null, undefined);
+		treeInput.addConnections(TreeUtils.convertToConnectionProfile(groups));
+		return tree.setInput(treeInput);
+	}
+
+	/**
+	 * Convert interface to match connection management API
+	 */
+	public static convertToConnectionProfile(conns: IConnectionProfile[]): ConnectionProfile[] {
+		let connections = [];
+		conns.forEach((conn) => {
+			connections.push(new ConnectionProfile(conn));
+		});
+		return connections;
+	}
+
+	public static getConnectionActions(instantiationService: IInstantiationService): IAction[] {
+		return [
+			instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL),
+			instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
+			instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL)
+		];
+	}
+
+	public static getConnectionProfileGroupActions(instantiationService: IInstantiationService): IAction[] {
+		return [
+			instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
+		];
+	}
+
 }

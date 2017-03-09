@@ -316,6 +316,10 @@ export class ConnectionStore {
 		return connectionProfileGroups;
 	}
 
+	public getRecentConnections(): IConnectionProfile[] {
+		return this._connectionConfig.getConnections(true);
+	}
+
 	private convertToConnectionGroup(groups: IConnectionProfileGroup[], connections: IConnectionProfile[], parent: ConnectionProfileGroup = undefined): ConnectionProfileGroup[] {
 		let result : ConnectionProfileGroup[] = [];
 		let children = groups.filter(g => g.parentId === (parent ? parent.id : undefined));

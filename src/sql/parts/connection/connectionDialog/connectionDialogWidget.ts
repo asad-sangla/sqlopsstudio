@@ -18,6 +18,7 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import * as platform from 'vs/base/common/platform';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import vscode = require('vscode');
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
@@ -52,7 +53,10 @@ export class ConnectionDialogWidget {
 	private _authenticationOptions: string[];
 	private _recentConnectionButtons: Button[];
 
-	constructor(container: HTMLElement, callbacks: IConnectionDialogCallbacks) {
+	constructor(container: HTMLElement,
+		callbacks: IConnectionDialogCallbacks,
+		@IInstantiationService private instantiationService: IInstantiationService)
+	{
 		this.container = container;
 		this.setCallbacks(callbacks);
 		this.toDispose = [];

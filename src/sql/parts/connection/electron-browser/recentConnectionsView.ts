@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import nls = require('vs/nls');
-import * as vscode from 'vscode';
 import errors = require('vs/base/common/errors');
+import * as vscode from 'vscode';
 import { IActionRunner, IAction } from 'vs/base/common/actions';
 import dom = require('vs/base/browser/dom');
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
@@ -15,40 +15,37 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
 import { ConnectionProfile } from '../node/connectionProfile';
-import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
-import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/electron-browser/serverTreeController';
+import { ServerTreeDataSource, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { RecentConnectionsRenderer, RecentConnectionsDragAndDrop } from 'sql/parts/connection/electron-browser/recentConnectionsRenderer';
+import { ConnectionTreeController, ConnectionTreeActionProvider, TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
-import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionProfile } from '../node/interfaces';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 const $ = builder.$;
 
 /**
- * ServerTreeview implements the dynamic tree view.
+ * RecentConnections view implements the dynamic tree view.
  */
-export class ServerTreeView extends AdaptiveCollapsibleViewletView {
+export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 
-	private fullRefreshNeeded: boolean;
-	private viewletState: TreeExplorerViewletState;
-	private searchBox: HTMLInputElement;
-
-	constructor(actionRunner: IActionRunner, settings: any,
+	constructor(private viewTitle, public viewKey, actionRunner: IActionRunner, settings: any,
 		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService private messageService: IMessageService
 	) {
-		super(actionRunner, 22 * 20, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
+		super(actionRunner, 175, false, viewTitle, keybindingService, contextMenuService);
 }
 	/**
 	 * Render header of the view
 	 */
 	public renderHeader(container: HTMLElement): void {
 		const titleDiv = $('div.title').appendTo(container);
-		$('span').text(nls.localize('registeredServers', "Registered Servers")).appendTo(titleDiv);
+		$('span').text(this.viewTitle).appendTo(titleDiv);
 
 		super.renderHeader(container);
 	}
@@ -59,27 +56,15 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	public renderBody(container: HTMLElement): void {
 		this.treeContainer = super.renderViewTree(container);
 		dom.addClass(this.treeContainer, 'explorer-servers');
-
-		const dataSource = this.instantiationService.createInstance(ServerTreeDataSource);
-		this.viewletState = new TreeExplorerViewletState();
-		const actionProvider = this.instantiationService.createInstance(ServerTreeActionProvider);
-		const renderer = this.instantiationService.createInstance(ServerTreeRenderer);
-		const controller = this.instantiationService.createInstance(ServerTreeController,actionProvider);
-		const dnd = this.instantiationService.createInstance(ServerTreeDragAndDrop);
-		const filter = new DefaultFilter();
-		const sorter = null;
-		const accessibilityProvider = new DefaultAccessibilityProvider();
-
-		this.tree = new Tree(this.treeContainer, {
-			dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider
-		}, {
-				indentPixels: 10,
-				twistiePixels: 20,
-				ariaLabel: nls.localize({ key: 'treeAriaLabel', comment: ['Registered Servers'] }, "Registered Servers")
-			});
+		this.tree = TreeUtils.createConnectionTree(this.treeContainer, this.instantiationService);
 		this.toDispose.push(this.tree.addListener2('selection', () => this.onSelected()));
 		const self = this;
-		let handle = 199889;
+		let handle;
+		if (this.viewKey === 'recent') {
+			handle = 19990;
+		} else if (this.viewKey === 'active') {
+			handle = 19999;
+		}
 		this.connectionManagementService.addEventListener(handle, {
 			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): void {
 				//no op
@@ -120,16 +105,26 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	 * Set input for the tree.
 	 */
 	private structuralTreeUpdate(): void {
-		const self = this;
-		let groups = this.connectionManagementService.getConnections();
-		// TODO@Isidor temporary workaround due to a partial tree refresh issue
-		this.fullRefreshNeeded = true;
+		let groups;
+		if (this.viewKey === 'recent') {
+			groups = this.connectionManagementService.getRecentConnections();
+		} else if (this.viewKey === 'active') {
+			groups = this.connectionManagementService.getRecentConnections();
+		}
+
 		const treeInput =  new ConnectionProfileGroup('root', null, undefined);
-		treeInput.addGroups(groups);
+		console.log(this.viewKey + ' groups ' + groups);
+		treeInput.addConnections(TreeUtils.convertToConnectionProfile(groups));
 		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
-			self.fullRefreshNeeded = false;
-			self.tree.getFocus();
+			this.tree.getFocus();
 		}, errors.onUnexpectedError);
+	}
+
+	private convertToConnectionProfile(conns: IConnectionProfile[]) : ConnectionProfile[]{
+		let connections = [];
+		conns.forEach((conn) => { connections.push(new ConnectionProfile(conn));
+			});
+		return connections;
 	}
 
 	private onError(err: any): void {

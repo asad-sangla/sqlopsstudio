@@ -12,6 +12,7 @@ import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDia
 import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class ConnectionDialogService implements IConnectionDialogService {
 
@@ -22,7 +23,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _container: HTMLElement;
 
 	constructor(
-		@IPartService private partService: IPartService
+		@IPartService private partService: IPartService,
+		@IInstantiationService private instantiationService: IInstantiationService
 	) {
 	}
 
@@ -59,7 +61,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		if (!this._connectionDialog) {
 			let container = withElementById(this.partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 			this._container = container;
-			this._connectionDialog = new ConnectionDialogWidget(container, {
+			this._connectionDialog = this.instantiationService.createInstance(ConnectionDialogWidget, container, {
 				onCancel: () => { },
 				onConnect: () => this.handleOnConnect(),
 				onAdvancedProperties: () => this.handleOnAdvancedProperties()

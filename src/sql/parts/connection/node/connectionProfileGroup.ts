@@ -49,7 +49,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	public get fullName(): string {
 		let fullName: string = (this.name === 'root') ? undefined : this.name;
 		if (this._parent) {
-			var parentFullName = this._parent.fullName;
+			let parentFullName = this._parent.fullName;
 			if (parentFullName) {
 				fullName = parentFullName + ConnectionProfileGroup.GroupNameSeparator + this.name;
 			}
@@ -69,7 +69,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	}
 
 	public getChildren(): any {
-		var allChildren = [];
+		let allChildren = [];
 
 		if (this.connections) {
 			this.connections.forEach((conn) => {
@@ -114,14 +114,14 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	}
 
 	public updateGroup(child: ConnectionProfileGroup): void {
-		var index = this.children.indexOf(child);
+		let index = this.children.indexOf(child);
 		if (index !== -1) {
 			this.children[index] = child;
 		}
 	}
 
 	public removeConnection(child: ConnectionProfile): void {
-		var connections = this.connections;
+		let connections = this.connections;
 		connections.forEach((val, i) => {
 			if (val.equals(child)) {
 				connections.splice(i, 1);
@@ -135,7 +135,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	}
 
 	public removeGroup(child: ConnectionProfileGroup): void {
-		var groups = this.children;
+		let groups = this.children;
 		groups.forEach((val, i) => {
 			if (val.equals(child)) {
 				groups.splice(i, 1);
@@ -149,7 +149,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	}
 
 	public addGroup(child: ConnectionProfileGroup): void {
-		var servers = this.children;
+		let servers = this.children;
 		if (!this.children) {
 			this.children = [child];
 			child._parent = this;

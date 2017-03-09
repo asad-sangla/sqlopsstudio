@@ -22,19 +22,27 @@ import Severity from 'vs/base/common/severity';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { IConnectionsViewlet, IConnectionManagementService, VIEWLET_ID } from 'sql/parts/connection/common/connectionManagement';
 import { ServerTreeView } from 'sql/parts/connection/electron-browser/serverTreeView';
-import { SplitView} from 'vs/base/browser/ui/splitview/splitview';
+import { RecentConnectionsView } from 'sql/parts/connection/electron-browser/recentConnectionsView';
+import { SplitView } from 'vs/base/browser/ui/splitview/splitview';
+import { IAction, Action } from 'vs/base/common/actions';
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem } from 'sql/parts/query/execution/queryActions';
+import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 
 export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	private searchDelayer: ThrottledDelayer<any>;
 	private root: HTMLElement;
 	private searchBox: HTMLInputElement;
-	private extensionsBox: HTMLElement;
 	private messageBox: HTMLElement;
 	private disposables: IDisposable[] = [];
 	private connectionButton: Button;
 	private views: IViewletView[];
 	private serverTreeView: ServerTreeView;
+	private recentConnView: RecentConnectionsView;
+	private activeConnView: RecentConnectionsView;
 	private viewletContainer: Builder;
 	private splitView: SplitView;
 
@@ -54,16 +62,13 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		super.create(parent);
 		parent.addClass('extensions-viewlet');
 		this.root = parent.getHTMLElement();
-
-
 		const header = append(this.root, $('.header'));
-
 		this.searchBox = append(header, $<HTMLInputElement>('input.search-box'));
 		this.searchBox.placeholder = 'Find Server';
 		this.disposables.push(addStandardDisposableListener(this.searchBox, EventType.FOCUS, () => addClass(this.searchBox, 'synthetic-focus')));
 		this.disposables.push(addStandardDisposableListener(this.searchBox, EventType.BLUR, () => removeClass(this.searchBox, 'synthetic-focus')));
 
-		this.extensionsBox = append(this.root, $('.extensions'));
+		//this.extensionsBox = append(this.root, $('.extensions'));
 		this.messageBox = append(this.root, $('.message'));
 
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
@@ -76,9 +81,13 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 		this.splitView = new SplitView(this.viewletContainer.getHTMLElement());
 		this.serverTreeView = this.instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
+		this.recentConnView = this.instantiationService.createInstance(RecentConnectionsView, "Recent Connections", "recent", this.getActionRunner(), {});
+		this.activeConnView = this.instantiationService.createInstance(RecentConnectionsView, "Active Connections", "active", this.getActionRunner(), {});
+		this.splitView.addView(this.activeConnView);
+		this.splitView.addView(this.recentConnView);
 		this.splitView.addView(this.serverTreeView, 20);
 		this.views.push(this.serverTreeView);
-
+		this.views.push(this.recentConnView);
 		this.serverTreeView.create().then(() => {
 			this.updateTitleArea();
 			this.setVisible(this.isVisible()).then(() => this.focus());
@@ -94,12 +103,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	setVisible(visible: boolean): TPromise<void> {
 		return super.setVisible(visible).then(() => {
 			if (visible) {
-				this.searchBox.focus();
-				this.searchBox.setSelectionRange(0, this.searchBox.value.length);
 				this.serverTreeView.setVisible(visible);
-				//this.populateServerList().then(model => {
-				//	this.setModel(model);
-				//});
 			} else {
 				this.setModel([]);
 			}
@@ -107,7 +111,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	}
 
 	focus(): void {
-		this.searchBox.focus();
 		this.serverTreeView.focus();
 	}
 
@@ -125,7 +128,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	}
 
 	private setModel(model: number[]) {
-		toggleClass(this.extensionsBox, 'hidden', model.length === 0);
 		toggleClass(this.messageBox, 'hidden', model.length > 0);
 
 		if (model.length === 0 && this.isVisible()) {

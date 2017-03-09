@@ -38,7 +38,7 @@ export class ConnectionProfile extends ConnectionCredentials implements IConnect
 		this.userName = connectionProfile.userName;
 		this.authenticationType = connectionProfile.authenticationType;
 		this.groupId = connectionProfile.groupId;
-		this.id = this.groupName + ConnectionProfileGroup.GroupNameSeparator +
+		this.id = this.groupId + ConnectionProfileGroup.GroupNameSeparator +
 					this.serverName + ConnectionProfileGroup.GroupNameSeparator +
 					this.databaseName + ConnectionProfileGroup.GroupNameSeparator +
 					this.userName;
@@ -59,7 +59,7 @@ export class ConnectionProfile extends ConnectionCredentials implements IConnect
     }
 
     public get fullName(): string {
-		let fullName: string = this.serverName + ConnectionProfileGroup.GroupNameSeparator ;
+		let fullName: string = this.groupId + ConnectionProfileGroup.GroupNameSeparator ;
 		if(this.parent) {
 			fullName = this.parent.fullName + ConnectionProfileGroup.GroupNameSeparator + fullName;
 		}
