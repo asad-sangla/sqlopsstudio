@@ -88,7 +88,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
-    $getQueryRows(handle: number, rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
+	$getQueryRows(handle: number, rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
 		return this._runWithProvider(handle, (provider) => {
 			return provider.queryProvider.getQueryRows(rowData);
 		});

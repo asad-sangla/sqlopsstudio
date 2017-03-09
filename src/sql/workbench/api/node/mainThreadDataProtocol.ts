@@ -73,7 +73,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void> {
 				return self._proxy.$runQuery(handle, ownerUri, selection);
 			},
-    		getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
+			getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
 				return self._proxy.$getQueryRows(handle, rowData);
 			},
 			disposeQuery(ownerUri: string): Thenable<void> {
