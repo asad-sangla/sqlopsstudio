@@ -211,6 +211,19 @@ declare module 'data' {
 		registerOnBatchComplete(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any): void;
 		registerOnResultSetComplete(handler: (resultSetInfo: QueryExecuteResultSetCompleteNotificationParams) => any): void;
 		registerOnMessage(handler: (message: QueryExecuteMessageParams) => any): void;
+
+		// Edit Data Requests
+		commitEdit(ownerUri: string): Thenable<void>;
+		createRow(ownerUri: string): Thenable<EditCreateRowResult>;
+		deleteRow(ownerUri: string, rowId: number): Thenable<void>;
+		disposeEdit(ownerUri: string): Thenable<void>;
+		initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void>;
+		revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult>;
+		revertRow(ownerUri: string, rowId: number): Thenable<void>;
+		updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult>;
+
+		// Edit Data Notifications
+		registerOnEditSessionReady(handler: (ownerUri: string, success: boolean) => any): void;
 	}
 
 	export interface IDbColumn {

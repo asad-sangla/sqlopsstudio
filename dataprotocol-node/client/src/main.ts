@@ -85,7 +85,16 @@ import {
 		QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
 		QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryDisposeResult, QueryExecuteCompleteNotificationResult,
 		QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResult, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
-		QueryExecuteSubsetRequest
+		QueryExecuteSubsetRequest,
+		EditCommitRequest, EditCommitParams, EditCommitResult,
+		EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
+		EditDeleteRowRequest, EditDeleteRowParams, EditDeleteRowResult,
+		EditDisposeRequest, EditDisposeParams, EditDisposeResult,
+		EditInitializeRequest, EditInitializeParams, EditInitializeResult,
+		EditRevertCellRequest, EditRevertCellParams, EditRevertCellResult,
+		EditRevertRowRequest, EditRevertRowParams, EditRevertRowResult,
+		EditSessionReadyNotification, EditSessionReadyParams,
+		EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -1437,7 +1446,120 @@ export class LanguageClient {
 						ownerUri: params.ownerUri
 					});
 				});
-			}
+			},
+
+
+			// Edit Data Requests
+			commitEdit(ownerUri: string): Thenable<void> {
+				let params: EditCommitParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, EditCommitRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						this.logFailedRequest(EditCommitRequest.type, error);
+						return Promise.resolve(null);
+					}
+				);
+			},
+
+			createRow(ownerUri: string): Thenable<EditCreateRowResult> {
+				let params: EditCreateRowParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, EditCreateRowRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						this.logFailedRequest(EditCreateRowRequest.type, error);
+						return Promise.resolve(null);
+					}
+				);
+			},
+
+			deleteRow(ownerUri: string, rowId: number): Thenable<void> {
+				let params: EditDeleteRowParams = {ownerUri: ownerUri, rowId: rowId};
+				return self.doSendRequest(connection, EditDeleteRowRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						this.logFailedRequest(EditDeleteRowRequest.type, error);
+						return Promise.resolve(null);
+					}
+				);
+			},
+
+			disposeEdit(ownerUri: string): Thenable<void> {
+				let params: EditDisposeParams = {ownerUri: ownerUri};
+				return self.doSendRequest(connection, EditDisposeRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						this.logFailedRequest(EditDisposeRequest.type, error);
+						return Promise.resolve(null);
+					}
+				);
+			},
+
+			initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void> {
+				let params: EditInitializeParams = {ownerUri: ownerUri, objectName: objectName, objectType: objectType};
+				return self.doSendRequest(connection, EditInitializeRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						this.logFailedRequest(EditInitializeRequest.type, error);
+						return Promise.resolve(null);
+					}
+				);
+			},
+
+			revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult> {
+				let params: EditRevertCellParams = {ownerUri: ownerUri, rowId: rowId, columnId: columnId};
+				return self.doSendRequest(connection, EditRevertCellRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						this.logFailedRequest(EditRevertCellRequest.type, error);
+						return Promise.resolve(null);
+					}
+				);
+			},
+
+			revertRow(ownerUri: string, rowId: number): Thenable<void> {
+				let params: EditRevertRowParams = {ownerUri: ownerUri, rowId: rowId};
+				return self.doSendRequest(connection, EditRevertRowRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						this.logFailedRequest(EditRevertRowRequest.type, error);
+						return Promise.resolve(null);
+					}
+				);
+			},
+
+			updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult> {
+				let params: EditUpdateCellParams = {ownerUri: ownerUri, rowId: rowId, columnId: columnId, newValue: newValue};
+				return self.doSendRequest(connection, EditUpdateCellRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						this.logFailedRequest(EditUpdateCellRequest.type, error);
+						return Promise.resolve(null);
+					}
+				);
+			},
+
+			// Edit Data Event Handlers
+			registerOnEditSessionReady(handler: (ownerUri: string, success: boolean) => any): void {
+				connection.onNotification(EditSessionReadyNotification.type, (params: EditSessionReadyParams) => {
+					handler(params.ownerUri, params.success);
+				});
+			},
 		};
 
 		let metadataProvider: MetadataProvider = {
