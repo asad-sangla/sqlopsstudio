@@ -85,6 +85,8 @@ declare module 'vscode' {
 
 		description: string;
 
+		groupName: string;
+
 		valueType: ConnectionOptionType;
 
 		specialValueType: ConnectionOptionSpecialType;

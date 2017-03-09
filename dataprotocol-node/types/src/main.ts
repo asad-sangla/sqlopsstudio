@@ -11,6 +11,8 @@ export interface ConnectionOption {
 
 	description: string;
 
+	groupName: string;
+
 	valueType: string;
 
 	defaultValue: string;

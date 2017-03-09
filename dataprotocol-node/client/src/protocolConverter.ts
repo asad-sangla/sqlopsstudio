@@ -410,6 +410,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 					name: srcOption.name,
 					displayName: !!srcOption.displayName ? srcOption.displayName : srcOption.name,
 					description: srcOption.description,
+					groupName: srcOption.groupName,
 					defaultValue: srcOption.defaultValue,
 					categoryValues: srcOption.categoryValues,
 					isIdentity: srcOption.isIdentity,
