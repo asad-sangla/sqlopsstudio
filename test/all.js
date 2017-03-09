@@ -16,6 +16,7 @@ var minimatch = require('minimatch');
 var fs = require('fs');
 var vm = require('vm');
 var TEST_GLOB = '**/*test*/**/*.test.js';
+var SQL_TEST_GLOB = '**/sqltest/**/*.test.js';
 
 var optimist = require('optimist')
 	.usage('Run the Code tests. All mocha options apply.')
@@ -66,7 +67,7 @@ function main() {
 		loaderConfig.nodeInstrumenter = function (contents, source) {
 			seenSources[source] = true;
 
-			if (minimatch(source, TEST_GLOB)) {
+			if (minimatch(source, SQL_TEST_GLOB)) {
 				return contents;
 			}
 
@@ -79,7 +80,7 @@ function main() {
 			}
 
 			if (argv.forceLoad) {
-				var allFiles = glob.sync(out + '/vs/**/*.js');
+				var allFiles = glob.sync(out + '/sqltest/**/*.js');
 				allFiles = allFiles.map(function(source) {
 					return path.join(__dirname, '..', source);
 				});
@@ -87,7 +88,7 @@ function main() {
 					if (seenSources[source]) {
 						return false;
 					}
-					if (minimatch(source, TEST_GLOB)) {
+					if (minimatch(source, SQL_TEST_GLOB)) {
 						return false;
 					}
 					if (/fixtures/.test(source)) {
@@ -138,7 +139,9 @@ function main() {
 			for (var entryKey in remappedCoverage) {
 				var entry = remappedCoverage[entryKey];
 				entry.path = fixPath(entry.path);
-				finalCoverage[fixPath(entryKey)] = entry;
+				if (!entry.path.includes('\\vs\\')) {
+					finalCoverage[fixPath(entryKey)] = entry;
+				}
 			}
 
 			var collector = new istanbul.Collector();
