@@ -7,4 +7,8 @@
 
 <connection-profile [connection]='connection'></connection-profile>
 
-<schema-explorer></schema-explorer>
+<schema-explorer
+	[connection]='connection'
+	[metadataService]='metadataService'
+	[scriptingService]='scriptingService'>
+</schema-explorer>

@@ -28,7 +28,7 @@ export interface ConnectionManagementEvents {
 
 	onDeleteConnectionProfile(uri: string, connection: vscode.ConnectionInfo): void;
 
-	onConnect(connectionUri: string, connection: vscode.ConnectionInfo): void;
+	onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean>;
 }
 
 export interface IConnectionManagementService {
@@ -36,7 +36,7 @@ export interface IConnectionManagementService {
 
 	addEventListener(handle: number, events: ConnectionManagementEvents): IDisposable;
 
-	newConnection();
+	newConnection(): void;
 
 	addConnectionProfile(connection: IConnectionProfile): Promise<boolean>;
 

@@ -16,7 +16,8 @@ import {
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
 		DocumentLink as VDocumentLink, ConnectionInfo, ConnectionInfoSummary, dataprotocol,
 		DataProtocolProvider, ConnectionProvider, DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
-		DataProtocolClientCapabilities, CapabilitiesProvider
+		DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider, ScriptingProvider, ProviderMetadata,
+		ScriptingResult
 } from 'vscode';
 
 import {
@@ -38,7 +39,9 @@ import {
 		CodeLens,
 		FormattingOptions, DocumentLink,
 		ConnectionCompleteParams, IntelliSenseReadyParams,
-		ConnectionProviderOptions, DataProtocolServerCapabilities
+		ConnectionProviderOptions, DataProtocolServerCapabilities,
+		MetadataQueryParams, MetadataQueryResult,
+		ScriptingSelectParams, ScriptingSelectResult
 } from 'dataprotocol-languageserver-types';
 
 
@@ -65,10 +68,8 @@ import {
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
 		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
-		CapabiltiesDiscoveryRequest,
-		ConnectionRequest, ConnectParams,
-		DisconnectRequest, DisconnectParams,
-		ConnectionCompleteNotification, IntelliSenseReadyNotification
+		CapabiltiesDiscoveryRequest, ConnectionRequest, DisconnectRequest, DisconnectParams,
+		ConnectionCompleteNotification, IntelliSenseReadyNotification, MetadataQueryRequest, ScriptingSelectRequest
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -859,7 +860,7 @@ export class LanguageClient {
 				this._childProcess = null;
 				// Remove all markers
 				this.checkProcessDied(toCheck);
-			})
+			});
 		});
 	}
 
@@ -901,7 +902,7 @@ export class LanguageClient {
 						connection.didChangeWatchedFiles({ changes: this._fileEvents });
 					}
 					this._fileEvents = [];
-				})
+				});
 			}, (error) => {
 				this.error(`Notify file events failed.`, error);
 			});
@@ -1286,7 +1287,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						this.logFailedRequest(ConnectionRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.resolve(false);
 					}
 				);
 			},
@@ -1302,7 +1303,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						this.logFailedRequest(DisconnectRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.resolve(false);
 					}
 				);
 			},
@@ -1326,12 +1327,42 @@ export class LanguageClient {
 			}
 		};
 
+		let metadataProvider: MetadataProvider = {
+			getMetadata(connectionUri: string): Thenable<ProviderMetadata> {
+				return self.doSendRequest(connection, MetadataQueryRequest.type,
+						self._c2p.asMetadataQueryParams(connectionUri), undefined).then(
+					self._p2c.asProviderMetadata,
+					(error) => {
+						this.logFailedRequest(ConnectionRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			}
+		};
+
+		let scriptingProvider: ScriptingProvider = {
+			scriptAsSelect(connectionUri: string, objectName: string): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingSelectRequest.type,
+						self._c2p.asScriptingSelectParams(connectionUri, objectName), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						this.logFailedRequest(ConnectionRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			}
+		};
+
 		this._providers.push(dataprotocol.registerProvider({
 			handle: -1,
 
 			capabilitiesProvider: capabilitiesProvider,
 
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+
+			metadataProvider: metadataProvider,
+
+			scriptingProvider: scriptingProvider
 		}));
 	}
 

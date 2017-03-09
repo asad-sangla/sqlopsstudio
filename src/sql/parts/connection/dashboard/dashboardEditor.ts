@@ -15,6 +15,8 @@ import { DashboardInput } from './dashboardInput';
 import { AppModule } from './app.module';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IMetadataService } from 'sql/parts/metadata/metadataService';
+import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 
 declare let AngularPlatformBrowserDynamic;
 
@@ -25,7 +27,9 @@ export class DashboardEditor extends BaseEditor {
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService private instantiationService: IInstantiationService,
-		@IConnectionManagementService private _connectionService: IConnectionManagementService
+		@IConnectionManagementService private _connectionService: IConnectionManagementService,
+		@IMetadataService private _metadataService: IMetadataService,
+		@IScriptingService private _scriptingService: IScriptingService
 	) {
 		super(DashboardEditor.ID, telemetryService);
 	}
@@ -49,7 +53,7 @@ export class DashboardEditor extends BaseEditor {
 	public layout(dimension: Dimension): void {
 	}
 
-	setInput(input: DashboardInput, options: EditorOptions): TPromise<void> {
+	public setInput(input: DashboardInput, options: EditorOptions): TPromise<void> {
 		super.setInput(input, options);
 
 		this.bootstrapAngular();
@@ -62,15 +66,22 @@ export class DashboardEditor extends BaseEditor {
 	 */
 	private bootstrapAngular(): void {
 		let input = <DashboardInput>this.input;
-		let connection: IConnectionProfile = input.getConnectionProfile();
+		if (!input.hasInitialized) {
+			let connection: IConnectionProfile = input.getConnectionProfile();
 
-		//input.setBootstrappedTrue();
+			input.setHasInitialized();
 
-		const parent = this.getContainer().getHTMLElement();
-		append(parent, $('connection-dashboard'));
+			const parent = this.getContainer().getHTMLElement();
+			append(parent, $('connection-dashboard'));
 
-		// Bootstrap the angular content
-		let providers = [ {provide: 'ConnectionProfile', useValue: connection } ];
-		AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
+			// Bootstrap the angular content
+			let providers = [
+				{ provide: 'ConnectionProfile', useValue: connection },
+				{ provide: 'ConnectionService', useValue: this._connectionService },
+				{ provide: 'MetadataService', useValue: this._metadataService },
+				{ provide: 'ScriptingService', useValue: this._scriptingService },
+			];
+			AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
+		}
 	}
 }

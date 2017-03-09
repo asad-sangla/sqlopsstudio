@@ -4,16 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IMetadataService } from 'sql/parts/metadata/metadataService';
+import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 
 declare let AngularCore;
 
 @AngularCore.Component({
-  selector: 'connection-dashboard',
-  templateUrl: require.toUrl('sql/parts/connection/dashboard/app.component.html'),
-  styleUrl: require.toUrl('sql/parts/connection/dashboard/app.component.css')
+	selector: 'connection-dashboard',
+	templateUrl: require.toUrl('sql/parts/connection/dashboard/app.component.html'),
+	styleUrl: require.toUrl('sql/parts/connection/dashboard/app.component.css')
 })
 export class AppComponent {
-  constructor(
-    @AngularCore.Inject('ConnectionProfile') private connection: IConnectionProfile) {
-  }
+	constructor(
+		@AngularCore.Inject('ConnectionProfile') private connection: IConnectionProfile,
+		@AngularCore.Inject('ConnectionService') private connectionService: IConnectionManagementService,
+		@AngularCore.Inject('MetadataService') private metadataService: IMetadataService,
+		@AngularCore.Inject('ScriptingService') private scriptingService: IScriptingService) {
+	}
 }

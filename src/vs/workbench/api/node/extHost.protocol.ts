@@ -41,11 +41,6 @@ import { InternalTreeExplorerNodeContent } from 'vs/workbench/parts/explorers/co
 export abstract class ExtHostDataProtocolShape {
 
 	/**
-	 * Register a connection information provider.
-	 */
-	$registerConnectionProvider(provider: vscode.ConnectionProvider): vscode.Disposable { throw ni(); }
-
-	/**
 	 * Establish a connection to a data source using the provided ConnectionInfo instance.
 	 */
 	$connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> { throw ni(); }
@@ -61,7 +56,11 @@ export abstract class ExtHostDataProtocolShape {
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
 
 
-	$getServerCapabilities(handle:number, client: vscode.DataProtocolClientCapabilities): Thenable<vscode.DataProtocolServerCapabilities> { throw ni(); }
+	$getServerCapabilities(handle: number, client: vscode.DataProtocolClientCapabilities): Thenable<vscode.DataProtocolServerCapabilities> { throw ni(); }
+
+	$getMetadata(handle: number, connectionUri: string): Thenable<vscode.ProviderMetadata> { throw ni(); }
+
+	$scriptAsSelect(handle: number, connectionUri: string, objectName: string): Thenable<vscode.ScriptingResult> { throw ni(); }
 }
 
 /**

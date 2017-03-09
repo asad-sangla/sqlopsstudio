@@ -35,35 +35,52 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		return ExtHostDataProtocol._handlePool++;
 	}
 
-	$registerProvider(provider: vscode.DataProtocolProvider): vscode.Disposable {
+	public $registerProvider(provider: vscode.DataProtocolProvider): vscode.Disposable {
 		provider.handle = this._nextHandle();
-
 		this._adapter[provider.handle] = provider;
 		this._proxy.$registerProvider(provider.handle);
 		return this._createDisposable(provider.handle);
 	}
 
 	// Capabilities Discovery handlers
-	$getServerCapabilities(handle:number, client: vscode.DataProtocolClientCapabilities): Thenable<vscode.DataProtocolServerCapabilities> {
+	public $getServerCapabilities(handle:number, client: vscode.DataProtocolClientCapabilities): Thenable<vscode.DataProtocolServerCapabilities> {
 		let provider = this._adapter[handle];
-		return provider !== undefined
+		return provider !== undefined && provider.capabilitiesProvider !== undefined
 			? provider.capabilitiesProvider.getServerCapabilities(client)
 			: undefined;
 	}
 
 	// Connection Management handlers
-	$connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
+	public $connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
 		let provider = this._adapter[handle];
-		return provider !== undefined
+		return provider !== undefined && provider.connectionProvider !== undefined
 			? provider.connectionProvider.connect(connectionUri, connection)
 			: undefined;
 	}
 
-	$onConnectComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void{
+	public $onConnectComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void{
 		this._proxy.$onConnectionComplete(handle, connectionInfoSummary);
 	}
 
-	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
+	public $onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
 		this._proxy.$onIntelliSenseCacheComplete(handle, connectionUri);
+	}
+
+	// Metadata handlers
+	public $getMetadata(handle: number, connectionUri: string): Thenable<vscode.ProviderMetadata> {
+		let provider = this._adapter[handle];
+		if (provider !== undefined && provider.metadataProvider !== undefined) {
+			return provider.metadataProvider.getMetadata(connectionUri);
+		}
+		return Promise.resolve(undefined);
+	}
+
+	// Scripting handlers
+	public $scriptAsSelect(handle: number, connectionUri: string, objectName: string): Thenable<vscode.ScriptingResult> {
+		let provider = this._adapter[handle];
+		if (provider !== undefined && provider.scriptingProvider !== undefined) {
+			return provider.scriptingProvider.scriptAsSelect(connectionUri, objectName);
+		}
+		return Promise.resolve(undefined);
 	}
 }

@@ -23,7 +23,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		};
 	}
 
-	newConnection(){
+	newConnection(): void {
 
 	}
 

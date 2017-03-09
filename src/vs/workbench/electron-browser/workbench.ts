@@ -95,10 +95,12 @@ import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/c
 
 import { ICapabilitiesService, CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
+import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IMetadataService, MetadataService } from 'sql/parts/metadata/metadataService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { IQueryParameterService, QueryParameterService } from 'sql/parts/query/execution/queryParameterService';
-import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IScriptingService, ScriptingService } from 'sql/parts/scripting/scriptingService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -532,6 +534,8 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
 		serviceCollection.set(IQueryParameterService, this.instantiationService.createInstance(QueryParameterService));
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));
+		serviceCollection.set(IMetadataService, this.instantiationService.createInstance(MetadataService));
+		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));
 
 		// Contributed services
 		const contributedServices = getServices();

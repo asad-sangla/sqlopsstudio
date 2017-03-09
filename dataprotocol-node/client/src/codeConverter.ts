@@ -64,6 +64,10 @@ export interface Converter {
 	asConnectionParams(connectionUri: string, connectionInfo: code.ConnectionInfo) : proto.ConnectParams;
 
 	asCapabilitiesParams(client: code.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams;
+
+	asMetadataQueryParams(connectionUri: string) : ls.MetadataQueryParams;
+
+	asScriptingSelectParams(connectionUri: string, objectName: string) : ls.ScriptingSelectParams;
 }
 
 export interface URIConverter {
@@ -348,6 +352,19 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asMetadataQueryParams(connectionUri: string): ls.MetadataQueryParams {
+		return <ls.MetadataQueryParams> {
+			ownerUri: connectionUri
+		};
+	}
+
+	function asScriptingSelectParams(connectionUri: string, objectName: string) : ls.ScriptingSelectParams {
+		return <ls.ScriptingSelectParams> {
+			ownerUri: connectionUri,
+			objectName: objectName
+		};
+	}
+
 	return {
 		asUri,
 		asTextDocumentIdentifier,
@@ -374,7 +391,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asDocumentLink,
 		asDocumentLinkParams,
 		asCapabilitiesParams,
-		asConnectionParams
+		asConnectionParams,
+		asMetadataQueryParams,
+		asScriptingSelectParams
 	};
 }
 

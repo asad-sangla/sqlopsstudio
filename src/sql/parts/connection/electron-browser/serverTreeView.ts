@@ -81,8 +81,8 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		const self = this;
 		let handle = 199889;
 		this.connectionManagementService.addEventListener(handle, {
-			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): void {
-				//no op
+			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
+				return Promise.resolve(true);
 			},
 			onAddConnectionProfile(uri, connection: vscode.ConnectionInfo): void {
 				self.structuralTreeUpdate();

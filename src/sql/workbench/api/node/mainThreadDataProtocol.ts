@@ -10,6 +10,8 @@ import { IThreadService } from 'vs/workbench/services/thread/common/threadServic
 import { ExtHostContext, ExtHostDataProtocolShape, MainThreadDataProtocolShape } from 'vs/workbench/api/node/extHost.protocol';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { IMetadataService } from 'sql/parts/metadata/metadataService';
+import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import * as vscode from 'vscode';
 
 /**
@@ -28,8 +30,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	constructor(
 		@IThreadService threadService: IThreadService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService
-
+		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
+		@IMetadataService private _metadataService: IMetadataService,
+		@IScriptingService private _scriptingService: IScriptingService
 	) {
 		super();
 		this._proxy = threadService.get(ExtHostContext.ExtHostDataProtocol);
@@ -42,22 +45,32 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	public $registerProvider(handle: number): TPromise<any> {
 		let self = this;
 
+		let providerId: string = handle.toString();
+
 		// register connection management provider
 		this._connectionRegistrations[handle] = this._connectionManagementService.addEventListener(handle, {
 			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
 				return self._proxy.$connect(handle, connectionUri, connection);
 			},
-			onAddConnectionProfile(uri, connection: vscode.ConnectionInfo): Thenable<boolean> {
-				return self._proxy.$connect(handle, uri, connection);
-			},
-			onDeleteConnectionProfile(uri, connection: vscode.ConnectionInfo): void {
-				//no op
+			onAddConnectionProfile(uri, connection: vscode.ConnectionInfo): void { /* no op */ },
+			onDeleteConnectionProfile(uri, connection: vscode.ConnectionInfo): void { /* no op */ }
+		});
+
+		this._capabilitiesService.registerProvider(<vscode.CapabilitiesProvider> {
+			getServerCapabilities(client: vscode.DataProtocolClientCapabilities): Thenable<vscode.DataProtocolServerCapabilities> {
+				return self._proxy.$getServerCapabilities(handle, client);
 			}
 		});
 
-		this._capabilitiesService.registerProvider(<vscode.CapabilitiesProvider>{
-			getServerCapabilities(client: vscode.DataProtocolClientCapabilities): Thenable<vscode.DataProtocolServerCapabilities> {
-				return self._proxy.$getServerCapabilities(handle, client);
+		this._metadataService.registerProvider(providerId, <vscode.MetadataProvider> {
+			getMetadata(connectionUri: string): Thenable<vscode.ProviderMetadata> {
+				return self._proxy.$getMetadata(handle, connectionUri);
+			}
+		});
+
+		this._scriptingService.registerProvider(providerId, <vscode.ScriptingProvider> {
+			scriptAsSelect(connectionUri: string, objectName: string): Thenable<vscode.ScriptingResult> {
+				return self._proxy.$scriptAsSelect(handle, connectionUri, objectName);
 			}
 		});
 

@@ -22,8 +22,10 @@ import {
 		ConnectionDetails, ServerInfo,
 		ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams,
 		ConnectionProviderOptions, DataProtocolServerCapabilities,
-		CapabiltiesDiscoveryResult
+		CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
+		ScriptingSelectParams, ScriptingSelectResult
 	} from 'dataprotocol-languageserver-types';
+
 
 /**
  * A parameter literal used in requests to pass a text document and a position inside that
@@ -1030,4 +1032,16 @@ export class CapabiltiesDiscoveryParams {
 
 export namespace CapabiltiesDiscoveryRequest {
     export const type: RequestType<CapabiltiesDiscoveryParams, CapabiltiesDiscoveryResult, void> = { get method(): string { return 'capabilities/list'; } };
+}
+
+// ------------------------------- < Metadata Events > ------------------------------------
+
+export namespace MetadataQueryRequest {
+    export const type: RequestType<MetadataQueryParams, MetadataQueryResult, void> = { get method(): string { return 'metadata/list'; } };
+}
+
+// ------------------------------- < Scripting Events > ------------------------------------
+
+export namespace ScriptingSelectRequest {
+    export const type: RequestType<ScriptingSelectParams, ScriptingSelectResult, void> = { get method(): string { return 'scripting/select'; } };
 }

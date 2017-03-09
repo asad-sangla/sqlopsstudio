@@ -5,9 +5,8 @@
 
 'use strict';
 
-import nls = require('vs/nls');
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import vscode = require('vscode');
 
 export const SERVICE_ID = 'credentialsService';
@@ -17,7 +16,7 @@ export interface CredentialManagementEvents {
 
 	onReadCredential(credentialId: string): Thenable<vscode.Credential>;
 
-    onDeleteCredential(credentialId: string): Thenable<boolean>;
+	onDeleteCredential(credentialId: string): Thenable<boolean>;
 }
 
 export const ICredentialsService = createDecorator<ICredentialsService>(SERVICE_ID);
@@ -29,7 +28,7 @@ export interface ICredentialsService {
 
 	readCredential(credentialId: string): Thenable<vscode.Credential>;
 
-    deleteCredential(credentialId: string): Thenable<boolean>;
+	deleteCredential(credentialId: string): Thenable<boolean>;
 
 	addEventListener(handle: number, events: CredentialManagementEvents): IDisposable;
 }
@@ -70,7 +69,7 @@ export class CredentialsService implements ICredentialsService {
 		return this._serverEvents[this._lastHandle].onReadCredential(credentialId);
 	}
 
-    public deleteCredential(credentialId: string): Thenable<boolean> {
+	public deleteCredential(credentialId: string): Thenable<boolean> {
 		return this._serverEvents[this._lastHandle].onDeleteCredential(credentialId);
 	 }
 

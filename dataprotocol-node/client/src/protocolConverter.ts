@@ -77,6 +77,10 @@ export interface Converter {
 	asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary;
 
 	asServerCapabilities(params: ls.CapabiltiesDiscoveryResult): code.DataProtocolServerCapabilities;
+
+	asProviderMetadata(params: ls.MetadataQueryResult): code.ProviderMetadata;
+
+	asScriptingResult(params: ls.ScriptingSelectResult): code.ScriptingResult;
 }
 
 export interface URIConverter {
@@ -452,6 +456,19 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return capabilities;
 	}
 
+	function asProviderMetadata(params: ls.MetadataQueryResult): code.ProviderMetadata {
+		return <code.ProviderMetadata> {
+			objectMetadata: []
+		};
+	}
+
+	function asScriptingResult(params: ls.ScriptingSelectResult): code.ScriptingResult {
+		return <code.ScriptingResult> {
+			objectName: params.objectName,
+			script: params.script
+		};
+	}
+
 	return {
 		asUri,
 		asDiagnostics,
@@ -485,7 +502,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asDocumentLink,
 		asDocumentLinks,
 		asConnectionSummary,
-		asServerCapabilities
+		asServerCapabilities,
+		asProviderMetadata,
+		asScriptingResult
 	};
 }
 

@@ -308,6 +308,43 @@ export class CapabiltiesDiscoveryResult {
 	public capabilities: DataProtocolServerCapabilities;
 }
 
+export class MetadataQueryParams {
+	/**
+     * Owner URI of the connection that changed.
+     */
+    public ownerUri: string;
+}
+
+export class MetadataQueryResult {
+	/**
+     * Owner URI of the connection that changed.
+     */
+    public ownerUri: string;
+
+	public tables: string[];
+}
+
+export class ScriptingSelectParams {
+	/**
+     * Owner URI of the connection that changed.
+     */
+    public ownerUri: string;
+
+	public objectName: string;
+}
+
+
+export class ScriptingSelectResult {
+	/**
+     * Owner URI of the connection that changed.
+     */
+    public ownerUri: string;
+
+	public objectName: string;
+
+	public script: string;
+}
+
 /**
  * Position in a text document expressed as zero-based line and character offset.
  */

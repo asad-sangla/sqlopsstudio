@@ -124,12 +124,40 @@ declare module 'vscode' {
 		getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<DataProtocolServerCapabilities>
 	}
 
+	export interface ObjectMetadata {
+		name: string;
+
+		schema: string;
+	}
+
+	export interface ProviderMetadata {
+		objectMetadata: ObjectMetadata[];
+	}
+
+	export interface MetadataProvider {
+		getMetadata(connectionUri: string): Thenable<ProviderMetadata>;
+	}
+
+	export interface ScriptingResult {
+		objectName: string;
+
+		script: string;
+	}
+
+	export interface ScriptingProvider {
+		scriptAsSelect(connectionUri: string, objectName: string): Thenable<ScriptingResult>;
+	}
+
 	export interface DataProtocolProvider {
 		handle: number;
 
 		capabilitiesProvider: CapabilitiesProvider;
 
 		connectionProvider: ConnectionProvider;
+
+		metadataProvider: MetadataProvider;
+
+		scriptingProvider: ScriptingProvider;
 	}
 
 	/**
