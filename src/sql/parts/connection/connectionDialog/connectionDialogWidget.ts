@@ -19,6 +19,9 @@ import * as platform from 'vs/base/common/platform';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
 import vscode = require('vscode');
+import DOM = require('vs/base/browser/dom');
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
 
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
@@ -48,14 +51,12 @@ export class ConnectionDialogWidget {
 	private _dialog: ModalDialogBuilder;
 	private _authenticationOptions: string[];
 	private _recentConnectionButtons: Button[];
-	private _isRecentConnectionClear: boolean;
 
 	constructor(container: HTMLElement, callbacks: IConnectionDialogCallbacks) {
 		this.container = container;
 		this.setCallbacks(callbacks);
 		this.toDispose = [];
 		this._recentConnectionButtons = [];
-		this._isRecentConnectionClear = false;
 		if (platform.isWindows) {
 			this._authenticationOptions = [this.WindowsAuthTypeName, this.SqlAuthTypeName];
 			this.authTypeSelectBox = new ConnectionDialogSelectBox(this._authenticationOptions, this.WindowsAuthTypeName);
@@ -82,7 +83,7 @@ export class ConnectionDialogWidget {
 				this.passwordInputBox = ConnectionDialogHelper.appendInputBox(
 					ConnectionDialogHelper.appendRow(tableContainer, 'Password', 'connection-label', 'connection-input'));
 				this.passwordInputBox.inputElement.type = 'password';
-				this.rememberPassword = this.appendCheckbox(tableContainer, 'Remember Password', 'checkbox', 'connection-input');
+				this.rememberPassword = this.appendCheckbox(tableContainer, 'Remember Password', 'connection-checkbox', 'connection-input');
 				this.databaseNameInputBox = ConnectionDialogHelper.appendInputBox(
 					ConnectionDialogHelper.appendRow(tableContainer, 'Database Name', 'connection-label', 'connection-input'));
 				this.serverGroupInputBox = ConnectionDialogHelper.appendInputBox(
@@ -100,8 +101,6 @@ export class ConnectionDialogWidget {
 		this._builder.build(this.container);
 		this.registerListeners();
 		this.modelElement = this._builder.getHTMLElement();
-		this.serverNameInputBox.focus();
-
 		this.onAuthTypeSelected(this.authTypeSelectBox.value);
 
 		return this.modelElement;
@@ -111,9 +110,9 @@ export class ConnectionDialogWidget {
 		let checkbox: Checkbox;
 		container.element('tr', {}, (rowContainer) => {
 			rowContainer.element('td');
-			rowContainer.element('td', { class: 'connection-' + cellContainerClass }, (inputCellContainer) => {
+			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
 				checkbox = new Checkbox({
-					actionClassName: 'connection-' + checkboxClass,
+					actionClassName: checkboxClass,
 					title: label,
 					isChecked: false,
 					onChange: (viaKeyboard) => {
@@ -288,6 +287,10 @@ export class ConnectionDialogWidget {
 		jQuery('#connectionDialogModal').modal('hide');
 	}
 
+	public focusOnAdvancedButton() {
+		this.advancedButton.focus();
+	}
+
 	private createRecentConnectionsBuilder(recentConnections: vscode.ConnectionInfo[]): Builder {
 		var recentConnectionBuilder = $().div({ class: 'connection-recent-content' }, (recentConnectionContainer) => {
 			recentConnectionContainer.div({class:'modal-title'}, (recentTitle) => {
@@ -340,28 +343,34 @@ export class ConnectionDialogWidget {
 	}
 
 	private clearRecentConnection() {
-		if(!this._isRecentConnectionClear) {
-			jQuery('#recentConnection').empty();
-			while (this._recentConnectionButtons.length) {
-				this._recentConnectionButtons.pop().dispose();
-			}
+		this._builder.off(DOM.EventType.KEY_DOWN);
+		jQuery('#recentConnection').empty();
+		while (this._recentConnectionButtons.length) {
+			this._recentConnectionButtons.pop().dispose();
 		}
-		this._isRecentConnectionClear = true;
 	}
 
 	public open(recentConnections: vscode.ConnectionInfo[]) {
-		if(!this._isRecentConnectionClear) {
-			this.clearRecentConnection();
+		if(recentConnections.length !== 0) {
+			var recentConnectionbuilder = this.createRecentConnectionsBuilder(recentConnections);
+			jQuery('#recentConnection').append(recentConnectionbuilder.getHTMLElement());
 		}
-		var recentConnectionbuilder = this.createRecentConnectionsBuilder(recentConnections);
-		jQuery('#recentConnection').append(recentConnectionbuilder.getHTMLElement());
-		jQuery('#connectionDialogModal').modal({ backdrop: true, keyboard: true });
-		this._isRecentConnectionClear = false;
+
+		jQuery('#connectionDialogModal').modal({ backdrop: false, keyboard: true });
+		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Enter)) {
+				this.connect();
+			} else if (event.equals(KeyCode.Escape)) {
+				this.cancel();
+			}
+		});
 	}
 
 	private initDialog(): void {
 		this._dialog.showError('');
 		this._dialog.hideSpinner();
+		this.serverNameInputBox.focus();
 	}
 
 	public showError(err: string) {

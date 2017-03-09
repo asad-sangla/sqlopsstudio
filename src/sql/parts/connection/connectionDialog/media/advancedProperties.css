@@ -14,7 +14,6 @@
 }
 
 .advancedDialog-input {
-	padding-right:8px;
 	width: 200px;
 	padding-bottom: 5px;
 }
@@ -28,9 +27,12 @@
 }
 
 .advanced-dialog .select-box {
-	width: 318px;
-	border: none;
+	width: 321px;
 	height: 25px;
+	color: #6C6C6C;
+	font-size: 11px;
+	border: 1px solid transparent;
+	margin-left: 1px;
 }
 
 .advanced-dialog .modal-title {

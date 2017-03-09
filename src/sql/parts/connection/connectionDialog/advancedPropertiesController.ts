@@ -11,8 +11,10 @@ import vscode = require('vscode');
 export class AdvancedPropertiesController {
 	private _container: HTMLElement;
 	private _connectionOptions: vscode.ConnectionOption[];
-
 	private _advancedDialog: AdvancedPropertiesDialog;
+
+	constructor(private _onCloseAdvancedProperties: () => void) {
+	}
 
 	private handleOnOk(): void {
 		// Update advanced properties
@@ -28,7 +30,8 @@ export class AdvancedPropertiesController {
 		if(!this._advancedDialog) {
 			this._advancedDialog  = new AdvancedPropertiesDialog(this._container, {
 				onCancel: () => {},
-				onOk: () => this.handleOnOk()
+				onOk: () => this.handleOnOk(),
+				onClose: () => this._onCloseAdvancedProperties()
 			});
 			this._advancedDialog.create();
 		}

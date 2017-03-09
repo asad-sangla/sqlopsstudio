@@ -23,6 +23,7 @@
 .monaco-shell .modal-content{
 	background-color: #F3F3F3;
 	height: 100%;
+	font-size: 11px;
 }
 
 .monaco-shell .modal-body{
@@ -52,7 +53,10 @@
 }
 
 .custom-checkbox.connection-checkbox {
-	Margin-right: 10px;
+	margin-right: 5px;
+	margin-top: 2px;
+    width: 12px;
+    height: 12px;
 }
 
 .custom-checkbox.connection-checkbox.checked {
@@ -88,8 +92,11 @@
 
 .connection-dialog-widget .select-box {
 	width: 371px;
-	border: none;
 	height: 25px;
+	color: #6C6C6C;
+	font-size: 11px;
+	border: 1px solid transparent;
+	margin-left: 1px;
 }
 
 .connection-dialog-widget .modal-title {
@@ -107,14 +114,16 @@
 }
 
 .connection-dialog-widget .connection-recent {
-	height: calc(100% - 303px);
+	height: calc(100% - 291px);
 	padding: 15px;
 	overflow-y: auto;
 }
 
 .connection-dialog-widget .connection-table {
 	border-top: 1px solid #e5e5e5;
-	padding: 15px;
+	padding-right: 15px;
+    padding-left: 15px;
+    padding-top: 15px;
 }
 
 .connection-dialog-widget .dialogErrorMessage {
@@ -124,7 +133,8 @@
 
 .connection-dialog-widget .hiddenSpinner {
 	content: url(progress_36x_animation.gif);
-	width: 30px;
+	width: 20px;
+    height: 20px;
 	visibility: hidden;
 }
 
@@ -141,7 +151,6 @@
 
 /* For recent connection list */
 .connection-info-group {
-	font-size: 12px;
 	color: #6C6C6C;
 	padding-left: 30px;
 	cursor: pointer;

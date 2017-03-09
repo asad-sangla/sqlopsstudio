@@ -42,7 +42,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private handleOnAdvancedProperties(): void {
 		if (!this._advancedcontroller) {
-			this._advancedcontroller = new AdvancedPropertiesController();
+			this._advancedcontroller = new AdvancedPropertiesController(() => this._connectionDialog.focusOnAdvancedButton());
 		}
 		var connectionProperties = this._connectionManagementService.getAdvancedProperties();
 		this._advancedcontroller.showDialog(connectionProperties, this._container);

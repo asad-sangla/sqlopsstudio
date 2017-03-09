@@ -17,10 +17,14 @@ import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import vscode = require('vscode');
 import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
+import DOM = require('vs/base/browser/dom');
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
 
 export interface IAdvancedDialogCallbacks {
 	onOk: () => void;
 	onCancel: () => void;
+	onClose: () => void;
 }
 
 interface IAdvancedPropertyElement {
@@ -40,14 +44,12 @@ export class AdvancedPropertiesDialog {
 	private _toDispose: lifecycle.IDisposable[];
 	private _connectionOptions: vscode.ConnectionOption[];
 	private _advancedPropertiesMaps: { [propertyName: string]: IAdvancedPropertyElement };
-	private _isDisposed: boolean;
 
 	constructor(container: HTMLElement, callbacks: IAdvancedDialogCallbacks) {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
 		this._advancedPropertiesMaps = {};
-		this._isDisposed = false;
 	}
 
 	public create(): HTMLElement {
@@ -149,31 +151,36 @@ export class AdvancedPropertiesDialog {
 		jQuery('#propertiesContent').empty();
 		this.dispose();
 		jQuery('#advancedDialogModal').modal('hide');
+		this._callbacks.onClose();
 	}
 
 	public open(connectionOptions: vscode.ConnectionOption[]) {
-		if(!this._isDisposed) {
-			jQuery('#propertiesContent').empty();
-			this.dispose();
-		}
 		this._connectionOptions = connectionOptions;
 		var propertiesContentbuilder = $().element('table', { class: 'advancedDialog-table' }, (tableContainer: Builder) => {
 			this.fillInProperties(tableContainer);
 		});
 		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());
-		jQuery('#advancedDialogModal').modal({ backdrop: true, keyboard: true });
-		this._isDisposed = false;
+		jQuery('#advancedDialogModal').modal({ backdrop: false, keyboard: true });
+		var firstPropertyWidget = this._advancedPropertiesMaps[this._connectionOptions[0].displayName].advancedPropertyWidget;
+		firstPropertyWidget.focus();
+
+		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Enter)) {
+				this.ok();
+			} else if (event.equals(KeyCode.Escape)) {
+				this.cancel();
+			}
+		});
 	}
 
 	public dispose(): void {
-		if(!this._isDisposed) {
-			this._toDispose = lifecycle.dispose(this._toDispose);
-			for (var key in this._advancedPropertiesMaps) {
-				var widget: Widget = this._advancedPropertiesMaps[key].advancedPropertyWidget;
-				widget.dispose();
-				delete this._advancedPropertiesMaps[key];
-			}
-			this._isDisposed = true;
+		this._builder.off(DOM.EventType.KEY_DOWN);
+		this._toDispose = lifecycle.dispose(this._toDispose);
+		for (var key in this._advancedPropertiesMaps) {
+			var widget: Widget = this._advancedPropertiesMaps[key].advancedPropertyWidget;
+			widget.dispose();
+			delete this._advancedPropertiesMaps[key];
 		}
 	}
 }
