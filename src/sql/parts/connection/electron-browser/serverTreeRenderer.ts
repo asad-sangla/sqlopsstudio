@@ -92,8 +92,8 @@ export class ServerTreeRenderer implements IRenderer {
 		templateData.type.textContent = connection.type;
 	}
 
-	private renderConnectionProfileGroup(tree: ITree, ConnectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
-		templateData.name.textContent = ConnectionProfileGroup.name;
+	private renderConnectionProfileGroup(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
+		templateData.name.textContent = connectionProfileGroup.name;
 	}
 
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {
@@ -162,7 +162,7 @@ export class ServerTreeDataSource implements IDataSource {
  */
 export class ServerTreeDragAndDrop implements IDragAndDrop {
 
-	constructor(@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
+	constructor( @IConnectionManagementService private connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService
 	) {
 	}
@@ -228,22 +228,15 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 
 		if (this.isDropAllowed(targetConnectionProfileGroup, oldParent, source)) {
 
-			console.log('drop ' + source.serverName + ' to ' + targetConnectionProfileGroup.fullName);
 			if (source instanceof ConnectionProfile) {
-				// Change groupName of Profile
-				this.connectionManagementService.changeGroupNameForConnection(source, targetConnectionProfileGroup.id).then(() => {
+				// Change group id of profile
+				this.connectionManagementService.changeGroupIdForConnection(source, targetConnectionProfileGroup.id).then(() => {
 					this.renderTree(tree);
 				});
 			} else if (source instanceof ConnectionProfileGroup) {
-
-				// Change groupName of all children under this group
-				this.connectionManagementService.changeGroupNameForGroup(source.fullName, targetConnectionProfileGroup.fullName + ConnectionProfileGroup.GroupNameSeparator + source.name).then(() => {
-					// Move group to its new parent
-					oldParent.removeGroup(source);
-					targetConnectionProfileGroup.addGroup(source);
-					this.connectionManagementService.updateGroups(source, targetConnectionProfileGroup).then(() => {
-						this.renderTree(tree);
-					});
+				// Change parent id of group
+				this.connectionManagementService.changeGroupIdForConnectionGroup(source, targetConnectionProfileGroup).then(() => {
+					this.renderTree(tree);
 				});
 			}
 		}
@@ -251,8 +244,8 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	}
 
 	private isDropAllowed(targetConnectionProfileGroup: ConnectionProfileGroup,
-					oldParent:ConnectionProfileGroup,
-					source: ConnectionProfile | ConnectionProfileGroup): boolean {
+		oldParent: ConnectionProfileGroup,
+		source: ConnectionProfile | ConnectionProfileGroup): boolean {
 
 		let isDropToItself = source && targetConnectionProfileGroup && (source instanceof ConnectionProfileGroup) && source.name === targetConnectionProfileGroup.name;
 		let isDropToSameLevel = oldParent && oldParent.equals(targetConnectionProfileGroup);
@@ -263,31 +256,19 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Sets tree input and renders tree
 	 */
 	public renderTree(tree: ITree): void {
-		let treeInput = new ConnectionProfileGroup('root', null, undefined);
-			let groups = this.connectionManagementService.getConnections();
-			treeInput.addGroups(groups);
-			console.log('tree input');
-			if (treeInput !== tree.getInput()) {
-				tree.setInput(treeInput).done(() => {
-					tree.getFocus();
-				}, errors.onUnexpectedError);
-			} else {
-				tree.refresh().done(() => {
-					tree.getFocus();
-				}, errors.onUnexpectedError);
-			}
-
-	}
-
-	/**
-	 * Returns the topmost parent of a tree item
-	 */
-	public getTopParent(element: ConnectionProfileGroup): ConnectionProfileGroup {
-		let current = element;
-		while (current.getParent() !== null && current.getParent().id !== 'root') {
-			current = current.getParent();
+		let treeInput = new ConnectionProfileGroup('root', null, 'root');
+		let groups = this.connectionManagementService.getConnections();
+		treeInput.addGroups(groups);
+		if (treeInput !== tree.getInput()) {
+			tree.setInput(treeInput).done(() => {
+				tree.getFocus();
+			}, errors.onUnexpectedError);
+		} else {
+			tree.refresh().done(() => {
+				tree.getFocus();
+			}, errors.onUnexpectedError);
 		}
-		return current;
+
 	}
 }
 

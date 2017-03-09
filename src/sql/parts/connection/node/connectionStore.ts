@@ -359,15 +359,11 @@ export class ConnectionStore {
 		return maxConnections;
 	}
 
-    public updateGroups(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
-        return this._connectionConfig.updateGroups(source, target);
-	}
-
-    public changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void> {
-        return this._connectionConfig.changeGroupNameForGroup(sourceGroupName, targetGroupName);
+    public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
+        return this._connectionConfig.changeGroupIdForConnectionGroup(source, target);
     }
 
-    public changeGroupNameForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void> {
-        return this._connectionConfig.changeGroupNameForConnection(source, targetGroupName);
+    public changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
+        return this._connectionConfig.changeGroupIdForConnection(source, targetGroupId);
     }
 }

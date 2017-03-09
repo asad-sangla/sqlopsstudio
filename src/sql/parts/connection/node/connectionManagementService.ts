@@ -252,15 +252,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return null;
 	}
 
-	public updateGroups(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
-		return this._connectionStore.updateGroups(source, target);
+	public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
+		return this._connectionStore.changeGroupIdForConnectionGroup(source, target);
 	}
 
-	public changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void> {
-		return this._connectionStore.changeGroupNameForGroup(sourceGroupName, targetGroupName);
-	}
-
-	public changeGroupNameForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void> {
-		return this._connectionStore.changeGroupNameForConnection(source, targetGroupName);
+	public changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
+		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
 }

@@ -41,6 +41,7 @@ export class ConnectionProfile extends ConnectionCredentials implements IConnect
 		this.id = this.groupId + ConnectionProfileGroup.GroupNameSeparator +
 					this.serverName + ConnectionProfileGroup.GroupNameSeparator +
 					this.databaseName + ConnectionProfileGroup.GroupNameSeparator +
+					this.authenticationType + ConnectionProfileGroup.GroupNameSeparator +
 					this.userName;
 		this.type = 'SQL';
 	}

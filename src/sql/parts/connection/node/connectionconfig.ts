@@ -7,7 +7,6 @@ import * as Constants from './constants';
 import * as Utils from './utils';
 import { IConnectionProfile, IConnectionProfileStore } from './interfaces';
 import { IConnectionConfig } from './iconnectionconfig';
-import { ConnectionProfile } from './connectionProfile';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
 import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { IConfigurationEditingService, ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
@@ -215,39 +214,31 @@ export class ConnectionConfig implements IConnectionConfig {
         });
     }
 
-    public changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            resolve();
+    public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
+        let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+        let updatedGroups = groups.map(g => {
+            if(g.id === source.id) {
+                g.parentId = target.id;
+            }
+            return g;
         });
+
+        return this.writeUserConfiguration(Constants.connectionGroupsArrayName, updatedGroups);
 
     }
 
-    public changeGroupNameForConnection(profile: IConnectionProfile, groupName: string): Promise<void> {
+    public changeGroupIdForConnection(profile: IConnectionProfile, newGroupID: string): Promise<void> {
 
         let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
         let configProfile = this.convertToConnectionProfileStore(profile, profile.groupId);
 
         profiles.forEach((value) => {
             if (Utils.isSameProfileStore(value, configProfile)) {
-                value.groupId = groupName;
+                value.groupId = newGroupID;
             }
         });
         return this.writeUserConfiguration(Constants.connectionsArrayName, profiles);
     }
-
-    public updateGroups(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
-        let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
-        let updatedGroups = groups.map(g => {
-            if(g.id === source.id) {
-                g.parentId = source.getParent().id;
-            } else if(g.id === target.id) {
-                g.parentId = target.getParent().id;
-            }
-            return g;
-        });
-
-        return this.writeUserConfiguration(Constants.connectionGroupsArrayName, updatedGroups);
-	}
 
     private saveGroup(groups: IConnectionProfileGroup[], groupFullName: string): IConnectionProfileGroup[] {
 

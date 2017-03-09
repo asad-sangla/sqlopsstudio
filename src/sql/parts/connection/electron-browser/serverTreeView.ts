@@ -124,7 +124,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		let groups = this.connectionManagementService.getConnections();
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
 		this.fullRefreshNeeded = true;
-		const treeInput =  new ConnectionProfileGroup('root', null, undefined);
+		const treeInput =  new ConnectionProfileGroup('root', null, 'root');
 		treeInput.addGroups(groups);
 		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
 			self.fullRefreshNeeded = false;

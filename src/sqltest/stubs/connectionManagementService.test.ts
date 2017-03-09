@@ -51,15 +51,11 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
-	updateGroups(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void> {
+	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void> {
 		return;
 	}
 
-	changeGroupNameForGroup(sourceGroupName: string, targetGroupName: string): Promise<void> {
-		return;
-	}
-
-	changeGroupNameForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void> {
+	changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
 		return;
 	}
 

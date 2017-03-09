@@ -85,7 +85,7 @@ export class RecentConnectionsRenderer implements IRenderer {
  */
 export class RecentConnectionsDragAndDrop implements IDragAndDrop {
 
-	constructor(@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
+	constructor( @IConnectionManagementService private connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService
 	) {
 	}
@@ -120,20 +120,14 @@ export class RecentConnectionsDragAndDrop implements IDragAndDrop {
 	 * Sent when the drag operation is starting.
 	 */
 	public onDragStart(tree: ITree, data: IDragAndDropData, originalEvent: DragMouseEvent): void {
-		console.log('drag start');
 		return;
 	}
 
 	/**
 	 * Returns a DragOverReaction indicating whether sources can be
 	 * dropped into target or some parent of the target.
-	 * Returns DRAG_OVER_ACCEPT_BUBBLE_DOWN when element is aconnection group or connection
 	 */
 	public onDragOver(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): IDragOverReaction {
-		if (targetElement instanceof ConnectionProfile || targetElement instanceof ConnectionProfileGroup) {
-			console.log('drag accept');
-			return DRAG_OVER_ACCEPT_BUBBLE_DOWN(true);
-		}
 		return DRAG_OVER_REJECT;
 	}
 
@@ -141,68 +135,7 @@ export class RecentConnectionsDragAndDrop implements IDragAndDrop {
 	 * Handle drop in the server tree.
 	 */
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
-		let targetConnectionProfileGroup: ConnectionProfileGroup;
-		if (targetElement instanceof ConnectionProfile) {
-			targetConnectionProfileGroup = (<ConnectionProfile>targetElement).getParent();
-		}
-		else {
-			targetConnectionProfileGroup = <ConnectionProfileGroup>targetElement;
-		}
-		const source = data.getData()[0];
-		let oldParent: ConnectionProfileGroup = source.getParent();
-
-		if (targetConnectionProfileGroup && targetConnectionProfileGroup.name !== 'root' && oldParent && !oldParent.equals(targetConnectionProfileGroup)) {
-
-			console.log('drop ' + source.serverName + ' to ' + targetConnectionProfileGroup.fullName);
-			if (source instanceof ConnectionProfile) {
-				// Change groupName of Profile
-				this.connectionManagementService.changeGroupNameForConnection(source, targetConnectionProfileGroup.fullName).then(() => {
-					this.renderTree(tree);
-				});
-			} else if (source instanceof ConnectionProfileGroup) {
-
-				// Change groupName of all children under this group
-				this.connectionManagementService.changeGroupNameForGroup(source.fullName, targetConnectionProfileGroup.fullName + '/' + source.name).then(() => {
-					// Move group to its new parent
-					oldParent.removeGroup(source);
-					targetConnectionProfileGroup.addGroup(source);
-					this.connectionManagementService.updateGroups(this.getTopParent(oldParent), this.getTopParent(targetConnectionProfileGroup)).then(() => {
-						this.renderTree(tree);
-					});
-				});
-			}
-		}
-		return;
+		// No op
 	}
 
-	/**
-	 * Set tree input and render tree
-	 */
-	public renderTree(tree: ITree): void {
-		let treeInput = new ConnectionProfileGroup('root', null, undefined);
-			let groups = this.connectionManagementService.getConnections();
-			treeInput.addGroups(groups);
-			console.log('tree input');
-			if (treeInput !== tree.getInput()) {
-				tree.setInput(treeInput).done(() => {
-					tree.getFocus();
-				}, errors.onUnexpectedError);
-			} else {
-				tree.refresh().done(() => {
-					tree.getFocus();
-				}, errors.onUnexpectedError);
-			}
-
-	}
-
-	/**
-	 * Returns the topmost parent of a tree item
-	 */
-	public getTopParent(element: ConnectionProfileGroup): ConnectionProfileGroup {
-		let current = element;
-		while (current.getParent() !== null && current.getParent().id !== 'root') {
-			current = current.getParent();
-		}
-		return current;
-	}
 }

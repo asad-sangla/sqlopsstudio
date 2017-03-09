@@ -112,7 +112,7 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 			groups = this.connectionManagementService.getRecentConnections();
 		}
 
-		const treeInput =  new ConnectionProfileGroup('root', null, undefined);
+		const treeInput =  new ConnectionProfileGroup('root', null, 'root');
 		console.log(this.viewKey + ' groups ' + groups);
 		treeInput.addConnections(TreeUtils.convertToConnectionProfile(groups));
 		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
