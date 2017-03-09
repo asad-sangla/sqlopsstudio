@@ -81,6 +81,11 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 						extHostDataProvider.$onQueryMessage(provider.handle, message);
 					});
 
+					// Edit Data callbacks
+					provider.queryProvider.registerOnEditSessionReady((ownerUri: string, success: boolean) => {
+						extHostDataProvider.$onEditSessionReady(provider.handle, ownerUri, success);
+					});
+
 					// Complete registration
 					return extHostDataProvider.$registerProvider(provider);
 				}

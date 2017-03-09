@@ -29,6 +29,7 @@ export interface IQueryManagementService {
 	onBatchComplete(batchInfo: data.QueryExecuteBatchNotificationParams): void;
 	onResultSetComplete( resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void;
 	onMessage(message: data.QueryExecuteMessageParams): void;
+	onEditSessionReady(ownerUri: string, success: boolean): void;
 }
 
 /*
@@ -155,5 +156,8 @@ export class QueryManagementService implements IQueryManagementService {
 		this._notify(message.ownerUri, (runner: QueryRunner) => {
 			runner.handleMessage(message);
 		});
+	}
+	public onEditSessionReady(ownerUri: string, success: boolean): void {
+
 	}
 }

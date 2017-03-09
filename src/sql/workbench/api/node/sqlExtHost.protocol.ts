@@ -78,6 +78,46 @@ export abstract class ExtHostDataProtocolShape {
 	 * Callback when a message generated during query execution is issued
 	 */
 	$onQueryMessage(handle: number, message: data.QueryExecuteMessageParams): void { throw ni(); }
+
+		/**
+	 * Commits all pending edits in an edit session
+	 */
+	$commitEdit(handle: number, ownerUri: string): Thenable<void> { throw ni(); }
+
+	/**
+	 * Creates a new row in the edit session
+	 */
+	$createRow(handle: number, ownerUri: string): Thenable<carbon.EditCreateRowResult> { throw ni(); }
+
+	/**
+	 * Marks the selected row for deletion in the edit session
+	 */
+	$deleteRow(handle: number, ownerUri: string, rowId: number): Thenable<void> { throw ni(); }
+
+	/**
+	 * Initializes a new edit data session for the requested table/view
+	 */
+	$initializeEdit(handle: number, ownerUri: string, objectName: string, objectType: string): Thenable<void> { throw ni(); }
+
+	/**
+	 * Reverts any pending changes for the requested cell and returns the original value
+	 */
+	$revertCell(handle: number, ownerUri: string, rowId: number, columnId: number): Thenable<carbon.EditRevertCellResult> { throw ni(); }
+
+	/**
+	 * Reverts any pending changes for the requested row
+	 */
+	$revertRow(handle: number, ownerUri: string, rowId: number): Thenable<void> { throw ni(); }
+
+	/**
+	 * Updates a cell value in the requested row. Returns if there are any corrections to the value
+	 */
+	$updateCell(handle: number, ownerUri: string, rowId: number, columId: number, newValue: string): Thenable<carbon.EditUpdateCellResult> { throw ni(); }
+
+	/**
+	 * Callback when a session has completed initialization
+	 */
+	$onEditSessionReady(handle: number, ownerUri: string, success: boolean) { throw ni(); }
 }
 
 /**

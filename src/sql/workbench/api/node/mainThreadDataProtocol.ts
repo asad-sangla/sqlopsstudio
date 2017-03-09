@@ -123,6 +123,10 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		this._queryManagementService.onMessage(message);
 	}
 
+	public $onEditSessionReady(handle: number, ownerUri: string, success: boolean): void {
+		this._queryManagementService.onEditSessionReady(ownerUri, success);
+	}
+
 	public $unregisterProvider(handle: number): TPromise<any> {
 		let connectionRegistration = this._connectionRegistrations[handle];
 		if (connectionRegistration) {
