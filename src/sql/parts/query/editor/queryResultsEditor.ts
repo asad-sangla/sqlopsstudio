@@ -67,7 +67,7 @@ export class QueryResultsEditor extends BaseEditor {
 		input.setBootstrappedTrue();
 
 		const parent = this.getContainer().getHTMLElement();
-		append(parent, $('slickgrid-container'));
+		append(parent, $('slickgrid-container.slickgridContainer'));
 
 		// Bootstrap the angular content
 		let providers = [{ provide: 'ParameterService', useValue: this._angularParameterService }];

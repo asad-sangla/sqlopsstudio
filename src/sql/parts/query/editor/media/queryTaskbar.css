@@ -43,7 +43,8 @@
 
  li .queryTaskbarIcon {
 	margin-top: 4px;
-	padding-left: 15px;
+	padding-left: 22px;
+	background-repeat: no-repeat;
  }
 
 .listDatabasesSelectBox {
@@ -53,12 +54,13 @@
 .queryTaskbar .monaco-toolbar .monaco-action-bar.animated .actions-container .action-item
 .configuration.select-container .select-box {
 	margin-top: 4px;
+	margin-top: 3px;
  }
 
 .queryTaskbarSeparator {
-    width:1px;
+    width: 1px;
     background-color:#555;
-    margin-right: 8px;
+    margin-right: 6px;
 	margin-top: 3px;
 }
 
