@@ -86,13 +86,13 @@ import {
 		QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryDisposeResult, QueryExecuteCompleteNotificationResult,
 		QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResult, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
 		QueryExecuteSubsetRequest,
-		EditCommitRequest, EditCommitParams, EditCommitResult,
+		EditCommitRequest, EditCommitParams,
 		EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
-		EditDeleteRowRequest, EditDeleteRowParams, EditDeleteRowResult,
-		EditDisposeRequest, EditDisposeParams, EditDisposeResult,
-		EditInitializeRequest, EditInitializeParams, EditInitializeResult,
+		EditDeleteRowRequest, EditDeleteRowParams,
+		EditDisposeRequest, EditDisposeParams,
+		EditInitializeRequest, EditInitializeParams,
 		EditRevertCellRequest, EditRevertCellParams, EditRevertCellResult,
-		EditRevertRowRequest, EditRevertRowParams, EditRevertRowResult,
+		EditRevertRowRequest, EditRevertRowParams,
 		EditSessionReadyNotification, EditSessionReadyParams,
 		EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult
 } from './protocol';
@@ -1435,7 +1435,7 @@ export class LanguageClient {
 				connection.onNotification(QueryExecuteResultSetCompleteNotification.type, (params: QueryExecuteResultSetCompleteNotificationParams) => {
 					handler({
 						ownerUri: params.ownerUri,
-    					resultSetSummary: params.resultSetSummary
+						resultSetSummary: params.resultSetSummary
 					});
 				});
 			},
