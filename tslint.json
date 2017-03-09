@@ -49,7 +49,7 @@
 			},
 			{
 				"target": "{**/**.test.ts,**/test/**}",
-				"restrictions": "{**/vs/**,**/sql/**,assert,sinon,typemoq}"
+				"restrictions": "{**/vs/**,**/sql/**,**/sqltest/**,assert,sinon,typemoq}"
 			},
 			{
 				"target": "**/{common,browser,workbench}/**",

@@ -11,7 +11,7 @@ import { ConnectionConfig } from 'sql/parts/connection/node/connectionconfig';
 import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/node/interfaces';
 import { ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
-import { WorkspaceConfigurationTestService } from './workspaceConfigurationTestService';
+import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import * as Constants from 'sql/parts/connection/node/constants';
 import { IConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';

@@ -7,9 +7,9 @@
 import * as TypeMoq from 'typemoq';
 import { ConnectionConfig } from 'sql/parts/connection/node/connectionconfig';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import { WorkspaceConfigurationTestService } from './workspaceConfigurationTestService';
+import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import * as Constants from 'sql/parts/connection/node/constants';
-import { StorageTestService } from './storageTestService';
+import { StorageTestService } from 'sqltest/stubs/storageTestService';
 import { ConnectionStore } from 'sql/parts/connection/node/connectionStore';
 import { CredentialsService } from 'sql/parts/credentials/credentialsService';
 import * as assert from 'assert';
