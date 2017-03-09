@@ -46,7 +46,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport{
 	}
 
 	public matches(otherInput: any): boolean {
-		if (otherInput instanceof QueryInput){
+		if (otherInput instanceof QueryInput) {
 			return this._sql.matches(otherInput.sql);
 		}
 

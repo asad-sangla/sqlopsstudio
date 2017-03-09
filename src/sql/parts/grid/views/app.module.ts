@@ -10,8 +10,8 @@ declare let AngularPlatformBrowser;
 declare let AngularCore;
 
 @AngularCore.NgModule({
-  imports: [ AngularPlatformBrowser.BrowserModule ],
-  declarations: [ AppComponent, SlickGrid ],
-  bootstrap: [ AppComponent ]
+	imports: [AngularPlatformBrowser.BrowserModule],
+	declarations: [AppComponent, SlickGrid],
+	bootstrap: [AppComponent]
 })
 export class AppModule { }

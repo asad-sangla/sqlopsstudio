@@ -17,26 +17,26 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import Event, { Emitter } from 'vs/base/common/event';
 
 interface QueryEvent {
-    type: string;
-    data: any;
+	type: string;
+	data: any;
 }
 
 /**
  * Holds information about the state of a query runner
  */
 class QueryInfo {
-    public queryRunner: QueryRunner;
-    public dataService: DataService;
-    public queryEventQueue: QueryEvent[];
+	public queryRunner: QueryRunner;
+	public dataService: DataService;
+	public queryEventQueue: QueryEvent[];
 
-    // Notes if the angular components have obtained the DataService. If not, all messages sent
-    // via the data service will be lost.
-    public dataServiceReady: boolean;
+	// Notes if the angular components have obtained the DataService. If not, all messages sent
+	// via the data service will be lost.
+	public dataServiceReady: boolean;
 
-    constructor () {
-        this.dataServiceReady = false;
-        this.queryEventQueue = [];
-    }
+	constructor() {
+		this.dataServiceReady = false;
+		this.queryEventQueue = [];
+	}
 
 }
 
@@ -45,201 +45,201 @@ class QueryInfo {
  */
 export class QueryModelService implements IQueryModelService {
 
-    // MEMBER VARIABLES ////////////////////////////////////////////////////
-    private _queryInfoMap: Map<string, QueryInfo>;
+	// MEMBER VARIABLES ////////////////////////////////////////////////////
+	private _queryInfoMap: Map<string, QueryInfo>;
 	private _onRunQueryStart: Emitter<string>;
 	private _onRunQueryComplete: Emitter<string>;
 
-    // EVENTS /////////////////////////////////////////////////////////////
+	// EVENTS /////////////////////////////////////////////////////////////
 	public get onRunQueryStart(): Event<string> { return this._onRunQueryStart.event; }
 	public get onRunQueryComplete(): Event<string> { return this._onRunQueryComplete.event; }
 
-    // CONSTRUCTOR /////////////////////////////////////////////////////////
-    constructor(
+	// CONSTRUCTOR /////////////////////////////////////////////////////////
+	constructor(
 		@IInstantiationService private _instantiationService: IInstantiationService,
-    ) {
-        this._queryInfoMap = new Map<string, QueryInfo>();
-        this._onRunQueryStart = new Emitter<string>();
-        this._onRunQueryComplete = new Emitter<string>();
-    }
+	) {
+		this._queryInfoMap = new Map<string, QueryInfo>();
+		this._onRunQueryStart = new Emitter<string>();
+		this._onRunQueryComplete = new Emitter<string>();
+	}
 
-    // IQUERYMODEL /////////////////////////////////////////////////////////
+	// IQUERYMODEL /////////////////////////////////////////////////////////
 
-    public TEST_sendDummyQueryEvents(uri: string): void {
-        this._queryInfoMap.get(uri).queryRunner.TEST_setupRunQuery();
-    }
+	public TEST_sendDummyQueryEvents(uri: string): void {
+		this._queryInfoMap.get(uri).queryRunner.TEST_setupRunQuery();
+	}
 
-    public getDataService(uri: string): DataService {
-        let dataService = this._queryInfoMap.get(uri).dataService;
-        if (!dataService) {
-            throw new Error('Could not find data service for uri: ' + uri);
-        }
+	public getDataService(uri: string): DataService {
+		let dataService = this._queryInfoMap.get(uri).dataService;
+		if (!dataService) {
+			throw new Error('Could not find data service for uri: ' + uri);
+		}
 
-        return dataService;
-    }
+		return dataService;
+	}
 
-    /**
-     * To be called by an angular component's DataService when the component has finished loading.
-     * Sends all previously enqueued query events to the DataService and signals to stop enqueuing
-     * any further events. This prevents QueryEvents from getting lost if they are sent before
-     * angular is listening for them.
-     */
-    public onAngularLoaded(uri: string) {
-        let info = this._queryInfoMap.get(uri);
-        info.dataServiceReady = true;
-        this._sendQueuedEvents(uri);
-    }
+	/**
+	 * To be called by an angular component's DataService when the component has finished loading.
+	 * Sends all previously enqueued query events to the DataService and signals to stop enqueuing
+	 * any further events. This prevents QueryEvents from getting lost if they are sent before
+	 * angular is listening for them.
+	 */
+	public onAngularLoaded(uri: string) {
+		let info = this._queryInfoMap.get(uri);
+		info.dataServiceReady = true;
+		this._sendQueuedEvents(uri);
+	}
 
-    /**
-     * Get more data rows from the current resultSets from the service layer
-     */
-    public getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset> {
-        return this._queryInfoMap.get(uri).queryRunner.getRows(rowStart, numberOfRows, batchId, resultId).then(results => {
-            return results.resultSubset;
-        });
-    }
+	/**
+	 * Get more data rows from the current resultSets from the service layer
+	 */
+	public getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset> {
+		return this._queryInfoMap.get(uri).queryRunner.getRows(rowStart, numberOfRows, batchId, resultId).then(results => {
+			return results.resultSubset;
+		});
+	}
 
-    public getConfig(): Promise<{[key: string]: any}> {
-        return undefined;
-    }
+	public getConfig(): Promise<{ [key: string]: any }> {
+		return undefined;
+	}
 
-    public getShortcuts(): Promise<any> {
-        return undefined;
-    }
+	public getShortcuts(): Promise<any> {
+		return undefined;
+	}
 
-    public save(uri: string, batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void {
-    }
+	public save(uri: string, batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void {
+	}
 
-    public openLink(uri: string, content: string, columnName: string, linkType: string): void {
-    }
+	public openLink(uri: string, content: string, columnName: string, linkType: string): void {
+	}
 
-    public copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void {
-    }
+	public copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void {
+	}
 
-    public setEditorSelection(uri: string, selection: ISelectionData): void {
-    }
+	public setEditorSelection(uri: string, selection: ISelectionData): void {
+	}
 
-    public showWarning(uri: string, message: string): void {
-    }
+	public showWarning(uri: string, message: string): void {
+	}
 
-    public showError(uri: string, message: string): void {
-    }
+	public showError(uri: string, message: string): void {
+	}
 
-    public isRunningQuery(uri: string): boolean {
-        return !this._queryInfoMap.has(uri)
-            ? false
-            : this._queryInfoMap.get(uri).queryRunner.isExecutingQuery;
-    }
+	public isRunningQuery(uri: string): boolean {
+		return !this._queryInfoMap.has(uri)
+			? false
+			: this._queryInfoMap.get(uri).queryRunner.isExecutingQuery;
+	}
 
-    /**
-     * Run a query for the given URI with the given text selection
-     */
-    public runQuery(uri: string, selection: ISelectionData, title: string): void {
-        // Reuse existing query runner if it exists
-        let queryRunner: QueryRunner;
-        let info: QueryInfo;
+	/**
+	 * Run a query for the given URI with the given text selection
+	 */
+	public runQuery(uri: string, selection: ISelectionData, title: string): void {
+		// Reuse existing query runner if it exists
+		let queryRunner: QueryRunner;
+		let info: QueryInfo;
 
-        if (this._queryInfoMap.has(uri)) {
-            info = this._queryInfoMap.get(uri);
-            let existingRunner: QueryRunner = info.queryRunner;
+		if (this._queryInfoMap.has(uri)) {
+			info = this._queryInfoMap.get(uri);
+			let existingRunner: QueryRunner = info.queryRunner;
 
-            // If the query is already in progress, don't attempt to send it
-            if (existingRunner.isExecutingQuery) {
-                return;
-            }
+			// If the query is already in progress, don't attempt to send it
+			if (existingRunner.isExecutingQuery) {
+				return;
+			}
 
-            // If the query is not in progress, we can reuse the query runner
-            queryRunner = existingRunner;
-        } else {
-            // We do not have a query runner for this editor, so create a new one
-            // and map it to the results uri
-            queryRunner = new QueryRunner(uri, title);
-            queryRunner.eventEmitter.on('resultSet', (resultSet) => {
-                this._fireQueryEvent(uri, 'resultSet', resultSet);
-            });
-            queryRunner.eventEmitter.on('batchStart', (batch) => {
-                let message = {
-                    message: Constants.runQueryBatchStartMessage,
-                    batchId: undefined,
-                    isError: false,
-                    time: new Date().toLocaleTimeString(),
-                    link: {
-                        text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1),
-                        uri: ''
-                    }
-                };
-                this._fireQueryEvent(uri, 'message', message);
-            });
-            queryRunner.eventEmitter.on('message', (message) => {
-                this._fireQueryEvent(uri, 'message', message);
-            });
-            queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
-                this._onRunQueryComplete.fire(uri);
-                this._fireQueryEvent(uri, 'complete', totalMilliseconds);
-            });
-            queryRunner.eventEmitter.on('start', () => {
-                this._onRunQueryStart.fire(uri);
-                this._fireQueryEvent(uri, 'start');
-            });
+			// If the query is not in progress, we can reuse the query runner
+			queryRunner = existingRunner;
+		} else {
+			// We do not have a query runner for this editor, so create a new one
+			// and map it to the results uri
+			queryRunner = new QueryRunner(uri, title);
+			queryRunner.eventEmitter.on('resultSet', (resultSet) => {
+				this._fireQueryEvent(uri, 'resultSet', resultSet);
+			});
+			queryRunner.eventEmitter.on('batchStart', (batch) => {
+				let message = {
+					message: Constants.runQueryBatchStartMessage,
+					batchId: undefined,
+					isError: false,
+					time: new Date().toLocaleTimeString(),
+					link: {
+						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1),
+						uri: ''
+					}
+				};
+				this._fireQueryEvent(uri, 'message', message);
+			});
+			queryRunner.eventEmitter.on('message', (message) => {
+				this._fireQueryEvent(uri, 'message', message);
+			});
+			queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
+				this._onRunQueryComplete.fire(uri);
+				this._fireQueryEvent(uri, 'complete', totalMilliseconds);
+			});
+			queryRunner.eventEmitter.on('start', () => {
+				this._onRunQueryStart.fire(uri);
+				this._fireQueryEvent(uri, 'start');
+			});
 
-            info = new QueryInfo();
-            info.queryRunner = queryRunner;
-            info.dataService = new DataService(this, uri);
-            this._queryInfoMap.set(uri, info);
-        }
+			info = new QueryInfo();
+			info.queryRunner = queryRunner;
+			info.dataService = new DataService(this, uri);
+			this._queryInfoMap.set(uri, info);
+		}
 
-        queryRunner.runQuery(selection);
-    }
+		queryRunner.runQuery(selection);
+	}
 
-    public cancelQuery(input: QueryRunner | string): void {
-        let queryRunner: QueryRunner;
+	public cancelQuery(input: QueryRunner | string): void {
+		let queryRunner: QueryRunner;
 
-        if (typeof input === 'string') {
-            if (this._queryInfoMap.has(input)) {
-                queryRunner = this._queryInfoMap.get(input).queryRunner;
-            }
-        } else {
-            queryRunner = input;
-        }
+		if (typeof input === 'string') {
+			if (this._queryInfoMap.has(input)) {
+				queryRunner = this._queryInfoMap.get(input).queryRunner;
+			}
+		} else {
+			queryRunner = input;
+		}
 
-        if (queryRunner === undefined || !queryRunner.isExecutingQuery) {
-            // TODO: Cannot cancel query as no query is running.
-            return;
-        }
+		if (queryRunner === undefined || !queryRunner.isExecutingQuery) {
+			// TODO: Cannot cancel query as no query is running.
+			return;
+		}
 
-        // Switch the spinner to canceling, which will be reset when the query execute sends back its completed event
-        // TODO indicate on the status bar that the query is being canceled
+		// Switch the spinner to canceling, which will be reset when the query execute sends back its completed event
+		// TODO indicate on the status bar that the query is being canceled
 
-        // Cancel the query
-        queryRunner.cancelQuery().then(success => undefined, error => {
-            // On error, show error message
-            // TODO: Canceling the query failed: {0}
-        });
+		// Cancel the query
+		queryRunner.cancelQuery().then(success => undefined, error => {
+			// On error, show error message
+			// TODO: Canceling the query failed: {0}
+		});
 
-    }
+	}
 
-    // PRIVATE METHODS //////////////////////////////////////////////////////
+	// PRIVATE METHODS //////////////////////////////////////////////////////
 
-    private _fireQueryEvent(uri: string, type: string, data?: any) {
-        let info: QueryInfo = this._queryInfoMap.get(uri);
+	private _fireQueryEvent(uri: string, type: string, data?: any) {
+		let info: QueryInfo = this._queryInfoMap.get(uri);
 
-        if (info.dataServiceReady) {
-            let service: DataService = this.getDataService(uri);
-            service.dataEventObs.next({
-                type: type,
-                data: data
-            });
-        } else {
-            let queueItem: QueryEvent = { type: type, data: data };
-            info.queryEventQueue.push(queueItem);
-        }
-    }
+		if (info.dataServiceReady) {
+			let service: DataService = this.getDataService(uri);
+			service.dataEventObs.next({
+				type: type,
+				data: data
+			});
+		} else {
+			let queueItem: QueryEvent = { type: type, data: data };
+			info.queryEventQueue.push(queueItem);
+		}
+	}
 
-    private _sendQueuedEvents(uri: string): void {
-        let info: QueryInfo = this._queryInfoMap.get(uri);
-        while (info.queryEventQueue.length > 0) {
-            let event: QueryEvent = info.queryEventQueue.shift();
-            this._fireQueryEvent(uri, event.type, event.data);
-        }
-    }
+	private _sendQueuedEvents(uri: string): void {
+		let info: QueryInfo = this._queryInfoMap.get(uri);
+		while (info.queryEventQueue.length > 0) {
+			let event: QueryEvent = info.queryEventQueue.shift();
+			this._fireQueryEvent(uri, event.type, event.data);
+		}
+	}
 }

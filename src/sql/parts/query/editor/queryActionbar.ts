@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 'use strict';
 
 import 'vs/css!vs/base/browser/ui/actionbar/actionbar';
@@ -12,8 +17,10 @@ import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { EventType } from 'vs/base/browser/touch';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-import { IActionBarOptions, ActionsOrientation, IActionItem,
-	IActionOptions, ActionItem, BaseActionItem} from 'vs/base/browser/ui/actionbar/actionbar';
+import {
+	IActionBarOptions, ActionsOrientation, IActionItem,
+	IActionOptions, ActionItem, BaseActionItem
+} from 'vs/base/browser/ui/actionbar/actionbar';
 
 let defaultOptions: IActionBarOptions = {
 	orientation: ActionsOrientation.HORIZONTAL,

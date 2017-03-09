@@ -70,7 +70,7 @@ export class QueryResultsEditor extends BaseEditor {
 		append(parent, $('slickgrid-container'));
 
 		// Bootstrap the angular content
-		let providers = [ {provide: 'ParameterService', useValue: this._angularParameterService } ];
+		let providers = [{ provide: 'ParameterService', useValue: this._angularParameterService }];
 		AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
 	}
 

@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class QueryCancelParams {
-    ownerUri: string;
+	ownerUri: string;
 }
 
 export class QueryCancelResult {
-    messages: string;
+	messages: string;
 }

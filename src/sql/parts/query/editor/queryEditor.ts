@@ -14,7 +14,7 @@ import { IEditorRegistry, Extensions as EditorExtensions, EditorInput, EditorOpt
 import { BaseEditor, EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { IEditorControl, Position } from 'vs/platform/editor/common/editor';
 import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from '../views/flexibleSash';
-import { Orientation} from 'vs/base/browser/ui/sash/sash';
+import { Orientation } from 'vs/base/browser/ui/sash/sash';
 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -28,8 +28,10 @@ import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResour
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
-import { RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
-	DisconnectDatabaseAction, ConnectDatabaseAction, ChangeConnectionAction } from 'sql/parts/query/execution/queryActions';
+import {
+	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
+	DisconnectDatabaseAction, ConnectDatabaseAction, ChangeConnectionAction
+} from 'sql/parts/query/execution/queryActions';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import { IShowQueryResultsEditor } from 'sql/parts/query/editor/showQueryResultsEditor';
@@ -72,7 +74,7 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 		@IEditorGroupService private editorGroupService: IEditorGroupService,
 		@IContextMenuService protected contextMenuService: IContextMenuService,
 		@IQueryModelService protected queryModelService: IQueryModelService,
-		 editorOrientation?: Orientation
+		editorOrientation?: Orientation
 	) {
 		super(QueryEditor.ID, telemetryService);
 
@@ -209,15 +211,15 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 		let input = <QueryInput>this.input;
 
 		this._createEditor(<QueryResultsInput>input.results, this.resultsEditorContainer)
-		.then(result => {
-			this._onResultsEditorCreated(<QueryResultsEditor>result, input.results, this.options);
-			this._setResultsEditorVisible();
-			this._doLayout();
-		});
+			.then(result => {
+				this._onResultsEditorCreated(<QueryResultsEditor>result, input.results, this.options);
+				this._setResultsEditorVisible();
+				this._doLayout();
+			});
 	}
 
 	get uri(): string {
-		let input: QueryInput = <QueryInput> this.input;
+		let input: QueryInput = <QueryInput>this.input;
 		return input ? input.getQueryResultsInputResource() : undefined;
 	}
 
@@ -242,7 +244,7 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 		let listDatabasesAction = new ListDatabasesAction();
 
 		// Create HTML Elements for the toolbar
-		let separator = QueryTaskbar.createTaskbarSeparator() ;
+		let separator = QueryTaskbar.createTaskbarSeparator();
 
 		// Register callbacks for the Actions
 		this._register(this.queryModelService.onRunQueryStart(uri => {
@@ -335,13 +337,13 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 				this._doLayout();
 			});
 
-		// If only the sql editor exists, create a promise and wait for the sql editor to be created
+			// If only the sql editor exists, create a promise and wait for the sql editor to be created
 		} else {
 			this._createEditor(<UntitledEditorInput>newInput.sql, this.sqlEditorContainer)
-			.then(result => {
-				this._onSqlEditorCreated(<TextResourceEditor>result, newInput.sql, options);
-				this._doLayout();
-			});
+				.then(result => {
+					this._onSqlEditorCreated(<TextResourceEditor>result, newInput.sql, options);
+					this._doLayout();
+				});
 		}
 	}
 
@@ -397,7 +399,7 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 
 		if (!input.results.container) {
 			let cssClass: string = '.master-editor-container';
-			if(this.orientation === Orientation.HORIZONTAL) {
+			if (this.orientation === Orientation.HORIZONTAL) {
 				cssClass = '.master-editor-container-horizontal';
 			}
 
@@ -443,10 +445,10 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 		// Get info from sash. E.g. for a horizontal sash the majorDimension is height and the
 		// major position is height, because the sash can be dragged up and down to adjust the
 		// heights of each sub-editor
-		let	splitPoint: number = this.sash.getMajorPositionValue();
-		let	majorDim: string = this.sash.getMajorDimensionName();
-		let	minorDim: string = this.sash.getMinorDimensionName();
-		let	majorPos: string = this.sash.getMajorPositionName();
+		let splitPoint: number = this.sash.getMajorPositionValue();
+		let majorDim: string = this.sash.getMajorDimensionName();
+		let minorDim: string = this.sash.getMinorDimensionName();
+		let majorPos: string = this.sash.getMajorPositionName();
 
 		const sqlEditorMajorDimension = this.dimension[majorDim] - splitPoint;
 		const queryResultsEditorMajorDimension = this.dimension[majorDim] - sqlEditorMajorDimension - this.editorTopOffset;

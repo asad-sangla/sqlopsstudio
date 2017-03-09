@@ -10,14 +10,14 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
  * Used to pass parameters that are unique to different instances of AppComponent, working
  * around the fact that Angular injections are treated as singletons.
  */
-export class QueryParameterService implements IQueryParameterService  {
+export class QueryParameterService implements IQueryParameterService {
 	dataService: DataService;
 }
 
-export interface IQueryParameterService  {
+export interface IQueryParameterService {
 	dataService: DataService;
 }
 
 export const SERVICE_ID = 'queryParameterService';
 
-export const IQueryParameterService  = createDecorator<IQueryParameterService >(SERVICE_ID);
+export const IQueryParameterService = createDecorator<IQueryParameterService>(SERVICE_ID);

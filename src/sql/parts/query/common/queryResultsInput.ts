@@ -88,19 +88,19 @@ export class QueryResultsInput extends EditorInput {
 	set container(container: HTMLElement) {
 		this._disposeContainer();
 		this._editorContainer = container;
-    }
+	}
 
 	get container(): HTMLElement {
 		return this._editorContainer;
-    }
+	}
 
 	get hasBootstrapped(): boolean {
 		return this._hasBootstrapped;
-    }
+	}
 
 	get visible(): boolean {
 		return this._visible;
-    }
+	}
 
 	get uri(): string {
 		return this._uri;
