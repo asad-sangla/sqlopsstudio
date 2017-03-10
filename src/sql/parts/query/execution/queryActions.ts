@@ -55,7 +55,6 @@ export class RunQueryAction extends QueryTaskbarAction {
 	private static EnabledClass = 'runQuery';
 	public static ID = 'runQueryAction';
 
-
 	constructor(private _editorService: IWorkbenchEditorService, private _queryModelService: IQueryModelService) {
 		super(RunQueryAction.ID, RunQueryAction.EnabledClass);
 		this.label = nls.localize('runQueryLabel', 'Run Query');
@@ -71,8 +70,6 @@ export class RunQueryAction extends QueryTaskbarAction {
 			this._queryModelService.runQuery(uri, undefined, uri);
 			editor.showQueryResultsEditor();
 			this._queryModelService.TEST_sendDummyQueryEvents(uri);
-		} else {
-			throw new Error('Run Query button activated but active editor is not of type QueryEditor');
 		}
 
 		return TPromise.as(null);
@@ -86,7 +83,6 @@ export class CancelQueryAction extends QueryTaskbarAction {
 
 	private static EnabledClass = 'cancelQuery';
 	public static ID = 'cancelQueryAction';
-
 
 	constructor(private _editorService: IWorkbenchEditorService, private _queryModelService: IQueryModelService) {
 		super(CancelQueryAction.ID, CancelQueryAction.EnabledClass);

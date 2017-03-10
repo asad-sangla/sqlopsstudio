@@ -100,6 +100,7 @@ import { IMetadataService, MetadataService } from 'sql/parts/metadata/metadataSe
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { IQueryParameterService, QueryParameterService } from 'sql/parts/query/execution/queryParameterService';
+import { IEditorDescriptorService, EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { IScriptingService, ScriptingService } from 'sql/parts/scripting/scriptingService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
@@ -427,7 +428,7 @@ export class Workbench implements IPartService {
 	}
 
 	private initServices(): void {
-		const {serviceCollection} = this.workbenchParams;
+		const { serviceCollection } = this.workbenchParams;
 
 		this.toDispose.push(this.lifecycleService.onShutdown(this.shutdownComponents, this));
 
@@ -535,6 +536,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
 		serviceCollection.set(IQueryParameterService, this.instantiationService.createInstance(QueryParameterService));
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));
+		serviceCollection.set(IEditorDescriptorService, this.instantiationService.createInstance(EditorDescriptorService));
 		serviceCollection.set(IMetadataService, this.instantiationService.createInstance(MetadataService));
 		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));
 

@@ -38,9 +38,6 @@ export class EditDataAction extends Action {
 			.then((tableName) => {
 				if(tableName) {
 					// open an edit data session on that table
-					console.log('Edit Data Session Started');
-					console.log('Connection: ' + element);
-					console.log('Table Name: ' + tableName);
 					this.queryEditorService.newEditDataEditor(tableName);
 				}
 			});
