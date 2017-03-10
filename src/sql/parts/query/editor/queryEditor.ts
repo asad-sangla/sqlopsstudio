@@ -504,31 +504,31 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 
 	// TESTING PROPERTIES ////////////////////////////////////////////////////////////
 
-	public get __resultsEditor(): QueryResultsEditor {
+	public get resultsEditor(): QueryResultsEditor {
 		return this._resultsEditor;
 	}
 
-	public get __sqlEditor(): TextResourceEditor {
+	public get sqlEditor(): TextResourceEditor {
 		return this._sqlEditor;
 	}
 
-	public get __taskbar(): QueryTaskbar {
+	public get taskbar(): QueryTaskbar {
 		return this._taskbar;
 	}
 
-	public get __sash(): IFlexibleSash {
+	public get sash(): IFlexibleSash {
 		return this._sash;
 	}
 
-	public get __resultsEditorContainer(): HTMLElement {
+	public get resultsEditorContainer(): HTMLElement {
 		return this._resultsEditorContainer;
 	}
 
-	public get __sqlEditorContainer(): HTMLElement {
+	public get sqlEditorContainer(): HTMLElement {
 		return this._sqlEditorContainer;
 	}
 
-	public get __taskbarContainer(): HTMLElement {
+	public get taskbarContainer(): HTMLElement {
 		return this._taskbarContainer;
 	}
 }

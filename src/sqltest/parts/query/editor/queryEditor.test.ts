@@ -68,17 +68,17 @@ suite('SQL QueryEditor Tests', () => {
 		let uri: URI = URI.parse(filePath);
 		let fileInput = new UntitledEditorInput(uri, false, '', instantiationService.object, undefined, undefined);
 		let queryResultsInput: QueryResultsInput = new QueryResultsInput(uri.fsPath);
-		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput);
+		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput, undefined);
 
 		// Create a QueryInput to compare to the previous one
 		let filePath2 = 'someFile2.sql';
 		let uri2: URI = URI.parse(filePath2);
 		let fileInput2 = new UntitledEditorInput(uri2, false, '', instantiationService.object, undefined, undefined);
 		let queryResultsInput2: QueryResultsInput = new QueryResultsInput(uri2.fsPath);
-		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2);
+		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2, undefined);
 
 		// Create a QueryModelService
-		queryModelService = new QueryModelService();
+		queryModelService = new QueryModelService(instantiationService.object);
 	});
 
 	test('createEditor creates only the taskbar', (done) => {
@@ -87,16 +87,16 @@ suite('SQL QueryEditor Tests', () => {
 		editor.createEditor(parentBuilder);
 
 		// The taskbar should be created
-		assert.equal(!!editor.__taskbar, true);
-		assert.equal(!!editor.__taskbarContainer, true);
+		assert.equal(!!editor.taskbar, true);
+		assert.equal(!!editor.taskbarContainer, true);
 
 		// But Nothing else should be created
 		assert.equal(!!editor.getContainer(), false);
-		assert.equal(!!editor.__sqlEditor, false);
-		assert.equal(!!editor.__sqlEditorContainer, false);
-		assert.equal(!!editor.__resultsEditor, false);
-		assert.equal(!!editor.__resultsEditorContainer, false);
-		assert.equal(!!editor.__sash, false);
+		assert.equal(!!editor.sqlEditor, false);
+		assert.equal(!!editor.sqlEditorContainer, false);
+		assert.equal(!!editor.resultsEditor, false);
+		assert.equal(!!editor.resultsEditorContainer, false);
+		assert.equal(!!editor.sash, false);
 		assert.equal(!!editor._isResultsEditorVisible(), false);
 		done();
 	});
@@ -104,16 +104,16 @@ suite('SQL QueryEditor Tests', () => {
 	test('setInput creates SQL components', (done) => {
 		let assertInput = function () {
 			// The taskbar SQL, and parent should be created
-			assert.equal(!!editor.__taskbar, true);
-			assert.equal(!!editor.__taskbarContainer, true);
+			assert.equal(!!editor.taskbar, true);
+			assert.equal(!!editor.taskbarContainer, true);
 			assert.equal(!!editor.getContainer(), true);
-			assert.equal(!!editor.__sqlEditor, true);
-			assert.equal(!!editor.__sqlEditorContainer, true);
+			assert.equal(!!editor.sqlEditor, true);
+			assert.equal(!!editor.sqlEditorContainer, true);
 
 			// But the results componenets should not
-			assert.equal(!!editor.__resultsEditor, false);
-			assert.equal(!!editor.__resultsEditorContainer, false);
-			assert.equal(!!editor.__sash, false);
+			assert.equal(!!editor.resultsEditor, false);
+			assert.equal(!!editor.resultsEditorContainer, false);
+			assert.equal(!!editor.sash, false);
 			assert.equal(!!editor._isResultsEditorVisible(), false);
 		};
 
@@ -133,14 +133,14 @@ suite('SQL QueryEditor Tests', () => {
 		};
 
 		let assertInput = function () {
-			assert.equal(!!editor.__taskbar, true);
-			assert.equal(!!editor.__taskbarContainer, true);
+			assert.equal(!!editor.taskbar, true);
+			assert.equal(!!editor.taskbarContainer, true);
 			assert.equal(!!editor.getContainer(), true);
-			assert.equal(!!editor.__sqlEditor, true);
-			assert.equal(!!editor.__sqlEditorContainer, true);
-			assert.equal(!!editor.__resultsEditor, true);
-			assert.equal(!!editor.__resultsEditorContainer, true);
-			assert.equal(!!editor.__sash, true);
+			assert.equal(!!editor.sqlEditor, true);
+			assert.equal(!!editor.sqlEditorContainer, true);
+			assert.equal(!!editor.resultsEditor, true);
+			assert.equal(!!editor.resultsEditorContainer, true);
+			assert.equal(!!editor.sash, true);
 			assert.equal(!!editor._isResultsEditorVisible(), true);
 		};
 
@@ -166,7 +166,7 @@ suite('SQL QueryEditor Tests', () => {
 		let recordFirstInput = function () {
 			let input = <QueryInput>editor.input;
 			firstInput = input.sql;
-			firstContainer = editor.__sqlEditorContainer;
+			firstContainer = editor.sqlEditorContainer;
 			firstContainer.id = firstContainerId;
 		};
 
@@ -181,7 +181,7 @@ suite('SQL QueryEditor Tests', () => {
 		let assertFirstInputIsRemoved = function () {
 			let input = <QueryInput>editor.input;
 			secondInput = input.sql;
-			secondContainer = editor.__sqlEditorContainer;
+			secondContainer = editor.sqlEditorContainer;
 			secondContainer.id = secondContainerId;
 
 			// The inputs should not match
@@ -204,7 +204,7 @@ suite('SQL QueryEditor Tests', () => {
 		let assertFirstInputIsAddedBack = function () {
 			let input = <QueryInput>editor.input;
 			firstInput = input.sql;
-			firstContainer = editor.__sqlEditorContainer;
+			firstContainer = editor.sqlEditorContainer;
 
 			// The inputs should not match
 			assert.notEqual(firstInput.getName(), secondInput.getName());
