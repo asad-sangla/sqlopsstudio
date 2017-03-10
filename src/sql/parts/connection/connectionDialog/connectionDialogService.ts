@@ -47,7 +47,11 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			this._advancedcontroller = new AdvancedPropertiesController(() => this._connectionDialog.focusOnAdvancedButton());
 		}
 		var connectionProperties = this._connectionManagementService.getAdvancedProperties();
-		this._advancedcontroller.showDialog(connectionProperties, this._container);
+		if (!!connectionProperties) {
+			var advancedOption = connectionProperties.filter(
+				(property) => (property.specialValueType === undefined || property.specialValueType === null));
+			this._advancedcontroller.showDialog(advancedOption, this._container);
+		}
 	}
 
 	public showDialog(connectionManagementService: IConnectionManagementService, model?: IConnectionProfile): TPromise<void> {

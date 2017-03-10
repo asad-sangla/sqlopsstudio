@@ -10,23 +10,36 @@ import vscode = require('vscode');
 
 export class AdvancedPropertiesController {
 	private _container: HTMLElement;
-	private _connectionOptions: vscode.ConnectionOption[];
 	private _advancedDialog: AdvancedPropertiesDialog;
 
 	constructor(private _onCloseAdvancedProperties: () => void) {
 	}
+
 
 	private handleOnOk(): void {
 		// Update advanced properties
 	}
 
 	public showDialog(connectionProperties: vscode.ConnectionOption[], container: HTMLElement): void {
-		this._connectionOptions = connectionProperties;
+		var connectionPropertiesMaps = {};
+		for (var i = 0; i < connectionProperties.length; i++) {
+			var property = connectionProperties[i];
+			var groupName = property.groupName;
+			if (groupName === null || groupName === undefined) {
+				groupName = 'Others';
+			}
+
+			if (!!connectionPropertiesMaps[groupName]) {
+				connectionPropertiesMaps[groupName].push(property);
+			} else {
+				connectionPropertiesMaps[groupName] = [property];
+			}
+		}
 		this._container = container;
-		this.doShowDialog();
+		this.doShowDialog(connectionPropertiesMaps);
 	}
 
-	private doShowDialog(): void {
+	private doShowDialog(connectionPropertiesMaps: { [category: string]: vscode.ConnectionOption[] }): void {
 		if(!this._advancedDialog) {
 			this._advancedDialog  = new AdvancedPropertiesDialog(this._container, {
 				onCancel: () => {},
@@ -36,6 +49,6 @@ export class AdvancedPropertiesController {
 			this._advancedDialog.create();
 		}
 
-		return this._advancedDialog.open(this._connectionOptions);
+		return this._advancedDialog.open(connectionPropertiesMaps);
 	}
 }

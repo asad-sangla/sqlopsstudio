@@ -5,9 +5,10 @@
 
 'use strict';
 
-import { Builder, $ } from 'vs/base/browser/builder';
+import { Builder } from 'vs/base/browser/builder';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
+import { Button } from 'vs/base/browser/ui/button/button';
 
 export class ConnectionDialogHelper {
 	static appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
@@ -26,6 +27,25 @@ export class ConnectionDialogHelper {
 		return cellContainer;
 	}
 
+	static appendRowLink(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
+		let rowButton:Button;
+		container.element('tr', {}, (rowContainer) => {
+				rowContainer.element('td', {class: labelClass}, (labelCellContainer) => {
+						labelCellContainer.div({}, (labelContainer) => {
+								labelContainer.innerHtml(label);
+						});
+				});
+				rowContainer.element('td', {class: cellContainerClass}, (inputCellContainer) => {
+					inputCellContainer.element('div', {}, (rowContainer) => {
+						rowButton = new Button(rowContainer);
+
+					});
+				});
+		});
+
+		return new Builder(rowButton.getElement());
+	}
+
 	static appendInputBox(container: Builder): InputBox {
 		return new InputBox(container.getHTMLElement(), null, {});
 	}
@@ -36,6 +56,6 @@ export class ConnectionDialogHelper {
 	}
 
 	static isNumeric(num): boolean	{
-   		return !isNaN(num)
+		return !isNaN(num);
 	}
 }

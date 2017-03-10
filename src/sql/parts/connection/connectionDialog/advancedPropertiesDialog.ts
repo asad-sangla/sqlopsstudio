@@ -42,8 +42,9 @@ export class AdvancedPropertiesDialog {
 	private _trueInputValue: string = 'True';
 	private _falseInputValue: string = 'False';
 	private _toDispose: lifecycle.IDisposable[];
-	private _connectionOptions: vscode.ConnectionOption[];
 	private _advancedPropertiesMaps: { [propertyName: string]: IAdvancedPropertyElement };
+	private _propertyTitle: Builder;
+	private _propertyDescription: Builder;
 
 	constructor(container: HTMLElement, callbacks: IAdvancedDialogCallbacks) {
 		this._container = container;
@@ -53,8 +54,17 @@ export class AdvancedPropertiesDialog {
 	}
 
 	public create(): HTMLElement {
-		let dialog = new ModalDialogBuilder('advancedDialogModal', 'Advanced Properties', 'advanced-dialog', 'propertiesContent');
+		let dialog = new ModalDialogBuilder('advancedDialogModal', 'Advanced Properties', 'advanced-dialog', 'advancedBody');
 		this._builder = dialog.create();
+		dialog.bodyContainer.div({class:'advancedDialog-properties', id: 'propertiesContent'});
+		dialog.bodyContainer.div({class:'advancedDialog-description'}, (descriptionContainer) => {
+			descriptionContainer.div({class:'modal-title'}, (propertyTitle) => {
+				this._propertyTitle = propertyTitle;
+			});
+			descriptionContainer.div({class:'advancedDialog-description-content'}, (propertyDescription) => {
+				this._propertyDescription = propertyDescription;
+			});
+		});
 		this.createBackButton(dialog.headerContainer);
 		dialog.addModalTitle();
 		this._okButton = this.createFooterButton(dialog.footerContainer, 'OK');
@@ -66,34 +76,67 @@ export class AdvancedPropertiesDialog {
 		return this._modelElement;
 	}
 
-	private fillInProperties(container: Builder): void {
-		for (var i = 0; i < this._connectionOptions.length; i++) {
 
-			var property: vscode.ConnectionOption = this._connectionOptions[i];
-			var propertyWidget: any;
-			switch (property.valueType) {
-				case ConnectionOptionType.boolean:
-					propertyWidget = new ConnectionDialogSelectBox([this._trueInputValue, this._falseInputValue], property.defaultValue ? this._trueInputValue : this._falseInputValue);
-					ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input'), propertyWidget);
-					break;
-				case ConnectionOptionType.number:
-					propertyWidget = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input'));
-					propertyWidget.value = property.defaultValue;
-					this._toDispose.push(propertyWidget.onDidChange(newInput => {
-						// TODO input validation
-						this.numberInputBoxChanged(newInput);
-					}));
-					break;
-				case ConnectionOptionType.category:
-					propertyWidget = new ConnectionDialogSelectBox(property.categoryValues, property.defaultValue);
-					ConnectionDialogHelper.appendInputSelectBox(ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input'), propertyWidget);
-					break;
-				case ConnectionOptionType.string:
-					propertyWidget = ConnectionDialogHelper.appendInputBox(ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input'));
-					propertyWidget.value = property.defaultValue;
-			}
-			this._advancedPropertiesMaps[property.name] = { advancedPropertyWidget: propertyWidget, advancedProperty: property };
+	private onAdvancedPropertyLinkClicked(propertyName: string): void {
+		var property = this._advancedPropertiesMaps[propertyName].advancedProperty;
+		this._propertyTitle.innerHtml(property.displayName);
+		this._propertyDescription.innerHtml(property.description);
+	}
+
+	private fillInProperties(container: Builder, connectionOptions: vscode.ConnectionOption[]): void {
+		for (var i = 0; i < connectionOptions.length; i++) {
+			var property: vscode.ConnectionOption = connectionOptions[i];
+			var rowContainer = ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input');
+			this.createAdvancedProperty(property, rowContainer);
 		}
+	}
+
+	private createAdvancedProperty(property: vscode.ConnectionOption, rowContainer: Builder): void {
+		var propertyWidget: any;
+		var inputElement: HTMLElement;
+		switch (property.valueType) {
+			case ConnectionOptionType.boolean:
+				propertyWidget = new ConnectionDialogSelectBox([this._trueInputValue, this._falseInputValue], property.defaultValue ? this._trueInputValue : this._falseInputValue);
+				ConnectionDialogHelper.appendInputSelectBox(rowContainer, propertyWidget);
+				inputElement = this.findElement(rowContainer, 'select-box');
+				break;
+			case ConnectionOptionType.number:
+				propertyWidget = ConnectionDialogHelper.appendInputBox(rowContainer);
+				propertyWidget.value = property.defaultValue;
+				this._toDispose.push(propertyWidget.onDidChange(newInput => {
+					// TODO input validation
+					this.numberInputBoxChanged(newInput);
+				}));
+				inputElement = this.findElement(rowContainer, 'input');
+				break;
+			case ConnectionOptionType.category:
+				propertyWidget = new ConnectionDialogSelectBox(property.categoryValues, property.defaultValue);
+				ConnectionDialogHelper.appendInputSelectBox(rowContainer, propertyWidget);
+				inputElement = this.findElement(rowContainer, 'select-box');
+				break;
+			case ConnectionOptionType.string:
+			case ConnectionOptionType.password:
+				propertyWidget = ConnectionDialogHelper.appendInputBox(rowContainer);
+				propertyWidget.value = property.defaultValue;
+				if (property.valueType === ConnectionOptionType.password) {
+					propertyWidget.inputElement.type = 'password';
+				}
+				inputElement = this.findElement(rowContainer, 'input');
+		}
+		this._advancedPropertiesMaps[property.name] = { advancedPropertyWidget: propertyWidget, advancedProperty: property };
+		inputElement.onfocus = () => this.onAdvancedPropertyLinkClicked(property.name);
+	}
+
+	private findElement(container: Builder, className: string): HTMLElement {
+		var elementBuilder: Builder = container;
+		while (!!elementBuilder.getHTMLElement()) {
+			var htmlElement = elementBuilder.getHTMLElement();
+			if(htmlElement.className === className) {
+				break;
+			}
+			elementBuilder = elementBuilder.child(0);
+		}
+		return elementBuilder.getHTMLElement();
 	}
 
 	private createBackButton(container: Builder): void {
@@ -154,14 +197,30 @@ export class AdvancedPropertiesDialog {
 		this._callbacks.onClose();
 	}
 
-	public open(connectionOptions: vscode.ConnectionOption[]) {
-		this._connectionOptions = connectionOptions;
-		var propertiesContentbuilder = $().element('table', { class: 'advancedDialog-table' }, (tableContainer: Builder) => {
-			this.fillInProperties(tableContainer);
+	public open(connectionPropertiesMaps: { [category: string]:  vscode.ConnectionOption[] }) {
+		var firstProperty: string;
+		var containerGroup: Builder;
+		var propertiesContentbuilder: Builder = $().div({class:'advancedDialog-properties-groups'}, (container) => {
+			containerGroup = container;
 		});
+		for (var category in connectionPropertiesMaps) {
+			var propertyOptions: vscode.ConnectionOption[] = connectionPropertiesMaps[category];
+			containerGroup.div({class:'advancedDialog-properties-category'}, (categoryContainer) => {
+				categoryContainer.div({class:'modal-title'}, (categoryTitle) => {
+					categoryTitle.innerHtml(category);
+				});
+				categoryContainer.element('table', { class: 'advancedDialog-table' }, (tableContainer: Builder) => {
+					this.fillInProperties(tableContainer, propertyOptions);
+				});
+			});
+			if (!firstProperty) {
+				firstProperty = propertyOptions[0].name;
+			}
+		}
+
 		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());
 		jQuery('#advancedDialogModal').modal({ backdrop: false, keyboard: true });
-		var firstPropertyWidget = this._advancedPropertiesMaps[this._connectionOptions[0].displayName].advancedPropertyWidget;
+		var firstPropertyWidget = this._advancedPropertiesMaps[firstProperty].advancedPropertyWidget;
 		firstPropertyWidget.focus();
 
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {

@@ -34,6 +34,7 @@
 	font-size: 11px;
 	border: 1px solid transparent;
 	margin-left: 1px;
+	width: 100%;
 }
 
 .advanced-dialog .modal-title {
@@ -51,6 +52,8 @@
 
 #propertiesContent {
 	padding: 15px;
+	height: calc(100% - 150px);
+	overflow-y: auto;
 }
 
 .advanced-dialog .backButtonIcon {
@@ -61,12 +64,22 @@
 	cursor: pointer;
 }
 
-.advanced-dialog .advancedDialog-table{
-	width:100%;
+.advanced-dialog .advancedDialog-description {
+	border-top: 1px solid #e5e5e5;
+	padding: 15px;
+	overflow-y: auto;
 }
 
-.advanced-dialog .select-box {
-	width: 100%;
+.advanced-dialog .advancedDialog-description-content {
+	padding: 10px;
+}
+
+.advanced-dialog .advancedDialog-properties-category {
+	padding-bottom: 15px;
+}
+
+.advanced-dialog .advancedDialog-table{
+	width:100%;
 }
 
 td.advancedDialog-input.select-container {
