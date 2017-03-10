@@ -1457,7 +1457,7 @@ export class LanguageClient {
 						return undefined;
 					},
 					(error) => {
-						this.logFailedRequest(EditCommitRequest.type, error);
+						self.logFailedRequest(EditCommitRequest.type, error);
 						return Promise.resolve(null);
 					}
 				);
@@ -1470,7 +1470,7 @@ export class LanguageClient {
 						return result;
 					},
 					(error) => {
-						this.logFailedRequest(EditCreateRowRequest.type, error);
+						self.logFailedRequest(EditCreateRowRequest.type, error);
 						return Promise.resolve(null);
 					}
 				);
@@ -1483,7 +1483,7 @@ export class LanguageClient {
 						return undefined;
 					},
 					(error) => {
-						this.logFailedRequest(EditDeleteRowRequest.type, error);
+						self.logFailedRequest(EditDeleteRowRequest.type, error);
 						return Promise.resolve(null);
 					}
 				);
@@ -1496,7 +1496,7 @@ export class LanguageClient {
 						return undefined;
 					},
 					(error) => {
-						this.logFailedRequest(EditDisposeRequest.type, error);
+						self.logFailedRequest(EditDisposeRequest.type, error);
 						return Promise.resolve(null);
 					}
 				);
@@ -1509,7 +1509,7 @@ export class LanguageClient {
 						return undefined;
 					},
 					(error) => {
-						this.logFailedRequest(EditInitializeRequest.type, error);
+						self.logFailedRequest(EditInitializeRequest.type, error);
 						return Promise.resolve(null);
 					}
 				);
@@ -1522,7 +1522,7 @@ export class LanguageClient {
 						return result;
 					},
 					(error) => {
-						this.logFailedRequest(EditRevertCellRequest.type, error);
+						self.logFailedRequest(EditRevertCellRequest.type, error);
 						return Promise.resolve(null);
 					}
 				);
@@ -1535,7 +1535,7 @@ export class LanguageClient {
 						return undefined;
 					},
 					(error) => {
-						this.logFailedRequest(EditRevertRowRequest.type, error);
+						self.logFailedRequest(EditRevertRowRequest.type, error);
 						return Promise.resolve(null);
 					}
 				);
@@ -1548,7 +1548,7 @@ export class LanguageClient {
 						return result;
 					},
 					(error) => {
-						this.logFailedRequest(EditUpdateCellRequest.type, error);
+						self.logFailedRequest(EditUpdateCellRequest.type, error);
 						return Promise.resolve(null);
 					}
 				);
