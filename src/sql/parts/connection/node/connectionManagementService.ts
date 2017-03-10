@@ -159,7 +159,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private getDocumentUri(connection: vscode.ConnectionInfo): string {
 		let uri = this.getActiveEditorUri();
-		if (uri === undefined) {
+		if (!uri) {
 			uri = 'connection://' + connection.serverName + ':' + connection.databaseName;
 		}
 
@@ -227,6 +227,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public dispose(): void {
 		this.disposables = dispose(this.disposables);
+	}
+
+	public shutdown(): void {
+		this.connectionMemento.saveMemento();
 	}
 
 	public addEventListener(handle: number, serverEvents: ConnectionManagementEvents): IDisposable {

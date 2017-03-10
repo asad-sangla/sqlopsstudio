@@ -152,16 +152,19 @@ export class ConnectionDialogWidget {
 
 	private createFooterButton(container: Builder, title: string): Button {
 		let button;
-		container.element('td', { class: 'footer-button' }, (cellContainer) => {
-			button = new Button(cellContainer);
-			button.label = title;
-			button.addListener2('click', () => {
-				if (title === 'Connect') {
-					this.connect();
-				} else {
-					this.cancel();
-				}
+		container.element('td', (cellContainer) => {
+			cellContainer.div({class:'footer-button'}, (buttonContainer) => {
+				button = new Button(buttonContainer);
+				button.label = title;
+				button.addListener2('click', () => {
+					if (title === 'Connect') {
+						this.connect();
+					} else {
+						this.cancel();
+					}
+				});
 			});
+
 		});
 
 		return button;

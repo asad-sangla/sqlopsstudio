@@ -16,6 +16,7 @@
 .advancedDialog-input {
 	width: 200px;
 	padding-bottom: 5px;
+	padding-right: 7px;
 }
 
 .vs-dark.monaco-shell .advanced-dialog .input {
@@ -45,7 +46,7 @@
 }
 
 .advanced-dialog .footer-buttons {
-    width: 200px;
+	width: 200px;
 }
 
 #propertiesContent {
@@ -58,4 +59,16 @@
 	padding-right: 10px;
 	float: left;
 	cursor: pointer;
+}
+
+.advanced-dialog .advancedDialog-table{
+	width:100%;
+}
+
+.advanced-dialog .select-box {
+	width: 100%;
+}
+
+td.advancedDialog-input.select-container {
+	padding-right: 9px;
 }

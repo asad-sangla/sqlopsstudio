@@ -530,12 +530,16 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
-		serviceCollection.set(IConnectionManagementService, this.instantiationService.createInstance(ConnectionManagementService));
+		let connectionManagementService = this.instantiationService.createInstance(ConnectionManagementService);
+		serviceCollection.set(IConnectionManagementService, connectionManagementService);
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
 		serviceCollection.set(IQueryParameterService, this.instantiationService.createInstance(QueryParameterService));
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));
 		serviceCollection.set(IMetadataService, this.instantiationService.createInstance(MetadataService));
 		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));
+
+		this.toDispose.push(connectionManagementService);
+		this.toShutdown.push(connectionManagementService);
 
 		// Contributed services
 		const contributedServices = getServices();
