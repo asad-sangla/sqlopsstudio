@@ -23,6 +23,8 @@ import vscode = require('vscode');
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
+import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
@@ -55,7 +57,8 @@ export class ConnectionDialogWidget {
 
 	constructor(container: HTMLElement,
 		callbacks: IConnectionDialogCallbacks,
-		@IInstantiationService private instantiationService: IInstantiationService)
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService)
 	{
 		this.container = container;
 		this.setCallbacks(callbacks);
@@ -303,40 +306,19 @@ export class ConnectionDialogWidget {
 			recentConnectionContainer.div({class:'modal-title'}, (recentTitle) => {
 				recentTitle.innerHtml('Recent History');
 			});
-			recentConnectionContainer.element('table', { class: 'connection-history-table' }, (tableContainer: Builder) => {
-				let connectionInfo: vscode.ConnectionInfo;
-				for (var i = 0; i < recentConnections.length; i++) {
-					connectionInfo = recentConnections[i];
-					this.fillInRecentConnection(tableContainer, connectionInfo);
-				}
+
+			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
+				divContainer.element('div', { class: 'explorer-servers'}, (treeContainer: Builder) => {
+					let recentConnectionTree = TreeUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService);
+					TreeUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService).then(() => {
+						// call layout with view height
+						recentConnectionTree.layout(300);
+						divContainer.append(recentConnectionTree.getHTMLElement());
+					});
+				});
 			});
 		});
 		return recentConnectionBuilder;
-	}
-
-	private fillInRecentConnection(container: Builder, connectionInfo: vscode.ConnectionInfo){
-		let recentConnectButton:Button;
-		container.element('tr', {}, (rowContainer) => {
-			recentConnectButton = new Button(rowContainer);
-			recentConnectButton.addListener2('click', () => {
-				this.OnRecentConnectionClick(connectionInfo);
-			});
-		});
-		var rowButtonContainer = new Builder(recentConnectButton.getElement());
-		rowButtonContainer.element('div', { class: 'connection-info-group' }, (groupContainer) => {
-			groupContainer.element('div', { class: 'connection-info-title' }, (labelContainer) => {
-				labelContainer.innerHtml(connectionInfo.databaseName);
-			});
-			groupContainer.element('div', { class: 'connection-info-content' }, (labelContainer) => {
-				var connectionContent = connectionInfo.serverName;
-				if (!this.isEmptyString(connectionInfo.userName))
-				{
-					connectionContent += ' (' + connectionInfo.userName + ')';
-				}
-				labelContainer.innerHtml(connectionContent);
-			});
-		});
-		this._recentConnectionButtons.push(recentConnectButton);
 	}
 
 	private OnRecentConnectionClick(connectionInfo: vscode.ConnectionInfo) {

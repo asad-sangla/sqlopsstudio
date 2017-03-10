@@ -168,6 +168,10 @@
 	height: 100%;
 }
 
+.explorer-servers {
+	height: 100%;
+}
+
 .server-explorer-viewlet .explorer-item,
 .server-explorer-viewlet .open-editor,
 .server-explorer-viewlet .editor-group {

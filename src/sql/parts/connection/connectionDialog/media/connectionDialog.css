@@ -137,6 +137,10 @@
 	visibility: hidden;
 }
 
+.connection-recent-content {
+	height: 100%;
+}
+
 .connection-dialog-widget .spinner {
 	content: url(progress_36x_animation.gif);
 	width: 30px;
