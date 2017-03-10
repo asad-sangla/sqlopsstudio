@@ -353,6 +353,7 @@ export class ConnectionDialogWidget {
 			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
 				divContainer.element('div', { class: 'explorer-servers'}, (treeContainer: Builder) => {
 					let recentConnectionTree = TreeUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService);
+					recentConnectionTree.addListener2('selection', (event: any) => this.OnRecentConnectionClick(event));
 					TreeUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService).then(() => {
 						// call layout with view height
 						recentConnectionTree.layout(300);
@@ -364,11 +365,12 @@ export class ConnectionDialogWidget {
 		return recentConnectionBuilder;
 	}
 
-	private OnRecentConnectionClick(connectionInfo: vscode.ConnectionInfo) {
+	private OnRecentConnectionClick(event: any) {
+		let connectionInfo = event.selection[0];
 		this.serverNameInputBox.value = connectionInfo.serverName;
 		this.databaseNameInputBox.value = connectionInfo.databaseName;
-		this.userNameInputBox.value = connectionInfo.userName;
-		this.passwordInputBox.value = connectionInfo.password;
+		this.userNameInputBox.value = (connectionInfo.authenticationType === 'SqlLogin') ? connectionInfo.userName : '';
+		this.passwordInputBox.value = (connectionInfo.authenticationType === 'SqlLogin') ? connectionInfo.password : '';
 		this.rememberPassword.checked = !this.isEmptyString(connectionInfo.password);
 		this.authTypeSelectBox.selectWithOptionName(connectionInfo.authenticationType);
 		this.serverGroupInputBox.value = '';

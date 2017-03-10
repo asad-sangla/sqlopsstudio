@@ -152,51 +152,7 @@
 	text-align: left;
 }
 
-/* For recent connection list */
-.connection-info-group {
-	color: #6C6C6C;
-	padding-left: 30px;
-	cursor: pointer;
-}
-
-.vs-dark.monaco-shell .connection-info-group {
-	color: #BBB;
-}
-
-.connection-info-group:before {
-	content: ' ';
-	position: absolute;
-	display: block;
-	background: url('server.svg') 50% 50% no-repeat;
-	width: 36px;
-	height: 32px;
-	left: 5px;
-}
-
-.connection-info-title {
-	font-weight: bold;
-}
-
 .connection-dialog-widget .connection-table-content {
 	width:100%;
 	table-layout: fixed;
 }
-
-/* Hover */
-.connection-info-group:hover { background-color: #F0F0F0; color: #6C6C6C; }
-.vs-dark.monaco-shell .connection-info-group:hover { background-color: rgba(255, 255, 255, 0.08); color: #BBB; }
-.hc-black .monaco-shell .connection-info-group:hover { outline: 1px dashed #f38518; outline-offset: -1px; background: transparent; }
-
-/* Focus */
-.connection-info-group.focused { background-color: #DCEBFC; }
-.vs-dark.monaco-shell .connection-info-group.focused { background-color: #073655; }
-.hc-black .monaco-shell .connection-info-group.focused { outline: 1px dotted #f38518; outline-offset: -1px; background: transparent }
-
-/* Selection */
-.monaco-shell .connection-info-group.selected { background-color: #4FA7FF; color: white; }
-.vs-dark.monaco-shell .connection-info-group.selected { background-color: #0E639C; color: white; }
-.hc-black .monaco-shell .connection-info-group.selected { outline: 1px solid #f38518; color: white; }
-
-/* Selection and focus */
-.connection-info-group.selected.focused { background-color: #3399FF; color: white; }
-.vs-dark.monaco-shell .connection-info-group.selected.focused { background-color: #094771; color: white; }
