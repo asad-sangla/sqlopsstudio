@@ -53,6 +53,10 @@ export interface IConnectionManagementService {
 	changeGroupIdForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void>;
 
 	getAdvancedProperties(): vscode.ConnectionOption[];
+
+	connect(fileUri: string, connection: ConnectionProfile): Promise<boolean>;
+
+	disconnect(fileUri: string): Promise<boolean>;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

@@ -3,10 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 'use strict';
-import * as vscode from 'vscode';
 import dom = require('vs/base/browser/dom');
-import { IConnectionProfile } from '../node/interfaces';
-import { ConnectionCredentials } from '../node/connectionCredentials';
 import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
 import { ConnectionProfile } from '../node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -298,17 +295,17 @@ export class NewQueryAction extends Action {
 	constructor(
 		id: string,
 		label: string,
-		@IQueryEditorService private queryEditorService: IQueryEditorService
+		@IQueryEditorService private queryEditorService: IQueryEditorService,
+		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
 	}
 
-	public run(element: ConnectionProfile): TPromise<boolean> {
+	public run(connectionProfile: ConnectionProfile): TPromise<boolean> {
 		// ask sqldoc service for an untitled sql sqldoc
 		this.queryEditorService.newSqlEditor().then((newDocUri) => {
-			// TODO: implement the following components when serverTree is done
-			// get connection info from server
-			// add a connection to sql doc association to the connection service
+			// connect our editor to the input connection
+			this.connectionManagementService.connect(newDocUri.toString(), connectionProfile);
 		});
 		return TPromise.as(true);
 	}

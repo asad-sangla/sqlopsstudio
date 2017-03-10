@@ -33,7 +33,7 @@ export class EditDataAction extends Action {
 		let tableRequest = (con: ConnectionProfile) => {
 			return this.quickOpenService.input(
 				{
-						placeHolder: 'table name'
+						placeHolder: nls.localize('tableName', 'table name')
 				})
 			.then((tableName) => {
 				if(tableName) {
@@ -56,7 +56,7 @@ export class EditDataAction extends Action {
 			let conIds = connectionList.map(x => x.id);
 
 			// select a connection from the drop down
-			this.quickOpenService.pick(conIds, {placeHolder: 'connection profile', ignoreFocusLost: true}).then((connection) => {
+			this.quickOpenService.pick(conIds, {placeHolder: nls.localize('connectionProfile','connection profile'), ignoreFocusLost: true}).then((connection) => {
 				// get connection
 				let conProfile: ConnectionProfile = connectionList.find(x => x.id === connection);
 				if (conProfile) {

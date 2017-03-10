@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
+import nls = require('vs/nls');
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
@@ -27,6 +28,8 @@ import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
 import * as vscode from 'vscode';
+import * as ConnectionContracts from 'sql/parts/connection/node/connection';
+import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -55,7 +58,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IConfigurationEditingService private _configurationEditService: IConfigurationEditingService,
 		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
 		@ICredentialsService private _credentialsService: ICredentialsService,
-		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService
+		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
+		@IQuickOpenService private quickOpenService: IQuickOpenService
 	) {
 
 		this.connectionMemento = new Memento('ConnectionManagement');
@@ -110,33 +114,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.getRecentlyUsedConnections();
 	}
 
-	private connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
-		const self = this;
-
-		return new Promise<boolean>((resolve, reject) => {
-			let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
-			connectionInfo.extensionTimer = new Utils.Timer();
-			connectionInfo.intelliSenseTimer = new Utils.Timer();
-			connectionInfo.connectionProfile = connection;
-			connectionInfo.connecting = true;
-			this._connections[uri] = connectionInfo;
-
-			// Setup the handler for the connection complete notification to call
-			connectionInfo.connectHandler = ((connectResult, error) => {
-				if (error) {
-					reject(error);
-				} else {
-					resolve(connectResult);
-				}
-			});
-
-			connectionInfo.serviceTimer = new Utils.Timer();
-
-			// send connection request
-			self.sendConnectRequest(connection, uri);
-		});
-	}
-
 	public getAdvancedProperties(): vscode.ConnectionOption[] {
 		let capabilities = this._capabilitiesService.getCapabilities();
 		if (capabilities !== undefined && capabilities.length > 0) {
@@ -151,10 +128,22 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return undefined;
 	}
 
+	// Request Senders
+	// TODO: Request Handlers Mapping to prevent sending request to all handlers
 	private sendConnectRequest(connection: vscode.ConnectionInfo, uri: string): void {
 		for (var key in this._serverEvents) {
 			this._serverEvents[key].onConnect(uri, connection);
 		}
+	}
+
+	private sendDisconnectRequest(uri: string): Thenable<boolean> {
+		// TODO: send onDisconnect event
+		return new Promise(() => true);
+	}
+
+	private sendCancelRequest(uri: string): Thenable<boolean> {
+		// TODO: send onCancelRequest event
+		return new Promise(() => true);
 	}
 
 	private getDocumentUri(connection: vscode.ConnectionInfo): string {
@@ -263,4 +252,129 @@ export class ConnectionManagementService implements IConnectionManagementService
 	public changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
+
+	/* Live connection related functions */
+
+	// Connect an open URI to a connection profile
+	public connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
+		const self = this;
+
+		return new Promise<boolean>((resolve, reject) => {
+			let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
+			connectionInfo.extensionTimer = new Utils.Timer();
+			connectionInfo.intelliSenseTimer = new Utils.Timer();
+			connectionInfo.connectionProfile = connection;
+			connectionInfo.connecting = true;
+			self._connections[uri] = connectionInfo;
+
+			// Setup the handler for the connection complete notification to call
+			connectionInfo.connectHandler = ((connectResult, error) => {
+				if (error) {
+					reject(error);
+				} else {
+					resolve(connectResult); // on connection complete called here?
+				}
+			});
+
+			connectionInfo.serviceTimer = new Utils.Timer();
+
+			// send connection request
+			self.sendConnectRequest(connection, uri);
+		});
+	}
+
+	// Disconnect a URI from its current connection
+	public disconnect(fileUri: string): Promise<boolean> {
+		const self = this;
+
+		return new Promise<boolean>((resolve, reject) => {
+			if (self.isConnected(fileUri)) {
+				resolve(self.doDisconnect(fileUri));
+			} else if (self.isConnecting(fileUri)) {
+				// Prompt the user to cancel connecting
+				self.shouldCancelConnect(fileUri).then((result) => {
+					if (result) {
+						self.doCancelConnect(fileUri);
+					}
+					resolve(true);
+				});
+			} else {
+				resolve(true);
+			}
+		});
+    }
+
+	// Ask user if they are sure they want to cancel connection request
+	private shouldCancelConnect(fileUri: string): Thenable<boolean> {
+		const self = this;
+
+        // Double check if the user actually wants to cancel their connection request
+		return new Promise<boolean>((resolve, reject) => {
+			// Setup our cancellation choices
+			let choices: {key, value}[] = [
+				{key: nls.localize('yes', 'Yes'), value: true},
+				{key: nls.localize('no', 'No'), value: false}
+			];
+
+			self.quickOpenService.pick(choices.map(x => x.key), {placeHolder: nls.localize('cancelConnetionConfirmation','Are you sure you want to cancel this connection?'), ignoreFocusLost: true}).then((choice) => {
+				let confirm = choices.find(x => x.key === choice);
+				resolve(confirm && confirm.value);
+			});
+		});
+    }
+
+	private doDisconnect(fileUri: string) {
+		const self = this;
+
+		return new Promise<boolean>((resolve, reject) => {
+			let disconnectParams = new ConnectionContracts.DisconnectParams();
+			disconnectParams.ownerUri = fileUri;
+
+			// Send a disconnection request for the input URI
+			self.sendDisconnectRequest(fileUri).then((result) => {
+				// If the request was sent
+				if (result) {
+					delete self._connections[fileUri];
+					// TODO: show diconnection in status statusview
+					// self.statusView.notConnected(fileUri);
+
+					// TODO: send telemetry events
+					// Telemetry.sendTelemetryEvent('DatabaseDisconnected');
+					resolve(true);
+				} else {
+					resolve(false);
+				}
+			});
+		});
+	}
+
+	private doCancelConnect(fileUri: string): Thenable<boolean> {
+		const self = this;
+
+		return new Promise<boolean>((resolve, reject) => {
+			// Check if we are still conecting after user input
+			if (self.isConnecting(fileUri)) {
+				// Create a new set of cancel connection params with our file URI
+				let cancelParams: ConnectionContracts.CancelConnectParams = new ConnectionContracts.CancelConnectParams();
+				cancelParams.ownerUri = fileUri;
+
+				delete self._connections[fileUri];
+				// Send connection cancellation request
+				resolve(self.sendCancelRequest(fileUri));
+			} else {
+				// If we are not connecting anymore let disconnect handle the next steps
+				resolve(self.disconnect(fileUri));
+			}
+		});
+    }
+
+	// Is a certain file URI connected?
+	private isConnected(fileUri: string): boolean {
+        return (fileUri in this._connections && this._connections[fileUri].connectionId && Utils.isNotEmpty(this._connections[fileUri].connectionId));
+    }
+
+	// Is a certain file URI currently connecting
+	private isConnecting(fileUri: string): boolean {
+        return (fileUri in this._connections && this._connections[fileUri].connecting);
+    }
 }

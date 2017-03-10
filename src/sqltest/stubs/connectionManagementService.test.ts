@@ -62,4 +62,12 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	getAdvancedProperties(): vscode.ConnectionOption[] {
 		return [];
 	}
+
+	connect(fileUri: string, connection: ConnectionProfile): Promise<boolean>{
+		return new Promise<boolean>(() => true);
+	}
+
+	disconnect(fileUri: string): Promise<boolean>{
+		return new Promise<boolean>(() => true);
+	}
 }

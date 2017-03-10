@@ -154,7 +154,7 @@ export class QueryEditorService implements IQueryEditorService {
      * If fileInput is a supported query editor file, return it's URI. Otherwise return undefined.
      */
     private static getQueryEditorFileUri(fileInput: EditorInput): string {
-        if (!!fileInput || !!fileInput.getName()) {
+        if (!fileInput || !fileInput.getName()) {
             return undefined;
         }
 
