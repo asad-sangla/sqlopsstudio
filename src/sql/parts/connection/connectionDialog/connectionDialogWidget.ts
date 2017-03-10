@@ -11,7 +11,7 @@ import 'vs/css!./media/connectionDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
-import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
+import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import * as lifecycle from 'vs/base/common/lifecycle';
@@ -181,6 +181,30 @@ export class ConnectionDialogWidget {
 		this.toDispose.push(this.serverNameInputBox.onDidChange(serverName => {
 			this.serverNameChanged(serverName);
 		}));
+
+		this.toDispose.push(this.userNameInputBox.onDidChange(userName => {
+			this.userNameChanged(userName);
+		}));
+
+		this.toDispose.push(this.passwordInputBox.onDidChange(password => {
+			this.passwordChanged(password);
+		}));
+
+		this.toDispose.push(this.databaseNameInputBox.onDidChange(database => {
+			this.databaseNameChanged(database);
+		}));
+	}
+
+	private databaseNameChanged(database: string) {
+		this.databaseNameInputBox.hideMessage();
+	}
+
+	private passwordChanged(password: string) {
+		this.passwordInputBox.hideMessage();
+	}
+
+	private userNameChanged(userName: string) {
+		this.userNameInputBox.hideMessage();
 	}
 
 	private serverNameChanged(serverName: string) {
@@ -192,6 +216,10 @@ export class ConnectionDialogWidget {
 			case this.WindowsAuthTypeName:
 				this.userNameInputBox.disable();
 				this.passwordInputBox.disable();
+				this.userNameInputBox.hideMessage();
+				this.passwordInputBox.hideMessage();
+				this.userNameInputBox.value = '';
+				this.passwordInputBox.value = '';
 				break;
 			case this.SqlAuthTypeName:
 				this.userNameInputBox.enable();
@@ -257,7 +285,22 @@ export class ConnectionDialogWidget {
 	}
 
 	private validateInputs(): boolean {
-		return !this.isEmptyString(this.serverName);
+		var validInputs = true;
+		if (this.authTypeSelectBox.value === this.SqlAuthTypeName) {
+			if (this.isEmptyString(this.userName)) {
+				validInputs = false;
+				this.userNameInputBox.showMessage({ type: MessageType.ERROR, content: 'User name is required.' });
+			}
+			if (this.isEmptyString(this.password)) {
+				validInputs = false;
+				this.passwordInputBox.showMessage({ type: MessageType.ERROR, content: 'Password is required.' });
+			}
+		}
+		if (this.isEmptyString(this.databaseName)) {
+			validInputs = false;
+			this.databaseNameInputBox.showMessage({ type: MessageType.ERROR, content: 'Database name is required.' });
+		}
+		return validInputs;
 	}
 
 	private isEmptyString(value: string): boolean {
@@ -283,7 +326,7 @@ export class ConnectionDialogWidget {
 			this._dialog.showSpinner();
 
 		} else {
-			this.showError('invalid input');
+			this.showError('Missing required fields');
 		}
 	}
 
@@ -349,7 +392,9 @@ export class ConnectionDialogWidget {
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter)) {
-				this.connect();
+				if (this.connectButton.enabled) {
+					this.connect();
+				}
 			} else if (event.equals(KeyCode.Escape)) {
 				this.cancel();
 			}
