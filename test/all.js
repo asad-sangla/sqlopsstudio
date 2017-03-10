@@ -139,7 +139,7 @@ function main() {
 			for (var entryKey in remappedCoverage) {
 				var entry = remappedCoverage[entryKey];
 				entry.path = fixPath(entry.path);
-				if (!entry.path.includes('\\vs\\')) {
+				if (!entry.path.includes('\\vs\\') && !entry.path.includes('/vs/')) {
 					finalCoverage[fixPath(entryKey)] = entry;
 				}
 			}
