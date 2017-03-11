@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
+
+
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import * as paths from 'vs/base/common/paths';
 import { mkdirp, dirExists } from 'vs/base/node/pfs';
@@ -13,7 +15,7 @@ import { AbstractExtensionService, ActivatedExtension } from 'vs/platform/extens
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 import { ExtHostStorage } from 'vs/workbench/api/node/extHostStorage';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { createApiFactory, initializeExtensionApi } from 'vs/workbench/api/node/extHost.api.impl';
+import { createApiFactory, initializeExtensionApi } from 'sql/workbench/api/node/sqlExtHost.api.impl';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { MainContext, MainProcessExtensionServiceShape, IEnvironment, IInitData } from './extHost.protocol';

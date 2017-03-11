@@ -8,13 +8,15 @@
 import Constants = require('sql/parts/connection/node/constants');
 import Utils = require('sql/parts/connection/node/utils');
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
-import { ISelectionData } from 'sql/parts/connection/node/interfaces';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
-import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IMessageService } from 'vs/platform/message/common/message';
+import Severity from 'vs/base/common/severity';
 import Event, { Emitter } from 'vs/base/common/event';
+import { ISelectionData, ResultSetSubset } from 'data';
 
 interface QueryEvent {
 	type: string;
@@ -33,11 +35,10 @@ class QueryInfo {
 	// via the data service will be lost.
 	public dataServiceReady: boolean;
 
-	constructor() {
+	constructor () {
 		this.dataServiceReady = false;
 		this.queryEventQueue = [];
 	}
-
 }
 
 /**
@@ -57,6 +58,8 @@ export class QueryModelService implements IQueryModelService {
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
 		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IQueryManagementService private _queryManagementService: IQueryManagementService,
+		@IMessageService private _messageService: IMessageService
 	) {
 		this._queryInfoMap = new Map<string, QueryInfo>();
 		this._onRunQueryStart = new Emitter<string>();
@@ -64,11 +67,6 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	// IQUERYMODEL /////////////////////////////////////////////////////////
-
-	public TEST_sendDummyQueryEvents(uri: string): void {
-		this._queryInfoMap.get(uri).queryRunner.TEST_setupRunQuery();
-	}
-
 	public getDataService(uri: string): DataService {
 		let dataService = this._queryInfoMap.get(uri).dataService;
 		if (!dataService) {
@@ -94,7 +92,7 @@ export class QueryModelService implements IQueryModelService {
 	 * Get more data rows from the current resultSets from the service layer
 	 */
 	public getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset> {
-		return this._queryInfoMap.get(uri).queryRunner.getRows(rowStart, numberOfRows, batchId, resultId).then(results => {
+		return this._queryInfoMap.get(uri).queryRunner.getQueryRows(rowStart, numberOfRows, batchId, resultId).then(results => {
 			return results.resultSubset;
 		});
 	}
@@ -153,7 +151,7 @@ export class QueryModelService implements IQueryModelService {
 		} else {
 			// We do not have a query runner for this editor, so create a new one
 			// and map it to the results uri
-			queryRunner = new QueryRunner(uri, title);
+			queryRunner = this._instantiationService.createInstance(QueryRunner, uri, title);
 			queryRunner.eventEmitter.on('resultSet', (resultSet) => {
 				this._fireQueryEvent(uri, 'resultSet', resultSet);
 			});
@@ -212,8 +210,10 @@ export class QueryModelService implements IQueryModelService {
 
 		// Cancel the query
 		queryRunner.cancelQuery().then(success => undefined, error => {
-			// On error, show error message
-			// TODO: Canceling the query failed: {0}
+			// On error, show error message and notify that the query is complete so that buttons and other status indicators
+			// can be correct
+			this._messageService.show(Severity.Error, Utils.formatString(Constants.msgCancelQueryFailed, error));
+			this._fireQueryEvent(queryRunner.uri, 'complete', 0);
 		});
 
 	}

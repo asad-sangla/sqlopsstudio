@@ -6,10 +6,11 @@
 'use strict';
 
 import { AdvancedPropertiesDialog } from 'sql/parts/connection/connectionDialog/advancedPropertiesDialog';
-import vscode = require('vscode');
+import data = require('data');
 
 export class AdvancedPropertiesController {
 	private _container: HTMLElement;
+
 	private _advancedDialog: AdvancedPropertiesDialog;
 
 	constructor(private _onCloseAdvancedProperties: () => void) {
@@ -20,7 +21,7 @@ export class AdvancedPropertiesController {
 		// Update advanced properties
 	}
 
-	public showDialog(connectionProperties: vscode.ConnectionOption[], container: HTMLElement): void {
+	public showDialog(connectionProperties: data.ConnectionOption[], container: HTMLElement): void {
 		var connectionPropertiesMaps = {};
 		for (var i = 0; i < connectionProperties.length; i++) {
 			var property = connectionProperties[i];
@@ -39,7 +40,7 @@ export class AdvancedPropertiesController {
 		this.doShowDialog(connectionPropertiesMaps);
 	}
 
-	private doShowDialog(connectionPropertiesMaps: { [category: string]: vscode.ConnectionOption[] }): void {
+	private doShowDialog(connectionPropertiesMaps: { [category: string]: data.ConnectionOption[] }): void {
 		if(!this._advancedDialog) {
 			this._advancedDialog  = new AdvancedPropertiesDialog(this._container, {
 				onCancel: () => {},

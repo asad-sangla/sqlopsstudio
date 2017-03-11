@@ -5,6 +5,7 @@
 
 'use strict';
 import vscode = require('vscode');
+import data = require('data');
 import * as Constants from 'sql/parts/connection/node/constants';
 
 // interfaces
@@ -196,7 +197,7 @@ export interface IConnectionCredentials {
 
 // A Connection Profile contains all the properties of connection credentials, with additional
 // optional name and details on whether password should be saved
-export interface IConnectionProfile extends vscode.ConnectionInfo {
+export interface IConnectionProfile extends data.ConnectionInfo {
 	savePassword: boolean;
 	groupName: string;
 	groupId: string;
@@ -226,62 +227,10 @@ export interface IConnectionProperties {
 	currentDatabase: string;
 };
 
-export interface IDbColumn {
-	allowDBNull?: boolean;
-	baseCatalogName: string;
-	baseColumnName: string;
-	baseSchemaName: string;
-	baseServerName: string;
-	baseTableName: string;
-	columnName: string;
-	columnOrdinal?: number;
-	columnSize?: number;
-	isAliased?: boolean;
-	isAutoIncrement?: boolean;
-	isExpression?: boolean;
-	isHidden?: boolean;
-	isIdentity?: boolean;
-	isKey?: boolean;
-	isBytes?: boolean;
-	isChars?: boolean;
-	isSqlVariant?: boolean;
-	isUdt?: boolean;
-	dataType: string;
-	isXml?: boolean;
-	isJson?: boolean;
-	isLong?: boolean;
-	isReadOnly?: boolean;
-	isUnique?: boolean;
-	numericPrecision?: number;
-	numericScale?: number;
-	udtAssemblyQualifiedName: string;
-	dataTypeName: string;
-}
-
-export interface IGridResultSet {
-	columns: IDbColumn[];
-	rowsUri: string;
-	numberOfRows: number;
-}
-
-export interface ISelectionData {
-	startLine: number;
-	startColumn: number;
-	endLine: number;
-	endColumn: number;
-}
-
-export interface IResultMessage {
-	batchId?: number;
-	isError: boolean;
-	time: string;
-	message: string;
-}
-
 export interface IGridBatchMetaData {
-	resultSets: IGridResultSet[];
+	resultSets: data.IGridResultSet[];
 	hasError: boolean;
-	selection: ISelectionData;
+	selection: data.ISelectionData;
 	startTime: string;
 	endTime: string;
 	totalTime: string;
@@ -329,71 +278,6 @@ export interface IColumnDefinition {
 	type: FieldType;
 	asyncPostRender?: (cellRef: string, row: number, dataContext: JSON, colDef: any) => void;
 	formatter?: (row: number, cell: any, value: any, columnDef: any, dataContext: any) => string;
-}
-
-export interface IDbColumn {
-	allowDBNull?: boolean;
-	baseCatalogName: string;
-	baseColumnName: string;
-	baseSchemaName: string;
-	baseServerName: string;
-	baseTableName: string;
-	columnName: string;
-	columnOrdinal?: number;
-	columnSize?: number;
-	isAliased?: boolean;
-	isAutoIncrement?: boolean;
-	isExpression?: boolean;
-	isHidden?: boolean;
-	isIdentity?: boolean;
-	isKey?: boolean;
-	isBytes?: boolean;
-	isChars?: boolean;
-	isSqlVariant?: boolean;
-	isUdt?: boolean;
-	dataType: string;
-	isXml?: boolean;
-	isJson?: boolean;
-	isLong?: boolean;
-	isReadOnly?: boolean;
-	isUnique?: boolean;
-	numericPrecision?: number;
-	numericScale?: number;
-	udtAssemblyQualifiedName: string;
-	dataTypeName: string;
-}
-
-export class ResultSetSubset {
-	rowCount: number;
-	rows: any[][];
-}
-
-export class ResultSetSummary {
-	id: number;
-	rowCount: number;
-	columnInfo: IDbColumn[];
-}
-
-export class BatchSummary {
-	id: number;
-	selection: ISelectionData;
-	resultSetSummaries: ResultSetSummary[];
-	executionElapsed: string;
-	executionEnd: string;
-	executionStart: string;
-}
-
-export interface IGridResultSet {
-	columns: IDbColumn[];
-	rowsUri: string;
-	numberOfRows: number;
-}
-
-export interface ISelectionData {
-	startLine: number;
-	startColumn: number;
-	endLine: number;
-	endColumn: number;
 }
 
 export interface IMessageLink {

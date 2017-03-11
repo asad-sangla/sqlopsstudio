@@ -9,8 +9,7 @@ import { Observable, Subject, Observer } from 'rxjs/Rx';
 declare let Rx;
 
 import { ISlickRange } from 'angular2-slickgrid';
-import { ISelectionData } from 'sql/parts/connection/node/interfaces';
-import { ResultSetSubset } from 'sql/parts/query/execution/contracts/queryExecute';
+import { ISelectionData, ResultSetSubset } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 
 /**

@@ -15,7 +15,7 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import { ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
-import vscode = require('vscode');
+import data = require('data');
 import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
@@ -29,7 +29,7 @@ export interface IAdvancedDialogCallbacks {
 
 interface IAdvancedPropertyElement {
 	advancedPropertyWidget: any;
-	advancedProperty: vscode.ConnectionOption;
+	advancedProperty: data.ConnectionOption;
 }
 
 export class AdvancedPropertiesDialog {
@@ -76,22 +76,21 @@ export class AdvancedPropertiesDialog {
 		return this._modelElement;
 	}
 
-
 	private onAdvancedPropertyLinkClicked(propertyName: string): void {
 		var property = this._advancedPropertiesMaps[propertyName].advancedProperty;
 		this._propertyTitle.innerHtml(property.displayName);
 		this._propertyDescription.innerHtml(property.description);
 	}
 
-	private fillInProperties(container: Builder, connectionOptions: vscode.ConnectionOption[]): void {
+	private fillInProperties(container: Builder, connectionOptions: data.ConnectionOption[]): void {
 		for (var i = 0; i < connectionOptions.length; i++) {
-			var property: vscode.ConnectionOption = connectionOptions[i];
+			var property: data.ConnectionOption = connectionOptions[i];
 			var rowContainer = ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input');
 			this.createAdvancedProperty(property, rowContainer);
 		}
 	}
 
-	private createAdvancedProperty(property: vscode.ConnectionOption, rowContainer: Builder): void {
+	private createAdvancedProperty(property: data.ConnectionOption, rowContainer: Builder): void {
 		var propertyWidget: any;
 		var inputElement: HTMLElement;
 		switch (property.valueType) {
@@ -197,14 +196,14 @@ export class AdvancedPropertiesDialog {
 		this._callbacks.onClose();
 	}
 
-	public open(connectionPropertiesMaps: { [category: string]:  vscode.ConnectionOption[] }) {
+	public open(connectionPropertiesMaps: { [category: string]:  data.ConnectionOption[] }) {
 		var firstProperty: string;
 		var containerGroup: Builder;
 		var propertiesContentbuilder: Builder = $().div({class:'advancedDialog-properties-groups'}, (container) => {
 			containerGroup = container;
 		});
 		for (var category in connectionPropertiesMaps) {
-			var propertyOptions: vscode.ConnectionOption[] = connectionPropertiesMaps[category];
+			var propertyOptions: data.ConnectionOption[] = connectionPropertiesMaps[category];
 			containerGroup.div({class:'advancedDialog-properties-category'}, (categoryContainer) => {
 				categoryContainer.div({class:'modal-title'}, (categoryTitle) => {
 					categoryTitle.innerHtml(category);

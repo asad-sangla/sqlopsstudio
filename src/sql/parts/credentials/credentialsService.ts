@@ -7,14 +7,14 @@
 
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import vscode = require('vscode');
+import data = require('data');
 
 export const SERVICE_ID = 'credentialsService';
 
 export interface CredentialManagementEvents {
 	onSaveCredential(credentialId: string, password: string): Thenable<boolean>;
 
-	onReadCredential(credentialId: string): Thenable<vscode.Credential>;
+	onReadCredential(credentialId: string): Thenable<data.Credential>;
 
 	onDeleteCredential(credentialId: string): Thenable<boolean>;
 }
@@ -26,7 +26,7 @@ export interface ICredentialsService {
 
 	saveCredential(credentialId: string, password: string): Thenable<boolean>;
 
-	readCredential(credentialId: string): Thenable<vscode.Credential>;
+	readCredential(credentialId: string): Thenable<data.Credential>;
 
 	deleteCredential(credentialId: string): Thenable<boolean>;
 
@@ -65,7 +65,7 @@ export class CredentialsService implements ICredentialsService {
 		return this._serverEvents[this._lastHandle].onSaveCredential(credentialId, password);
 	}
 
-	public readCredential(credentialId: string): Thenable<vscode.Credential> {
+	public readCredential(credentialId: string): Thenable<data.Credential> {
 		return this._serverEvents[this._lastHandle].onReadCredential(credentialId);
 	}
 

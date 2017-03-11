@@ -6,7 +6,7 @@
 'use strict';
 
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import vscode = require('vscode');
+import data = require('data');
 
 export const SERVICE_ID = 'capabilitiesService';
 export const HOST_NAME = 'carbon';
@@ -23,12 +23,12 @@ export interface ICapabilitiesService {
 	/**
 	 * Retrieve a list of registered capabilities providers
 	 */
-	getCapabilities(): vscode.DataProtocolServerCapabilities[];
+	getCapabilities(): data.DataProtocolServerCapabilities[];
 
 	/**
 	 * Register a capabilities provider
 	 */
-	registerProvider(provider: vscode.CapabilitiesProvider): void;
+	registerProvider(provider: data.CapabilitiesProvider): void;
 }
 
 /**
@@ -39,11 +39,11 @@ export class CapabilitiesService implements ICapabilitiesService {
 
 	public _serviceBrand: any;
 
-	private _providers: vscode.CapabilitiesProvider[] = [];
+	private _providers: data.CapabilitiesProvider[] = [];
 
-	private _capabilities: vscode.DataProtocolServerCapabilities[] = [];
+	private _capabilities: data.DataProtocolServerCapabilities[] = [];
 
-	private  _clientCapabilties: vscode.DataProtocolClientCapabilities = {
+	private  _clientCapabilties: data.DataProtocolClientCapabilities = {
 		hostName: HOST_NAME,
         hostVersion: HOST_VERSION
 	};
@@ -54,7 +54,7 @@ export class CapabilitiesService implements ICapabilitiesService {
 	/**
 	 * Retrieve a list of registered server capabilities
 	 */
-	public getCapabilities(): vscode.DataProtocolServerCapabilities[] {
+	public getCapabilities(): data.DataProtocolServerCapabilities[] {
 		return this._capabilities;
 	}
 
@@ -62,7 +62,7 @@ export class CapabilitiesService implements ICapabilitiesService {
 	 * Register the capabilities provider and query the provider for its capabilities
 	 * @param provider
 	 */
-	public registerProvider(provider: vscode.CapabilitiesProvider): void {
+	public registerProvider(provider: data.CapabilitiesProvider): void {
 		this._providers.push(provider);
 
 		// request the capabilities from server

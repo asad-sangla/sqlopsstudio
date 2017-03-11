@@ -4,4 +4,5 @@
  *--------------------------------------------------------------------------------------------*/
 
 /// <reference path='../../../../../src/vs/vscode.d.ts'/>
+/// <reference path='../../../../../src/sql/data.d.ts'/>
 /// <reference path='../../../node_modules/@types/node/index.d.ts'/>

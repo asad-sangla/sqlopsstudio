@@ -69,7 +69,6 @@ export class RunQueryAction extends QueryTaskbarAction {
 
 			this._queryModelService.runQuery(uri, undefined, uri);
 			editor.showQueryResultsEditor();
-			this._queryModelService.TEST_sendDummyQueryEvents(uri);
 		}
 
 		return TPromise.as(null);

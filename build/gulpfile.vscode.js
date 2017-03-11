@@ -262,6 +262,7 @@ function packageTask(platform, arch, opts) {
 
 		// TODO the API should be copied to `out` during compile, not here
 		const api = gulp.src('src/vs/vscode.d.ts').pipe(rename('out/vs/vscode.d.ts'));
+		const dataApi = gulp.src('src/vs/data.d.ts').pipe(rename('out/sql/data.d.ts'));
 
 		const depsSrc = _.flatten(dependencies
 			.map(function (d) { return ['node_modules/' + d + '/**', '!node_modules/' + d + '/**/{test,tests}/**']; }));
@@ -280,6 +281,7 @@ function packageTask(platform, arch, opts) {
 			productJsonStream,
 			license,
 			api,
+			dataApi,
 			sources,
 			deps
 		);

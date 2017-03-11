@@ -27,7 +27,7 @@ import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
-import * as vscode from 'vscode';
+import * as data from 'data';
 import * as ConnectionContracts from 'sql/parts/connection/node/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 
@@ -110,11 +110,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.getConnectionProfileGroups();
 	}
 
-	public getRecentConnections(): vscode.ConnectionInfo[] {
+	public getRecentConnections(): data.ConnectionInfo[] {
 		return this._connectionStore.getRecentlyUsedConnections();
 	}
 
-	public getAdvancedProperties(): vscode.ConnectionOption[] {
+	public getAdvancedProperties(): data.ConnectionOption[] {
 		let capabilities = this._capabilitiesService.getCapabilities();
 		if (capabilities !== undefined && capabilities.length > 0) {
 			// just grab the first registered provider for now, this needs to change
@@ -130,7 +130,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	// Request Senders
 	// TODO: Request Handlers Mapping to prevent sending request to all handlers
-	private sendConnectRequest(connection: vscode.ConnectionInfo, uri: string): void {
+	private sendConnectRequest(connection: data.ConnectionInfo, uri: string): void {
 		for (var key in this._serverEvents) {
 			this._serverEvents[key].onConnect(uri, connection);
 		}
@@ -146,7 +146,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise(() => true);
 	}
 
-	private getDocumentUri(connection: vscode.ConnectionInfo): string {
+	private getDocumentUri(connection: data.ConnectionInfo): string {
 		let uri = this.getActiveEditorUri();
 		if (!uri) {
 			uri = 'connection://' + connection.serverName + ':' + connection.databaseName;
@@ -188,7 +188,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 	}
 
-	public onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void {
+	public onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
 		const self = this;
 		let connection = this._connections[connectionInfoSummary.ownerUri];
 		connection.serviceTimer.end();

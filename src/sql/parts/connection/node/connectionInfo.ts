@@ -3,7 +3,7 @@ import Constants = require('./constants');
 import Interfaces = require('./interfaces');
 import * as ConnectionContracts from './connection';
 import * as Utils from './utils';
-import vscode = require('vscode');
+import data = require('data');
 
 /**
  * Sets sensible defaults for key connection properties, especially
@@ -13,7 +13,7 @@ import vscode = require('vscode');
  * @param {Interfaces.IConnectionCredentials} connCreds connection to be fixed up
  * @returns {Interfaces.IConnectionCredentials} the updated connection
  */
-export function fixupConnectionCredentials(connCreds: vscode.ConnectionInfo): vscode.ConnectionInfo {
+export function fixupConnectionCredentials(connCreds: data.ConnectionInfo): data.ConnectionInfo {
     if (!connCreds.serverName) {
         connCreds.serverName = '';
     }

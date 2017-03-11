@@ -112,6 +112,7 @@ function isSameAuthenticationType(currentAuthenticationType: string, expectedAut
  * If not, match on all key properties (server, db, auth type, user) being identical.
  * Other properties are ignored for this purpose
  *
+
  * @param {IConnectionProfile} currentProfile the profile to check
  * @param {IConnectionProfile} expectedProfile the profile to try to match
  * @returns boolean that is true if the profiles match
@@ -137,7 +138,6 @@ export function isSameProfileStore(currentProfile: IConnectionProfileStore, expe
 		&& expectedProfile.options['userName'] === currentProfile.options['userName']
 		&& expectedProfile.groupId === currentProfile.groupId
 		&& expectedProfile.providerName === currentProfile.providerName;
-
 }
 
 // One-time use timer for performance testing

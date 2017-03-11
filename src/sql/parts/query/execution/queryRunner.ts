@@ -5,18 +5,15 @@
 
 'use strict';
 
-import { QueryCancelResult } from 'sql/parts/query/execution/contracts/queryCancel';
-import {
-	BatchSummary,
-	QueryExecuteCompleteNotificationResult,
-	QueryExecuteSubsetResult,
-	QueryExecuteResultSetCompleteNotificationParams,
-	QueryExecuteSubsetParams,
-	QueryExecuteMessageParams,
-	QueryExecuteBatchNotificationParams
-} from 'sql/parts/query/execution/contracts/queryExecute';
+import { BatchSummary, QueryCancelResult,
+    QueryExecuteCompleteNotificationResult, QueryExecuteSubsetResult, QueryExecuteResultSetCompleteNotificationParams,
+    QueryExecuteSubsetParams, QueryExecuteMessageParams, QueryExecuteBatchNotificationParams,
+    ISelectionData } from 'data';
+
 import { EventEmitter } from 'events';
-import { ISelectionData } from 'sql/parts/connection/node/interfaces';
+import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
+import { IMessageService } from 'vs/platform/message/common/message';
+import Severity from 'vs/base/common/severity';
 import * as Utils from 'sql/parts/connection/node/utils';
 
 /*
@@ -36,7 +33,10 @@ export default class QueryRunner {
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 
-	constructor(private _ownerUri: string, private _editorTitle: string) {
+	constructor (private _ownerUri: string,
+			private _editorTitle: string,
+			@IQueryManagementService private _queryManagementService: IQueryManagementService,
+			@IMessageService private _messageService: IMessageService) {
 
 		// Store the state
 		this._uri = _ownerUri;
@@ -44,149 +44,6 @@ export default class QueryRunner {
 		this._isExecuting = false;
 		this._totalElapsedMilliseconds = 0;
 		this._hasCompleted = false;
-	}
-
-	// TEST FUNCTIONS //////////////////////////////////////////////////////
-
-	private _TEST_getTestColumn(colName: string): any {
-		return {
-			baseCatalogName: null,
-			baseColumnName: null,
-			baseSchemaName: null,
-			baseServerName: null,
-			baseTableName: null,
-			columnName: colName,
-			udtAssemblyQualifiedName: null,
-			dataType: 'System.String, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e',
-			dataTypeName: 'nvarchar'
-		};
-	}
-
-	public TEST_setupRunQuery(): void {
-		const self = this;
-		let currentTime = 500;
-
-		setTimeout(function () {
-			let test = {
-				ownerUri: this._uri,
-				batchSummary: {
-					hasError: false,
-					id: 0,
-					selection: {
-						startLine: 1,
-						startColumn: 2,
-						endLine: 3,
-						endColumn: 3
-					},
-					resultSetSummaries: undefined,
-					executionElapsed: '',
-					executionEnd: '',
-					executionStart: ''
-				}
-			};
-			self.handleBatchStart(test);
-
-		}, currentTime += 200);
-
-		setTimeout(function () {
-			let test = {
-				ownerUri: this._uri,
-				message: {
-					isError: false,
-					batchId: 0,
-					time: new Date().toLocaleString(),
-					message: '(5 rows affected)',
-				}
-			};
-			self.handleMessage(test);
-
-		}, 700);
-
-		setTimeout(function () {
-			let test = {
-				ownerUri: this._uri,
-				resultSetSummary: {
-					batchId: 0,
-					id: 0,
-					rowCount: 5,
-					columnInfo: [self._TEST_getTestColumn('col1'), self._TEST_getTestColumn('col2'), self._TEST_getTestColumn('col3')]
-				}
-			};
-			self.handleResultSetComplete(test);
-
-		}, currentTime += 200);
-
-		setTimeout(function () {
-			let test = {
-				ownerUri: this._uri,
-				message: {
-					isError: false,
-					batchId: 0,
-					time: new Date().toLocaleString(),
-					message: '(5 rows affected)',
-				}
-			};
-			self.handleMessage(test);
-
-		}, 700);
-
-		setTimeout(function () {
-			let test = {
-				ownerUri: this._uri,
-				resultSetSummary: {
-					batchId: 0,
-					id: 0,
-					rowCount: 5,
-					columnInfo: [self._TEST_getTestColumn('col1'), self._TEST_getTestColumn('col2'), self._TEST_getTestColumn('col3')]
-				}
-			};
-			self.handleResultSetComplete(test);
-
-		}, currentTime += 200);
-
-		setTimeout(function () {
-			let test = {
-				ownerUri: this._uri,
-				batchSummary: {
-					hasError: false,
-					id: 0,
-					selection: {
-						startLine: 1,
-						startColumn: 2,
-						endLine: 3,
-						endColumn: 3
-					},
-					resultSetSummaries: undefined,
-					executionElapsed: '00:00:00.55',
-					executionEnd: '',
-					executionStart: ''
-				}
-			};
-			self.handleBatchComplete(test);
-
-		}, currentTime += 200);
-
-		setTimeout(function () {
-			let test = {
-				ownerUri: this._uri,
-				batchSummaries: [{
-					hasError: false,
-					id: 0,
-					selection: {
-						startLine: 1,
-						startColumn: 2,
-						endLine: 3,
-						endColumn: 3
-					},
-					resultSetSummaries: undefined,
-					executionElapsed: '00:00:00.45',
-					executionEnd: '',
-					executionStart: ''
-				}]
-			};
-			self.handleQueryComplete(test);
-
-		}, currentTime += 200);
 	}
 
 	// PROPERTIES //////////////////////////////////////////////////////////
@@ -229,8 +86,7 @@ export default class QueryRunner {
 	 * Cancels the running query, if there is one
 	 */
 	public cancelQuery(): Thenable<QueryCancelResult> {
-		return new Promise<QueryCancelResult>((resolve, reject) => {
-		});
+		return this._queryManagementService.cancelQuery(this._uri);
 	}
 
 	/**
@@ -243,10 +99,22 @@ export default class QueryRunner {
 		this._resultLineOffset = selection ? selection.startLine : 0;
 		this._isExecuting = true;
 		this._totalElapsedMilliseconds = 0;
+		// TODO issue #228 add statusview callbacks here
 
 		// Send the request to execute the query
-		return new Promise<void>((resolve, reject) => {
+		let ownerUri = this._uri;
+		return this._queryManagementService.runQuery(ownerUri, selection).then(result => {
+			// The query has started, so lets fire up the result pane
 			self.eventEmitter.emit('start');
+			self._queryManagementService.registerRunner(self, ownerUri);
+		}, error => {
+			// Attempting to launch the query failed, show the error message
+
+			// TODO issue #228 add statusview callbacks here
+			self._isExecuting = false;
+
+			// TODO localize
+			self._messageService.show(Severity.Error, 'Execution failed: ' + error);
 		});
 	}
 
@@ -329,33 +197,26 @@ export default class QueryRunner {
 	/**
 	 * Get more data rows from the current resultSets from the service layer
 	 */
-	public getRows(rowStart: number, numberOfRows: number, batchIndex: number, resultSetIndex: number): Thenable<QueryExecuteSubsetResult> {
-		let queryDetails = new QueryExecuteSubsetParams();
-		queryDetails.ownerUri = this.uri;
-		queryDetails.resultSetIndex = resultSetIndex;
-		queryDetails.rowsCount = numberOfRows;
-		queryDetails.rowsStartIndex = rowStart;
-		queryDetails.batchIndex = batchIndex;
+	public getQueryRows(rowStart: number, numberOfRows: number, batchIndex: number, resultSetIndex: number): Thenable<QueryExecuteSubsetResult> {
+		const self = this;
+		let rowData: QueryExecuteSubsetParams = <QueryExecuteSubsetParams> {
+			ownerUri: this.uri,
+			resultSetIndex: resultSetIndex,
+			rowsCount: numberOfRows,
+			rowsStartIndex: rowStart,
+			batchIndex: batchIndex
+		};
 
 		return new Promise<QueryExecuteSubsetResult>((resolve, reject) => {
-			let colCount = 3;
-			let rows = [];
-			for (let r = 0; r < numberOfRows; r++) {
-				let row = [];
-				for (let c = 0; c < colCount; c++) {
-					row.push('row: ' + r + ', col: ' + c);
+			self._queryManagementService.getQueryRows(rowData).then(result => {
+				if (result.message) {
+					// TODO localize
+					self._messageService.show(Severity.Error, 'Something went wrong getting more rows: ' + result.message);
+					reject();
+				} else {
+					resolve(result);
 				}
-				rows.push(row);
-			}
-
-			let val = {
-				message: 'result subset',
-				resultSubset: {
-					rowCount: numberOfRows,
-					rows: rows
-				}
-			};
-			resolve(val);
+			});
 		});
 	}
 
@@ -364,7 +225,15 @@ export default class QueryRunner {
 	 * @returns A promise that will be rejected if a problem occured
 	 */
 	public dispose(): Promise<void> {
-		return undefined;
+		const self = this;
+		return new Promise<void>((resolve, reject) => {
+			self._queryManagementService.disposeQuery(self.uri).then(result => {
+				resolve();
+			}, error => {
+				self._messageService.show(Severity.Error, 'Failed disposing query: ' + error);
+				reject();
+			});
+		});
 	}
 
 	get totalElapsedMilliseconds(): number {

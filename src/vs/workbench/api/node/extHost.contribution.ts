@@ -44,9 +44,6 @@ import { SaveParticipant } from './mainThreadSaveParticipant';
 // --- registers itself as service
 import './mainThreadHeapService';
 
-// --- SQL contributions
-import { MainThreadCredentialManagement } from 'sql/workbench/api/node/mainThreadCredentialManagement';
-import { MainThreadDataProtocol } from 'sql/workbench/api/node/mainThreadDataProtocol';
 
 export class ExtHostContribution implements IWorkbenchContribution {
 
@@ -71,8 +68,6 @@ export class ExtHostContribution implements IWorkbenchContribution {
 		const col = new InstanceCollection();
 		col.define(MainContext.MainThreadCommands).set(create(MainThreadCommands));
 		col.define(MainContext.MainThreadConfiguration).set(create(MainThreadConfiguration));
-		col.define(MainContext.MainThreadCredentialManagement).set(create(MainThreadCredentialManagement));
-		col.define(MainContext.MainThreadDataProtocol).set(create(MainThreadDataProtocol));
 		col.define(MainContext.MainThreadDiagnostics).set(create(MainThreadDiagnostics));
 		col.define(MainContext.MainThreadDocuments).set(create(MainThreadDocuments));
 		col.define(MainContext.MainThreadEditors).set(create(MainThreadEditors));

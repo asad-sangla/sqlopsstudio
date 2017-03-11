@@ -198,7 +198,6 @@ export class ConnectionSummary {
     public userName: string;
 }
 
-
 /**
  * Connection response format.
  */
@@ -306,6 +305,80 @@ export class ServerInfo {
 
 export class CapabiltiesDiscoveryResult {
 	public capabilities: DataProtocolServerCapabilities;
+}
+
+export interface ResultSetSummary {
+    id: number;
+    batchId: number;
+    rowCount: number;
+    columnInfo: IDbColumn[];
+}
+
+export interface BatchSummary {
+    hasError: boolean;
+    id: number;
+    selection: ISelectionData;
+    resultSetSummaries: ResultSetSummary[];
+    executionElapsed: string;
+    executionEnd: string;
+    executionStart: string;
+}
+
+export interface IDbColumn {
+	allowDBNull?: boolean;
+	baseCatalogName: string;
+	baseColumnName: string;
+	baseSchemaName: string;
+	baseServerName: string;
+	baseTableName: string;
+	columnName: string;
+	columnOrdinal?: number;
+	columnSize?: number;
+	isAliased?: boolean;
+	isAutoIncrement?: boolean;
+	isExpression?: boolean;
+	isHidden?: boolean;
+	isIdentity?: boolean;
+	isKey?: boolean;
+	isBytes?: boolean;
+	isChars?: boolean;
+	isSqlVariant?: boolean;
+	isUdt?: boolean;
+	dataType: string;
+	isXml?: boolean;
+	isJson?: boolean;
+	isLong?: boolean;
+	isReadOnly?: boolean;
+	isUnique?: boolean;
+	numericPrecision?: number;
+	numericScale?: number;
+	udtAssemblyQualifiedName: string;
+	dataTypeName: string;
+}
+
+export interface IGridResultSet {
+	columns: IDbColumn[];
+	rowsUri: string;
+	numberOfRows: number;
+}
+
+export interface IResultMessage {
+	batchId?: number;
+	isError: boolean;
+	time: string;
+	message: string;
+}
+
+export interface ISelectionData {
+	startLine: number;
+	startColumn: number;
+	endLine: number;
+	endColumn: number;
+}
+
+export interface QueryExecuteBatchNotificationParams {
+    batchSummary: BatchSummary;
+    ownerUri: string;
 }
 
 export class MetadataQueryParams {

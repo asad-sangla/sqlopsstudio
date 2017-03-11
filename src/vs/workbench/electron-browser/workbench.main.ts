@@ -119,6 +119,7 @@ import 'vs/workbench/parts/watermark/electron-browser/watermark';
 import 'vs/workbench/parts/welcomeOverlay/browser/welcomeOverlay';
 
 // SQL
+import 'sql/workbench/api/node/sqlExtHost.contribution';
 import 'sql/parts/connection/electron-browser/connection.contribution';
 import 'sql/parts/connection/electron-browser/connectionViewlet';
 import 'sql/parts/query/electron-browser/query.contribution';

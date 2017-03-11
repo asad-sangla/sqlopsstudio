@@ -5,6 +5,7 @@
 'use strict';
 
 import * as code from 'vscode';
+import * as data from 'data';
 import * as ls from 'dataprotocol-languageserver-types';
 import * as is from './utils/is';
 import ProtocolCompletionItem from './protocolCompletionItem';
@@ -74,13 +75,13 @@ export interface Converter {
 
 	asDocumentLinks(items: ls.DocumentLink[]): code.DocumentLink[];
 
-	asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary;
+	asConnectionSummary(params: ls.ConnectionCompleteParams): data.ConnectionInfoSummary;
 
-	asServerCapabilities(params: ls.CapabiltiesDiscoveryResult): code.DataProtocolServerCapabilities;
+	asServerCapabilities(params: ls.CapabiltiesDiscoveryResult): data.DataProtocolServerCapabilities;
 
-	asProviderMetadata(params: ls.MetadataQueryResult): code.ProviderMetadata;
+	asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata;
 
-	asScriptingResult(params: ls.ScriptingSelectResult): code.ScriptingResult;
+	asScriptingResult(params: ls.ScriptingSelectResult): data.ScriptingResult;
 }
 
 export interface URIConverter {
@@ -383,8 +384,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return items.map(asDocumentLink);
 	}
 
-	function asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary {
-		let connSummary: code.ConnectionInfoSummary = {
+	function asConnectionSummary(params: ls.ConnectionCompleteParams): data.ConnectionInfoSummary {
+		let connSummary: data.ConnectionInfoSummary = {
 			ownerUri: params.ownerUri,
 			connectionId: params.connectionId,
 			messages: params.messages,
@@ -394,8 +395,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return connSummary;
 	}
 
-	function asServerCapabilities(result: ls.CapabiltiesDiscoveryResult): code.DataProtocolServerCapabilities {
-		let capabilities: code.DataProtocolServerCapabilities = {
+	function asServerCapabilities(result: ls.CapabiltiesDiscoveryResult): data.DataProtocolServerCapabilities {
+		let capabilities: data.DataProtocolServerCapabilities = {
 			protocolVersion: result.capabilities.protocolVersion,
 			providerName: result.capabilities.providerName,
 			providerDisplayName: result.capabilities.providerDisplayName,
@@ -405,12 +406,12 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		if (!!result.capabilities.connectionProvider
 				&& !!result.capabilities.connectionProvider.options
 				&& result.capabilities.connectionProvider.options.length > 0) {
-			capabilities.connectionProvider = <code.ConnectionProviderOptions>{
-				options: new Array<code.ConnectionOption>()
+			capabilities.connectionProvider = <data.ConnectionProviderOptions>{
+				options: new Array<data.ConnectionOption>()
 			};
 			for (let i = 0; i < result.capabilities.connectionProvider.options.length; ++i) {
 				let srcOption: ls.ConnectionOption = result.capabilities.connectionProvider.options[i];
-				let descOption: code.ConnectionOption = {
+				let descOption: data.ConnectionOption = {
 					name: srcOption.name,
 					displayName: !!srcOption.displayName ? srcOption.displayName : srcOption.name,
 					description: srcOption.description,
@@ -424,29 +425,29 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 				};
 
 				if (srcOption.valueType === 'string') {
-					descOption.valueType = code.ConnectionOptionType.string;
+					descOption.valueType = data.ConnectionOptionType.string;
 				} else if (srcOption.valueType === 'multistring') {
-					descOption.valueType = code.ConnectionOptionType.multistring;
+					descOption.valueType = data.ConnectionOptionType.multistring;
 				} else if (srcOption.valueType === 'password') {
-					descOption.valueType = code.ConnectionOptionType.password;
+					descOption.valueType = data.ConnectionOptionType.password;
 				} else if (srcOption.valueType === 'number') {
-					descOption.valueType = code.ConnectionOptionType.number;
+					descOption.valueType = data.ConnectionOptionType.number;
 				} else if (srcOption.valueType === 'boolean') {
-					descOption.valueType = code.ConnectionOptionType.boolean;
+					descOption.valueType = data.ConnectionOptionType.boolean;
 				} else if (srcOption.valueType === 'category') {
-					descOption.valueType = code.ConnectionOptionType.category;
+					descOption.valueType = data.ConnectionOptionType.category;
 				}
 
 				if (srcOption.specialValueType === 'serverName') {
-					descOption.specialValueType = code.ConnectionOptionSpecialType.serverName;
+					descOption.specialValueType = data.ConnectionOptionSpecialType.serverName;
 				} else if (srcOption.specialValueType === 'databaseName') {
-					descOption.specialValueType = code.ConnectionOptionSpecialType.databaseName;
+					descOption.specialValueType = data.ConnectionOptionSpecialType.databaseName;
 				} else if (srcOption.specialValueType === 'authType') {
-					descOption.specialValueType = code.ConnectionOptionSpecialType.authType;
+					descOption.specialValueType = data.ConnectionOptionSpecialType.authType;
 				} else if (srcOption.specialValueType === 'userName') {
-					descOption.specialValueType = code.ConnectionOptionSpecialType.userName;
+					descOption.specialValueType = data.ConnectionOptionSpecialType.userName;
 				} else if (srcOption.specialValueType === 'password') {
-					descOption.specialValueType = code.ConnectionOptionSpecialType.password;
+					descOption.specialValueType = data.ConnectionOptionSpecialType.password;
 				}
 
 				capabilities.connectionProvider.options.push(descOption);
@@ -456,14 +457,14 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return capabilities;
 	}
 
-	function asProviderMetadata(params: ls.MetadataQueryResult): code.ProviderMetadata {
-		return <code.ProviderMetadata> {
+	function asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata {
+		return <data.ProviderMetadata> {
 			objectMetadata: []
 		};
 	}
 
-	function asScriptingResult(params: ls.ScriptingSelectResult): code.ScriptingResult {
-		return <code.ScriptingResult> {
+	function asScriptingResult(params: ls.ScriptingSelectResult): data.ScriptingResult {
+		return <data.ScriptingResult> {
 			objectName: params.objectName,
 			script: params.script
 		};

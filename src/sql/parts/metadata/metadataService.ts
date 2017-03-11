@@ -7,7 +7,7 @@
 
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import vscode = require('vscode');
+import data = require('data');
 
 export const SERVICE_ID = 'metadataService';
 
@@ -16,12 +16,12 @@ export const IMetadataService = createDecorator<IMetadataService>(SERVICE_ID);
 export interface IMetadataService {
 	_serviceBrand: any;
 
-	getMetadata(providerId: string, connectionUri: string): Thenable<vscode.ProviderMetadata>;
+	getMetadata(providerId: string, connectionUri: string): Thenable<data.ProviderMetadata>;
 
 	/**
 	 * Register a metadata provider
 	 */
-	registerProvider(providerId: string, provider: vscode.MetadataProvider): void;
+	registerProvider(providerId: string, provider: data.MetadataProvider): void;
 }
 
 export class MetadataService implements IMetadataService {
@@ -30,12 +30,12 @@ export class MetadataService implements IMetadataService {
 
 	private disposables: IDisposable[] = [];
 
-	private _providers: { [handle: string]: vscode.MetadataProvider; } = Object.create(null);
+	private _providers: { [handle: string]: data.MetadataProvider; } = Object.create(null);
 
 	constructor() {
 	}
 
-	public getMetadata(providerId: string, connectionUri: string): Thenable<vscode.ProviderMetadata> {
+	public getMetadata(providerId: string, connectionUri: string): Thenable<data.ProviderMetadata> {
 		let provider = this._providers[providerId];
 		if (provider) {
 			return provider.getMetadata(connectionUri);
@@ -47,7 +47,7 @@ export class MetadataService implements IMetadataService {
 	/**
 	 * Register a metadata provider
 	 */
-	public registerProvider(providerId: string, provider: vscode.MetadataProvider): void {
+	public registerProvider(providerId: string, provider: data.MetadataProvider): void {
 		this._providers[providerId] = provider;
 	}
 

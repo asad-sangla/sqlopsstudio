@@ -6,14 +6,15 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { MainContext, MainThreadCredentialManagementShape, ExtHostCredentialManagementShape } from 'vs/workbench/api/node/extHost.protocol';
+import { SqlMainContext, MainThreadCredentialManagementShape, ExtHostCredentialManagementShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import * as vscode from 'vscode';
+import * as data from 'data';
 import { Disposable } from 'vs/workbench/api/node/extHostTypes';
 
 class CredentialAdapter {
-	private _provider: vscode.CredentialProvider;
+	private _provider: data.CredentialProvider;
 
-	constructor(provider: vscode.CredentialProvider) {
+	constructor(provider: data.CredentialProvider) {
 		this._provider = provider;
 	}
 
@@ -21,7 +22,7 @@ class CredentialAdapter {
 		return this._provider.saveCredential(credentialId, password);
 	}
 
-	public readCredential(credentialId: string): Thenable<vscode.Credential> {
+	public readCredential(credentialId: string): Thenable<data.Credential> {
 		return this._provider.readCredential(credentialId);
 	}
 
@@ -62,10 +63,10 @@ export class ExtHostCredentialManagement extends ExtHostCredentialManagementShap
 		threadService: IThreadService
 	) {
 		super();
-		this._proxy = threadService.get(MainContext.MainThreadCredentialManagement);
+		this._proxy = threadService.get(SqlMainContext.MainThreadCredentialManagement);
 	}
 
-	public $registerCredentialProvider(provider: vscode.CredentialProvider): vscode.Disposable {
+	public $registerCredentialProvider(provider: data.CredentialProvider): vscode.Disposable {
 		provider.handle = this._nextHandle();
 		this._adapter[provider.handle] = new CredentialAdapter(provider);
 		this._proxy.$registerCredentialProvider(provider.handle);
@@ -76,7 +77,7 @@ export class ExtHostCredentialManagement extends ExtHostCredentialManagementShap
 		return this._withAdapter(0, CredentialAdapter, adapter => adapter.saveCredential(credentialId, password));
 	}
 
-	public $readCredential(credentialId: string): Thenable<vscode.Credential> {
+	public $readCredential(credentialId: string): Thenable<data.Credential> {
 		return this._withAdapter(0, CredentialAdapter, adapter => adapter.readCredential(credentialId));
 	}
 

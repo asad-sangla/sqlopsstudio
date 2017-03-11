@@ -8,7 +8,7 @@ import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/conne
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IDisposable } from 'vs/base/common/lifecycle';
-import vscode = require('vscode');
+import data = require('data');
 
 
 // Test stubs for commonly used objects
@@ -31,7 +31,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return new Promise(() => true);
 	}
 
-	onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void {
+	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
 
 	}
 
@@ -47,7 +47,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
-	getRecentConnections(): vscode.ConnectionInfo[] {
+	getRecentConnections(): data.ConnectionInfo[] {
+
 		return [];
 	}
 
@@ -59,7 +60,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return;
 	}
 
-	getAdvancedProperties(): vscode.ConnectionOption[] {
+	getAdvancedProperties(): data.ConnectionOption[] {
 		return [];
 	}
 

@@ -23,7 +23,8 @@ import {
 		ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams,
 		ConnectionProviderOptions, DataProtocolServerCapabilities,
 		CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
-		ScriptingSelectParams, ScriptingSelectResult
+		ScriptingSelectParams, ScriptingSelectResult,
+		BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData
 	} from 'dataprotocol-languageserver-types';
 
 
@@ -1034,6 +1035,116 @@ export namespace CapabiltiesDiscoveryRequest {
     export const type: RequestType<CapabiltiesDiscoveryParams, CapabiltiesDiscoveryResult, void> = { get method(): string { return 'capabilities/list'; } };
 }
 
+// ------------------------------- < Query Cancellation Request > ------------------------------------
+export namespace QueryCancelRequest {
+    export const type: RequestType<QueryCancelParams, QueryCancelResult, void> = { get method(): string { return 'query/cancel'; } };
+}
+
+export interface QueryCancelParams {
+    ownerUri: string;
+}
+
+export interface QueryCancelResult {
+    messages: string;
+}
+
+// ------------------------------- < Query Dispose Request > ------------------------------------
+
+export namespace QueryDisposeRequest {
+    export const type: RequestType<QueryDisposeParams, QueryDisposeResult, void> = { get method(): string { return 'query/dispose'; } };
+}
+
+/**
+ * Parameters to provide when disposing of a query
+ */
+export interface QueryDisposeParams {
+    ownerUri: string;
+}
+
+/**
+ * Result received upon successful disposal of a query
+ */
+export interface QueryDisposeResult {
+}
+
+// ------------------------------- < Query Execution Complete Notification > ------------------------------------
+export namespace QueryExecuteCompleteNotification {
+    export const type: NotificationType<QueryExecuteCompleteNotificationResult> = { get method(): string { return 'query/complete'; } };
+}
+
+/**
+ * Result received upon successful execution of a query
+ */
+export interface QueryExecuteCompleteNotificationResult {
+    ownerUri: string;
+    batchSummaries: BatchSummary[];
+}
+
+// ------------------------------- < Query Batch Start  Notification > ------------------------------------
+export namespace QueryExecuteBatchStartNotification {
+    export const type: NotificationType<QueryExecuteBatchNotificationParams> = { get method(): string { return 'query/batchStart'; } };
+}
+
+// ------------------------------- < Query Batch Complete Notification > ------------------------------------
+export namespace QueryExecuteBatchCompleteNotification {
+    export const type: NotificationType<QueryExecuteBatchNotificationParams> = { get method(): string { return 'query/batchComplete'; } };
+}
+
+// ------------------------------- < Query ResultSet Complete Notification > ------------------------------------
+export namespace QueryExecuteResultSetCompleteNotification {
+    export const type: NotificationType<QueryExecuteResultSetCompleteNotificationParams> = {  get method(): string { return 'query/resultSetComplete'; } };
+}
+
+export interface QueryExecuteResultSetCompleteNotificationParams {
+    resultSetSummary: ResultSetSummary;
+    ownerUri: string;
+}
+
+// ------------------------------- < Query Message Notification > ------------------------------------
+export namespace QueryExecuteMessageNotification {
+    export const type: NotificationType<QueryExecuteMessageParams> = { get method(): string { return 'query/message'; } };
+}
+
+export class QueryExecuteMessageParams {
+    message: IResultMessage;
+    ownerUri: string;
+}
+
+// ------------------------------- < Query Execution Request > ------------------------------------
+export namespace QueryExecuteRequest {
+    export const type: RequestType<QueryExecuteParams, QueryExecuteResult, void> = { get method(): string { return 'query/executeDocumentSelection'; } };
+}
+
+export interface QueryExecuteParams {
+    ownerUri: string;
+    querySelection: ISelectionData;
+}
+
+export interface QueryExecuteResult {}
+
+// ------------------------------- < Query Results Request > ------------------------------------
+export namespace QueryExecuteSubsetRequest {
+    export const type: RequestType<QueryExecuteSubsetParams, QueryExecuteSubsetResult, void> = { get method(): string { return 'query/subset'; } };
+}
+
+export interface QueryExecuteSubsetParams {
+    ownerUri: string;
+    batchIndex: number;
+    resultSetIndex: number;
+    rowsStartIndex: number;
+    rowsCount: number;
+}
+
+export interface ResultSetSubset {
+    rowCount: number;
+    rows: any[][];
+}
+
+export interface QueryExecuteSubsetResult {
+    message: string;
+    resultSubset: ResultSetSubset;
+}
+
 // ------------------------------- < Metadata Events > ------------------------------------
 
 export namespace MetadataQueryRequest {
@@ -1044,4 +1155,5 @@ export namespace MetadataQueryRequest {
 
 export namespace ScriptingSelectRequest {
     export const type: RequestType<ScriptingSelectParams, ScriptingSelectResult, void> = { get method(): string { return 'scripting/select'; } };
+
 }

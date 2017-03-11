@@ -7,7 +7,7 @@
 
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import vscode = require('vscode');
+import data = require('data');
 
 export const SERVICE_ID = 'scriptingService';
 
@@ -16,12 +16,12 @@ export const IScriptingService = createDecorator<IScriptingService>(SERVICE_ID);
 export interface IScriptingService {
 	_serviceBrand: any;
 
-	scriptObject(providerId: string, connectionUri: string, objectName: string): Thenable<vscode.ScriptingResult>;
+	scriptObject(providerId: string, connectionUri: string, objectName: string): Thenable<data.ScriptingResult>;
 
 	/**
 	 * Register a scripting provider
 	 */
-	registerProvider(providerId: string, provider: vscode.ScriptingProvider): void;
+	registerProvider(providerId: string, provider: data.ScriptingProvider): void;
 }
 
 export class ScriptingService implements IScriptingService {
@@ -30,12 +30,12 @@ export class ScriptingService implements IScriptingService {
 
 	private disposables: IDisposable[] = [];
 
-	private _providers: { [handle: string]: vscode.ScriptingProvider; } = Object.create(null);
+	private _providers: { [handle: string]: data.ScriptingProvider; } = Object.create(null);
 
 	constructor() {
 	}
 
-	public scriptObject(providerId: string, connectionUri: string, objectName: string): Thenable<vscode.ScriptingResult> {
+	public scriptObject(providerId: string, connectionUri: string, objectName: string): Thenable<data.ScriptingResult> {
 		let provider = this._providers[providerId];
 		if (provider) {
 			return provider.scriptAsSelect(connectionUri, objectName);
@@ -47,7 +47,7 @@ export class ScriptingService implements IScriptingService {
 	/**
 	 * Register a scripting provider
 	 */
-	public registerProvider(providerId: string, provider: vscode.ScriptingProvider): void {
+	public registerProvider(providerId: string, provider: data.ScriptingProvider): void {
 		this._providers[providerId] = provider;
 	}
 

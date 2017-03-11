@@ -38,54 +38,6 @@ import { IApplyEditsOptions, IUndoStopOptions, TextEditorRevealType, ITextEditor
 
 import { InternalTreeExplorerNodeContent } from 'vs/workbench/parts/explorers/common/treeExplorerViewModel';
 
-export abstract class ExtHostDataProtocolShape {
-
-	/**
-	 * Establish a connection to a data source using the provided ConnectionInfo instance.
-	 */
-	$connect(handle:number, connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> { throw ni(); }
-
-	/**
-	 * Callback when a connection request has completed
-	 */
-	$onConnectComplete(handle:number, connectionInfoSummary: vscode.ConnectionInfoSummary): void { throw ni(); }
-
-	/**
-	 * Callback when a IntelliSense cache has been built
-	 */
-	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
-
-
-	$getServerCapabilities(handle: number, client: vscode.DataProtocolClientCapabilities): Thenable<vscode.DataProtocolServerCapabilities> { throw ni(); }
-
-	$getMetadata(handle: number, connectionUri: string): Thenable<vscode.ProviderMetadata> { throw ni(); }
-
-	$scriptAsSelect(handle: number, connectionUri: string, objectName: string): Thenable<vscode.ScriptingResult> { throw ni(); }
-}
-
-/**
- * Credential Management extension host class.
- */
-export abstract class ExtHostCredentialManagementShape {
-	$saveCredential(credentialId: string, password: string): Thenable<boolean> { throw ni(); }
-
-	$readCredential(credentialId: string): Thenable<vscode.Credential> { throw ni(); }
-
-    $deleteCredential(credentialId: string): Thenable<boolean> { throw ni(); }
-}
-
-export abstract class MainThreadDataProtocolShape {
-	$registerProvider(handle: number): TPromise<any> { throw ni(); }
-	$unregisterProvider(handle: number): TPromise<any> { throw ni(); }
-	$onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void { throw ni(); }
-	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
-}
-
-export abstract class MainThreadCredentialManagementShape {
-	$registerCredentialProvider(handle: number): TPromise<any> { throw ni(); }
-	$unregisterCredentialProvider(handle: number): TPromise<any> { throw ni(); }
-}
-
 export interface IEnvironment {
 	enableProposedApi: boolean;
 	appSettingsHome: string;
@@ -447,10 +399,6 @@ export abstract class ExtHostSCMShape {
 // --- proxy identifiers
 
 export const MainContext = {
-	// SQL entries
-	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement', MainThreadCredentialManagementShape),
-	MainThreadDataProtocol: createMainId<MainThreadDataProtocolShape>('MainThreadDataProtocol', MainThreadDataProtocolShape),
-
 	// VS Code entries
 	MainThreadCommands: createMainId<MainThreadCommandsShape>('MainThreadCommands', MainThreadCommandsShape),
 	MainThreadConfiguration: createMainId<MainThreadConfigurationShape>('MainThreadConfiguration', MainThreadConfigurationShape),
@@ -477,8 +425,6 @@ export const MainContext = {
 export const ExtHostContext = {
 	ExtHostCommands: createExtId<ExtHostCommandsShape>('ExtHostCommands', ExtHostCommandsShape),
 	ExtHostConfiguration: createExtId<ExtHostConfigurationShape>('ExtHostConfiguration', ExtHostConfigurationShape),
-	ExtHostCredentialManagement: createExtId<ExtHostCredentialManagementShape>('ExtHostCredentialManagement', ExtHostCredentialManagementShape),
-	ExtHostDataProtocol: createExtId<ExtHostDataProtocolShape>('ExtHostDataProtocol', ExtHostDataProtocolShape),
 	ExtHostDiagnostics: createExtId<ExtHostDiagnosticsShape>('ExtHostDiagnostics', ExtHostDiagnosticsShape),
 	ExtHostDocuments: createExtId<ExtHostDocumentsShape>('ExtHostDocuments', ExtHostDocumentsShape),
 	ExtHostDocumentSaveParticipant: createExtId<ExtHostDocumentSaveParticipantShape>('ExtHostDocumentSaveParticipant', ExtHostDocumentSaveParticipantShape),

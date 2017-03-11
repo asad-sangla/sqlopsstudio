@@ -137,6 +137,12 @@ export class ConnectionConfig implements IConnectionConfig {
             // Sort by profile name if available, otherwise fall back to server name
             let nameA = a.profileName ? a.profileName : a.options['serverName'];
             let nameB = b.profileName ? b.profileName : b.options['serverName'];
+            if (!nameA) {
+                // something is wrong since server name and profile is missing
+                return -1;
+            } else if (!nameB) {
+                return 1;
+            }
             return nameA.localeCompare(nameB);
         };
 

@@ -19,7 +19,7 @@ import * as platform from 'vs/base/common/platform';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import vscode = require('vscode');
+import data = require('data');
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
@@ -344,7 +344,7 @@ export class ConnectionDialogWidget {
 		this.advancedButton.focus();
 	}
 
-	private createRecentConnectionsBuilder(recentConnections: vscode.ConnectionInfo[]): Builder {
+	private createRecentConnectionsBuilder(recentConnections: data.ConnectionInfo[]): Builder {
 		var recentConnectionBuilder = $().div({ class: 'connection-recent-content' }, (recentConnectionContainer) => {
 			recentConnectionContainer.div({class:'modal-title'}, (recentTitle) => {
 				recentTitle.innerHtml('Recent History');
@@ -384,7 +384,7 @@ export class ConnectionDialogWidget {
 		}
 	}
 
-	public open(recentConnections: vscode.ConnectionInfo[]) {
+	public open(recentConnections: data.ConnectionInfo[]) {
 		if(recentConnections.length !== 0) {
 			var recentConnectionbuilder = this.createRecentConnectionsBuilder(recentConnections);
 			jQuery('#recentConnection').append(recentConnectionbuilder.getHTMLElement());

@@ -5,6 +5,7 @@
 'use strict';
 
 import * as code from 'vscode';
+import * as data from 'data';
 import * as ls from 'dataprotocol-languageserver-types';
 import * as proto from './protocol';
 import * as is from './utils/is';
@@ -61,9 +62,9 @@ export interface Converter {
 
 	asDocumentLinkParams(textDocument: code.TextDocument): proto.DocumentLinkParams;
 
-	asConnectionParams(connectionUri: string, connectionInfo: code.ConnectionInfo) : proto.ConnectParams;
+	asConnectionParams(connectionUri: string, connectionInfo: data.ConnectionInfo) : proto.ConnectParams;
 
-	asCapabilitiesParams(client: code.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams;
+	asCapabilitiesParams(client: data.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams;
 
 	asMetadataQueryParams(connectionUri: string) : ls.MetadataQueryParams;
 
@@ -310,7 +311,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
-	function asCapabilitiesParams(client: code.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams {
+	function asCapabilitiesParams(client: data.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams {
 		let params:  proto.CapabiltiesDiscoveryParams = {
 			hostName: client.hostName,
 			hostVersion: client.hostVersion
@@ -318,7 +319,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return params;
 	}
 
-	function asConnectionParams(connUri: string, connInfo: code.ConnectionInfo) : proto.ConnectParams {
+	function asConnectionParams(connUri: string, connInfo: data.ConnectionInfo) : proto.ConnectParams {
 		return {
 			ownerUri: connUri,
 			connection: {

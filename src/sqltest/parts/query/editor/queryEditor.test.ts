@@ -7,12 +7,14 @@
 
 import { EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
+import { IMessageService } from 'vs/platform/message/common/message';
 import { IEditorDescriptor, EditorInput } from 'vs/workbench/common/editor';
 import { TPromise } from 'vs/base/common/winjs.base';
 import URI from 'vs/base/common/uri';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
+import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { Builder } from 'vs/base/browser/builder';
@@ -23,6 +25,8 @@ import * as assert from 'assert';
 suite('SQL QueryEditor Tests', () => {
 	let queryModelService: QueryModelService;
 	let instantiationService: TypeMoq.Mock<InstantiationService>;
+	let queryManagementService: TypeMoq.Mock<IQueryManagementService>;
+	let messageService: TypeMoq.Mock<IMessageService>;
 	let editorDescriptorService: TypeMoq.Mock<EditorDescriptorService>;
 	let queryInput: QueryInput;
 	let queryInput2: QueryInput;
@@ -78,7 +82,7 @@ suite('SQL QueryEditor Tests', () => {
 		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2, undefined);
 
 		// Create a QueryModelService
-		queryModelService = new QueryModelService(instantiationService.object);
+		queryModelService = new QueryModelService(instantiationService.object, queryManagementService.object, messageService.object);
 	});
 
 	test('createEditor creates only the taskbar', (done) => {

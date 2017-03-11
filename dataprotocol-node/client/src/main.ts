@@ -14,11 +14,17 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink, ConnectionInfo, ConnectionInfoSummary, dataprotocol,
-		DataProtocolProvider, ConnectionProvider, DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
-		DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider, ScriptingProvider, ProviderMetadata,
-		ScriptingResult
+		DocumentLink as VDocumentLink
+
 } from 'vscode';
+
+import {
+		ConnectionInfo, ConnectionInfoSummary, dataprotocol, DataProtocolProvider, ConnectionProvider,
+		DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
+		DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider,
+		ScriptingProvider, ProviderMetadata, ScriptingResult,
+		QueryProvider, QueryCancelResult as VQueryCancelResult
+} from 'data';
 
 import {
 		Message,
@@ -40,6 +46,7 @@ import {
 		FormattingOptions, DocumentLink,
 		ConnectionCompleteParams, IntelliSenseReadyParams,
 		ConnectionProviderOptions, DataProtocolServerCapabilities,
+		ISelectionData, QueryExecuteBatchNotificationParams,
 		MetadataQueryParams, MetadataQueryResult,
 		ScriptingSelectParams, ScriptingSelectResult
 } from 'dataprotocol-languageserver-types';
@@ -68,8 +75,17 @@ import {
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
 		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
-		CapabiltiesDiscoveryRequest, ConnectionRequest, DisconnectRequest, DisconnectParams,
-		ConnectionCompleteNotification, IntelliSenseReadyNotification, MetadataQueryRequest, ScriptingSelectRequest
+		CapabiltiesDiscoveryRequest,
+		ConnectionRequest, ConnectParams,
+		DisconnectRequest, DisconnectParams,
+		ConnectionCompleteNotification, IntelliSenseReadyNotification,
+		MetadataQueryRequest, ScriptingSelectRequest,
+		QueryCancelRequest, QueryCancelResult, QueryCancelParams,
+		QueryExecuteRequest, QueryExecuteSubsetResult, QueryExecuteSubsetParams,
+		QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
+		QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryDisposeResult, QueryExecuteCompleteNotificationResult,
+		QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResult, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
+		QueryExecuteSubsetRequest
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -179,7 +195,7 @@ function createConnection(input: any, output: any, errorHandler: ConnectionError
 		onDiagnostics: (handler: NotificationHandler<PublishDiagnosticsParams>) => connection.onNotification(PublishDiagnosticsNotification.type, handler),
 
 		dispose: () => connection.dispose()
-	}
+	};
 
 	return result;
 }
@@ -1270,7 +1286,7 @@ export class LanguageClient {
 				return self.doSendRequest(connection, CapabiltiesDiscoveryRequest.type, self._c2p.asCapabilitiesParams(client), undefined).then(
 					self._p2c.asServerCapabilities,
 					(error) => {
-						this.logFailedRequest(ConnectionRequest.type, error);
+						self.logFailedRequest(ConnectionRequest.type, error);
 						return Promise.resolve([]);
 					}
 				);
@@ -1286,7 +1302,7 @@ export class LanguageClient {
 						return result;
 					},
 					(error) => {
-						this.logFailedRequest(ConnectionRequest.type, error);
+						self.logFailedRequest(ConnectionRequest.type, error);
 						return Promise.resolve(false);
 					}
 				);
@@ -1302,7 +1318,7 @@ export class LanguageClient {
 						return result;
 					},
 					(error) => {
-						this.logFailedRequest(DisconnectRequest.type, error);
+						self.logFailedRequest(DisconnectRequest.type, error);
 						return Promise.resolve(false);
 					}
 				);
@@ -1323,6 +1339,103 @@ export class LanguageClient {
 			registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any) {
 				connection.onNotification(IntelliSenseReadyNotification.type, (params: IntelliSenseReadyParams) => {
 					handler(params.ownerUri);
+				});
+			}
+		};
+
+		let queryProvider: QueryProvider = {
+			handle: -1,
+			queryType: 'MSSQL',
+			cancelQuery(ownerUri: string): Thenable<QueryCancelResult> {
+				let params: QueryCancelParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, QueryCancelRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(QueryCancelRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			runQuery(ownerUri: string, selection: ISelectionData): Thenable<void> {
+				let params: QueryExecuteParams = {ownerUri: ownerUri, querySelection: selection };
+				return self.doSendRequest(connection, QueryExecuteRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(QueryExecuteRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			getQueryRows(rowData: QueryExecuteSubsetParams): Thenable<QueryExecuteSubsetResult> {
+				return self.doSendRequest(connection, QueryExecuteSubsetRequest.type, rowData, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(QueryExecuteSubsetRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			disposeQuery(ownerUri: string): Thenable<void>{
+				let params: QueryDisposeParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, QueryDisposeRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(QueryDisposeRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			registerOnQueryComplete(handler: (result: QueryExecuteCompleteNotificationResult) => any) {
+				connection.onNotification(QueryExecuteCompleteNotification.type, (params: QueryExecuteCompleteNotificationResult) => {
+					handler({
+						ownerUri: params.ownerUri,
+						batchSummaries: params.batchSummaries});
+				});
+			},
+
+			registerOnBatchStart(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any) {
+				connection.onNotification(QueryExecuteBatchStartNotification.type, (params: QueryExecuteBatchNotificationParams) => {
+					handler({
+						batchSummary: params.batchSummary,
+						ownerUri: params.ownerUri
+					});
+				});
+			},
+
+			registerOnBatchComplete(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any) {
+				connection.onNotification(QueryExecuteBatchCompleteNotification.type, (params: QueryExecuteBatchNotificationParams) => {
+					handler({
+						batchSummary: params.batchSummary,
+						ownerUri: params.ownerUri
+					});
+				});
+			},
+			registerOnResultSetComplete(handler: (resultSetInfo: QueryExecuteResultSetCompleteNotificationParams) => any) {
+				connection.onNotification(QueryExecuteResultSetCompleteNotification.type, (params: QueryExecuteResultSetCompleteNotificationParams) => {
+					handler({
+						ownerUri: params.ownerUri,
+    					resultSetSummary: params.resultSetSummary
+					});
+				});
+			},
+			registerOnMessage(handler: (message: QueryExecuteMessageParams) => any) {
+				connection.onNotification(QueryExecuteMessageNotification.type, (params: QueryExecuteMessageParams) => {
+					handler({
+						message: params.message,
+						ownerUri: params.ownerUri
+					});
 				});
 			}
 		};
@@ -1359,6 +1472,8 @@ export class LanguageClient {
 			capabilitiesProvider: capabilitiesProvider,
 
 			connectionProvider: connectionProvider,
+
+			queryProvider: queryProvider,
 
 			metadataProvider: metadataProvider,
 

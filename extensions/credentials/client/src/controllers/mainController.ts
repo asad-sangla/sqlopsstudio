@@ -5,12 +5,13 @@
 
 'use strict';
 import vscode = require('vscode');
+import data = require('data');
 import Constants = require('../models/constants');
 import Utils = require('../models/utils');
 import SqlToolsServerClient from '../languageservice/serviceclient';
 import Telemetry from '../models/telemetry';
 import VscodeWrapper from './vscodeWrapper';
-import { CredentialStore } from '../credentialstore/credentialstore'
+import { CredentialStore } from '../credentialstore/credentialstore';
 
 /**
  * The main controller class that initializes the extension
@@ -70,12 +71,12 @@ export default class MainController implements vscode.Disposable {
 
         // initialize language service client
         return new Promise<boolean>( (resolve, reject) => {
-                let provider: vscode.CredentialProvider = {
+                let provider: data.CredentialProvider = {
                     handle: 0,
 		            saveCredential(credentialId: string, password: string): Thenable<boolean> {
                         return self._credentialStore.saveCredential(credentialId, password);
                     },
-                    readCredential(credentialId: string): Thenable<vscode.Credential> {
+                    readCredential(credentialId: string): Thenable<data.Credential> {
                         return self._credentialStore.readCredential(credentialId);
                     },
                     deleteCredential(credentialId: string): Thenable<boolean> {
@@ -83,7 +84,7 @@ export default class MainController implements vscode.Disposable {
                     }
                 };
 
-                vscode.credentials.registerProvider(provider);
+                data.credentials.registerProvider(provider);
 
                 SqlToolsServerClient.instance.initialize(self._context).then(serverResult => {
 

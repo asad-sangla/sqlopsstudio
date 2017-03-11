@@ -8,7 +8,7 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import Event from 'vs/base/common/event';
-import vscode = require('vscode');
+import data = require('data');
 import { IConnectionProfileGroup, ConnectionProfileGroup } from '../node/connectionProfileGroup';
 import { ConnectionProfile } from '../node/connectionProfile';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
@@ -24,11 +24,11 @@ export const SERVICE_ID = 'connectionManagementService';
 export const IConnectionManagementService = createDecorator<IConnectionManagementService>(SERVICE_ID);
 
 export interface ConnectionManagementEvents {
-	onAddConnectionProfile(uri: string, connection: vscode.ConnectionInfo): void;
+	onAddConnectionProfile(uri: string, connection: data.ConnectionInfo): void;
 
-	onDeleteConnectionProfile(uri: string, connection: vscode.ConnectionInfo): void;
+	onDeleteConnectionProfile(uri: string, connection: data.ConnectionInfo): void;
 
-	onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean>;
+	onConnect(connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean>;
 }
 
 export interface IConnectionManagementService {
@@ -40,19 +40,19 @@ export interface IConnectionManagementService {
 
 	addConnectionProfile(connection: IConnectionProfile): Promise<boolean>;
 
-	onConnectionComplete(handle: number, connectionInfoSummary: vscode.ConnectionInfoSummary): void;
+	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void;
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
 
 	getConnections(): ConnectionProfileGroup[];
 
-	getRecentConnections(): vscode.ConnectionInfo[];
+	getRecentConnections(): data.ConnectionInfo[];
 
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
 
 	changeGroupIdForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void>;
 
-	getAdvancedProperties(): vscode.ConnectionOption[];
+	getAdvancedProperties(): data.ConnectionOption[];
 
 	connect(fileUri: string, connection: ConnectionProfile): Promise<boolean>;
 

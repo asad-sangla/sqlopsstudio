@@ -19,7 +19,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
-import vscode = require('vscode');
+import data = require('data');
 
 /**
  * Manages the connections list including saved profiles and the most recently used connections
@@ -174,7 +174,7 @@ export class ConnectionStore {
 	 * Gets the list of recently used connections. These will not include the password - a separate call to
 	 * {addSavedPassword} is needed to fill that before connecting
 	 *
-	 * @returns {vscode.ConnectionInfo} the array of connections, empty if none are found
+	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
 	 */
 	public getRecentlyUsedConnections(): IConnectionProfile[] {
 		let configValues: IConnectionProfile[] = this._memento['RECENT_CONNECTIONS'];
@@ -251,7 +251,7 @@ export class ConnectionStore {
 		return this.doSavePassword(profile, CredentialsQuickPickItemType.Profile);
 	}
 
-	private doSavePassword(conn: vscode.ConnectionInfo, type: CredentialsQuickPickItemType): Promise<boolean> {
+	private doSavePassword(conn: data.ConnectionInfo, type: CredentialsQuickPickItemType): Promise<boolean> {
 		let self = this;
 		return new Promise<boolean>((resolve, reject) => {
 			if (Utils.isNotEmpty(conn.password)) {

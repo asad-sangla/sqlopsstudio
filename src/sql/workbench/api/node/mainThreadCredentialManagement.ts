@@ -7,9 +7,9 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { ExtHostContext, ExtHostCredentialManagementShape, MainThreadCredentialManagementShape } from 'vs/workbench/api/node/extHost.protocol';
+import { SqlExtHostContext, ExtHostCredentialManagementShape, MainThreadCredentialManagementShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
-import * as vscode from 'vscode';
+import * as data from 'data';
 
 export class MainThreadCredentialManagement extends MainThreadCredentialManagementShape {
 
@@ -25,7 +25,7 @@ export class MainThreadCredentialManagement extends MainThreadCredentialManageme
 
 	) {
 		super();
-		this._proxy = threadService.get(ExtHostContext.ExtHostCredentialManagement);
+		this._proxy = threadService.get(SqlExtHostContext.ExtHostCredentialManagement);
 	}
 
 	public dispose(): void {
@@ -39,7 +39,7 @@ export class MainThreadCredentialManagement extends MainThreadCredentialManageme
 			onSaveCredential(credentialId: string, password: string): Thenable<boolean> {
 				return self._proxy.$saveCredential(credentialId, password);
 			},
-			onReadCredential(credentialId: string): Thenable<vscode.Credential> {
+			onReadCredential(credentialId: string): Thenable<data.Credential> {
 				return self._proxy.$readCredential(credentialId);
 			},
 			onDeleteCredential(credentialId: string): Thenable<boolean> {

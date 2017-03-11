@@ -95,11 +95,12 @@ import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/c
 
 import { ICapabilitiesService, CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
-import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IMetadataService, MetadataService } from 'sql/parts/metadata/metadataService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { IQueryParameterService, QueryParameterService } from 'sql/parts/query/execution/queryParameterService';
+import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IQueryManagementService, QueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IEditorDescriptorService, EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { IScriptingService, ScriptingService } from 'sql/parts/scripting/scriptingService';
 
@@ -533,6 +534,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
 		let connectionManagementService = this.instantiationService.createInstance(ConnectionManagementService);
 		serviceCollection.set(IConnectionManagementService, connectionManagementService);
+		serviceCollection.set(IQueryManagementService, this.instantiationService.createInstance(QueryManagementService));
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
 		serviceCollection.set(IQueryParameterService, this.instantiationService.createInstance(QueryParameterService));
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));

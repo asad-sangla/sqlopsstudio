@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import nls = require('vs/nls');
-import * as vscode from 'vscode';
+import * as data from 'data';
 import errors = require('vs/base/common/errors');
 import { IActionRunner, IAction } from 'vs/base/common/actions';
 import dom = require('vs/base/browser/dom');
@@ -81,13 +81,13 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		const self = this;
 		let handle = 199889;
 		this.connectionManagementService.addEventListener(handle, {
-			onConnect(connectionUri: string, connection: vscode.ConnectionInfo): Thenable<boolean> {
+			onConnect(connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> {
 				return Promise.resolve(true);
 			},
-			onAddConnectionProfile(uri, connection: vscode.ConnectionInfo): void {
+			onAddConnectionProfile(uri, connection: data.ConnectionInfo): void {
 				self.structuralTreeUpdate();
 			},
-			onDeleteConnectionProfile(uri, connection: vscode.ConnectionInfo): void {
+			onDeleteConnectionProfile(uri, connection: data.ConnectionInfo): void {
 				self.structuralTreeUpdate();
 			}
 		});
