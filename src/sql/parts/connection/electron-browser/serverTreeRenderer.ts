@@ -11,6 +11,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { ITree, IDataSource, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACCEPT_BUBBLE_DOWN, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
+import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
@@ -301,11 +302,10 @@ export class NewQueryAction extends Action {
 		super(id, label);
 	}
 
-	public run(connectionProfile: ConnectionProfile): TPromise<boolean> {
-		// ask sqldoc service for an untitled sql sqldoc
+	public run(connectionProfileGroup: ConnectionProfile): TPromise<boolean> {
 		this.queryEditorService.newSqlEditor().then((newDocUri) => {
-			// connect our editor to the input connection
-			this.connectionManagementService.connect(newDocUri.toString(), connectionProfile);
+			// Connect our editor to the input connection
+			this.connectionManagementService.connectEditor(newDocUri.toString(), connectionProfileGroup);
 		});
 		return TPromise.as(true);
 	}

@@ -54,9 +54,9 @@ export interface IConnectionManagementService {
 
 	getAdvancedProperties(): data.ConnectionOption[];
 
-	connect(fileUri: string, connection: ConnectionProfile): Promise<boolean>;
+	connectEditor(uri: string, connection: ConnectionProfile): Promise<boolean>;
 
-	disconnect(fileUri: string): Promise<boolean>;
+	disconnectEditor(fileUri: string, force?: boolean): Promise<boolean>;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

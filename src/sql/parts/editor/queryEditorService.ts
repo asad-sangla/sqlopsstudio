@@ -31,15 +31,16 @@ export interface IQueryEditorService {
  */
 export class QueryEditorService implements IQueryEditorService {
 	public _serviceBrand: any;
+	// file extensions that should be put into query editors
+	private static fileTypes = ['SQL'];
+	// prefic for untitled sql editors
+	private static untitledFilePrefix = 'SQLQuery';
 
 	constructor(
 		@IUntitledEditorService private untitledEditorService: IUntitledEditorService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService) {
 	}
-
-	// file extensions that should be put into query editors
-	private static fileTypes = ['SQL'];
 
 	/**
 	 * Creates new untitled document for SQL query and opens in new editor tab
@@ -91,7 +92,7 @@ export class QueryEditorService implements IQueryEditorService {
 
 	private createUntitledSqlFilePath(): string {
 		let sqlFileName = (counter: number): string => {
-			return `SQLQuery${counter}`;
+			return `${QueryEditorService.untitledFilePrefix}${counter}`;
 		};
 
 		let counter = 1;
@@ -158,18 +159,13 @@ export class QueryEditorService implements IQueryEditorService {
             return undefined;
         }
 
-        let lastPeriodIndex = fileInput.getName().lastIndexOf('.');
-
         // if this editor is not already of type queryinput and there is a file extension
-        if (!(fileInput instanceof QueryInput) && lastPeriodIndex > -1) {
-
-            // parse the file extension
-            let extension: string = fileInput.getName().substr(lastPeriodIndex+1).toUpperCase();
+        if (!(fileInput instanceof QueryInput)) {
 
             // if it is supported and we can get the URI, return the URI
             // there is no interface containing getResource, so we must do a typeof check
             let fileInputCast: any = <any> fileInput;
-            if (!!this.fileTypes.find(x => x === extension) && typeof fileInputCast.getResource === 'function') {
+            if (!!this.isQueryEditorFile(fileInput) && typeof fileInputCast.getResource === 'function') {
                 let uri: URI = fileInputCast.getResource();
                 if (!!uri && !!uri.toString()) {
                     return uri.toString();
@@ -179,4 +175,22 @@ export class QueryEditorService implements IQueryEditorService {
 
         return undefined;
     }
+
+	private static isQueryEditorFile(fileInput: EditorInput): boolean {
+		// Check the extension type
+		let lastPeriodIndex = fileInput.getName().lastIndexOf('.');
+		if(lastPeriodIndex > -1) {
+			let extension: string = fileInput.getName().substr(lastPeriodIndex+1).toUpperCase();
+			return !!this.fileTypes.find(x => x === extension);
+		}
+
+		// Check for untitled file type
+		if (fileInput.getName().includes(this.untitledFilePrefix)) {
+			return true;
+		}
+
+		// Return false if not a queryEditor file
+		return false;
+	}
+
 }

@@ -108,10 +108,17 @@ export class QueryInput extends EditorInput implements IEncodingSupport{
 		return this._sql.hasAssociatedFilePath;
 	}
 
+	public dispose(): void {
+		this._sql.dispose();
+		this._results.dispose();
+		super.dispose();
+	}
+
 	public close(): void {
-		this.connectionManagementService.disconnect(this.getQueryResultsInputResource());
+		let force = true;
+		this.connectionManagementService.disconnectEditor(this.getQueryResultsInputResource(), force);
 		this._sql.close();
 		this._results.close();
-		this.dispose();
+		super.close();
 	}
 }

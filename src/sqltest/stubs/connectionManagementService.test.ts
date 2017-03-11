@@ -64,11 +64,11 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
-	connect(fileUri: string, connection: ConnectionProfile): Promise<boolean>{
+	connectEditor(fileUri: string, connection: ConnectionProfile): Promise<boolean>{
 		return new Promise<boolean>(() => true);
 	}
 
-	disconnect(fileUri: string): Promise<boolean>{
+	disconnectEditor(fileUri: string): Promise<boolean>{
 		return new Promise<boolean>(() => true);
 	}
 }

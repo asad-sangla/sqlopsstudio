@@ -6,6 +6,7 @@
 
 import nls = require('vs/nls');
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
@@ -138,12 +139,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private sendDisconnectRequest(uri: string): Thenable<boolean> {
 		// TODO: send onDisconnect event
-		return new Promise(() => true);
+		return new Promise((resolve, reject) => resolve(true));
 	}
 
 	private sendCancelRequest(uri: string): Thenable<boolean> {
 		// TODO: send onCancelRequest event
-		return new Promise(() => true);
+		return new Promise((resolve, reject) => resolve(true));
 	}
 
 	private getDocumentUri(connection: data.ConnectionInfo): string {
@@ -253,10 +254,62 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
 
-	/* Live connection related functions */
+
+	public connectEditor(uri: string, connectionProfile: ConnectionProfile): Promise<boolean> {
+		let connection: IConnectionProfile = {
+			serverName: connectionProfile.serverName,
+			databaseName: connectionProfile.databaseName,
+			userName: connectionProfile.userName,
+			password: connectionProfile.password,
+			authenticationType: connectionProfile.authenticationType,
+			groupId: connectionProfile.groupId,
+			groupName: connectionProfile.groupName,
+			savePassword: connectionProfile.savePassword
+		};
+
+		// Retrieve saved password if needed
+		return new Promise<boolean>((resolve, reject) => {
+			this._connectionStore.addSavedPassword(connection).then(newConnection => {
+				return this.connect(uri, newConnection).then(status => {
+					// Status tells use if the connection attempt was successfull or not
+					resolve(status);
+				});
+			});
+		});
+	}
+
+		// Disconnect a URI from its current connection
+	public disconnectEditor(fileUri: string, force: boolean = false): Promise<boolean> {
+		const self = this;
+
+		return new Promise<boolean>((resolve, reject) => {
+			if (self.isConnected(fileUri)) {
+				resolve(self.doDisconnect(fileUri));
+			} else if (self.isConnecting(fileUri)) {
+				// Prompt the user to cancel connecting
+				if (!force) {
+					self.shouldCancelConnect(fileUri).then((result) => {
+						if (result) {
+							resolve(self.doCancelConnect(fileUri));
+						}
+					});
+				} else {
+					resolve(self.doCancelConnect(fileUri));
+				}
+
+			} else {
+				resolve(true);
+			}
+		});
+    }
+
+
+	/**
+	 * Functions to handle the connecting lifecycle
+	 */
 
 	// Connect an open URI to a connection profile
-	public connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
+	private connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
 		const self = this;
 
 		return new Promise<boolean>((resolve, reject) => {
@@ -270,9 +323,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 			// Setup the handler for the connection complete notification to call
 			connectionInfo.connectHandler = ((connectResult, error) => {
 				if (error) {
+					// Connection to the server failed
 					reject(error);
 				} else {
-					resolve(connectResult); // on connection complete called here?
+					resolve(connectResult);
 				}
 			});
 
@@ -282,27 +336,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 			self.sendConnectRequest(connection, uri);
 		});
 	}
-
-	// Disconnect a URI from its current connection
-	public disconnect(fileUri: string): Promise<boolean> {
-		const self = this;
-
-		return new Promise<boolean>((resolve, reject) => {
-			if (self.isConnected(fileUri)) {
-				resolve(self.doDisconnect(fileUri));
-			} else if (self.isConnecting(fileUri)) {
-				// Prompt the user to cancel connecting
-				self.shouldCancelConnect(fileUri).then((result) => {
-					if (result) {
-						self.doCancelConnect(fileUri);
-					}
-					resolve(true);
-				});
-			} else {
-				resolve(true);
-			}
-		});
-    }
 
 	// Ask user if they are sure they want to cancel connection request
 	private shouldCancelConnect(fileUri: string): Thenable<boolean> {
@@ -363,7 +396,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				resolve(self.sendCancelRequest(fileUri));
 			} else {
 				// If we are not connecting anymore let disconnect handle the next steps
-				resolve(self.disconnect(fileUri));
+				resolve(self.disconnectEditor(fileUri));
 			}
 		});
     }
