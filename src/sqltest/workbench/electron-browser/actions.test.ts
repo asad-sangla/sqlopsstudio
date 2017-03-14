@@ -63,7 +63,7 @@ suite('SQL Actions Tests', () => {
 		});
 
 		conManService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Strict);
-		conManService.setup(x => x.getConnections()).returns(() => [conProfGroup]);
+		conManService.setup(x => x.getConnectionGroups()).returns(() => [conProfGroup]);
 
 	});
 
@@ -87,7 +87,7 @@ suite('SQL Actions Tests', () => {
 		// Runnig test function
 		return editDataAction.run().then(() => {
 			// Verificiations
-			conManService.verify(x => x.getConnections(), TypeMoq.Times.once());
+			conManService.verify(x => x.getConnectionGroups(), TypeMoq.Times.once());
 			quickOpen.verify(x => x.pick(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			quickOpen.verify(x => x.input(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 

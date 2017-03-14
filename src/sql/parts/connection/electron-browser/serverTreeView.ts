@@ -41,7 +41,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService private messageService: IMessageService
 	) {
-		super(actionRunner, 22 * 20, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
+		super(actionRunner, 22 * 15, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
 }
 	/**
 	 * Render header of the view
@@ -121,7 +121,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	 */
 	private structuralTreeUpdate(): void {
 		const self = this;
-		let groups = this.connectionManagementService.getConnections();
+		let groups = this.connectionManagementService.getConnectionGroups();
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
 		this.fullRefreshNeeded = true;
 		const treeInput =  new ConnectionProfileGroup('root', null, 'root');

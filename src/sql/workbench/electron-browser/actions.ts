@@ -46,7 +46,7 @@ export class EditDataAction extends Action {
 		if (!element) {
 			// creating a flat map of connections (ungrouping them)
 			let connectionList: ConnectionProfile[] = [];
-			this.connectionManagementService.getConnections()
+			this.connectionManagementService.getConnectionGroups()
 				.map(group => group.connections
 				.map(con => connectionList.push(con)));
 

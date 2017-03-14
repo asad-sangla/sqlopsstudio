@@ -44,7 +44,9 @@ export interface IConnectionManagementService {
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
 
-	getConnections(): ConnectionProfileGroup[];
+	getConnectionGroups(): ConnectionProfileGroup[];
+
+	getActiveConnections(): data.ConnectionInfo[];
 
 	getRecentConnections(): data.ConnectionInfo[];
 

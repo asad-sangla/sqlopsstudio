@@ -163,8 +163,7 @@ export class TreeUtils {
 		if (viewKey === 'recent') {
 			groups = connectionManagementService.getRecentConnections();
 		} else if (viewKey === 'active') {
-			// TODO: Call active API after implementation
-			groups = connectionManagementService.getRecentConnections();
+			groups = connectionManagementService.getActiveConnections();
 		}
 		const treeInput = new ConnectionProfileGroup('root', null, undefined);
 		treeInput.addConnections(TreeUtils.convertToConnectionProfile(groups));

@@ -185,6 +185,32 @@ export class ConnectionStore {
 	}
 
 	/**
+	 * Moves all the active connections to recent connections list and clears active connections list.
+	 * To be called before shutdown.
+	 */
+	public saveActiveConnectionsToRecent(): void {
+		let activeConnections: IConnectionProfile[] = this._memento['ACTIVE_CONNECTIONS'];
+		let recentConnections: IConnectionProfile[] = this._memento['RECENT_CONNECTIONS'];
+		recentConnections = activeConnections.concat(recentConnections);
+		this._memento['RECENT_CONNECTIONS'] = recentConnections;
+		this._memento['ACTIVE_CONNECTIONS'] = [];
+	}
+
+	/**
+	 * Gets the list of active connections. These will not include the password - a separate call to
+	 * {addSavedPassword} is needed to fill that before connecting
+	 *
+	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
+	 */
+	public getActiveConnections(): IConnectionProfile[] {
+		let configValues: IConnectionProfile[] = this._memento['ACTIVE_CONNECTIONS'];
+		if (!configValues) {
+			configValues = [];
+		}
+		return configValues;
+	}
+
+	/**
 	 * Adds a connection to the recently used list.
 	 * Password values are stored to a separate credential store if the "savePassword" option is true
 	 *
@@ -218,6 +244,38 @@ export class ConnectionStore {
 	}
 
 	/**
+	 * Adds a connection to the active connections list.
+	 * Password values are stored to a separate credential store if the "savePassword" option is true
+	 *
+	 * @param {IConnectionCredentials} conn the connection to add
+	 * @returns {Promise<void>} a Promise that returns when the connection was saved
+	 */
+	public addActiveConnection(conn: IConnectionProfile): Promise<void> {
+
+		const self = this;
+		return new Promise<void>((resolve, reject) => {
+			// Get all profiles
+			let configValues = self.getActiveConnections();
+			let maxConnections = self.getMaxRecentConnectionsCount();
+
+			// Remove the connection from the list if it already exists
+			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
+
+			// Add the connection to the front of the list, taking care to clear out the password field
+			let savedConn: IConnectionProfile = Object.assign({}, conn, { password: '' });
+			configValues.unshift(savedConn);
+
+			// Remove last element if needed
+			if (configValues.length > maxConnections) {
+				configValues = configValues.slice(0, maxConnections);
+			}
+			this._memento['ACTIVE_CONNECTIONS'] = configValues;
+			self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
+			resolve(undefined);
+		});
+	}
+
+	/**
 	 * Clear all recently used connections from the MRU list.
 	 */
 	public clearRecentlyUsed(): Promise<void> {
@@ -241,6 +299,23 @@ export class ConnectionStore {
 
 			// Update the MRU list
 			this._memento['RECENT_CONNECTIONS'] = configValues;
+		});
+	}
+
+	/**
+	 * Remove a connection profile from the active connections list.
+	 */
+	private removeActiveConnection(conn: IConnectionProfile): Promise<void> {
+		const self = this;
+		return new Promise<void>((resolve, reject) => {
+			// Get all profiles
+			let configValues = self.getActiveConnections();
+
+			// Remove the connection from the list if it already exists
+			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
+
+			// Update the Active list
+			this._memento['ACTIVE_CONNECTIONS'] = configValues;
 		});
 	}
 
@@ -290,7 +365,11 @@ export class ConnectionStore {
 			// Remove the profile from the recently used list if necessary
 			return new Promise<boolean>((resolve, reject) => {
 				self.removeRecentlyUsed(profile).then(() => {
-					resolve(profileFound);
+					self.removeActiveConnection(profile).then(() => {
+						resolve(profileFound);
+					}).catch(err => {
+						reject(err);
+					});
 				}).catch(err => {
 					reject(err);
 				});

@@ -17,6 +17,8 @@
 	width: 100%;
 	height: 28px;
 	line-height: 18px;
+	min-height: 10px;
+	position: absolute;
 	box-sizing: border-box;
 	padding: 4px;
 	border: 1px solid transparent;
@@ -166,10 +168,20 @@
 /* --- Registered servers tree viewlet --- */
 .server-explorer-viewlet {
 	height: 100%;
+	width: 100%;
+	position: absolute;
 }
 
 .explorer-servers {
 	height: 100%;
+}
+
+.server-explorer-viewlet .split-view-view {
+	min-height: 22px;
+}
+
+.server-explorer-viewlet .split-view-view .header {
+	min-height: 22px;
 }
 
 .server-explorer-viewlet .explorer-item,

@@ -38,7 +38,7 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService private messageService: IMessageService
 	) {
-		super(actionRunner, 175, false, viewTitle, keybindingService, contextMenuService);
+		super(actionRunner, 150, false, viewTitle, keybindingService, contextMenuService);
 }
 	/**
 	 * Render header of the view
@@ -109,7 +109,7 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 		if (this.viewKey === 'recent') {
 			groups = this.connectionManagementService.getRecentConnections();
 		} else if (this.viewKey === 'active') {
-			groups = this.connectionManagementService.getRecentConnections();
+			groups = this.connectionManagementService.getActiveConnections();
 		}
 
 		const treeInput =  new ConnectionProfileGroup('root', null, 'root');

@@ -107,12 +107,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	public getConnections(): ConnectionProfileGroup[] {
+	public getConnectionGroups(): ConnectionProfileGroup[] {
 		return this._connectionStore.getConnectionProfileGroups();
 	}
 
 	public getRecentConnections(): data.ConnectionInfo[] {
 		return this._connectionStore.getRecentlyUsedConnections();
+	}
+
+	public getActiveConnections(): data.ConnectionInfo[] {
+		return this._connectionStore.getActiveConnections();
 	}
 
 	public getAdvancedProperties(): data.ConnectionOption[] {
@@ -176,9 +180,28 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	}
 
+	/**
+	 * Add a connection to the recent connections list.
+	 */
 	private tryAddMruConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile): void {
 		if (newConnection) {
 			this._connectionStore.addRecentlyUsed(newConnection)
+				.then(() => {
+					connectionManagementInfo.connectHandler(true);
+				}, err => {
+					connectionManagementInfo.connectHandler(false, err);
+				});
+		} else {
+			connectionManagementInfo.connectHandler(false);
+		}
+	}
+
+	/**
+	 * Add a connection to the active connections list.
+	 */
+	private tryAddActiveConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile): void {
+		if (newConnection) {
+			this._connectionStore.addActiveConnection(newConnection)
 				.then(() => {
 					connectionManagementInfo.connectHandler(true);
 				}, err => {
@@ -195,17 +218,17 @@ export class ConnectionManagementService implements IConnectionManagementService
 		connection.serviceTimer.end();
 		connection.connecting = false;
 
-		let mruConnection: IConnectionProfile = <any>{};
+		let activeConnection: IConnectionProfile = <any>{};
 
 		if (Utils.isNotEmpty(connectionInfoSummary.connectionId)) {
 			connection.connectHandler(true);
-			mruConnection = connection.connectionProfile;
+			activeConnection = connection.connectionProfile;
 		} else {
 			connection.connectHandler(false, connectionInfoSummary.messages);
-			mruConnection = undefined;
+			activeConnection = undefined;
 		}
 
-		self.tryAddMruConnection(connection, mruConnection);
+		self.tryAddActiveConnection(connection, activeConnection);
 		this._statusService.setStatusMessage('Updating IntelliSense cache');
 	}
 
@@ -220,6 +243,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public shutdown(): void {
+		this._connectionStore.saveActiveConnectionsToRecent();
 		this.connectionMemento.saveMemento();
 	}
 

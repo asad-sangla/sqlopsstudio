@@ -255,7 +255,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 */
 	public renderTree(tree: ITree): void {
 		let treeInput = new ConnectionProfileGroup('root', null, 'root');
-		let groups = this.connectionManagementService.getConnections();
+		let groups = this.connectionManagementService.getConnectionGroups();
 		treeInput.addGroups(groups);
 		if (treeInput !== tree.getInput()) {
 			tree.setInput(treeInput).done(() => {

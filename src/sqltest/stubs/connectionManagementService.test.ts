@@ -39,11 +39,11 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	}
 
-	getConnections(): ConnectionProfileGroup[] {
+	getConnectionGroups(): ConnectionProfileGroup[] {
 		return [];
 	}
 
-	getRecentConnectionsProfile(): ConnectionProfile[] {
+	getActiveConnections(): data.ConnectionInfo[] {
 		return [];
 	}
 
