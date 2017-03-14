@@ -35,5 +35,5 @@ export interface IQueryModelService {
 	showError(uri: string, message: string): void;
 
 	onRunQueryStart: Event<string>;
-onRunQueryComplete: Event<string>;
+	onRunQueryComplete: Event<string>;
 }

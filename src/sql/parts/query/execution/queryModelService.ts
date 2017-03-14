@@ -11,7 +11,6 @@ import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
@@ -35,7 +34,7 @@ class QueryInfo {
 	// via the data service will be lost.
 	public dataServiceReady: boolean;
 
-	constructor () {
+	constructor() {
 		this.dataServiceReady = false;
 		this.queryEventQueue = [];
 	}
@@ -58,7 +57,6 @@ export class QueryModelService implements IQueryModelService {
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
 		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IQueryManagementService private _queryManagementService: IQueryManagementService,
 		@IMessageService private _messageService: IMessageService
 	) {
 		this._queryInfoMap = new Map<string, QueryInfo>();

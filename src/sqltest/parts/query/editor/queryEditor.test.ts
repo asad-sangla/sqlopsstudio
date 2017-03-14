@@ -8,13 +8,13 @@
 import { EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 import { IMessageService } from 'vs/platform/message/common/message';
+import { TestMessageService } from 'vs/workbench/test/workbenchTestServices';
 import { IEditorDescriptor, EditorInput } from 'vs/workbench/common/editor';
 import { TPromise } from 'vs/base/common/winjs.base';
 import URI from 'vs/base/common/uri';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
-import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { Builder } from 'vs/base/browser/builder';
@@ -25,7 +25,6 @@ import * as assert from 'assert';
 suite('SQL QueryEditor Tests', () => {
 	let queryModelService: QueryModelService;
 	let instantiationService: TypeMoq.Mock<InstantiationService>;
-	let queryManagementService: TypeMoq.Mock<IQueryManagementService>;
 	let messageService: TypeMoq.Mock<IMessageService>;
 	let editorDescriptorService: TypeMoq.Mock<EditorDescriptorService>;
 	let queryInput: QueryInput;
@@ -81,8 +80,11 @@ suite('SQL QueryEditor Tests', () => {
 		let queryResultsInput2: QueryResultsInput = new QueryResultsInput(uri2.fsPath);
 		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2, undefined);
 
+		// Mock IMessageService
+		messageService = TypeMoq.Mock.ofType(TestMessageService, TypeMoq.MockBehavior.Loose);
+
 		// Create a QueryModelService
-		queryModelService = new QueryModelService(instantiationService.object, queryManagementService.object, messageService.object);
+		queryModelService = new QueryModelService(instantiationService.object, messageService.object);
 	});
 
 	test('createEditor creates only the taskbar', (done) => {
