@@ -68,7 +68,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.disposables.push(addStandardDisposableListener(this.searchBox, EventType.FOCUS, () => addClass(this.searchBox, 'synthetic-focus')));
 		this.disposables.push(addStandardDisposableListener(this.searchBox, EventType.BLUR, () => removeClass(this.searchBox, 'synthetic-focus')));
 
-		//this.extensionsBox = append(this.root, $('.extensions'));
 		this.messageBox = append(this.root, $('.message'));
 
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
