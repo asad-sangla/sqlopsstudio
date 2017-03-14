@@ -7,6 +7,10 @@
 	height: 100%;
 }
 
+.connection-recent .server-explorer-viewlet {
+	height: calc(100% - 365px);
+}
+
 .extensions-viewlet > .header {
 	height: 38px;
 	box-sizing: border-box;

@@ -366,14 +366,16 @@ export class ConnectionDialogWidget {
 	}
 
 	private OnRecentConnectionClick(event: any) {
-		let connectionInfo = event.selection[0];
-		this.serverNameInputBox.value = connectionInfo.serverName;
-		this.databaseNameInputBox.value = connectionInfo.databaseName;
-		this.userNameInputBox.value = (connectionInfo.authenticationType === 'SqlLogin') ? connectionInfo.userName : '';
-		this.passwordInputBox.value = (connectionInfo.authenticationType === 'SqlLogin') ? connectionInfo.password : '';
-		this.rememberPassword.checked = !this.isEmptyString(connectionInfo.password);
-		this.authTypeSelectBox.selectWithOptionName(connectionInfo.authenticationType);
-		this.serverGroupInputBox.value = '';
+		let connectionInfo: data.ConnectionInfo = event.selection[0];
+		if (connectionInfo) {
+			this.serverNameInputBox.value = connectionInfo.serverName;
+			this.databaseNameInputBox.value = connectionInfo.databaseName;
+			this.userNameInputBox.value = (connectionInfo.authenticationType === 'SqlLogin') ? connectionInfo.userName : '';
+			this.passwordInputBox.value = (connectionInfo.authenticationType === 'SqlLogin') ? connectionInfo.password : '';
+			this.rememberPassword.checked = !this.isEmptyString(connectionInfo.password);
+			this.authTypeSelectBox.selectWithOptionName(connectionInfo.authenticationType);
+			this.serverGroupInputBox.value = '';
+		}
 	}
 
 	private clearRecentConnection() {
@@ -386,8 +388,9 @@ export class ConnectionDialogWidget {
 
 	public open(recentConnections: data.ConnectionInfo[]) {
 		if(recentConnections.length !== 0) {
-			var recentConnectionbuilder = this.createRecentConnectionsBuilder(recentConnections);
-			jQuery('#recentConnection').append(recentConnectionbuilder.getHTMLElement());
+			this.clearRecentConnection();
+			var recentConnectionBuilder = this.createRecentConnectionsBuilder(recentConnections);
+			jQuery('#recentConnection').append(recentConnectionBuilder.getHTMLElement());
 		}
 
 		jQuery('#connectionDialogModal').modal({ backdrop: false, keyboard: true });
