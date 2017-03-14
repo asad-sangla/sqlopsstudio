@@ -3,6 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+.monaco-shell .advanced-dialog .modal-dialog  {
+	margin: auto auto auto auto;
+	height: calc(100% - 23px);
+	right: 0;
+	position: absolute;
+}
+
 .monaco-shell .advanced-dialog .modal-body{
 	height: calc(100% - 138px);
 	overflow-y: auto;
@@ -74,12 +81,9 @@
 	padding: 10px;
 }
 
-.advanced-dialog .advancedDialog-properties-category {
-	padding-bottom: 15px;
-}
-
 .advanced-dialog .advancedDialog-table{
 	width:100%;
+	padding: 10px;
 }
 
 td.advancedDialog-input.select-container {

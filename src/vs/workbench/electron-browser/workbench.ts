@@ -89,9 +89,10 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
-import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
+import { ErrorMessageService } from 'sql/parts/common/errorMessageService';
 
 import { ICapabilitiesService, CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
@@ -529,6 +530,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IQuickOpenService, this.quickOpen);
 
 		// SQL Tools services
+		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));

@@ -11,6 +11,7 @@ import data = require('data');
 import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import Severity from 'vs/base/common/severity';
 
 
 export const VIEWLET_ID = 'workbench.view.connections';
@@ -64,6 +65,12 @@ export const IConnectionDialogService = createDecorator<IConnectionDialogService
 export interface IConnectionDialogService {
 	_serviceBrand: any;
 	showDialog(connectionManagementService: IConnectionManagementService): TPromise<void>;
+}
+
+export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');
+export interface IErrorMessageService {
+	_serviceBrand: any;
+	showDialog(container: HTMLElement,  severity: Severity, headerTitle: string, message: string): void;
 }
 
 export enum ConnectionOptionType {

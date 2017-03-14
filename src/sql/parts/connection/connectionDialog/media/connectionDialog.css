@@ -13,7 +13,7 @@
 	background-color: #000;
 }
 
-.monaco-shell .modal-dialog  {
+.monaco-shell .connection-dialog-widget .modal-dialog  {
 	margin: auto auto auto auto;
 	height: calc(100% - 23px);
 	right: 0;

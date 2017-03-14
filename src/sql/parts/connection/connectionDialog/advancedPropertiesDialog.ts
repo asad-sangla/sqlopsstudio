@@ -11,6 +11,7 @@ import 'vs/css!./media/advancedProperties';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
+import { SplitView, FixedCollapsibleView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
@@ -30,6 +31,33 @@ export interface IAdvancedDialogCallbacks {
 interface IAdvancedPropertyElement {
 	advancedPropertyWidget: any;
 	advancedProperty: data.ConnectionOption;
+}
+
+class OptionPropertiesView extends FixedCollapsibleView {
+	private _treecontainer: HTMLElement;
+	constructor(private viewTitle: string, private _bodyContainer: HTMLElement, collapsed: boolean, initialBodySize: number,) {
+		super({
+			expandedBodySize: initialBodySize,
+			headerSize: 22,
+			initialState: collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED,
+			ariaHeaderLabel: viewTitle
+			});
+	}
+
+	public renderHeader(container: HTMLElement): void {
+		const titleDiv = $('div.title').appendTo(container);
+		$('span').text(this.viewTitle).appendTo(titleDiv);
+	}
+
+	public renderBody(container: HTMLElement): void {
+		this._treecontainer = document.createElement('div');
+		container.appendChild(this._treecontainer);
+		this._treecontainer.appendChild(this._bodyContainer);
+	}
+
+	public layoutBody(size: number): void {
+		this._treecontainer.style.height = size + 'px';
+	}
 }
 
 export class AdvancedPropertiesDialog {
@@ -202,21 +230,22 @@ export class AdvancedPropertiesDialog {
 		var propertiesContentbuilder: Builder = $().div({class:'advancedDialog-properties-groups'}, (container) => {
 			containerGroup = container;
 		});
+		var splitview = new SplitView(containerGroup.getHTMLElement());
 		for (var category in connectionPropertiesMaps) {
 			var propertyOptions: data.ConnectionOption[] = connectionPropertiesMaps[category];
-			containerGroup.div({class:'advancedDialog-properties-category'}, (categoryContainer) => {
-				categoryContainer.div({class:'modal-title'}, (categoryTitle) => {
-					categoryTitle.innerHtml(category);
-				});
-				categoryContainer.element('table', { class: 'advancedDialog-table' }, (tableContainer: Builder) => {
-					this.fillInProperties(tableContainer, propertyOptions);
-				});
+			var bodyContainer = $().element('table', { class: 'advancedDialog-table' }, (tableContainer: Builder) => {
+				this.fillInProperties(tableContainer, propertyOptions);
 			});
+
+			var viewSize = 20 + propertyOptions.length * 31;
+			var categoryView = new OptionPropertiesView(category, bodyContainer.getHTMLElement(), false, viewSize);
+			splitview.addView(categoryView);
+
 			if (!firstProperty) {
 				firstProperty = propertyOptions[0].name;
 			}
 		}
-
+		splitview.layout(569);
 		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());
 		jQuery('#advancedDialogModal').modal({ backdrop: false, keyboard: true });
 		var firstPropertyWidget = this._advancedPropertiesMaps[firstProperty].advancedPropertyWidget;

@@ -5,7 +5,7 @@
 
 'use strict';
 
-import { IConnectionDialogService, IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionDialogService, IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
@@ -13,6 +13,7 @@ import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import Severity from 'vs/base/common/severity';
 
 export class ConnectionDialogService implements IConnectionDialogService {
 
@@ -23,8 +24,9 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _container: HTMLElement;
 
 	constructor(
-		@IPartService private partService: IPartService,
-		@IInstantiationService private instantiationService: IInstantiationService
+		@IPartService private _partService: IPartService,
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 	}
 
@@ -38,7 +40,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			}
 
 		}).catch(err => {
-			this._connectionDialog.showError(err);
+			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
 		});
 	}
 
@@ -63,9 +65,9 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private doShowDialog(model?: IConnectionProfile): TPromise<void> {
 		if (!this._connectionDialog) {
-			let container = withElementById(this.partService.getWorkbenchElementId()).getHTMLElement().parentElement;
+			let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 			this._container = container;
-			this._connectionDialog = this.instantiationService.createInstance(ConnectionDialogWidget, container, {
+			this._connectionDialog = this._instantiationService.createInstance(ConnectionDialogWidget, container, {
 				onCancel: () => { },
 				onConnect: () => this.handleOnConnect(),
 				onAdvancedProperties: () => this.handleOnAdvancedProperties()
