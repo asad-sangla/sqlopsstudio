@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionManagementService, ConnectionManagementEvents } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
@@ -15,12 +15,11 @@ import data = require('data');
 
 export class TestConnectionManagementService implements IConnectionManagementService {
 	_serviceBrand: any;
+	onAddConnectionProfile = undefined;
+	onDeleteConnectionProfile = undefined;
 
-	addEventListener(handle: number, events: ConnectionManagementEvents): IDisposable {
-		return {
-			dispose: () => {
-			}
-		};
+	registerProvider(providerId: string, provider: data.ConnectionProvider): void {
+
 	}
 
 	newConnection(): void {

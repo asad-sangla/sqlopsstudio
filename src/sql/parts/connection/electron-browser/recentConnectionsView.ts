@@ -65,17 +65,15 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 		} else if (this.viewKey === 'active') {
 			handle = 19999;
 		}
-		this.connectionManagementService.addEventListener(handle, {
-			onConnect(connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> {
-				return Promise.resolve(true);
-			},
-			onAddConnectionProfile(uri, connection: data.ConnectionInfo): void {
-				self.structuralTreeUpdate();
-			},
-			onDeleteConnectionProfile(uri, connection: data.ConnectionInfo): void {
-				self.structuralTreeUpdate();
-			}
+
+		// Refresh Tree when these events are emitted
+		this.connectionManagementService.onAddConnectionProfile(() => {
+			self.structuralTreeUpdate();
 		});
+		this.connectionManagementService.onDeleteConnectionProfile(() => {
+			self.structuralTreeUpdate();
+		});
+
 		this.structuralTreeUpdate();
 	}
 

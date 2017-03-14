@@ -78,6 +78,7 @@ import {
 		CapabiltiesDiscoveryRequest,
 		ConnectionRequest, ConnectParams,
 		DisconnectRequest, DisconnectParams,
+		CancelConnectRequest, CancelConnectParams,
 		ConnectionCompleteNotification, IntelliSenseReadyNotification,
 		MetadataQueryRequest, ScriptingSelectRequest,
 		QueryCancelRequest, QueryCancelResult, QueryCancelParams,
@@ -1319,6 +1320,22 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(DisconnectRequest.type, error);
+						return Promise.resolve(false);
+					}
+				);
+			},
+
+			cancelConnect(connUri: string): Thenable<boolean> {
+				let params: CancelConnectParams  = {
+					ownerUri: connUri
+				};
+
+				return self.doSendRequest(connection, CancelConnectRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(CancelConnectRequest.type, error);
 						return Promise.resolve(false);
 					}
 				);

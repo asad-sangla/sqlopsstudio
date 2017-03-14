@@ -23,6 +23,16 @@ export abstract class ExtHostDataProtocolShape {
 	$connect(handle:number, connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> { throw ni(); }
 
 	/**
+	 * Disconnect from a data source using the provided connectionUri string.
+	 */
+	$disconnect(handle:number, connectionUri: string): Thenable<boolean> { throw ni(); }
+
+	/**
+	 * Cancel a connection to a data source using the provided connectionUri string.
+	 */
+	$cancelConnect(handle:number, connectionUri: string): Thenable<boolean> { throw ni(); }
+
+	/**
 	 * Callback when a connection request has completed
 	 */
 	$onConnectComplete(handle:number, connectionInfoSummary: data.ConnectionInfoSummary): void { throw ni(); }

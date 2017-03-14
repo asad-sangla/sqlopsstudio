@@ -9,7 +9,7 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnectionManagementService, ConnectionManagementEvents, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
@@ -31,6 +31,7 @@ import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
 import * as data from 'data';
 import * as ConnectionContracts from 'sql/parts/connection/node/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
+import Event, { Emitter } from 'vs/base/common/event';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -38,15 +39,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private disposables: IDisposable[] = [];
 
-	private _providers: ConnectionManagementEvents[] = [];
-
-	private _serverEvents: { [handle: number]: ConnectionManagementEvents; } = Object.create(null);
+	private _providers: { [handle: string]: data.ConnectionProvider; } = Object.create(null);
 
 	private _connectionStore: ConnectionStore;
 
 	private connectionMemento: Memento;
 
 	private _connections: { [fileUri: string]: ConnectionManagementInfo };
+
+	private _onAddConnectionProfile: Emitter<void>;
+	private _onDeleteConnectionProfile: Emitter<void>;
 
 	constructor(
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
@@ -68,6 +70,27 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._connectionStore = new ConnectionStore(_storageService, this.connectionMemento,
 			_configurationEditService, this._workspaceConfigurationService, this._credentialsService);
 		this._connections = {};
+
+		// Setting up our event emitters
+		this._onAddConnectionProfile = new Emitter<void>();
+		this._onDeleteConnectionProfile = new Emitter<void>();
+
+		this.disposables.push(this._onAddConnectionProfile);
+		this.disposables.push(this._onDeleteConnectionProfile);
+	}
+
+	// Event Emitters
+	public get onAddConnectionProfile(): Event<void> {
+		return this._onAddConnectionProfile.event;
+	}
+
+	public get onDeleteConnectionProfile(): Event<void> {
+		return this._onDeleteConnectionProfile.event;
+	}
+
+	// Connection Provider Registration
+	public registerProvider(providerId: string, provider: data.ConnectionProvider): void {
+		this._providers[providerId] = provider;
 	}
 
 	public newConnection(): void {
@@ -84,9 +107,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					let connectionInfo = this._connections[uri];
 					this.saveToSettings(connectionInfo.connectionProfile).then(value => {
 						if (value) {
-							for (var key in this._serverEvents) {
-								this._serverEvents[key].onAddConnectionProfile(uri, connectionInfo.connectionProfile);
-							}
+							this._onAddConnectionProfile.fire();
 						}
 					});
 					this.showDashboard(connection);
@@ -134,21 +155,32 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	// Request Senders
-	// TODO: Request Handlers Mapping to prevent sending request to all handlers
-	private sendConnectRequest(connection: data.ConnectionInfo, uri: string): void {
-		for (var key in this._serverEvents) {
-			this._serverEvents[key].onConnect(uri, connection);
-		}
+	// TODO: Request Handlers Mapping to prevent sending request to all providers
+	private sendConnectRequest(connection: data.ConnectionInfo, uri: string): Thenable<boolean> {
+		return new Promise((resolve, reject) => {
+			for (var key in this._providers) {
+				this._providers[key].connect(uri, connection);
+			}
+			resolve(true);
+		});
 	}
 
 	private sendDisconnectRequest(uri: string): Thenable<boolean> {
-		// TODO: send onDisconnect event
-		return new Promise((resolve, reject) => resolve(true));
+		return new Promise((resolve, reject) => {
+			for (var key in this._providers) {
+				this._providers[key].disconnect(uri);
+			}
+			resolve(true);
+		});
 	}
 
 	private sendCancelRequest(uri: string): Thenable<boolean> {
-		// TODO: send onCancelRequest event
-		return new Promise((resolve, reject) => resolve(true));
+		return new Promise((resolve, reject) => {
+			for (var key in this._providers) {
+				this._providers[key].cancelConnect(uri);
+			}
+			resolve(true);
+		});
 	}
 
 	private getDocumentUri(connection: data.ConnectionInfo): string {
@@ -217,6 +249,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		let connection = this._connections[connectionInfoSummary.ownerUri];
 		connection.serviceTimer.end();
 		connection.connecting = false;
+		connection.connectionId = connectionInfoSummary.connectionId;
 
 		let activeConnection: IConnectionProfile = <any>{};
 
@@ -247,17 +280,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this.connectionMemento.saveMemento();
 	}
 
-	public addEventListener(handle: number, serverEvents: ConnectionManagementEvents): IDisposable {
-		this._providers.push(serverEvents);
-
-		this._serverEvents[handle] = serverEvents;
-
-		return {
-			dispose: () => {
-			}
-		};
-	}
-
 	private getActiveEditorInputResource(): string {
 		const input = this._editorService.getActiveEditorInput();
 		if (input &&
@@ -278,7 +300,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
 
-
+	// Connect a URI from its current connection
 	public connectEditor(uri: string, connectionProfile: ConnectionProfile): Promise<boolean> {
 		let connection: IConnectionProfile = {
 			serverName: connectionProfile.serverName,
@@ -302,7 +324,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-		// Disconnect a URI from its current connection
+	// Disconnect a URI from its current connection
 	public disconnectEditor(fileUri: string, force: boolean = false): Promise<boolean> {
 		const self = this;
 
@@ -316,14 +338,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 						if (result) {
 							resolve(self.doCancelConnect(fileUri));
 						}
+						resolve(false);
 					});
 				} else {
 					resolve(self.doCancelConnect(fileUri));
 				}
 
-			} else {
-				resolve(true);
-			}
+			};
+
+			// resolve true if already disconnected
+			resolve(true);
 		});
     }
 
@@ -397,10 +421,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 					// TODO: send telemetry events
 					// Telemetry.sendTelemetryEvent('DatabaseDisconnected');
-					resolve(true);
-				} else {
-					resolve(false);
 				}
+
+				resolve(result);
 			});
 		});
 	}

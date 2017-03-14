@@ -998,6 +998,25 @@ export namespace DisconnectRequest {
     export const type: RequestType<DisconnectParams, DisconnectResult, void> = { get method(): string { return 'connection/disconnect'; } };
 }
 
+// ------------------------------- < Cancel Connect Request > ---------------------------------------
+
+
+// Cancel connect request message format
+export class CancelConnectParams {
+    /**
+     * URI identifying the owner of the connection
+     */
+    public ownerUri: string;
+}
+
+// Cancel connect response format.
+export type CancelConnectResult = boolean;
+
+// Cancel connect request message callback declaration
+export namespace CancelConnectRequest {
+    export const type: RequestType<CancelConnectParams, CancelConnectResult, void> = { get method(): string { return 'connection/cancelconnect'; } };
+}
+
 // ------------------------------- < List Databases Request > ---------------------------------------
 
 // List databases request format

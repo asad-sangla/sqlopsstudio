@@ -6,12 +6,12 @@
 import { IViewlet } from 'vs/workbench/common/viewlet';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IDisposable } from 'vs/base/common/lifecycle';
 import Event from 'vs/base/common/event';
 import data = require('data');
-import { IConnectionProfileGroup, ConnectionProfileGroup } from '../node/connectionProfileGroup';
-import { ConnectionProfile } from '../node/connectionProfile';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+
 
 export const VIEWLET_ID = 'workbench.view.connections';
 
@@ -23,18 +23,12 @@ export const SERVICE_ID = 'connectionManagementService';
 
 export const IConnectionManagementService = createDecorator<IConnectionManagementService>(SERVICE_ID);
 
-export interface ConnectionManagementEvents {
-	onAddConnectionProfile(uri: string, connection: data.ConnectionInfo): void;
-
-	onDeleteConnectionProfile(uri: string, connection: data.ConnectionInfo): void;
-
-	onConnect(connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean>;
-}
-
 export interface IConnectionManagementService {
 	_serviceBrand: any;
 
-	addEventListener(handle: number, events: ConnectionManagementEvents): IDisposable;
+	// Event Emitters
+	onAddConnectionProfile: Event<void>;
+	onDeleteConnectionProfile: Event<void>;
 
 	newConnection(): void;
 
@@ -59,6 +53,11 @@ export interface IConnectionManagementService {
 	connectEditor(uri: string, connection: ConnectionProfile): Promise<boolean>;
 
 	disconnectEditor(fileUri: string, force?: boolean): Promise<boolean>;
+
+	/**
+	 * Register a connection provider
+	 */
+	registerProvider(providerId: string, provider: data.ConnectionProvider): void;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

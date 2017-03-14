@@ -62,7 +62,21 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 	$connect(handle:number, connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> {
 		return this._runWithProvider(handle, provider => {
 			return provider.connectionProvider ? provider.connectionProvider.connect(connectionUri, connection)
-												: undefined;
+											   : undefined;
+		});
+	}
+
+	$disconnect(handle:number, connectionUri: string): Thenable<boolean> {
+		return this._runWithProvider(handle, provider => {
+			return provider.connectionProvider ? provider.connectionProvider.disconnect(connectionUri)
+											   : undefined;
+		});
+	}
+
+	$cancelConnect(handle:number, connectionUri: string): Thenable<boolean> {
+		return this._runWithProvider(handle, provider => {
+			return provider.connectionProvider ? provider.connectionProvider.cancelConnect(connectionUri)
+											   : undefined;
 		});
 	}
 

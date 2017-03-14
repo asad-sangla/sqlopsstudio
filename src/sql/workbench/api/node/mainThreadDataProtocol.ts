@@ -24,8 +24,6 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 
 	private _toDispose: IDisposable[];
 
-	private _connectionRegistrations: { [handle: number]: IDisposable; } = Object.create(null);
-
 	private _capabilitiesRegistrations: { [handle: number]: IDisposable; } = Object.create(null);
 
 	constructor(
@@ -50,12 +48,16 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		let providerId: string = handle.toString();
 
 		// register connection management provider
-		this._connectionRegistrations[handle] = this._connectionManagementService.addEventListener(handle, {
-			onConnect(connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> {
-				return self._proxy.$connect(handle, connectionUri, connection);
+		this._connectionManagementService.registerProvider(providerId, <data.ConnectionProvider> {
+			connect(connectionUri: string, connectionInfo: data.ConnectionInfo): Thenable<boolean> {
+				return self._proxy.$connect(handle, connectionUri, connectionInfo);
 			},
-			onAddConnectionProfile(uri, connection: data.ConnectionInfo): void { /* no op */ },
-			onDeleteConnectionProfile(uri, connection: data.ConnectionInfo): void { /* no op */ }
+			disconnect(connectionUri: string): Thenable<boolean> {
+				return self._proxy.$disconnect(handle, connectionUri);
+			},
+			cancelConnect(connectionUri: string): Thenable<boolean> {
+				return self._proxy.$cancelConnect(handle, connectionUri);
+			}
 		});
 
 		this._capabilitiesService.registerProvider(<data.CapabilitiesProvider>{
@@ -124,12 +126,6 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	}
 
 	public $unregisterProvider(handle: number): TPromise<any> {
-		let connectionRegistration = this._connectionRegistrations[handle];
-		if (connectionRegistration) {
-			connectionRegistration.dispose();
-			delete this._connectionRegistrations[handle];
-		}
-
 		let capabilitiesRegistration = this._capabilitiesRegistrations[handle];
 		if (capabilitiesRegistration) {
 			capabilitiesRegistration.dispose();

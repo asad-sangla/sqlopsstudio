@@ -52,6 +52,8 @@ declare module 'data' {
 
 		disconnect(connectionUri: string): Thenable<boolean>;
 
+		cancelConnect(connectionUri: string): Thenable<boolean>;
+
 		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any);
 
 		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);
