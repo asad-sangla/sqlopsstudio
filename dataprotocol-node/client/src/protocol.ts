@@ -1160,11 +1160,11 @@ export namespace ScriptingSelectRequest {
 
 // Edit Data ======================================================================================
 // Shared Interfaces --------------------------------------------------------------------------
-export interface IEditSessionOperationParams {
+export interface EditSessionOperationParams {
 	ownerUri: string;
 }
 
-export interface IEditRowOperationParams extends IEditSessionOperationParams {
+export interface EditRowOperationParams extends EditSessionOperationParams {
 	rowId: number;
 }
 
@@ -1172,14 +1172,14 @@ export interface IEditRowOperationParams extends IEditSessionOperationParams {
 export namespace EditCommitRequest {
 	export const type: RequestType<EditCommitParams, EditCommitResult, void> = {get method(): string {return 'edit/commit';}};
 }
-export interface EditCommitParams extends IEditSessionOperationParams {	}
+export interface EditCommitParams extends EditSessionOperationParams {}
 export interface EditCommitResult {}
 
 // edit/createRow -----------------------------------------------------------------------------
 export namespace EditCreateRowRequest {
 	export const type: RequestType<EditCreateRowParams, EditCreateRowResult, void> = {get method(): string {return 'edit/createRow';}};
 }
-export interface EditCreateRowParams extends IEditSessionOperationParams { }
+export interface EditCreateRowParams extends EditSessionOperationParams {}
 export interface EditCreateRowResult {
 	defaultValues: string[];
 	newRowId: number;
@@ -1187,33 +1187,33 @@ export interface EditCreateRowResult {
 
 // edit/deleteRow -----------------------------------------------------------------------------
 export namespace EditDeleteRowRequest {
-	export const type: RequestType<EditDeleteRowParams, EditDeleteRowResult, void> = {get method(): string {return 'edit/deleteRow'}};
+	export const type: RequestType<EditDeleteRowParams, EditDeleteRowResult, void> = {get method(): string {return 'edit/deleteRow';}};
 }
-export interface EditDeleteRowParams extends IEditRowOperationParams { }
-export interface EditDeleteRowResult { }
+export interface EditDeleteRowParams extends EditRowOperationParams {}
+export interface EditDeleteRowResult {}
 
 // edit/dispose -------------------------------------------------------------------------------
 export namespace EditDisposeRequest {
 	export const type: RequestType<EditDisposeParams, EditDisposeResult, void> = {get method(): string {return 'edit/dispose';}};
 }
-export interface EditDisposeParams extends IEditSessionOperationParams { }
-export interface EditDisposeResult { }
+export interface EditDisposeParams extends EditSessionOperationParams {}
+export interface EditDisposeResult {}
 
 // edit/initialize ----------------------------------------------------------------------------
 export namespace EditInitializeRequest {
 	export const type: RequestType<EditInitializeParams, EditInitializeResult, void> = {get method(): string {return 'edit/initialize';}};
 }
-export interface EditInitializeParams extends IEditSessionOperationParams {
+export interface EditInitializeParams extends EditSessionOperationParams {
 	objectName: string;
 	objectType: string;
 }
-export interface EditInitializeResult { }
+export interface EditInitializeResult {}
 
 // edit/revertCell --------------------------------------------------------------------------------
 export namespace EditRevertCellRequest {
 	export const type: RequestType<EditRevertCellParams, EditRevertCellResult, void> = {get method(): string {return 'edit/revertCell';}};
 }
-export interface EditRevertCellParams extends IEditRowOperationParams {
+export interface EditRevertCellParams extends EditRowOperationParams {
 	columnId: number;
 }
 export interface EditRevertCellResult {
@@ -1224,8 +1224,8 @@ export interface EditRevertCellResult {
 export namespace EditRevertRowRequest {
 	export const type: RequestType<EditRevertRowParams, EditRevertRowResult, void> = {get method(): string {return 'edit/revertRow';}};
 }
-export interface EditRevertRowParams extends IEditRowOperationParams { }
-export interface EditRevertRowResult { }
+export interface EditRevertRowParams extends EditRowOperationParams {}
+export interface EditRevertRowResult {}
 
 // edit/sessionReady Event --------------------------------------------------------------------
 export namespace EditSessionReadyNotification {
@@ -1240,7 +1240,7 @@ export interface EditSessionReadyParams {
 export namespace EditUpdateCellRequest {
 	export const type: RequestType<EditUpdateCellParams, EditUpdateCellResult, void> = {get method(): string {return 'edit/updateCell';}};
 }
-export interface EditUpdateCellParams extends IEditRowOperationParams {
+export interface EditUpdateCellParams extends EditRowOperationParams {
 	columnId: number;
 	newValue: string;
 }

@@ -159,6 +159,6 @@ export class QueryManagementService implements IQueryManagementService {
 		});
 	}
 	public onEditSessionReady(ownerUri: string, success: boolean): void {
-
+		// TODO: Implement logic
 	}
 }
