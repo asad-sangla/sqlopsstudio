@@ -25,6 +25,7 @@ import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
@@ -366,7 +367,7 @@ export class ConnectionDialogWidget {
 	}
 
 	private OnRecentConnectionClick(event: any) {
-		let connectionInfo: data.ConnectionInfo = event.selection[0];
+		let connectionInfo: ConnectionProfile = event.selection[0];
 		if (connectionInfo) {
 			this.serverNameInputBox.value = connectionInfo.serverName;
 			this.databaseNameInputBox.value = connectionInfo.databaseName;
@@ -374,7 +375,7 @@ export class ConnectionDialogWidget {
 			this.passwordInputBox.value = (connectionInfo.authenticationType === 'SqlLogin') ? connectionInfo.password : '';
 			this.rememberPassword.checked = !this.isEmptyString(connectionInfo.password);
 			this.authTypeSelectBox.selectWithOptionName(connectionInfo.authenticationType);
-			this.serverGroupInputBox.value = '';
+			this.serverGroupInputBox.value = connectionInfo.groupName;
 		}
 	}
 
