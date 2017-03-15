@@ -36,14 +36,12 @@ import { MainThreadFileSystemEventService } from './mainThreadFileSystemEventSer
 import { MainThreadSCM } from './mainThreadSCM';
 
 // --- other interested parties
-import { MainProcessTextMateSnippet } from 'vs/editor/node/textMate/TMSnippets';
 import { JSONValidationExtensionPoint } from 'vs/platform/jsonschemas/common/jsonValidationExtensionPoint';
 import { LanguageConfigurationFileHandler } from 'vs/editor/node/languageConfigurationExtensionPoint';
 import { SaveParticipant } from './mainThreadSaveParticipant';
 
 // --- registers itself as service
 import './mainThreadHeapService';
-
 
 export class ExtHostContribution implements IWorkbenchContribution {
 
@@ -91,7 +89,6 @@ export class ExtHostContribution implements IWorkbenchContribution {
 		col.finish(true, this.threadService);
 
 		// Other interested parties
-		create(MainProcessTextMateSnippet);
 		create(JSONValidationExtensionPoint);
 		this.instantiationService.createInstance(LanguageConfigurationFileHandler);
 		create(MainThreadFileSystemEventService);

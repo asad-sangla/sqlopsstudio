@@ -32,7 +32,6 @@ export function loaderConfig(emptyPaths:string[]) {
 	const result = {
 		paths: {
 			'vs': 'out-build/vs',
-			'sql': 'out-build/sql',
 			'vscode': 'empty:'
 		},
 		nodeModules: emptyPaths||[]

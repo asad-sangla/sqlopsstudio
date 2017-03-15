@@ -5,9 +5,9 @@ First, please do a search in [open issues](https://github.com/Microsoft/carbon/i
 
 If you find your issue already exists, make relevant comments and add your [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments). Use a reaction in place of a "+1" comment.
 
-👍 - upvote
+� - upvotee
 
-👎 - downvote
+� - downvotee
 
 The VS Code project is distributed across multiple repositories, try to file the issue against the correct repository [Related Projects](https://github.com/Microsoft/carbon/wiki/Related-Projects).
 

@@ -105,6 +105,9 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 	private pendingEditorInputsToClose: EditorIdentifier[];
 	private pendingEditorInputCloseTimeout: number;
 
+	private onLayoutEmitter = new Emitter<Dimension>();
+	public onLayout = this.onLayoutEmitter.event;
+
 	constructor(
 		id: string,
 		restoreFromStorage: boolean,
@@ -265,7 +268,8 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 			!input ||																		// no input
 			position === null ||															// invalid position
 			Object.keys(this.mapEditorInstantiationPromiseToEditor[position]).length > 0 ||	// pending editor load
-			this.editorGroupsControl.isDragging()												// pending editor DND
+			!this.editorGroupsControl ||													// too early
+			this.editorGroupsControl.isDragging()											// pending editor DND
 		) {
 			return TPromise.as<BaseEditor>(null);
 		}
@@ -1193,6 +1197,8 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 		// Pass to Side by Side Control
 		this.dimension = sizes[1];
 		this.editorGroupsControl.layout(this.dimension);
+
+		this.onLayoutEmitter.fire(dimension);
 
 		return sizes;
 	}

@@ -539,7 +539,7 @@ var AMDLoader;
         }
         /**
          * Attach load / error listeners to a script element and remove them when either one has fired.
-         * Implemented for browsers supporting HTML5 standard 'load' and 'error' events.
+         * Implemented for browssers supporting HTML5 standard 'load' and 'error' events.
          */
         BrowserScriptLoader.prototype.attachListeners = function (script, callback, errorback) {
             var unbind = function () {

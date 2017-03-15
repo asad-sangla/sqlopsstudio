@@ -60,8 +60,7 @@ suite('Stream', () => {
 	test('readToMatchingString - ANSI', function (done: () => void) {
 		const file = require.toUrl('./fixtures/file.css');
 
-
-		stream.readToMatchingString(file, '\n' , 10, 100, (error: Error, result: string) => {
+		stream.readToMatchingString(file, '\n', 10, 100, (error: Error, result: string) => {
 			assert.equal(error, null);
 			// \r may be present on Windows
 			assert.equal(result.replace('\r', ''), '/*---------------------------------------------------------------------------------------------');

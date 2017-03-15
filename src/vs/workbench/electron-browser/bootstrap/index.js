@@ -9,12 +9,12 @@
 
 /*global window,document,define*/
 
-// Set globals used by vs
 const path = require('path');
 const electron = require('electron');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
 
+// SQL global imports
 // Set jQuery globals
 const jQuery = require('jquery');
 jQuery.fn.drag = require('jquery.event.drag');
@@ -42,7 +42,6 @@ const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynami
 const AngularCore = require('@angular/core');
 const AngularPlatformBrowser = require('@angular/platform-browser');
 const Rx = require('rxjs/Rx');
-
 process.lazyEnv = new Promise(function (resolve) {
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
 		assign(process.env, shellEnv);
@@ -50,7 +49,6 @@ process.lazyEnv = new Promise(function (resolve) {
 	});
 	ipc.send('vscode:fetchShellEnv', remote.getCurrentWindow().id);
 });
-
 
 function onError(error, enableDeveloperTools) {
 	if (enableDeveloperTools) {
@@ -176,16 +174,6 @@ function main() {
 		webFrame.setZoomLevel(zoomLevel);
 	}
 
-	// Handle high contrast mode
-	if (configuration.highContrast) {
-		var themeStorageKey = 'storage://global/workbench.theme';
-		var hcTheme = 'hc-black vscode-theme-defaults-themes-hc_black-json';
-		if (window.localStorage.getItem(themeStorageKey) !== hcTheme) {
-			window.localStorage.setItem(themeStorageKey, hcTheme);
-			window.document.body.className = 'monaco-shell ' + hcTheme;
-		}
-	}
-
 	// Load the loader and start loading the workbench
 	const appRoot = uriFromPath(configuration.appRoot);
 	const rootUrl = appRoot + '/out';
@@ -193,7 +181,6 @@ function main() {
 	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
 	createScript(rootUrl + '/sql/parts/grid/views/slick.dragrowselector.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/views/slick.autosizecolumn.js', undefined);
-
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation
