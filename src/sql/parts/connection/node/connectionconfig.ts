@@ -8,10 +8,8 @@ import * as Utils from './utils';
 import { IConnectionProfile, IConnectionProfileStore } from './interfaces';
 import { IConnectionConfig } from './iconnectionconfig';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
-import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { IConfigurationEditingService, ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService, IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
-import vscode = require('vscode');
 
 /**
  * Implements connection profile file storage.
@@ -101,9 +99,9 @@ export class ConnectionConfig implements IConnectionConfig {
      */
     public addGroup(profile: IConnectionProfile): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            if(profile.groupId) {
+            if (profile.groupId) {
                 return profile.groupId;
-            } else if(profile.groupName && profile.groupName !== '') {
+            } else if (profile.groupName && profile.groupName !== '') {
                 let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
                 groups = this.saveGroup(groups, profile.groupName);
                 let group = this.findGroupInUserSettings(groups, profile.groupName);
@@ -113,8 +111,9 @@ export class ConnectionConfig implements IConnectionConfig {
                 }).catch(err => {
                     reject(err);
                 });
-            } else{
-                resolve(undefined);
+                return resolve(undefined);
+            } else {
+                return resolve(undefined);
             }
         });
     }
@@ -123,6 +122,8 @@ export class ConnectionConfig implements IConnectionConfig {
          if (groupFullName !== undefined && groupFullName !== '') {
             let groupNames: string[] = groupFullName.split(ConnectionProfileGroup.GroupNameSeparator);
              return this.findGroupInTree(groups, undefined, groupNames, 0);
+         } else {
+             return undefined;
          }
     }
 

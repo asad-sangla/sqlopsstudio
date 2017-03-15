@@ -114,6 +114,7 @@ export class RecentConnectionsDragAndDrop implements IDragAndDrop {
 		else if (elements[0] instanceof ConnectionProfileGroup) {
 			return (<ConnectionProfileGroup>elements[0]).name;
 		}
+		return undefined;
 	}
 
 	/**

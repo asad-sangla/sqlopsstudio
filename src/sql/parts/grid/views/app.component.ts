@@ -555,10 +555,9 @@ export class AppComponent {
     public linkHandler(type: string): Function {
         if (type === 'xml') {
             return this.xmlLinkHandler;
-        } else if (type === 'json') {
+        } else { // default to JSON handler
             return this.jsonLinkHandler;
         }
-
     }
 
     /**

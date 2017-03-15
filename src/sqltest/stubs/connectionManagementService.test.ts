@@ -56,11 +56,11 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void> {
-		return;
+		return Promise.resolve();
 	}
 
 	changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
-		return;
+		return Promise.resolve();
 	}
 
 	getAdvancedProperties(): data.ConnectionOption[] {

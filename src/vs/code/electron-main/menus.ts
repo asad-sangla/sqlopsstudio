@@ -307,9 +307,9 @@ export class VSCodeMenu {
 		this.setEditMenu(editMenu);
 
 		// Selection
-		const selectionMenu = new Menu();
-		const selectionMenuItem = new MenuItem({ label: mnemonicLabel(nls.localize({ key: 'mSelection', comment: ['&& denotes a mnemonic'] }, "&&Selection")), submenu: selectionMenu });
-		this.setSelectionMenu(selectionMenu);
+		// const selectionMenu = new Menu();
+		// const selectionMenuItem = new MenuItem({ label: mnemonicLabel(nls.localize({ key: 'mSelection', comment: ['&& denotes a mnemonic'] }, "&&Selection")), submenu: selectionMenu });
+		// this.setSelectionMenu(selectionMenu);
 
 		// View
 		const viewMenu = new Menu();
@@ -341,7 +341,7 @@ export class VSCodeMenu {
 
 		menubar.append(fileMenuItem);
 		menubar.append(editMenuItem);
-		menubar.append(selectionMenuItem);
+		// menubar.append(selectionMenuItem);
 		menubar.append(viewMenuItem);
 		menubar.append(gotoMenuItem);
 

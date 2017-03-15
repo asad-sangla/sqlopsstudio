@@ -17,21 +17,25 @@ function npmInstall(location) {
 	}
 }
 
+const protocol = [
+	'jsonrpc',
+	'types',
+	'client',
+	'server'
+];
+
+protocol.forEach(item => npmInstall(`dataprotocol-node/${item}`));
+
 npmInstall('extensions'); // node modules shared by all extensions
 
 const extensions = [
-	'vscode-api-tests',
 	'vscode-colorize-tests',
+	'git',
 	'json',
+	'mssql',
+	'credentials',
 	'configuration-editing',
-	'extension-editing',
-	'markdown',
-	'typescript',
-	'php',
-	'javascript',
-	'css',
-	'html',
-	'git'
+	'extension-editing'
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));

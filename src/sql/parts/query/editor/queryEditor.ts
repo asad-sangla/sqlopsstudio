@@ -410,6 +410,7 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 					this._onSqlEditorCreated(<TextResourceEditor>result, newInput.sql, options);
 					this._doLayout();
 				});
+			return TPromise.as(null);
 		}
 	}
 

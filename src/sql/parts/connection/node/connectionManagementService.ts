@@ -203,6 +203,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 			let activeEditor = this._editorService.getActiveEditor();
 			if (activeEditor !== undefined) {
 				return this.getActiveEditorInputResource();
+			} else {
+				return undefined;
 			}
 		} catch (e) {
 			return undefined;

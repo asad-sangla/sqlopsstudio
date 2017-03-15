@@ -12,6 +12,13 @@ import Event from 'vs/base/common/event';
 export class WorkspaceConfigurationTestService implements IWorkspaceConfigurationService {
 	_serviceBrand: any;
 
+    /**
+	 * Returns untrusted configuration keys for the current workspace.
+	 */
+	getUnsupportedWorkspaceKeys(): string[] {
+		return [];
+	}
+
 	/**
 	 * Returns iff the workspace has configuration or not.
 	 */

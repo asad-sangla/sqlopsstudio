@@ -11,7 +11,6 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { ITree, IDataSource, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACCEPT_BUBBLE_DOWN, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
@@ -112,9 +111,10 @@ export class ServerTreeDataSource implements IDataSource {
 	public getId(tree: ITree, element: any): string {
 		if (element instanceof ConnectionProfile) {
 			return (<ConnectionProfile>element).id;
-		}
-		else if (element instanceof ConnectionProfileGroup) {
+		} else if (element instanceof ConnectionProfileGroup) {
 			return (<ConnectionProfileGroup>element).id;
+		} else {
+			return undefined;
 		}
 	}
 
@@ -124,8 +124,7 @@ export class ServerTreeDataSource implements IDataSource {
 	public hasChildren(tree: ITree, element: any): boolean {
 		if (element instanceof ConnectionProfile) {
 			return false;
-		}
-		else if (element instanceof ConnectionProfileGroup) {
+		} else if (element instanceof ConnectionProfileGroup) {
 			return element.hasChildren();
 		}
 		return false;
@@ -137,9 +136,10 @@ export class ServerTreeDataSource implements IDataSource {
 	public getChildren(tree: ITree, element: any): TPromise<any> {
 		if (element instanceof ConnectionProfile) {
 			return TPromise.as(null);
-		}
-		else if (element instanceof ConnectionProfileGroup) {
+		} else if (element instanceof ConnectionProfileGroup) {
 			return TPromise.as((<ConnectionProfileGroup>element).getChildren());
+		} else {
+			return TPromise.as(null);
 		}
 	}
 
@@ -152,6 +152,8 @@ export class ServerTreeDataSource implements IDataSource {
 		}
 		else if (element instanceof ConnectionProfileGroup) {
 			return TPromise.as((<ConnectionProfileGroup>element).getParent());
+		} else {
+			return TPromise.as(null);
 		}
 	}
 }
@@ -186,9 +188,10 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	public getDragLabel(tree: ITree, elements: any[]): string {
 		if (elements[0] instanceof ConnectionProfile) {
 			return (<ConnectionProfile>elements[0]).serverName;
-		}
-		else if (elements[0] instanceof ConnectionProfileGroup) {
+		} else if (elements[0] instanceof ConnectionProfileGroup) {
 			return (<ConnectionProfileGroup>elements[0]).name;
+		} else {
+			return undefined;
 		}
 	}
 

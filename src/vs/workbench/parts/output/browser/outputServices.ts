@@ -176,7 +176,7 @@ class OutputContentProvider implements ITextModelContentProvider {
 
 	private bufferedOutput: { [channel: string]: string; };
 	private appendOutputScheduler: { [channel: string]: RunOnceScheduler; };
-	private channelIdsWithScrollLock: Set<string> = new Set();
+	private channelIdsWithScrollLock: Set<string> = new Set<string>();
 
 	private toDispose: IDisposable[];
 

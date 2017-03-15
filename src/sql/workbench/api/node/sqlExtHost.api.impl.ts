@@ -113,7 +113,7 @@ function createExtensionPathIndex(extensionService: ExtHostExtensionService): TP
 	const trie = new TrieMap<IExtensionDescription>(TrieMap.PathSplitter);
 	const extensions = extensionService.getAllExtensionDescriptions().map(ext => {
 		if (!ext.main) {
-			return;
+			return undefined;
 		}
 		return new TPromise((resolve, reject) => {
 			realpath(ext.extensionFolderPath, (err, path) => {
