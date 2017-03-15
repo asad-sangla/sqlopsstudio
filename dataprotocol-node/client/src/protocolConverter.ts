@@ -81,7 +81,7 @@ export interface Converter {
 
 	asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata;
 
-	asScriptingResult(params: ls.ScriptingSelectResult): data.ScriptingResult;
+	asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult;
 }
 
 export interface URIConverter {
@@ -458,14 +458,39 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	}
 
 	function asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata {
+		let objectMetadata: data.ObjectMetadata[] = [];
+
+		for (let i = 0; i < params.metadata.length; ++i) {
+			let metadata:ls.ObjectMetadata = params.metadata[i];
+
+			// the display string should come from the provider
+			// this is temporary mapping (3/13 karlb)
+			let metadataTypeName: string;
+			if (metadata.metadataType === ls.MetadataType.View) {
+				metadataTypeName = 'View';
+			} else if (metadata.metadataType === ls.MetadataType.SProc) {
+				metadataTypeName = 'Procedure';
+			} else if (metadata.metadataType === ls.MetadataType.Function) {
+				metadataTypeName = 'Function';
+			} else {
+				metadataTypeName = 'Table';
+			}
+
+			objectMetadata.push({
+				metadataTypeName: metadataTypeName,
+				metadataType: metadata.metadataType,
+				name: metadata.name,
+				schema: metadata.schema
+			});
+		}
+
 		return <data.ProviderMetadata> {
-			objectMetadata: []
+			objectMetadata: objectMetadata
 		};
 	}
 
-	function asScriptingResult(params: ls.ScriptingSelectResult): data.ScriptingResult {
+	function asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult {
 		return <data.ScriptingResult> {
-			objectName: params.objectName,
 			script: params.script
 		};
 	}

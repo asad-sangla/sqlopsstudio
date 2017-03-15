@@ -20,7 +20,7 @@ export interface IQueryEditorService {
 	_serviceBrand: any;
 
 	// opens a new sql editor and returns its URI
-	newSqlEditor(): Promise<URI>;
+	newSqlEditor(sqlContent?: string): Promise<URI>;
 
 	// opens a new data editor and returns its URI
 	newEditDataEditor(tableName: string): Promise<URI>;
@@ -45,7 +45,7 @@ export class QueryEditorService implements IQueryEditorService {
 	/**
 	 * Creates new untitled document for SQL query and opens in new editor tab
 	 */
-	public newSqlEditor(): Promise<URI> {
+	public newSqlEditor(sqlContent?: string): Promise<URI> {
 
 		return new Promise<URI>((resolve, reject) => {
 			try {
@@ -55,6 +55,14 @@ export class QueryEditorService implements IQueryEditorService {
 
 				// Create a sql document pane with accoutrements
 				const fileInput = this.untitledEditorService.createOrGet(docUri, 'sql');
+				fileInput.resolve().then(m => {
+					if (sqlContent) {
+						m.textEditorModel.setValue(sqlContent);
+					}
+				});
+
+				//input.resolve().then(model => this.backupFileService.backupResource(resource, model.getValue(), model.getVersionId())).done(null, errors.onUnexpectedError);
+
 				const queryResultsInput: QueryResultsInput = this.instantiationService.createInstance(QueryResultsInput, docUri.toString());
 				let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
 				this.editorService.openEditor(queryInput, { pinned: true });

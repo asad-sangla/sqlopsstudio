@@ -34,6 +34,8 @@ const Slick = window.Slick;
 require('slickgrid/slick.grid');
 require('slickgrid/slick.editors');
 
+const PrimeNg = require('primeng/primeng');
+
 // Set temporary globals for angular relative path fix
 // TODO make it so these don't need to be globals
 const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');

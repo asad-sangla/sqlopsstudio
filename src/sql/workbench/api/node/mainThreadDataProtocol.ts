@@ -90,8 +90,20 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		});
 
 		this._scriptingService.registerProvider(providerId, <data.ScriptingProvider> {
-			scriptAsSelect(connectionUri: string, objectName: string): Thenable<data.ScriptingResult> {
-				return self._proxy.$scriptAsSelect(handle, connectionUri, objectName);
+			scriptAsSelect(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+				return self._proxy.$scriptAsSelect(handle, connectionUri, metadata);
+			},
+			scriptAsCreate(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+				return self._proxy.$scriptAsCreate(handle, connectionUri, metadata);
+			},
+			scriptAsInsert(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+				return self._proxy.$scriptAsInsert(handle, connectionUri, metadata);
+			},
+			scriptAsUpdate(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+				return self._proxy.$scriptAsUpdate(handle, connectionUri, metadata);
+			},
+			scriptAsDelete(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+				return self._proxy.$scriptAsDelete(handle, connectionUri, metadata);
 			}
 		});
 

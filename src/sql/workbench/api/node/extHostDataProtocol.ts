@@ -187,15 +187,43 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 	public $getMetadata(handle: number, connectionUri: string): Thenable<data.ProviderMetadata> {
 		return this._runWithProvider(handle, provider => {
 			return provider.metadataProvider ? provider.metadataProvider.getMetadata(connectionUri)
-												: Promise.resolve(undefined);
+											 : Promise.resolve(undefined);
 		});
 	}
 
 	// Scripting handlers
-	public $scriptAsSelect(handle: number, connectionUri: string, objectName: string): Thenable<data.ScriptingResult> {
+	public $scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
-			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsSelect(connectionUri, objectName)
-												: Promise.resolve(undefined);
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsSelect(connectionUri, metadata)
+											  : Promise.resolve(undefined);
+		});
+	}
+
+	public $scriptAsCreate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsCreate(connectionUri, metadata)
+											  : Promise.resolve(undefined);
+		});
+	}
+
+	public $scriptAsUpdate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsUpdate(connectionUri, metadata)
+											  : Promise.resolve(undefined);
+		});
+	}
+
+	public $scriptAsInsert(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsInsert(connectionUri, metadata)
+											  : Promise.resolve(undefined);
+		});
+	}
+
+	public $scriptAsDelete(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsDelete(connectionUri, metadata)
+											  : Promise.resolve(undefined);
 		});
 	}
 }

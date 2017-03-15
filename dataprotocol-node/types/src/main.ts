@@ -388,33 +388,64 @@ export class MetadataQueryParams {
     public ownerUri: string;
 }
 
+export enum MetadataType
+{
+	Table = 0,
+	View = 1,
+	SProc = 2,
+	Function = 3
+}
+
+export class ObjectMetadata
+{
+	metadataType: MetadataType;
+
+	metadataTypeName: string;
+
+	name: string;
+
+	schema: string;
+}
+
 export class MetadataQueryResult {
-	/**
-     * Owner URI of the connection that changed.
-     */
-    public ownerUri: string;
-
-	public tables: string[];
+	public metadata: ObjectMetadata[];
 }
 
-export class ScriptingSelectParams {
-	/**
-     * Owner URI of the connection that changed.
-     */
-    public ownerUri: string;
-
-	public objectName: string;
+export enum ScriptOperation
+{
+	Select = 0,
+	Create = 1,
+	Insert = 2,
+	Update = 3,
+	Delete = 4
 }
 
-
-export class ScriptingSelectResult {
+export class ScriptingScriptAsParams {
 	/**
      * Owner URI of the connection that changed.
      */
     public ownerUri: string;
 
-	public objectName: string;
+	/**
+	 * Scripting operation type
+	 */
+	public operation: ScriptOperation;
 
+	/**
+	 * Metadata for the object to script
+	 */
+	public metadata: ObjectMetadata;
+}
+
+export class ScriptingScriptAsResult {
+	/**
+     * Owner URI of the connection that changed.
+     */
+    public ownerUri: string;
+
+	/**
+	 * Generated SQL script statements
+	 */
 	public script: string;
 }
 

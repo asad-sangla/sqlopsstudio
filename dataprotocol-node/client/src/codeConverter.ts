@@ -68,7 +68,7 @@ export interface Converter {
 
 	asMetadataQueryParams(connectionUri: string) : ls.MetadataQueryParams;
 
-	asScriptingSelectParams(connectionUri: string, objectName: string) : ls.ScriptingSelectParams;
+	asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata) : ls.ScriptingScriptAsParams;
 }
 
 export interface URIConverter {
@@ -359,10 +359,11 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
-	function asScriptingSelectParams(connectionUri: string, objectName: string) : ls.ScriptingSelectParams {
-		return <ls.ScriptingSelectParams> {
+	function asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata) : ls.ScriptingScriptAsParams {
+		return <ls.ScriptingScriptAsParams> {
 			ownerUri: connectionUri,
-			objectName: objectName
+			operation: operation,
+			metadata: metadata
 		};
 	}
 
@@ -394,7 +395,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asCapabilitiesParams,
 		asConnectionParams,
 		asMetadataQueryParams,
-		asScriptingSelectParams
+		asScriptingScriptAsParams
 	};
 }
 

@@ -89,3 +89,11 @@ export enum ConnectionOptionSpecialType {
 	userName = 3,
 	password = 4
 }
+
+export enum MetadataType
+{
+	Table = 0,
+	View = 1,
+	SProc = 2,
+	Function = 3
+}

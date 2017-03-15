@@ -20,6 +20,7 @@ import * as vscode from 'vscode';
 import { SqlExtHostContext, SqlInstanceCollection } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { ExtHostCredentialManagement } from 'sql/workbench/api/node/extHostCredentialManagement';
 import { ExtHostDataProtocol } from 'sql/workbench/api/node/extHostDataProtocol';
+import * as sqlExtHostTypes from 'sql/workbench/api/node/sqlExtHostTypes';
 
 export interface ISqlExtensionApiFactory {
 	vsCodeFactory(extension: IExtensionDescription): typeof vscode;
@@ -94,8 +95,9 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 			return {
 				credentials,
 				dataprotocol,
-				ConnectionOptionType: extHostTypes.ConnectionOptionType,
-				ConnectionOptionSpecialType: extHostTypes.ConnectionOptionSpecialType,
+				ConnectionOptionType: sqlExtHostTypes.ConnectionOptionType,
+				ConnectionOptionSpecialType: sqlExtHostTypes.ConnectionOptionSpecialType,
+				MetadataType: sqlExtHostTypes.MetadataType
 			};
 		}
 	};

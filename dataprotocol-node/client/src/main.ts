@@ -15,7 +15,6 @@ import {
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
 		DocumentLink as VDocumentLink
-
 } from 'vscode';
 
 import {
@@ -23,7 +22,7 @@ import {
 		DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
 		DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider,
 		ScriptingProvider, ProviderMetadata, ScriptingResult,
-		QueryProvider, QueryCancelResult as VQueryCancelResult
+		QueryProvider, QueryCancelResult as VQueryCancelResult, ObjectMetadata
 } from 'data';
 
 import {
@@ -48,7 +47,7 @@ import {
 		ConnectionProviderOptions, DataProtocolServerCapabilities,
 		ISelectionData, QueryExecuteBatchNotificationParams,
 		MetadataQueryParams, MetadataQueryResult,
-		ScriptingSelectParams, ScriptingSelectResult
+		ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation
 } from 'dataprotocol-languageserver-types';
 
 
@@ -80,7 +79,7 @@ import {
 		DisconnectRequest, DisconnectParams,
 		CancelConnectRequest, CancelConnectParams,
 		ConnectionCompleteNotification, IntelliSenseReadyNotification,
-		MetadataQueryRequest, ScriptingSelectRequest,
+		MetadataQueryRequest, ScriptingScriptAsRequest,
 		QueryCancelRequest, QueryCancelResult, QueryCancelParams,
 		QueryExecuteRequest, QueryExecuteSubsetResult, QueryExecuteSubsetParams,
 		QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
@@ -1585,7 +1584,7 @@ export class LanguageClient {
 						self._c2p.asMetadataQueryParams(connectionUri), undefined).then(
 					self._p2c.asProviderMetadata,
 					(error) => {
-						this.logFailedRequest(ConnectionRequest.type, error);
+						self.logFailedRequest(MetadataQueryRequest.type, error);
 						return Promise.resolve(undefined);
 					}
 				);
@@ -1593,12 +1592,56 @@ export class LanguageClient {
 		};
 
 		let scriptingProvider: ScriptingProvider = {
-			scriptAsSelect(connectionUri: string, objectName: string): Thenable<ScriptingResult> {
-				return self.doSendRequest(connection, ScriptingSelectRequest.type,
-						self._c2p.asScriptingSelectParams(connectionUri, objectName), undefined).then(
+			scriptAsSelect(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Select, metadata), undefined).then(
 					self._p2c.asScriptingResult,
 					(error) => {
-						this.logFailedRequest(ConnectionRequest.type, error);
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			scriptAsCreate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Create, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			scriptAsInsert(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Insert, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Update, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			scriptAsDelete(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Delete, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
 						return Promise.resolve(undefined);
 					}
 				);

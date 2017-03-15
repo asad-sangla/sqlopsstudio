@@ -9,6 +9,7 @@ import { SchemaExplorerComponent } from './schema-explorer/schema-explorer.compo
 
 declare let AngularPlatformBrowser;
 declare let AngularCore;
+declare let PrimeNg;
 
 // Connection Dashboard main angular module
 @AngularCore.NgModule({
@@ -17,7 +18,11 @@ declare let AngularCore;
     ConnectionProfileComponent,
     SchemaExplorerComponent
   ],
-  imports: [ AngularPlatformBrowser.BrowserModule ],
+  imports: [
+    AngularPlatformBrowser.BrowserModule,
+    PrimeNg.DataTableModule,
+    PrimeNg.SharedModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })

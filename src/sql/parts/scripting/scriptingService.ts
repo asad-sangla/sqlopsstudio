@@ -16,7 +16,7 @@ export const IScriptingService = createDecorator<IScriptingService>(SERVICE_ID);
 export interface IScriptingService {
 	_serviceBrand: any;
 
-	scriptObject(providerId: string, connectionUri: string, objectName: string): Thenable<data.ScriptingResult>;
+	scriptAsCreate(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult>;
 
 	/**
 	 * Register a scripting provider
@@ -35,10 +35,10 @@ export class ScriptingService implements IScriptingService {
 	constructor() {
 	}
 
-	public scriptObject(providerId: string, connectionUri: string, objectName: string): Thenable<data.ScriptingResult> {
+	public scriptAsCreate(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 		let provider = this._providers[providerId];
 		if (provider) {
-			return provider.scriptAsSelect(connectionUri, objectName);
+			return provider.scriptAsCreate(connectionUri, metadata);
 		}
 
 		return Promise.resolve(undefined);

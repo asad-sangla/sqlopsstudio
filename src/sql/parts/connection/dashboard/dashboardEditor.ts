@@ -17,6 +17,7 @@ import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 
 declare let AngularPlatformBrowserDynamic;
 
@@ -29,7 +30,8 @@ export class DashboardEditor extends BaseEditor {
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IConnectionManagementService private _connectionService: IConnectionManagementService,
 		@IMetadataService private _metadataService: IMetadataService,
-		@IScriptingService private _scriptingService: IScriptingService
+		@IScriptingService private _scriptingService: IScriptingService,
+		@IQueryEditorService private _queryEditorService: IQueryEditorService
 	) {
 		super(DashboardEditor.ID, telemetryService);
 	}
@@ -68,6 +70,7 @@ export class DashboardEditor extends BaseEditor {
 		let input = <DashboardInput>this.input;
 		if (!input.hasInitialized) {
 			let connection: IConnectionProfile = input.getConnectionProfile();
+			let ownerUri: string = input.getUri();
 
 			input.setHasInitialized();
 
@@ -76,10 +79,13 @@ export class DashboardEditor extends BaseEditor {
 
 			// Bootstrap the angular content
 			let providers = [
+				{ provide: 'OwnerUri', useValue: ownerUri },
 				{ provide: 'ConnectionProfile', useValue: connection },
 				{ provide: 'ConnectionService', useValue: this._connectionService },
 				{ provide: 'MetadataService', useValue: this._metadataService },
 				{ provide: 'ScriptingService', useValue: this._scriptingService },
+				{ provide: 'QueryEditorService', useValue: this._queryEditorService },
+
 			];
 			AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
 		}

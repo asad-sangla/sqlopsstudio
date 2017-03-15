@@ -46,7 +46,14 @@ export abstract class ExtHostDataProtocolShape {
 
 	$getMetadata(handle: number, connectionUri: string): Thenable<data.ProviderMetadata> { throw ni(); }
 
-	$scriptAsSelect(handle: number, connectionUri: string, objectName: string): Thenable<data.ScriptingResult> { throw ni(); }
+	/**
+	 * Scripting methods
+	 */
+	$scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsCreate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsUpdate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsInsert(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsDelete(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
 
 	/**
 	 * Cancels the currently running query for a URI

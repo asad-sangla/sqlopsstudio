@@ -110,7 +110,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 							this._onAddConnectionProfile.fire();
 						}
 					});
-					this.showDashboard(connection);
+					this.showDashboard(uri, connection);
 				}
 				resolve(connected);
 			}).catch(err => {
@@ -119,11 +119,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private showDashboard(connection: IConnectionProfile): Promise<boolean> {
+	private showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean> {
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
-			let dashboardInput: DashboardInput = self._instantiationService.createInstance(DashboardInput, connection);
-			self._editorService.openEditor(dashboardInput, null, false);
+			let dashboardInput: DashboardInput = self._instantiationService.createInstance(DashboardInput, uri, connection);
+			self._editorService.openEditor(dashboardInput, { pinned: true }, false);
 			resolve(true);
 		});
 	}

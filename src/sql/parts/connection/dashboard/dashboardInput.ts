@@ -15,7 +15,7 @@ export class DashboardInput extends EditorInput {
 
 	private _hasInitialized: boolean = false;
 
-	constructor(private _connection: IConnectionProfile) {
+	constructor(private _uri: string, private _connection: IConnectionProfile) {
 		super();
 	}
 
@@ -29,6 +29,10 @@ export class DashboardInput extends EditorInput {
 
 	public getName(): string {
 		return 'Connection Dashboard';
+	}
+
+	public getUri(): string {
+		return this._uri;
 	}
 
 	public getConnectionProfile(): IConnectionProfile {

@@ -122,7 +122,19 @@ declare module 'data' {
 		getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<DataProtocolServerCapabilities>
 	}
 
+	export enum MetadataType
+	{
+		Table = 0,
+		View = 1,
+		SProc = 2,
+		Function = 3
+	}
+
 	export interface ObjectMetadata {
+		metadataType: MetadataType;
+
+		metadataTypeName: string;
+
 		name: string;
 
 		schema: string;
@@ -143,9 +155,22 @@ declare module 'data' {
 	}
 
 	export interface ScriptingProvider {
-		scriptAsSelect(connectionUri: string, objectName: string): Thenable<ScriptingResult>;
+		scriptAsSelect(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
+
+		scriptAsCreate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
+
+		scriptAsInsert(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
+
+		scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
+
+		scriptAsDelete(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
 	}
 
+	/**
+	 * Data Management Protocol main provider class that DMP extensions should implement.
+	 * This provider interface contains references to providers for the various capabilitiesProvider
+	 * that an extension can implement.
+	 */
 	export interface DataProtocolProvider {
 		handle: number;
 

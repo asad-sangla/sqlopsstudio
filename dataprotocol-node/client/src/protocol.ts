@@ -23,7 +23,7 @@ import {
 		ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams,
 		ConnectionProviderOptions, DataProtocolServerCapabilities,
 		CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
-		ScriptingSelectParams, ScriptingSelectResult,
+		ScriptingScriptAsParams, ScriptingScriptAsResult,
 		BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData
 	} from 'dataprotocol-languageserver-types';
 
@@ -1172,9 +1172,8 @@ export namespace MetadataQueryRequest {
 
 // ------------------------------- < Scripting Events > ------------------------------------
 
-export namespace ScriptingSelectRequest {
-    export const type: RequestType<ScriptingSelectParams, ScriptingSelectResult, void> = { get method(): string { return 'scripting/select'; } };
-
+export namespace ScriptingScriptAsRequest {
+    export const type: RequestType<ScriptingScriptAsParams, ScriptingScriptAsResult, void> = { get method(): string { return 'scripting/scriptas'; } };
 }
 
 // Edit Data ======================================================================================
