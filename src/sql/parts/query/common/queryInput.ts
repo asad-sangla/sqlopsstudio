@@ -5,7 +5,6 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput,  EditorModel, ConfirmResult, EncodingMode, IEncodingSupport } from 'vs/workbench/common/editor';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import Event from 'vs/base/common/event';
@@ -15,13 +14,12 @@ import URI from 'vs/base/common/uri';
  * Input for the QueryEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
  * and a UntitledEditorInput for the SQL File Editor.
  */
-export class QueryInput extends EditorInput implements IEncodingSupport{
+export class QueryInput extends EditorInput implements IEncodingSupport {
 
 	public static ID: string = 'workbench.editorinputs.queryInput';
 	public static SCHEMA: string = 'sql';
 
-	constructor(private name: string, private description: string, private _sql: UntitledEditorInput, private _results: QueryResultsInput,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService) {
+	constructor(private name: string, private description: string, private _sql: UntitledEditorInput, private _results: QueryResultsInput) {
 		super();
 		// re-emit sql editor events through this editor
 		this._sql.onDidChangeDirty(() => this._onDidChangeDirty.fire());
@@ -115,8 +113,6 @@ export class QueryInput extends EditorInput implements IEncodingSupport{
 	}
 
 	public close(): void {
-		let force = true;
-		this.connectionManagementService.disconnectEditor(this.getQueryResultsInputResource(), force);
 		this._sql.close();
 		this._results.close();
 		super.close();

@@ -94,7 +94,7 @@ export class ConnectionTreeController extends treedefaults.DefaultController {
 					tree.DOMFocus();
 				}
 			},
-			getActionsContext: () => (parent)
+			getActionsContext: () => (element)
 		});
 
 		return true;

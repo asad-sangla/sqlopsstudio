@@ -13,7 +13,6 @@ import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import Severity from 'vs/base/common/severity';
 
-
 export const VIEWLET_ID = 'workbench.view.connections';
 
 export interface IConnectionsViewlet extends IViewlet {
@@ -31,7 +30,7 @@ export interface IConnectionManagementService {
 	onAddConnectionProfile: Event<void>;
 	onDeleteConnectionProfile: Event<void>;
 
-	newConnection(): void;
+	newConnection(params?: INewConnectionParams): void;
 
 	addConnectionProfile(connection: IConnectionProfile): Promise<boolean>;
 
@@ -51,9 +50,11 @@ export interface IConnectionManagementService {
 
 	getAdvancedProperties(): data.ConnectionOption[];
 
-	connectEditor(uri: string, connection: ConnectionProfile): Promise<boolean>;
+	connectEditor(editor: IConnectableEditor, uri: string, runQueryOnCompletion: boolean, connection: ConnectionProfile | IConnectionProfile): Promise<boolean>;
 
-	disconnectEditor(fileUri: string, force?: boolean): Promise<boolean>;
+	isConnected(fileUri: string): boolean;
+
+	disconnectEditor(editor: IConnectableEditor, uri: string, force?: boolean): Promise<boolean>;
 
 	/**
 	 * Register a connection provider
@@ -64,7 +65,7 @@ export interface IConnectionManagementService {
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
 export interface IConnectionDialogService {
 	_serviceBrand: any;
-	showDialog(connectionManagementService: IConnectionManagementService): TPromise<void>;
+	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams): TPromise<void>;
 }
 
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');
@@ -88,6 +89,31 @@ export enum ConnectionOptionSpecialType {
 	authType = 2,
 	userName = 3,
 	password = 4
+}
+
+export interface INewConnectionParams {
+	connectionType: ConnectionType;
+	editor?: IConnectableEditor;
+	uri?: string;
+	runQueryOnCompletion?: boolean;
+}
+
+export interface IConnectableEditorParams {
+	uri: string;
+	editor: IConnectableEditor;
+}
+
+export interface IConnectableEditor {
+	uri: string;
+	onConnectStart(): void;
+	onConnectReject(): void;
+	onConnectSuccess(runQueryOnCompletion: boolean): void;
+	onDisconnect(): void;
+}
+
+export enum ConnectionType {
+	default = 0,
+	queryEditor = 1
 }
 
 export enum MetadataType

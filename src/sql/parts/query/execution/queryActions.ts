@@ -5,12 +5,12 @@
 
 import { Action, IActionItem, IActionRunner } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IShowQueryResultsEditor, isInstanceOfIQueryEditor } from 'sql/parts/query/editor/showQueryResultsEditor';
-import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IShowQueryResultsEditor } from 'sql/parts/query/common/showQueryResultsEditor';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
+import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import nls = require('vs/nls');
 import * as dom from 'vs/base/browser/dom';
 const $ = dom.$;
@@ -25,7 +25,12 @@ export abstract class QueryTaskbarAction extends Action {
 
 	private _classes: string[];
 
-	constructor(id: string, enabledClass: string) {
+	constructor(
+		protected _connectionManagementService: IConnectionManagementService,
+		protected editor: IShowQueryResultsEditor,
+		id: string,
+		enabledClass: string
+	) {
 		super(id);
 		this.enabled = true;
 		this.setClass(enabledClass);
@@ -45,6 +50,29 @@ export abstract class QueryTaskbarAction extends Action {
 		}
 		this.class = this._classes.join(' ');
 	}
+
+	/**
+	 * Returns the URI of the given editor if it is not undefined and is connected.
+	 */
+	protected getConnectedQueryEditorUri(editor: IShowQueryResultsEditor): string {
+		if (!editor || !editor.uri) {
+			return undefined;
+		}
+		return this._connectionManagementService.isConnected(editor.uri) ? editor.uri : undefined;
+	}
+
+	/**
+	 * Connects the given editor to it's current URI.
+	 */
+	protected connectEditor(editor: IShowQueryResultsEditor, uri: string, runQueryOnCompletion: boolean): void {
+		let params: INewConnectionParams = {
+			editor: editor,
+			connectionType: ConnectionType.queryEditor,
+			uri: uri ? uri : editor.uri,
+			runQueryOnCompletion: runQueryOnCompletion
+		};
+		this._connectionManagementService.newConnection(params);
+	}
 }
 
 /**
@@ -55,23 +83,40 @@ export class RunQueryAction extends QueryTaskbarAction {
 	private static EnabledClass = 'runQuery';
 	public static ID = 'runQueryAction';
 
-	constructor(private _editorService: IWorkbenchEditorService, private _queryModelService: IQueryModelService) {
-		super(RunQueryAction.ID, RunQueryAction.EnabledClass);
+	constructor(
+		private _queryModelService: IQueryModelService,
+		connectionManagementService: IConnectionManagementService,
+		editor: IShowQueryResultsEditor
+	) {
+		super(connectionManagementService, editor, RunQueryAction.ID, RunQueryAction.EnabledClass);
 		this.label = nls.localize('runQueryLabel', 'Run Query');
 	}
 
 	public run(): TPromise<void> {
-		let activeEditor = this._editorService.getActiveEditor();
+		let uri = this.getConnectedQueryEditorUri(this.editor);
 
-		if (activeEditor && isInstanceOfIQueryEditor(activeEditor)) {
-			let editor: IShowQueryResultsEditor = <IShowQueryResultsEditor>activeEditor;
-			let uri: string = editor.uri;
+		if (uri) {
+			// If we are already connected, run the query
+			this.runQuery(this.editor, uri);
+		} else {
+			// If we are not already connected, prompt for conneciton and run the query if the
+			// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
+			this.connectEditor(this.editor, uri, true);
+		}
+		return TPromise.as(null);
+	}
 
+	public runQuery(editor?: IShowQueryResultsEditor, uri?: string) {
+		if (!editor) {
+			editor = this.editor;
+		}
+		if (!uri) {
+			uri = this.getConnectedQueryEditorUri(editor);
+		}
+		if (uri) {
 			this._queryModelService.runQuery(uri, undefined, uri);
 			editor.showQueryResultsEditor();
 		}
-
-		return TPromise.as(null);
 	}
 }
 
@@ -83,21 +128,21 @@ export class CancelQueryAction extends QueryTaskbarAction {
 	private static EnabledClass = 'cancelQuery';
 	public static ID = 'cancelQueryAction';
 
-	constructor(private _editorService: IWorkbenchEditorService, private _queryModelService: IQueryModelService) {
-		super(CancelQueryAction.ID, CancelQueryAction.EnabledClass);
+	constructor(
+		private _queryModelService: IQueryModelService,
+		connectionManagementService: IConnectionManagementService,
+		editor: IShowQueryResultsEditor
+	) {
+		super(connectionManagementService, editor, CancelQueryAction.ID, CancelQueryAction.EnabledClass);
 		this.enabled = false;
 		this.label = nls.localize('cancelQueryLabel', 'Cancel Query');
 	}
 
 	public run(): TPromise<void> {
-		let activeEditor = this._editorService.getActiveEditor();
-
-		if (activeEditor && isInstanceOfIQueryEditor(activeEditor)) {
-			let editor: IShowQueryResultsEditor = <IShowQueryResultsEditor>activeEditor;
-			let uri: string = editor.uri;
+		let uri = this.getConnectedQueryEditorUri(this.editor);
+		if (uri) {
 			this._queryModelService.cancelQuery(uri);
 		}
-
 		return TPromise.as(null);
 	}
 }
@@ -110,12 +155,20 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
 	private static EnabledClass = 'disconnectDatabase';
 	public static ID = 'disconnectDatabaseAction';
 
-	constructor() {
-		super(CancelQueryAction.ID, DisconnectDatabaseAction.EnabledClass);
+	constructor(
+		connectionManagementService: IConnectionManagementService,
+		editor: IShowQueryResultsEditor
+	) {
+		super(connectionManagementService, editor, CancelQueryAction.ID, DisconnectDatabaseAction.EnabledClass);
 		this.label = nls.localize('disconnectDatabaseLabel', 'Disconnect');
 	}
 
 	public run(): TPromise<void> {
+		let uri = this.getConnectedQueryEditorUri(this.editor);
+
+		if (uri) {
+			this._connectionManagementService.disconnectEditor(this.editor, uri);
+		}
 		return TPromise.as(null);
 	}
 }
@@ -128,13 +181,19 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
 	private static EnabledClass = 'connectDatabase';
 	public static ID = 'connectDatabaseAction';
 
-	constructor() {
-		super(CancelQueryAction.ID, ConnectDatabaseAction.EnabledClass);
+	constructor(
+		connectionManagementService: IConnectionManagementService,
+		editor: IShowQueryResultsEditor
+	) {
+		super(connectionManagementService, editor, CancelQueryAction.ID, ConnectDatabaseAction.EnabledClass);
 		this.label = nls.localize('connectDatabaseLabel', 'Connect');
 	}
 
 	public run(): TPromise<void> {
-		// TODO hook this up
+		let uri = this.getConnectedQueryEditorUri(this.editor);
+		if (!uri) {
+			this.connectEditor(this.editor, uri, false);
+		}
 		return TPromise.as(null);
 	}
 }
@@ -147,13 +206,24 @@ export class ChangeConnectionAction extends QueryTaskbarAction {
 	private static EnabledClass = 'changeConnectionDatabase';
 	public static ID = 'changeConnectionDatabaseAction';
 
-	constructor() {
-		super(CancelQueryAction.ID, ChangeConnectionAction.EnabledClass);
+	constructor(
+		connectionManagementService: IConnectionManagementService,
+		editor: IShowQueryResultsEditor
+	) {
+		super(connectionManagementService, editor, CancelQueryAction.ID, ChangeConnectionAction.EnabledClass);
 		this.label = nls.localize('changeConnectionDatabaseLabel', 'Change Connection');
 	}
 
 	public run(): TPromise<void> {
-		// TODO hook this up
+		let uri = this.getConnectedQueryEditorUri(this.editor);
+		if (uri) {
+			// Wait for the current connection to disconnect, then connect
+			this._connectionManagementService.disconnectEditor(this.editor, uri).then(didDisconnect => {
+				if (didDisconnect) {
+					this.connectEditor(this.editor, uri, false);
+				}
+			});
+		}
 		return TPromise.as(null);
 	}
 }
@@ -166,14 +236,16 @@ export class ListDatabasesAction extends QueryTaskbarAction {
 	private static EnabledClass = '';
 	public static ID = 'listDatabaseQueryAction';
 
-	constructor() {
-		super(ListDatabasesAction.ID, undefined);
+	constructor(
+		connectionManagementService: IConnectionManagementService,
+		editor: IShowQueryResultsEditor
+	) {
+		super(connectionManagementService, editor, ListDatabasesAction.ID, undefined);
 		this.enabled = false;
 		this.class = ListDatabasesAction.EnabledClass;
 	}
 
 	public run(): TPromise<void> {
-		// TODO hook this up
 		return TPromise.as(null);
 	}
 }
@@ -183,8 +255,6 @@ export class ListDatabasesAction extends QueryTaskbarAction {
  * Based off StartDebugActionItem.
  */
 export class ListDatabasesActionItem extends EventEmitter implements IActionItem {
-
-	private static testDatabaseList: string[] = ['master', 'testdb', 'anotherTest', 'aVeryLongDatabaseName'];
 
 	public actionRunner: IActionRunner;
 	private container: HTMLElement;
@@ -203,13 +273,12 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this.selectBox = new SelectBox([], -1);
 		this._registerListeners();
 
-		this._databases = ListDatabasesActionItem.testDatabaseList;
+		this._databases = [];
 		this._refreshDatabaseList();
 	}
 
 	public render(container: HTMLElement): void {
 		this.container = container;
-		this.selectBox.render(dom.append(container, $('.configuration')));
 	}
 
 	public setActionContext(context: any): void {

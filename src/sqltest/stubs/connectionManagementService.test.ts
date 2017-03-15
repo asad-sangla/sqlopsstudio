@@ -8,8 +8,8 @@ import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/conne
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IDisposable } from 'vs/base/common/lifecycle';
+import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import data = require('data');
-
 
 // Test stubs for commonly used objects
 
@@ -32,6 +32,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
 
+	}
+
+	connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
+		return new Promise(() => true);
 	}
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
@@ -63,11 +67,15 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
-	connectEditor(fileUri: string, connection: ConnectionProfile): Promise<boolean>{
+	isConnected(fileUri: string): boolean {
+		return false;
+	}
+
+	connectEditor(editor: QueryEditor, uri: string, runQueryOnCompletion: boolean, connection: ConnectionProfile): Promise<boolean>{
 		return new Promise<boolean>(() => true);
 	}
 
-	disconnectEditor(fileUri: string): Promise<boolean>{
+	disconnectEditor(editor: QueryEditor): Promise<boolean>{
 		return new Promise<boolean>(() => true);
 	}
 }

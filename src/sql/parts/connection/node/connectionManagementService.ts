@@ -9,7 +9,8 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
+	ConnectionType, IConnectableEditor } from 'sql/parts/connection/common/connectionManagement';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
@@ -41,16 +42,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _providers: { [handle: string]: data.ConnectionProvider; } = Object.create(null);
 
-	private _connectionStore: ConnectionStore;
-
-	private connectionMemento: Memento;
-
 	private _connections: { [fileUri: string]: ConnectionManagementInfo };
 
 	private _onAddConnectionProfile: Emitter<void>;
 	private _onDeleteConnectionProfile: Emitter<void>;
 
 	constructor(
+		private _connectionMemento: Memento,
+		private _connectionStore: ConnectionStore,
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
@@ -64,11 +63,15 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IQuickOpenService private quickOpenService: IQuickOpenService
 	) {
+		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
+		if (!this._connectionMemento) {
+			this._connectionMemento = new Memento('ConnectionManagement');
+		}
+		if (!this._connectionStore) {
+			this._connectionStore = new ConnectionStore(_storageService, this._connectionMemento,
+				_configurationEditService, this._workspaceConfigurationService, this._credentialsService);
+		}
 
-		this.connectionMemento = new Memento('ConnectionManagement');
-
-		this._connectionStore = new ConnectionStore(_storageService, this.connectionMemento,
-			_configurationEditService, this._workspaceConfigurationService, this._credentialsService);
 		this._connections = {};
 
 		// Setting up our event emitters
@@ -93,8 +96,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._providers[providerId] = provider;
 	}
 
-	public newConnection(): void {
-		this._connectionDialogService.showDialog(this);
+	public newConnection(params?: INewConnectionParams): void {
+		if (!params) {
+			params = { connectionType: ConnectionType.default };
+		}
+		this._connectionDialogService.showDialog(this, params);
 	}
 
 	public addConnectionProfile(connection: IConnectionProfile): Promise<boolean> {
@@ -277,7 +283,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public shutdown(): void {
 		this._connectionStore.saveActiveConnectionsToRecent();
-		this.connectionMemento.saveMemento();
+		this._connectionMemento.saveMemento();
 	}
 
 	private getActiveEditorInputResource(): string {
@@ -300,8 +306,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
 
-	// Connect a URI from its current connection
-	public connectEditor(uri: string, connectionProfile: ConnectionProfile): Promise<boolean> {
+	public connectEditor(editor: IConnectableEditor, uri: string, runQueryOnCompletion: boolean, connectionProfile: ConnectionProfile | IConnectionProfile): Promise<boolean> {
+		// If we are passed a ConnectionProfile, we must only pass the info below or the connection will reject
 		let connection: IConnectionProfile = {
 			serverName: connectionProfile.serverName,
 			databaseName: connectionProfile.databaseName,
@@ -313,44 +319,56 @@ export class ConnectionManagementService implements IConnectionManagementService
 			savePassword: connectionProfile.savePassword
 		};
 
-		// Retrieve saved password if needed
-		return new Promise<boolean>((resolve, reject) => {
-			this._connectionStore.addSavedPassword(connection).then(newConnection => {
-				return this.connect(uri, newConnection).then(status => {
-					// Status tells use if the connection attempt was successfull or not
-					resolve(status);
+		// Retreive saved password if needed
+        return new Promise<boolean>((resolve, reject) => {
+            this._connectionStore.addSavedPassword(connection).then(newConnection => {
+				editor.onConnectStart();
+				return this.connect(uri, newConnection).then(status => {
+					if (status) {
+						editor.onConnectSuccess(runQueryOnCompletion);
+					} else {
+						editor.onConnectReject();
+					}
+                    resolve(status);
+                }, (error) => {
+					editor.onConnectReject();
 				});
-			});
-		});
+            });
+        });
 	}
 
 	// Disconnect a URI from its current connection
-	public disconnectEditor(fileUri: string, force: boolean = false): Promise<boolean> {
+	public disconnectEditor(editor: IConnectableEditor, uri: string, force: boolean = false): Promise<boolean> {
 		const self = this;
 
 		return new Promise<boolean>((resolve, reject) => {
-			if (self.isConnected(fileUri)) {
-				resolve(self.doDisconnect(fileUri));
-			} else if (self.isConnecting(fileUri)) {
-				// Prompt the user to cancel connecting
+			// If the URI is connected, disconnect it and the editor
+			if (self.isConnected(uri)) {
+				editor.onDisconnect();
+				resolve(self.doDisconnect(uri));
+
+			// If the URI is connecting, prompt the user to cancel connecting
+			} else if (self.isConnecting(uri)) {
 				if (!force) {
-					self.shouldCancelConnect(fileUri).then((result) => {
+					self.shouldCancelConnect(uri).then((result) => {
+						// If the user wants to cancel, then disconnect
 						if (result) {
-							resolve(self.doCancelConnect(fileUri));
+							editor.onDisconnect();
+							resolve(self.doCancelConnect(editor));
 						}
+						// If the user does not want to cancel, then ignore
 						resolve(false);
 					});
 				} else {
-					resolve(self.doCancelConnect(fileUri));
+					editor.onDisconnect();
+					resolve(self.doCancelConnect(editor));
 				}
-
-			};
-
-			// resolve true if already disconnected
+			}
+			// If the URI is disconnected, ensure the UI state is consistent and resolve true
+			editor.onDisconnect();
 			resolve(true);
 		});
     }
-
 
 	/**
 	 * Functions to handle the connecting lifecycle
@@ -428,8 +446,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private doCancelConnect(fileUri: string): Thenable<boolean> {
+	private doCancelConnect(editor: IConnectableEditor): Thenable<boolean> {
 		const self = this;
+		let fileUri: string = editor.uri;
 
 		return new Promise<boolean>((resolve, reject) => {
 			// Check if we are still conecting after user input
@@ -443,13 +462,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 				resolve(self.sendCancelRequest(fileUri));
 			} else {
 				// If we are not connecting anymore let disconnect handle the next steps
-				resolve(self.disconnectEditor(fileUri));
+				resolve(self.disconnectEditor(editor, fileUri));
 			}
 		});
     }
 
 	// Is a certain file URI connected?
-	private isConnected(fileUri: string): boolean {
+	public isConnected(fileUri: string): boolean {
         return (fileUri in this._connections && this._connections[fileUri].connectionId && Utils.isNotEmpty(this._connections[fileUri].connectionId));
     }
 

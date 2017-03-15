@@ -23,8 +23,10 @@ export interface IQueryModelService {
 	getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
 	runQuery(uri: string, selection: ISelectionData, title: string): void;
 	cancelQuery(input: QueryRunner | string): void;
+	isRunningQuery(uri: string): boolean;
 
 	getDataService(uri: string): DataService;
+	refreshResultsets(uri: string): void;
 	onAngularLoaded(uri: string): void;
 
 	save(uri: string, batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void;

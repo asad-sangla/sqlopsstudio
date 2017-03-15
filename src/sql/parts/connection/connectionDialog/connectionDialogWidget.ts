@@ -24,13 +24,14 @@ import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
 	onCancel: () => void;
 	onAdvancedProperties: () => void;
+	params: INewConnectionParams;
 }
 
 export class ConnectionDialogWidget {
@@ -55,6 +56,7 @@ export class ConnectionDialogWidget {
 	private _dialog: ModalDialogBuilder;
 	private _authenticationOptions: string[];
 	private _recentConnectionButtons: Button[];
+	public _newConnectionParams: INewConnectionParams;
 
 	constructor(container: HTMLElement,
 		callbacks: IConnectionDialogCallbacks,
@@ -271,6 +273,14 @@ export class ConnectionDialogWidget {
 			default:
 				return 'Integrated';
 		}
+	}
+
+	public get newConnectionParams(): INewConnectionParams {
+		return this._newConnectionParams;
+	}
+
+	public set newConnectionParams(params: INewConnectionParams) {
+		this._newConnectionParams = params;
 	}
 
 	public set authenticationType(authenticationType: string) {

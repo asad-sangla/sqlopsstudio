@@ -283,7 +283,8 @@ export class AppComponent {
      */
     ngOnInit(): void {
         const self = this;
-        this.dataService.dataEventObs.subscribe(event => {
+
+        this.dataService.queryEventObserver.subscribe(event => {
             switch (event.type) {
                 case 'start':
                     self.handleStart(self, event);
@@ -303,6 +304,11 @@ export class AppComponent {
             }
             self.cd.detectChanges();
         });
+
+        this.dataService.refreshGridsObserver.subscribe(() => {
+            self.refreshResultsets();
+        });
+
         this.dataService.onAngularLoaded();
     }
 
@@ -320,6 +326,10 @@ export class AppComponent {
         self.totalElapsedTimeSpan = event.data;
         self.complete = true;
         self.messagesAdded = true;
+
+        setTimeout(function(){
+            self.refreshResultsets();
+        }, 1);
     }
 
     handleMessage(self: AppComponent, event: any): void {
@@ -398,6 +408,18 @@ export class AppComponent {
             this.messagesAdded = false;
             this.scrollMessages();
         }
+    }
+
+    /**
+     * Force angular to re-render the results grids. Calling this upon unhide (upon focus) fixes UI
+     * glitches that occur when a QueryRestulsEditor is hidden then unhidden while it is running a query.
+     */
+    refreshResultsets(): void {
+        let tempRenderedDataSets = this.renderedDataSets;
+        this.renderedDataSets = [];
+        this.cd.detectChanges();
+        this.renderedDataSets = tempRenderedDataSets;
+        this.cd.detectChanges();
     }
 
     /**

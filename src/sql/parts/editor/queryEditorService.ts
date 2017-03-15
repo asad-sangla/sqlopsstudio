@@ -10,17 +10,17 @@ import { createDecorator, IInstantiationService } from 'vs/platform/instantiatio
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import URI from 'vs/base/common/uri';
+import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
+import { IConnectableEditorParams } from 'sql/parts/connection/common/connectionManagement';
 const fs = require('fs');
 
-
 export const IQueryEditorService = createDecorator<QueryEditorService>('QueryEditorService');
-
 
 export interface IQueryEditorService {
 	_serviceBrand: any;
 
 	// opens a new sql editor and returns its URI
-	newSqlEditor(sqlContent?: string): Promise<URI>;
+	newSqlEditor(sqlContent?: string): Promise<IConnectableEditorParams>;
 
 	// opens a new data editor and returns its URI
 	newEditDataEditor(tableName: string): Promise<URI>;
@@ -45,9 +45,8 @@ export class QueryEditorService implements IQueryEditorService {
 	/**
 	 * Creates new untitled document for SQL query and opens in new editor tab
 	 */
-	public newSqlEditor(sqlContent?: string): Promise<URI> {
-
-		return new Promise<URI>((resolve, reject) => {
+	public newSqlEditor(sqlContent?: string): Promise<IConnectableEditorParams> {
+		return new Promise<IConnectableEditorParams>((resolve, reject) => {
 			try {
 				// Create file path and file URI
 				let filePath = this.createUntitledSqlFilePath();
@@ -65,9 +64,14 @@ export class QueryEditorService implements IQueryEditorService {
 
 				const queryResultsInput: QueryResultsInput = this.instantiationService.createInstance(QueryResultsInput, docUri.toString());
 				let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
-				this.editorService.openEditor(queryInput, { pinned: true });
 
-				resolve(docUri);
+				this.editorService.openEditor(queryInput, { pinned: true })
+				.then((editor) => {
+					let params = {editor: <QueryEditor>editor, uri: docUri.toString() };
+					resolve(params);
+				}, (error) => {
+					reject(error);
+				});
 			} catch (error) {
 				reject(error);
 			}

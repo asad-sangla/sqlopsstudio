@@ -32,9 +32,11 @@ import {
 } from 'sql/parts/query/execution/queryActions';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
-import { IShowQueryResultsEditor } from 'sql/parts/query/editor/showQueryResultsEditor';
+import { IShowQueryResultsEditor } from 'sql/parts/query/common/showQueryResultsEditor';
+import { IConnectableEditor } from 'sql/parts/connection/common/connectionManagement';
 import { Action } from 'vs/base/common/actions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 
 /**
@@ -66,6 +68,13 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 	private _taskbarContainer: HTMLElement;
 	private _listDatabasesActionItem: ListDatabasesActionItem;
 
+	private _runQueryAction: RunQueryAction;
+	private _cancelQueryAction: CancelQueryAction;
+	private _connectDatabaseAction: ConnectDatabaseAction;
+	private _disconnectDatabaseAction: DisconnectDatabaseAction;
+	private _changeConnectionAction: ChangeConnectionAction;
+	private _listDatabasesAction: ListDatabasesAction;
+
 	constructor(
 		@ITelemetryService _telemetryService: ITelemetryService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
@@ -73,6 +82,7 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 		@IContextMenuService private _contextMenuService: IContextMenuService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IEditorDescriptorService private _editorDescriptorService: IEditorDescriptorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
 		editorOrientation?: Orientation
 	) {
 		super(QueryEditor.ID, _telemetryService);
@@ -195,6 +205,13 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 		super.dispose();
 	}
 
+	public close(): void {
+		this.connectionManagementService.disconnectEditor(this, this.uri, true);
+		let queryInput: QueryInput = <QueryInput>this.input;
+		queryInput.sql.close();
+		queryInput.results.close();
+	}
+
 	/**
 	 * Makes visible the QueryResultsEditor for the current QueryInput (if it is not
 	 * already visible).
@@ -204,16 +221,57 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 			return;
 		}
 
+		let input = <QueryInput>this.input;
 		this._createSash(this.getContainer().getHTMLElement());
 		this._createResultsEditorContainer();
 
-		let input = <QueryInput>this.input;
 		this._createEditor(<QueryResultsInput>input.results, this._resultsEditorContainer)
 			.then(result => {
 				this._onResultsEditorCreated(<QueryResultsEditor>result, input.results, this.options);
 				this._setResultsEditorVisible();
 				this._doLayout();
 			});
+	}
+
+	public onConnectStart(): void {
+		this._runQueryAction.enabled = false;
+		this._cancelQueryAction.enabled = false;
+		this._connectDatabaseAction.enabled = false;
+		this._disconnectDatabaseAction.enabled = true;
+		this._changeConnectionAction.enabled = false;
+	}
+
+	public onConnectReject(): void {
+		this.onDisconnect();
+	}
+
+	public onConnectSuccess(runQueryOnCompletion: boolean): void {
+		this._runQueryAction.enabled = true;
+		this._connectDatabaseAction.enabled = false;
+		this._disconnectDatabaseAction.enabled = true;
+		this._changeConnectionAction.enabled = true;
+
+		if (!this.isCurrentUriRunningQuery() && runQueryOnCompletion) {
+			this._runQueryAction.runQuery();
+		}
+	}
+
+	public onDisconnect(): void {
+		this._runQueryAction.enabled = true;
+		this._cancelQueryAction.enabled = false;
+		this._connectDatabaseAction.enabled = true;
+		this._disconnectDatabaseAction.enabled = false;
+		this._changeConnectionAction.enabled = false;
+	}
+
+	public onRunQuery(): void {
+		this._runQueryAction.enabled = false;
+		this._cancelQueryAction.enabled = true;
+	}
+
+	public onQueryComplete(): void {
+		this._runQueryAction.enabled = true;
+		this._cancelQueryAction.enabled = false;
 	}
 
 	get uri(): string {
@@ -233,40 +291,44 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 			actionItemProvider: (action: Action) => this._getListDatabasesActionItem(action),
 		});
 
-		// Create Actions for the taskbar
-		let runQueryAction = new RunQueryAction(this._editorService, this._queryModelService);
-		let cancelQueryAction = new CancelQueryAction(this._editorService, this._queryModelService);
-		let connectDatabaseAction = new ConnectDatabaseAction();
-		let disconnectDatabaseAction = new DisconnectDatabaseAction();
-		let changeConnectionAction = new ChangeConnectionAction();
-		let listDatabasesAction = new ListDatabasesAction();
+		// Create Actions for the toolbar
+		this._runQueryAction = new RunQueryAction(this._queryModelService, this.connectionManagementService, this);
+		this._cancelQueryAction = new CancelQueryAction(this._queryModelService, this.connectionManagementService, this);
+		this._connectDatabaseAction = new ConnectDatabaseAction(this.connectionManagementService, this);
+		this._disconnectDatabaseAction = new DisconnectDatabaseAction(this.connectionManagementService, this);
+		this._changeConnectionAction = new ChangeConnectionAction(this.connectionManagementService, this);
+		this._listDatabasesAction = new ListDatabasesAction(this.connectionManagementService, this);
+
+		// Set initial state for taskbar UI
+		this.onDisconnect();
+		this.onQueryComplete();
 
 		// Create HTML Elements for the taskbar
 		let separator = QueryTaskbar.createTaskbarSeparator();
 
+		let self = this;
+
 		// Register callbacks for the Actions
 		this._register(this._queryModelService.onRunQueryStart(uri => {
-			if (this.uri === uri) {
-				cancelQueryAction.enabled = true;
-				runQueryAction.enabled = false;
+			if (self.uri === uri) {
+				self.onRunQuery();
 			}
 		}));
 		this._register(this._queryModelService.onRunQueryComplete(uri => {
-			if (this.uri === uri) {
-				cancelQueryAction.enabled = false;
-				runQueryAction.enabled = true;
+			if (self.uri === uri) {
+				self.onQueryComplete();
 			}
 		}));
 
 		// Set the content in the order we desire
 		let content: ITaskbarContent[] = [
-			{ action: runQueryAction },
-			{ action: cancelQueryAction },
+			{ action: this._runQueryAction },
+			{ action: this._cancelQueryAction },
 			{ element: separator },
-			{ action: connectDatabaseAction },
-			{ action: disconnectDatabaseAction },
-			{ action: changeConnectionAction },
-			{ action: listDatabasesAction },
+			{ action: this._connectDatabaseAction },
+			{ action: this._disconnectDatabaseAction },
+			{ action: this._changeConnectionAction },
+			{ action: this._listDatabasesAction },
 		];
 		this._taskbar.setContent(content);
 	}
@@ -301,6 +363,11 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 			this._createSqlEditorContainer();
 			if (this._isResultsEditorVisible()) {
 				this._createResultsEditorContainer();
+
+				let uri: string = newInput.getQueryResultsInputResource();
+				if (uri) {
+					this._queryModelService.refreshResultsets(uri);
+				}
 			}
 
 			returnValue = this._setNewInput(newInput, options);
@@ -313,6 +380,7 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 			returnValue = TPromise.as(null);
 		}
 
+		this._setTaskbarState(newInput);
 		return returnValue;
 	}
 
@@ -500,6 +568,35 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 	private _setResultsEditorVisible(): void {
 		let input: QueryInput = <QueryInput>this.input;
 		input.results.setVisibleTrue();
+	}
+
+	/**
+	 * Update the buttons on the taskbar to reflect the state of the current input.
+	 */
+	private _setTaskbarState(newInput: QueryInput): void {
+		if (this.isCurrentUriConnected()) {
+			this.onConnectSuccess(false);
+		} else {
+			this.onDisconnect();
+		}
+
+		if (this.isCurrentUriRunningQuery()) {
+			this.onRunQuery();
+		} else {
+			this.onQueryComplete();
+		}
+	}
+
+	private isCurrentUriConnected(): boolean {
+		let input: QueryInput = <QueryInput>this.input;
+		let uri: string = input.getQueryResultsInputResource();
+		return uri ? this.connectionManagementService.isConnected(uri) : false;
+	}
+
+	private isCurrentUriRunningQuery(): boolean {
+		let input: QueryInput = <QueryInput>this.input;
+		let uri: string = input.getQueryResultsInputResource();
+		return uri ? this._queryModelService.isRunningQuery(uri) : false;
 	}
 
 	// TESTING PROPERTIES ////////////////////////////////////////////////////////////

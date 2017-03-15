@@ -17,6 +17,7 @@ import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IConnectionProfileGroupTemplateData, IConnectionTemplateData } from 'sql/parts/connection/electron-browser/templateData';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IConnectableEditorParams } from 'sql/parts/connection/common/connectionManagement';
 const $ = dom.$;
 
 /**
@@ -303,9 +304,9 @@ export class NewQueryAction extends Action {
 	}
 
 	public run(connectionProfileGroup: ConnectionProfile): TPromise<boolean> {
-		this.queryEditorService.newSqlEditor().then((newDocUri) => {
+		this.queryEditorService.newSqlEditor().then((params: IConnectableEditorParams) => {
 			// Connect our editor to the input connection
-			this.connectionManagementService.connectEditor(newDocUri.toString(), connectionProfileGroup);
+			this.connectionManagementService.connectEditor(params.editor, params.uri, false, connectionProfileGroup);
 		});
 		return TPromise.as(true);
 	}

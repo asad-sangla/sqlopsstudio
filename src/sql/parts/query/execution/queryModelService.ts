@@ -74,6 +74,13 @@ export class QueryModelService implements IQueryModelService {
 		return dataService;
 	}
 
+	public refreshResultsets(uri: string): void {
+		let dataService = this._queryInfoMap.get(uri).dataService;
+		if (dataService) {
+			dataService.refreshGridsObserver.next();
+		}
+	}
+
 	/**
 	 * To be called by an angular component's DataService when the component has finished loading.
 	 * Sends all previously enqueued query events to the DataService and signals to stop enqueuing
@@ -223,7 +230,7 @@ export class QueryModelService implements IQueryModelService {
 
 		if (info.dataServiceReady) {
 			let service: DataService = this.getDataService(uri);
-			service.dataEventObs.next({
+			service.queryEventObserver.next({
 				type: type,
 				data: data
 			});

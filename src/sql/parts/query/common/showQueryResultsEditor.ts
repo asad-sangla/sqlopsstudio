@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// This file is used to help avoid a circular dependency between QueryEditor and QueryAction.
+import { IConnectableEditor } from 'sql/parts/connection/common/connectionManagement';
 
-export interface IShowQueryResultsEditor {
-	showQueryResultsEditor(): void;
+/*
+ * This interface is used to help avoid a circular dependency between QueryEditor and QueryAction.
+ */
+export interface IShowQueryResultsEditor extends IConnectableEditor {
 	uri: string;
-}
 
-export function isInstanceOfIQueryEditor(object: any): object is IShowQueryResultsEditor {
-	return 'showQueryResultsEditor' in object;
+	showQueryResultsEditor(): void;
 }

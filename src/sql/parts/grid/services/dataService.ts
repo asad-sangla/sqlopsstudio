@@ -17,10 +17,12 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
  * query running and grid interaction communication for a single URI.
  */
 export class DataService {
-	public dataEventObs: Subject<any>;
+	public queryEventObserver: Subject<any>;
+	public refreshGridsObserver: Subject<any>;
 
 	constructor(private _queryModel: IQueryModelService, private _uri: string) {
-		this.dataEventObs = new Rx.Subject();
+		this.queryEventObserver = new Rx.Subject();
+		this.refreshGridsObserver = new Rx.Subject();
 	}
 
 	/**

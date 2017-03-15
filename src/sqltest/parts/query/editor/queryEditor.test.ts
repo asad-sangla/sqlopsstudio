@@ -17,6 +17,8 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
+import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
+import { Memento } from 'vs/workbench/common/memento';
 import { Builder } from 'vs/base/browser/builder';
 import * as DOM from 'vs/base/browser/dom';
 import * as TypeMoq from 'typemoq';
@@ -27,10 +29,24 @@ suite('SQL QueryEditor Tests', () => {
 	let instantiationService: TypeMoq.Mock<InstantiationService>;
 	let messageService: TypeMoq.Mock<IMessageService>;
 	let editorDescriptorService: TypeMoq.Mock<EditorDescriptorService>;
+	let connectionManagementService: TypeMoq.Mock<ConnectionManagementService>;
+	let memento: TypeMoq.Mock<Memento>;
+
 	let queryInput: QueryInput;
 	let queryInput2: QueryInput;
 	let parentBuilder: Builder;
 	let mockEditor: any;
+
+	let getQueryEditor = function(): QueryEditor {
+		return new QueryEditor(
+			undefined,
+			instantiationService.object,
+			undefined,
+			undefined,
+			queryModelService,
+			editorDescriptorService.object,
+			connectionManagementService.object);
+	};
 
 	setup(() => {
 		// Setup DOM elements
@@ -71,17 +87,24 @@ suite('SQL QueryEditor Tests', () => {
 		let uri: URI = URI.parse(filePath);
 		let fileInput = new UntitledEditorInput(uri, false, '', instantiationService.object, undefined, undefined);
 		let queryResultsInput: QueryResultsInput = new QueryResultsInput(uri.fsPath);
-		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput, undefined);
+		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput);
 
 		// Create a QueryInput to compare to the previous one
 		let filePath2 = 'someFile2.sql';
 		let uri2: URI = URI.parse(filePath2);
 		let fileInput2 = new UntitledEditorInput(uri2, false, '', instantiationService.object, undefined, undefined);
 		let queryResultsInput2: QueryResultsInput = new QueryResultsInput(uri2.fsPath);
-		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2, undefined);
+		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2);
 
 		// Mock IMessageService
 		messageService = TypeMoq.Mock.ofType(TestMessageService, TypeMoq.MockBehavior.Loose);
+
+		// Mock ConnectionManagementService
+		memento = TypeMoq.Mock.ofType(Memento, TypeMoq.MockBehavior.Loose, '');
+		memento.setup(x => x.getMemento(TypeMoq.It.isAny())).returns(() => {});
+		connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, memento.object, undefined);
+		connectionManagementService.callBase = true;
+		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAny())).returns(() => false);
 
 		// Create a QueryModelService
 		queryModelService = new QueryModelService(instantiationService.object, messageService.object);
@@ -89,7 +112,7 @@ suite('SQL QueryEditor Tests', () => {
 
 	test('createEditor creates only the taskbar', (done) => {
 		// If I call createEditor
-		let editor: QueryEditor = new QueryEditor(undefined, instantiationService.object, undefined, undefined, queryModelService, editorDescriptorService.object);
+		let editor: QueryEditor = getQueryEditor();
 		editor.createEditor(parentBuilder);
 
 		// The taskbar should be created
@@ -124,7 +147,7 @@ suite('SQL QueryEditor Tests', () => {
 		};
 
 		// If I call create a QueryEditor
-		let editor: QueryEditor = new QueryEditor(undefined, instantiationService.object, undefined, undefined, queryModelService, editorDescriptorService.object);
+		let editor: QueryEditor = getQueryEditor();
 		editor.create(parentBuilder);
 
 		return editor.setInput(queryInput) 	// Then I set the input
@@ -151,7 +174,7 @@ suite('SQL QueryEditor Tests', () => {
 		};
 
 		// If I create a QueryEditor
-		let editor: QueryEditor = new QueryEditor(undefined, instantiationService.object, undefined, undefined, queryModelService, editorDescriptorService.object);
+		let editor: QueryEditor = getQueryEditor();
 		editor.create(parentBuilder);
 
 		return editor.setInput(queryInput) // Then I set the input
@@ -227,7 +250,7 @@ suite('SQL QueryEditor Tests', () => {
 
 
 		// If I create a QueryEditor
-		let editor: QueryEditor = new QueryEditor(undefined, instantiationService.object, undefined, undefined, queryModelService, editorDescriptorService.object);
+		let editor: QueryEditor = getQueryEditor();
 		editor.create(parentBuilder);
 
 		return editor.setInput(queryInput) // and I set the input

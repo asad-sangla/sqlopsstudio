@@ -5,7 +5,8 @@
 
 'use strict';
 
-import { IConnectionDialogService, IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionDialogService, IConnectionManagementService, IErrorMessageService,
+	ConnectionType, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
@@ -33,7 +34,21 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _connectionDialog: ConnectionDialogWidget;
 	private _advancedcontroller: AdvancedPropertiesController;
 
-	private handleOnConnect(): void {
+	private handleOnConnect(params: INewConnectionParams): void {
+		if (params && params.connectionType === ConnectionType.default) {
+			this.handleDefaultOnConnect();
+		} else if (params && params.editor && params.uri && params.connectionType === ConnectionType.queryEditor) {
+			this.handleQueryEditorOnConnect(params);
+		}
+	}
+
+	private handleOnCancel(params: INewConnectionParams): void {
+		if (params && params.editor && params.uri && params.connectionType === ConnectionType.queryEditor) {
+			params.editor.onConnectReject();
+		}
+	}
+
+	private handleDefaultOnConnect(): void {
 		this._connectionManagementService.addConnectionProfile(this._connectionDialog.getConnection()).then(connected => {
 			if (connected) {
 				this._connectionDialog.close();
@@ -43,6 +58,18 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
 		});
 	}
+
+	private handleQueryEditorOnConnect(params: INewConnectionParams): void {
+		this._connectionManagementService.connectEditor(params.editor, params.uri, params.runQueryOnCompletion, this._connectionDialog.getConnection()).then(connected => {
+			if (connected) {
+				this._connectionDialog.close();
+			}
+
+		}).catch(err => {
+			this._connectionDialog.showError(err);
+		});
+	}
+
 
 	private handleOnAdvancedProperties(): void {
 		if (!this._advancedcontroller) {
@@ -56,24 +83,25 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		}
 	}
 
-	public showDialog(connectionManagementService: IConnectionManagementService, model?: IConnectionProfile): TPromise<void> {
+	public showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
 		this._connectionManagementService = connectionManagementService;
 		return new TPromise<void>(() => {
-			this.doShowDialog(model);
+			this.doShowDialog(params, model);
 		});
 	}
 
-	private doShowDialog(model?: IConnectionProfile): TPromise<void> {
+	private doShowDialog(params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
 		if (!this._connectionDialog) {
 			let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 			this._container = container;
 			this._connectionDialog = this._instantiationService.createInstance(ConnectionDialogWidget, container, {
-				onCancel: () => { },
-				onConnect: () => this.handleOnConnect(),
-				onAdvancedProperties: () => this.handleOnAdvancedProperties()
+				onCancel: () => this.handleOnCancel(this._connectionDialog.newConnectionParams),
+				onConnect: () => this.handleOnConnect(this._connectionDialog.newConnectionParams),
+				onAdvancedProperties: () => this.handleOnAdvancedProperties(),
 			});
 			this._connectionDialog.create();
 		}
+		this._connectionDialog.newConnectionParams = params;
 
 		return new TPromise<void>(() => {
 			model = model !== undefined ? model : {
