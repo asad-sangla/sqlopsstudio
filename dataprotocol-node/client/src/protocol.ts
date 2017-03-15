@@ -934,28 +934,28 @@ export namespace DocumentLinkResolveRequest {
  * Connection request message format
  */
 export interface ConnectParams {
-    /**
-     * URI identifying the owner of the connection
-     */
-    ownerUri: string;
+	/**
+	 * URI identifying the owner of the connection
+	 */
+	ownerUri: string;
 
-    /**
-     * Details for creating the connection
-     */
-    connection: ConnectionDetails;
+	/**
+	 * Details for creating the connection
+	 */
+	connection: ConnectionDetails;
 }
 
 
 // Connection request message callback declaration
 export namespace ConnectionRequest {
-     export const type: RequestType<ConnectParams, boolean, void> = { get method(): string { return 'connection/connect'; } };
+	export const type: RequestType<ConnectParams, boolean, void> = { get method(): string { return 'connection/connect'; } };
 }
 
 // ------------------------------- < Connection Complete Event > ------------------------------------
 
 
 export namespace ConnectionCompleteNotification {
-    export const type: NotificationType<ConnectionCompleteParams> = { get method(): string { return 'connection/complete'; } };
+	export const type: NotificationType<ConnectionCompleteParams> = { get method(): string { return 'connection/complete'; } };
 }
 
 // ------------------------------- < Connection Changed Event > -------------------------------------
@@ -964,30 +964,30 @@ export namespace ConnectionCompleteNotification {
  * Parameters for the ConnectionChanged notification.
  */
 export class ConnectionChangedParams {
-    /**
-     * Owner URI of the connection that changed.
-     */
-    public ownerUri: string;
+	/**
+	 * Owner URI of the connection that changed.
+	 */
+	public ownerUri: string;
 
-    /**
-     * Summary of details containing any connection changes.
-     */
-    public connection: ConnectionSummary;
+	/**
+	 * Summary of details containing any connection changes.
+	 */
+	public connection: ConnectionSummary;
 }
 
 /**
  * Connection changed event callback declaration.
  */
 export namespace ConnectionChangedNotification {
-    export const type: NotificationType<ConnectionChangedParams> = { get method(): string { return 'connection/connectionchanged'; } };
+	export const type: NotificationType<ConnectionChangedParams> = { get method(): string { return 'connection/connectionchanged'; } };
 }
 
 // ------------------------------- < Disconnect Request > -------------------------------------------
 
 // Disconnect request message format
 export class DisconnectParams {
-    // URI identifying the owner of the connection
-    public ownerUri: string;
+	// URI identifying the owner of the connection
+	public ownerUri: string;
 }
 
 // Disconnect response format
@@ -995,7 +995,7 @@ export type DisconnectResult = boolean;
 
 // Disconnect request message callback declaration
 export namespace DisconnectRequest {
-    export const type: RequestType<DisconnectParams, DisconnectResult, void> = { get method(): string { return 'connection/disconnect'; } };
+	export const type: RequestType<DisconnectParams, DisconnectResult, void> = { get method(): string { return 'connection/disconnect'; } };
 }
 
 // ------------------------------- < Cancel Connect Request > ---------------------------------------
@@ -1021,25 +1021,25 @@ export namespace CancelConnectRequest {
 
 // List databases request format
 export class ListDatabasesParams {
-    // Connection information to use for querying master
-    public ownerUri: string;
+	// Connection information to use for querying master
+	public ownerUri: string;
 }
 
 // List databases response format
 export class ListDatabasesResult {
-    public databaseNames: Array<string>;
+	public databaseNames: Array<string>;
 }
 
 // List databases request callback declaration
 export namespace ListDatabasesRequest {
-    export const type: RequestType<ListDatabasesParams, ListDatabasesResult, void> = { get method(): string { return 'connection/listdatabases'; } };
+	export const type: RequestType<ListDatabasesParams, ListDatabasesResult, void> = { get method(): string { return 'connection/listdatabases'; } };
 }
 
 /**
  * Event sent when the language service is finished updating after a connection
  */
 export namespace IntelliSenseReadyNotification {
-    export const type: NotificationType<IntelliSenseReadyParams> = { get method(): string { return 'textDocument/intelliSenseReady'; } };
+	export const type: NotificationType<IntelliSenseReadyParams> = { get method(): string { return 'textDocument/intelliSenseReady'; } };
 }
 
 // ------------------------------- < Capabilties Discovery Event > ------------------------------------
@@ -1051,33 +1051,33 @@ export class CapabiltiesDiscoveryParams {
 }
 
 export namespace CapabiltiesDiscoveryRequest {
-    export const type: RequestType<CapabiltiesDiscoveryParams, CapabiltiesDiscoveryResult, void> = { get method(): string { return 'capabilities/list'; } };
+	export const type: RequestType<CapabiltiesDiscoveryParams, CapabiltiesDiscoveryResult, void> = { get method(): string { return 'capabilities/list'; } };
 }
 
 // ------------------------------- < Query Cancellation Request > ------------------------------------
 export namespace QueryCancelRequest {
-    export const type: RequestType<QueryCancelParams, QueryCancelResult, void> = { get method(): string { return 'query/cancel'; } };
+	export const type: RequestType<QueryCancelParams, QueryCancelResult, void> = { get method(): string { return 'query/cancel'; } };
 }
 
 export interface QueryCancelParams {
-    ownerUri: string;
+	ownerUri: string;
 }
 
 export interface QueryCancelResult {
-    messages: string;
+	messages: string;
 }
 
 // ------------------------------- < Query Dispose Request > ------------------------------------
 
 export namespace QueryDisposeRequest {
-    export const type: RequestType<QueryDisposeParams, QueryDisposeResult, void> = { get method(): string { return 'query/dispose'; } };
+	export const type: RequestType<QueryDisposeParams, QueryDisposeResult, void> = { get method(): string { return 'query/dispose'; } };
 }
 
 /**
  * Parameters to provide when disposing of a query
  */
 export interface QueryDisposeParams {
-    ownerUri: string;
+	ownerUri: string;
 }
 
 /**
@@ -1088,80 +1088,80 @@ export interface QueryDisposeResult {
 
 // ------------------------------- < Query Execution Complete Notification > ------------------------------------
 export namespace QueryExecuteCompleteNotification {
-    export const type: NotificationType<QueryExecuteCompleteNotificationResult> = { get method(): string { return 'query/complete'; } };
+	export const type: NotificationType<QueryExecuteCompleteNotificationResult> = { get method(): string { return 'query/complete'; } };
 }
 
 /**
  * Result received upon successful execution of a query
  */
 export interface QueryExecuteCompleteNotificationResult {
-    ownerUri: string;
-    batchSummaries: BatchSummary[];
+	ownerUri: string;
+	batchSummaries: BatchSummary[];
 }
 
 // ------------------------------- < Query Batch Start  Notification > ------------------------------------
 export namespace QueryExecuteBatchStartNotification {
-    export const type: NotificationType<QueryExecuteBatchNotificationParams> = { get method(): string { return 'query/batchStart'; } };
+	export const type: NotificationType<QueryExecuteBatchNotificationParams> = { get method(): string { return 'query/batchStart'; } };
 }
 
 // ------------------------------- < Query Batch Complete Notification > ------------------------------------
 export namespace QueryExecuteBatchCompleteNotification {
-    export const type: NotificationType<QueryExecuteBatchNotificationParams> = { get method(): string { return 'query/batchComplete'; } };
+	export const type: NotificationType<QueryExecuteBatchNotificationParams> = { get method(): string { return 'query/batchComplete'; } };
 }
 
 // ------------------------------- < Query ResultSet Complete Notification > ------------------------------------
 export namespace QueryExecuteResultSetCompleteNotification {
-    export const type: NotificationType<QueryExecuteResultSetCompleteNotificationParams> = {  get method(): string { return 'query/resultSetComplete'; } };
+	export const type: NotificationType<QueryExecuteResultSetCompleteNotificationParams> = {  get method(): string { return 'query/resultSetComplete'; } };
 }
 
 export interface QueryExecuteResultSetCompleteNotificationParams {
-    resultSetSummary: ResultSetSummary;
-    ownerUri: string;
+	resultSetSummary: ResultSetSummary;
+	ownerUri: string;
 }
 
 // ------------------------------- < Query Message Notification > ------------------------------------
 export namespace QueryExecuteMessageNotification {
-    export const type: NotificationType<QueryExecuteMessageParams> = { get method(): string { return 'query/message'; } };
+	export const type: NotificationType<QueryExecuteMessageParams> = { get method(): string { return 'query/message'; } };
 }
 
 export class QueryExecuteMessageParams {
-    message: IResultMessage;
-    ownerUri: string;
+	message: IResultMessage;
+	ownerUri: string;
 }
 
 // ------------------------------- < Query Execution Request > ------------------------------------
 export namespace QueryExecuteRequest {
-    export const type: RequestType<QueryExecuteParams, QueryExecuteResult, void> = { get method(): string { return 'query/executeDocumentSelection'; } };
+	export const type: RequestType<QueryExecuteParams, QueryExecuteResult, void> = { get method(): string { return 'query/executeDocumentSelection'; } };
 }
 
 export interface QueryExecuteParams {
-    ownerUri: string;
-    querySelection: ISelectionData;
+	ownerUri: string;
+	querySelection: ISelectionData;
 }
 
 export interface QueryExecuteResult {}
 
 // ------------------------------- < Query Results Request > ------------------------------------
 export namespace QueryExecuteSubsetRequest {
-    export const type: RequestType<QueryExecuteSubsetParams, QueryExecuteSubsetResult, void> = { get method(): string { return 'query/subset'; } };
+	export const type: RequestType<QueryExecuteSubsetParams, QueryExecuteSubsetResult, void> = { get method(): string { return 'query/subset'; } };
 }
 
 export interface QueryExecuteSubsetParams {
-    ownerUri: string;
-    batchIndex: number;
-    resultSetIndex: number;
-    rowsStartIndex: number;
-    rowsCount: number;
+	ownerUri: string;
+	batchIndex: number;
+	resultSetIndex: number;
+	rowsStartIndex: number;
+	rowsCount: number;
 }
 
 export interface ResultSetSubset {
-    rowCount: number;
-    rows: any[][];
+	rowCount: number;
+	rows: any[][];
 }
 
 export interface QueryExecuteSubsetResult {
-    message: string;
-    resultSubset: ResultSetSubset;
+	message: string;
+	resultSubset: ResultSetSubset;
 }
 
 // ------------------------------- < Metadata Events > ------------------------------------
@@ -1175,4 +1175,97 @@ export namespace MetadataQueryRequest {
 export namespace ScriptingSelectRequest {
     export const type: RequestType<ScriptingSelectParams, ScriptingSelectResult, void> = { get method(): string { return 'scripting/select'; } };
 
+}
+
+// Edit Data ======================================================================================
+// Shared Interfaces --------------------------------------------------------------------------
+export interface EditSessionOperationParams {
+	ownerUri: string;
+}
+
+export interface EditRowOperationParams extends EditSessionOperationParams {
+	rowId: number;
+}
+
+// edit/commit --------------------------------------------------------------------------------
+export namespace EditCommitRequest {
+	export const type: RequestType<EditCommitParams, EditCommitResult, void> = {get method(): string {return 'edit/commit';}};
+}
+export interface EditCommitParams extends EditSessionOperationParams {}
+export interface EditCommitResult {}
+
+// edit/createRow -----------------------------------------------------------------------------
+export namespace EditCreateRowRequest {
+	export const type: RequestType<EditCreateRowParams, EditCreateRowResult, void> = {get method(): string {return 'edit/createRow';}};
+}
+export interface EditCreateRowParams extends EditSessionOperationParams {}
+export interface EditCreateRowResult {
+	defaultValues: string[];
+	newRowId: number;
+}
+
+// edit/deleteRow -----------------------------------------------------------------------------
+export namespace EditDeleteRowRequest {
+	export const type: RequestType<EditDeleteRowParams, EditDeleteRowResult, void> = {get method(): string {return 'edit/deleteRow';}};
+}
+export interface EditDeleteRowParams extends EditRowOperationParams {}
+export interface EditDeleteRowResult {}
+
+// edit/dispose -------------------------------------------------------------------------------
+export namespace EditDisposeRequest {
+	export const type: RequestType<EditDisposeParams, EditDisposeResult, void> = {get method(): string {return 'edit/dispose';}};
+}
+export interface EditDisposeParams extends EditSessionOperationParams {}
+export interface EditDisposeResult {}
+
+// edit/initialize ----------------------------------------------------------------------------
+export namespace EditInitializeRequest {
+	export const type: RequestType<EditInitializeParams, EditInitializeResult, void> = {get method(): string {return 'edit/initialize';}};
+}
+export interface EditInitializeParams extends EditSessionOperationParams {
+	objectName: string;
+	objectType: string;
+}
+export interface EditInitializeResult {}
+
+// edit/revertCell --------------------------------------------------------------------------------
+export namespace EditRevertCellRequest {
+	export const type: RequestType<EditRevertCellParams, EditRevertCellResult, void> = {get method(): string {return 'edit/revertCell';}};
+}
+export interface EditRevertCellParams extends EditRowOperationParams {
+	columnId: number;
+}
+export interface EditRevertCellResult {
+	newValue: string;
+}
+
+// edit/revertRow -----------------------------------------------------------------------------
+export namespace EditRevertRowRequest {
+	export const type: RequestType<EditRevertRowParams, EditRevertRowResult, void> = {get method(): string {return 'edit/revertRow';}};
+}
+export interface EditRevertRowParams extends EditRowOperationParams {}
+export interface EditRevertRowResult {}
+
+// edit/sessionReady Event --------------------------------------------------------------------
+export namespace EditSessionReadyNotification {
+    export const type: NotificationType<EditSessionReadyParams> = { get method(): string { return 'edit/sessionReady'; } };
+}
+export interface EditSessionReadyParams {
+	ownerUri: string;
+	success: boolean;
+}
+
+// edit/updateCell ----------------------------------------------------------------------------
+export namespace EditUpdateCellRequest {
+	export const type: RequestType<EditUpdateCellParams, EditUpdateCellResult, void> = {get method(): string {return 'edit/updateCell';}};
+}
+export interface EditUpdateCellParams extends EditRowOperationParams {
+	columnId: number;
+	newValue: string;
+}
+export interface EditUpdateCellResult {
+	hasCorrections: boolean;
+	isNull: boolean;
+	isRevert: boolean;
+	newValue: string;
 }

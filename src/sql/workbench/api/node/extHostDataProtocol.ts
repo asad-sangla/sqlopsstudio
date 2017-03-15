@@ -102,7 +102,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
-    $getQueryRows(handle: number, rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
+	$getQueryRows(handle: number, rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
 		return this._runWithProvider(handle, (provider) => {
 			return provider.queryProvider.getQueryRows(rowData);
 		});
@@ -128,6 +128,59 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 	}
 	$onQueryMessage(handle: number, message: data.QueryExecuteMessageParams): void {
 		this._proxy.$onQueryMessage(handle, message);
+	}
+
+	// Edit Data handlers
+	$commitEdit(handle: number, ownerUri: string): Thenable<void> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.commitEdit(ownerUri);
+		});
+	}
+
+	$createRow(handle: number, ownerUri: string): Thenable<carbon.EditCreateRowResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.createRow(ownerUri);
+		});
+	}
+
+	$deleteRow(handle: number, ownerUri: string, rowId: number): Thenable<void> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.deleteRow(ownerUri, rowId);
+		});
+	}
+
+	$disposeEdit(handle: number, ownerUri: string): Thenable<void> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.disposeEdit(ownerUri);
+		});
+	}
+
+	$initializeEdit(handle: number, ownerUri: string, objectName: string, objectType: string): Thenable<void> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.initializeEdit(ownerUri, objectName, objectType);
+		});
+	}
+
+	$revertCell(handle: number, ownerUri: string, rowId: number, columnId: number): Thenable<carbon.EditRevertCellResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.revertCell(ownerUri, rowId, columnId);
+		});
+	}
+
+	$revertRow(handle: number, ownerUri: string, rowId: number): Thenable<void> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.revertRow(ownerUri, rowId);
+		});
+	}
+
+	$updateCell(handle: number, ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<carbon.EditUpdateCellResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.updateCell(ownerUri, rowId, columnId, newValue);
+		});
+	}
+
+	$onEditSessionReady(handle: number, ownerUri: string, success: boolean): void {
+		this._proxy.$onEditSessionReady(handle, ownerUri, success);
 	}
 
 	// Metadata handlers

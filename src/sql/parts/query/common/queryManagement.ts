@@ -21,14 +21,16 @@ export interface IQueryManagementService {
 
 	cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult>;
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
-    getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
+	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
+
 
 	onQueryComplete(result: data.QueryExecuteCompleteNotificationResult): void;
 	onBatchStart(batchInfo: data.QueryExecuteBatchNotificationParams): void;
 	onBatchComplete(batchInfo: data.QueryExecuteBatchNotificationParams): void;
 	onResultSetComplete( resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void;
 	onMessage(message: data.QueryExecuteMessageParams): void;
+	onEditSessionReady(ownerUri: string, success: boolean): void;
 }
 
 /*
@@ -37,7 +39,7 @@ export interface IQueryManagementService {
 export interface QueryRequestHandler {
 	cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult>;
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
-    getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
+	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
 }
 
@@ -117,7 +119,7 @@ export class QueryManagementService implements IQueryManagementService {
 			return runner.runQuery(ownerUri, selection);
 		});
 	}
-    public getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
+	public getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
 		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
 			return runner.getQueryRows(rowData);
 		});
@@ -155,5 +157,8 @@ export class QueryManagementService implements IQueryManagementService {
 		this._notify(message.ownerUri, (runner: QueryRunner) => {
 			runner.handleMessage(message);
 		});
+	}
+	public onEditSessionReady(ownerUri: string, success: boolean): void {
+		// TODO: Implement logic
 	}
 }

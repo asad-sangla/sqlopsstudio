@@ -213,6 +213,19 @@ declare module 'data' {
 		registerOnBatchComplete(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any): void;
 		registerOnResultSetComplete(handler: (resultSetInfo: QueryExecuteResultSetCompleteNotificationParams) => any): void;
 		registerOnMessage(handler: (message: QueryExecuteMessageParams) => any): void;
+
+		// Edit Data Requests
+		commitEdit(ownerUri: string): Thenable<void>;
+		createRow(ownerUri: string): Thenable<EditCreateRowResult>;
+		deleteRow(ownerUri: string, rowId: number): Thenable<void>;
+		disposeEdit(ownerUri: string): Thenable<void>;
+		initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void>;
+		revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult>;
+		revertRow(ownerUri: string, rowId: number): Thenable<void>;
+		updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult>;
+
+		// Edit Data Notifications
+		registerOnEditSessionReady(handler: (ownerUri: string, success: boolean) => any): void;
 	}
 
 	export interface IDbColumn {
@@ -333,5 +346,73 @@ declare module 'data' {
 
 	export interface QueryCancelResult {
 		messages: string;
+	}
+
+	// Edit Data ==================================================================================
+	// Shared Interfaces --------------------------------------------------------------------------
+	export interface IEditSessionOperationParams {
+		ownerUri: string;
+	}
+
+	export interface IEditRowOperationParams extends IEditSessionOperationParams {
+		rowId: number;
+	}
+
+	// edit/commit --------------------------------------------------------------------------------
+	export interface EditCommitParams extends IEditSessionOperationParams {	}
+	export interface EditCommitResult {}
+
+	// edit/createRow -----------------------------------------------------------------------------
+	export interface EditCreateRowParams extends IEditSessionOperationParams { }
+	export interface EditCreateRowResult {
+		defaultValues: string[];
+		newRowId: number;
+	}
+
+	// edit/deleteRow -----------------------------------------------------------------------------
+	export interface EditDeleteRowParams extends IEditRowOperationParams { }
+	export interface EditDeleteRowResult { }
+
+	// edit/dispose -------------------------------------------------------------------------------
+	export interface EditDisposeParams extends IEditSessionOperationParams { }
+	export interface EditDisposeResult { }
+
+	// edit/initialize ----------------------------------------------------------------------------
+	export interface EditInitializeParams extends IEditSessionOperationParams {
+		objectName: string;
+		objectType: string;
+	}
+
+	export interface EditInitializeResult { }
+
+	// edit/revertCell ----------------------------------------------------------------------------
+	export interface EditRevertCellParams extends IEditRowOperationParams {
+		columnId: number;
+	}
+	export interface EditRevertCellResult {
+		newValue: string;
+	}
+
+	// edit/revertRow -----------------------------------------------------------------------------
+	export interface EditRevertRowParams extends IEditRowOperationParams { }
+	export interface EditRevertRowResult { }
+
+	// edit/sessionReady Event --------------------------------------------------------------------
+	export interface EditSessionReadyParams {
+		ownerUri: string;
+		success: boolean;
+	}
+
+	// edit/updateCell ----------------------------------------------------------------------------
+	export interface EditUpdateCellParams extends IEditRowOperationParams {
+		columnId: number;
+		newValue: string;
+	}
+
+	export interface EditUpdateCellResult {
+		hasCorrections: boolean;
+		isNull: boolean;
+		isRevert: boolean;
+		newValue: string;
 	}
 }
