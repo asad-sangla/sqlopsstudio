@@ -31,6 +31,7 @@ import { RecentConnectionsRenderer, RecentConnectionsDragAndDrop } from 'sql/par
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
+import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 
 /**
  * Extends the tree controller to handle clicks on the tree elements
@@ -41,7 +42,8 @@ export class ConnectionTreeController extends treedefaults.DefaultController {
 		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
 		@IContextMenuService private contextMenuService: IContextMenuService,
 		@ITelemetryService private telemetryService: ITelemetryService,
-		@IKeybindingService private keybindingService: IKeybindingService
+		@IKeybindingService private keybindingService: IKeybindingService,
+		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 	) {
 		super({ clickBehavior: treedefaults.ClickBehavior.ON_MOUSE_DOWN });
 	}
@@ -173,10 +175,11 @@ export class TreeUtils {
 	/**
 	 * Convert interface to match connection management API
 	 */
-	public static convertToConnectionProfile(conns: IConnectionProfile[]): ConnectionProfile[] {
+	public static convertToConnectionProfile(conns: ConnectionProfile[]): ConnectionProfile[] {
 		let connections = [];
+
 		conns.forEach((conn) => {
-			connections.push(new ConnectionProfile(conn));
+			connections.push(conn);
 		});
 		return connections;
 	}

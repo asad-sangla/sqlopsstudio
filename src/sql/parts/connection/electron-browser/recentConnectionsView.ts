@@ -118,9 +118,9 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 		}, errors.onUnexpectedError);
 	}
 
-	private convertToConnectionProfile(conns: IConnectionProfile[]) : ConnectionProfile[]{
+	private convertToConnectionProfile(conns: ConnectionProfile[]) : ConnectionProfile[] {
 		let connections = [];
-		conns.forEach((conn) => { connections.push(new ConnectionProfile(conn));
+		conns.forEach((conn) => { connections.push(conn);
 			});
 		return connections;
 	}

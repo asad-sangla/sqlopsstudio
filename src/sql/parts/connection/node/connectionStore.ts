@@ -19,6 +19,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
+import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import data = require('data');
 
 /**
@@ -36,13 +37,15 @@ export class ConnectionStore {
 		private _context: Memento,
 		private _configurationEditService: IConfigurationEditingService,
 		private _workspaceConfigurationService: IWorkspaceConfigurationService,
-		private _credentialService?: ICredentialsService,
-		private _connectionConfig?: IConnectionConfig) {
+		private _credentialService: ICredentialsService,
+		private _capabilitiesService: ICapabilitiesService,
+		private _connectionConfig?: IConnectionConfig
+	) {
 
 		this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
 
 		if (!this._connectionConfig) {
-			this._connectionConfig = new ConnectionConfig(this._configurationEditService, this._workspaceConfigurationService);
+			this._connectionConfig = new ConnectionConfig(this._configurationEditService, this._workspaceConfigurationService, this._capabilitiesService);
 		}
 	}
 
@@ -147,9 +150,10 @@ export class ConnectionStore {
 			// Add the profile to the saved list, taking care to clear out the password field if necessary
 			let savedProfile: IConnectionProfile;
 			if (forceWritePlaintextPassword) {
-				savedProfile = Object.assign({}, profile);
+				savedProfile = profile;
 			} else {
-				savedProfile = Object.assign({}, profile, { password: '' });
+
+				savedProfile = this.getProfileWithoutPassword(profile);
 			}
 
 			self._connectionConfig.addConnection(savedProfile)
@@ -176,12 +180,19 @@ export class ConnectionStore {
 	 *
 	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
 	 */
-	public getRecentlyUsedConnections(): IConnectionProfile[] {
+	public getRecentlyUsedConnections(): ConnectionProfile[] {
 		let configValues: IConnectionProfile[] = this._memento['RECENT_CONNECTIONS'];
 		if (!configValues) {
 			configValues = [];
 		}
-		return configValues;
+
+		configValues = configValues.filter(c => !!(c));
+		return configValues.map(c => {
+			if (c) {
+				let capabilities = this._connectionConfig.getCapabilities(c.providerName);
+				return new ConnectionProfile(capabilities, c);
+			}
+		});
 	}
 
 	/**
@@ -192,6 +203,12 @@ export class ConnectionStore {
 		let activeConnections: IConnectionProfile[] = this._memento['ACTIVE_CONNECTIONS'];
 		let recentConnections: IConnectionProfile[] = this._memento['RECENT_CONNECTIONS'];
 		recentConnections = activeConnections.concat(recentConnections);
+		let maxConnections = this.getMaxRecentConnectionsCount();
+		// Remove last element if needed
+		if (recentConnections.length > maxConnections) {
+			recentConnections = recentConnections.slice(0, maxConnections);
+		}
+
 		this._memento['RECENT_CONNECTIONS'] = recentConnections;
 		this._memento['ACTIVE_CONNECTIONS'] = [];
 	}
@@ -202,45 +219,30 @@ export class ConnectionStore {
 	 *
 	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
 	 */
-	public getActiveConnections(): IConnectionProfile[] {
+	public getActiveConnections(): ConnectionProfile[] {
 		let configValues: IConnectionProfile[] = this._memento['ACTIVE_CONNECTIONS'];
 		if (!configValues) {
 			configValues = [];
 		}
-		return configValues;
+
+		return configValues.map(c => {
+			let capabilities = this._connectionConfig.getCapabilities(c.providerName);
+			return new ConnectionProfile(capabilities, c);
+		});
 	}
 
-	/**
-	 * Adds a connection to the recently used list.
-	 * Password values are stored to a separate credential store if the "savePassword" option is true
-	 *
-	 * @param {IConnectionCredentials} conn the connection to add
-	 * @returns {Promise<void>} a Promise that returns when the connection was saved
-	 */
-	public addRecentlyUsed(conn: IConnectionProfile): Promise<void> {
-
-		const self = this;
-		return new Promise<void>((resolve, reject) => {
-			// Get all profiles
-			let configValues = self.getRecentlyUsedConnections();
-			let maxConnections = self.getMaxRecentConnectionsCount();
-
-			// Remove the connection from the list if it already exists
-			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
-
+	public getProfileWithoutPassword(conn: IConnectionProfile): ConnectionProfile {
+		let savedConn: ConnectionProfile = undefined;
+		let connectionProfileInstance = conn as ConnectionProfile;
+		if (connectionProfileInstance) {
+			savedConn = connectionProfileInstance.withoutPassword();
+		} else {
 			// Add the connection to the front of the list, taking care to clear out the password field
-			let savedConn: IConnectionProfile = Object.assign({}, conn, { password: '' });
-			configValues.unshift(savedConn);
+			let connProfile: IConnectionProfile = Object.assign({}, conn, { password: '' });
+			savedConn = new ConnectionProfile(this._connectionConfig.getCapabilities(conn.providerName), connProfile);
+		}
 
-			// Remove last element if needed
-			if (configValues.length > maxConnections) {
-				configValues = configValues.slice(0, maxConnections);
-			}
-
-			this._memento['RECENT_CONNECTIONS'] = configValues;
-			self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
-			resolve(undefined);
-		});
+		return savedConn;
 	}
 
 	/**
@@ -257,19 +259,22 @@ export class ConnectionStore {
 			// Get all profiles
 			let configValues = self.getActiveConnections();
 			let maxConnections = self.getMaxRecentConnectionsCount();
+			let savedProfile: ConnectionProfile = this.getProfileWithoutPassword(conn);
 
 			// Remove the connection from the list if it already exists
-			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
+			configValues = configValues.filter(value => value.getUniqueId() !== savedProfile.getUniqueId());
 
-			// Add the connection to the front of the list, taking care to clear out the password field
-			let savedConn: IConnectionProfile = Object.assign({}, conn, { password: '' });
-			configValues.unshift(savedConn);
+			configValues.unshift(savedProfile);
 
 			// Remove last element if needed
 			if (configValues.length > maxConnections) {
 				configValues = configValues.slice(0, maxConnections);
 			}
-			this._memento['ACTIVE_CONNECTIONS'] = configValues;
+
+			let configToSave = configValues.map(c => {
+				return c.toIConnectionProfile();
+			});
+			this._memento['ACTIVE_CONNECTIONS'] = configToSave;
 			self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
 			resolve(undefined);
 		});
@@ -281,6 +286,16 @@ export class ConnectionStore {
 	public clearRecentlyUsed(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			this._memento['RECENT_CONNECTIONS'] = [];
+			resolve();
+		});
+	}
+
+	/**
+	 * Clear all active connections from the MRU list.
+	 */
+	public clearActiveConnections(): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			this._memento['ACTIVE_CONNECTIONS'] = [];
 			resolve();
 		});
 	}
@@ -395,20 +410,16 @@ export class ConnectionStore {
 		return connectionProfileGroups;
 	}
 
-	public getRecentConnections(): IConnectionProfile[] {
-		return this._connectionConfig.getConnections(true);
-	}
-
-	private convertToConnectionGroup(groups: IConnectionProfileGroup[], connections: IConnectionProfile[], parent: ConnectionProfileGroup = undefined): ConnectionProfileGroup[] {
-		let result : ConnectionProfileGroup[] = [];
+	private convertToConnectionGroup(groups: IConnectionProfileGroup[], connections: ConnectionProfile[], parent: ConnectionProfileGroup = undefined): ConnectionProfileGroup[] {
+		let result: ConnectionProfileGroup[] = [];
 		let children = groups.filter(g => g.parentId === (parent ? parent.id : undefined));
-		if(children) {
-			children.map( group => {
+		if (children) {
+			children.map(group => {
 				let connectionGroup = new ConnectionProfileGroup(group.name, parent, group.id);
 				let connectionsForGroup = connections.filter(conn => conn.groupId === connectionGroup.id);
 				var conns = [];
 				connectionsForGroup.forEach((conn) => {
-					conns.push(new ConnectionProfile(conn));
+					conns.push(conn);
 				});
 				connectionGroup.addConnections(conns);
 
@@ -416,11 +427,11 @@ export class ConnectionStore {
 				connectionGroup.addGroups(childrenGroups);
 				result.push(connectionGroup);
 			});
-			if(parent) {
+			if (parent) {
 				parent.addGroups(result);
 			}
 		}
-        return result;
+		return result;
 	}
 
 	private loadProfiles(loadWorkspaceProfiles: boolean): IConnectionProfile[] {
@@ -438,11 +449,11 @@ export class ConnectionStore {
 		return maxConnections;
 	}
 
-    public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
-        return this._connectionConfig.changeGroupIdForConnectionGroup(source, target);
-    }
+	public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
+		return this._connectionConfig.changeGroupIdForConnectionGroup(source, target);
+	}
 
-    public changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
-        return this._connectionConfig.changeGroupIdForConnection(source, targetGroupId);
-    }
+	public changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
+		return this._connectionConfig.changeGroupIdForConnection(source, targetGroupId);
+	}
 }

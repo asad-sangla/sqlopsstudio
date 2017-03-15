@@ -236,13 +236,18 @@ export class ConnectionDialogWidget {
 		return this.model;
 	}
 
+	private getModelValue(value: string): string {
+		return !!value ? value : ''
+	}
+
 	public setConnection(model: IConnectionProfile) {
-		this.serverNameInputBox.value = model.serverName;
-		this.databaseNameInputBox.value = model.databaseName;
-		this.userNameInputBox.value = model.userName;
-		this.passwordInputBox.value = model.password;
-		this.serverGroupInputBox.value = model.groupName;
-		this.authenticationType = model.authenticationType;
+		this.model = model;
+		this.serverNameInputBox.value = this.getModelValue(model.serverName);
+		this.databaseNameInputBox.value = this.getModelValue(model.databaseName);
+		this.userNameInputBox.value = this.getModelValue(model.userName);
+		this.passwordInputBox.value = this.getModelValue(model.password);
+		this.serverGroupInputBox.value = this.getModelValue(model.groupName);
+		this.authenticationType = this.getModelValue(model.authenticationType);
 		this.initDialog();
 	}
 
@@ -321,16 +326,15 @@ export class ConnectionDialogWidget {
 
 	public connect(): void {
 		if (this.validateInputs()) {
-			this.model = {
-				serverName: this.serverName,
-				databaseName: this.databaseName,
-				userName: this.userName,
-				password: this.password,
-				authenticationType: this.authenticationType,
-				savePassword: this.rememberPassword.checked,
-				groupName: this.serverGroup,
-				groupId: undefined
-			};
+
+			this.model.serverName = this.serverName;
+			this.model.databaseName = this.databaseName;
+			this.model.userName = this.userName;
+			this.model.password = this.password;
+			this.model.authenticationType = this.authenticationType;
+			this.model.savePassword = this.rememberPassword.checked;
+			this.model.groupName = this.serverGroup;
+			this.model.groupId = undefined;
 
 			this.connectButton.enabled = false;
 			this.callbacks.onConnect();
@@ -343,7 +347,7 @@ export class ConnectionDialogWidget {
 
 	public cancel() {
 		this.callbacks.onCancel();
-		this.close();
+		this.close();	
 	}
 
 	public close() {

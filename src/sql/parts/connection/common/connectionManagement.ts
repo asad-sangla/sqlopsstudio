@@ -40,9 +40,10 @@ export interface IConnectionManagementService {
 
 	getConnectionGroups(): ConnectionProfileGroup[];
 
+	getRecentConnections(): ConnectionProfile[];
+
 	getActiveConnections(): data.ConnectionInfo[];
 
-	getRecentConnections(): data.ConnectionInfo[];
 
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
 
@@ -65,7 +66,7 @@ export interface IConnectionManagementService {
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
 export interface IConnectionDialogService {
 	_serviceBrand: any;
-	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams): TPromise<void>;
+	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model: IConnectionProfile): TPromise<void>;
 }
 
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');

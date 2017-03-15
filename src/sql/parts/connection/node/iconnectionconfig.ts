@@ -6,7 +6,8 @@
 
 import { IConnectionProfile } from './interfaces';
 import { IConnectionProfileGroup, ConnectionProfileGroup } from './connectionProfileGroup';
-import vscode = require('vscode');
+import { ConnectionProfile } from './connectionProfile';
+import data = require('data');
 
 /**
  * Interface for a configuration file that stores connection profiles.
@@ -16,9 +17,11 @@ import vscode = require('vscode');
  */
 export interface IConnectionConfig {
     addConnection(profile: IConnectionProfile): Promise<void>;
-    getConnections(getWorkspaceConnections: boolean): IConnectionProfile[];
+    getConnections(getWorkspaceConnections: boolean): ConnectionProfile[];
     removeConnection(profile: IConnectionProfile): Promise<boolean>;
     getAllGroups(): IConnectionProfileGroup[];
     changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void>;
     changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void>;
+    getMetadata(): data.DataProtocolServerCapabilities[];
+    getCapabilities(providerName: string);
 }
