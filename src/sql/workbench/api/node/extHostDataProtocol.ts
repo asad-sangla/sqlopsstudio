@@ -137,7 +137,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
-	$createRow(handle: number, ownerUri: string): Thenable<carbon.EditCreateRowResult> {
+	$createRow(handle: number, ownerUri: string): Thenable<data.EditCreateRowResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.queryProvider.createRow(ownerUri);
 		});
@@ -161,7 +161,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
-	$revertCell(handle: number, ownerUri: string, rowId: number, columnId: number): Thenable<carbon.EditRevertCellResult> {
+	$revertCell(handle: number, ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.queryProvider.revertCell(ownerUri, rowId, columnId);
 		});
@@ -173,7 +173,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
-	$updateCell(handle: number, ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<carbon.EditUpdateCellResult> {
+	$updateCell(handle: number, ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.queryProvider.updateCell(ownerUri, rowId, columnId, newValue);
 		});

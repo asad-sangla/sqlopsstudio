@@ -104,7 +104,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Creates a new row in the edit session
 	 */
-	$createRow(handle: number, ownerUri: string): Thenable<carbon.EditCreateRowResult> { throw ni(); }
+	$createRow(handle: number, ownerUri: string): Thenable<data.EditCreateRowResult> { throw ni(); }
 
 	/**
 	 * Marks the selected row for deletion in the edit session
@@ -119,7 +119,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Reverts any pending changes for the requested cell and returns the original value
 	 */
-	$revertCell(handle: number, ownerUri: string, rowId: number, columnId: number): Thenable<carbon.EditRevertCellResult> { throw ni(); }
+	$revertCell(handle: number, ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult> { throw ni(); }
 
 	/**
 	 * Reverts any pending changes for the requested row
@@ -129,12 +129,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Updates a cell value in the requested row. Returns if there are any corrections to the value
 	 */
-	$updateCell(handle: number, ownerUri: string, rowId: number, columId: number, newValue: string): Thenable<carbon.EditUpdateCellResult> { throw ni(); }
-
-	/**
-	 * Callback when a session has completed initialization
-	 */
-	$onEditSessionReady(handle: number, ownerUri: string, success: boolean) { throw ni(); }
+	$updateCell(handle: number, ownerUri: string, rowId: number, columId: number, newValue: string): Thenable<data.EditUpdateCellResult> { throw ni(); }
 }
 
 /**
@@ -158,6 +153,11 @@ export abstract class MainThreadDataProtocolShape {
 	$onBatchComplete(handle: number, batchInfo: data.QueryExecuteBatchNotificationParams): void { throw ni(); }
 	$onResultSetComplete(handle: number, resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void { throw ni(); }
 	$onQueryMessage(handle: number, message: data.QueryExecuteMessageParams): void { throw ni(); }
+
+	/**
+	 * Callback when a session has completed initialization
+	 */
+	$onEditSessionReady(handle: number, ownerUri: string, success: boolean) { throw ni(); }
 }
 
 export abstract class MainThreadCredentialManagementShape {
