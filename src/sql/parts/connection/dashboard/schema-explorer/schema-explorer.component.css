@@ -2422,10 +2422,6 @@ button.ui-button::-moz-focus-inner {
    right: 0;
 }
 
-.ui-lightbox-loading {
-    background: url("./images/loading.gif") #000000 center center no-repeat;
-}
-
 .ui-lightbox-caption {
     padding: 0.2em 0.4em;
     display: none;
@@ -3231,7 +3227,6 @@ button.ui-button::-moz-focus-inner {
 
 .ui-password-panel .ui-password-meter {
     height: 10px;
-    background:transparent url("./images/password-meter.png") no-repeat left top;
     padding: 0;
     margin: 0;
 }
@@ -4102,7 +4097,6 @@ button.ui-button::-moz-focus-inner {
 }
 
 .ui-tree.ui-tree-horizontal .ui-treenode {
-    background: url("./images/line.gif") repeat-x scroll center center transparent;
     padding: .25em 2.5em;
 }
 
@@ -4126,7 +4120,6 @@ button.ui-button::-moz-focus-inner {
 }
 
 .ui-tree.ui-tree-horizontal .ui-treenode-connector-line {
-    background: url("./images/line.gif") repeat-y scroll 0 0 transparent;
     width: 1px;
 }
 
