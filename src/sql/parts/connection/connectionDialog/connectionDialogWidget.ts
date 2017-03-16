@@ -25,7 +25,7 @@ import data = require('data');
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
 	onCancel: () => void;
-	onShowUiComponent: (container: Builder) => void;
+	onShowUiComponent: () => HTMLElement;
 	onInitDialog: () => void;
 	onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => void;
 }
@@ -70,16 +70,30 @@ export class ConnectionDialogWidget {
 
 		this._dialog.bodyContainer.div({class:'connection-recent', id: 'recentConnection'});
 		this._dialog.addErrorMessage();
-
-		// Show connection form based on server type
-		this._callbacks.onShowUiComponent(this._dialog.bodyContainer);
+		this._dialog.bodyContainer.div({class:'connection-provider-info', id: 'connectionProviderInfo'});
 
 		this._connectButton = this.createFooterButton(this._dialog.footerContainer, 'Connect');
 		this._connectButton.enabled = false;
 		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
 
 		this._builder.build(this._container);
+		this.registerListeners();
+		this.onProviderTypeSelected(this._providerTypeSelectBox.value);
+
 		return this._builder.getHTMLElement();
+	}
+
+
+	private registerListeners(): void {
+		this._toDispose.push(this._providerTypeSelectBox.onDidSelect(selectedProviderType => {
+			this.onProviderTypeSelected(selectedProviderType);
+		}));
+	}
+
+	private onProviderTypeSelected(selectedProviderType: string) {
+		// Show connection form based on server type
+		jQuery('#connectionProviderInfo').empty();
+		jQuery('#connectionProviderInfo').append(this._callbacks.onShowUiComponent);
 	}
 
 	private createFooterButton(container: Builder, title: string): Button {
@@ -104,8 +118,8 @@ export class ConnectionDialogWidget {
 
 	public connect(): void {
 		this._connectButton.enabled = false;
-		this._callbacks.onConnect();
 		this._dialog.showSpinner();
+		this._callbacks.onConnect();
 	}
 
 	public cancel() {

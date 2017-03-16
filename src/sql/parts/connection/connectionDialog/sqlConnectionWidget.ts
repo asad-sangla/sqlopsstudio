@@ -8,7 +8,7 @@
 import 'vs/css!./media/bootstrap';
 import 'vs/css!./media/bootstrap-theme';
 import 'vs/css!./media/sqlConnection';
-import { Builder } from 'vs/base/browser/builder';
+import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
@@ -18,9 +18,6 @@ import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDi
 import * as lifecycle from 'vs/base/common/lifecycle';
 import * as platform from 'vs/base/common/platform';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import DOM = require('vs/base/browser/dom');
-import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { KeyCode } from 'vs/base/common/keyCodes';
 
 export class SqlConnectionWidget {
 	private _builder: Builder;
@@ -52,9 +49,8 @@ export class SqlConnectionWidget {
 		}
 	}
 
-	public createSqlConnectionWidget(container: Builder): void {
-		this._builder = container;
-		this._builder.div({class:'connection-table'}, (modelTableContent) => {
+	public createSqlConnectionWidget(): HTMLElement {
+		this._builder = $().div({class:'connection-table'}, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this._serverNameInputBox = ConnectionDialogHelper.appendInputBox(
 					ConnectionDialogHelper.appendRow(tableContainer, 'Server Name', 'connection-label', 'connection-input'));
@@ -76,16 +72,7 @@ export class SqlConnectionWidget {
 		});
 		this.registerListeners();
 		this.onAuthTypeSelected(this._authTypeSelectBox.value);
-		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter)) {
-				if (this._callbacks.onGetConnectButton) {
-					this._callbacks.onConnect();
-				}
-			} else if (event.equals(KeyCode.Escape)) {
-				this._callbacks.onCancel();
-			}
-		});
+		return this._builder.getHTMLElement();
 	}
 
 	private createAdvancedButton(container: Builder, title: string): Button {
@@ -203,8 +190,17 @@ export class SqlConnectionWidget {
 		this._userNameInputBox.value = this.getModelValue(connectionInfo.userName);
 		this._passwordInputBox.value = this.getModelValue(connectionInfo.password);
 		this._serverGroupInputBox.value = this.getModelValue(connectionInfo.groupName);
-		this._authTypeSelectBox.selectWithOptionName(connectionInfo.authenticationType);
 		this._rememberPassword.checked = !ConnectionDialogHelper.isEmptyString(connectionInfo.password);
+
+		switch (connectionInfo.authenticationType) {
+			case 'SqlLogin':
+				this._authTypeSelectBox.selectWithOptionName(this._SqlAuthTypeName);
+				break;
+			default:
+				this._authTypeSelectBox.selectWithOptionName(this._WindowsAuthTypeName);
+				break;
+		}
+		this.onAuthTypeSelected(this._authTypeSelectBox.value);
 	}
 
 	public get serverGroup(): string {
@@ -278,7 +274,6 @@ export class SqlConnectionWidget {
 	}
 
 	public dispose(): void {
-		this._builder.off(DOM.EventType.KEY_DOWN);
 		this._toDispose = lifecycle.dispose(this._toDispose);
 	}
 }

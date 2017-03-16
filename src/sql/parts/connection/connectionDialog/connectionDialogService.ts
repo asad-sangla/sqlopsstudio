@@ -19,15 +19,12 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import Severity from 'vs/base/common/severity';
 
 export interface IConnectionComponentCallbacks {
-	onConnect: () => void;
-	onCancel: () => void;
-	onGetConnectButton: () => boolean;
 	onSetConnectButton: (enable: boolean) => void;
 	onAdvancedProperties?: () => void;
 }
 
 export interface IConnectionComponentController {
-	showSqlUiComponent(container: Builder): void;
+	showSqlUiComponent(): HTMLElement;
 	initDialog(model: IConnectionProfile): void;
 	validateConnection(model: IConnectionProfile): boolean;
 	fillInConnectionInputs(connectionInfo: IConnectionProfile): void;
@@ -93,25 +90,18 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private get sqlUiController(): SqlConnectionController {
 		if (!this._sqlConnectionController) {
 			this._sqlConnectionController = new SqlConnectionController(this._container, this._connectionManagementService, {
-				onCancel: () => this.handleOnCancel(this._connectionDialog.newConnectionParams),
-				onConnect: () => this.handleOnConnect(this._connectionDialog.newConnectionParams),
-				onGetConnectButton: () => this.handleGetConnectButtonEnable(),
 				onSetConnectButton: (enable: boolean) => this.handleSetConnectButtonEnable(enable)
 			});
 		}
 		return this._sqlConnectionController;
 	}
 
-	private handleGetConnectButtonEnable(): boolean {
-		return this._connectionDialog.connectButtonEnabled;
-	}
-
 	private handleSetConnectButtonEnable(enable: boolean): void {
 		this._connectionDialog.connectButtonEnabled = enable;
 	}
 
-	private handleShowUiComponent(container: Builder): void {
-		this.sqlUiController.showSqlUiComponent(container);
+	private handleShowUiComponent(): HTMLElement {
+		return this.sqlUiController.showSqlUiComponent();
 	}
 
 	private handleInitDialog(): void {
@@ -142,7 +132,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			this._connectionDialog = this._instantiationService.createInstance(ConnectionDialogWidget, container, {
 				onCancel: () => this.handleOnCancel(this._connectionDialog.newConnectionParams),
 				onConnect: () => this.handleOnConnect(this._connectionDialog.newConnectionParams),
-				onShowUiComponent: (container: Builder) => this.handleShowUiComponent(container),
+				onShowUiComponent: () => this.handleShowUiComponent(),
 				onInitDialog: () => this.handleInitDialog(),
 				onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => this.handleFillInConnectionInputs(connectionInfo)
 			});

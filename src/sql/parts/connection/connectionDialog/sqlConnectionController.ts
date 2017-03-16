@@ -10,7 +10,6 @@ import { IConnectionComponentCallbacks, IConnectionComponentController } from 's
 import { SqlConnectionWidget } from 'sql/parts/connection/connectionDialog/sqlConnectionWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import { Builder } from 'vs/base/browser/builder';
 
 export class SqlConnectionController implements IConnectionComponentController {
 	private _container: HTMLElement;
@@ -24,9 +23,6 @@ export class SqlConnectionController implements IConnectionComponentController {
 		this._connectionManagementService = connectionManagementService;
 		this._callback = callback;
 		this._sqlConnectionWidget  = new SqlConnectionWidget({
-			onCancel: () => this._callback.onCancel(),
-			onConnect: () => this._callback.onConnect(),
-			onGetConnectButton: () => this._callback.onGetConnectButton(),
 			onSetConnectButton: (enable: boolean) => this._callback.onSetConnectButton(enable),
 			onAdvancedProperties: () => this.handleOnAdvancedProperties(),
 		});
@@ -44,8 +40,8 @@ export class SqlConnectionController implements IConnectionComponentController {
 		}
 	}
 
-	public showSqlUiComponent(container: Builder): void {
-		this._sqlConnectionWidget.createSqlConnectionWidget(container);
+	public showSqlUiComponent(): HTMLElement {
+		return this._sqlConnectionWidget.createSqlConnectionWidget();
 	}
 
 	public initDialog(model: IConnectionProfile): void {
