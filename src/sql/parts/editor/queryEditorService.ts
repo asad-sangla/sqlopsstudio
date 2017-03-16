@@ -7,6 +7,7 @@ import { EditorInput } from 'vs/workbench/common/editor';
 import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import URI from 'vs/base/common/uri';
@@ -50,7 +51,7 @@ export class QueryEditorService implements IQueryEditorService {
 			try {
 				// Create file path and file URI
 				let filePath = this.createUntitledSqlFilePath();
-				let docUri: URI = URI.parse(filePath);
+				let docUri: URI = URI.from({ scheme: UntitledEditorInput.SCHEMA, path: filePath });
 
 				// Create a sql document pane with accoutrements
 				const fileInput = this.untitledEditorService.createOrGet(docUri, 'sql');
@@ -87,7 +88,7 @@ export class QueryEditorService implements IQueryEditorService {
 			try {
 				// Create file path and file URI
 				let filePath = this.createEditDataFileName(tableName);
-				let docUri: URI = URI.parse(filePath);
+				let docUri: URI = URI.from({ scheme: UntitledEditorInput.SCHEMA, path: filePath });
 
 				// Create a sql document pane with accoutrements
 				const fileInput = this.untitledEditorService.createOrGet(docUri);
