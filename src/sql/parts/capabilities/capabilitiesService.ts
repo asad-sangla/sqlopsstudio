@@ -6,7 +6,9 @@
 'use strict';
 
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import data = require('data');
+import Event, { Emitter } from 'vs/base/common/event';
 
 export const SERVICE_ID = 'capabilitiesService';
 export const HOST_NAME = 'carbon';
@@ -29,6 +31,12 @@ export interface ICapabilitiesService {
 	 * Register a capabilities provider
 	 */
 	registerProvider(provider: data.CapabilitiesProvider): void;
+
+	/**
+	 * Event raised when a provider is registered
+	 */
+	onProviderRegisteredEvent: Event<data.DataProtocolServerCapabilities>;
+
 }
 
 /**
@@ -43,12 +51,19 @@ export class CapabilitiesService implements ICapabilitiesService {
 
 	private _capabilities: data.DataProtocolServerCapabilities[] = [];
 
+	private _onProviderRegistered : Emitter<data.DataProtocolServerCapabilities>;
+
 	private  _clientCapabilties: data.DataProtocolClientCapabilities = {
+
 		hostName: HOST_NAME,
         hostVersion: HOST_VERSION
 	};
 
+	private disposables: IDisposable[] = [];
+
 	constructor() {
+		this._onProviderRegistered = new Emitter<data.DataProtocolServerCapabilities>();
+		this.disposables.push(this._onProviderRegistered);
 	}
 
 	/**
@@ -68,6 +83,16 @@ export class CapabilitiesService implements ICapabilitiesService {
 		// request the capabilities from server
 		provider.getServerCapabilities(this._clientCapabilties).then(serverCapabilities => {
 			this._capabilities.push(serverCapabilities);
+			this._onProviderRegistered.fire(serverCapabilities);
 		});
+	}
+
+	// Event Emitters
+	public get onProviderRegisteredEvent(): Event<data.DataProtocolServerCapabilities> {
+		return this._onProviderRegistered.event;
+	}
+
+	public dispose(): void {
+		this.disposables = dispose(this.disposables);
 	}
 }

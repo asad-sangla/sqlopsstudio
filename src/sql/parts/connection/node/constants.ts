@@ -13,6 +13,7 @@ export const outputChannelName = 'MSSQL';
 export const connectionConfigFilename = 'settings.json';
 export const connectionsArrayName = 'datasource.connections';
 export const connectionGroupsArrayName = 'datasource.connectionGroups';
+export const connectionMetadata = 'datasource.metadata';
 
 export const cmdRunQuery = 'extension.runQuery';
 export const cmdCancelQuery = 'extension.cancelQuery';

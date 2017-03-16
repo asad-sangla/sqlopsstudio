@@ -50,8 +50,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
-	getRecentConnections(): data.ConnectionInfo[] {
-
+	getRecentConnections(): ConnectionProfile[] {
 		return [];
 	}
 
@@ -77,5 +76,9 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	disconnectEditor(editor: QueryEditor): Promise<boolean>{
 		return new Promise<boolean>(() => true);
+	}
+
+	getCapabilities(): data.DataProtocolServerCapabilities[] {
+		return [];
 	}
 }

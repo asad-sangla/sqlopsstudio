@@ -87,7 +87,7 @@ export class ServerTreeRenderer implements IRenderer {
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
 		templateData.serverName.textContent = connection.serverName;
 		templateData.databaseName.textContent = connection.databaseName;
-		templateData.type.textContent = connection.type;
+		templateData.type.textContent = connection.providerName;
 	}
 
 	private renderConnectionProfileGroup(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {

@@ -4,64 +4,37 @@
 *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { IConnectionProfile, AuthenticationTypes } from './interfaces';
-import { ConnectionCredentials } from './connectionCredentials';
+import { IConnectionProfile } from './interfaces';
 import { ConnectionProfileGroup } from './connectionProfileGroup';
-import { QuestionTypes, IQuestion, IPrompter, INameValueChoice } from './question';
-import * as utils from './utils';
-import vscode = require('vscode');
+import data = require('data');
+import { ProviderConnectionInfo } from 'sql/parts/connection/node/providerConnectionInfo';
+import * as interfaces from 'sql/parts/connection/node/interfaces';
 
 // Concrete implementation of the IConnectionProfile interface
 
 /**
  * A concrete implementation of an IConnectionProfile with support for profile creation and validation
  */
-export class ConnectionProfile extends ConnectionCredentials implements IConnectionProfile {
-    public profileName: string;
-    public savePassword: boolean;
-    public groupName: string;
-    public groupId: string;
-    public parent: ConnectionProfileGroup = null;
-    public serverName: string;
-	public databaseName: string;
-	public type: string;
-	public id: string;
-	public userName: string;
-	public authenticationType: string;
+export class ConnectionProfile extends ProviderConnectionInfo implements interfaces.IConnectionProfile {
 
-	constructor(connectionProfile: IConnectionProfile) {
-		super();
-		this.savePassword = connectionProfile.savePassword;
-		this.groupName = connectionProfile.groupName;
-		this.serverName = connectionProfile.serverName;
-		this.databaseName = connectionProfile.databaseName;
-		this.userName = connectionProfile.userName;
-		this.authenticationType = connectionProfile.authenticationType;
-		this.groupId = connectionProfile.groupId;
-		this.id = this.groupId + ConnectionProfileGroup.GroupNameSeparator +
-					this.serverName + ConnectionProfileGroup.GroupNameSeparator +
-					this.databaseName + ConnectionProfileGroup.GroupNameSeparator +
-					this.authenticationType + ConnectionProfileGroup.GroupNameSeparator +
-					this.userName;
-		this.type = 'SQL';
+	public parent: ConnectionProfileGroup = null;
+	private _id: string;
+	public savePassword: boolean;
+	public groupName: string;
+	public groupId: string;
+
+	public constructor(optionsMetadata?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
+		super(optionsMetadata, model);
+		if (model) {
+			this.groupId = model.groupId;
+			this.groupName = model.groupName;
+			this.savePassword = model.savePassword;
+		}
 	}
 
-    // Assumption: having server + profile name indicates all requirements were met
-    private isValidProfile(): boolean {
-        if (this.authenticationType) {
-            if (this.authenticationType === AuthenticationTypes[AuthenticationTypes.Integrated]) {
-                return utils.isNotEmpty(this.serverName);
-            } else {
-                return utils.isNotEmpty(this.serverName)
-                    && utils.isNotEmpty(this.userName);
-            }
-        }
-        return false;
-    }
-
-    public get fullName(): string {
-		let fullName: string = this.groupId + ConnectionProfileGroup.GroupNameSeparator ;
-		if(this.parent) {
+	public get fullName(): string {
+		let fullName: string = this.groupId + ConnectionProfileGroup.GroupNameSeparator;
+		if (this.parent) {
 			fullName = this.parent.fullName + ConnectionProfileGroup.GroupNameSeparator + fullName;
 		}
 		return fullName;
@@ -71,10 +44,85 @@ export class ConnectionProfile extends ConnectionCredentials implements IConnect
 		if (!(other instanceof ConnectionProfile)) {
 			return false;
 		}
-		return other.id === this.id && other.serverName === this.serverName;
+		return other.getUniqueId() === this.getUniqueId() && other.serverName === this.serverName;
 	}
 
 	public getParent(): ConnectionProfileGroup {
 		return this.parent;
 	}
+
+	public get id(): string {
+		return this._id ? this._id : this.getUniqueId();
+	}
+
+	public set id(value: string) {
+		this._id = value;
+	}
+
+	public clone(): ConnectionProfile {
+		let instance = new ConnectionProfile(this._optionsMetadata, this);
+		return instance;
+	}
+
+	public withoutPassword(): ConnectionProfile {
+		let clone = this.clone();
+		clone.password = '';
+		return clone;
+	}
+
+	public getUniqueId(): string {
+		let id = super.getUniqueId();
+		return id + this.groupId;
+	}
+
+	public onProviderRegistered(serverCapabilities: data.DataProtocolServerCapabilities): void {
+		if (serverCapabilities.providerName === this.providerName) {
+			this.setOptionsMetadata(serverCapabilities);
+		}
+	}
+
+	public toIConnectionProfile(): IConnectionProfile {
+		let result: IConnectionProfile = {
+			serverName: this.serverName,
+			databaseName: this.databaseName,
+			authenticationType: this.authenticationType,
+			getUniqueId: undefined,
+			groupId: this.groupId,
+			groupName: this.groupName,
+			password: this.password,
+			providerName: this.providerName,
+			savePassword: this.savePassword,
+			userName: this.userName
+		};
+
+		return result;
+	}
+
+	public static createFromStoredProfile(profile: interfaces.IConnectionProfileStore, serverCapabilities: data.DataProtocolServerCapabilities): ConnectionProfile {
+		let connectionInfo = new ConnectionProfile(serverCapabilities, undefined);
+		connectionInfo.options = profile.options;
+		connectionInfo.groupId = profile.groupId;
+		connectionInfo.providerName = profile.providerName;
+		return connectionInfo;
+	}
+
+	public static convertToProfileStore(
+		optionsMetadata: data.DataProtocolServerCapabilities,
+		connectionProfile: IConnectionProfile): interfaces.IConnectionProfileStore {
+
+		let connectionInfo = connectionProfile as ConnectionProfile;
+		if(!connectionInfo) {
+			connectionInfo = new ConnectionProfile(optionsMetadata, connectionProfile);
+		}
+		let profile: interfaces.IConnectionProfileStore = {
+			options: {},
+			groupId: connectionProfile.groupId,
+			providerName: connectionInfo.providerName
+		};
+
+		profile.options = connectionInfo.options;
+
+		return profile;
+	}
+
 }

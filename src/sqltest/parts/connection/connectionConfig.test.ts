@@ -9,6 +9,7 @@
 import * as TypeMoq from 'typemoq';
 import { ConnectionConfig } from 'sql/parts/connection/node/connectionconfig';
 import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/node/interfaces';
+import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
@@ -17,8 +18,16 @@ import * as Constants from 'sql/parts/connection/node/constants';
 import { IConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as assert from 'assert';
+import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import data = require('data');
+import { Emitter } from 'vs/base/common/event';
 
-suite('ConnectionConfig tests', () => {
+suite('SQL ConnectionConfig tests', () => {
+	let capabilitiesService: TypeMoq.Mock<CapabilitiesService>;
+	let workspaceConfigurationServiceMock: TypeMoq.Mock<WorkspaceConfigurationTestService>;
+	let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService>;
+	let msSQLCapabilities: data.DataProtocolServerCapabilities;
+
 	let configValueToConcat: IWorkspaceConfigurationValue<IConnectionProfileGroup[]> = {
 		workspace: [{
 			name: 'g1',
@@ -136,6 +145,96 @@ suite('ConnectionConfig tests', () => {
 		],
 		default: []
 	};
+	setup(() => {
+		capabilitiesService = TypeMoq.Mock.ofType(CapabilitiesService);
+		let capabilities: data.DataProtocolServerCapabilities[] = [];
+		let connectionProvider: data.ConnectionProviderOptions = {
+			options: [
+				{
+					name: 'serverName',
+					displayName: undefined,
+					description: undefined,
+					groupName: undefined,
+					categoryValues: undefined,
+					defaultValue: undefined,
+					isIdentity: true,
+					isRequired: true,
+					specialValueType: 0,
+					valueType: 0
+				},
+				{
+					name: 'databaseName',
+					displayName: undefined,
+					description: undefined,
+					groupName: undefined,
+					categoryValues: undefined,
+					defaultValue: undefined,
+					isIdentity: true,
+					isRequired: true,
+					specialValueType: 1,
+					valueType: 0
+				},
+				{
+					name: 'userName',
+					displayName: undefined,
+					description: undefined,
+					groupName: undefined,
+					categoryValues: undefined,
+					defaultValue: undefined,
+					isIdentity: true,
+					isRequired: true,
+					specialValueType: 3,
+					valueType: 0
+				},
+				{
+					name: 'authenticationType',
+					displayName: undefined,
+					description: undefined,
+					groupName: undefined,
+					categoryValues: undefined,
+					defaultValue: undefined,
+					isIdentity: true,
+					isRequired: true,
+					specialValueType: 2,
+					valueType: 0
+				},
+				{
+					name: 'password',
+					displayName: undefined,
+					description: undefined,
+					groupName: undefined,
+					categoryValues: undefined,
+					defaultValue: undefined,
+					isIdentity: true,
+					isRequired: true,
+					specialValueType: 4,
+					valueType: 0
+				}
+			]
+		};
+		msSQLCapabilities = {
+			protocolVersion: '1',
+			providerName: 'MSSQL',
+			providerDisplayName: 'MSSQL',
+			connectionProvider: connectionProvider
+		};
+		capabilities.push(msSQLCapabilities);
+		let onProviderRegistered = new Emitter<data.DataProtocolServerCapabilities>();
+		capabilitiesService.setup(x => x.getCapabilities()).returns(() => capabilities);
+		capabilitiesService.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);
+
+		workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
+		configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
+		let metadataConfig: IWorkspaceConfigurationValue<IConnectionProfileGroup[]> = {
+			workspace: [],
+			user: [],
+			value: [],
+			default: []
+		};
+		let nothing: void;
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));;
+		workspaceConfigurationServiceMock.setup(x => x.lookup(Constants.connectionMetadata)).returns(() => metadataConfig);
+	});
 
 	function groupsAreEqual(groups1: IConnectionProfileGroup[], groups2: IConnectionProfileGroup[]): Boolean {
 		if (!groups1 && !groups2) {
@@ -168,14 +267,11 @@ suite('ConnectionConfig tests', () => {
 	}
 
 	test('allGroups should return groups from user and workspace settings', () => {
-
-		let configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		let workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
-
-		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfile[] | IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName))
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfile[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
 			.returns(() => configValueToConcat);
 
-		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		let allGroups = config.getAllGroups();
 
 
@@ -184,8 +280,6 @@ suite('ConnectionConfig tests', () => {
 	});
 
 	test('allGroups should merge groups from user and workspace settings', () => {
-		let configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		let workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
 		let expectedAllGroups: IConnectionProfileGroup[] = [
 			{
 				name: 'g1',
@@ -213,10 +307,11 @@ suite('ConnectionConfig tests', () => {
 				parentId: 'g1'
 			}];
 
-		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName))
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
 			.returns(() => configValueToMerge);
 
-		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		let allGroups = config.getAllGroups();
 
 
@@ -225,8 +320,6 @@ suite('ConnectionConfig tests', () => {
 	});
 
 	test('addConnection should add the new profile to user settings if does not exist', done => {
-		let configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		let workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
 		let newProfile: IConnectionProfile = {
 			serverName: 'new server',
 			databaseName: 'database',
@@ -235,19 +328,20 @@ suite('ConnectionConfig tests', () => {
 			authenticationType: '',
 			savePassword: true,
 			groupName: undefined,
-			groupId: undefined
+			groupId: undefined,
+			getUniqueId: undefined,
+			providerName: 'MSSQL'
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
 
-		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[]>(Constants.connectionsArrayName))
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
 			.returns(() => connections);
-		let nothing: void;
-		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));
 
-
-		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object);
-		config.addConnection(newProfile).then(success => {
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.addConnection(connectionProfile).then(success => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
 			done();
@@ -258,8 +352,6 @@ suite('ConnectionConfig tests', () => {
 	});
 
 	test('addConnection should not add the new profile to user settings if already exists', done => {
-		let configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		let workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
 		let profileFromConfig = connections.user[0];
 		let newProfile: IConnectionProfile = {
 			serverName: profileFromConfig.options['serverName'],
@@ -269,19 +361,20 @@ suite('ConnectionConfig tests', () => {
 			authenticationType: profileFromConfig.options['authenticationType'],
 			groupId: profileFromConfig.groupId,
 			savePassword: true,
-			groupName: undefined
+			groupName: undefined,
+			getUniqueId: undefined,
+			providerName: 'MSSQL'
 		};
 
 		let expectedNumberOfConnections = connections.user.length;
 
-		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[]>(Constants.connectionsArrayName))
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
 			.returns(() => connections);
-		let nothing: void;
-		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));
 
-
-		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object);
-		config.addConnection(newProfile).then(success => {
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.addConnection(connectionProfile).then(success => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
 			done();
@@ -292,8 +385,6 @@ suite('ConnectionConfig tests', () => {
 	});
 
 	test('addConnection should add the new group to user settings if does not exist', done => {
-		let configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		let workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
 		let newProfile: IConnectionProfile = {
 			serverName: 'new server',
 			databaseName: 'database',
@@ -302,21 +393,25 @@ suite('ConnectionConfig tests', () => {
 			authenticationType: '',
 			savePassword: true,
 			groupName: 'g2/g2-2',
-			groupId: undefined
+			groupId: undefined,
+			getUniqueId: undefined,
+			providerName: 'MSSQL'
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
 		let expectedNumberOfGroups = configValueToConcat.user.length + 1;
 
-		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[]>(Constants.connectionsArrayName))
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
 			.returns(() => connections);
-		let nothing: void;
-		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));
-		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName))
+
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
 			.returns(() => configValueToConcat);
 
-		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object);
-		config.addConnection(newProfile).then(success => {
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.addConnection(connectionProfile).then(success => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
@@ -329,31 +424,27 @@ suite('ConnectionConfig tests', () => {
 	});
 
 	test('getConnections should return connections from user and workspace settings given getWorkspaceConnections set to true', () => {
-		let configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		let workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
 		let getWorkspaceConnections: boolean = true;
 
-		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[]>(Constants.connectionsArrayName))
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
 			.returns(() => connections);
 
-
-
-		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		let allConnections = config.getConnections(getWorkspaceConnections);
 		assert.equal(allConnections.length, connections.user.length + connections.workspace.length);
 	});
 
 	test('getConnections should return connections from user settings given getWorkspaceConnections set to false', () => {
-		let configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		let workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
 		let getWorkspaceConnections: boolean = false;
 
-		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[]>(Constants.connectionsArrayName))
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
 			.returns(() => connections);
 
 
 
-		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		let allConnections = config.getConnections(getWorkspaceConnections);
 		assert.equal(allConnections.length, connections.user.length);
 	});

@@ -7,7 +7,7 @@
 
 import { IConnectionProfile } from './interfaces';
 import { ConnectionProfile } from './connectionProfile';
-import vscode = require('vscode');
+import data = require('data');
 
 export interface IConnectionProfileGroup {
 	id: string;
@@ -55,10 +55,6 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 			}
 		}
 		return fullName;
-	}
-
-	public get serverName(): string {
-		return this.name;
 	}
 
 	public hasChildren(): boolean {

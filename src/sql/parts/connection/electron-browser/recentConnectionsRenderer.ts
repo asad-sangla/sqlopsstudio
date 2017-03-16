@@ -72,7 +72,7 @@ export class RecentConnectionsRenderer implements IRenderer {
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
 		templateData.serverName.textContent = connection.serverName;
 		templateData.databaseName.textContent = connection.databaseName;
-		templateData.type.textContent = connection.type;
+		templateData.type.textContent = connection.providerName;
 	}
 
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {

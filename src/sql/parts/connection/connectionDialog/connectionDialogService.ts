@@ -13,7 +13,9 @@ import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDia
 import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import Severity from 'vs/base/common/severity';
 
 export class ConnectionDialogService implements IConnectionDialogService {
@@ -27,12 +29,13 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	constructor(
 		@IPartService private _partService: IPartService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
+		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 	}
 
 	private _connectionDialog: ConnectionDialogWidget;
-	private _advancedcontroller: AdvancedPropertiesController;
+	private _advancedController: AdvancedPropertiesController;
 
 	private handleOnConnect(params: INewConnectionParams): void {
 		if (params && params.connectionType === ConnectionType.default) {
@@ -72,21 +75,27 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 
 	private handleOnAdvancedProperties(): void {
-		if (!this._advancedcontroller) {
-			this._advancedcontroller = new AdvancedPropertiesController(() => this._connectionDialog.focusOnAdvancedButton());
+		if (!this._advancedController) {
+			this._advancedController = new AdvancedPropertiesController(() => this._connectionDialog.focusOnAdvancedButton());
 		}
 		var connectionProperties = this._connectionManagementService.getAdvancedProperties();
 		if (!!connectionProperties) {
 			var advancedOption = connectionProperties.filter(
 				(property) => (property.specialValueType === undefined || property.specialValueType === null));
-			this._advancedcontroller.showDialog(advancedOption, this._container);
+			this._advancedController.showDialog(advancedOption, this._container);
 		}
 	}
 
 	public showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
 		this._connectionManagementService = connectionManagementService;
+		let capabilities = this._capabilitiesService.getCapabilities();
+		//For now harcoding to mssql only. The dialog has to show all the providers
+		//and create the connection profile for that provider
+		let sqlCapabilities = capabilities.find(c => c.providerName === 'MSSQL');
+		let connectionProfile: ConnectionProfile = new ConnectionProfile(sqlCapabilities, model);
+
 		return new TPromise<void>(() => {
-			this.doShowDialog(params, model);
+			this.doShowDialog(params, connectionProfile);
 		});
 	}
 
@@ -104,16 +113,6 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this._connectionDialog.newConnectionParams = params;
 
 		return new TPromise<void>(() => {
-			model = model !== undefined ? model : {
-				serverName: '',
-				authenticationType: '',
-				databaseName: '',
-				groupName: '',
-				userName: '',
-				password: '',
-				savePassword: false,
-				groupId: undefined
-			};
 			this._connectionDialog.open(this._connectionManagementService.getRecentConnections());
 			this._connectionDialog.setConnection(model);
 		});

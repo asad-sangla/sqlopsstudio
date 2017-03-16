@@ -201,6 +201,8 @@ export interface IConnectionProfile extends data.ConnectionInfo {
 	savePassword: boolean;
 	groupName: string;
 	groupId: string;
+	getUniqueId(): string;
+	providerName: string;
 };
 
 export interface IConnectionProfileStore {
