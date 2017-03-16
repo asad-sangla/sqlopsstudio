@@ -9,22 +9,39 @@ import { IConnectionDialogService, IConnectionManagementService, IErrorMessageSe
 	ConnectionType, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
-import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
-import { withElementById } from 'vs/base/browser/builder';
+import { Builder, withElementById } from 'vs/base/browser/builder';
+import { SqlConnectionController } from 'sql/parts/connection/connectionDialog/sqlConnectionController';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import Severity from 'vs/base/common/severity';
+
+export interface IConnectionComponentCallbacks {
+	onConnect: () => void;
+	onCancel: () => void;
+	onGetConnectButton: () => boolean;
+	onSetConnectButton: (enable: boolean) => void;
+	onAdvancedProperties?: () => void;
+}
+
+export interface IConnectionComponentController {
+	showSqlUiComponent(container: Builder): void;
+	initDialog(model: IConnectionProfile): void;
+	validateConnection(model: IConnectionProfile): boolean;
+	fillInConnectionInputs(connectionInfo: IConnectionProfile): void;
+}
 
 export class ConnectionDialogService implements IConnectionDialogService {
 
 	_serviceBrand: any;
 
 	private _connectionManagementService: IConnectionManagementService;
-
 	private _container: HTMLElement;
+	private _connectionDialog: ConnectionDialogWidget;
+	private _sqlConnectionController: SqlConnectionController;
+	private _model: IConnectionProfile;
 
 	constructor(
 		@IPartService private _partService: IPartService,
@@ -34,14 +51,15 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	) {
 	}
 
-	private _connectionDialog: ConnectionDialogWidget;
-	private _advancedController: AdvancedPropertiesController;
-
 	private handleOnConnect(params: INewConnectionParams): void {
-		if (params && params.connectionType === ConnectionType.default) {
-			this.handleDefaultOnConnect();
-		} else if (params && params.editor && params.uri && params.connectionType === ConnectionType.queryEditor) {
-			this.handleQueryEditorOnConnect(params);
+		if(this.sqlUiController.validateConnection(this._model)) {
+			if (params && params.connectionType === ConnectionType.default) {
+				this.handleDefaultOnConnect();
+			} else if (params && params.editor && params.uri && params.connectionType === ConnectionType.queryEditor) {
+				this.handleQueryEditorOnConnect(params);
+			}
+		} else {
+			this._connectionDialog.showError('Missing required fields');
 		}
 	}
 
@@ -52,18 +70,17 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleDefaultOnConnect(): void {
-		this._connectionManagementService.addConnectionProfile(this._connectionDialog.getConnection()).then(connected => {
+		this._connectionManagementService.addConnectionProfile(this._model).then(connected => {
 			if (connected) {
 				this._connectionDialog.close();
 			}
-
 		}).catch(err => {
 			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
 		});
 	}
 
 	private handleQueryEditorOnConnect(params: INewConnectionParams): void {
-		this._connectionManagementService.connectEditor(params.editor, params.uri, params.runQueryOnCompletion, this._connectionDialog.getConnection()).then(connected => {
+		this._connectionManagementService.connectEditor(params.editor, params.uri, params.runQueryOnCompletion, this._model).then(connected => {
 			if (connected) {
 				this._connectionDialog.close();
 			}
@@ -73,17 +90,36 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		});
 	}
 
+	private get sqlUiController(): SqlConnectionController {
+		if (!this._sqlConnectionController) {
+			this._sqlConnectionController = new SqlConnectionController(this._container, this._connectionManagementService, {
+				onCancel: () => this.handleOnCancel(this._connectionDialog.newConnectionParams),
+				onConnect: () => this.handleOnConnect(this._connectionDialog.newConnectionParams),
+				onGetConnectButton: () => this.handleGetConnectButtonEnable(),
+				onSetConnectButton: (enable: boolean) => this.handleSetConnectButtonEnable(enable)
+			});
+		}
+		return this._sqlConnectionController;
+	}
 
-	private handleOnAdvancedProperties(): void {
-		if (!this._advancedController) {
-			this._advancedController = new AdvancedPropertiesController(() => this._connectionDialog.focusOnAdvancedButton());
-		}
-		var connectionProperties = this._connectionManagementService.getAdvancedProperties();
-		if (!!connectionProperties) {
-			var advancedOption = connectionProperties.filter(
-				(property) => (property.specialValueType === undefined || property.specialValueType === null));
-			this._advancedController.showDialog(advancedOption, this._container);
-		}
+	private handleGetConnectButtonEnable(): boolean {
+		return this._connectionDialog.connectButtonEnabled;
+	}
+
+	private handleSetConnectButtonEnable(enable: boolean): void {
+		this._connectionDialog.connectButtonEnabled = enable;
+	}
+
+	private handleShowUiComponent(container: Builder): void {
+		this.sqlUiController.showSqlUiComponent(container);
+	}
+
+	private handleInitDialog(): void {
+		this.sqlUiController.initDialog(this._model);
+	}
+
+	private handleFillInConnectionInputs(connectionInfo: IConnectionProfile): void {
+		this.sqlUiController.fillInConnectionInputs(connectionInfo);
 	}
 
 	public showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
@@ -92,21 +128,23 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		//For now harcoding to mssql only. The dialog has to show all the providers
 		//and create the connection profile for that provider
 		let sqlCapabilities = capabilities.find(c => c.providerName === 'MSSQL');
-		let connectionProfile: ConnectionProfile = new ConnectionProfile(sqlCapabilities, model);
+		this._model = new ConnectionProfile(sqlCapabilities, model);
 
 		return new TPromise<void>(() => {
-			this.doShowDialog(params, connectionProfile);
+			this.doShowDialog(params);
 		});
 	}
 
-	private doShowDialog(params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
+	private doShowDialog(params: INewConnectionParams): TPromise<void> {
 		if (!this._connectionDialog) {
 			let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 			this._container = container;
 			this._connectionDialog = this._instantiationService.createInstance(ConnectionDialogWidget, container, {
 				onCancel: () => this.handleOnCancel(this._connectionDialog.newConnectionParams),
 				onConnect: () => this.handleOnConnect(this._connectionDialog.newConnectionParams),
-				onAdvancedProperties: () => this.handleOnAdvancedProperties(),
+				onShowUiComponent: (container: Builder) => this.handleShowUiComponent(container),
+				onInitDialog: () => this.handleInitDialog(),
+				onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => this.handleFillInConnectionInputs(connectionInfo)
 			});
 			this._connectionDialog.create();
 		}
@@ -114,7 +152,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 		return new TPromise<void>(() => {
 			this._connectionDialog.open(this._connectionManagementService.getRecentConnections());
-			this._connectionDialog.setConnection(model);
+			this._connectionDialog.initDialog();
 		});
 	}
 }

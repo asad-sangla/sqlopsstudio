@@ -58,4 +58,9 @@ export class ConnectionDialogHelper {
 	static isNumeric(num): boolean	{
 		return !isNaN(num);
 	}
+
+	static isEmptyString(value: string): boolean {
+		//TODO find a better way to check for empty string
+		return value === undefined || value === '';
+	}
 }
