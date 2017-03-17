@@ -53,7 +53,11 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			if (params && params.connectionType === ConnectionType.default) {
 				this.handleDefaultOnConnect();
 			} else if (params && params.editor && params.uri && params.connectionType === ConnectionType.queryEditor) {
-				this.handleQueryEditorOnConnect(params);
+				if (params.disconnectExistingConnection) {
+					this.handleQueryEditorOnChangeConnection(params);
+				} else {
+					this.handleQueryEditorOnConnect(params);
+				}
 			}
 		} else {
 			this._connectionDialog.showError('Missing required fields');
@@ -82,6 +86,23 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				this._connectionDialog.close();
 			}
 
+		}).catch(err => {
+			this._connectionDialog.showError(err);
+		});
+	}
+
+	private handleQueryEditorOnChangeConnection(params: INewConnectionParams): void {
+		this._connectionManagementService.disconnectEditor(params.editor, params.uri, true)
+		.then(disconnected => {
+			if(disconnected) {
+				return this._connectionManagementService.connectEditor(params.editor, params.uri, params.runQueryOnCompletion, this._model);
+			}
+			return false;
+		})
+		.then(connected => {
+			if (connected) {
+				this._connectionDialog.close();
+			}
 		}).catch(err => {
 			this._connectionDialog.showError(err);
 		});

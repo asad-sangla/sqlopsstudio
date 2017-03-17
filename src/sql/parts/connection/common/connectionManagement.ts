@@ -98,6 +98,7 @@ export interface INewConnectionParams {
 	editor?: IConnectableEditor;
 	uri?: string;
 	runQueryOnCompletion?: boolean;
+	disconnectExistingConnection?: boolean;
 }
 
 export interface IConnectableEditorParams {

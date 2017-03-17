@@ -629,4 +629,24 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 	public get taskbarContainer(): HTMLElement {
 		return this._taskbarContainer;
 	}
+
+	public get runQueryAction(): RunQueryAction {
+		return this._runQueryAction;
+	}
+
+	public get cancelQueryAction(): CancelQueryAction{
+		return this._cancelQueryAction;
+	}
+
+	public get connectDatabaseAction(): ConnectDatabaseAction{
+		return this._connectDatabaseAction;
+	}
+
+	public get disconnectDatabaseAction(): DisconnectDatabaseAction{
+		return this._disconnectDatabaseAction;
+	}
+
+	public get changeConnectionAction(): ChangeConnectionAction{
+		return this._changeConnectionAction;
+	}
 }

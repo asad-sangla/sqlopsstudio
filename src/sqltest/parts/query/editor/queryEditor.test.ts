@@ -248,7 +248,6 @@ suite('SQL QueryEditor Tests', () => {
 			assert.notEqual(firstContainer.parentElement, undefined);
 		};
 
-
 		// If I create a QueryEditor
 		let editor: QueryEditor = getQueryEditor();
 		editor.create(parentBuilder);
@@ -261,5 +260,19 @@ suite('SQL QueryEditor Tests', () => {
 			.then(setFirstInputAgain) // then if I set the input back to the original
 			.then(assertFirstInputIsAddedBack) // the inputs should not match, and the second input should be removed from the DOM
 			.then(() => done(), (err) => done(err));
+	});
+
+	test('Taskbar buttons are set correctly upon standard load', (done) => {
+		// If I create a QueryEditor
+		let editor: QueryEditor = getQueryEditor();
+		editor.create(parentBuilder);
+
+		// Buttons should be
+		assert.equal(editor.runQueryAction.enabled, true, 'runQueryAction button should be enabled');
+		assert.equal(editor.cancelQueryAction.enabled, false, 'cancelQueryAction button should not be enabled');
+		assert.equal(editor.connectDatabaseAction.enabled, true, 'connectDatabaseAction button should be enabled');
+		assert.equal(editor.disconnectDatabaseAction.enabled, false, 'disconnectDatabaseAction button should not be enabled');
+		assert.equal(editor.changeConnectionAction.enabled, false, 'changeConnectionAction button should not be enabled');
+		done();
 	});
 });

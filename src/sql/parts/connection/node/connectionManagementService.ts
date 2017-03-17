@@ -68,9 +68,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		if (!this._connectionMemento) {
 			this._connectionMemento = new Memento('ConnectionManagement');
 		}
-
-		this._connectionStore = new ConnectionStore(_storageService, this._connectionMemento,
-			_configurationEditService, this._workspaceConfigurationService, this._credentialsService, this._capabilitiesService);
+		if (!this._connectionStore) {
+			this._connectionStore = new ConnectionStore(_storageService, this._connectionMemento,
+				_configurationEditService, this._workspaceConfigurationService, this._credentialsService, this._capabilitiesService);
+		}
 
 		this._connectionFactory = new ConnectionFactory();
 

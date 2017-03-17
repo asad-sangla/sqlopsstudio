@@ -21,7 +21,7 @@ const $ = dom.$;
  */
 export abstract class QueryTaskbarAction extends Action {
 
-	private static BaseClass = 'queryTaskbarIcon';
+	public static BaseClass = 'queryTaskbarIcon';
 
 	private _classes: string[];
 
@@ -33,7 +33,7 @@ export abstract class QueryTaskbarAction extends Action {
 	) {
 		super(id);
 		this.enabled = true;
-		this.setClass(enabledClass);
+		this._setCssClass(enabledClass);
 	}
 
 	/**
@@ -41,7 +41,11 @@ export abstract class QueryTaskbarAction extends Action {
 	 */
 	public abstract run(): TPromise<void>;
 
-	protected setClass(enabledClass: string): void {
+	/**
+	 * Sets the CSS classes combining the parent and child classes.
+	 * Public for testing only.
+	 */
+	private _setCssClass(enabledClass: string): void {
 		this._classes = [];
 		this._classes.push(QueryTaskbarAction.BaseClass);
 
@@ -53,8 +57,9 @@ export abstract class QueryTaskbarAction extends Action {
 
 	/**
 	 * Returns the URI of the given editor if it is not undefined and is connected.
+	 * Public for testing only.
 	 */
-	protected getConnectedQueryEditorUri(editor: IShowQueryResultsEditor): string {
+	public _getConnectedQueryEditorUri(editor: IShowQueryResultsEditor): string {
 		if (!editor || !editor.uri) {
 			return undefined;
 		}
@@ -63,13 +68,15 @@ export abstract class QueryTaskbarAction extends Action {
 
 	/**
 	 * Connects the given editor to it's current URI.
+	 * Public for testing only.
 	 */
-	protected connectEditor(editor: IShowQueryResultsEditor, uri: string, runQueryOnCompletion: boolean): void {
+	public _connectEditor(editor: IShowQueryResultsEditor, uri: string, runQueryOnCompletion?: boolean, disconnectExistingConnection?: boolean): void {
 		let params: INewConnectionParams = {
 			editor: editor,
 			connectionType: ConnectionType.queryEditor,
 			uri: uri ? uri : editor.uri,
-			runQueryOnCompletion: runQueryOnCompletion
+			runQueryOnCompletion: runQueryOnCompletion ? runQueryOnCompletion : false,
+			disconnectExistingConnection: disconnectExistingConnection ? disconnectExistingConnection : false
 		};
 		this._connectionManagementService.newConnection(params);
 	}
@@ -80,7 +87,7 @@ export abstract class QueryTaskbarAction extends Action {
  */
 export class RunQueryAction extends QueryTaskbarAction {
 
-	private static EnabledClass = 'runQuery';
+	public static EnabledClass = 'runQuery';
 	public static ID = 'runQueryAction';
 
 	constructor(
@@ -93,7 +100,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this.getConnectedQueryEditorUri(this.editor);
+		let uri = this._getConnectedQueryEditorUri(this.editor);
 
 		if (uri) {
 			// If we are already connected, run the query
@@ -101,7 +108,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 		} else {
 			// If we are not already connected, prompt for conneciton and run the query if the
 			// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
-			this.connectEditor(this.editor, uri, true);
+			this._connectEditor(this.editor, uri, true);
 		}
 		return TPromise.as(null);
 	}
@@ -111,7 +118,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 			editor = this.editor;
 		}
 		if (!uri) {
-			uri = this.getConnectedQueryEditorUri(editor);
+			uri = this._getConnectedQueryEditorUri(editor);
 		}
 		if (uri) {
 			this._queryModelService.runQuery(uri, undefined, uri);
@@ -125,7 +132,7 @@ export class RunQueryAction extends QueryTaskbarAction {
  */
 export class CancelQueryAction extends QueryTaskbarAction {
 
-	private static EnabledClass = 'cancelQuery';
+	public static EnabledClass = 'cancelQuery';
 	public static ID = 'cancelQueryAction';
 
 	constructor(
@@ -139,7 +146,7 @@ export class CancelQueryAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this.getConnectedQueryEditorUri(this.editor);
+		let uri = this._getConnectedQueryEditorUri(this.editor);
 		if (uri) {
 			this._queryModelService.cancelQuery(uri);
 		}
@@ -152,7 +159,7 @@ export class CancelQueryAction extends QueryTaskbarAction {
  */
 export class DisconnectDatabaseAction extends QueryTaskbarAction {
 
-	private static EnabledClass = 'disconnectDatabase';
+	public static EnabledClass = 'disconnectDatabase';
 	public static ID = 'disconnectDatabaseAction';
 
 	constructor(
@@ -164,11 +171,9 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this.getConnectedQueryEditorUri(this.editor);
-
-		if (uri) {
-			this._connectionManagementService.disconnectEditor(this.editor, uri);
-		}
+		// Call disconnectEditor regardless of the connection state and let the ConnectionManagementService
+		// determine if we need to disconnect, cancel an in-progress conneciton, or do nothing
+		this._connectionManagementService.disconnectEditor(this.editor, this.editor.uri);
 		return TPromise.as(null);
 	}
 }
@@ -178,7 +183,7 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
  */
 export class ConnectDatabaseAction extends QueryTaskbarAction {
 
-	private static EnabledClass = 'connectDatabase';
+	public static EnabledClass = 'connectDatabase';
 	public static ID = 'connectDatabaseAction';
 
 	constructor(
@@ -190,9 +195,9 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this.getConnectedQueryEditorUri(this.editor);
+		let uri = this._getConnectedQueryEditorUri(this.editor);
 		if (!uri) {
-			this.connectEditor(this.editor, uri, false);
+			this._connectEditor(this.editor, uri);
 		}
 		return TPromise.as(null);
 	}
@@ -203,7 +208,7 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
  */
 export class ChangeConnectionAction extends QueryTaskbarAction {
 
-	private static EnabledClass = 'changeConnectionDatabase';
+	public static EnabledClass = 'changeConnectionDatabase';
 	public static ID = 'changeConnectionDatabaseAction';
 
 	constructor(
@@ -215,14 +220,9 @@ export class ChangeConnectionAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this.getConnectedQueryEditorUri(this.editor);
+		let uri = this._getConnectedQueryEditorUri(this.editor);
 		if (uri) {
-			// Wait for the current connection to disconnect, then connect
-			this._connectionManagementService.disconnectEditor(this.editor, uri).then(didDisconnect => {
-				if (didDisconnect) {
-					this.connectEditor(this.editor, uri, false);
-				}
-			});
+			this._connectEditor(this.editor, uri, false, true);
 		}
 		return TPromise.as(null);
 	}
@@ -233,7 +233,7 @@ export class ChangeConnectionAction extends QueryTaskbarAction {
  */
 export class ListDatabasesAction extends QueryTaskbarAction {
 
-	private static EnabledClass = '';
+	public static EnabledClass = '';
 	public static ID = 'listDatabaseQueryAction';
 
 	constructor(
@@ -279,6 +279,7 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	public render(container: HTMLElement): void {
 		this.container = container;
+		this.selectBox.render(dom.append(container, $('.configuration.listDatabasesSelectBox')));
 	}
 
 	public setActionContext(context: any): void {
