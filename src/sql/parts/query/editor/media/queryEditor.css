@@ -18,3 +18,7 @@
 .side-by-side-editor > .master-editor-container-horizontal {
 	box-shadow: 0 -6px 5px -5px #DDD;
 }
+
+.editDataEditor {
+	height: 100%
+}

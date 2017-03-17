@@ -44,15 +44,18 @@ class QueryInfo {
  * Handles running queries and grid interactions for all URIs. Interacts with each URI's results grid via a DataService instance
  */
 export class QueryModelService implements IQueryModelService {
+	_serviceBrand: any;
 
 	// MEMBER VARIABLES ////////////////////////////////////////////////////
 	private _queryInfoMap: Map<string, QueryInfo>;
 	private _onRunQueryStart: Emitter<string>;
 	private _onRunQueryComplete: Emitter<string>;
+	private _onEditSessionReady: Emitter<string>;
 
 	// EVENTS /////////////////////////////////////////////////////////////
 	public get onRunQueryStart(): Event<string> { return this._onRunQueryStart.event; }
 	public get onRunQueryComplete(): Event<string> { return this._onRunQueryComplete.event; }
+	public get onEditSessionReady(): Event<string> { return this._onEditSessionReady.event; }
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
@@ -62,6 +65,7 @@ export class QueryModelService implements IQueryModelService {
 		this._queryInfoMap = new Map<string, QueryInfo>();
 		this._onRunQueryStart = new Emitter<string>();
 		this._onRunQueryComplete = new Emitter<string>();
+		this._onEditSessionReady = new Emitter<string>();
 	}
 
 	// IQUERYMODEL /////////////////////////////////////////////////////////
@@ -131,7 +135,7 @@ export class QueryModelService implements IQueryModelService {
 	public isRunningQuery(uri: string): boolean {
 		return !this._queryInfoMap.has(uri)
 			? false
-			: this._queryInfoMap.get(uri).queryRunner.isExecutingQuery;
+			: this._queryInfoMap.get(uri).queryRunner.isExecuting;
 	}
 
 	/**
@@ -147,7 +151,7 @@ export class QueryModelService implements IQueryModelService {
 			let existingRunner: QueryRunner = info.queryRunner;
 
 			// If the query is already in progress, don't attempt to send it
-			if (existingRunner.isExecutingQuery) {
+			if (existingRunner.isExecuting) {
 				return;
 			}
 
@@ -205,7 +209,7 @@ export class QueryModelService implements IQueryModelService {
 			queryRunner = input;
 		}
 
-		if (queryRunner === undefined || !queryRunner.isExecutingQuery) {
+		if (queryRunner === undefined || !queryRunner.isExecuting) {
 			// TODO: Cannot cancel query as no query is running.
 			return;
 		}
@@ -221,6 +225,67 @@ export class QueryModelService implements IQueryModelService {
 			this._fireQueryEvent(queryRunner.uri, 'complete', 0);
 		});
 
+	}
+
+	// EDIT DATA METHODS /////////////////////////////////////////////////////
+	initializeEdit(ownerUri: string, objectName: string, objectType: string): void {
+		// Reuse existing query runner if it exists
+		let queryRunner: QueryRunner;
+		let info: QueryInfo;
+
+		if (this._queryInfoMap.has(ownerUri)) {
+			info = this._queryInfoMap.get(ownerUri);
+			let existingRunner: QueryRunner = info.queryRunner;
+
+			// If the initialization is already in progress
+			if (existingRunner.isExecuting) {
+				return;
+			}
+
+			queryRunner = existingRunner;
+		} else {
+			// We do not have a query runner for this editor, so create a new one
+			// and map it to the results uri
+			queryRunner = this._instantiationService.createInstance(QueryRunner, ownerUri, ownerUri);
+			queryRunner.eventEmitter.on('resultSet', (resultSet) => {
+				this._fireQueryEvent(ownerUri, 'resultSet', resultSet);
+			});
+			queryRunner.eventEmitter.on('batchStart', (batch) => {
+				let message = {
+					message: Constants.runQueryBatchStartMessage,
+					batchId: undefined,
+					isError: false,
+					time: new Date().toLocaleTimeString(),
+					link: {
+						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1),
+						uri: ''
+					}
+				};
+				this._fireQueryEvent(ownerUri, 'message', message);
+			});
+			queryRunner.eventEmitter.on('message', (message) => {
+				this._fireQueryEvent(ownerUri, 'message', message);
+			});
+			queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
+				this._onRunQueryComplete.fire(ownerUri);
+				this._fireQueryEvent(ownerUri, 'complete', totalMilliseconds);
+			});
+			queryRunner.eventEmitter.on('start', () => {
+				this._onRunQueryStart.fire(ownerUri);
+				this._fireQueryEvent(ownerUri, 'start');
+			});
+			queryRunner.eventEmitter.on('editSessionReady', () => {
+				this._onEditSessionReady.fire(ownerUri);
+				this._fireQueryEvent(ownerUri, 'editSessionReady');
+			});
+
+			info = new QueryInfo();
+			info.queryRunner = queryRunner;
+			info.dataService = new DataService(this, ownerUri);
+			this._queryInfoMap.set(ownerUri, info);
+		}
+
+		queryRunner.initializeEdit(ownerUri, objectName, objectType);
 	}
 
 	// PRIVATE METHODS //////////////////////////////////////////////////////

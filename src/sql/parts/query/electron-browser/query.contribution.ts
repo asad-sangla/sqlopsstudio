@@ -12,6 +12,9 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
+import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
+
 
 // Editor
 const queryResultsEditorDescriptor = new EditorDescriptor(
@@ -34,3 +37,14 @@ const queryEditorDescriptor = new EditorDescriptor(
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 	.registerEditor(queryEditorDescriptor, [new SyncDescriptor(QueryInput)]);
+
+// Editor
+const editDataEditorDescriptor = new EditorDescriptor(
+	EditDataEditor.ID,
+	'EditData',
+	'sql/parts/editData/editor/editDataEditor',
+	'EditDataEditor'
+);
+
+Registry.as<IEditorRegistry>(EditorExtensions.Editors)
+	.registerEditor(editDataEditorDescriptor, [new SyncDescriptor(EditDataInput)]);

@@ -71,7 +71,7 @@ suite('SQL Actions Tests', () => {
 
 	test('Edit Data Action (With Connection)', (done) => {
 		// Setting up our object
-		let editDataAction = new EditDataAction(EditDataAction.ID, EditDataAction.LABEL, quickOpen.object, conManService.object, editorService.object);
+		let editDataAction = new EditDataAction(EditDataAction.ID, EditDataAction.LABEL, quickOpen.object, conManService.object, editorService.object, undefined);
 		// Runnig test function
 		return editDataAction.run(connection).then(() => {
 			// Verificiations
@@ -85,7 +85,7 @@ suite('SQL Actions Tests', () => {
 
 	test('Edit Data Action (No Connection)', (done) => {
 		// Setting up our object
-		let editDataAction = new EditDataAction(EditDataAction.ID, EditDataAction.LABEL, quickOpen.object, conManService.object, editorService.object);
+		let editDataAction = new EditDataAction(EditDataAction.ID, EditDataAction.LABEL, quickOpen.object, conManService.object, editorService.object, undefined);
 		// Runnig test function
 		return editDataAction.run().then(() => {
 			// Verificiations

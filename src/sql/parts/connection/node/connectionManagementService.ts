@@ -307,7 +307,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			providerName: ''
 		};
 
-		// Retreive saved password if needed
+		// Retrieve saved password if needed
         return new Promise<boolean>((resolve, reject) => {
             this._connectionStore.addSavedPassword(connection).then(newConnection => {
 				editor.onConnectStart();

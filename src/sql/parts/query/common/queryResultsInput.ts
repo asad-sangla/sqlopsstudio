@@ -39,11 +39,11 @@ export class QueryResultsInput extends EditorInput {
 	}
 
 	matches(other: any): boolean {
-		if (!other || !(other instanceof QueryResultsInput)) {
-			return false;
+		if (other instanceof QueryResultsInput) {
+			return (other._uri === this._uri);
 		}
 
-		return true;
+		return false;
 	}
 
 	resolve(refresh?: boolean): TPromise<any> {

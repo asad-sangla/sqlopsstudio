@@ -80,6 +80,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			},
 			disposeQuery(ownerUri: string): Thenable<void> {
 				return self._proxy.$disposeQuery(handle, ownerUri);
+			},
+			initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void> {
+				return self._proxy.$initializeEdit(handle, ownerUri, objectName, objectType);
 			}
 		});
 

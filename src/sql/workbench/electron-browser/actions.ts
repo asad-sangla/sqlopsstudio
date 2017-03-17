@@ -7,6 +7,8 @@ import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IConnectableEditorParams } from 'sql/parts/connection/common/connectionManagement';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import nls = require('vs/nls');
@@ -23,12 +25,13 @@ export class EditDataAction extends Action {
 		label: string,
 		@IQuickOpenService private quickOpenService: IQuickOpenService,
 		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
-		@IQueryEditorService private queryEditorService: IQueryEditorService
+		@IQueryEditorService private queryEditorService: IQueryEditorService,
+		@IQueryModelService private queryModelService: IQueryModelService
 	) {
 		super(id, label);
 	}
 
-	public run(element?: ConnectionProfile): TPromise<boolean> {
+	public run(connectionProfile?: ConnectionProfile): TPromise<boolean> {
 		// ask for a table within the element connectionProfile
 		let tableRequest = (con: ConnectionProfile) => {
 			return this.quickOpenService.input(
@@ -38,12 +41,15 @@ export class EditDataAction extends Action {
 			.then((tableName) => {
 				if(tableName) {
 					// open an edit data session on that table
-					this.queryEditorService.newEditDataEditor(tableName);
+					this.queryEditorService.newEditDataEditor(tableName).then((connectedEditor: IConnectableEditorParams) => {
+						// Connect our editor
+						this.connectionManagementService.connectEditor(connectedEditor.editor, connectedEditor.uri, true, connectionProfile);
+					});
 				}
 			});
 		};
 
-		if (!element) {
+		if (!connectionProfile) {
 			// creating a flat map of connections (ungrouping them)
 			let connectionList: ConnectionProfile[] = [];
 			this.connectionManagementService.getConnectionGroups()
@@ -67,7 +73,7 @@ export class EditDataAction extends Action {
 			});
 
 		} else {
-			tableRequest(element);
+			tableRequest(connectionProfile);
 		}
 
 		return TPromise.as(true);

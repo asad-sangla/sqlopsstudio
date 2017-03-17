@@ -65,6 +65,11 @@
 	margin-top: 3px;
 }
 
+.queryTaskbarTextSeparator {
+	margin-left: 3px;
+	margin-top: 4px;
+}
+
 /* Taskbar Icons */
 
 .queryTaskbarIcon {
@@ -89,4 +94,12 @@
 
 .changeConnectionDatabase {
 	background-image: url('changeConnection.svg');
+}
+
+.cancelRefreshData {
+	background-image: url('stop.svg');
+}
+
+.refreshData {
+	background-image: url('refresh.svg');
 }

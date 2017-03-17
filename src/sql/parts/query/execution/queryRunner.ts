@@ -72,7 +72,7 @@ export default class QueryRunner {
 		this._batchSets = batchSets;
 	}
 
-	get isExecutingQuery(): boolean {
+	get isExecuting(): boolean {
 		return this._isExecuting;
 	}
 
@@ -218,6 +218,36 @@ export default class QueryRunner {
 				}
 			});
 		});
+	}
+
+	/*
+	 * Handle a session ready event for Edit Data
+	 */
+	initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void> {
+		const self = this;
+
+		// Update internal state to show that we're executing the query
+		this._isExecuting = true;
+		this._totalElapsedMilliseconds = 0;
+		// TODO issue #228 add statusview callbacks here
+
+		return this._queryManagementService.initializeEdit(ownerUri, objectName, objectType).then(result => {
+			// The query has started, so lets fire up the result pane
+			self.eventEmitter.emit('start');
+			self._queryManagementService.registerRunner(self, ownerUri);
+		}, error => {
+			// Attempting to launch the query failed, show the error message
+
+			// TODO issue #228 add statusview callbacks here
+			self._isExecuting = false;
+
+			// TODO localize
+			self._messageService.show(Severity.Error, 'Init Edit Execution failed: ' + error);
+		});
+	}
+
+	public handleEditSessionReady(ownerUri: string, success: boolean): void {
+		this.eventEmitter.emit('editSessionReady');
 	}
 
 	/**

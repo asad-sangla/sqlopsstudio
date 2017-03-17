@@ -62,6 +62,16 @@ export class QueryTaskbar {
 		return element;
 	}
 
+	/**
+	 * Creates an HTML text separator.
+	 */
+	public static createTaskbarText(inputText: string): HTMLElement {
+		let element = document.createElement('div');
+		element.className = 'queryTaskbarTextSeparator';
+		element.innerHTML = inputText;
+		return element;
+	}
+
 	public set actionRunner(actionRunner: IActionRunner) {
 		this.actionBar.actionRunner = actionRunner;
 	}

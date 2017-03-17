@@ -10,9 +10,11 @@ import { createDecorator, IInstantiationService } from 'vs/platform/instantiatio
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import URI from 'vs/base/common/uri';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { IConnectableEditorParams } from 'sql/parts/connection/common/connectionManagement';
+import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
 const fs = require('fs');
 
 export const IQueryEditorService = createDecorator<QueryEditorService>('QueryEditorService');
@@ -24,7 +26,7 @@ export interface IQueryEditorService {
 	newSqlEditor(sqlContent?: string): Promise<IConnectableEditorParams>;
 
 	// opens a new data editor and returns its URI
-	newEditDataEditor(tableName: string): Promise<URI>;
+	newEditDataEditor(tableName: string): Promise<IConnectableEditorParams>;
 }
 
 /**
@@ -82,21 +84,25 @@ export class QueryEditorService implements IQueryEditorService {
 	/**
 	 * Creates new edit data session
 	 */
-	public newEditDataEditor(tableName: string): Promise<URI> {
+	public newEditDataEditor(tableName: string): Promise<IConnectableEditorParams> {
 
-		return new Promise<URI>((resolve, reject) => {
+		return new Promise<IConnectableEditorParams>((resolve, reject) => {
 			try {
 				// Create file path and file URI
 				let filePath = this.createEditDataFileName(tableName);
 				let docUri: URI = URI.from({ scheme: UntitledEditorInput.SCHEMA, path: filePath });
 
-				// Create a sql document pane with accoutrements
-				const fileInput = this.untitledEditorService.createOrGet(docUri);
+				// Create a QueryResultInput for editing
 				const queryResultsInput: QueryResultsInput = this.instantiationService.createInstance(QueryResultsInput, docUri.toString());
-				let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
-				this.editorService.openEditor(queryInput, { pinned: true });
+				let editDataInput: EditDataInput = this.instantiationService.createInstance(EditDataInput, docUri, '', tableName, queryResultsInput);
 
-				resolve(docUri);
+				this.editorService.openEditor(editDataInput, { pinned: true })
+				.then((editor) => {
+					let params = {editor: <EditDataEditor>editor, uri: docUri.toString() };
+					resolve(params);
+				}, (error) => {
+					reject(error);
+				});
 			} catch (error) {
 				reject(error);
 			}
@@ -128,7 +134,7 @@ export class QueryEditorService implements IQueryEditorService {
 
 	private createEditDataFileName(tableName: string): string {
 		let sqlFileName = (counter: number): string => {
-			return `${tableName} ${counter}`;
+			return `${tableName}_${counter}`;
 		};
 
 		let counter = 1;

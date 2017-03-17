@@ -24,12 +24,14 @@ export interface IQueryManagementService {
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
 
-
 	onQueryComplete(result: data.QueryExecuteCompleteNotificationResult): void;
 	onBatchStart(batchInfo: data.QueryExecuteBatchNotificationParams): void;
 	onBatchComplete(batchInfo: data.QueryExecuteBatchNotificationParams): void;
 	onResultSetComplete( resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void;
 	onMessage(message: data.QueryExecuteMessageParams): void;
+
+	// Edit Data Functions
+	initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void>;
 	onEditSessionReady(ownerUri: string, success: boolean): void;
 }
 
@@ -41,6 +43,9 @@ export interface QueryRequestHandler {
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
+
+	// Edit Data Functions
+	initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void>;
 }
 
 export class QueryManagementService implements IQueryManagementService {
@@ -158,7 +163,17 @@ export class QueryManagementService implements IQueryManagementService {
 			runner.handleMessage(message);
 		});
 	}
+
+	// Edit Data Functions
+	public initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.initializeEdit(ownerUri, objectName, objectType);
+		});
+	}
+
 	public onEditSessionReady(ownerUri: string, success: boolean): void {
-		// TODO: Implement logic
+		this._notify(ownerUri, (runner: QueryRunner) => {
+			runner.handleEditSessionReady(ownerUri, success);
+		})
 	}
 }

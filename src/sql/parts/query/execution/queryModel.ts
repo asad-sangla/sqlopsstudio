@@ -18,6 +18,8 @@ export const IQueryModelService = createDecorator<IQueryModelService>(SERVICE_ID
  * Interface for the logic of handling running queries and grid interactions for all URIs.
  */
 export interface IQueryModelService {
+	_serviceBrand: any;
+
 	getConfig(): Promise<{ [key: string]: any }>;
 	getShortcuts(): Promise<any>;
 	getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
@@ -38,4 +40,8 @@ export interface IQueryModelService {
 
 	onRunQueryStart: Event<string>;
 	onRunQueryComplete: Event<string>;
+
+	// Edit Data Functions
+	initializeEdit(ownerUri: string, objectName: string, objectType: string): void;
+	onEditSessionReady: Event<string>;
 }
