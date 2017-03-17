@@ -6,6 +6,7 @@
 
 import { IConnectionProfile } from './interfaces';
 import { ConnectionProfileGroup } from './connectionProfileGroup';
+import * as utils from './utils';
 import data = require('data');
 import { ProviderConnectionInfo } from 'sql/parts/connection/node/providerConnectionInfo';
 import * as interfaces from 'sql/parts/connection/node/interfaces';
@@ -30,14 +31,6 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			this.groupName = model.groupName;
 			this.savePassword = model.savePassword;
 		}
-	}
-
-	public get fullName(): string {
-		let fullName: string = this.groupId + ConnectionProfileGroup.GroupNameSeparator;
-		if (this.parent) {
-			fullName = this.parent.fullName + ConnectionProfileGroup.GroupNameSeparator + fullName;
-		}
-		return fullName;
 	}
 
 	public equals(other: any): boolean {

@@ -5,7 +5,6 @@
 
 'use strict';
 
-import { IConnectionProfile } from './interfaces';
 import { ConnectionProfile } from './connectionProfile';
 import data = require('data');
 
@@ -47,11 +46,11 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	}
 
 	public get fullName(): string {
-		let fullName: string = (this.id === 'root') ? undefined : this.id;
+		let fullName: string = (this.id === 'root') ? undefined : this.name;
 		if (this._parent) {
 			let parentFullName = this._parent.fullName;
 			if (parentFullName) {
-				fullName = parentFullName + ConnectionProfileGroup.GroupNameSeparator + this.id;
+				fullName = parentFullName + ConnectionProfileGroup.GroupNameSeparator + this.name;
 			}
 		}
 		return fullName;

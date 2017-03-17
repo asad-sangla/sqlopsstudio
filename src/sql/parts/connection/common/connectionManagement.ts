@@ -30,7 +30,7 @@ export interface IConnectionManagementService {
 	onAddConnectionProfile: Event<void>;
 	onDeleteConnectionProfile: Event<void>;
 
-	newConnection(params?: INewConnectionParams): void;
+	newConnection(params?: INewConnectionParams, model?: IConnectionProfile): void;
 
 	addConnectionProfile(connection: IConnectionProfile): Promise<boolean>;
 
@@ -44,7 +44,6 @@ export interface IConnectionManagementService {
 
 	getActiveConnections(): data.ConnectionInfo[];
 
-
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
 
 	changeGroupIdForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void>;
@@ -52,6 +51,8 @@ export interface IConnectionManagementService {
 	getAdvancedProperties(): data.ConnectionOption[];
 
 	connectEditor(editor: IConnectableEditor, uri: string, runQueryOnCompletion: boolean, connection: ConnectionProfile | IConnectionProfile): Promise<boolean>;
+
+	connectProfile(connection: ConnectionProfile): Promise<boolean>;
 
 	isConnected(fileUri: string): boolean;
 

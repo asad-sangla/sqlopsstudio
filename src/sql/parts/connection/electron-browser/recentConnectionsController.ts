@@ -26,7 +26,7 @@ import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
-import { ServerTreeDataSource, AddServerToGroupAction, NewQueryAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ServerTreeRenderer, ServerTreeDataSource, AddServerToGroupAction, NewQueryAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { RecentConnectionsRenderer, RecentConnectionsDragAndDrop } from 'sql/parts/connection/electron-browser/recentConnectionsRenderer';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
@@ -137,10 +137,10 @@ export class TreeUtils {
 	/**
 	 * Create a recent/active connections tree
 	 */
-	public static createConnectionTree(treeContainer: HTMLElement, instantiationService: IInstantiationService): Tree {
+	public static createConnectionTree(treeContainer: HTMLElement, instantiationService: IInstantiationService, isCompact: boolean): Tree {
 		const dataSource = instantiationService.createInstance(ServerTreeDataSource);
 		const actionProvider = instantiationService.createInstance(ConnectionTreeActionProvider);
-		const renderer = instantiationService.createInstance(RecentConnectionsRenderer);
+		const renderer = instantiationService.createInstance(ServerTreeRenderer, isCompact);
 		const controller = instantiationService.createInstance(ConnectionTreeController, actionProvider);
 		const dnd = instantiationService.createInstance(RecentConnectionsDragAndDrop);
 		const filter = new DefaultFilter();

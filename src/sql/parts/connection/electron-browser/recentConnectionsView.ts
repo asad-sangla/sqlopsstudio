@@ -41,7 +41,7 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 		super(actionRunner, 150, false, viewTitle, keybindingService, contextMenuService);
 }
 	/**
-	 * Render header of the view
+	 * Render the view header
 	 */
 	public renderHeader(container: HTMLElement): void {
 		const titleDiv = $('div.title').appendTo(container);
@@ -56,16 +56,9 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 	public renderBody(container: HTMLElement): void {
 		this.treeContainer = super.renderViewTree(container);
 		dom.addClass(this.treeContainer, 'explorer-servers');
-		this.tree = TreeUtils.createConnectionTree(this.treeContainer, this.instantiationService);
+		this.tree = TreeUtils.createConnectionTree(this.treeContainer, this.instantiationService, false);
 		this.toDispose.push(this.tree.addListener2('selection', () => this.onSelected()));
 		const self = this;
-		let handle;
-		if (this.viewKey === 'recent') {
-			handle = 19990;
-		} else if (this.viewKey === 'active') {
-			handle = 19999;
-		}
-
 		// Refresh Tree when these events are emitted
 		this.connectionManagementService.onAddConnectionProfile(() => {
 			self.structuralTreeUpdate();
@@ -111,18 +104,10 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 		}
 
 		const treeInput =  new ConnectionProfileGroup('root', null, 'root');
-		console.log(this.viewKey + ' groups ' + groups);
 		treeInput.addConnections(TreeUtils.convertToConnectionProfile(groups));
 		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
 			this.tree.getFocus();
 		}, errors.onUnexpectedError);
-	}
-
-	private convertToConnectionProfile(conns: ConnectionProfile[]) : ConnectionProfile[] {
-		let connections = [];
-		conns.forEach((conn) => { connections.push(conn);
-			});
-		return connections;
 	}
 
 	private onError(err: any): void {

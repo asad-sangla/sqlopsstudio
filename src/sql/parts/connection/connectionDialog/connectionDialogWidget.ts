@@ -140,7 +140,7 @@ export class ConnectionDialogWidget {
 
 			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
 				divContainer.element('div', { class: 'explorer-servers'}, (treeContainer: Builder) => {
-					let recentConnectionTree = TreeUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService);
+					let recentConnectionTree = TreeUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true);
 					recentConnectionTree.addListener2('selection', (event: any) => this.OnRecentConnectionClick(event));
 					TreeUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService).then(() => {
 						// call layout with view height

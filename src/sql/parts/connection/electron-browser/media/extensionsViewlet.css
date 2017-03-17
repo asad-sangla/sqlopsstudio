@@ -136,11 +136,11 @@
 	font-weight: 600;
 }
 
-.extensions-viewlet > .extensions .extension > .details > .footer > .monaco-action-bar > .actions-container {
+.server-explorer-viewlet .monaco-action-bar > .actions-container {
 	flex-wrap: wrap-reverse;
 }
 
-.extensions-viewlet > .extensions .extension > .details > .footer > .monaco-action-bar .action-label {
+.server-explorer-viewlet  .monaco-action-bar .action-label {
 	margin-right: 0;
 	margin-left: 0.3em;
 	line-height: 15px;
@@ -191,8 +191,11 @@
 .server-explorer-viewlet .explorer-item,
 .server-explorer-viewlet .open-editor,
 .server-explorer-viewlet .editor-group {
-	height: 66px;
-	line-height: 22px;
+	line-height: 20px;
+}
+
+.server-explorer-viewlet .editor-group {
+	padding-right: 4px;
 }
 
 .server-explorer-viewlet .server-group {
@@ -228,6 +231,18 @@
 
 .server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content {
 	display: flex;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content >.editor-group .monaco-action-bar {
+	display: none;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content >.editor-group:hover .monaco-action-bar {
+	display: block;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content >.editor-group:hover .monaco-action-bar > .actions-container{
+	min-width: 150px
 }
 
 .server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .monaco-action-bar {
@@ -346,7 +361,7 @@
 	display: block;
 	background: url('databaseEngine.svg') 50% 50% no-repeat;
 	width: 36px;
-	height: 100%;
+	height: 60%;
 	top: 0;
 	left: -30px;
 }

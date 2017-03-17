@@ -70,6 +70,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return false;
 	}
 
+	connectProfile(connection: ConnectionProfile): Promise<boolean>{
+		return new Promise(() => true);
+	}
+
 	connectEditor(editor: QueryEditor, uri: string, runQueryOnCompletion: boolean, connection: ConnectionProfile): Promise<boolean>{
 		return new Promise<boolean>(() => true);
 	}

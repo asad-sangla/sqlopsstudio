@@ -96,11 +96,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._providers[providerId] = provider;
 	}
 
-	public newConnection(params?: INewConnectionParams): void {
+	public newConnection(params?: INewConnectionParams, model?: IConnectionProfile): void {
 		if (!params) {
 			params = { connectionType: ConnectionType.default };
 		}
-		this._connectionDialogService.showDialog(this, params, undefined);
+		this._connectionDialogService.showDialog(this, params, model);
 	}
 
 	public addConnectionProfile(connection: IConnectionProfile): Promise<boolean> {
@@ -259,8 +259,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._statusService.setStatusMessage('Updating IntelliSense cache');
 	}
 
-
-
 	public onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
 		this._statusService.setStatusMessage('Connection Complete ' + connectionUri);
 	}
@@ -325,6 +323,42 @@ export class ConnectionManagementService implements IConnectionManagementService
 				});
             });
         });
+	}
+
+	public connectProfile(connectionProfile: ConnectionProfile): Promise<boolean> {
+		let uri = this._connectionFactory.getUniqueUri(connectionProfile);
+		let connection: IConnectionProfile = {
+			serverName: connectionProfile.serverName,
+			databaseName: connectionProfile.databaseName,
+			userName: connectionProfile.userName,
+			password: connectionProfile.password,
+			authenticationType: connectionProfile.authenticationType,
+			groupId: connectionProfile.groupId,
+			groupName: connectionProfile.groupName,
+			savePassword: connectionProfile.savePassword,
+			getUniqueId: undefined,
+			providerName: ''
+		};
+
+		// Retreive saved password if needed
+		return new Promise<boolean>((resolve, reject) => {
+			this._statusService.setStatusMessage('Connecting...');
+			this._connectionStore.addSavedPassword(connection).then(newConnection => {
+				if (!this._connectionFactory.hasConnection(connection, uri)) {
+					return this.connect(uri, connection).then(connected => {
+						if (connected) {
+							this.showDashboard(uri, connection);
+						}
+						resolve(connected);
+					}).catch(err => {
+						reject(err);
+						this._connectionFactory.deleteConnection(uri);
+					});
+				} else {
+					return resolve(true);
+				}
+			});
+		});
 	}
 
 	// Disconnect a URI from its current connection

@@ -15,6 +15,7 @@ import { ConnectionProfile } from './connectionProfile';
 import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import * as data from 'data';
 
+
 /**
  * Implements connection profile file storage.
  */

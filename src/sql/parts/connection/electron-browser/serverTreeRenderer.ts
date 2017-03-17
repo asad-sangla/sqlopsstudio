@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 import dom = require('vs/base/browser/dom');
-import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
-import { ConnectionProfile } from '../node/connectionProfile';
+import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ITree, IDataSource, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACCEPT_BUBBLE_DOWN, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
@@ -16,6 +17,8 @@ import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IConnectionProfileGroupTemplateData, IConnectionTemplateData } from 'sql/parts/connection/electron-browser/templateData';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
+import { ChangeConnectionAction } from 'sql/parts/connection/electron-browser/connectionTreeAction';
 import { IConnectableEditorParams } from 'sql/parts/connection/common/connectionManagement';
 const $ = dom.$;
 
@@ -29,6 +32,16 @@ export class ServerTreeRenderer implements IRenderer {
 	public static CONNECTION_GROUP_HEIGHT = 32;
 	private static CONNECTION_TEMPLATE_ID = 'connection';
 	private static CONNECTION_GROUP_TEMPLATE_ID = 'ConnectionProfileGroup';
+	private _isCompact: boolean = false;
+
+	constructor(isCompact: boolean,
+		@IInstantiationService private _instantiationService: IInstantiationService
+	) {
+		// isCompact defaults to false unless explicitly set by instantiation call.
+		if (isCompact) {
+			this._isCompact = isCompact;
+		}
+	}
 
 	/**
 	 * Returns the element's height in the tree, in pixels.
@@ -56,19 +69,41 @@ export class ServerTreeRenderer implements IRenderer {
 	public renderTemplate(tree: ITree, templateId: string, container: HTMLElement): any {
 
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
-			const serverTemplate: IConnectionTemplateData = Object.create(null);
-			serverTemplate.root = dom.append(container, $('.editor-group'));
-			serverTemplate.serverName = dom.append(serverTemplate.root, $('span.name'));
-			serverTemplate.databaseName = dom.append(serverTemplate.root, $('.description.ellipsis'));
-			serverTemplate.footer = dom.append(serverTemplate.root, $('.footer'));
-			serverTemplate.type = dom.append(serverTemplate.footer, $('.author.ellipsis'));
-			return serverTemplate;
+			const root = dom.append(container, $('.editor-group'));
+			const serverName = dom.append(root, $('span.name'));
+			const databaseName = dom.append(root, $('div.author.ellipsis'));
+			if (!this._isCompact) {
+				const actionOptions = { icon: true, label: true };
+				const actionbar = new ActionBar(root, {
+					animated: false
+				});
+				const connectAction = this._instantiationService.createInstance(ChangeConnectionAction);
+				const newQueryAction = this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL);
+				actionbar.push([connectAction, newQueryAction], actionOptions);
+				return {
+					root,
+					serverName,
+					databaseName,
+					set connectionProfile(profile: ConnectionProfile) {
+						connectAction.connectionProfile = profile;
+						newQueryAction.connectionProfile = profile;
+					}
+				};
+			}
+			return {
+				root,
+				serverName,
+				databaseName,
+				set connectionProfile(profile: ConnectionProfile) {
+					//no op
+				}
+			};
 		}
 		else {
-			const serverTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
-			serverTemplate.root = dom.append(container, $('.server-group'));
-			serverTemplate.name = dom.append(serverTemplate.root, $('span.name'));
-			return serverTemplate;
+			const groupTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
+			groupTemplate.root = dom.append(container, $('.server-group'));
+			groupTemplate.name = dom.append(groupTemplate.root, $('span.name'));
+			return groupTemplate;
 		}
 	}
 
@@ -87,7 +122,7 @@ export class ServerTreeRenderer implements IRenderer {
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
 		templateData.serverName.textContent = connection.serverName;
 		templateData.databaseName.textContent = connection.databaseName;
-		templateData.type.textContent = connection.providerName;
+		templateData.connectionProfile = connection;
 	}
 
 	private renderConnectionProfileGroup(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
@@ -282,13 +317,26 @@ export class AddServerToGroupAction extends Action {
 	public static LABEL = nls.localize('addConnection', "Add Connection");
 	constructor(
 		id: string,
-		label: string
+		label: string,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
 	}
 
 	public run(element: ConnectionProfileGroup): TPromise<boolean> {
-		console.log('Action run');
+		let connection: IConnectionProfile = {
+			serverName: undefined,
+			databaseName: undefined,
+			userName: undefined,
+			password: undefined,
+			authenticationType: undefined,
+			groupId: undefined,
+			groupName: element.fullName,
+			savePassword: undefined,
+			getUniqueId: undefined,
+			providerName: ''
+		};
+		this._connectionManagementService.newConnection(undefined, connection);
 		return TPromise.as(true);
 	}
 }
@@ -296,6 +344,14 @@ export class AddServerToGroupAction extends Action {
 export class NewQueryAction extends Action {
 	public static ID = 'registeredServers.newQuery';
 	public static LABEL = nls.localize('newQuery', 'New Query');
+	private _connectionProfile: ConnectionProfile;
+	get connectionProfile(): ConnectionProfile
+	{
+		return this._connectionProfile;
+	}
+	set connectionProfile(profile: ConnectionProfile) {
+		this._connectionProfile = profile;
+	}
 
 	constructor(
 		id: string,
@@ -304,12 +360,18 @@ export class NewQueryAction extends Action {
 		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
+		this.class = 'extension-action update';
+		this.label = 'Query';
 	}
 
-	public run(connectionProfileGroup: ConnectionProfile): TPromise<boolean> {
+	public run(connectionProfile: any): TPromise<boolean> {
+		if (connectionProfile instanceof ConnectionProfile) {
+			//set connectionProfile for context menu clicks
+			this._connectionProfile = connectionProfile;
+		}
 		this.queryEditorService.newSqlEditor().then((params: IConnectableEditorParams) => {
 			// Connect our editor to the input connection
-			this.connectionManagementService.connectEditor(params.editor, params.uri, false, connectionProfileGroup);
+			this.connectionManagementService.connectEditor(params.editor, params.uri, false, this._connectionProfile);
 		});
 		return TPromise.as(true);
 	}

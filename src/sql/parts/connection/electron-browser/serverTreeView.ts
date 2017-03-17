@@ -49,7 +49,6 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	public renderHeader(container: HTMLElement): void {
 		const titleDiv = $('div.title').appendTo(container);
 		$('span').text(nls.localize('registeredServers', "Registered Servers")).appendTo(titleDiv);
-
 		super.renderHeader(container);
 	}
 
@@ -63,7 +62,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		const dataSource = this.instantiationService.createInstance(ServerTreeDataSource);
 		this.viewletState = new TreeExplorerViewletState();
 		const actionProvider = this.instantiationService.createInstance(ServerTreeActionProvider);
-		const renderer = this.instantiationService.createInstance(ServerTreeRenderer);
+		const renderer = this.instantiationService.createInstance(ServerTreeRenderer, false);
 		const controller = this.instantiationService.createInstance(ServerTreeController,actionProvider);
 		const dnd = this.instantiationService.createInstance(ServerTreeDragAndDrop);
 		const filter = new DefaultFilter();
@@ -79,8 +78,6 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 			});
 		this.toDispose.push(this.tree.addListener2('selection', () => this.onSelected()));
 		const self = this;
-		let handle = 199889;
-
 		// Refresh Tree when these events are emitted
 		this.connectionManagementService.onAddConnectionProfile(() => {
 			self.structuralTreeUpdate();
