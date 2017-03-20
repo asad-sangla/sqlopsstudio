@@ -17,8 +17,6 @@ const ipc = electron.ipcRenderer;
 // SQL global imports
 // Set jQuery globals
 const jQuery = require('jquery');
-jQuery.fn.drag = require('jquery.event.drag');
-require('jquery-ui');
 const $ = jQuery;
 
 // Set other globals
@@ -28,12 +26,6 @@ require('reflect-metadata');
 require('zone.js');
 require('bootstrap');
 
-// Require slickgrid
-require('slickgrid/slick.core');
-const Slick = window.Slick;
-require('slickgrid/slick.grid');
-require('slickgrid/slick.editors');
-
 const PrimeNg = require('primeng/primeng');
 
 // Set temporary globals for angular relative path fix
@@ -42,6 +34,7 @@ const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynami
 const AngularCore = require('@angular/core');
 const AngularPlatformBrowser = require('@angular/platform-browser');
 const Rx = require('rxjs/Rx');
+
 process.lazyEnv = new Promise(function (resolve) {
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
 		assign(process.env, shellEnv);
@@ -179,6 +172,9 @@ function main() {
 	const rootUrl = appRoot + '/out';
 
 	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
+	createScript(appRoot + '/node_modules/slickgrid/lib/jquery.event.drag-2.2.js', undefined);
+	createScript(appRoot + '/node_modules/slickgrid/lib/jquery-ui-1.9.2.js', undefined);
+	createScript(rootUrl + '/sql/parts/grid/load/loadSlickgrid.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/views/slick.dragrowselector.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/views/slick.autosizecolumn.js', undefined);
 

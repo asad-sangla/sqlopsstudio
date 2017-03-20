@@ -98,7 +98,6 @@ const template = `
 
 @AngularCore.Component({
     selector: 'slickgrid-container',
-    host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
     template: template,
     styles: [`
     .errorMessage {
@@ -241,6 +240,8 @@ export class AppComponent {
     private messages: IMessage[] = [];
     private scrollTimeOut: number;
     private messagesAdded = false;
+    private resizing = false;
+    private resizeHandleTop = 0;
     private scrollEnabled = true;
     // tslint:disable-next-line:no-unused-variable
     private resultActive = true;
@@ -283,6 +284,7 @@ export class AppComponent {
      */
     ngOnInit(): void {
         const self = this;
+        this.setupResizeBind();
 
         this.dataService.queryEventObserver.subscribe(event => {
             switch (event.type) {
@@ -644,7 +646,6 @@ export class AppComponent {
      * Sets up the resize for the messages/results panes bar
      */
     setupResizeBind(): void {
-        /*
         const self = this;
         let $resizeHandle = $(self._el.nativeElement.querySelector('#messageResizeHandle'));
         let $messagePane = $(self._el.nativeElement.querySelector('#messages'));
@@ -665,7 +666,6 @@ export class AppComponent {
             self.cd.detectChanges();
             self.resizeGrids();
         });
-        */
     }
 
     /**
@@ -694,30 +694,6 @@ export class AppComponent {
             }
             self.slickgrids.toArray()[0].setActive();
         });
-    }
-
-    /**
-     *
-     */
-    keyEvent(e): void {
-        /*
-        const self = this;
-        if (e.detail) {
-            e.which = e.detail.which;
-            e.ctrlKey = e.detail.ctrlKey;
-            e.metaKey = e.detail.metaKey;
-            e.altKey = e.detail.altKey;
-            e.shiftKey = e.detail.shiftKey;
-        }
-        let eString = this.shortcuts.buildEventString(e);
-        this.shortcuts.getEvent(eString).then((result) => {
-            if (result) {
-                let eventName = <string> result;
-                self.shortcutfunc[eventName]();
-                e.stopImmediatePropagation();
-            }
-        });
-        */
     }
 
     /**

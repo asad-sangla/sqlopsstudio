@@ -29,7 +29,7 @@ slick-grid.active .grid .slick-cell.selected {
 }
 
 .grid .slick-cell.selected .grid-cell-value-container.missing-value {
-    color: var(--color-content);
+    color: var(--color-content) !important;
 }
 
 .boxRow.content.horzBox.slickgrid {
