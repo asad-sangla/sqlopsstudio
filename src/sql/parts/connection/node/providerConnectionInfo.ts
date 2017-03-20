@@ -145,5 +145,9 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 			this.options[name] = value;
 		}
 	}
+
+	public getOptionsMetadata(): data.ConnectionOption[] {
+		return this._optionsMetadata.connectionProvider.options;
+	}
 }
 

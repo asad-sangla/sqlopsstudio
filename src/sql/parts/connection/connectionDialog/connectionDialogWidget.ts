@@ -20,6 +20,7 @@ import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import data = require('data');
 
 export interface IConnectionDialogCallbacks {
@@ -38,7 +39,6 @@ export class ConnectionDialogWidget {
 	private _closeButton: Button;
 	private _dialog: ModalDialogBuilder;
 	private _providerTypeSelectBox: ConnectionDialogSelectBox;
-	private _sqlProviderType: string = 'SQL';
 	private _toDispose: lifecycle.IDisposable[];
 	private _newConnectionParams: INewConnectionParams;
 
@@ -50,26 +50,24 @@ export class ConnectionDialogWidget {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
-
-		var providerTypeOptions = [this._sqlProviderType];
-		this._providerTypeSelectBox = new ConnectionDialogSelectBox(providerTypeOptions, this._sqlProviderType);
 	}
 
-	public create(): HTMLElement {
+	public create(providerTypeOptions: string[], selectedProviderType: string): HTMLElement {
+		this._providerTypeSelectBox = new ConnectionDialogSelectBox(providerTypeOptions, selectedProviderType);
+
 		this._dialog = new ModalDialogBuilder('connectionDialogModal', 'Connect to Server', 'connection-dialog-widget', 'connectionDialogBody');
 		this._builder = this._dialog.create();
 		this._dialog.addModalTitle();
-		this._dialog.headerContainer.div({ class: 'Connection-type' }, (connectionTypeContainer) => {
-			connectionTypeContainer.div({ class: 'ConnectionType-label'}, (labelContainer) => {
-				labelContainer.innerHtml('Connection Type');
-			});
-			connectionTypeContainer.div({ class: 'ConnectionType-input'}, (inputContainer) => {
-				this._providerTypeSelectBox.render(inputContainer.getHTMLElement());
-			});
-		});
 
 		this._dialog.bodyContainer.div({class:'connection-recent', id: 'recentConnection'});
 		this._dialog.addErrorMessage();
+		this._dialog.bodyContainer.div({class:'Connection-type'}, (modelTableContent) => {
+			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
+				ConnectionDialogHelper.appendInputSelectBox(
+					ConnectionDialogHelper.appendRow(tableContainer, 'Connection Type', 'connection-label', 'connection-input'), this._providerTypeSelectBox);
+			});
+		});
+
 		this._dialog.bodyContainer.div({class:'connection-provider-info', id: 'connectionProviderInfo'});
 
 		this._connectButton = this.createFooterButton(this._dialog.footerContainer, 'Connect');
@@ -183,6 +181,7 @@ export class ConnectionDialogWidget {
 				this.cancel();
 			}
 		});
+		this.initDialog();
 	}
 
 	public set connectButtonEnabled(enable: boolean) {
@@ -193,7 +192,7 @@ export class ConnectionDialogWidget {
 		return this._connectButton.enabled;
 	}
 
-	public initDialog(): void {
+	private initDialog(): void {
 		this._dialog.showError('');
 		this._dialog.hideSpinner();
 		this._callbacks.onInitDialog();

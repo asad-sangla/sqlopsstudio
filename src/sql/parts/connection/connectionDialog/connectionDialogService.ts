@@ -9,7 +9,7 @@ import { IConnectionDialogService, IConnectionManagementService, IErrorMessageSe
 	ConnectionType, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
-import { Builder, withElementById } from 'vs/base/browser/builder';
+import { withElementById } from 'vs/base/browser/builder';
 import { SqlConnectionController } from 'sql/parts/connection/connectionDialog/sqlConnectionController';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
@@ -17,6 +17,7 @@ import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Severity from 'vs/base/common/severity';
+import data = require('data');
 
 export interface IConnectionComponentCallbacks {
 	onSetConnectButton: (enable: boolean) => void;
@@ -25,7 +26,7 @@ export interface IConnectionComponentCallbacks {
 
 export interface IConnectionComponentController {
 	showSqlUiComponent(): HTMLElement;
-	initDialog(model: IConnectionProfile): void;
+	initDialog(model: ConnectionProfile): void;
 	validateConnection(model: IConnectionProfile): boolean;
 	fillInConnectionInputs(connectionInfo: IConnectionProfile): void;
 }
@@ -38,7 +39,10 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _container: HTMLElement;
 	private _connectionDialog: ConnectionDialogWidget;
 	private _sqlConnectionController: SqlConnectionController;
-	private _model: IConnectionProfile;
+	private _model: ConnectionProfile;
+	private _capabilitiesMaps: { [providerDisplayName: string]: data.DataProtocolServerCapabilities };
+	private _providerNameToDisplayNameMap: { [providerDisplayName: string]: string };
+	private _providerTypes: string[];
 
 	constructor(
 		@IPartService private _partService: IPartService,
@@ -46,6 +50,9 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
+		this._capabilitiesMaps = {};
+		this._providerNameToDisplayNameMap = {};
+		this._providerTypes = [];
 	}
 
 	private handleOnConnect(params: INewConnectionParams): void {
@@ -110,7 +117,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private get sqlUiController(): SqlConnectionController {
 		if (!this._sqlConnectionController) {
-			this._sqlConnectionController = new SqlConnectionController(this._container, this._connectionManagementService, {
+			this._sqlConnectionController = new SqlConnectionController(this._container, this._connectionManagementService, this._capabilitiesMaps['MSSQL'], {
 				onSetConnectButton: (enable: boolean) => this.handleSetConnectButtonEnable(enable)
 			});
 		}
@@ -133,13 +140,22 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this.sqlUiController.fillInConnectionInputs(connectionInfo);
 	}
 
+	private UpdateModelOptionsMetadata(model: IConnectionProfile, providerName: string) {
+		let serverCapabilities = this._capabilitiesMaps[providerName];
+		this._model = new ConnectionProfile(serverCapabilities, model);
+	}
+
 	public showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
 		this._connectionManagementService = connectionManagementService;
+
 		let capabilities = this._capabilitiesService.getCapabilities();
-		//For now harcoding to mssql only. The dialog has to show all the providers
-		//and create the connection profile for that provider
-		let sqlCapabilities = capabilities.find(c => c.providerName === 'MSSQL');
-		this._model = new ConnectionProfile(sqlCapabilities, model);
+		capabilities.forEach(c => {
+			this._providerTypes.push(c.providerDisplayName);
+			this._capabilitiesMaps[c.providerName] = c;
+			this._providerNameToDisplayNameMap[c.providerName] = c.providerDisplayName;
+		});
+
+		this.UpdateModelOptionsMetadata( model, model ? model.providerName : 'MSSQL');
 
 		return new TPromise<void>(() => {
 			this.doShowDialog(params);
@@ -157,13 +173,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				onInitDialog: () => this.handleInitDialog(),
 				onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => this.handleFillInConnectionInputs(connectionInfo)
 			});
-			this._connectionDialog.create();
+			this._connectionDialog.create(this._providerTypes, this._providerNameToDisplayNameMap[this._model.providerName]);
 		}
 		this._connectionDialog.newConnectionParams = params;
 
 		return new TPromise<void>(() => {
 			this._connectionDialog.open(this._connectionManagementService.getRecentConnections());
-			this._connectionDialog.initDialog();
 		});
 	}
 }

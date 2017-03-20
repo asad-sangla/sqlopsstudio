@@ -6,7 +6,7 @@
 'use strict';
 
 import { Builder } from 'vs/base/browser/builder';
-import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
+import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 
@@ -46,8 +46,8 @@ export class ConnectionDialogHelper {
 		return new Builder(rowButton.getElement());
 	}
 
-	static appendInputBox(container: Builder): InputBox {
-		return new InputBox(container.getHTMLElement(), null, {});
+	static appendInputBox(container: Builder, options?: IInputOptions): InputBox {
+		return new InputBox(container.getHTMLElement(), null, options);
 	}
 
 	static appendInputSelectBox(container: Builder, selectBox: ConnectionDialogSelectBox): ConnectionDialogSelectBox {

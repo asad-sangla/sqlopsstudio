@@ -12,22 +12,24 @@ export class AdvancedPropertiesController {
 	private _container: HTMLElement;
 
 	private _advancedDialog: AdvancedPropertiesDialog;
+	private _options: { [name: string]: string };
 
 	constructor(private _onCloseAdvancedProperties: () => void) {
 	}
 
 
 	private handleOnOk(): void {
-		// Update advanced properties
+		this._options = this._advancedDialog.options;
 	}
 
-	public showDialog(connectionProperties: data.ConnectionOption[], container: HTMLElement): void {
+	public showDialog(optionsMetadata: data.ConnectionOption[], container: HTMLElement, options: { [name: string]: string }): void {
+		this._options = options;
 		var connectionPropertiesMaps = {};
-		for (var i = 0; i < connectionProperties.length; i++) {
-			var property = connectionProperties[i];
+		for (var i = 0; i < optionsMetadata.length; i++) {
+			var property = optionsMetadata[i];
 			var groupName = property.groupName;
 			if (groupName === null || groupName === undefined) {
-				groupName = 'Others';
+				groupName = 'General';
 			}
 
 			if (!!connectionPropertiesMaps[groupName]) {
@@ -50,6 +52,6 @@ export class AdvancedPropertiesController {
 			this._advancedDialog.create();
 		}
 
-		return this._advancedDialog.open(connectionPropertiesMaps);
+		return this._advancedDialog.open(connectionPropertiesMaps, this._options);
 	}
 }

@@ -10,6 +10,8 @@ import { IConnectionComponentCallbacks, IConnectionComponentController } from 's
 import { SqlConnectionWidget } from 'sql/parts/connection/connectionDialog/sqlConnectionWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import data = require('data');
 
 export class SqlConnectionController implements IConnectionComponentController {
 	private _container: HTMLElement;
@@ -17,12 +19,16 @@ export class SqlConnectionController implements IConnectionComponentController {
 	private _callback: IConnectionComponentCallbacks;
 	private _sqlConnectionWidget: SqlConnectionWidget;
 	private _advancedController: AdvancedPropertiesController;
+	private _model: ConnectionProfile;
 
-	constructor(container: HTMLElement, connectionManagementService: IConnectionManagementService, callback: IConnectionComponentCallbacks) {
+	constructor(container: HTMLElement, connectionManagementService: IConnectionManagementService, sqlCapabilities: data.DataProtocolServerCapabilities, callback: IConnectionComponentCallbacks) {
 		this._container = container;
 		this._connectionManagementService = connectionManagementService;
 		this._callback = callback;
-		this._sqlConnectionWidget  = new SqlConnectionWidget({
+		var options: data.ConnectionOption[] = sqlCapabilities.connectionProvider.options;
+		var specialOptions = options.filter(
+			(property) => (property.specialValueType !== null && property.specialValueType !== undefined));
+		this._sqlConnectionWidget  = new SqlConnectionWidget(specialOptions, {
 			onSetConnectButton: (enable: boolean) => this._callback.onSetConnectButton(enable),
 			onAdvancedProperties: () => this.handleOnAdvancedProperties(),
 		});
@@ -32,11 +38,11 @@ export class SqlConnectionController implements IConnectionComponentController {
 		if (!this._advancedController) {
 			this._advancedController = new AdvancedPropertiesController(() => this._sqlConnectionWidget.focusOnAdvancedButton());
 		}
-		var connectionProperties = this._connectionManagementService.getAdvancedProperties();
+		var connectionProperties = this._model.getOptionsMetadata();
 		if (!!connectionProperties) {
 			var advancedOption = connectionProperties.filter(
 				(property) => (property.specialValueType === undefined || property.specialValueType === null));
-			this._advancedController.showDialog(advancedOption, this._container);
+			this._advancedController.showDialog(advancedOption, this._container, this._model.options);
 		}
 	}
 
@@ -44,8 +50,9 @@ export class SqlConnectionController implements IConnectionComponentController {
 		return this._sqlConnectionWidget.createSqlConnectionWidget();
 	}
 
-	public initDialog(model: IConnectionProfile): void {
-		this._sqlConnectionWidget.initDialog(model);
+	public initDialog(model: ConnectionProfile): void {
+		this._model = model;
+		this._sqlConnectionWidget.initDialog(this._model);
 	}
 
 	public validateConnection(model: IConnectionProfile): boolean {

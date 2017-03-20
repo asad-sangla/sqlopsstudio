@@ -89,3 +89,11 @@
 td.advancedDialog-input.select-container {
 	padding-right: 9px;
 }
+
+.advanced-dialog .dialogErrorMessage {
+	color: red;
+	overflow: hidden;
+	padding-left: 10px;
+	overflow-y: auto;
+	max-height: 50px;
+}

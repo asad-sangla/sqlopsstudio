@@ -92,10 +92,8 @@
 }
 
 .connection-dialog-widget .connection-provider-info {
-	border-top: 1px solid #e5e5e5;
 	padding-right: 15px;
 	padding-left: 15px;
-	padding-top: 15px;
 }
 
 .connection-dialog-widget .dialogErrorMessage {
@@ -130,19 +128,9 @@
 	table-layout: fixed;
 }
 
-.connection-dialog-widget .ConnectionType-label {
-	float: left;
-	padding-left: 15px;
-	padding-top: 5px;
-}
-
-.connection-dialog-widget .ConnectionType-input.select-container {
-	float: left;
-	padding-left: 15px;
-	padding-right: 15px;
-	width: 80px;
-}
-
 .connection-dialog-widget .Connection-type {
-	float: right;
+	border-top: 1px solid #e5e5e5;
+	padding-right: 15px;
+	padding-left: 15px;
+	padding-top: 15px;
 }
