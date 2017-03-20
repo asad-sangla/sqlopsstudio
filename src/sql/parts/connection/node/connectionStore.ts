@@ -260,7 +260,6 @@ export class ConnectionStore {
 		return new Promise<void>((resolve, reject) => {
 			// Get all profiles
 			let configValues = self.getActiveConnections();
-			let maxConnections = self.getMaxRecentConnectionsCount();
 			let savedProfile: ConnectionProfile = this.getProfileWithoutPassword(conn);
 
 			// Remove the connection from the list if it already exists
@@ -268,15 +267,11 @@ export class ConnectionStore {
 
 			configValues.unshift(savedProfile);
 
-			// Remove last element if needed
-			if (configValues.length > maxConnections) {
-				configValues = configValues.slice(0, maxConnections);
-			}
 
 			let configToSave = configValues.map(c => {
 				return c.toIConnectionProfile();
 			});
-			this._memento['ACTIVE_CONNECTIONS'] = configToSave;
+			self._memento['ACTIVE_CONNECTIONS'] = configToSave;
 			self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
 			resolve(undefined);
 		});
@@ -286,8 +281,9 @@ export class ConnectionStore {
 	 * Clear all recently used connections from the MRU list.
 	 */
 	public clearRecentlyUsed(): Promise<void> {
+		const self = this;
 		return new Promise<void>((resolve, reject) => {
-			this._memento['RECENT_CONNECTIONS'] = [];
+			self._memento['RECENT_CONNECTIONS'] = [];
 			resolve();
 		});
 	}
@@ -296,8 +292,9 @@ export class ConnectionStore {
 	 * Clear all active connections from the MRU list.
 	 */
 	public clearActiveConnections(): Promise<void> {
+		const self = this;
 		return new Promise<void>((resolve, reject) => {
-			this._memento['ACTIVE_CONNECTIONS'] = [];
+			self._memento['ACTIVE_CONNECTIONS'] = [];
 			resolve();
 		});
 	}
@@ -315,7 +312,7 @@ export class ConnectionStore {
 			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
 
 			// Update the MRU list
-			this._memento['RECENT_CONNECTIONS'] = configValues;
+			self._memento['RECENT_CONNECTIONS'] = configValues;
 		});
 	}
 
@@ -332,7 +329,7 @@ export class ConnectionStore {
 			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
 
 			// Update the Active list
-			this._memento['ACTIVE_CONNECTIONS'] = configValues;
+			self._memento['ACTIVE_CONNECTIONS'] = configValues;
 		});
 	}
 

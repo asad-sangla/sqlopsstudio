@@ -158,7 +158,7 @@ suite('SQL ConnectionStore tests', () => {
 		defaultNamedConnectionProfile = new ConnectionProfile(msSQLCapabilities, defaultNamedProfile);
 	});
 
-	test('addActiveConnection should limit saves to the MaxRecentConnections amount', (done) => {
+	test('addActiveConnection should not limit saves to the MaxRecentConnections amount', (done) => {
 		// Given 3 is the max # creds
 		let numCreds = 6;
 
@@ -167,7 +167,7 @@ suite('SQL ConnectionStore tests', () => {
 			.returns(() => Promise.resolve(true));
 
 		// When saving 4 connections
-		// Then expect the only the 3 most recently saved connections to be returned as size is limited to 3
+		// Expect all of them to be saved even if size is limited to 3
 		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
 			credentialStore.object, capabilitiesService.object, connectionConfig.object);
 		let promise = Promise.resolve();
@@ -178,11 +178,7 @@ suite('SQL ConnectionStore tests', () => {
 				return connectionStore.addActiveConnection(connectionProfile);
 			}).then(() => {
 				let current = connectionStore.getActiveConnections();
-				if (i < maxRecent) {
-					assert.equal(current.length, i + 1, `expect all credentials to be saved when limit not reached ${current.length}|${i + 1} `);
-				} else {
-					assert.equal(current.length, maxRecent, `expect only top ${maxRecent} creds to be saved`);
-				}
+				assert.equal(current.length, i + 1, `expect all credentials to be saved ${current.length}|${i + 1} `);
 				assert.equal(current[0].serverName, cred.serverName, 'Expect most recently saved item to be first in list');
 				assert.ok(Utils.isEmpty(current[0].password));
 			});
@@ -190,7 +186,7 @@ suite('SQL ConnectionStore tests', () => {
 		promise.then(() => {
 			credentialStore.verify(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(numCreds));
 			let recentConnections = connectionStore.getActiveConnections();
-			assert.equal(maxRecent, recentConnections.length);
+			assert.equal(numCreds, recentConnections.length);
 			done();
 		}, err => {
 			// Must call done here so test indicates it's finished if errors occur

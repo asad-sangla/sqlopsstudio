@@ -15,7 +15,6 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegistry';
 import { IAction } from 'vs/base/common/actions';
-import { Keybinding } from 'vs/base/common/keyCodes';
 import { IActionProvider } from 'vs/base/parts/tree/browser/actionsRenderer';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IMouseEvent } from 'vs/base/browser/mouseEvent';
@@ -158,6 +157,25 @@ export class TreeUtils {
 	}
 
 	/**
+	 * Handle selection of tree element
+	 */
+	public static OnTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService) {
+		let selection = tree.getSelection();
+		const connectionUri = 'connection://';
+		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
+			let connectionProfile = <ConnectionProfile>selection[0];
+			let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
+			let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
+			if (isDoubleClick) {
+				let uri =  connectionUri + connectionProfile.getUniqueId();
+				if (!connectionManagementService.isConnected(uri)) {
+					connectionManagementService.connectProfile(connectionProfile);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Set input for the tree.
 	 */
 	public static structuralTreeUpdate(tree: Tree, viewKey: string, connectionManagementService: IConnectionManagementService): WinJS.Promise {
@@ -184,6 +202,9 @@ export class TreeUtils {
 		return connections;
 	}
 
+	/**
+	 * Return actions for connection elements
+	 */
 	public static getConnectionActions(instantiationService: IInstantiationService): IAction[] {
 		return [
 			instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL),
@@ -192,6 +213,9 @@ export class TreeUtils {
 		];
 	}
 
+	/**
+	 * Return actions for connection group elements
+	 */
 	public static getConnectionProfileGroupActions(instantiationService: IInstantiationService): IAction[] {
 		return [
 			instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)

@@ -20,6 +20,7 @@ import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import data = require('data');
 
@@ -45,8 +46,7 @@ export class ConnectionDialogWidget {
 	constructor(container: HTMLElement,
 		callbacks: IConnectionDialogCallbacks,
 		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService)
-	{
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService) {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
@@ -97,7 +97,7 @@ export class ConnectionDialogWidget {
 	private createFooterButton(container: Builder, title: string): Button {
 		let button;
 		container.element('td', (cellContainer) => {
-			cellContainer.div({class:'footer-button'}, (buttonContainer) => {
+			cellContainer.div({ class: 'footer-button' }, (buttonContainer) => {
 				button = new Button(buttonContainer);
 				button.label = title;
 				button.addListener2('click', () => {
@@ -132,14 +132,18 @@ export class ConnectionDialogWidget {
 
 	private createRecentConnectionsBuilder(): Builder {
 		var recentConnectionBuilder = $().div({ class: 'connection-recent-content' }, (recentConnectionContainer) => {
-			recentConnectionContainer.div({class:'connection-history-label'}, (recentTitle) => {
+			recentConnectionContainer.div({ class: 'connection-history-label' }, (recentTitle) => {
 				recentTitle.innerHtml('Recent History');
 			});
 
 			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
-				divContainer.element('div', { class: 'explorer-servers'}, (treeContainer: Builder) => {
+				divContainer.element('div', { class: 'explorer-servers' }, (treeContainer: Builder) => {
 					let recentConnectionTree = TreeUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true);
 					recentConnectionTree.addListener2('selection', (event: any) => this.OnRecentConnectionClick(event));
+					recentConnectionTree.addListener2('selection',
+						(event: any) => {
+							this.onRecentConnectionDoubleClick(event, recentConnectionTree);
+						});
 					TreeUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService).then(() => {
 						// call layout with view height
 						recentConnectionTree.layout(300);
@@ -149,6 +153,15 @@ export class ConnectionDialogWidget {
 			});
 		});
 		return recentConnectionBuilder;
+	}
+
+	private onRecentConnectionDoubleClick(event: any, recentConnectionTree: Tree) {
+		let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
+		let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
+		if (isDoubleClick) {
+			TreeUtils.OnTreeSelect(event, recentConnectionTree, this._connectionManagementService);
+			this.close();
+		}
 	}
 
 	private OnRecentConnectionClick(event: any) {
@@ -165,7 +178,7 @@ export class ConnectionDialogWidget {
 
 	public open(recentConnections: data.ConnectionInfo[]) {
 		this.clearRecentConnection();
-		if(recentConnections.length > 0) {
+		if (recentConnections.length > 0) {
 			var recentConnectionBuilder = this.createRecentConnectionsBuilder();
 			jQuery('#recentConnection').append(recentConnectionBuilder.getHTMLElement());
 		}

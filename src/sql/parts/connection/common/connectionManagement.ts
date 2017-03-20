@@ -29,6 +29,7 @@ export interface IConnectionManagementService {
 	// Event Emitters
 	onAddConnectionProfile: Event<void>;
 	onDeleteConnectionProfile: Event<void>;
+	onConnect: Event<void>;
 
 	newConnection(params?: INewConnectionParams, model?: IConnectionProfile): void;
 

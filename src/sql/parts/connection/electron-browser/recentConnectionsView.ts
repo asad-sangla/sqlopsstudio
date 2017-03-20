@@ -32,8 +32,8 @@ const $ = builder.$;
 export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 
 	constructor(private viewTitle, public viewKey, actionRunner: IActionRunner, settings: any,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService private messageService: IMessageService
@@ -56,14 +56,21 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 	public renderBody(container: HTMLElement): void {
 		this.treeContainer = super.renderViewTree(container);
 		dom.addClass(this.treeContainer, 'explorer-servers');
-		this.tree = TreeUtils.createConnectionTree(this.treeContainer, this.instantiationService, false);
-		this.toDispose.push(this.tree.addListener2('selection', () => this.onSelected()));
+		this.tree = TreeUtils.createConnectionTree(this.treeContainer, this._instantiationService, false);
+		this.toDispose.push(this.tree.addListener2('selection', (event) => TreeUtils.OnTreeSelect(
+			event,
+			this.tree,
+			this._connectionManagementService
+		)));
 		const self = this;
 		// Refresh Tree when these events are emitted
-		this.connectionManagementService.onAddConnectionProfile(() => {
+		this._connectionManagementService.onAddConnectionProfile(() => {
 			self.structuralTreeUpdate();
 		});
-		this.connectionManagementService.onDeleteConnectionProfile(() => {
+		this._connectionManagementService.onConnect(() => {
+			self.structuralTreeUpdate();
+		});
+		this._connectionManagementService.onDeleteConnectionProfile(() => {
 			self.structuralTreeUpdate();
 		});
 
@@ -75,7 +82,7 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 	 */
 	public getActions(): IAction[] {
 		return [
-			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
+			this._instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
 		];
 	}
 
@@ -98,9 +105,9 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 	private structuralTreeUpdate(): void {
 		let groups;
 		if (this.viewKey === 'recent') {
-			groups = this.connectionManagementService.getRecentConnections();
+			groups = this._connectionManagementService.getRecentConnections();
 		} else if (this.viewKey === 'active') {
-			groups = this.connectionManagementService.getActiveConnections();
+			groups = this._connectionManagementService.getActiveConnections();
 		}
 
 		const treeInput =  new ConnectionProfileGroup('root', null, 'root');

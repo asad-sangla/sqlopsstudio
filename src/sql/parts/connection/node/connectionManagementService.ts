@@ -47,6 +47,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _onAddConnectionProfile: Emitter<void>;
 	private _onDeleteConnectionProfile: Emitter<void>;
+	private _onConnect: Emitter<void>;
 
 	constructor(
 		private _connectionMemento: Memento,
@@ -78,6 +79,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// Setting up our event emitters
 		this._onAddConnectionProfile = new Emitter<void>();
 		this._onDeleteConnectionProfile = new Emitter<void>();
+		this._onConnect = new Emitter<void>();
 
 		this.disposables.push(this._onAddConnectionProfile);
 		this.disposables.push(this._onDeleteConnectionProfile);
@@ -90,6 +92,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public get onDeleteConnectionProfile(): Event<void> {
 		return this._onDeleteConnectionProfile.event;
+	}
+
+	public get onConnect(): Event<void> {
+		return this._onConnect.event;
 	}
 
 	// Connection Provider Registration
@@ -246,17 +252,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 		const self = this;
 		let connection = this._connectionFactory.onConnectionComplete(connectionInfoSummary.ownerUri, connectionInfoSummary.connectionId);
 
-		let activeConnection: IConnectionProfile = <any>{};
-
 		if (Utils.isNotEmpty(connectionInfoSummary.connectionId)) {
 			connection.connectHandler(true);
-			activeConnection = connection.connectionProfile;
+			let activeConnection = connection.connectionProfile;
+			self.tryAddActiveConnection(connection, activeConnection);
 		} else {
 			connection.connectHandler(false, connectionInfoSummary.messages);
-			activeConnection = undefined;
 		}
-
-		self.tryAddActiveConnection(connection, activeConnection);
 		this._statusService.setStatusMessage('Updating IntelliSense cache');
 	}
 
@@ -328,27 +330,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public connectProfile(connectionProfile: ConnectionProfile): Promise<boolean> {
 		let uri = this._connectionFactory.getUniqueUri(connectionProfile);
-		let connection: IConnectionProfile = {
-			serverName: connectionProfile.serverName,
-			databaseName: connectionProfile.databaseName,
-			userName: connectionProfile.userName,
-			password: connectionProfile.password,
-			authenticationType: connectionProfile.authenticationType,
-			groupId: connectionProfile.groupId,
-			groupName: connectionProfile.groupName,
-			savePassword: connectionProfile.savePassword,
-			getUniqueId: undefined,
-			providerName: ''
-		};
 
 		// Retreive saved password if needed
 		return new Promise<boolean>((resolve, reject) => {
 			this._statusService.setStatusMessage('Connecting...');
-			this._connectionStore.addSavedPassword(connection).then(newConnection => {
-				if (!this._connectionFactory.hasConnection(connection, uri)) {
-					return this.connect(uri, connection).then(connected => {
+			this._connectionStore.addSavedPassword(connectionProfile).then(newConnection => {
+				if (!this._connectionFactory.hasConnection(connectionProfile, uri)) {
+					return this.connect(uri, connectionProfile).then(connected => {
 						if (connected) {
-							this.showDashboard(uri, connection);
+							this._onConnect.fire();
+							this.showDashboard(uri, connectionProfile);
 						}
 						resolve(connected);
 					}).catch(err => {

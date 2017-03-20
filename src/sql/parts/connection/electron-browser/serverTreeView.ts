@@ -15,6 +15,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
 import { ConnectionProfile } from '../node/connectionProfile';
+import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
 import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/electron-browser/serverTreeController';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
@@ -35,7 +36,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	private searchBox: HTMLInputElement;
 
 	constructor(actionRunner: IActionRunner, settings: any,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
@@ -76,13 +77,13 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 				twistiePixels: 20,
 				ariaLabel: nls.localize({ key: 'treeAriaLabel', comment: ['Registered Servers'] }, "Registered Servers")
 			});
-		this.toDispose.push(this.tree.addListener2('selection', () => this.onSelected()));
+		this.toDispose.push(this.tree.addListener2('selection', (event) => this.onSelected(event)));
 		const self = this;
 		// Refresh Tree when these events are emitted
-		this.connectionManagementService.onAddConnectionProfile(() => {
+		this._connectionManagementService.onAddConnectionProfile(() => {
 			self.structuralTreeUpdate();
 		});
-		this.connectionManagementService.onDeleteConnectionProfile(() => {
+		this._connectionManagementService.onDeleteConnectionProfile(() => {
 			self.structuralTreeUpdate();
 		});
 
@@ -98,17 +99,8 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		];
 	}
 
-	private onSelected(): void {
-		let selection = this.tree.getSelection();
-
-		// Open a connected sql file if a ConnectionDisplay was chosen
-		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
-			this.openDatabase(selection[0]);
-		}
-	}
-
-	private openDatabase(server: ConnectionProfile): void {
-		// open the database dashboard
+	private onSelected(event: any): void {
+		TreeUtils.OnTreeSelect(event, this.tree, this._connectionManagementService);
 	}
 
 	/**
@@ -116,7 +108,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	 */
 	private structuralTreeUpdate(): void {
 		const self = this;
-		let groups = this.connectionManagementService.getConnectionGroups();
+		let groups = this._connectionManagementService.getConnectionGroups();
 		// TODO@Isidor temporary workaround due to a partial tree refresh issue
 		this.fullRefreshNeeded = true;
 		const treeInput =  new ConnectionProfileGroup('root', null, 'root');

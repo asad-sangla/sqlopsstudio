@@ -32,16 +32,25 @@ export class ChangeConnectionAction extends Action {
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super('registeredConnections.connect', ChangeConnectionAction.Label, ChangeConnectionAction.DisabledClass, false);
+		const self = this;
+		this._connectionManagementService.onConnect(() => {
+			self.onConnect();
+		});
 	}
 
 	private update(): void {
 		this.enabled = true;
 		this.class = ChangeConnectionAction.EnabledClass;
-		this.label = localize('connectTo', "Connect");
+		this.setLabel();
+	}
+
+	private onConnect(): void {
+		this.setLabel();
+	}
+
+	private setLabel(): void {
 		let uri = this.ConnectionUri + this._connectionProfile.getUniqueId();
-		if (this._connectionManagementService.isConnected(uri)) {
-			this.label = 'Disconnect';
-		}
+		this.label = this._connectionManagementService.isConnected(uri) ? 'Disconnect' : 'Connect';
 	}
 
 	run(): TPromise<any> {
