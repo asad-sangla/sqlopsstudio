@@ -25,11 +25,12 @@ import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
-import { ServerTreeRenderer, ServerTreeDataSource, AddServerToGroupAction, NewQueryAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { ServerTreeRenderer, ServerTreeDataSource } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { RecentConnectionsRenderer, RecentConnectionsDragAndDrop } from 'sql/parts/connection/electron-browser/recentConnectionsRenderer';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
+import { AddServerAction, NewQueryAction } from 'sql/parts/connection/electron-browser/connectionTreeAction';
 import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 
 /**
@@ -207,7 +208,7 @@ export class TreeUtils {
 	 */
 	public static getConnectionActions(instantiationService: IInstantiationService): IAction[] {
 		return [
-			instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL),
+			instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
 			instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL)
 		];
@@ -218,7 +219,7 @@ export class TreeUtils {
 	 */
 	public static getConnectionProfileGroupActions(instantiationService: IInstantiationService): IAction[] {
 		return [
-			instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
+			instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL)
 		];
 	}
 

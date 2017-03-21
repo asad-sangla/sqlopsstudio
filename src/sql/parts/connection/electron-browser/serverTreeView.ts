@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
+import 'vs/css!./media/serverTreeActions';
 import nls = require('vs/nls');
 import * as data from 'data';
 import errors = require('vs/base/common/errors');
@@ -16,7 +16,8 @@ import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
 import { ConnectionProfile } from '../node/connectionProfile';
 import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
-import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
+import { AddServerAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/connection/electron-browser/connectionTreeAction';
+import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
 import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/electron-browser/serverTreeController';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
@@ -33,7 +34,6 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 
 	private fullRefreshNeeded: boolean;
 	private viewletState: TreeExplorerViewletState;
-	private searchBox: HTMLInputElement;
 
 	constructor(actionRunner: IActionRunner, settings: any,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
@@ -95,7 +95,9 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	 */
 	public getActions(): IAction[] {
 		return [
-			this.instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
+			this.instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
+			this.instantiationService.createInstance(ActiveConnectionsFilterAction, ActiveConnectionsFilterAction.ID, ActiveConnectionsFilterAction.LABEL),
+			this.instantiationService.createInstance(RecentConnectionsFilterAction, RecentConnectionsFilterAction.ID, RecentConnectionsFilterAction.LABEL),
 		];
 	}
 

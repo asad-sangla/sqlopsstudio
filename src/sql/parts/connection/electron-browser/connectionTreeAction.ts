@@ -10,6 +10,10 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IConnectableEditorParams } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
 
 export class ChangeConnectionAction extends Action {
 
@@ -70,5 +74,139 @@ export class ChangeConnectionAction extends Action {
 	dispose(): void {
 		super.dispose();
 		this._disposables = dispose(this._disposables);
+	}
+}
+
+/**
+ * Actions to add a server to the group
+ */
+export class AddServerAction extends Action {
+	public static ID = 'registeredServers.addConnection';
+	public static LABEL = localize('addConnection', "Add Connection");
+
+	constructor(
+		id: string,
+		label: string,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = 'add-server-action';
+	}
+
+	public run(element: ConnectionProfileGroup): TPromise<boolean> {
+		let connection: IConnectionProfile = {
+			serverName: undefined,
+			databaseName: undefined,
+			userName: undefined,
+			password: undefined,
+			authenticationType: undefined,
+			groupId: undefined,
+			groupName: element.fullName,
+			savePassword: undefined,
+			getUniqueId: undefined,
+			providerName: ''
+		};
+		this._connectionManagementService.newConnection(undefined, connection);
+		return TPromise.as(true);
+	}
+}
+
+/**
+ * Display active connections in the tree
+ */
+export class ActiveConnectionsFilterAction extends Action {
+	public static ID = 'registeredServers.recentConnections';
+	public static LABEL = localize('activeConnections', "Active Connections");
+	private static enabledClass = 'active-connections-action';
+	private static disabledClass = 'active-connections-action-set';
+
+	constructor(
+		id: string,
+		label: string,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = ActiveConnectionsFilterAction.enabledClass;
+	}
+
+	public run(element: ConnectionProfileGroup): TPromise<boolean> {
+		//TODO
+		this.toggleClass();
+		console.log('Show active connections ');
+		return TPromise.as(true);
+	}
+
+	private toggleClass() {
+		this.class = (this.class === ActiveConnectionsFilterAction.disabledClass) ?
+			ActiveConnectionsFilterAction.enabledClass : ActiveConnectionsFilterAction.disabledClass;
+	}
+}
+
+/**
+ * Display recent connections in the tree
+ */
+export class RecentConnectionsFilterAction extends Action {
+	public static ID = 'registeredServers.recentConnections';
+	public static LABEL = localize('recentConnections', "Recent Connections");
+	private static enabledClass = 'active-connections-action';
+	private static disabledClass = 'active-connections-action-set';
+
+	constructor(
+		id: string,
+		label: string,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = 'recent-connections-action';
+	}
+
+	public run(element: ConnectionProfileGroup): TPromise<boolean> {
+		//TODO
+		this.toggleClass();
+		console.log('Show recent connections');
+		return TPromise.as(true);
+	}
+
+	private toggleClass() {
+		this.class = (this.class === RecentConnectionsFilterAction.disabledClass) ?
+			RecentConnectionsFilterAction.enabledClass : RecentConnectionsFilterAction.disabledClass;
+	}
+}
+
+
+
+export class NewQueryAction extends Action {
+	public static ID = 'registeredServers.newQuery';
+	public static LABEL = localize('newQuery', 'New Query');
+	private _connectionProfile: ConnectionProfile;
+	get connectionProfile(): ConnectionProfile
+	{
+		return this._connectionProfile;
+	}
+	set connectionProfile(profile: ConnectionProfile) {
+		this._connectionProfile = profile;
+	}
+
+	constructor(
+		id: string,
+		label: string,
+		@IQueryEditorService private queryEditorService: IQueryEditorService,
+		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = 'extension-action update';
+		this.label = 'Query';
+	}
+
+	public run(connectionProfile: any): TPromise<boolean> {
+		if (connectionProfile instanceof ConnectionProfile) {
+			//set connectionProfile for context menu clicks
+			this._connectionProfile = connectionProfile;
+		}
+		this.queryEditorService.newSqlEditor().then((params: IConnectableEditorParams) => {
+			// Connect our editor to the input connection
+			this.connectionManagementService.connectEditor(params.editor, params.uri, false, this._connectionProfile);
+		});
+		return TPromise.as(true);
 	}
 }

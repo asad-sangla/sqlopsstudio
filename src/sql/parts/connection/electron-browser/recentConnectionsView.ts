@@ -3,24 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
-import * as data from 'data';
-import { IActionRunner, IAction } from 'vs/base/common/actions';
+import { IActionRunner } from 'vs/base/common/actions';
 import dom = require('vs/base/browser/dom');
-import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
-import { ConnectionProfile } from '../node/connectionProfile';
-import { ServerTreeDataSource, AddServerToGroupAction } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
-import { RecentConnectionsRenderer, RecentConnectionsDragAndDrop } from 'sql/parts/connection/electron-browser/recentConnectionsRenderer';
-import { ConnectionTreeController, ConnectionTreeActionProvider, TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
-import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { IConnectionProfile } from '../node/interfaces';
+import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
@@ -75,28 +67,6 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 		});
 
 		this.structuralTreeUpdate();
-	}
-
-	/**
-	 * Return actions for the view
-	 */
-	public getActions(): IAction[] {
-		return [
-			this._instantiationService.createInstance(AddServerToGroupAction, AddServerToGroupAction.ID, AddServerToGroupAction.LABEL)
-		];
-	}
-
-	private onSelected(): void {
-		let selection = this.tree.getSelection();
-
-		// Open a connected sql file if a ConnectionDisplay was chosen
-		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
-			this.openDatabase(selection[0]);
-		}
-	}
-
-	private openDatabase(server: ConnectionProfile): void {
-		// open the database dashboard
 	}
 
 	/**
