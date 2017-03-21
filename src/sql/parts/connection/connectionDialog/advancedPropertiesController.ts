@@ -22,11 +22,11 @@ export class AdvancedPropertiesController {
 		this._options = this._advancedDialog.options;
 	}
 
-	public showDialog(optionsMetadata: data.ConnectionOption[], container: HTMLElement, options: { [name: string]: string }): void {
+	public showDialog(providerOptions: data.ConnectionOption[], container: HTMLElement, options: { [name: string]: string }): void {
 		this._options = options;
 		var connectionPropertiesMaps = {};
-		for (var i = 0; i < optionsMetadata.length; i++) {
-			var property = optionsMetadata[i];
+		for (var i = 0; i < providerOptions.length; i++) {
+			var property = providerOptions[i];
 			var groupName = property.groupName;
 			if (groupName === null || groupName === undefined) {
 				groupName = 'General';
@@ -43,9 +43,9 @@ export class AdvancedPropertiesController {
 	}
 
 	private doShowDialog(connectionPropertiesMaps: { [category: string]: data.ConnectionOption[] }): void {
-		if(!this._advancedDialog) {
-			this._advancedDialog  = new AdvancedPropertiesDialog(this._container, {
-				onCancel: () => {},
+		if (!this._advancedDialog) {
+			this._advancedDialog = new AdvancedPropertiesDialog(this._container, {
+				onCancel: () => { },
 				onOk: () => this.handleOnOk(),
 				onClose: () => this._onCloseAdvancedProperties()
 			});

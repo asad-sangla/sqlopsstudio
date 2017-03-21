@@ -41,20 +41,15 @@ export class ConnectionFactory {
 
 	public addConnection(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
 		const self = this;
-		if (!this.hasConnection(connection, id)) {
+		let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
+		connectionInfo.extensionTimer = new Utils.Timer();
+		connectionInfo.intelliSenseTimer = new Utils.Timer();
+		connectionInfo.connectionProfile = connection;
+		connectionInfo.connecting = true;
+		self._connections[id] = connectionInfo;
+		connectionInfo.serviceTimer = new Utils.Timer();
 
-			let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
-			connectionInfo.extensionTimer = new Utils.Timer();
-			connectionInfo.intelliSenseTimer = new Utils.Timer();
-			connectionInfo.connectionProfile = connection;
-			connectionInfo.connecting = true;
-			self._connections[id] = connectionInfo;
-			connectionInfo.serviceTimer = new Utils.Timer();
-
-			return connectionInfo;
-		} else {
-			return undefined;
-		}
+		return connectionInfo;
 	}
 
 	public onConnectionComplete(id: string, connectionId: string): ConnectionManagementInfo {

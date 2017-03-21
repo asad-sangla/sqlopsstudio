@@ -45,10 +45,10 @@ export class ConnectionStore {
 		this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
 
 		if (!this._connectionConfig) {
-			let cachedOptionsMetadata = this.getCachedOptionsMetadata();
+			let cachedServerCapabilities = this.getCachedServerCapabilities();
 			this._connectionConfig = new ConnectionConfig(this._configurationEditService,
-				this._workspaceConfigurationService, this._capabilitiesService, cachedOptionsMetadata);
-			this._connectionConfig.setCachedMetadata(cachedOptionsMetadata);
+				this._workspaceConfigurationService, this._capabilitiesService, cachedServerCapabilities);
+			this._connectionConfig.setCachedMetadata(cachedServerCapabilities);
 		}
 	}
 
@@ -170,7 +170,7 @@ export class ConnectionStore {
 					// Add necessary default properties before returning
 					// this is needed to support immediate connections
 					ConnInfo.fixupConnectionCredentials(profile);
-					this.saveCachedOptionsMetadata();
+					this.saveCachedServerCapabilities();
 					resolve(profile);
 				}, err => {
 					reject(err);
@@ -178,7 +178,7 @@ export class ConnectionStore {
 		});
 	}
 
-	private getCachedOptionsMetadata(): data.DataProtocolServerCapabilities[] {
+	private getCachedServerCapabilities(): data.DataProtocolServerCapabilities[] {
 		if (this._memento) {
 			let metadata: data.DataProtocolServerCapabilities[] = this._memento['OPTIONS_METADATA'];
 			return metadata;
@@ -188,7 +188,7 @@ export class ConnectionStore {
 
 	}
 
-	private saveCachedOptionsMetadata(): void {
+	private saveCachedServerCapabilities(): void {
 		if (this._memento) {
 			let capabilities = this._capabilitiesService.getCapabilities();
 			this._memento['OPTIONS_METADATA'] = capabilities;

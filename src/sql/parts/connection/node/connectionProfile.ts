@@ -24,8 +24,8 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	public groupName: string;
 	public groupId: string;
 
-	public constructor(optionsMetadata?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
-		super(optionsMetadata, model);
+	public constructor(serverCapabilities?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
+		super(serverCapabilities, model);
 		if (model) {
 			this.groupId = model.groupId;
 			this.groupName = model.groupName;
@@ -53,7 +53,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	}
 
 	public clone(): ConnectionProfile {
-		let instance = new ConnectionProfile(this._optionsMetadata, this);
+		let instance = new ConnectionProfile(this._serverCapabilities, this);
 		return instance;
 	}
 
@@ -70,7 +70,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 
 	public onProviderRegistered(serverCapabilities: data.DataProtocolServerCapabilities): void {
 		if (serverCapabilities.providerName === this.providerName) {
-			this.setOptionsMetadata(serverCapabilities);
+			this.setServerCapabilities(serverCapabilities);
 		}
 	}
 
@@ -101,12 +101,12 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	}
 
 	public static convertToProfileStore(
-		optionsMetadata: data.DataProtocolServerCapabilities,
+		serverCapabilities: data.DataProtocolServerCapabilities,
 		connectionProfile: IConnectionProfile): interfaces.IConnectionProfileStore {
 
 		let connectionInfo = connectionProfile as ConnectionProfile;
 		if(!connectionInfo) {
-			connectionInfo = new ConnectionProfile(optionsMetadata, connectionProfile);
+			connectionInfo = new ConnectionProfile(serverCapabilities, connectionProfile);
 		}
 		let profile: interfaces.IConnectionProfileStore = {
 			options: {},

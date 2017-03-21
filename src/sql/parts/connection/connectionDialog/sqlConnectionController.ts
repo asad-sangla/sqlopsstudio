@@ -28,7 +28,7 @@ export class SqlConnectionController implements IConnectionComponentController {
 		var options: data.ConnectionOption[] = sqlCapabilities.connectionProvider.options;
 		var specialOptions = options.filter(
 			(property) => (property.specialValueType !== null && property.specialValueType !== undefined));
-		this._sqlConnectionWidget  = new SqlConnectionWidget(specialOptions, {
+		this._sqlConnectionWidget = new SqlConnectionWidget(specialOptions, {
 			onSetConnectButton: (enable: boolean) => this._callback.onSetConnectButton(enable),
 			onAdvancedProperties: () => this.handleOnAdvancedProperties(),
 		});
@@ -38,7 +38,7 @@ export class SqlConnectionController implements IConnectionComponentController {
 		if (!this._advancedController) {
 			this._advancedController = new AdvancedPropertiesController(() => this._sqlConnectionWidget.focusOnAdvancedButton());
 		}
-		var connectionProperties = this._model.getOptionsMetadata();
+		var connectionProperties = this._model.getProviderOptions();
 		if (!!connectionProperties) {
 			var advancedOption = connectionProperties.filter(
 				(property) => (property.specialValueType === undefined || property.specialValueType === null));

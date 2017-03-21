@@ -42,19 +42,19 @@ export class SqlConnectionWidget {
 		this._callbacks = callbacks;
 		this._toDispose = [];
 		this._optionsMaps = {};
-		for (var i = 0 ; i < options.length; i++) {
+		for (var i = 0; i < options.length; i++) {
 			var option = options[i];
 			this._optionsMaps[option.specialValueType] = option;
 		}
 
-		var	authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
+		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
 		this._sqlAuthTypeName = authTypeOption.categoryValues[0].name;
 		this._windowsAuthTypeName = authTypeOption.categoryValues[1].name;
-		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
+		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.name), authTypeOption.defaultValue);
 	}
 
 	public createSqlConnectionWidget(): HTMLElement {
-		this._builder = $().div({class:'connection-table'}, (modelTableContent) => {
+		this._builder = $().div({ class: 'connection-table' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this._tableContainer = tableContainer;
 			});
@@ -193,14 +193,14 @@ export class SqlConnectionWidget {
 	}
 
 	public fillInConnectionInputs(connectionInfo: IConnectionProfile) {
-		if(connectionInfo) {
+		if (connectionInfo) {
 			this._serverNameInputBox.value = this.getModelValue(connectionInfo.serverName);
 			this._databaseNameInputBox.value = this.getModelValue(connectionInfo.databaseName);
 			this._userNameInputBox.value = this.getModelValue(connectionInfo.userName);
 			this._passwordInputBox.value = this.getModelValue(connectionInfo.password);
 			this._serverGroupInputBox.value = this.getModelValue(connectionInfo.groupName);
 			this._rememberPassword.checked = !ConnectionDialogHelper.isEmptyString(connectionInfo.password);
-			if(connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined){
+			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
 				switch (connectionInfo.authenticationType) {
 					case 'SqlLogin':
 						this._authTypeSelectBox.selectWithOptionName(this._sqlAuthTypeName);

@@ -118,24 +118,20 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise<boolean>((resolve, reject) => {
 			this._statusService.setStatusMessage('Connecting...');
 			//If there's an open connection with the same id then don't connect again
-			if (!this._connectionFactory.hasConnection(connection, uri)) {
-				return this.connect(uri, connection).then(connected => {
-					if (connected) {
-						this.saveToSettings(connection).then(value => {
-							if (value) {
-								this._onAddConnectionProfile.fire();
-							}
-						});
-						this.showDashboard(uri, connection);
-					}
-					resolve(connected);
-				}).catch(err => {
-					reject(err);
-					this._connectionFactory.deleteConnection(uri);
-				});
-			} else {
-				return resolve(true);
-			}
+			return this.connect(uri, connection).then(connected => {
+				if (connected) {
+					this.saveToSettings(connection).then(value => {
+						if (value) {
+							this._onAddConnectionProfile.fire();
+						}
+					});
+					this.showDashboard(uri, connection);
+				}
+				resolve(connected);
+			}).catch(err => {
+				reject(err);
+				this._connectionFactory.deleteConnection(uri);
+			});
 		});
 	}
 
@@ -313,7 +309,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise<boolean>((resolve, reject) => {
 			this._connectionStore.addSavedPassword(connection).then(newConnection => {
 				owner.onConnectStart();
-				return this.connect(owner.uri, newConnection).then(status => {
+				return this.connect(owner.uri, newConnection).then(status => {
 					if (status) {
 						owner.onConnectSuccess(runQueryOnCompletion);
 					} else {

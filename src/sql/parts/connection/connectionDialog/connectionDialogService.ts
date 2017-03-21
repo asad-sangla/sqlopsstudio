@@ -102,19 +102,19 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private handleQueryEditorOnChangeConnection(params: INewConnectionParams): void {
 		this._connectionManagementService.disconnectEditor(params.input, true)
-		.then(disconnected => {
-			if(disconnected) {
-				return this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, this._model);
-			}
-			return false;
-		})
-		.then(connected => {
-			if (connected) {
-				this._connectionDialog.close();
-			}
-		}).catch(err => {
-			this._connectionDialog.showError(err);
-		});
+			.then(disconnected => {
+				if (disconnected) {
+					return this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, this._model);
+				}
+				return false;
+			})
+			.then(connected => {
+				if (connected) {
+					this._connectionDialog.close();
+				}
+			}).catch(err => {
+				this._connectionDialog.showError(err);
+			});
 	}
 
 	private get sqlUiController(): SqlConnectionController {
@@ -142,7 +142,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this.sqlUiController.fillInConnectionInputs(connectionInfo);
 	}
 
-	private UpdateModelOptionsMetadata(model: IConnectionProfile, providerName: string) {
+	private UpdateModelServerCapabilities(model: IConnectionProfile, providerName: string) {
 		let serverCapabilities = this._capabilitiesMaps[providerName];
 		this._model = new ConnectionProfile(serverCapabilities, model);
 	}
@@ -157,7 +157,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			this._providerNameToDisplayNameMap[c.providerName] = c.providerDisplayName;
 		});
 
-		this.UpdateModelOptionsMetadata( model, model ? model.providerName : 'MSSQL');
+		this.UpdateModelServerCapabilities(model, model ? model.providerName : 'MSSQL');
 
 		return new TPromise<void>(() => {
 			this.doShowDialog(params);

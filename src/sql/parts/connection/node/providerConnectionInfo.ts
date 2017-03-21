@@ -14,17 +14,13 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 	options: { [name: string]: any };
 
 	providerName: string;
-	protected _optionsMetadata: data.DataProtocolServerCapabilities;
+	protected _serverCapabilities: data.DataProtocolServerCapabilities;
 
-	public constructor(optionsMetadata?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
-		this.load(optionsMetadata, model);
-	}
-
-	public load(optionsMetadata: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
+	public constructor(serverCapabilities?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
 		this.options = {};
-		if (optionsMetadata) {
-			this._optionsMetadata = optionsMetadata;
-			this.providerName = optionsMetadata.providerName;
+		if (serverCapabilities) {
+			this._serverCapabilities = serverCapabilities;
+			this.providerName = serverCapabilities.providerName;
 		}
 		if (model) {
 			this.serverName = model.serverName;
@@ -36,14 +32,14 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 	}
 
 	public clone(): ProviderConnectionInfo {
-		let instance = new ProviderConnectionInfo(this._optionsMetadata);
+		let instance = new ProviderConnectionInfo(this._serverCapabilities);
 		instance.options = Object.assign({}, this.options);
 		instance.providerName = this.providerName;
 		return instance;
 	}
 
-	public setOptionsMetadata(value: data.DataProtocolServerCapabilities) {
-		this._optionsMetadata = value;
+	public setServerCapabilities(value: data.DataProtocolServerCapabilities) {
+		this._serverCapabilities = value;
 	}
 
 	public get serverName(): string {
@@ -105,8 +101,8 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 
 	public getUniqueId(): string {
 		let idNames = [];
-		if (this._optionsMetadata) {
-			idNames = this._optionsMetadata.connectionProvider.options.map(o => {
+		if (this._serverCapabilities) {
+			idNames = this._serverCapabilities.connectionProvider.options.map(o => {
 				if ((o.specialValueType || o.isIdentity) && o.specialValueType !== ConnectionOptionSpecialType.password) {
 					return o.name;
 				} else {
@@ -131,8 +127,8 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 	}
 
 	public getSpecialTypeOptionName(type: number): string {
-		if (this._optionsMetadata) {
-			let optionMetadata = this._optionsMetadata.connectionProvider.options.find(o => o.specialValueType === type);
+		if (this._serverCapabilities) {
+			let optionMetadata = this._serverCapabilities.connectionProvider.options.find(o => o.specialValueType === type);
 			return !!optionMetadata ? optionMetadata.name : undefined;
 		} else {
 			return type.toString();
@@ -146,8 +142,8 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		}
 	}
 
-	public getOptionsMetadata(): data.ConnectionOption[] {
-		return this._optionsMetadata.connectionProvider.options;
+	public getProviderOptions(): data.ConnectionOption[] {
+		return this._serverCapabilities.connectionProvider.options;
 	}
 }
 

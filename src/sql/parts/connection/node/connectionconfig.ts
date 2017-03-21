@@ -214,7 +214,7 @@ export class ConnectionConfig implements IConnectionConfig {
 			let capabilitiesForProvider = this.getCapabilities(p.providerName);
 
 			let providerConnectionProfile = ConnectionProfile.createFromStoredProfile(p, capabilitiesForProvider);
-			providerConnectionProfile.setOptionsMetadata(capabilitiesForProvider);
+			providerConnectionProfile.setServerCapabilities(capabilitiesForProvider);
 			this._capabilitiesService.onProviderRegisteredEvent((serverCapabilities) => {
 				providerConnectionProfile.onProviderRegistered(serverCapabilities);
 			});
