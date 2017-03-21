@@ -27,32 +27,26 @@ import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import { Action } from 'vs/base/common/actions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
-import { IShowQueryResultsEditor } from 'sql/parts/query/common/showQueryResultsEditor';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 import {
 	RefreshTableAction, StopRefreshTableAction,
 	ChangeMaxRowsAction, ChangeMaxRowsActionItem} from 'sql/parts/editData/execution/editDataActions';
+import { append, $ } from 'vs/base/browser/dom';
+import { AppModule } from 'sql/parts/grid/views/editdata.module';
+
+declare let AngularPlatformBrowserDynamic;
 
 /**
  * Editor that hosts an action bar and a resultSetInput for an edit data session
  */
-export class EditDataEditor extends BaseEditor implements IShowQueryResultsEditor {
-
+export class EditDataEditor extends BaseEditor {
 	public static ID: string = 'workbench.editor.editDataEditor';
-
-	// The height of the taskbar above the editor
-	private readonly _taskbarHeight: number = 35;
-
-	private _editorTopOffset: number;
 	private _dimension: Dimension;
-
-	private _resultsEditor: QueryResultsEditor;
 	private _resultsEditorContainer: HTMLElement;
-
 	private _taskbar: QueryTaskbar;
 	private _taskbarContainer: HTMLElement;
 	private _changeMaxRowsActionItem: ChangeMaxRowsActionItem;
-
 	private _stopRefreshTableAction: StopRefreshTableAction;
 	private _refreshTableAction: RefreshTableAction;
 	private _changeMaxRowsAction: ChangeMaxRowsAction;
@@ -64,14 +58,19 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 		@IContextMenuService private _contextMenuService: IContextMenuService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IEditorDescriptorService private _editorDescriptorService: IEditorDescriptorService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IQueryParameterService private _angularParameterService: IQueryParameterService
 	) {
 		super(EditDataEditor.ID, _telemetryService);
-		this._editorTopOffset = this._taskbarHeight;
-
 	}
 
 	// PUBLIC METHODS ////////////////////////////////////////////////////////////
+
+	// Getters and Setters
+	public get editDataInput(): EditDataInput { return <EditDataInput>this.input; }
+	public get uri(): string { return this.input ? this.editDataInput.uri.toString() : undefined; }
+	public get tableName(): string { return this.editDataInput.tableName; }
+
 
 	/**
 	 * Called to create the editor in the parent builder.
@@ -86,7 +85,13 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 	 * Sets the input data for this editor.
 	 */
 	public setInput(newInput: EditDataInput, options?: EditorOptions): TPromise<void> {
-		const oldInput = <EditDataInput>this.input;
+		let oldInput = <EditDataInput>this.input;
+		if (!newInput.setup) {
+			this._register(newInput.updateTaskbar((owner) => this._updateTaskbar(owner)));
+			this._register(newInput.showTableView(() => this._showTableView()));
+			newInput.setupComplete();
+		}
+
 		return super.setInput(newInput, options)
 			.then(() => this._updateInput(oldInput, newInput, options) );
 	}
@@ -95,9 +100,6 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 	 * Sets this editor and the sub-editors to visible.
 	 */
 	public setEditorVisible(visible: boolean, position: Position): void {
-		if (this._resultsEditor) {
-			this._resultsEditor.setVisible(visible, position);
-		}
 		super.setEditorVisible(visible, position);
 	}
 
@@ -105,9 +107,6 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 	 * Changes the position of the editor.
 	 */
 	public changePosition(position: Position): void {
-		if (this._resultsEditor) {
-			this._resultsEditor.changePosition(position);
-		}
 		super.changePosition(position);
 	}
 
@@ -116,20 +115,8 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 	 * input should be freed.
 	 */
 	public clearInput(): void {
-		if (this._resultsEditor) {
-			this._resultsEditor.clearInput();
-		}
 		this._disposeEditors();
 		super.clearInput();
-	}
-
-	/**
-	 * Sets focus on the result editor
-	 */
-	public focus(): void {
-		if (this._resultsEditor) {
-			this._resultsEditor.focus();
-		}
 	}
 
 	/**
@@ -140,37 +127,47 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 		this._dimension = dimension;
 	}
 
-	/**
-	 * Returns the editor control for the result editor
-	 */
-	public getControl(): IEditorControl {
-		if (this._resultsEditor) {
-			return this._resultsEditor.getControl();
-		}
-		return null;
-	}
-
-	public getQueryResultsEditor(): QueryResultsEditor {
-		return this._resultsEditor;
-	}
-
 	public dispose(): void {
 		this._disposeEditors();
 		super.dispose();
 	}
 
 	public close(): void {
-		this._connectionManagementService.disconnectEditor(this, this.uri, true);
-		let queryInput: EditDataInput = <EditDataInput>this.input;
-		queryInput.results.close();
+		this.input.close();
 	}
 
-	get uri(): string {
-		let input: EditDataInput = <EditDataInput>this.input;
-		return input ? input.getQueryResultsInputResource() : undefined;
+	/**
+	 * Returns true if the results table for the current edit data session is visible
+	 * Public for testing only.
+	 */
+	public _isResultsEditorVisible(): boolean {
+		if (!this.editDataInput) {
+			return false;
+		}
+		return this.editDataInput.visible;
+	}
+
+	/**
+	 * Makes visible the results table for the current edit data session
+	 */
+	private _showTableView(): void {
+		if (this._isResultsEditorVisible()) {
+			return;
+		}
+
+		this._createTableViewContainer();
+		this._setTableViewVisible();
+		this.setInput(this.editDataInput, this.options);
 	}
 
 	// PRIVATE METHODS ////////////////////////////////////////////////////////////
+	private _updateTaskbar(owner: EditDataInput): void {
+		// Update the taskbar if the owner of this call is being presented
+		if (owner.matches(this.editDataInput)) {
+			this._refreshTableAction.enabled = owner.refreshButtonEnabled;
+			this._stopRefreshTableAction.enabled = owner.stopButtonEnabled;
+		}
+	}
 
 	private _createTaskbar(parentElement: HTMLElement): void {
 		// Create QueryTaskbar
@@ -227,8 +224,8 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 			}
 
 			if (this._isResultsEditorVisible()) {
-				this._createResultsEditorContainer();
-				let uri: string = newInput.getQueryResultsInputResource();
+				this._createTableViewContainer();
+				let uri: string = newInput.uri;
 				if (uri) {
 					this._queryModelService.refreshResultsets(uri);
 				}
@@ -236,12 +233,11 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 
 			returnValue = this._setNewInput(newInput, options);
 		} else {
-			if (this._isResultsEditorVisible()) {
-				this._resultsEditor.setInput(newInput.results, options);
-			}
+			this._setNewInput(newInput, options);
 			returnValue = TPromise.as(null);
 		}
 
+		this._updateTaskbar(newInput);
 		return returnValue;
 	}
 
@@ -253,63 +249,26 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 	private _setNewInput(newInput: EditDataInput, options?: EditorOptions): TPromise<void> {
 		if (this._isResultsEditorVisible()) {
 			// If both editors exist, create a joined promise and wait for both editors to be created
-			return TPromise.join([this._createEditor(<QueryResultsInput>newInput.results, this._resultsEditorContainer)]).then(result => {
-				this._onResultsEditorCreated(<QueryResultsEditor>result[0], newInput.results, options);
-			});
+			return this._bootstrapAngularAndResults(newInput, options);
 		}
 
 		return TPromise.as(undefined);
 	}
-
 	/**
-	 * Create a single editor based on the type of the given EditorInput.
+	 * Appends the HTML for the edit data table view
 	 */
-	private _createEditor(editorInput: EditorInput, container: HTMLElement): TPromise<BaseEditor> {
-		const descriptor = this._editorDescriptorService.getEditor(editorInput);
-		if (!descriptor) {
-			return TPromise.wrapError(new Error(strings.format('Can not find a registered editor for the input {0}', editorInput)));
-		}
-		return this._instantiationService.createInstance(<EditorDescriptor>descriptor)
-			.then((editor: BaseEditor) => {
-				editor.create(new Builder(container));
-				editor.setVisible(this.isVisible(), this.position);
-				return editor;
-			});
-	}
-
-	/**
-	 * Sets input for the results editor after it has been created.
-	 */
-	private _onResultsEditorCreated(resultsEditor: QueryResultsEditor, resultsInput: QueryResultsInput, options: EditorOptions): TPromise<void> {
-		this._resultsEditor = resultsEditor;
-		// Conditionally render the results pane
-		return this._resultsEditor.setInput(resultsInput, options);
-	}
-
-	/**
-	 * Appends the HTML for the QueryResultsEditor to the QueryEditor. If the HTML has not yet been
-	 * created, it creates it and appends it. If it has already been created, it locates it and
-	 * appends it.
-	 */
-	private _createResultsEditorContainer() {
+	private _createTableViewContainer() {
 		const parentElement = this.getContainer().getHTMLElement();
-		let input = <EditDataInput>this.input;
 
-		if (!input.results.container) {
+		if (!this.editDataInput.container) {
 			this._resultsEditorContainer = DOM.append(parentElement, DOM.$('.editDataEditor'));
-			input.results.container = this._resultsEditorContainer;
+			this.editDataInput.container = this._resultsEditorContainer;
 		} else {
-			this._resultsEditorContainer = DOM.append(parentElement, input.results.container);
+			this._resultsEditorContainer = DOM.append(parentElement, this.editDataInput.container);
 		}
 	}
 
 	private _disposeEditors(): void {
-		if (this._resultsEditor) {
-			this._resultsEditor.dispose();
-			this._resultsEditor = null;
-		}
-
-		const parentContainer = this.getContainer().getHTMLElement();
 		if (this._resultsEditorContainer) {
 			this._resultsEditorContainer.remove();
 			this._resultsEditorContainer = null;
@@ -317,60 +276,34 @@ export class EditDataEditor extends BaseEditor implements IShowQueryResultsEdito
 	}
 
 	/**
-	 * Returns true if the QueryResultsInput has denoted that the results editor
-	 * should be visible.
-	 * Public for testing only.
+	 * Load the angular components and record for this input that we have done so
 	 */
-	public _isResultsEditorVisible(): boolean {
-		let input: EditDataInput = <EditDataInput>this.input;
+	private _bootstrapAngularAndResults(input: EditDataInput, options: EditorOptions): TPromise<void> {
+		super.setInput(input, options);
+		if (!input.hasBootstrapped) {
+			let uri = this.editDataInput.uri;
 
-		if (!input) {
-			return false;
+			// Pass the correct DataService to the new angular component
+			let dataService = this._queryModelService.getDataService(uri);
+			if (!dataService) {
+				throw new Error('DataService not found for URI: ' + uri);
+			}
+			this._angularParameterService.dataService = dataService;
+
+			this.editDataInput.setBootstrappedTrue();
+
+			const parent = this._resultsEditorContainer;
+			append(parent, $('slickgrid-container.slickgridContainer'));
+
+			// Bootstrap the angular content
+			let providers = [{ provide: 'ParameterService', useValue: this._angularParameterService }];
+			AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
+
 		}
-		return input.results.visible;
+		return TPromise.as<void>(null);
 	}
 
-	private _setResultsEditorVisible(): void {
-		let input: EditDataInput = <EditDataInput>this.input;
-		input.results.setVisibleTrue();
-	}
-
-	// Connection Lifecycle Functions
-
-	/**
-	 * Makes visible the QueryResultsEditor for the current QueryInput (if it is not
-	 * already visible).
-	 */
-	public showQueryResultsEditor(): void {
-		if (this._isResultsEditorVisible()) {
-			return;
-		}
-
-		let input = <EditDataInput>this.input;
-		this._createResultsEditorContainer();
-
-		this._createEditor(<QueryResultsInput>input.results, this._resultsEditorContainer)
-			.then(result => {
-				this._onResultsEditorCreated(<QueryResultsEditor>result, input.results, this.options);
-				this._setResultsEditorVisible();
-			});
-	}
-
-	onConnectStart(): void {
-		// TODO: Indicate connection started
-	}
-
-	onConnectReject(): void {
-		// TODO: deal with connection failure
-	}
-
-	onConnectSuccess(runQueryOnCompletion: boolean): void {
-		let input = <EditDataInput>this._input;
-		this._queryModelService.initializeEdit(input.uri, input.tableName, 'TABLE');
-		this.showQueryResultsEditor();
-	}
-
-	onDisconnect(): void {
-		// TODO: deal with disconnections
+	private _setTableViewVisible(): void {
+		this.editDataInput.setVisibleTrue();
 	}
 }

@@ -11,9 +11,9 @@ import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
-import { IConnectableEditorParams } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
+import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 
 export class ChangeConnectionAction extends Action {
 
@@ -203,9 +203,9 @@ export class NewQueryAction extends Action {
 			//set connectionProfile for context menu clicks
 			this._connectionProfile = connectionProfile;
 		}
-		this.queryEditorService.newSqlEditor().then((params: IConnectableEditorParams) => {
+		this.queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
 			// Connect our editor to the input connection
-			this.connectionManagementService.connectEditor(params.editor, params.uri, false, this._connectionProfile);
+			this.connectionManagementService.connectEditor(owner, false, this._connectionProfile);
 		});
 		return TPromise.as(true);
 	}

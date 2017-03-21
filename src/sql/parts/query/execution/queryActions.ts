@@ -5,12 +5,13 @@
 
 import { Action, IActionItem, IActionRunner } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IShowQueryResultsEditor } from 'sql/parts/query/common/showQueryResultsEditor';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
+import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import nls = require('vs/nls');
 import * as dom from 'vs/base/browser/dom';
@@ -28,7 +29,7 @@ export abstract class QueryTaskbarAction extends Action {
 
 	constructor(
 		protected _connectionManagementService: IConnectionManagementService,
-		protected editor: IShowQueryResultsEditor,
+		protected editor: QueryEditor,
 		id: string,
 		enabledClass: string
 	) {
@@ -60,22 +61,21 @@ export abstract class QueryTaskbarAction extends Action {
 	 * Returns the URI of the given editor if it is not undefined and is connected.
 	 * Public for testing only.
 	 */
-	public _getConnectedQueryEditorUri(editor: IShowQueryResultsEditor): string {
-		if (!editor || !editor.uri) {
-			return undefined;
+	public isConnected(editor: QueryEditor): boolean {
+		if (!editor || !editor.currentQueryInput) {
+			return false;
 		}
-		return this._connectionManagementService.isConnected(editor.uri) ? editor.uri : undefined;
+		return this._connectionManagementService.isConnected(editor.currentQueryInput.uri);
 	}
 
 	/**
 	 * Connects the given editor to it's current URI.
 	 * Public for testing only.
 	 */
-	public _connectEditor(editor: IShowQueryResultsEditor, uri: string, runQueryOnCompletion?: boolean, disconnectExistingConnection?: boolean): void {
+	protected connectEditor(editor: QueryEditor, runQueryOnCompletion?: boolean, disconnectExistingConnection?: boolean): void {
 		let params: INewConnectionParams = {
-			editor: editor,
+			input: editor.currentQueryInput,
 			connectionType: ConnectionType.queryEditor,
-			uri: uri ? uri : editor.uri,
 			runQueryOnCompletion: runQueryOnCompletion ? runQueryOnCompletion : false,
 			disconnectExistingConnection: disconnectExistingConnection ? disconnectExistingConnection : false
 		};
@@ -92,7 +92,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 	public static ID = 'runQueryAction';
 
 	constructor(
-		editor: IShowQueryResultsEditor,
+		editor: QueryEditor,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService,
 		@IEditorGroupService private editorGroupService: IEditorGroupService
@@ -102,30 +102,24 @@ export class RunQueryAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this._getConnectedQueryEditorUri(this.editor);
-
-		if (uri) {
+		if (this.isConnected(this.editor)) {
 			// If we are already connected, run the query
-			this.runQuery(this.editor, uri);
+			this.runQuery(this.editor);
 		} else {
 			// If we are not already connected, prompt for conneciton and run the query if the
 			// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
-			this._connectEditor(this.editor, uri, true);
+			this.connectEditor(this.editor, true);
 		}
 		return TPromise.as(null);
 	}
 
-	public runQuery(editor?: IShowQueryResultsEditor, uri?: string) {
+	public runQuery(editor: QueryEditor) {
 		if (!editor) {
 			editor = this.editor;
 		}
-		if (!uri) {
-			uri = this._getConnectedQueryEditorUri(editor);
-		}
-		if (uri) {
-			this.editorGroupService.pinEditor(editor.position, editor.input);
-			this._queryModelService.runQuery(uri, undefined, uri);
-			editor.showQueryResultsEditor();
+
+		if (this.isConnected(editor)) {
+			editor.currentQueryInput.runQuery();
 		}
 	}
 }
@@ -139,7 +133,7 @@ export class CancelQueryAction extends QueryTaskbarAction {
 	public static ID = 'cancelQueryAction';
 
 	constructor(
-		editor: IShowQueryResultsEditor,
+		editor: QueryEditor,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
@@ -149,9 +143,8 @@ export class CancelQueryAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this._getConnectedQueryEditorUri(this.editor);
-		if (uri) {
-			this._queryModelService.cancelQuery(uri);
+		if (this.isConnected(this.editor)) {
+			this._queryModelService.cancelQuery(this.editor.currentQueryInput.uri);
 		}
 		return TPromise.as(null);
 	}
@@ -166,7 +159,7 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
 	public static ID = 'disconnectDatabaseAction';
 
 	constructor(
-		editor: IShowQueryResultsEditor,
+		editor: QueryEditor,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, CancelQueryAction.ID, DisconnectDatabaseAction.EnabledClass);
@@ -176,7 +169,7 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
 	public run(): TPromise<void> {
 		// Call disconnectEditor regardless of the connection state and let the ConnectionManagementService
 		// determine if we need to disconnect, cancel an in-progress conneciton, or do nothing
-		this._connectionManagementService.disconnectEditor(this.editor, this.editor.uri);
+		this._connectionManagementService.disconnectEditor(this.editor.currentQueryInput);
 		return TPromise.as(null);
 	}
 }
@@ -190,7 +183,7 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
 	public static ID = 'connectDatabaseAction';
 
 	constructor(
-		editor: IShowQueryResultsEditor,
+		editor: QueryEditor,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, CancelQueryAction.ID, ConnectDatabaseAction.EnabledClass);
@@ -198,9 +191,8 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this._getConnectedQueryEditorUri(this.editor);
-		if (!uri) {
-			this._connectEditor(this.editor, uri);
+		if (!this.isConnected(this.editor)) {
+			this.connectEditor(this.editor, false);
 		}
 		return TPromise.as(null);
 	}
@@ -215,7 +207,7 @@ export class ChangeConnectionAction extends QueryTaskbarAction {
 	public static ID = 'changeConnectionDatabaseAction';
 
 	constructor(
-		editor: IShowQueryResultsEditor,
+		editor: QueryEditor,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, CancelQueryAction.ID, ChangeConnectionAction.EnabledClass);
@@ -223,9 +215,8 @@ export class ChangeConnectionAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		let uri = this._getConnectedQueryEditorUri(this.editor);
-		if (uri) {
-			this._connectEditor(this.editor, uri, false, true);
+		if (this.isConnected(this.editor)) {
+			this.connectEditor(this.editor, false, true);
 		}
 		return TPromise.as(null);
 	}
@@ -240,7 +231,7 @@ export class ListDatabasesAction extends QueryTaskbarAction {
 	public static ID = 'listDatabaseQueryAction';
 
 	constructor(
-		editor: IShowQueryResultsEditor,
+		editor: QueryEditor,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, ListDatabasesAction.ID, undefined);

@@ -247,7 +247,7 @@ export default class QueryRunner {
 	}
 
 	public handleEditSessionReady(ownerUri: string, success: boolean): void {
-		this.eventEmitter.emit('editSessionReady');
+		this.eventEmitter.emit('editSessionReady', ownerUri, success);
 	}
 
 	/**

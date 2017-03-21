@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
@@ -75,11 +75,11 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return new Promise(() => true);
 	}
 
-	connectEditor(editor: QueryEditor, uri: string, runQueryOnCompletion: boolean, connection: ConnectionProfile): Promise<boolean>{
+	connectEditor(owner: IConnectableInput, runQueryOnCompletion: boolean, connection: ConnectionProfile): Promise<boolean>{
 		return new Promise<boolean>(() => true);
 	}
 
-	disconnectEditor(editor: QueryEditor): Promise<boolean>{
+	disconnectEditor(owner: IConnectableInput): Promise<boolean>{
 		return new Promise<boolean>(() => true);
 	}
 

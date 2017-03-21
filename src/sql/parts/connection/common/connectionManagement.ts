@@ -51,13 +51,13 @@ export interface IConnectionManagementService {
 
 	getAdvancedProperties(): data.ConnectionOption[];
 
-	connectEditor(editor: IConnectableEditor, uri: string, runQueryOnCompletion: boolean, connection: ConnectionProfile | IConnectionProfile): Promise<boolean>;
+	connectEditor(editor: IConnectableInput, runQueryOnCompletion: boolean, connection: ConnectionProfile | IConnectionProfile): Promise<boolean>;
 
 	connectProfile(connection: ConnectionProfile): Promise<boolean>;
 
 	isConnected(fileUri: string): boolean;
 
-	disconnectEditor(editor: IConnectableEditor, uri: string, force?: boolean): Promise<boolean>;
+	disconnectEditor(owner: IConnectableInput, force?: boolean): Promise<boolean>;
 
 	/**
 	 * Register a connection provider
@@ -96,18 +96,12 @@ export enum ConnectionOptionSpecialType {
 
 export interface INewConnectionParams {
 	connectionType: ConnectionType;
-	editor?: IConnectableEditor;
-	uri?: string;
+	input?: IConnectableInput;
 	runQueryOnCompletion?: boolean;
 	disconnectExistingConnection?: boolean;
 }
 
-export interface IConnectableEditorParams {
-	uri: string;
-	editor: IConnectableEditor;
-}
-
-export interface IConnectableEditor {
+export interface IConnectableInput {
 	uri: string;
 	onConnectStart(): void;
 	onConnectReject(): void;

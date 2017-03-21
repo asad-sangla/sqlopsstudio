@@ -7,7 +7,7 @@ import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
-import { IConnectableEditorParams } from 'sql/parts/connection/common/connectionManagement';
+import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
@@ -41,9 +41,9 @@ export class EditDataAction extends Action {
 			.then((tableName) => {
 				if(tableName) {
 					// open an edit data session on that table
-					this.queryEditorService.newEditDataEditor(tableName).then((connectedEditor: IConnectableEditorParams) => {
+					this.queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
 						// Connect our editor
-						this.connectionManagementService.connectEditor(connectedEditor.editor, connectedEditor.uri, true, connectionProfile);
+						this.connectionManagementService.connectEditor(owner, true, connectionProfile);
 					});
 				}
 			});

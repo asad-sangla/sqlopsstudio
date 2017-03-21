@@ -7,6 +7,7 @@ import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import Event from 'vs/base/common/event';
 import { ISelectionData, ResultSetSubset } from 'data';
 
@@ -42,6 +43,7 @@ export interface IQueryModelService {
 	onRunQueryComplete: Event<string>;
 
 	// Edit Data Functions
-	initializeEdit(ownerUri: string, objectName: string, objectType: string): void;
-	onEditSessionReady: Event<string>;
+	initializeEdit(owner: EditDataInput): void;
+	disposeEdit(owner: EditDataInput): void;
+	onEditSessionReady: Event<{ownerUri: string, success: boolean}>;
 }

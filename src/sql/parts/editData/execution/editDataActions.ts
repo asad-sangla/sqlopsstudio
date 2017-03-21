@@ -5,12 +5,12 @@
 
 import { Action, IActionItem, IActionRunner } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IShowQueryResultsEditor } from 'sql/parts/query/common/showQueryResultsEditor';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
 import nls = require('vs/nls');
 import * as dom from 'vs/base/browser/dom';
 const $ = dom.$;
@@ -24,7 +24,8 @@ export abstract class EditDataAction extends Action {
 
 	private _classes: string[];
 
-	constructor(protected editor: IShowQueryResultsEditor, id: string, enabledClass: string) {
+	constructor(protected editor: EditDataEditor, id: string, enabledClass: string,
+	 @IConnectionManagementService private _connectionManagementService: IConnectionManagementService) {
 		super(id);
 		this.enabled = true;
 		this.setClass(enabledClass);
@@ -44,6 +45,16 @@ export abstract class EditDataAction extends Action {
 		}
 		this.class = this._classes.join(' ');
 	}
+
+	/**
+	 * Returns the URI of the given editor if it is not undefined and is connected.
+	 */
+	public isConnected(editor: EditDataEditor): boolean {
+		if (!editor || !editor.uri) {
+			return false;
+		}
+		return this._connectionManagementService.isConnected(editor.uri);
+	}
 }
 
 /**
@@ -53,15 +64,21 @@ export class RefreshTableAction extends EditDataAction {
 	private static EnabledClass = 'refreshData';
 	public static ID = 'refreshTableAction';
 
-	constructor(editor: IShowQueryResultsEditor,
+	constructor(editor: EditDataEditor,
 		@IQueryModelService private _queryModelService: IQueryModelService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService _connectionManagementService: IConnectionManagementService
 	) {
-		super(editor, RefreshTableAction.ID, RefreshTableAction.EnabledClass);
+		super(editor, RefreshTableAction.ID, RefreshTableAction.EnabledClass, _connectionManagementService);
 		this.label = nls.localize('refresh', 'Refresh');
 	}
 
 	public run(): TPromise<void> {
+		if (this.isConnected(this.editor)) {
+			this._queryModelService.disposeEdit(this.editor.editDataInput);
+			this._queryModelService.initializeEdit(this.editor.editDataInput);
+		} else {
+			// TODO: notify user they are in an unconnected state
+		}
 		return TPromise.as(null);
 	}
 }
@@ -74,16 +91,17 @@ export class StopRefreshTableAction extends EditDataAction {
 	private static EnabledClass = 'cancelRefreshData';
 	public static ID = 'stopRefreshAction';
 
-	constructor(editor: IShowQueryResultsEditor,
+	constructor(editor: EditDataEditor,
 		@IQueryModelService private _queryModelService: IQueryModelService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService _connectionManagementService: IConnectionManagementService
 	) {
-		super(editor, StopRefreshTableAction.ID, StopRefreshTableAction.EnabledClass);
+		super(editor, StopRefreshTableAction.ID, StopRefreshTableAction.EnabledClass, _connectionManagementService);
 		this.enabled = false;
 		this.label = nls.localize('stop', 'Stop');
 	}
 
 	public run(): TPromise<void> {
+
 		return TPromise.as(null);
 	}
 }
@@ -96,16 +114,17 @@ export class ChangeMaxRowsAction extends EditDataAction {
 	private static EnabledClass = '';
 	public static ID = 'changeMaxRowsAction';
 
-	constructor(editor: IShowQueryResultsEditor,
+	constructor(editor: EditDataEditor,
 		@IQueryModelService private _queryModelService: IQueryModelService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService _connectionManagementService: IConnectionManagementService
 	) {
-		super(editor, ChangeMaxRowsAction.ID, undefined);
+		super(editor, ChangeMaxRowsAction.ID, undefined, _connectionManagementService);
 		this.enabled = false;
 		this.class = ChangeMaxRowsAction.EnabledClass;
 	}
 
 	public run(): TPromise<void> {
+
 		return TPromise.as(null);
 	}
 }

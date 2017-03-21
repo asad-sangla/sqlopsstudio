@@ -9,8 +9,7 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
-	ConnectionType, IConnectableEditor } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionDialogService, INewConnectionParams, ConnectionType, IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
@@ -295,7 +294,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
 
-	public connectEditor(editor: IConnectableEditor, uri: string, runQueryOnCompletion: boolean, connectionProfile: ConnectionProfile | IConnectionProfile): Promise<boolean> {
+	public connectEditor(owner: IConnectableInput, runQueryOnCompletion: boolean, connectionProfile: ConnectionProfile | IConnectionProfile): Promise<boolean> {
 		// If we are passed a ConnectionProfile, we must only pass the info below or the connection will reject
 		let connection: IConnectionProfile = {
 			serverName: connectionProfile.serverName,
@@ -313,16 +312,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// Retrieve saved password if needed
         return new Promise<boolean>((resolve, reject) => {
             this._connectionStore.addSavedPassword(connection).then(newConnection => {
-				editor.onConnectStart();
-				return this.connect(uri, newConnection).then(status => {
+				owner.onConnectStart();
+				return this.connect(owner.uri, newConnection).then(status => {
 					if (status) {
-						editor.onConnectSuccess(runQueryOnCompletion);
+						owner.onConnectSuccess(runQueryOnCompletion);
 					} else {
-						editor.onConnectReject();
+						owner.onConnectReject();
 					}
                     resolve(status);
                 }, (error) => {
-					editor.onConnectReject();
+					owner.onConnectReject();
 				});
             });
         });
@@ -354,34 +353,36 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	// Disconnect a URI from its current connection
-	public disconnectEditor(editor: IConnectableEditor, uri: string, force: boolean = false): Promise<boolean> {
+	// The default editor implementation does not perform UI updates
+	// The default force implementation is set to false
+	public disconnectEditor(owner: IConnectableInput, force: boolean = false): Promise<boolean> {
 		const self = this;
 
 		return new Promise<boolean>((resolve, reject) => {
 			// If the URI is connected, disconnect it and the editor
-			if (self.isConnected(uri)) {
-				editor.onDisconnect();
-				resolve(self.doDisconnect(uri));
+			if (self.isConnected(owner.uri)) {
+				owner.onDisconnect();
+				resolve(self.doDisconnect(owner.uri));
 
 			// If the URI is connecting, prompt the user to cancel connecting
-			} else if (self.isConnecting(uri)) {
+			} else if (self.isConnecting(owner.uri)) {
 				if (!force) {
-					self.shouldCancelConnect(uri).then((result) => {
+					self.shouldCancelConnect(owner.uri).then((result) => {
 						// If the user wants to cancel, then disconnect
 						if (result) {
-							editor.onDisconnect();
-							resolve(self.doCancelConnect(editor));
+							owner.onDisconnect();
+							resolve(self.doCancelConnect(owner));
 						}
 						// If the user does not want to cancel, then ignore
 						resolve(false);
 					});
 				} else {
-					editor.onDisconnect();
-					resolve(self.doCancelConnect(editor));
+					owner.onDisconnect();
+					resolve(self.doCancelConnect(owner));
 				}
 			}
 			// If the URI is disconnected, ensure the UI state is consistent and resolve true
-			editor.onDisconnect();
+			owner.onDisconnect();
 			resolve(true);
 		});
 	}
@@ -454,9 +455,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private doCancelConnect(editor: IConnectableEditor): Thenable<boolean> {
+	private doCancelConnect(owner: IConnectableInput): Thenable<boolean> {
 		const self = this;
-		let fileUri: string = editor.uri;
+		let fileUri: string = owner.uri;
 
 		return new Promise<boolean>((resolve, reject) => {
 			// Check if we are still conecting after user input
@@ -470,7 +471,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				resolve(self.sendCancelRequest(fileUri));
 			} else {
 				// If we are not connecting anymore let disconnect handle the next steps
-				resolve(self.disconnectEditor(editor, fileUri));
+				resolve(self.disconnectEditor(owner));
 			}
 		});
 	}

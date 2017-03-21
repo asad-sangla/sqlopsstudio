@@ -49,6 +49,17 @@ suite('SQL QueryEditor Tests', () => {
 			connectionManagementService.object);
 	};
 
+	let getQueryInput = function(): QueryInput {
+		return new QueryInput(
+			'testUri',
+			'',
+			undefined,
+			undefined,
+			undefined,
+			undefined
+		);
+	};
+
 	setup(() => {
 		// Setup DOM elements
 		let element = DOM.$('queryEditorParent');
@@ -91,14 +102,14 @@ suite('SQL QueryEditor Tests', () => {
 		let uri: URI = URI.parse(filePath);
 		let fileInput = new UntitledEditorInput(uri, false, '', instantiationService.object, undefined, undefined);
 		let queryResultsInput: QueryResultsInput = new QueryResultsInput(uri.fsPath);
-		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput);
+		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput, undefined, undefined);
 
 		// Create a QueryInput to compare to the previous one
 		let filePath2 = 'someFile2.sql';
 		let uri2: URI = URI.parse(filePath2);
 		let fileInput2 = new UntitledEditorInput(uri2, false, '', instantiationService.object, undefined, undefined);
 		let queryResultsInput2: QueryResultsInput = new QueryResultsInput(uri2.fsPath);
-		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2);
+		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2, undefined, undefined);
 
 		// Mock IMessageService
 		messageService = TypeMoq.Mock.ofType(TestMessageService, TypeMoq.MockBehavior.Loose);
@@ -162,7 +173,7 @@ suite('SQL QueryEditor Tests', () => {
 	test('showQueryResultsEditor creates all components', (done) => {
 		// Setup
 		let showQueryResultsEditor = function () {
-			return editor.showQueryResultsEditor();
+			return editor._showQueryResultsEditor();
 		};
 
 		let assertInput = function () {
@@ -273,23 +284,15 @@ suite('SQL QueryEditor Tests', () => {
 			return new TPromise((resolve) => resolve(new RunQueryAction(undefined, undefined, undefined, undefined)));
 		});
 
-		// If I create a QueryEditor
-		let editor: QueryEditor = new QueryEditor(
-			undefined,
-			queryActionInstantiationService.object,
-			undefined,
-			undefined,
-			queryModelService,
-			editorDescriptorService.object,
-			connectionManagementService.object);
-		editor.create(parentBuilder);
+		// If I create a QueryInput
+		let editor: QueryInput = getQueryInput();
 
 		// Buttons should be
-		assert.equal(editor.runQueryAction.enabled, true, 'runQueryAction button should be enabled');
-		assert.equal(editor.cancelQueryAction.enabled, false, 'cancelQueryAction button should not be enabled');
-		assert.equal(editor.connectDatabaseAction.enabled, true, 'connectDatabaseAction button should be enabled');
-		assert.equal(editor.disconnectDatabaseAction.enabled, false, 'disconnectDatabaseAction button should not be enabled');
-		assert.equal(editor.changeConnectionAction.enabled, false, 'changeConnectionAction button should not be enabled');
+		assert.equal(editor.runQueryEnabled, true, 'runQueryAction button should be enabled');
+		assert.equal(editor.cancelQueryEnabled, false, 'cancelQueryAction button should not be enabled');
+		assert.equal(editor.connectEnabled, true, 'connectDatabaseAction button should be enabled');
+		assert.equal(editor.disconnectEnabled, false, 'disconnectDatabaseAction button should not be enabled');
+		assert.equal(editor.changeConnectionEnabled, false, 'changeConnectionAction button should not be enabled');
 		done();
 	});
 });

@@ -59,7 +59,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		if(this.sqlUiController.validateConnection(this._model)) {
 			if (params && params.connectionType === ConnectionType.default) {
 				this.handleDefaultOnConnect();
-			} else if (params && params.editor && params.uri && params.connectionType === ConnectionType.queryEditor) {
+			} else if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
 				if (params.disconnectExistingConnection) {
 					this.handleQueryEditorOnChangeConnection(params);
 				} else {
@@ -72,8 +72,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleOnCancel(params: INewConnectionParams): void {
-		if (params && params.editor && params.uri && params.connectionType === ConnectionType.queryEditor) {
-			params.editor.onConnectReject();
+		if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
+			params.input.onConnectReject();
 		}
 	}
 
@@ -88,7 +88,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleQueryEditorOnConnect(params: INewConnectionParams): void {
-		this._connectionManagementService.connectEditor(params.editor, params.uri, params.runQueryOnCompletion, this._model).then(connected => {
+		this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, this._model).then(connected => {
 			if (connected) {
 				this._connectionDialog.close();
 			}
@@ -99,10 +99,10 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleQueryEditorOnChangeConnection(params: INewConnectionParams): void {
-		this._connectionManagementService.disconnectEditor(params.editor, params.uri, true)
+		this._connectionManagementService.disconnectEditor(params.input, true)
 		.then(disconnected => {
 			if(disconnected) {
-				return this._connectionManagementService.connectEditor(params.editor, params.uri, params.runQueryOnCompletion, this._model);
+				return this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, this._model);
 			}
 			return false;
 		})
