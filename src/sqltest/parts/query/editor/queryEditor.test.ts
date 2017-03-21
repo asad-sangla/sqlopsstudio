@@ -20,6 +20,7 @@ import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorIn
 import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
 import { Memento } from 'vs/workbench/common/memento';
 import { Builder } from 'vs/base/browser/builder';
+import { RunQueryAction } from 'sql/parts/query/execution/queryActions';
 import * as DOM from 'vs/base/browser/dom';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
@@ -71,6 +72,9 @@ suite('SQL QueryEditor Tests', () => {
 		instantiationService = TypeMoq.Mock.ofType(InstantiationService, TypeMoq.MockBehavior.Loose);
 		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny())).returns((input) => {
 			return new TPromise((resolve) => resolve(mockEditor));
+		});
+		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((input) => {
+			return new TPromise((resolve) => resolve(new RunQueryAction(undefined, undefined, undefined, undefined)));
 		});
 
 		// Mock EditorDescriptorService to give us a mock editor description
@@ -263,8 +267,21 @@ suite('SQL QueryEditor Tests', () => {
 	});
 
 	test('Taskbar buttons are set correctly upon standard load', (done) => {
+		// Mock InstantiationService to give us the actions
+		let queryActionInstantiationService = TypeMoq.Mock.ofType(InstantiationService, TypeMoq.MockBehavior.Loose);
+		queryActionInstantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((input) => {
+			return new TPromise((resolve) => resolve(new RunQueryAction(undefined, undefined, undefined, undefined)));
+		});
+
 		// If I create a QueryEditor
-		let editor: QueryEditor = getQueryEditor();
+		let editor: QueryEditor = new QueryEditor(
+			undefined,
+			queryActionInstantiationService.object,
+			undefined,
+			undefined,
+			queryModelService,
+			editorDescriptorService.object,
+			connectionManagementService.object);
 		editor.create(parentBuilder);
 
 		// Buttons should be

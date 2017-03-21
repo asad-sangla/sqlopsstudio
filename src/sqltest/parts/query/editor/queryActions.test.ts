@@ -10,7 +10,7 @@ import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/c
 import { RunQueryAction, CancelQueryAction,
 	DisconnectDatabaseAction, ConnectDatabaseAction, ChangeConnectionAction, QueryTaskbarAction
 } from 'sql/parts/query/execution/queryActions';
-
+import { TestEditorGroupService } from 'vs/workbench/test/workbenchTestServices';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
@@ -33,7 +33,7 @@ suite('SQL QueryAction Tests', () => {
 
 	test('setClass sets child CSS class correctly', (done) => {
 		// If I create a RunQueryAction
-		let queryAction: QueryTaskbarAction = new RunQueryAction(undefined, undefined, undefined);
+		let queryAction: QueryTaskbarAction = new RunQueryAction(undefined, undefined, undefined, undefined);
 
 		// "class should automatically get set to include the base class and the RunQueryAction class
 		let className = QueryTaskbarAction.BaseClass + ' ' + RunQueryAction.EnabledClass;
@@ -54,7 +54,7 @@ suite('SQL QueryAction Tests', () => {
 		editor.setup(x => x.uri).returns(() => testUri);
 
 		// If I create a QueryTaskbarAction and I pass a non-connected editor to _getConnectedQueryEditorUri
-		let queryAction: QueryTaskbarAction = new RunQueryAction(undefined, connectionManagementService.object, undefined);
+		let queryAction: QueryTaskbarAction = new RunQueryAction(undefined, undefined, connectionManagementService.object, undefined);
 		let uri = queryAction._getConnectedQueryEditorUri(editor.object);
 
 		// I should get an undefined URI
@@ -95,8 +95,12 @@ suite('SQL QueryAction Tests', () => {
 			calledRunQuery = true;
 		});
 
+		let editorGroupService = TypeMoq.Mock.ofType(TestEditorGroupService, TypeMoq.MockBehavior.Loose);
+		editorGroupService.setup(x => x.pinEditor(TypeMoq.It.isAny(), TypeMoq.It.isAny())).callback(() => {
+		});
+
 		// If I call run on RunQueryAction when I am not connected
-		let queryAction: RunQueryAction = new RunQueryAction(queryModelService.object, connectionManagementService.object, editor.object);
+		let queryAction: RunQueryAction = new RunQueryAction(editor.object, queryModelService.object, connectionManagementService.object, editorGroupService.object);
 		isConnected = false;
 		calledShowQueryResultsEditor = false;
 		queryAction.run();
@@ -139,7 +143,7 @@ suite('SQL QueryAction Tests', () => {
 		});
 
 		// If I call run on CancelQueryAction when I am not connected
-		let queryAction: CancelQueryAction = new CancelQueryAction(queryModelService.object, connectionManagementService.object, editor.object);
+		let queryAction: CancelQueryAction = new CancelQueryAction(editor.object, queryModelService.object, connectionManagementService.object);
 		isConnected = false;
 		queryAction.run();
 
@@ -169,7 +173,7 @@ suite('SQL QueryAction Tests', () => {
 		});
 
 		// If I call run on DisconnectDatabaseAction when I am not connected
-		let queryAction: DisconnectDatabaseAction  = new DisconnectDatabaseAction(connectionManagementService.object, editor.object);
+		let queryAction: DisconnectDatabaseAction  = new DisconnectDatabaseAction(editor.object, connectionManagementService.object);
 		isConnected = false;
 		queryAction.run();
 
@@ -205,7 +209,7 @@ suite('SQL QueryAction Tests', () => {
 		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAnyString())).returns(() => isConnected);
 
 		// If I call run on ConnectDatabaseAction when I am not connected
-		let queryAction: ConnectDatabaseAction = new ConnectDatabaseAction(connectionManagementService.object, editor.object);
+		let queryAction: ConnectDatabaseAction = new ConnectDatabaseAction(editor.object, connectionManagementService.object);
 		isConnected = false;
 		queryAction.run();
 
@@ -246,7 +250,7 @@ suite('SQL QueryAction Tests', () => {
 		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAnyString())).returns(() => isConnected);
 
 		// If I call run on ChangeConnectionAction when I am not connected
-		queryAction = new ChangeConnectionAction(connectionManagementService.object, editor.object);
+		queryAction = new ChangeConnectionAction(editor.object, connectionManagementService.object);
 		isConnected = false;
 		queryAction.run();
 

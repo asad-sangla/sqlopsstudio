@@ -33,7 +33,6 @@ import {
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import { IShowQueryResultsEditor } from 'sql/parts/query/common/showQueryResultsEditor';
-import { IConnectableEditor } from 'sql/parts/connection/common/connectionManagement';
 import { Action } from 'vs/base/common/actions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
@@ -292,12 +291,12 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 		});
 
 		// Create Actions for the toolbar
-		this._runQueryAction = new RunQueryAction(this._queryModelService, this.connectionManagementService, this);
-		this._cancelQueryAction = new CancelQueryAction(this._queryModelService, this.connectionManagementService, this);
-		this._connectDatabaseAction = new ConnectDatabaseAction(this.connectionManagementService, this);
-		this._disconnectDatabaseAction = new DisconnectDatabaseAction(this.connectionManagementService, this);
-		this._changeConnectionAction = new ChangeConnectionAction(this.connectionManagementService, this);
-		this._listDatabasesAction = new ListDatabasesAction(this.connectionManagementService, this);
+		this._runQueryAction = this._instantiationService.createInstance(RunQueryAction, this);
+		this._cancelQueryAction = this._instantiationService.createInstance(CancelQueryAction, this);
+		this._connectDatabaseAction = this._instantiationService.createInstance(ConnectDatabaseAction, this);
+		this._disconnectDatabaseAction = this._instantiationService.createInstance(DisconnectDatabaseAction, this);
+		this._changeConnectionAction = this._instantiationService.createInstance(ChangeConnectionAction, this);
+		this._listDatabasesAction = this._instantiationService.createInstance(ListDatabasesAction, this);
 
 		// Set initial state for taskbar UI
 		this.onDisconnect();
@@ -533,7 +532,6 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 	}
 
 	private _disposeEditors(): void {
-		const parentContainer = this.getContainer().getHTMLElement();
 		if (this._sqlEditor) {
 			this._sqlEditor.dispose();
 			this._sqlEditor = null;
@@ -543,11 +541,15 @@ export class QueryEditor extends BaseEditor implements IShowQueryResultsEditor {
 			this._resultsEditor = null;
 		}
 		if (this._sqlEditorContainer) {
-			parentContainer.removeChild(this._sqlEditorContainer);
+			if (this._sqlEditorContainer.parentElement) {
+				this._sqlEditorContainer.parentElement.removeChild(this._sqlEditorContainer);
+			}
 			this._sqlEditorContainer = null;
 		}
 		if (this._resultsEditorContainer) {
-			parentContainer.removeChild(this._resultsEditorContainer);
+			if (this._resultsEditorContainer.parentElement) {
+				this._resultsEditorContainer.parentElement.removeChild(this._resultsEditorContainer);
+			}
 			this._resultsEditorContainer = null;
 		}
 	}

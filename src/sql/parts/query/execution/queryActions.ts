@@ -11,6 +11,7 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import nls = require('vs/nls');
 import * as dom from 'vs/base/browser/dom';
 const $ = dom.$;
@@ -91,9 +92,10 @@ export class RunQueryAction extends QueryTaskbarAction {
 	public static ID = 'runQueryAction';
 
 	constructor(
-		private _queryModelService: IQueryModelService,
-		connectionManagementService: IConnectionManagementService,
-		editor: IShowQueryResultsEditor
+		editor: IShowQueryResultsEditor,
+		@IQueryModelService private _queryModelService: IQueryModelService,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService,
+		@IEditorGroupService private editorGroupService: IEditorGroupService
 	) {
 		super(connectionManagementService, editor, RunQueryAction.ID, RunQueryAction.EnabledClass);
 		this.label = nls.localize('runQueryLabel', 'Run Query');
@@ -121,6 +123,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 			uri = this._getConnectedQueryEditorUri(editor);
 		}
 		if (uri) {
+			this.editorGroupService.pinEditor(editor.position, editor.input);
 			this._queryModelService.runQuery(uri, undefined, uri);
 			editor.showQueryResultsEditor();
 		}
@@ -136,9 +139,9 @@ export class CancelQueryAction extends QueryTaskbarAction {
 	public static ID = 'cancelQueryAction';
 
 	constructor(
-		private _queryModelService: IQueryModelService,
-		connectionManagementService: IConnectionManagementService,
-		editor: IShowQueryResultsEditor
+		editor: IShowQueryResultsEditor,
+		@IQueryModelService private _queryModelService: IQueryModelService,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, CancelQueryAction.ID, CancelQueryAction.EnabledClass);
 		this.enabled = false;
@@ -163,8 +166,8 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
 	public static ID = 'disconnectDatabaseAction';
 
 	constructor(
-		connectionManagementService: IConnectionManagementService,
-		editor: IShowQueryResultsEditor
+		editor: IShowQueryResultsEditor,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, CancelQueryAction.ID, DisconnectDatabaseAction.EnabledClass);
 		this.label = nls.localize('disconnectDatabaseLabel', 'Disconnect');
@@ -187,8 +190,8 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
 	public static ID = 'connectDatabaseAction';
 
 	constructor(
-		connectionManagementService: IConnectionManagementService,
-		editor: IShowQueryResultsEditor
+		editor: IShowQueryResultsEditor,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, CancelQueryAction.ID, ConnectDatabaseAction.EnabledClass);
 		this.label = nls.localize('connectDatabaseLabel', 'Connect');
@@ -212,8 +215,8 @@ export class ChangeConnectionAction extends QueryTaskbarAction {
 	public static ID = 'changeConnectionDatabaseAction';
 
 	constructor(
-		connectionManagementService: IConnectionManagementService,
-		editor: IShowQueryResultsEditor
+		editor: IShowQueryResultsEditor,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, CancelQueryAction.ID, ChangeConnectionAction.EnabledClass);
 		this.label = nls.localize('changeConnectionDatabaseLabel', 'Change Connection');
@@ -237,8 +240,8 @@ export class ListDatabasesAction extends QueryTaskbarAction {
 	public static ID = 'listDatabaseQueryAction';
 
 	constructor(
-		connectionManagementService: IConnectionManagementService,
-		editor: IShowQueryResultsEditor
+		editor: IShowQueryResultsEditor,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, ListDatabasesAction.ID, undefined);
 		this.enabled = false;
