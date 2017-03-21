@@ -104,7 +104,8 @@ export class AddServerAction extends Action {
 			groupName: element.fullName,
 			savePassword: undefined,
 			getUniqueId: undefined,
-			providerName: ''
+			providerName: '',
+			options: {}
 		};
 		this._connectionManagementService.newConnection(undefined, connection);
 		return TPromise.as(true);

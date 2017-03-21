@@ -85,7 +85,8 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			password: this.password,
 			providerName: this.providerName,
 			savePassword: this.savePassword,
-			userName: this.userName
+			userName: this.userName,
+			options: this.options
 		};
 
 		return result;

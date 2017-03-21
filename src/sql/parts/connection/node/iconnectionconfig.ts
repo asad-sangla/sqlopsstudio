@@ -16,12 +16,12 @@ import data = require('data');
  * @interface IConnectionConfig
  */
 export interface IConnectionConfig {
-    addConnection(profile: IConnectionProfile): Promise<void>;
-    getConnections(getWorkspaceConnections: boolean): ConnectionProfile[];
-    removeConnection(profile: IConnectionProfile): Promise<boolean>;
-    getAllGroups(): IConnectionProfileGroup[];
-    changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void>;
-    changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void>;
-    getMetadata(): data.DataProtocolServerCapabilities[];
-    getCapabilities(providerName: string);
+	addConnection(profile: IConnectionProfile): Promise<void>;
+	getConnections(getWorkspaceConnections: boolean): ConnectionProfile[];
+	removeConnection(profile: IConnectionProfile): Promise<boolean>;
+	getAllGroups(): IConnectionProfileGroup[];
+	changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void>;
+	changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void>;
+	setCachedMetadata(cachedMetaData: data.DataProtocolServerCapabilities[]): void;
+	getCapabilities(providerName: string);
 }

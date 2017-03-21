@@ -323,32 +323,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return {
 			ownerUri: connUri,
 			connection: {
-					serverName: connInfo.serverName,
-					databaseName: connInfo.databaseName,
-					userName: connInfo.userName,
-					password: connInfo.password,
-					authenticationType: connInfo.authenticationType,
-					encrypt: false,
-					trustServerCertificate: true,
-					persistSecurityInfo: true,
-					connectTimeout: 30,
-					connectRetryCount: 1,
-					connectRetryInterval: 10,
-					applicationName: 'carbon',
-					workstationId: undefined,
-					applicationIntent: undefined,
-					currentLanguage: undefined,
-					pooling: undefined,
-					maxPoolSize: undefined,
-					minPoolSize: undefined,
-					loadBalanceTimeout: undefined,
-					replication: undefined,
-					attachDbFilename: undefined,
-					failoverPartner: undefined,
-					multiSubnetFailover: false,
-					multipleActiveResultSets: false,
-					packetSize: undefined,
-					typeSystemVersion: undefined
+				options: connInfo.options
 			}
 		};
 	}

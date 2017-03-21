@@ -9,7 +9,10 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IConnectionManagementService, IConnectionDialogService, INewConnectionParams, ConnectionType, IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
+import {
+	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
+	ConnectionType, IConnectableInput
+} from 'sql/parts/connection/common/connectionManagement';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
@@ -177,11 +180,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private sendConnectRequest(connection: data.ConnectionInfo, uri: string): Thenable<boolean> {
 		//TODO: create the model to send for connecting
 		let connectionInfo = Object.assign({}, {
-			serverName: connection.serverName,
-			databaseName: connection.databaseName,
-			userName: connection.userName,
-			password: connection.password,
-			authenticationType: connection.authenticationType
+			options: connection.options
 		});
 		return new Promise((resolve, reject) => {
 			for (var key in this._providers) {
@@ -306,12 +305,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 			groupName: connectionProfile.groupName,
 			savePassword: connectionProfile.savePassword,
 			getUniqueId: undefined,
-			providerName: ''
+			providerName: '',
+			options: connectionProfile.options
 		};
 
 		// Retrieve saved password if needed
-        return new Promise<boolean>((resolve, reject) => {
-            this._connectionStore.addSavedPassword(connection).then(newConnection => {
+		return new Promise<boolean>((resolve, reject) => {
+			this._connectionStore.addSavedPassword(connection).then(newConnection => {
 				owner.onConnectStart();
 				return this.connect(owner.uri, newConnection).then(status => {
 					if (status) {
@@ -319,12 +319,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 					} else {
 						owner.onConnectReject();
 					}
-                    resolve(status);
-                }, (error) => {
+					resolve(status);
+				}, (error) => {
 					owner.onConnectReject();
 				});
-            });
-        });
+			});
+		});
 	}
 
 	public connectProfile(connectionProfile: ConnectionProfile): Promise<boolean> {
@@ -364,7 +364,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				owner.onDisconnect();
 				resolve(self.doDisconnect(owner.uri));
 
-			// If the URI is connecting, prompt the user to cancel connecting
+				// If the URI is connecting, prompt the user to cancel connecting
 			} else if (self.isConnecting(owner.uri)) {
 				if (!force) {
 					self.shouldCancelConnect(owner.uri).then((result) => {

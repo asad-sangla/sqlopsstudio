@@ -21,18 +21,23 @@ import * as data from 'data';
  */
 export class ConnectionConfig implements IConnectionConfig {
 
-	private _capabilitiesCache: { [providerName: string]: data.DataProtocolServerCapabilities };
-	private _configProviderMetadataCache: { [providerName: string]: data.DataProtocolServerCapabilities };
+	private _providerCapabilitiesMap: { [providerName: string]: data.DataProtocolServerCapabilities };
+	private _providerCachedCapabilitiesMap: { [providerName: string]: data.DataProtocolServerCapabilities };
 	/**
 	 * Constructor.
 	 */
 	public constructor(
 		private _configurationEditService: IConfigurationEditingService,
 		private _workspaceConfigurationService: IWorkspaceConfigurationService,
-		private _capabilitiesService: ICapabilitiesService
+		private _capabilitiesService: ICapabilitiesService,
+		private _cachedMetadata?: data.DataProtocolServerCapabilities[]
 	) {
-		this._capabilitiesCache = {};
-		this._configProviderMetadataCache = {};
+		this._providerCapabilitiesMap = {};
+		this._providerCachedCapabilitiesMap = {};
+	}
+
+	public setCachedMetadata(cachedMetaData: data.DataProtocolServerCapabilities[]): void {
+		this._cachedMetadata = cachedMetaData;
 	}
 
 	/**
@@ -69,27 +74,27 @@ export class ConnectionConfig implements IConnectionConfig {
 	public getCapabilities(providerName: string): data.DataProtocolServerCapabilities {
 		let result: data.DataProtocolServerCapabilities;
 
-		if (providerName in this._capabilitiesCache) {
-			result = this._capabilitiesCache[providerName];
+		if (providerName in this._providerCapabilitiesMap) {
+			result = this._providerCapabilitiesMap[providerName];
 		} else {
 			let capabilities = this._capabilitiesService.getCapabilities();
 			if (capabilities) {
 				let providerCapabilities = capabilities.find(c => c.providerName === providerName);
 				if (providerCapabilities) {
-					this._capabilitiesCache[providerName] = providerCapabilities;
+					this._providerCapabilitiesMap[providerName] = providerCapabilities;
 					result = providerCapabilities;
 				}
 			}
 		}
 
-		if (!result) {
-			if (providerName in this._configProviderMetadataCache) {
-				result = this._configProviderMetadataCache[providerName];
+		if (!result && this._cachedMetadata) {
+			if (providerName in this._providerCachedCapabilitiesMap) {
+				result = this._providerCachedCapabilitiesMap[providerName];
 			} else {
-				let metaDataFromConfig = this.getMetadata();
+				let metaDataFromConfig = this._cachedMetadata;
 				if (metaDataFromConfig) {
 					let providerCapabilities = metaDataFromConfig.find(m => m.providerName === providerName);
-					this._configProviderMetadataCache[providerName] = providerCapabilities;
+					this._providerCachedCapabilitiesMap[providerName] = providerCapabilities;
 					result = providerCapabilities;
 				}
 			}
@@ -203,7 +208,6 @@ export class ConnectionConfig implements IConnectionConfig {
 			if (workspaceProfiles !== undefined) {
 				profiles = profiles.concat(workspaceProfiles);
 			}
-
 		}
 
 		let connectionProfiles = profiles.map(p => {
@@ -218,11 +222,6 @@ export class ConnectionConfig implements IConnectionConfig {
 		});
 
 		return connectionProfiles;
-	}
-
-	public getMetadata(): data.DataProtocolServerCapabilities[] {
-		let metaData = this.getConfiguration(Constants.connectionMetadata).user as data.DataProtocolServerCapabilities[];
-		return metaData;
 	}
 
 	/**

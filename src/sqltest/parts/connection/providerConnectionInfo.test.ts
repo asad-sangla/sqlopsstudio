@@ -24,7 +24,8 @@ suite('SQL ProviderConnectionInfo tests', () => {
 		groupName: 'g2/g2-2',
 		groupId: undefined,
 		getUniqueId: undefined,
-		providerName: 'MSSQL'
+		providerName: 'MSSQL',
+		options: {}
 	};
 
 	setup(() => {

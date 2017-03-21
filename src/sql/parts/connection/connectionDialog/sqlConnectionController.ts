@@ -52,6 +52,7 @@ export class SqlConnectionController implements IConnectionComponentController {
 
 	public initDialog(model: ConnectionProfile): void {
 		this._model = model;
+		this._model.setOptionValue('applicationName', 'carbon');
 		this._sqlConnectionWidget.initDialog(this._model);
 	}
 

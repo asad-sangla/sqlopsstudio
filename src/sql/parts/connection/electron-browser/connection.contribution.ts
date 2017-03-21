@@ -90,10 +90,6 @@ configurationRegistry.registerConfiguration({
 		'datasource.connectionGroups': {
 			'description': 'data source connections',
 			'type': 'array'
-		},
-		'datasource.metadata': {
-			'description': 'data source metadata',
-			'type': 'array'
 		}
 	}
 });

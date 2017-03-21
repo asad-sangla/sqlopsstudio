@@ -1,8 +1,15 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 'use strict';
+
+export interface CategoryValue {
+    displayName: string;
+
+    name: string;
+}
 
 export interface ConnectionOption {
 	name: string;
@@ -17,7 +24,7 @@ export interface ConnectionOption {
 
 	defaultValue: string;
 
-	categoryValues: string[];
+	categoryValues: CategoryValue[];
 
 	specialValueType: string;
 
@@ -29,6 +36,7 @@ export interface ConnectionOption {
 export interface ConnectionProviderOptions  {
 	options: ConnectionOption[];
 }
+
 
 export interface DataProtocolServerCapabilities  {
 	protocolVersion: string;
@@ -44,263 +52,136 @@ export interface DataProtocolServerCapabilities  {
  * Parameters to initialize a connection to a database
  */
 export interface ConnectionDetails {
-    /**
-     * server name
-     */
-    serverName: string;
 
-    /**
-     * database name
-     */
-    databaseName: string;
-
-    /**
-     * user name
-     */
-    userName: string;
-
-    /**
-     * unencrypted password
-     */
-    password: string;
-
-    /**
-     * Gets or sets the authentication to use.
-     */
-    authenticationType: string;
-
-    /**
-     * Gets or sets a Boolean value that indicates whether SQL Server uses SSL encryption for all data sent between the client and server if
-     * the server has a certificate installed.
-     */
-    encrypt: boolean;
-
-    /**
-     * Gets or sets a value that indicates whether the channel will be encrypted while bypassing walking the certificate chain to validate trust.
-     */
-    trustServerCertificate: boolean;
-
-    /**
-     * Gets or sets a Boolean value that indicates if security-sensitive information, such as the password, is not returned as part of the
-     * connection if the connection is open or has ever been in an open state.
-     */
-    persistSecurityInfo: boolean;
-
-    /**
-     * Gets or sets the length of time (in seconds) to wait for a connection to the server before terminating the attempt and generating an error.
-     */
-    connectTimeout: number;
-
-    /**
-     * The number of reconnections attempted after identifying that there was an idle connection failure.
-     */
-    connectRetryCount: number;
-
-    /**
-     * Amount of time (in seconds) between each reconnection attempt after identifying that there was an idle connection failure.
-     */
-    connectRetryInterval: number;
-
-    /**
-     * Gets or sets the name of the application associated with the connection string.
-     */
-    applicationName: string;
-
-    /**
-     * Gets or sets the name of the workstation connecting to SQL Server.
-     */
-    workstationId: string;
-
-    /**
-     * Declares the application workload type when connecting to a database in an SQL Server Availability Group.
-     */
-    applicationIntent: string;
-
-    /**
-     * Gets or sets the SQL Server Language record name.
-     */
-    currentLanguage: string;
-
-    /**
-     * Gets or sets a Boolean value that indicates whether the connection will be pooled or explicitly opened every time that the connection is requested.
-     */
-    pooling: boolean;
-
-    /**
-     * Gets or sets the maximum number of connections allowed in the connection pool for this specific connection string.
-     */
-    maxPoolSize: number;
-
-    /**
-     * Gets or sets the minimum number of connections allowed in the connection pool for this specific connection string.
-     */
-    minPoolSize: number;
-
-    /**
-     * Gets or sets the minimum time, in seconds, for the connection to live in the connection pool before being destroyed.
-     */
-    loadBalanceTimeout: number;
-
-    /**
-     * Gets or sets a Boolean value that indicates whether replication is supported using the connection.
-     */
-    replication: boolean;
-
-    /**
-     * Gets or sets a string that contains the name of the primary data file. This includes the full path name of an attachable database.
-     */
-    attachDbFilename: string;
-
-    /**
-     * Gets or sets the name or address of the partner server to connect to if the primary server is down.
-     */
-    failoverPartner: string;
-
-    /**
-     * If your application is connecting to an AlwaysOn availability group (AG) on different subnets, setting MultiSubnetFailover=true provides
-     * faster detection of and connection to the (currently) active server.
-     */
-    multiSubnetFailover: boolean;
-
-    /**
-     * When true, an application can maintain multiple active result sets (MARS).
-     */
-    multipleActiveResultSets: boolean;
-
-    /**
-     * Gets or sets the size in bytes of the network packets used to communicate with an instance of SQL Server.
-     */
-    packetSize: number;
-
-    /**
-     * Gets or sets a string value that indicates the type system the application expects.
-     */
-    typeSystemVersion: string;
+	/**
+	 * connection options
+	 */
+	options: {};
 }
 
 /**
  * Summary that identifies a unique database connection.
  */
 export class ConnectionSummary {
-    /**
-     * server name
-     */
-    public serverName: string;
+	/**
+	 * server name
+	 */
+	public serverName: string;
 
-    /**
-     * database name
-     */
-    public databaseName: string;
+	/**
+	 * database name
+	 */
+	public databaseName: string;
 
-    /**
-     * user name
-     */
-    public userName: string;
+	/**
+	 * user name
+	 */
+	public userName: string;
 }
 
 /**
  * Connection response format.
  */
 export class ConnectionCompleteParams {
-    /**
-     * URI identifying the owner of the connection
-     */
-    public ownerUri: string;
+	/**
+	 * URI identifying the owner of the connection
+	 */
+	public ownerUri: string;
 
-    /**
-     * connection id returned from service host.
-     */
-    public connectionId: string;
+	/**
+	 * connection id returned from service host.
+	 */
+	public connectionId: string;
 
-    /**
-     * any diagnostic messages return from the service host.
-     */
-    public messages: string;
+	/**
+	 * any diagnostic messages return from the service host.
+	 */
+	public messages: string;
 
-    /**
-     * Error message returned from the engine, if any.
-     */
-    public errorMessage: string;
+	/**
+	 * Error message returned from the engine, if any.
+	 */
+	public errorMessage: string;
 
-    /**
-     * Error number returned from the engine, if any.
-     */
-    public errorNumber: number;
+	/**
+	 * Error number returned from the engine, if any.
+	 */
+	public errorNumber: number;
 
-    /**
-     * Information about the connected server.
-     */
-    public serverInfo: ServerInfo;
+	/**
+	 * Information about the connected server.
+	 */
+	public serverInfo: ServerInfo;
 
-    /**
-     * information about the actual connection established
-     */
-    public connectionSummary: ConnectionSummary;
+	/**
+	 * information about the actual connection established
+	 */
+	public connectionSummary: ConnectionSummary;
 }
 
 /**
  * Update event parameters
  */
 export class IntelliSenseReadyParams {
-    /**
-     * URI identifying the text document
-     */
-    public ownerUri: string;
+	/**
+	 * URI identifying the text document
+	 */
+	public ownerUri: string;
 }
 
 /**
  * Information about a SQL Server instance.
  */
 export class ServerInfo {
-    /**
-     * The major version of the SQL Server instance.
-     */
-    public serverMajorVersion: number;
+	/**
+	 * The major version of the SQL Server instance.
+	 */
+	public serverMajorVersion: number;
 
-    /**
-     * The minor version of the SQL Server instance.
-     */
-    public serverMinorVersion: number;
+	/**
+	 * The minor version of the SQL Server instance.
+	 */
+	public serverMinorVersion: number;
 
-    /**
-     * The build of the SQL Server instance.
-     */
-    public serverReleaseVersion: number;
+	/**
+	 * The build of the SQL Server instance.
+	 */
+	public serverReleaseVersion: number;
 
-    /**
-     * The ID of the engine edition of the SQL Server instance.
-     */
-    public engineEditionId: number;
+	/**
+	 * The ID of the engine edition of the SQL Server instance.
+	 */
+	public engineEditionId: number;
 
-    /**
-     * String containing the full server version text.
-     */
-    public serverVersion: string;
+	/**
+	 * String containing the full server version text.
+	 */
+	public serverVersion: string;
 
-    /**
-     * String describing the product level of the server.
-     */
-    public serverLevel: string;
+	/**
+	 * String describing the product level of the server.
+	 */
+	public serverLevel: string;
 
-    /**
-     * The edition of the SQL Server instance.
-     */
-    public serverEdition: string;
+	/**
+	 * The edition of the SQL Server instance.
+	 */
+	public serverEdition: string;
 
-    /**
-     * Whether the SQL Server instance is running in the cloud (Azure) or not.
-     */
-    public isCloud: boolean;
+	/**
+	 * Whether the SQL Server instance is running in the cloud (Azure) or not.
+	 */
+	public isCloud: boolean;
 
-    /**
-     * The version of Azure that the SQL Server instance is running on, if applicable.
-     */
-    public azureVersion: number;
+	/**
+	 * The version of Azure that the SQL Server instance is running on, if applicable.
+	 */
+	public azureVersion: number;
 
-    /**
-     * The Operating System version string of the machine running the SQL Server instance.
-     */
-    public osVersion: string;
+	/**
+	 * The Operating System version string of the machine running the SQL Server instance.
+	 */
+	public osVersion: string;
 }
 
 export class CapabiltiesDiscoveryResult {
@@ -308,20 +189,20 @@ export class CapabiltiesDiscoveryResult {
 }
 
 export interface ResultSetSummary {
-    id: number;
-    batchId: number;
-    rowCount: number;
-    columnInfo: IDbColumn[];
+	id: number;
+	batchId: number;
+	rowCount: number;
+	columnInfo: IDbColumn[];
 }
 
 export interface BatchSummary {
-    hasError: boolean;
-    id: number;
-    selection: ISelectionData;
-    resultSetSummaries: ResultSetSummary[];
-    executionElapsed: string;
-    executionEnd: string;
-    executionStart: string;
+	hasError: boolean;
+	id: number;
+	selection: ISelectionData;
+	resultSetSummaries: ResultSetSummary[];
+	executionElapsed: string;
+	executionEnd: string;
+	executionStart: string;
 }
 
 export interface IDbColumn {
@@ -377,15 +258,15 @@ export interface ISelectionData {
 }
 
 export interface QueryExecuteBatchNotificationParams {
-    batchSummary: BatchSummary;
-    ownerUri: string;
+	batchSummary: BatchSummary;
+	ownerUri: string;
 }
 
 export class MetadataQueryParams {
 	/**
-     * Owner URI of the connection that changed.
-     */
-    public ownerUri: string;
+	 * Owner URI of the connection that changed.
+	 */
+	public ownerUri: string;
 }
 
 export enum MetadataType
@@ -422,9 +303,9 @@ export enum ScriptOperation
 
 export class ScriptingScriptAsParams {
 	/**
-     * Owner URI of the connection that changed.
-     */
-    public ownerUri: string;
+	 * Owner URI of the connection that changed.
+	 */
+	public ownerUri: string;
 
 	/**
 	 * Scripting operation type
@@ -439,9 +320,9 @@ export class ScriptingScriptAsParams {
 
 export class ScriptingScriptAsResult {
 	/**
-     * Owner URI of the connection that changed.
-     */
-    public ownerUri: string;
+	 * Owner URI of the connection that changed.
+	 */
+	public ownerUri: string;
 
 	/**
 	 * Generated SQL script statements
@@ -1625,30 +1506,30 @@ export interface TextDocument {
 	 */
 	getText(): string;
 
-    /**
-     * Converts a zero-based offset to a position.
-     *
-     * @param offset A zero-based offset.
-     * @return A valid [position](#Position).
-     */
-    positionAt(offset: number): Position;
+	/**
+	 * Converts a zero-based offset to a position.
+	 *
+	 * @param offset A zero-based offset.
+	 * @return A valid [position](#Position).
+	 */
+	positionAt(offset: number): Position;
 
-    /**
-     * Converts the position to a zero-based offset.
-     *
-     * The position will be [adjusted](#TextDocument.validatePosition).
-     *
-     * @param position A position.
-     * @return A valid zero-based offset.
-     */
-    offsetAt(position: Position): number;
+	/**
+	 * Converts the position to a zero-based offset.
+	 *
+	 * The position will be [adjusted](#TextDocument.validatePosition).
+	 *
+	 * @param position A position.
+	 * @return A valid zero-based offset.
+	 */
+	offsetAt(position: Position): number;
 
-    /**
-     * The number of lines in this document.
-     *
-     * @readonly
-     */
-    lineCount: number;
+	/**
+	 * The number of lines in this document.
+	 *
+	 * @readonly
+	 */
+	lineCount: number;
 }
 
 export namespace TextDocument {

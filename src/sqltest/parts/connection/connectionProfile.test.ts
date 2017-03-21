@@ -24,7 +24,8 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		groupName: 'g2/g2-2',
 		groupId: 'group id',
 		getUniqueId: undefined,
-		providerName: 'MSSQL'
+		providerName: 'MSSQL',
+		options: {}
 	};
 
 	setup(() => {

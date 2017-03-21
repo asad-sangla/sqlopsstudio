@@ -11,7 +11,7 @@ import { ConnectionOptionSpecialType } from 'sql/parts/connection/common/connect
 
 export class ProviderConnectionInfo implements data.ConnectionInfo {
 
-	options: { [name: string]: string };
+	options: { [name: string]: any };
 
 	providerName: string;
 	protected _optionsMetadata: data.DataProtocolServerCapabilities;
@@ -86,11 +86,11 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		this.setSpecialTypeOptionName(ConnectionOptionSpecialType.authType, value);
 	}
 
-	public getOptionValue(name: string): string {
+	public getOptionValue(name: string): any {
 		return this.options[name];
 	}
 
-	public setOptionValue(name: string, value: string): void {
+	public setOptionValue(name: string, value: any): void {
 		//TODO: validate
 		this.options[name] = value;
 	}

@@ -5,8 +5,10 @@
 
 'use strict';
 
-import { IConnectionDialogService, IConnectionManagementService, IErrorMessageService,
-	ConnectionType, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import {
+	IConnectionDialogService, IConnectionManagementService, IErrorMessageService,
+	ConnectionType, INewConnectionParams
+} from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { withElementById } from 'vs/base/browser/builder';
@@ -56,7 +58,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleOnConnect(params: INewConnectionParams): void {
-		if(this.sqlUiController.validateConnection(this._model)) {
+		if (this.sqlUiController.validateConnection(this._model)) {
 			if (params && params.connectionType === ConnectionType.default) {
 				this.handleDefaultOnConnect();
 			} else if (params && params.input && params.connectionType === ConnectionType.queryEditor) {

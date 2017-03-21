@@ -7,15 +7,8 @@ declare module 'data' {
 	import * as vscode from 'vscode';
 
 	export interface ConnectionInfo {
-		serverName: string;
 
-		databaseName: string;
-
-		userName: string;
-
-		password: string;
-
-		authenticationType: string;
+		options: { [name: string]: any };
 	}
 
 	export interface ConnectionInfoSummary {
@@ -76,6 +69,11 @@ declare module 'data' {
 		password = 4
 	}
 
+	export interface CategoryValue {
+    	displayName: string;
+		name: string;
+	}
+
 	export interface ConnectionOption {
 		name: string;
 
@@ -91,7 +89,7 @@ declare module 'data' {
 
 		defaultValue: string;
 
-		categoryValues: string[];
+		categoryValues: CategoryValue[];
 
 		isIdentity: boolean;
 

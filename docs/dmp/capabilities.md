@@ -86,7 +86,7 @@ List the capabilities implemented by a DMP server.
         /// <summary>
         /// Set of permitted values if ValueType is category.
         /// </summary>
-        public string[] CategoryValues { get; set; }
+        public CategoryValue[] CategoryValues { get; set; }
 
         /// <summary>
         /// Determines if the parameter is one of the 'specical' known values.

@@ -45,7 +45,10 @@ export class ConnectionStore {
 		this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
 
 		if (!this._connectionConfig) {
-			this._connectionConfig = new ConnectionConfig(this._configurationEditService, this._workspaceConfigurationService, this._capabilitiesService);
+			let cachedOptionsMetadata = this.getCachedOptionsMetadata();
+			this._connectionConfig = new ConnectionConfig(this._configurationEditService,
+				this._workspaceConfigurationService, this._capabilitiesService, cachedOptionsMetadata);
+			this._connectionConfig.setCachedMetadata(cachedOptionsMetadata);
 		}
 	}
 
@@ -167,11 +170,29 @@ export class ConnectionStore {
 					// Add necessary default properties before returning
 					// this is needed to support immediate connections
 					ConnInfo.fixupConnectionCredentials(profile);
+					this.saveCachedOptionsMetadata();
 					resolve(profile);
 				}, err => {
 					reject(err);
 				});
 		});
+	}
+
+	private getCachedOptionsMetadata(): data.DataProtocolServerCapabilities[] {
+		if (this._memento) {
+			let metadata: data.DataProtocolServerCapabilities[] = this._memento['OPTIONS_METADATA'];
+			return metadata;
+		} else {
+			return undefined;
+		}
+
+	}
+
+	private saveCachedOptionsMetadata(): void {
+		if (this._memento) {
+			let capabilities = this._capabilitiesService.getCapabilities();
+			this._memento['OPTIONS_METADATA'] = capabilities;
+		}
 	}
 
 	/**
@@ -187,13 +208,21 @@ export class ConnectionStore {
 		}
 
 		configValues = configValues.filter(c => !!(c));
+		return this.convertConfigValuesToConnectionProfiles(configValues);
+	}
+
+	private convertConfigValuesToConnectionProfiles(configValues: IConnectionProfile[]): ConnectionProfile[] {
 		return configValues.map(c => {
 			if (c) {
 				let capabilities = this._connectionConfig.getCapabilities(c.providerName);
-				return new ConnectionProfile(capabilities, c);
+				let connectionProfile = new ConnectionProfile(capabilities, c);
+				this._capabilitiesService.onProviderRegisteredEvent((serverCapabilities) => {
+					connectionProfile.onProviderRegistered(serverCapabilities);
+				});
+				return connectionProfile;
 			} else {
 				return undefined;
-			}
+			};
 		});
 	}
 
@@ -227,10 +256,7 @@ export class ConnectionStore {
 			configValues = [];
 		}
 
-		return configValues.map(c => {
-			let capabilities = this._connectionConfig.getCapabilities(c.providerName);
-			return new ConnectionProfile(capabilities, c);
-		});
+		return this.convertConfigValuesToConnectionProfiles(configValues);
 	}
 
 	public getProfileWithoutPassword(conn: IConnectionProfile): ConnectionProfile {
@@ -340,7 +366,7 @@ export class ConnectionStore {
 		return this.doSavePassword(profile, CredentialsQuickPickItemType.Profile);
 	}
 
-	private doSavePassword(conn: data.ConnectionInfo, type: CredentialsQuickPickItemType): Promise<boolean> {
+	private doSavePassword(conn: IConnectionProfile, type: CredentialsQuickPickItemType): Promise<boolean> {
 		let self = this;
 		return new Promise<boolean>((resolve, reject) => {
 			if (Utils.isNotEmpty(conn.password)) {

@@ -27,6 +27,8 @@ suite('SQL ConnectionConfig tests', () => {
 	let workspaceConfigurationServiceMock: TypeMoq.Mock<WorkspaceConfigurationTestService>;
 	let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService>;
 	let msSQLCapabilities: data.DataProtocolServerCapabilities;
+	let capabilities: data.DataProtocolServerCapabilities[];
+	let onProviderRegistered = new Emitter<data.DataProtocolServerCapabilities>();
 
 	let configValueToConcat: IWorkspaceConfigurationValue<IConnectionProfileGroup[]> = {
 		workspace: [{
@@ -147,7 +149,7 @@ suite('SQL ConnectionConfig tests', () => {
 	};
 	setup(() => {
 		capabilitiesService = TypeMoq.Mock.ofType(CapabilitiesService);
-		let capabilities: data.DataProtocolServerCapabilities[] = [];
+		capabilities = [];
 		let connectionProvider: data.ConnectionProviderOptions = {
 			options: [
 				{
@@ -219,7 +221,7 @@ suite('SQL ConnectionConfig tests', () => {
 			connectionProvider: connectionProvider
 		};
 		capabilities.push(msSQLCapabilities);
-		let onProviderRegistered = new Emitter<data.DataProtocolServerCapabilities>();
+
 		capabilitiesService.setup(x => x.getCapabilities()).returns(() => capabilities);
 		capabilitiesService.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);
 
@@ -330,7 +332,8 @@ suite('SQL ConnectionConfig tests', () => {
 			groupName: undefined,
 			groupId: undefined,
 			getUniqueId: undefined,
-			providerName: 'MSSQL'
+			providerName: 'MSSQL',
+			options: {}
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
@@ -363,7 +366,8 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupName: undefined,
 			getUniqueId: undefined,
-			providerName: 'MSSQL'
+			providerName: 'MSSQL',
+			options: {}
 		};
 
 		let expectedNumberOfConnections = connections.user.length;
@@ -395,7 +399,8 @@ suite('SQL ConnectionConfig tests', () => {
 			groupName: 'g2/g2-2',
 			groupId: undefined,
 			getUniqueId: undefined,
-			providerName: 'MSSQL'
+			providerName: 'MSSQL',
+			options: {}
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
@@ -442,11 +447,61 @@ suite('SQL ConnectionConfig tests', () => {
 			Constants.connectionsArrayName))
 			.returns(() => connections);
 
-
-
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		let allConnections = config.getConnections(getWorkspaceConnections);
 		assert.equal(allConnections.length, connections.user.length);
+	});
+
+	test('getConnections should return connections from user settings given getWorkspaceConnections set to false', () => {
+		let oldOptionName: string = 'oldOptionName';
+		let optionsMetadataFromConfig = capabilities[0].connectionProvider.options.concat({
+			name: oldOptionName,
+			displayName: undefined,
+			description: undefined,
+			groupName: undefined,
+			categoryValues: undefined,
+			defaultValue: undefined,
+			isIdentity: true,
+			isRequired: true,
+			specialValueType: 0,
+			valueType: 0
+		});
+
+		let capabilitiesFromConfig: data.DataProtocolServerCapabilities[] = [];
+		let connectionProvider: data.ConnectionProviderOptions = {
+			options: optionsMetadataFromConfig
+		};
+		let msSQLCapabilities2 = {
+			protocolVersion: '1',
+			providerName: 'MSSQL',
+			providerDisplayName: 'MSSQL',
+			connectionProvider: connectionProvider
+		};
+		capabilitiesFromConfig.push(msSQLCapabilities2);
+		let connectionUsingOldMetadata = connections.user.map(c => {
+			c.options[oldOptionName] = 'test';
+			return c;
+		});
+		let configValue = Object.assign(connections, {user: connectionUsingOldMetadata});
+		let capabilitiesService2: TypeMoq.Mock<CapabilitiesService> = TypeMoq.Mock.ofType(CapabilitiesService);
+		capabilitiesService2.setup(x => x.getCapabilities()).returns(() => []);
+		capabilitiesService2.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => configValue);
+
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService2.object, capabilitiesFromConfig);
+		let allConnections = config.getConnections(false);
+		allConnections.forEach(element => {
+			assert.notEqual(element.serverName, undefined);
+			assert.notEqual(element.getUniqueId().indexOf('test_'), -1);
+		});
+
+		onProviderRegistered.fire(msSQLCapabilities);
+		allConnections.forEach(element => {
+			assert.notEqual(element.serverName, undefined);
+			assert.equal(element.getUniqueId().indexOf('test_'), -1);
+		});
 	});
 });
 

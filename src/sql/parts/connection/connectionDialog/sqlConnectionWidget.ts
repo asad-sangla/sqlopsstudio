@@ -48,9 +48,9 @@ export class SqlConnectionWidget {
 		}
 
 		var	authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		this._sqlAuthTypeName = authTypeOption.categoryValues[0];
-		this._windowsAuthTypeName = authTypeOption.categoryValues[1];
-		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues, authTypeOption.defaultValue);
+		this._sqlAuthTypeName = authTypeOption.categoryValues[0].name;
+		this._windowsAuthTypeName = authTypeOption.categoryValues[1].name;
+		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
 	}
 
 	public createSqlConnectionWidget(): HTMLElement {

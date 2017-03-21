@@ -36,7 +36,8 @@ suite('SQL Actions Tests', () => {
 			userName: 'testUsername',
 			groupId: undefined,
 			getUniqueId: undefined,
-			providerName: 'MSSQL'
+			providerName: 'MSSQL',
+			options: {}
 		});
 		connection.id = 'testID';
 		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
@@ -80,7 +81,7 @@ suite('SQL Actions Tests', () => {
 			quickOpen.verify(x => x.input(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 
 			editorService.verify(x => x.newEditDataEditor(TypeMoq.It.isAnyString()), TypeMoq.Times.once());
-		}).then(() => done(), (err) => done(err) );
+		}).then(() => done(), (err) => done(err));
 	});
 
 	test('Edit Data Action (No Connection)', (done) => {
@@ -94,6 +95,6 @@ suite('SQL Actions Tests', () => {
 			quickOpen.verify(x => x.input(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 
 			editorService.verify(x => x.newEditDataEditor(TypeMoq.It.isAnyString()), TypeMoq.Times.exactly(2));
-		}).then(() => done(), (err) => done(err) );
+		}).then(() => done(), (err) => done(err));
 	});
 });

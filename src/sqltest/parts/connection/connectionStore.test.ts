@@ -18,6 +18,7 @@ import * as Utils from 'sql/parts/connection/node/utils';
 import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import data = require('data');
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { Emitter } from 'vs/base/common/event';
 
 suite('SQL ConnectionStore tests', () => {
 	let defaultNamedProfile: IConnectionProfile;
@@ -32,6 +33,8 @@ suite('SQL ConnectionStore tests', () => {
 	let maxRecent = 5;
 	let msSQLCapabilities: data.DataProtocolServerCapabilities;
 	let defaultNamedConnectionProfile: ConnectionProfile;
+	let onProviderRegistered = new Emitter<data.DataProtocolServerCapabilities>();
+
 
 	setup(() => {
 		defaultNamedProfile = Object.assign({}, {
@@ -42,9 +45,10 @@ suite('SQL ConnectionStore tests', () => {
 			password: 'asdf!@#$',
 			savePassword: true,
 			groupId: '',
-			groupName:'',
+			groupName: '',
 			getUniqueId: undefined,
-			providerName: 'MSSQL'
+			providerName: 'MSSQL',
+			options: {}
 		});
 
 		defaultUnnamedProfile = Object.assign({}, {
@@ -55,10 +59,10 @@ suite('SQL ConnectionStore tests', () => {
 			password: 'asdf!@#$',
 			savePassword: true,
 			groupId: '',
-			groupName:'',
+			groupName: '',
 			getUniqueId: undefined,
-			providerName: 'MSSQL'
-
+			providerName: 'MSSQL',
+			options: {}
 		});
 
 		let momento = new Memento('ConnectionManagement');
@@ -153,6 +157,7 @@ suite('SQL ConnectionStore tests', () => {
 		};
 		capabilities.push(msSQLCapabilities);
 		capabilitiesService.setup(x => x.getCapabilities()).returns(() => capabilities);
+		capabilitiesService.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);
 		connectionConfig.setup(x => x.getCapabilities('MSSQL')).returns(() => msSQLCapabilities);
 
 		defaultNamedConnectionProfile = new ConnectionProfile(msSQLCapabilities, defaultNamedProfile);

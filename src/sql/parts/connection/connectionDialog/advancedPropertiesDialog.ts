@@ -37,13 +37,13 @@ interface IAdvancedPropertyElement {
 
 class OptionPropertiesView extends FixedCollapsibleView {
 	private _treecontainer: HTMLElement;
-	constructor(private viewTitle: string, private _bodyContainer: HTMLElement, collapsed: boolean, initialBodySize: number,) {
+	constructor(private viewTitle: string, private _bodyContainer: HTMLElement, collapsed: boolean, initialBodySize: number, ) {
 		super({
 			expandedBodySize: initialBodySize,
 			headerSize: 22,
 			initialState: collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED,
 			ariaHeaderLabel: viewTitle
-			});
+		});
 	}
 
 	public renderHeader(container: HTMLElement): void {
@@ -96,7 +96,7 @@ export class AdvancedPropertiesDialog {
 			descriptionContainer.div({class:'modal-title'}, (propertyTitle) => {
 				this._propertyTitle = propertyTitle;
 			});
-			descriptionContainer.div({class:'advancedDialog-description-content'}, (propertyDescription) => {
+			descriptionContainer.div({ class: 'advancedDialog-description-content' }, (propertyDescription) => {
 				this._propertyDescription = propertyDescription;
 			});
 		});
@@ -149,7 +149,7 @@ export class AdvancedPropertiesDialog {
 				if (property.valueType === ConnectionOptionType.boolean) {
 					categoryValues = [this._trueInputValue, this._falseInputValue];
 				} else {
-					categoryValues = property.categoryValues;
+					categoryValues = property.categoryValues.map(c => c.name);
 				}
 				if (optionValue === null || optionValue === undefined) {
 					if (property.isRequired) {
@@ -181,7 +181,7 @@ export class AdvancedPropertiesDialog {
 		var elementBuilder: Builder = container;
 		while (elementBuilder.getHTMLElement()) {
 			var htmlElement = elementBuilder.getHTMLElement();
-			if(htmlElement.className === className) {
+			if (htmlElement.className === className) {
 				break;
 			}
 			elementBuilder = elementBuilder.child(0);
@@ -294,7 +294,7 @@ export class AdvancedPropertiesDialog {
 		this._options = options;
 		var firstProperty: string;
 		var containerGroup: Builder;
-		var propertiesContentbuilder: Builder = $().div({class:'advancedDialog-properties-groups'}, (container) => {
+		var propertiesContentbuilder: Builder = $().div({ class: 'advancedDialog-properties-groups' }, (container) => {
 			containerGroup = container;
 		});
 		var splitview = new SplitView(containerGroup.getHTMLElement());
