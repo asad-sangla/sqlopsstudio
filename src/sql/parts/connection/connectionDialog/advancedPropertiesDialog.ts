@@ -37,10 +37,10 @@ interface IAdvancedPropertyElement {
 
 class OptionPropertiesView extends FixedCollapsibleView {
 	private _treecontainer: HTMLElement;
-	constructor(private viewTitle: string, private _bodyContainer: HTMLElement, collapsed: boolean, initialBodySize: number, ) {
+	constructor(private viewTitle: string, private _bodyContainer: HTMLElement, collapsed: boolean, initialBodySize: number, headerSize: number) {
 		super({
 			expandedBodySize: initialBodySize,
-			headerSize: 22,
+			headerSize: headerSize,
 			initialState: collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED,
 			ariaHeaderLabel: viewTitle
 		});
@@ -79,6 +79,7 @@ export class AdvancedPropertiesDialog {
 	private _options: { [name: string]: any };
 	private _propertyRowSize = 31;
 	private _propertyCategoryPadding = 30;
+	private _categoryHeaderSize = 22;
 
 	constructor(container: HTMLElement, callbacks: IAdvancedDialogCallbacks) {
 		this._container = container;
@@ -160,7 +161,7 @@ export class AdvancedPropertiesDialog {
 					}
 				}
 				categoryValues.forEach(v => possibleInputs.push(v));
-				propertyWidget = new ConnectionDialogSelectBox(possibleInputs, optionValue);
+				propertyWidget = new ConnectionDialogSelectBox(possibleInputs, optionValue.toString());
 				ConnectionDialogHelper.appendInputSelectBox(rowContainer, propertyWidget);
 				inputElement = this.findElement(rowContainer, 'select-box');
 				break;
@@ -228,7 +229,11 @@ export class AdvancedPropertiesDialog {
 					delete this._options[key];
 				}
 				if (!ConnectionDialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value)) {
-					this._options[key] = propertyElement.advancedPropertyWidget.value;
+					if (propertyElement.advancedProperty.valueType === ConnectionOptionType.boolean) {
+						this._options[key] = (propertyElement.advancedPropertyWidget.value === this._trueInputValue) ? true : false;
+					} else {
+						this._options[key] = propertyElement.advancedPropertyWidget.value;
+					}
 				}
 			}
 		}
@@ -294,6 +299,7 @@ export class AdvancedPropertiesDialog {
 		this._options = options;
 		var firstProperty: string;
 		var containerGroup: Builder;
+		var layoutSize = 0;
 		var propertiesContentbuilder: Builder = $().div({ class: 'advancedDialog-properties-groups' }, (container) => {
 			containerGroup = container;
 		});
@@ -305,14 +311,15 @@ export class AdvancedPropertiesDialog {
 			});
 
 			var viewSize = this._propertyCategoryPadding + propertyOptions.length * this._propertyRowSize;
-			var categoryView = new OptionPropertiesView(category, bodyContainer.getHTMLElement(), false, viewSize);
+			layoutSize += (viewSize + this._categoryHeaderSize);
+			var categoryView = new OptionPropertiesView(category, bodyContainer.getHTMLElement(), false, viewSize, this._categoryHeaderSize);
 			splitview.addView(categoryView);
 
 			if (!firstProperty) {
 				firstProperty = propertyOptions[0].name;
 			}
 		}
-		splitview.layout(569);
+		splitview.layout(layoutSize);
 		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());
 		jQuery('#advancedDialogModal').modal({ backdrop: false, keyboard: true });
 		var firstPropertyWidget = this._advancedPropertiesMap[firstProperty].advancedPropertyWidget;

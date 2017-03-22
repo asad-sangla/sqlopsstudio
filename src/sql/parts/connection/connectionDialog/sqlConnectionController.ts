@@ -40,10 +40,9 @@ export class SqlConnectionController implements IConnectionComponentController {
 		var timeoutOption = this._model.options[timeoutPropertyName];
 		if (timeoutOption === undefined || timeoutOption === null) {
 			this._model.options[timeoutPropertyName] = 30;
-		}
-
-		if (this._advancedController) {
-			this._advancedController.updateAdvancedOption(this._model.options);
+			if (this._advancedController) {
+				this._advancedController.updateAdvancedOption(this._model.options);
+			}
 		}
 	}
 
