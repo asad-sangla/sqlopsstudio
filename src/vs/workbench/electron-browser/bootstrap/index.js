@@ -15,9 +15,11 @@ const remote = electron.remote;
 const ipc = electron.ipcRenderer;
 
 // SQL global imports
-// Set jQuery globals
-const jQuery = require('jquery');
-const $ = jQuery;
+// Require slickgrid
+require('slickgrid/slick.core');
+const Slick = window.Slick;
+require('slickgrid/slick.grid');
+require('slickgrid/slick.editors');
 
 // Set other globals
 const _ = require('underscore')._;
@@ -172,9 +174,6 @@ function main() {
 	const rootUrl = appRoot + '/out';
 
 	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
-	createScript(appRoot + '/node_modules/slickgrid/lib/jquery.event.drag-2.2.js', undefined);
-	createScript(appRoot + '/node_modules/slickgrid/lib/jquery-ui-1.9.2.js', undefined);
-	createScript(rootUrl + '/sql/parts/grid/load/loadSlickgrid.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/views/slick.dragrowselector.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/views/slick.autosizecolumn.js', undefined);
 
