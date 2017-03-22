@@ -25,7 +25,7 @@ suite('SQL ProviderConnectionInfo tests', () => {
 		groupId: undefined,
 		getUniqueId: undefined,
 		providerName: 'MSSQL',
-		options: {}
+		options: undefined
 	};
 
 	setup(() => {
@@ -90,6 +90,18 @@ suite('SQL ProviderConnectionInfo tests', () => {
 					isIdentity: true,
 					isRequired: true,
 					specialValueType: 4,
+					valueType: 0
+				},
+				{
+					name: 'encrypt',
+					displayName: undefined,
+					description: undefined,
+					groupName: undefined,
+					categoryValues: undefined,
+					defaultValue: undefined,
+					isIdentity: false,
+					isRequired: false,
+					specialValueType: undefined,
 					valueType: 0
 				}
 			]
@@ -157,6 +169,20 @@ suite('SQL ProviderConnectionInfo tests', () => {
 		assert.equal(conn.authenticationType, conn2.authenticationType);
 		assert.equal(conn.password, conn2.password);
 		assert.equal(conn.userName, conn2.userName);
+	});
+
+	test('constructor should initialize the options given a valid model with options', () => {
+		let options = {};
+		options['encrypt'] = 'test value';
+		let conn2 = Object.assign({}, connectionProfile, { options: options });
+		let conn = new ProviderConnectionInfo(msSQLCapabilities, conn2);
+
+		assert.equal(conn.serverName, conn2.serverName);
+		assert.equal(conn.databaseName, conn2.databaseName);
+		assert.equal(conn.authenticationType, conn2.authenticationType);
+		assert.equal(conn.password, conn2.password);
+		assert.equal(conn.userName, conn2.userName);
+		assert.equal(conn.options['encrypt'], 'test value');
 	});
 
 	test('getUniqueId should create a valid unique id', () => {

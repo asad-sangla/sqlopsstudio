@@ -24,4 +24,5 @@ export interface IConnectionConfig {
 	changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void>;
 	setCachedMetadata(cachedMetaData: data.DataProtocolServerCapabilities[]): void;
 	getCapabilities(providerName: string);
+	getGroupName(groupId: string): string;
 }

@@ -68,7 +68,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private handleOnConnect(params: INewConnectionParams): void {
 		this.handleProviderOnConnecting();
 		var result = this.sqlUiController.validateConnection();
-		if(result.isValid) {
+		if (result.isValid) {
 			if (params && params.connectionType === ConnectionType.default) {
 				this.handleDefaultOnConnect(result.connection);
 			} else if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
@@ -166,7 +166,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this.sqlUiController.handleOnConnecting();
 	}
 
-	private UpdateModelServerCapabilities(model: IConnectionProfile, providerName: string) {
+	private UpdateModelServerCapabilities(model: IConnectionProfile) {
+		let providerName = model ? model.providerName : 'MSSQL';
+		providerName = providerName ? providerName : 'MSSQL';
+		if (model && !model.providerName) {
+			model.providerName = providerName;
+		}
 		let serverCapabilities = this._capabilitiesMaps[providerName];
 		this._model = new ConnectionProfile(serverCapabilities, model);
 	}
@@ -184,7 +189,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			});
 		}
 
-		this.UpdateModelServerCapabilities(model, model ? model.providerName : 'MSSQL');
+		this.UpdateModelServerCapabilities(model);
 
 		return new TPromise<void>(() => {
 			this.doShowDialog(params);

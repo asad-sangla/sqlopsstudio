@@ -227,15 +227,8 @@ suite('SQL ConnectionConfig tests', () => {
 
 		workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
 		configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		let metadataConfig: IWorkspaceConfigurationValue<IConnectionProfileGroup[]> = {
-			workspace: [],
-			user: [],
-			value: [],
-			default: []
-		};
 		let nothing: void;
 		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));;
-		workspaceConfigurationServiceMock.setup(x => x.lookup(Constants.connectionMetadata)).returns(() => metadataConfig);
 	});
 
 	function groupsAreEqual(groups1: IConnectionProfileGroup[], groups2: IConnectionProfileGroup[]): Boolean {
@@ -482,7 +475,7 @@ suite('SQL ConnectionConfig tests', () => {
 			c.options[oldOptionName] = 'test';
 			return c;
 		});
-		let configValue = Object.assign(connections, {user: connectionUsingOldMetadata});
+		let configValue = Object.assign(connections, { user: connectionUsingOldMetadata });
 		let capabilitiesService2: TypeMoq.Mock<CapabilitiesService> = TypeMoq.Mock.ofType(CapabilitiesService);
 		capabilitiesService2.setup(x => x.getCapabilities()).returns(() => []);
 		capabilitiesService2.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);

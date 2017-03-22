@@ -23,6 +23,7 @@ export class ConnectionConfig implements IConnectionConfig {
 
 	private _providerCapabilitiesMap: { [providerName: string]: data.DataProtocolServerCapabilities };
 	private _providerCachedCapabilitiesMap: { [providerName: string]: data.DataProtocolServerCapabilities };
+	private _groupsMap: { [groupId: string]: string };
 	/**
 	 * Constructor.
 	 */
@@ -34,6 +35,7 @@ export class ConnectionConfig implements IConnectionConfig {
 	) {
 		this._providerCapabilitiesMap = {};
 		this._providerCachedCapabilitiesMap = {};
+		this._groupsMap = {};
 	}
 
 	public setCachedMetadata(cachedMetaData: data.DataProtocolServerCapabilities[]): void {
@@ -64,6 +66,27 @@ export class ConnectionConfig implements IConnectionConfig {
 			return g;
 		});
 		return allGroups;
+	}
+
+	/**
+	 * Returns group name for given group id
+	 * @param groupId Group Id
+	 */
+	public getGroupName(groupId: string): string {
+		let groupName: string = '';
+		if (groupId in this._groupsMap) {
+			groupName = this._groupsMap[groupId];
+		} else {
+			let groups = this.getAllGroups();
+			groups.forEach(group => {
+				this._groupsMap[group.id] = group.name;
+				if (group.id === groupId) {
+					groupName = group.name;
+				}
+			});
+		}
+
+		return groupName;
 	}
 
 	/**
@@ -114,7 +137,6 @@ export class ConnectionConfig implements IConnectionConfig {
 					profiles = [];
 				}
 
-				let capabilities = this._capabilitiesService.getCapabilities();
 				let providerCapabilities = this.getCapabilities(profile.providerName);
 				let connectionProfile = this.getConnectionProfileInstance(profile, groupId);
 				let newProfile = ConnectionProfile.convertToProfileStore(providerCapabilities, connectionProfile);

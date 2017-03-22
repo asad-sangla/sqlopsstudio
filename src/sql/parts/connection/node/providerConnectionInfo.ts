@@ -23,6 +23,12 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 			this.providerName = serverCapabilities.providerName;
 		}
 		if (model) {
+			if (model.options && this._serverCapabilities) {
+				this._serverCapabilities.connectionProvider.options.forEach(option => {
+					let value = model.options[option.name];
+					this.options[option.name] = value;
+				});
+			}
 			this.serverName = model.serverName;
 			this.authenticationType = model.authenticationType;
 			this.databaseName = model.databaseName;
@@ -113,6 +119,8 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 			idNames = ['0', '1', '2', '3'];
 		}
 
+		idNames = idNames.filter(x => x !== undefined);
+
 		//Sort to make sure with the ids at the same order every time otherwise the ids would be different
 		idNames.sort();
 
@@ -123,7 +131,7 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 			idValues.push(value);
 		}
 
-		return this.providerName + '_' + idValues.join('_');
+		return this.providerName + '_' + idValues.join('_') + '_';
 	}
 
 	public getSpecialTypeOptionName(type: number): string {

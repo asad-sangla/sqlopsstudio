@@ -214,6 +214,9 @@ export class ConnectionStore {
 				this._capabilitiesService.onProviderRegisteredEvent((serverCapabilities) => {
 					connectionProfile.onProviderRegistered(serverCapabilities);
 				});
+				if (!connectionProfile.groupName && connectionProfile.groupId) {
+					connectionProfile.groupName = this._connectionConfig.getGroupName(connectionProfile.groupId);
+				}
 				return connectionProfile;
 			} else {
 				return undefined;

@@ -13,7 +13,6 @@ export const outputChannelName = 'MSSQL';
 export const connectionConfigFilename = 'settings.json';
 export const connectionsArrayName = 'datasource.connections';
 export const connectionGroupsArrayName = 'datasource.connectionGroups';
-export const connectionMetadata = 'datasource.metadata';
 
 export const cmdRunQuery = 'extension.runQuery';
 export const cmdCancelQuery = 'extension.cancelQuery';
@@ -113,8 +112,8 @@ export const msgPromptClearRecentConnections = 'Confirm to clear recent connecti
 export const extensionActivated = 'activated.';
 export const extensionDeactivated = 'de-activated.';
 export const msgOpenSqlFile = 'To use this command, Open a .sql file -or- ' +
-                                'Change editor language to "SQL" -or- ' +
-                                'Select T-SQL text in the active SQL editor.';
+	'Change editor language to "SQL" -or- ' +
+	'Select T-SQL text in the active SQL editor.';
 
 export const recentConnectionsPlaceholder = 'Choose a connection profile from the list below';
 export const msgNoConnectionsInSettings = 'To use this command, add connection profile to User Settings.';

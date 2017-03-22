@@ -191,7 +191,7 @@ suite('SQL ConnectionStore tests', () => {
 		promise.then(() => {
 			credentialStore.verify(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(numCreds));
 			let recentConnections = connectionStore.getActiveConnections();
-			assert.equal(numCreds, recentConnections.length);
+			assert.equal(numCreds, recentConnections.length, `expect number of active connection ${numCreds}|${recentConnections.length} `);
 			done();
 		}, err => {
 			// Must call done here so test indicates it's finished if errors occur
