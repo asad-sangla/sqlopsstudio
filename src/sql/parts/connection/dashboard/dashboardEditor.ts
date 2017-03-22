@@ -12,16 +12,18 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { append, $ } from 'vs/base/browser/dom';
 import { DashboardInput } from './dashboardInput';
-import { AppModule } from './app.module';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { DashboardModule } from './dashboard.module';
+import { IConnectionManagementService, DashboardParameterWrapper } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 
 declare let AngularPlatformBrowserDynamic;
 
+
 export class DashboardEditor extends BaseEditor {
+
+	private static _parameterWrapper: DashboardParameterWrapper = new DashboardParameterWrapper();
 
 	public static ID: string = 'workbench.editor.connectiondashboard';
 
@@ -56,38 +58,40 @@ export class DashboardEditor extends BaseEditor {
 	}
 
 	public setInput(input: DashboardInput, options: EditorOptions): TPromise<void> {
-		super.setInput(input, options);
+		if (this.input instanceof DashboardInput && this.input.matches(input)) {
+			return TPromise.as(undefined);
+		}
 
-		this.bootstrapAngular();
+		this.bootstrapAngular(input);
 
-		return TPromise.as<void>(null);
+		return super.setInput(input, options);
 	}
 
 	/**
 	 * Load the angular components and record for this input that we have done so
 	 */
-	private bootstrapAngular(): void {
-		let input = <DashboardInput>this.input;
-		if (!input.hasInitialized) {
-			let connection: IConnectionProfile = input.getConnectionProfile();
-			let ownerUri: string = input.getUri();
+	private bootstrapAngular(input: DashboardInput): void {
 
-			input.setHasInitialized();
+		DashboardEditor._parameterWrapper.ownerUri = input.getUri();
+		DashboardEditor._parameterWrapper.connection = input.getConnectionProfile();
 
-			const parent = this.getContainer().getHTMLElement();
-			append(parent, $('connection-dashboard'));
+		input.setHasInitialized();
 
-			// Bootstrap the angular content
-			let providers = [
-				{ provide: 'OwnerUri', useValue: ownerUri },
-				{ provide: 'ConnectionProfile', useValue: connection },
-				{ provide: 'ConnectionService', useValue: this._connectionService },
-				{ provide: 'MetadataService', useValue: this._metadataService },
-				{ provide: 'ScriptingService', useValue: this._scriptingService },
-				{ provide: 'QueryEditorService', useValue: this._queryEditorService },
+		const parent = this.getContainer().getHTMLElement();
+		append(parent, $('connection-dashboard'));
 
-			];
-			AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
-		}
+		// Bootstrap the angular content
+		let providers = [
+			{ provide: 'ConnectionService', useValue: this._connectionService },
+			{ provide: 'MetadataService', useValue: this._metadataService },
+			{ provide: 'ScriptingService', useValue: this._scriptingService },
+			{ provide: 'QueryEditorService', useValue: this._queryEditorService },
+			{ provide: 'DashboardParameters', useValue: DashboardEditor._parameterWrapper }
+		];
+		AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(DashboardModule);
+	}
+
+	public dispose(): void {
+		super.dispose();
 	}
 }

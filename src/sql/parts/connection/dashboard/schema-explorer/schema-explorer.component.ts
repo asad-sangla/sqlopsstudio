@@ -49,8 +49,11 @@ export class SchemaExplorerComponent implements OnInit {
 	 * Select the top rows from an object
 	 */
 	public scriptSelect(metadata: data.ObjectMetadata): void {
-		let selectScript: string = 'SELECT TOP 1000 *\nFROM ' + metadata.schema + '.' + metadata.name;
-		this.queryEditorService.newSqlEditor(selectScript);
+		this.scriptingService.scriptAsSelect('1', this.ownerUri, metadata).then(result => {
+			if (result && result.script) {
+				this.queryEditorService.newSqlEditor(result.script);
+			}
+		});
 	}
 
 	/**

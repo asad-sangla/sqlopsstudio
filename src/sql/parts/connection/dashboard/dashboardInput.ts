@@ -28,11 +28,15 @@ export class DashboardInput extends EditorInput {
 	}
 
 	public getName(): string {
-		return 'Connection Dashboard';
+		return this._connection.serverName + ':' + this._connection.databaseName;
 	}
 
 	public getUri(): string {
 		return this._uri;
+	}
+
+	public supportsSplitEditor(): boolean {
+		return false;
 	}
 
 	public getConnectionProfile(): IConnectionProfile {

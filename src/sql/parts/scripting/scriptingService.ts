@@ -18,6 +18,8 @@ export interface IScriptingService {
 
 	scriptAsCreate(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult>;
 
+	scriptAsSelect(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult>;
+
 	/**
 	 * Register a scripting provider
 	 */
@@ -39,6 +41,15 @@ export class ScriptingService implements IScriptingService {
 		let provider = this._providers[providerId];
 		if (provider) {
 			return provider.scriptAsCreate(connectionUri, metadata);
+		}
+
+		return Promise.resolve(undefined);
+	}
+
+	public scriptAsSelect(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.scriptAsSelect(connectionUri, metadata);
 		}
 
 		return Promise.resolve(undefined);

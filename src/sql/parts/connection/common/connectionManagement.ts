@@ -109,6 +109,12 @@ export interface IConnectableInput {
 	onDisconnect(): void;
 }
 
+export class DashboardParameterWrapper {
+	public ownerUri: string;
+
+	public connection: IConnectionProfile;
+}
+
 export enum ConnectionType {
 	default = 0,
 	queryEditor = 1
