@@ -76,7 +76,7 @@ export class AdvancedPropertiesDialog {
 	private _propertyTitle: Builder;
 	private _propertyDescription: Builder;
 	private _dialog: ModalDialogBuilder;
-	private _options: { [name: string]: string };
+	private _options: { [name: string]: any };
 	private _propertyRowSize = 31;
 	private _propertyCategoryPadding = 30;
 
@@ -290,7 +290,7 @@ export class AdvancedPropertiesDialog {
 		this._callbacks.onClose();
 	}
 
-	public open(connectionPropertiesMaps: { [category: string]:  data.ConnectionOption[] }, options: { [name: string]: string }) {
+	public open(connectionPropertiesMaps: { [category: string]:  data.ConnectionOption[] }, options: { [name: string]: any }) {
 		this._options = options;
 		var firstProperty: string;
 		var containerGroup: Builder;

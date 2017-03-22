@@ -6,8 +6,10 @@
 .monaco-shell .advanced-dialog .modal-dialog  {
 	margin: auto auto auto auto;
 	height: calc(100% - 23px);
-	right: 0;
+	width: 500px;
+	right: -18px;
 	position: absolute;
+	overflow-y: hidden;
 }
 
 .monaco-shell .advanced-dialog .modal-body{
@@ -16,7 +18,7 @@
 }
 
 .advancedDialog-label {
-	width: 150px;
+	width: 120px;
 	padding-bottom: 5px;
 }
 

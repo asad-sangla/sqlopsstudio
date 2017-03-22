@@ -6,11 +6,10 @@
 'use strict';
 
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { IConnectionComponentCallbacks, IConnectionComponentController } from 'sql/parts/connection/connectionDialog/connectionDialogService';
+import { IConnectionComponentCallbacks, IConnectionComponentController, IConnectionResult } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import { SqlConnectionWidget } from 'sql/parts/connection/connectionDialog/sqlConnectionWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import data = require('data');
 
 export class SqlConnectionController implements IConnectionComponentController {
@@ -19,48 +18,71 @@ export class SqlConnectionController implements IConnectionComponentController {
 	private _callback: IConnectionComponentCallbacks;
 	private _sqlConnectionWidget: SqlConnectionWidget;
 	private _advancedController: AdvancedPropertiesController;
-	private _model: ConnectionProfile;
+	private _model: IConnectionProfile;
+	private _providerOptions: data.ConnectionOption[];
 
 	constructor(container: HTMLElement, connectionManagementService: IConnectionManagementService, sqlCapabilities: data.DataProtocolServerCapabilities, callback: IConnectionComponentCallbacks) {
 		this._container = container;
 		this._connectionManagementService = connectionManagementService;
 		this._callback = callback;
-		var options: data.ConnectionOption[] = sqlCapabilities.connectionProvider.options;
-		var specialOptions = options.filter(
+		this._providerOptions = sqlCapabilities.connectionProvider.options;
+		var specialOptions = this._providerOptions.filter(
 			(property) => (property.specialValueType !== null && property.specialValueType !== undefined));
 		this._sqlConnectionWidget = new SqlConnectionWidget(specialOptions, {
 			onSetConnectButton: (enable: boolean) => this._callback.onSetConnectButton(enable),
 			onAdvancedProperties: () => this.handleOnAdvancedProperties(),
+			onSetAzureTimeOut: () => this.handleonSetAzureTimeOut()
 		});
+	}
+
+	private handleonSetAzureTimeOut(): void {
+		var timeoutPropertyName = 'connectTimeout';
+		var timeoutOption = this._model.options[timeoutPropertyName];
+		if (timeoutOption === undefined || timeoutOption === null) {
+			this._model.options[timeoutPropertyName] = 30;
+		}
+
+		if (this._advancedController) {
+			this._advancedController.updateAdvancedOption(this._model.options);
+		}
 	}
 
 	private handleOnAdvancedProperties(): void {
 		if (!this._advancedController) {
 			this._advancedController = new AdvancedPropertiesController(() => this._sqlConnectionWidget.focusOnAdvancedButton());
 		}
-		var connectionProperties = this._model.getProviderOptions();
-		if (!!connectionProperties) {
-			var advancedOption = connectionProperties.filter(
-				(property) => (property.specialValueType === undefined || property.specialValueType === null));
-			this._advancedController.showDialog(advancedOption, this._container, this._model.options);
-		}
+		var advancedOption = this._providerOptions.filter(
+			(property) => (property.specialValueType === undefined || property.specialValueType === null));
+		this._advancedController.showDialog(advancedOption, this._container, this._model.options);
 	}
 
 	public showSqlUiComponent(): HTMLElement {
 		return this._sqlConnectionWidget.createSqlConnectionWidget();
 	}
 
-	public initDialog(model: ConnectionProfile): void {
-		this._model = model;
-		this._model.setOptionValue('applicationName', 'carbon');
+	public initDialog(connectionInfo: IConnectionProfile): void {
+		this._model = connectionInfo;
+		this._model.options['applicationName'] = 'carbon';
 		this._sqlConnectionWidget.initDialog(this._model);
 	}
 
-	public validateConnection(model: IConnectionProfile): boolean {
-		return this._sqlConnectionWidget.connect(model);
+	public validateConnection(): IConnectionResult {
+		return {isValid: this._sqlConnectionWidget.connect(this._model), connection: this._model };
 	}
 
 	public fillInConnectionInputs(connectionInfo: IConnectionProfile): void {
+		this._model = connectionInfo;
 		this._sqlConnectionWidget.fillInConnectionInputs(connectionInfo);
+		if (this._advancedController) {
+			this._advancedController.updateAdvancedOption(this._model.options);
+		}
+	}
+
+	public handleOnConnecting(): void {
+		this._sqlConnectionWidget.handleOnConnecting();
+	}
+
+	public handleResetConnection(): void {
+		this._sqlConnectionWidget.handleResetConnection();
 	}
 }

@@ -27,11 +27,12 @@ export class SqlConnectionWidget {
 	private _databaseNameInputBox: InputBox;
 	private _userNameInputBox: InputBox;
 	private _passwordInputBox: InputBox;
-	private _rememberPassword: Checkbox;
+	private _rememberPasswordCheckBox: Checkbox;
 	private _advancedButton: Button;
+	private _saveConnectionCheckbox: Checkbox;
 	private _callbacks: IConnectionComponentCallbacks;
-	private _windowsAuthTypeName: string;
-	private _sqlAuthTypeName: string;
+	private _windowsAuthTypeDisplayName: string;
+	private _sqlAuthTypeDisplayName: string;
 	private _authenticationOptions: string[];
 	private _authTypeSelectBox: ConnectionDialogSelectBox;
 	private _toDispose: lifecycle.IDisposable[];
@@ -48,9 +49,9 @@ export class SqlConnectionWidget {
 		}
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		this._sqlAuthTypeName = authTypeOption.categoryValues[0].name;
-		this._windowsAuthTypeName = authTypeOption.categoryValues[1].name;
-		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.name), authTypeOption.defaultValue);
+		this._sqlAuthTypeDisplayName = authTypeOption.categoryValues[0].displayName;
+		this._windowsAuthTypeDisplayName = authTypeOption.categoryValues[1].displayName;
+		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
 	}
 
 	public createSqlConnectionWidget(): HTMLElement {
@@ -75,11 +76,12 @@ export class SqlConnectionWidget {
 		this._passwordInputBox = ConnectionDialogHelper.appendInputBox(
 			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.password].displayName, 'connection-label', 'connection-input'));
 		this._passwordInputBox.inputElement.type = 'password';
-		this._rememberPassword = this.appendCheckbox(this._tableContainer, 'Remember Password', 'connection-checkbox', 'connection-input');
+		this._rememberPasswordCheckBox = this.appendCheckbox(this._tableContainer, 'Remember Password', 'connection-checkbox', 'connection-input', false);
 		this._databaseNameInputBox = ConnectionDialogHelper.appendInputBox(
 			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.databaseName].displayName, 'connection-label', 'connection-input'));
 		this._serverGroupInputBox = ConnectionDialogHelper.appendInputBox(
 			ConnectionDialogHelper.appendRow(this._tableContainer, 'Add to Server group', 'connection-label', 'connection-input'));
+		this._saveConnectionCheckbox = this.appendCheckbox(this._tableContainer, 'Save Connection', 'connection-checkbox', 'connection-input', true, (viaKeyboard: boolean) => this.onSaveConnectionChecked(viaKeyboard));
 		this._advancedButton = this.createAdvancedButton(this._tableContainer, 'Advanced...');
 	}
 
@@ -101,7 +103,7 @@ export class SqlConnectionWidget {
 		return button;
 	}
 
-	private appendCheckbox(container: Builder, label: string, checkboxClass: string, cellContainerClass: string): Checkbox {
+	private appendCheckbox(container: Builder, label: string, checkboxClass: string, cellContainerClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
 		let checkbox: Checkbox;
 		container.element('tr', {}, (rowContainer) => {
 			rowContainer.element('td');
@@ -109,9 +111,11 @@ export class SqlConnectionWidget {
 				checkbox = new Checkbox({
 					actionClassName: checkboxClass,
 					title: label,
-					isChecked: false,
+					isChecked: isChecked,
 					onChange: (viaKeyboard) => {
-						//todo when the remember password checkbox is changed
+						if (onCheck) {
+							onCheck(viaKeyboard);
+						}
 					}
 				});
 				inputCellContainer.getHTMLElement().appendChild(checkbox.domNode);
@@ -145,9 +149,17 @@ export class SqlConnectionWidget {
 		}));
 	}
 
+	private onSaveConnectionChecked(viaKeyboard: boolean) {
+		if (this._saveConnectionCheckbox.checked) {
+			this._serverGroupInputBox.enable();
+		} else {
+			this._serverGroupInputBox.disable();
+		}
+	}
+
 	private onAuthTypeSelected(selectedAuthType: string) {
 		switch (selectedAuthType) {
-			case this._windowsAuthTypeName:
+			case this._windowsAuthTypeDisplayName:
 				this._userNameInputBox.disable();
 				this._passwordInputBox.disable();
 				this._userNameInputBox.hideMessage();
@@ -155,7 +167,7 @@ export class SqlConnectionWidget {
 				this._userNameInputBox.value = '';
 				this._passwordInputBox.value = '';
 				break;
-			case this._sqlAuthTypeName:
+			case this._sqlAuthTypeDisplayName:
 				this._userNameInputBox.enable();
 				this._passwordInputBox.enable();
 			default:
@@ -165,6 +177,13 @@ export class SqlConnectionWidget {
 
 	private serverNameChanged(serverName: string) {
 		this._callbacks.onSetConnectButton(!ConnectionDialogHelper.isEmptyString(serverName));
+		if (this.isSubsetString(serverName.toLocaleLowerCase(), 'database.windows.net')) {
+			this._callbacks.onSetAzureTimeOut();
+		}
+	}
+
+	private isSubsetString(str: string, subStr: string) {
+		return str.indexOf(subStr) !== -1;
 	}
 
 	private userNameChanged(userName: string) {
@@ -199,19 +218,25 @@ export class SqlConnectionWidget {
 			this._userNameInputBox.value = this.getModelValue(connectionInfo.userName);
 			this._passwordInputBox.value = this.getModelValue(connectionInfo.password);
 			this._serverGroupInputBox.value = this.getModelValue(connectionInfo.groupName);
-			this._rememberPassword.checked = !ConnectionDialogHelper.isEmptyString(connectionInfo.password);
+			this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
 			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
-				switch (connectionInfo.authenticationType) {
-					case 'SqlLogin':
-						this._authTypeSelectBox.selectWithOptionName(this._sqlAuthTypeName);
-						break;
-					default:
-						this._authTypeSelectBox.selectWithOptionName(this._windowsAuthTypeName);
-						break;
-				}
+				var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
+				authTypeOption.categoryValues.forEach(c => {
+					if(c.name === connectionInfo.authenticationType) {
+						this._authTypeSelectBox.selectWithOptionName(c.displayName);
+					}
+				});
 				this.onAuthTypeSelected(this._authTypeSelectBox.value);
 			}
 		}
+	}
+
+	public handleOnConnecting(): void {
+		this._advancedButton.enabled = false;
+	}
+
+	public handleResetConnection(): void {
+		this._advancedButton.enabled = true;
 	}
 
 	public get serverGroup(): string {
@@ -235,12 +260,14 @@ export class SqlConnectionWidget {
 	}
 
 	public get authenticationType(): string {
-		switch (this._authTypeSelectBox.value) {
-			case this._sqlAuthTypeName:
-				return 'SqlLogin';
-			default:
-				return 'Integrated';
-		}
+		var authType: string;
+		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
+		authTypeOption.categoryValues.forEach(c => {
+			if(c.displayName === this._authTypeSelectBox.value) {
+				authType = c.name;
+			}
+		});
+		return authType;
 	}
 
 	public set authenticationType(authenticationType: string) {
@@ -253,7 +280,7 @@ export class SqlConnectionWidget {
 	private validateInputs(): boolean {
 		let validInputs = true;
 		let option: data.ConnectionOption;
-		if (this._authTypeSelectBox.value === this._sqlAuthTypeName) {
+		if (this._authTypeSelectBox.value === this._sqlAuthTypeDisplayName) {
 			option = this._optionsMaps[ConnectionOptionSpecialType.userName];
 			if (ConnectionDialogHelper.isEmptyString(this.userName) && option.isRequired) {
 				validInputs = false;
@@ -281,7 +308,7 @@ export class SqlConnectionWidget {
 			model.userName = this.userName;
 			model.password = this.password;
 			model.authenticationType = this.authenticationType;
-			model.savePassword = this._rememberPassword.checked;
+			model.savePassword = this._rememberPasswordCheckBox.checked;
 			model.groupName = this.serverGroup;
 			model.groupId = undefined;
 		}

@@ -4,6 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 /* Theming */
+.monaco-shell .modal  {
+	background-color: rgba(0,0,0,0.4);
+}
+
+.vs-dark.monaco-shell .modal  {
+	background-color: rgba(74, 73, 73, 0.4);
+}
 
 .vs-dark.monaco-shell .modal-content{
 	background-color: #252526;
@@ -16,13 +23,16 @@
 .monaco-shell .connection-dialog-widget .modal-dialog  {
 	margin: auto auto auto auto;
 	height: calc(100% - 23px);
-	right: 0;
+	width: 500px;
+	right: -18px;
 	position: absolute;
+	overflow-y: hidden;
 }
 
 .monaco-shell .modal-content{
 	background-color: #F3F3F3;
 	height: 100%;
+	width: calc(100% - 20px);
 	font-size: 11px;
 }
 
@@ -41,7 +51,7 @@
 }
 
 .connection-label {
-	width: 100px;
+	width: 80px;
 	padding-bottom: 5px;
 }
 
@@ -82,7 +92,7 @@
 }
 
 .connection-dialog-widget .connection-recent {
-	height: calc(100% - 350px);
+	height: calc(100% - 380px);
 	padding: 15px;
 	overflow-y: auto;
 }
@@ -94,6 +104,7 @@
 .connection-dialog-widget .connection-provider-info {
 	padding-right: 15px;
 	padding-left: 15px;
+	overflow-y: hidden;
 }
 
 .connection-dialog-widget .dialogErrorMessage {
@@ -133,4 +144,5 @@
 	padding-right: 15px;
 	padding-left: 15px;
 	padding-top: 15px;
+	overflow-y: hidden;
 }

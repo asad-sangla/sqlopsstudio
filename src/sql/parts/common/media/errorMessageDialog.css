@@ -3,6 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+.monaco-shell .modal  {
+	background-color: rgba(0,0,0,0.4);
+}
+
+.vs-dark.monaco-shell .modal  {
+	background-color: rgba(74, 73, 73, 0.4);
+}
+
 .error-dialog .modal-content {
 	position: relative;
 	background-color: #fff;

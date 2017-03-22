@@ -30,6 +30,7 @@ export interface IConnectionDialogCallbacks {
 	onShowUiComponent: () => HTMLElement;
 	onInitDialog: () => void;
 	onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => void;
+	onResetConnection: () => void;
 }
 
 export class ConnectionDialogWidget {
@@ -126,6 +127,7 @@ export class ConnectionDialogWidget {
 	}
 
 	public close() {
+		this.resetConnection();
 		this.clearRecentConnection();
 		jQuery('#connectionDialogModal').modal('hide');
 	}
@@ -213,8 +215,13 @@ export class ConnectionDialogWidget {
 
 	public showError(err: string) {
 		this._dialog.showError(err);
+		this.resetConnection();
+	}
+
+	public resetConnection() {
 		this._dialog.hideSpinner();
 		this._connectButton.enabled = true;
+		this._callbacks.onResetConnection();
 	}
 
 	public get newConnectionParams(): INewConnectionParams {

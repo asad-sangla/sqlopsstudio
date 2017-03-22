@@ -21,16 +21,24 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import Severity from 'vs/base/common/severity';
 import data = require('data');
 
+export interface IConnectionResult {
+	isValid: boolean;
+	connection: IConnectionProfile;
+}
+
 export interface IConnectionComponentCallbacks {
 	onSetConnectButton: (enable: boolean) => void;
 	onAdvancedProperties?: () => void;
+	onSetAzureTimeOut?: () => void;
 }
 
 export interface IConnectionComponentController {
 	showSqlUiComponent(): HTMLElement;
-	initDialog(model: ConnectionProfile): void;
-	validateConnection(model: IConnectionProfile): boolean;
+	initDialog(model: IConnectionProfile): void;
+	validateConnection(): IConnectionResult;
 	fillInConnectionInputs(connectionInfo: IConnectionProfile): void;
+	handleOnConnecting(): void;
+	handleResetConnection(): void;
 }
 
 export class ConnectionDialogService implements IConnectionDialogService {
@@ -58,14 +66,16 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleOnConnect(params: INewConnectionParams): void {
-		if (this.sqlUiController.validateConnection(this._model)) {
+		this.handleProviderOnConnecting();
+		var result = this.sqlUiController.validateConnection();
+		if(result.isValid) {
 			if (params && params.connectionType === ConnectionType.default) {
-				this.handleDefaultOnConnect();
+				this.handleDefaultOnConnect(result.connection);
 			} else if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
 				if (params.disconnectExistingConnection) {
-					this.handleQueryEditorOnChangeConnection(params);
+					this.handleQueryEditorOnChangeConnection(params, result.connection);
 				} else {
-					this.handleQueryEditorOnConnect(params);
+					this.handleQueryEditorOnConnect(params, result.connection);
 				}
 			}
 		} else {
@@ -77,34 +87,37 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
 			params.input.onConnectReject();
 		}
+		this._connectionDialog.resetConnection();
 	}
 
-	private handleDefaultOnConnect(): void {
-		this._connectionManagementService.addConnectionProfile(this._model).then(connected => {
+	private handleDefaultOnConnect(connection: IConnectionProfile): void {
+		this._connectionManagementService.addConnectionProfile(connection).then(connected => {
 			if (connected) {
 				this._connectionDialog.close();
 			}
 		}).catch(err => {
 			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
+			this._connectionDialog.resetConnection();
 		});
 	}
 
-	private handleQueryEditorOnConnect(params: INewConnectionParams): void {
-		this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, this._model).then(connected => {
+	private handleQueryEditorOnConnect(params: INewConnectionParams, connection: IConnectionProfile): void {
+		this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, connection).then(connected => {
 			if (connected) {
 				this._connectionDialog.close();
 			}
 
 		}).catch(err => {
-			this._connectionDialog.showError(err);
+			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
+			this._connectionDialog.resetConnection();
 		});
 	}
 
-	private handleQueryEditorOnChangeConnection(params: INewConnectionParams): void {
+	private handleQueryEditorOnChangeConnection(params: INewConnectionParams, connection: IConnectionProfile): void {
 		this._connectionManagementService.disconnectEditor(params.input, true)
 			.then(disconnected => {
 				if (disconnected) {
-					return this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, this._model);
+					return this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, connection);
 				}
 				return false;
 			})
@@ -113,7 +126,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 					this._connectionDialog.close();
 				}
 			}).catch(err => {
-				this._connectionDialog.showError(err);
+				this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
+				this._connectionDialog.resetConnection();
 			});
 	}
 
@@ -142,6 +156,14 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this.sqlUiController.fillInConnectionInputs(connectionInfo);
 	}
 
+	private handleProviderOnResetConnection(): void {
+		this.sqlUiController.handleResetConnection();
+	}
+
+	private handleProviderOnConnecting(): void {
+		this.sqlUiController.handleOnConnecting();
+	}
+
 	private UpdateModelServerCapabilities(model: IConnectionProfile, providerName: string) {
 		let serverCapabilities = this._capabilitiesMaps[providerName];
 		this._model = new ConnectionProfile(serverCapabilities, model);
@@ -150,12 +172,15 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	public showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
 		this._connectionManagementService = connectionManagementService;
 
-		let capabilities = this._capabilitiesService.getCapabilities();
-		capabilities.forEach(c => {
-			this._providerTypes.push(c.providerDisplayName);
-			this._capabilitiesMaps[c.providerName] = c;
-			this._providerNameToDisplayNameMap[c.providerName] = c.providerDisplayName;
-		});
+		// only create the provider maps first time the dialog gets called
+		if (this._providerTypes.length === 0) {
+			let capabilities = this._capabilitiesService.getCapabilities();
+			capabilities.forEach(c => {
+				this._providerTypes.push(c.providerDisplayName);
+				this._capabilitiesMaps[c.providerName] = c;
+				this._providerNameToDisplayNameMap[c.providerName] = c.providerDisplayName;
+			});
+		}
 
 		this.UpdateModelServerCapabilities(model, model ? model.providerName : 'MSSQL');
 
@@ -173,7 +198,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				onConnect: () => this.handleOnConnect(this._connectionDialog.newConnectionParams),
 				onShowUiComponent: () => this.handleShowUiComponent(),
 				onInitDialog: () => this.handleInitDialog(),
-				onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => this.handleFillInConnectionInputs(connectionInfo)
+				onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => this.handleFillInConnectionInputs(connectionInfo),
+				onResetConnection: () => this.handleProviderOnResetConnection()
 			});
 			this._connectionDialog.create(this._providerTypes, this._providerNameToDisplayNameMap[this._model.providerName]);
 		}

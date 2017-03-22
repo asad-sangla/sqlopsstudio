@@ -12,6 +12,7 @@
 
 .custom-checkbox.connection-checkbox.checked {
 	background: url('check.svg') center center no-repeat;
+	border-color:#3C3C3C;
 }
 
 .custom-checkbox.connection-checkbox.unchecked {
@@ -20,6 +21,7 @@
 
 .vs-dark.monaco-shell .custom-checkbox.connection-checkbox.checked {
 	background: url('check.svg') center center no-repeat;
+	border-color:#3C3C3C;
 }
 
 .vs-dark.monaco-shell .custom-checkbox.connection-checkbox.unchecked {
