@@ -59,6 +59,8 @@ export interface IConnectionManagementService {
 
 	disconnectEditor(owner: IConnectableInput, force?: boolean): Promise<boolean>;
 
+	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile>;
+
 	/**
 	 * Register a connection provider
 	 */

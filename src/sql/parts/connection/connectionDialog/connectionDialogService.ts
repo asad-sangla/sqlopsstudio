@@ -153,7 +153,9 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleFillInConnectionInputs(connectionInfo: IConnectionProfile): void {
-		this.sqlUiController.fillInConnectionInputs(connectionInfo);
+		this._connectionManagementService.addSavedPassword(connectionInfo).then(connectionWithPassword => {
+			this.sqlUiController.fillInConnectionInputs(connectionWithPassword);
+		});
 	}
 
 	private handleProviderOnResetConnection(): void {

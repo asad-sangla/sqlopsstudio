@@ -68,6 +68,13 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		return id + this.groupId;
 	}
 
+	/**
+	 * Returns the unique id for the connection that doesn't include group name
+	 */
+	public getConnectionInfoId(): string {
+		return super.getUniqueId();
+	}
+
 	public onProviderRegistered(serverCapabilities: data.DataProtocolServerCapabilities): void {
 		if (serverCapabilities.providerName === this.providerName) {
 			this.setServerCapabilities(serverCapabilities);
@@ -105,7 +112,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		connectionProfile: IConnectionProfile): interfaces.IConnectionProfileStore {
 
 		let connectionInfo = connectionProfile as ConnectionProfile;
-		if(!connectionInfo) {
+		if (!connectionInfo) {
 			connectionInfo = new ConnectionProfile(serverCapabilities, connectionProfile);
 		}
 		let profile: interfaces.IConnectionProfileStore = {

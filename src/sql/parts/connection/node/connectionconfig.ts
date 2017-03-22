@@ -128,11 +128,7 @@ export class ConnectionConfig implements IConnectionConfig {
 				profiles.push(newProfile);
 
 				this.writeUserConfiguration(Constants.connectionsArrayName, profiles).then(() => {
-					this.writeUserConfiguration(Constants.connectionMetadata, capabilities).then(() => {
-						resolve();
-					}).catch(err => {
-						reject(err);
-					});
+					resolve();
 				}).catch(err => {
 					reject(err);
 				});

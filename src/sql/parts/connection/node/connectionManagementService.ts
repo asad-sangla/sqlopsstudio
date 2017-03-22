@@ -112,6 +112,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._connectionDialogService.showDialog(this, params, model);
 	}
 
+	public addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile> {
+		return this._connectionStore.addSavedPassword(connectionProfile);
+	}
+
 	public addConnectionProfile(connection: IConnectionProfile): Promise<boolean> {
 		let uri = this._connectionFactory.getUniqueUri(connection);
 

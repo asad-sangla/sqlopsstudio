@@ -86,4 +86,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	getCapabilities(): data.DataProtocolServerCapabilities[] {
 		return [];
 	}
+
+	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile> {
+		return new Promise<IConnectionProfile>(() => connectionProfile);
+	}
 }
