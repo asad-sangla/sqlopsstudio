@@ -252,7 +252,7 @@ export class QueryEditor extends BaseEditor {
 		// Create QueryTaskbar
 		this._taskbarContainer = DOM.append(parentElement, DOM.$('.queryTaskbar'));
 		this._taskbar = new QueryTaskbar(this._taskbarContainer, this._contextMenuService, {
-			actionItemProvider: (action: Action) => this._getListDatabasesActionItem(action),
+			actionItemProvider: (action: Action) => this._getActionItemForAction(action),
 		});
 
 		// Create Actions for the toolbar
@@ -283,15 +283,22 @@ export class QueryEditor extends BaseEditor {
 	 * Gets the IActionItem for the List Databases dropdown if provided the associated Action.
 	 * Otherwise returns null.
 	 */
-	private _getListDatabasesActionItem(action: Action): IActionItem {
+	private _getActionItemForAction(action: Action): IActionItem {
 		if (action.id === ListDatabasesAction.ID) {
-			if (!this._listDatabasesActionItem) {
-				this._listDatabasesActionItem = this._instantiationService.createInstance(ListDatabasesActionItem, null, action);
-			}
-			return this._listDatabasesActionItem;
+			return this.listDatabasesActionItem;
 		}
 
 		return null;
+	}
+
+	/**
+	 * Public for testing purposes only
+	 */
+	public get listDatabasesActionItem(): ListDatabasesActionItem {
+		if (!this._listDatabasesActionItem) {
+			this._listDatabasesActionItem = this._instantiationService.createInstance(ListDatabasesActionItem, this, this._listDatabasesAction);
+		}
+		return this._listDatabasesActionItem;
 	}
 
 	/**
@@ -530,6 +537,11 @@ export class QueryEditor extends BaseEditor {
 		this._connectDatabaseAction.enabled = queryInput.connectEnabled;
 		this._disconnectDatabaseAction.enabled = queryInput.disconnectEnabled;
 		this._runQueryAction.enabled = queryInput.runQueryEnabled;
+		if (queryInput.listDatabasesConnected) {
+			this.listDatabasesActionItem.onConnected();
+		} else {
+			this.listDatabasesActionItem.onDisconnect();
+		}
 	}
 
 	// TESTING PROPERTIES ////////////////////////////////////////////////////////////

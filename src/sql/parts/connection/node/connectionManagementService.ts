@@ -246,18 +246,26 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 	}
 
-	public onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
+	public onConnectionComplete(handle: number, info: data.ConnectionInfoSummary): void {
 		const self = this;
-		let connection = this._connectionFactory.onConnectionComplete(connectionInfoSummary.ownerUri, connectionInfoSummary.connectionId);
+		let connection = this._connectionFactory.onConnectionComplete(info);
 
-		if (Utils.isNotEmpty(connectionInfoSummary.connectionId)) {
+		if (Utils.isNotEmpty(info.connectionId)) {
+			self._updateConnectionInfoOnSuccess(connection, info);
 			connection.connectHandler(true);
 			let activeConnection = connection.connectionProfile;
 			self.tryAddActiveConnection(connection, activeConnection);
 		} else {
-			connection.connectHandler(false, connectionInfoSummary.messages);
+			connection.connectHandler(false, info.messages);
 		}
 		this._statusService.setStatusMessage('Updating IntelliSense cache');
+	}
+
+	private _updateConnectionInfoOnSuccess(connection: ConnectionManagementInfo, info: data.ConnectionInfoSummary): void {
+		if (info.connectionSummary && info.connectionSummary.databaseName) {
+			connection.connectionProfile.databaseName = info.connectionSummary.databaseName;
+		}
+		connection.serverInfo = info.serverInfo;
 	}
 
 	public onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
@@ -471,5 +479,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 	// Is a certain file URI currently connecting
 	private isConnecting(fileUri: string): boolean {
 		return this._connectionFactory.isConnecting(fileUri);
+	}
+
+	public getConnectionProfile(fileUri: string): IConnectionProfile {
+		return this._connectionFactory.isConnected(fileUri) ? this._connectionFactory.getConnectionProfile(fileUri) : undefined;
 	}
 }

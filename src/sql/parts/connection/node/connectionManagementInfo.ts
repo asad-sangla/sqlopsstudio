@@ -7,6 +7,7 @@
 
 import { IConnectionProfile } from './interfaces';
 import Utils = require('./utils');
+import * as data from 'data';
 
 /**
  * Information for a document's connection. Exported for testing purposes.
@@ -51,4 +52,9 @@ export class ConnectionManagementInfo {
      * Whether the connection is in the process of connecting.
      */
     public connecting: boolean;
+
+    /**
+     * Information about the connected server.
+     */
+    serverInfo: data.ServerInfo;
 }

@@ -7,14 +7,16 @@
 
 import { IConnectionManagementService, ConnectionType, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
-import { RunQueryAction, CancelQueryAction,
+import { RunQueryAction, CancelQueryAction, ListDatabasesActionItem,
 	DisconnectDatabaseAction, ConnectDatabaseAction, ChangeConnectionAction, QueryTaskbarAction
 } from 'sql/parts/query/execution/queryActions';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { TestEditorGroupService } from 'vs/workbench/test/workbenchTestServices';
+import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
+import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 
@@ -273,6 +275,48 @@ suite('SQL QueryAction Tests', () => {
 		assert.equal(connectionParams.input.uri, testUri, 'URI should be set to the test URI');
 		assert.equal(connectionParams.input, editor.object.currentQueryInput, 'Editor should be set to the mock editor');
 		assert.equal(connectionParams.disconnectExistingConnection, true, 'disconnectExistingConnection should be set to true');
+		done();
+	});
+
+	test('ListDatabaseItem shows items as expected', (done) => {
+		// ... Create assert variables
+		let listItem: ListDatabasesActionItem = undefined;
+		let isConnected: boolean = undefined;
+		let databaseName: string = undefined;
+
+		// ... Mock "isConnected" in ConnectionManagementService
+		let connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {}, undefined);
+		connectionManagementService.callBase = true;
+		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAnyString())).returns(() => isConnected);
+		connectionManagementService.setup(x => x.getConnectionProfile(TypeMoq.It.isAny())).returns(() => <IConnectionProfile> {
+			databaseName: databaseName
+		});
+
+		editor.setup(x => x.uri).returns(() => testUri);
+
+		let selectBoxMock = TypeMoq.Mock.ofType(SelectBox, TypeMoq.MockBehavior.Loose, [], -1);
+
+		// If I query without having initialized anything, state should be clear
+		listItem = new ListDatabasesActionItem(editor.object, undefined, connectionManagementService.object, undefined);
+		listItem._setSelectBox(selectBoxMock.object);
+
+		assert.equal(listItem.isEnabled(), false, 'do not expect dropdown enabled unless connected');
+		assert.equal(listItem.currentDatabaseName, undefined, 'do not expect dropdown to have entries unless connected');
+
+		// When I connect, database name should be returned in the dropdown and this should be enabled
+		isConnected = true;
+		databaseName = 'master';
+		listItem.onConnected();
+		assert.equal(listItem.isEnabled(), true, 'expect dropdown enabled when connected');
+		assert.equal(listItem.currentDatabaseName, 'master', 'expect dropdown to have current DB name when connected');
+
+		// When I disconnect, state should return to default
+		isConnected = false;
+		databaseName = undefined;
+		listItem.onDisconnect();
+		assert.equal(listItem.isEnabled(), false, 'do not expect dropdown enabled unless connected');
+		assert.equal(listItem.currentDatabaseName, undefined, 'do not expect dropdown to have entries unless connected');
+
 		done();
 	});
 });

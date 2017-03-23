@@ -36,6 +36,78 @@ declare module 'data' {
 		 * Error number returned from the engine, if any.
 		 */
 		errorNumber: number;
+		/**
+		 * Information about the connected server.
+		 */
+		serverInfo: ServerInfo;
+		/**
+		 * information about the actual connection established
+		 */
+		connectionSummary: ConnectionSummary;
+	}
+
+	/**
+	 * Summary that identifies a unique database connection.
+	 */
+	export interface ConnectionSummary {
+		/**
+		 * server name
+		 */
+		serverName: string;
+		/**
+		 * database name
+		 */
+		databaseName: string;
+		/**
+		 * user name
+		 */
+		userName: string;
+	}
+
+	/**
+	 * Information about a Server instance.
+	 */
+	export interface ServerInfo {
+		/**
+		 * The major version of the instance.
+		 */
+		serverMajorVersion: number;
+		/**
+		 * The minor version of the instance.
+		 */
+		serverMinorVersion: number;
+		/**
+		 * The build of the instance.
+		 */
+		serverReleaseVersion: number;
+		/**
+		 * The ID of the engine edition of the instance.
+		 */
+		engineEditionId: number;
+		/**
+		 * String containing the full server version text.
+		 */
+		serverVersion: string;
+		/**
+		 * String describing the product level of the server.
+		 */
+		serverLevel: string;
+		/**
+		 * The edition of the instance.
+		 */
+		serverEdition: string;
+		/**
+		 * Whether the instance is running in the cloud (Azure) or not.
+		 */
+		isCloud: boolean;
+		/**
+		 * The version of Azure that the instance is running on, if applicable.
+		 */
+		azureVersion: number;
+		/**
+		 * The Operating System version string of the machine running the instance.
+		 */
+		osVersion: string;
 	}
 
 	export interface ConnectionProvider {

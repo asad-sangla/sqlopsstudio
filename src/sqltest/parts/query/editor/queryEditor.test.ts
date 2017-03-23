@@ -20,7 +20,7 @@ import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorIn
 import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
 import { Memento } from 'vs/workbench/common/memento';
 import { Builder } from 'vs/base/browser/builder';
-import { RunQueryAction } from 'sql/parts/query/execution/queryActions';
+import { RunQueryAction, ListDatabasesActionItem } from 'sql/parts/query/execution/queryActions';
 import * as DOM from 'vs/base/browser/dom';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
@@ -49,17 +49,6 @@ suite('SQL QueryEditor Tests', () => {
 			connectionManagementService.object);
 	};
 
-	let getQueryInput = function(): QueryInput {
-		return new QueryInput(
-			'testUri',
-			'',
-			undefined,
-			undefined,
-			undefined,
-			undefined
-		);
-	};
-
 	setup(() => {
 		// Setup DOM elements
 		let element = DOM.$('queryEditorParent');
@@ -86,6 +75,16 @@ suite('SQL QueryEditor Tests', () => {
 		});
 		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((input) => {
 			return new TPromise((resolve) => resolve(new RunQueryAction(undefined, undefined, undefined, undefined)));
+		});
+		// Setup hook to capture calls to create the listDatabase action
+		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((classDef, editor, action) => {
+			if (classDef.ID) {
+				if (classDef.ID === 'listDatabaseQueryActionItem') {
+					return new ListDatabasesActionItem(editor, action, connectionManagementService.object, undefined);
+				}
+			}
+			// Default
+			return new RunQueryAction(undefined, undefined, undefined, undefined);
 		});
 
 		// Mock EditorDescriptorService to give us a mock editor description
@@ -277,22 +276,81 @@ suite('SQL QueryEditor Tests', () => {
 			.then(() => done(), (err) => done(err));
 	});
 
-	test('Taskbar buttons are set correctly upon standard load', (done) => {
-		// Mock InstantiationService to give us the actions
-		let queryActionInstantiationService = TypeMoq.Mock.ofType(InstantiationService, TypeMoq.MockBehavior.Loose);
-		queryActionInstantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((input) => {
-			return new TPromise((resolve) => resolve(new RunQueryAction(undefined, undefined, undefined, undefined)));
+	suite('Action Tests', () => {
+		let queryActionInstantiationService: TypeMoq.Mock<InstantiationService>;
+		let queryConnectionService: TypeMoq.Mock<ConnectionManagementService>;
+		let queryModelService: TypeMoq.Mock<QueryModelService>;
+		let queryInput: QueryInput;
+		setup(() => {
+
+			// Mock ConnectionManagementService but don't set connected state
+			memento = TypeMoq.Mock.ofType(Memento, TypeMoq.MockBehavior.Loose, '');
+			memento.setup(x => x.getMemento(TypeMoq.It.isAny())).returns(() => {});
+			queryConnectionService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, memento.object, undefined);
+			queryConnectionService.callBase = true;
+
+			// Mock InstantiationService to give us the actions
+			queryActionInstantiationService = TypeMoq.Mock.ofType(InstantiationService, TypeMoq.MockBehavior.Loose);
+
+			queryActionInstantiationService.setup(x => x.createInstance(TypeMoq.It.isAny())).returns((input) => {
+				return new TPromise((resolve) => resolve(mockEditor));
+			});
+
+			queryActionInstantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((input) => {
+				// Default
+				return new RunQueryAction(undefined, undefined, undefined, undefined);
+			});
+
+			// Setup hook to capture calls to create the listDatabase action
+			queryActionInstantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
+			.returns((definition, editor, action, selectBox) => {
+				if (definition.ID) {
+					if (definition.ID === 'listDatabaseQueryActionItem') {
+						let item = new ListDatabasesActionItem(editor, action, queryConnectionService.object, undefined);
+						return item;
+					}
+				}
+				// Default
+				return new RunQueryAction(undefined, undefined, undefined, undefined);
+			});
+
+			let fileInput = new UntitledEditorInput(URI.parse('testUri'), false, '', instantiationService.object, undefined, undefined);
+			queryModelService = TypeMoq.Mock.ofType(QueryModelService, TypeMoq.MockBehavior.Loose, undefined, undefined);
+			queryModelService.callBase = true;
+			queryInput = new QueryInput(
+				'testUri',
+				'',
+				fileInput,
+				undefined,
+				undefined,
+				queryModelService.object
+			);
 		});
 
-		// If I create a QueryInput
-		let editor: QueryInput = getQueryInput();
+		test('Taskbar buttons are set correctly upon standard load', (done) => {
+			queryConnectionService.setup(x => x.isConnected(TypeMoq.It.isAny())).returns(() => false);
+			queryModelService.setup(x => x.isRunningQuery(TypeMoq.It.isAny())).returns(() => false);
+			// If I use the created QueryEditor with no changes since creation
+			// Buttons should be set as if disconnected
+			assert.equal(queryInput.runQueryEnabled, true, 'runQueryAction button should be enabled');
+			assert.equal(queryInput.cancelQueryEnabled, false, 'cancelQueryAction button should not be enabled');
+			assert.equal(queryInput.connectEnabled, true, 'connectDatabaseAction button should be enabled');
+			assert.equal(queryInput.disconnectEnabled, false, 'disconnectDatabaseAction button should not be enabled');
+			assert.equal(queryInput.changeConnectionEnabled, false, 'changeConnectionAction button should not be enabled');
+			assert.equal(queryInput.listDatabasesConnected, false);
+			done();
+		});
 
-		// Buttons should be
-		assert.equal(editor.runQueryEnabled, true, 'runQueryAction button should be enabled');
-		assert.equal(editor.cancelQueryEnabled, false, 'cancelQueryAction button should not be enabled');
-		assert.equal(editor.connectEnabled, true, 'connectDatabaseAction button should be enabled');
-		assert.equal(editor.disconnectEnabled, false, 'disconnectDatabaseAction button should not be enabled');
-		assert.equal(editor.changeConnectionEnabled, false, 'changeConnectionAction button should not be enabled');
-		done();
+		test('Taskbar buttons are set correctly upon connect', (done) => {
+			queryInput.onConnectSuccess(false);
+			queryModelService.setup(x => x.isRunningQuery(TypeMoq.It.isAny())).returns(() => false);
+			assert.equal(queryInput.runQueryEnabled, true, 'runQueryAction button should be enabled');
+			assert.equal(queryInput.cancelQueryEnabled, false, 'cancelQueryAction button should not be enabled');
+			assert.equal(queryInput.connectEnabled, false, 'connectDatabaseAction button should not be enabled');
+			assert.equal(queryInput.disconnectEnabled, true, 'disconnectDatabaseAction button should be enabled');
+			assert.equal(queryInput.changeConnectionEnabled, true, 'changeConnectionAction button should be enabled');
+			assert.equal(queryInput.listDatabasesConnected, true);
+			done();
+		});
 	});
 });

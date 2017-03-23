@@ -7,6 +7,7 @@
 import { ConnectionManagementInfo } from './connectionManagementInfo';
 import { IConnectionProfile } from './interfaces';
 import Utils = require('./utils');
+import * as data from 'data';
 
 export class ConnectionFactory {
 	private _connections: { [id: string]: ConnectionManagementInfo };
@@ -34,9 +35,9 @@ export class ConnectionFactory {
 		}
 	}
 
-	public getConnectionProfile(connectionInfo: IConnectionProfile, id: string): IConnectionProfile {
+	public getConnectionProfile(id: string): IConnectionProfile {
 		let connectionInfoForId = this.findConnection(id);
-		return connectionInfo ? connectionInfoForId.connectionProfile : undefined;
+		return connectionInfoForId ? connectionInfoForId.connectionProfile : undefined;
 	}
 
 	public addConnection(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
@@ -52,11 +53,11 @@ export class ConnectionFactory {
 		return connectionInfo;
 	}
 
-	public onConnectionComplete(id: string, connectionId: string): ConnectionManagementInfo {
-		let connection = this._connections[id];
+	public onConnectionComplete(summary: data.ConnectionInfoSummary): ConnectionManagementInfo {
+		let connection = this._connections[summary.ownerUri];
 		connection.serviceTimer.end();
 		connection.connecting = false;
-		connection.connectionId = connectionId;
+		connection.connectionId = summary.connectionId;
 		return connection;
 	}
 

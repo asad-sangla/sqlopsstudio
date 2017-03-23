@@ -1356,7 +1356,9 @@ export class LanguageClient {
 						connectionId: params.connectionId,
 						messages: params.messages,
 						errorMessage: params.errorMessage,
-						errorNumber: params.errorNumber
+						errorNumber: params.errorNumber,
+						serverInfo: params.serverInfo,
+						connectionSummary: params.connectionSummary
 					});
 				});
 			},

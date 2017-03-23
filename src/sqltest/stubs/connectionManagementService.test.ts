@@ -7,8 +7,6 @@ import { IConnectionManagementService, IConnectableInput } from 'sql/parts/conne
 import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import data = require('data');
 
 // Test stubs for commonly used objects
@@ -85,6 +83,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	getCapabilities(): data.DataProtocolServerCapabilities[] {
 		return [];
+	}
+
+	getConnectionProfile(fileUri: string): IConnectionProfile {
+		return undefined;
 	}
 
 	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile> {

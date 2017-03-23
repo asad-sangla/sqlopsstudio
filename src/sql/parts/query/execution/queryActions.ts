@@ -249,26 +249,27 @@ export class ListDatabasesAction extends QueryTaskbarAction {
  * Based off StartDebugActionItem.
  */
 export class ListDatabasesActionItem extends EventEmitter implements IActionItem {
+	public static ID = 'listDatabaseQueryActionItem';
 
 	public actionRunner: IActionRunner;
 	private container: HTMLElement;
-	private start: HTMLElement;
 	private selectBox: SelectBox;
 	private toDispose: IDisposable[];
 	private context: any;
 	private _databases: string[];
-	private _currentDatabaseIndex: number;
+	private _currentDatabaseName: string;
+	private _isConnected: boolean;
 
-	constructor() {
+	constructor(
+		private editor: QueryEditor,
+		private action: ListDatabasesAction,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IQueryModelService private _queryModelService: IQueryModelService) {
 		super();
-		this._databases = [];
-		this._currentDatabaseIndex = 0;
 		this.toDispose = [];
 		this.selectBox = new SelectBox([], -1);
-		this._registerListeners();
-
 		this._databases = [];
-		this._refreshDatabaseList();
+		this._registerListeners();
 	}
 
 	public render(container: HTMLElement): void {
@@ -281,11 +282,11 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 	}
 
 	public isEnabled(): boolean {
-		return true;
+		return !!this._isConnected;
 	}
 
 	public focus(): void {
-		this.start.focus();
+		this.selectBox.focus();
 	}
 
 	public blur(): void {
@@ -296,8 +297,31 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this.toDispose = dispose(this.toDispose);
 	}
 
-	private _refreshDatabaseList(databaseIndex?: number): void {
-		this.selectBox.setOptions(this._databases, this._currentDatabaseIndex);
+	public onConnected(): void {
+		this._isConnected = true;
+		// TODO: query the connection service for a cached list of databases on the server
+		this._databases = [];
+		this._currentDatabaseName = this._getCurrentDatabaseName();
+		if (this._currentDatabaseName) {
+			this._databases.push(this._currentDatabaseName);
+		}
+		this._refreshDatabaseList();
+	}
+
+	public onDisconnect(): void {
+		this._isConnected = false;
+		this._currentDatabaseName = undefined;
+		this._databases = [];
+		this._refreshDatabaseList();
+	}
+
+	private _refreshDatabaseList(): void {
+		// Use object copy to ensure that we update the list of options in the
+		// selectedElement. Otherwise may fail to refresh the list
+		let dbs = this._databases.slice();
+		// Get selected index - will return -1 if not found
+		let selected = this._databases.indexOf(this._currentDatabaseName);
+		this.selectBox.setOptions(dbs, selected);
 	}
 
 	private _registerListeners(): void {
@@ -305,4 +329,39 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 			// TODO hook this up. We will need to inject services into this class
 		}));
 	}
+
+	private _getCurrentDatabaseName() {
+		let uri = this._getConnectedQueryEditorUri(this.editor);
+		if (uri) {
+			let profile = this._connectionManagementService.getConnectionProfile(uri);
+			if (profile) {
+				return profile.databaseName;
+			}
+		}
+		return undefined;
+	}
+
+	/**
+	 * Returns the URI of the given editor if it is not undefined and is connected.
+	 */
+	private _getConnectedQueryEditorUri(editor: QueryEditor): string {
+		if (!editor || !editor.uri) {
+			return undefined;
+		}
+		return this._connectionManagementService.isConnected(editor.uri) ? editor.uri : undefined;
+	}
+
+
+	// TESTING PROPERTIES ////////////////////////////////////////////////////////////
+	public get currentDatabaseName(): string {
+		return this._currentDatabaseName;
+	}
+
+	/**
+	 * public for testing purposes only
+	 */
+	public _setSelectBox(box: SelectBox): void {
+		this.selectBox = box;
+	}
+
 }

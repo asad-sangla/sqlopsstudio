@@ -26,6 +26,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	private _connectEnabled: boolean;
 	private _disconnectEnabled: boolean;
 	private _changeConnectionEnabled: boolean;
+	private _listDatabasesConnected: boolean;
 	private _updateTaskbar: Emitter<void>;
 	private _showQueryResultsEditor: Emitter<void>;
 	private _setup: boolean;
@@ -82,6 +83,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public get connectEnabled(): boolean{ return this._connectEnabled; }
 	public get disconnectEnabled(): boolean{ return this._disconnectEnabled; }
 	public get changeConnectionEnabled(): boolean{ return this._changeConnectionEnabled; }
+	public get listDatabasesConnected(): boolean{ return this._listDatabasesConnected; }
 	public get setup(): boolean { return this._setup; }
 	public setupComplete(): void { this._setup = true; }
 	public getQueryResultsInputResource(): string { return this._results.uri; }
@@ -128,6 +130,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._connectEnabled = false;
 		this._disconnectEnabled = true;
 		this._changeConnectionEnabled = false;
+		this._listDatabasesConnected = false;
 		this._updateTaskbar.fire();
 	}
 
@@ -141,6 +144,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._connectEnabled = false;
 		this._disconnectEnabled = true;
 		this._changeConnectionEnabled = true;
+		this._listDatabasesConnected = true;
 
 		let isRunningQuery = this._queryModelService.isRunningQuery(this.uri);
 		if (!isRunningQuery && runQueryOnCompletion) {
@@ -155,6 +159,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._connectEnabled = true;
 		this._disconnectEnabled = false;
 		this._changeConnectionEnabled = false;
+		this._listDatabasesConnected = false;
 		this._updateTaskbar.fire();
 	}
 

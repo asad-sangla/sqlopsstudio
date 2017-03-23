@@ -65,6 +65,8 @@ export interface IConnectionManagementService {
 	 * Register a connection provider
 	 */
 	registerProvider(providerId: string, provider: data.ConnectionProvider): void;
+
+	getConnectionProfile(fileUri: string): IConnectionProfile;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
