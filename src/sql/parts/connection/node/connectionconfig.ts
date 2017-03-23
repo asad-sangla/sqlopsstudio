@@ -295,11 +295,10 @@ export class ConnectionConfig implements IConnectionConfig {
 
 		let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
 		let providerCapabilities = this.getCapabilities(profile.providerName);
-		let connectionProfile = this.getConnectionProfileInstance(profile, profile.groupId);
-		let configProfile = ConnectionProfile.convertToProfileStore(providerCapabilities, connectionProfile);
 
 		profiles.forEach((value) => {
-			if (Utils.isSameProfileStore(value, configProfile)) {
+			let configProf = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
+			if (configProf.getUniqueId() === profile.getUniqueId()) {
 				value.groupId = newGroupID;
 			}
 		});

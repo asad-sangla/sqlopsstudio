@@ -132,10 +132,10 @@ export function isSameProfile(currentProfile: IConnectionProfile, expectedProfil
 
 export function isSameProfileStore(currentProfile: IConnectionProfileStore, expectedProfile: IConnectionProfileStore) {
 	//TODO: for each provider type get the list of identifications. hard coded for MSSQL for now
-	return expectedProfile.options['serverName'] === currentProfile.options['serverName']
-		&& isSameDatabase(expectedProfile.options['databaseName'], currentProfile.options['databaseName'])
+	return expectedProfile.options['server'] === currentProfile.options['server']
+		&& isSameDatabase(expectedProfile.options['database'], currentProfile.options['database'])
 		&& isSameAuthenticationType(expectedProfile.options['authenticationType'], currentProfile.options['authenticationType'])
-		&& expectedProfile.options['userName'] === currentProfile.options['userName']
+		&& expectedProfile.options['user'] === currentProfile.options['user']
 		&& expectedProfile.groupId === currentProfile.groupId
 		&& expectedProfile.providerName === currentProfile.providerName;
 }
