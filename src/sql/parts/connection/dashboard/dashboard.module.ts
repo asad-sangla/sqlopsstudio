@@ -6,6 +6,7 @@
 import { AppComponent } from './dashboard.component';
 import { ConnectionProfileComponent } from './connection-profile/connection-profile.component';
 import { SchemaExplorerComponent } from './schema-explorer/schema-explorer.component';
+import { ServerCommandWindowComponent } from './server/server-command-window.component';
 
 declare let AngularPlatformBrowser;
 declare let AngularCore;
@@ -16,12 +17,15 @@ declare let PrimeNg;
   declarations: [
     AppComponent,
     ConnectionProfileComponent,
-    SchemaExplorerComponent
+    SchemaExplorerComponent,
+    ServerCommandWindowComponent
   ],
   imports: [
     AngularPlatformBrowser.BrowserModule,
     PrimeNg.DataTableModule,
-    PrimeNg.SharedModule
+    PrimeNg.SharedModule,
+    PrimeNg.ButtonModule,
+    PrimeNg.DropdownModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -3,17 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
- .dashboard-search-box {
-	width: 100%;
-	height: 28px;
-	line-height: 18px;
-	box-sizing: border-box;
-	padding: 4px;
-	border: 1px solid transparent;
-	-webkit-appearance: textfield;
-}
-
-.ui-widget * {
+ .ui-widget * {
     box-sizing: border-box;
 }
 .ui-helper-hidden {
@@ -4224,4 +4214,26 @@ button.ui-button::-moz-focus-inner {
 
 .ui-treetable tbody .ui-treetable-row td input {
     outline: 0 none;
+}
+
+#server-command-window .ui-dropdown .ui-dropdown-label {
+    background-color: #5cb85c;
+    border-color: #5cb85c;
+    color: #ffffff;
+    width: auto;
+}
+
+#server-command-window .ui-dropdown-trigger {
+    background-color: rgb(221,221,221);
+    color: #000000;
+}
+
+#server-command-window .ui-dropdown-list {
+     background-color: rgb(221,221,221);
+     color: #000000;
+}
+
+#server-command-window .ui-dropdown-filter-container {
+    width: 100%;
+    background-color: rgb(221,221,221);
 }
