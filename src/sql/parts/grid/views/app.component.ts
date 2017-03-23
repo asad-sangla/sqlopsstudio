@@ -16,6 +16,7 @@ import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection
 import * as Utils from 'sql/parts/connection/node/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
+import * as Services from 'sql/parts/grid/services/sharedServices';
 
 declare let AngularCore;
 declare let rangy;
@@ -388,7 +389,7 @@ export class AppComponent {
                         ? 'XML Showplan'
                         : c.columnName,
                     type: self.stringToFieldType('string'),
-                    formatter: isLinked ? self.hyperLinkFormatter : self.textFormatter,
+                    formatter: isLinked ? Services.hyperLinkFormatter : Services.textFormatter,
                     asyncPostRender: isLinked ? self.linkHandler(linkType) : undefined
                 };
             })
@@ -560,37 +561,6 @@ export class AppComponent {
         } else { // default to JSON handler
             return this.jsonLinkHandler;
         }
-    }
-
-    /**
-     * Format xml field into a hyperlink and performs HTML entity encoding
-     */
-    public hyperLinkFormatter(row: number, cell: any, value: string, columnDef: any, dataContext: any): string {
-        let valueToDisplay = value;
-        let cellClasses = 'grid-cell-value-container';
-        if (value) {
-            cellClasses += ' xmlLink';
-            valueToDisplay = Utils.htmlEntities(value);
-            return `<a class="${cellClasses}" href="#" >${valueToDisplay}</a>`;
-        } else {
-            cellClasses += ' missing-value';
-            return `<span title="${valueToDisplay}" class="${cellClasses}">${valueToDisplay}</span>`;
-        }
-    }
-
-    /**
-     * Format all text to replace all new lines with spaces and performs HTML entity encoding
-     */
-    textFormatter(row: number, cell: any, value: string, columnDef: any, dataContext: any): string {
-        let valueToDisplay = value;
-        let cellClasses = 'grid-cell-value-container';
-        if (value) {
-            valueToDisplay = Utils.htmlEntities(value.replace(/(\r\n|\n|\r)/g, ' '));
-        } else {
-            cellClasses += ' missing-value';
-        }
-
-        return `<span title="${valueToDisplay}" class="${cellClasses}">${valueToDisplay}</span>`;
     }
 
     /**

@@ -293,21 +293,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
 
-	public connectEditor(owner: IConnectableInput, runQueryOnCompletion: boolean, connectionProfile: ConnectionProfile | IConnectionProfile): Promise<boolean> {
+	public connectEditor(owner: IConnectableInput, runQueryOnCompletion: boolean, connection: ConnectionProfile | IConnectionProfile): Promise<boolean> {
 		// If we are passed a ConnectionProfile, we must only pass the info below or the connection will reject
-		let connection: IConnectionProfile = {
-			serverName: connectionProfile.serverName,
-			databaseName: connectionProfile.databaseName,
-			userName: connectionProfile.userName,
-			password: connectionProfile.password,
-			authenticationType: connectionProfile.authenticationType,
-			groupId: connectionProfile.groupId,
-			groupName: connectionProfile.groupName,
-			savePassword: connectionProfile.savePassword,
-			getUniqueId: undefined,
-			providerName: '',
-			options: connectionProfile.options
-		};
 
 		// Retrieve saved password if needed
 		return new Promise<boolean>((resolve, reject) => {
