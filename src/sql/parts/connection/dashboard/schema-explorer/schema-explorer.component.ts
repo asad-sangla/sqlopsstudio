@@ -13,6 +13,34 @@ import data = require('data');
 
 declare let AngularCore;
 
+export class ObjectMetadataWrapper {
+	public metadata: data.ObjectMetadata;
+
+	public isEqualTo(wrapper: ObjectMetadataWrapper): boolean {
+		if (!wrapper) {
+			return false;
+		}
+
+		return this.metadata.metadataType === wrapper.metadata.metadataType
+			&& this.metadata.schema === wrapper.metadata.schema
+			&& this.metadata.name === wrapper.metadata.name;
+	}
+
+	public static createFromObjectMetadata(objectMetadata: data.ObjectMetadata[]): ObjectMetadataWrapper[] {
+		if (!objectMetadata) {
+			return undefined;
+		}
+
+		let wrapperArray = new Array(objectMetadata.length);
+		for (let i = 0; i < objectMetadata.length; ++i) {
+			wrapperArray[i] = <ObjectMetadataWrapper> {
+				metadata: objectMetadata[i]
+			};
+		}
+		return wrapperArray;
+	}
+}
+
 /**
  * Schema Explorer component class
  */
@@ -29,7 +57,11 @@ export class SchemaExplorerComponent implements OnInit {
 	@AngularCore.Input() public queryEditorService: IQueryEditorService;
 	@AngularCore.Input() public ownerUri: string;
 
-	public objectMetadata: data.ObjectMetadata[];
+	public objectMetadata: ObjectMetadataWrapper[];
+
+	public selectedObject: ObjectMetadataWrapper;
+
+	public databaseIcon: string = require.toUrl('sql/parts/connection/dashboard/media/database.svg');
 
 	constructor(
 		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef
@@ -40,7 +72,7 @@ export class SchemaExplorerComponent implements OnInit {
 
 		const self = this;
 		this.metadataService.getMetadata('1', this.ownerUri).then(result => {
-			self.objectMetadata = result.objectMetadata;
+			self.objectMetadata = ObjectMetadataWrapper.createFromObjectMetadata(result.objectMetadata);
 			this.changeDetectorRef.detectChanges();
 		});
 	}
@@ -48,22 +80,33 @@ export class SchemaExplorerComponent implements OnInit {
 	/**
 	 * Select the top rows from an object
 	 */
-	public scriptSelect(metadata: data.ObjectMetadata): void {
-		this.scriptingService.scriptAsSelect('1', this.ownerUri, metadata).then(result => {
-			if (result && result.script) {
-				this.queryEditorService.newSqlEditor(result.script);
-			}
-		});
+	public scriptSelect(): void {
+		if (this.selectedObject) {
+			this.scriptingService.scriptAsSelect('1', this.ownerUri, this.selectedObject.metadata).then(result => {
+				if (result && result.script) {
+					this.queryEditorService.newSqlEditor(result.script);
+				}
+			});
+		}
 	}
 
 	/**
 	 * Script the object as a CREATE statement
 	 */
-	public scriptCreate(metadata: data.ObjectMetadata): void {
-		this.scriptingService.scriptAsCreate('1', this.ownerUri, metadata).then(result => {
-			if (result && result.script) {
-				this.queryEditorService.newSqlEditor(result.script);
-			}
-		});
+	public scriptCreate(): void {
+		if (this.selectedObject) {
+			this.scriptingService.scriptAsCreate('1', this.ownerUri, this.selectedObject.metadata).then(result => {
+				if (result && result.script) {
+
+					 let script = result.script;
+					 var startPos: number = script.indexOf('CREATE');
+					 if (startPos > 0) {
+						script = script.substring(startPos);
+					 }
+
+					this.queryEditorService.newSqlEditor(script);
+				}
+			});
+		}
 	}
 }

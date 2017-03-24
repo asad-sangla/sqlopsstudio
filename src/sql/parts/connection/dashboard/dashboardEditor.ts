@@ -5,7 +5,7 @@
 
 import 'vs/css!sql/parts/query/editor/media/queryEditor';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { Builder, Dimension } from 'vs/base/browser/builder';
+import { Dimension, Builder } from 'vs/base/browser/builder';
 import { EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -62,7 +62,9 @@ export class DashboardEditor extends BaseEditor {
 			return TPromise.as(undefined);
 		}
 
-		this.bootstrapAngular(input);
+		// if (!input.hasInitialized) {
+			this.bootstrapAngular(input);
+		// }
 
 		return super.setInput(input, options);
 	}

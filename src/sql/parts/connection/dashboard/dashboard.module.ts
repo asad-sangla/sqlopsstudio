@@ -22,6 +22,7 @@ declare let PrimeNg;
   ],
   imports: [
     AngularPlatformBrowser.BrowserModule,
+    PrimeNg.ButtonModule,
     PrimeNg.DataTableModule,
     PrimeNg.SharedModule,
     PrimeNg.ButtonModule,

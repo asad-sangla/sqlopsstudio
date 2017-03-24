@@ -5,19 +5,66 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<h1>Object Explorer</h1>
 <div  style="border-bottom: 0 none">
-    <input class="dashboard-search-box" #gb type="text" pInputText size="50" placeholder="Filter">
+    <input class="dashboard-search-box" #gb type="text" pInputText size="50" placeholder="Search connection metadata">
 </div>
-<p-dataTable [value]="objectMetadata" [rows]="20" [paginator]="true" [globalFilter]="gb" #dt>
-    <p-column field="metadataTypeName" header="Type"></p-column>
-    <p-column field="schema" header="Schema"></p-column>
-    <p-column field="name" header="Object Name"></p-column>
 
-    <p-column header="Action">
-        <template let-col let-metadata="rowData" pTemplate type="body">
-            <a href="#" (click)="scriptSelect(metadata)">SELECT</a> \
-            <a href="#" (click)="scriptCreate(metadata)">SCRIPT CREATE</a>
-        </template>
-    </p-column>
-</p-dataTable>
+<div style="display: flex; flex-flow: row wrap; height: calc(100% - 200px); overflow: auto">
+<div style="order: 1; width: calc(100% - 138px); overflow: auto" >
+    <p-dataTable [value]="objectMetadata" [globalFilter]="gb" #dt selectionMode="single"
+                 [(selection)]="selectedObject" [tableStyle]="{'overflow': 'auto'}">
+        <p-column header="Type" field="metadata.metadataTypeName" hidden="true"></p-column>
+        <p-column header="Schema" field="metadata.schema" hidden="true"></p-column>
+        <p-column header="" field="metadata.name">
+            <template let-col let-dataitem="rowData" pTemplate type="body">
+                <div style="display: flex; flex-flow: row">
+                    <div style="order: 1">
+                        <img class="dashboard-button-content" src="{{databaseIcon}}" />
+                    </div>
+                    <div style="order: 2">
+                        <span class="dashboard-button-content">
+                            {{dataitem.metadata.schema}}.{{dataitem.metadata.name}} <br />
+                            {{dataitem.metadata.metadataTypeName}}
+                        </span>
+                    </div>
+                </div>
+            </template>
+        </p-column>
+    </p-dataTable>
+</div>
+
+<div style="order: 2;width: 133px; vertical-align: top">
+    <button pButton class="dashboard-button"
+            style="background: #0E639C; color: #ffffff; width: 125px; margin: 3px; text-align: left; border-width: 0px"t
+            type="button" (click)="scriptSelect()" label=" " >
+        <div style="vertical-align: middle">
+            <img class="dashboard-button-content" src="{{databaseIcon}}" />
+            <span class="dashboard-button-content">
+                Select Top 100
+            </span>
+        </div>
+    </button>
+    <br />
+    <button pButton class="dashboard-button"
+            style="background: #0E639C; color: #ffffff; width: 125px; margin: 3px; text-align: left; border-width: 0px"
+           (click)="scriptSelect()" label=" ">
+        <div style="vertical-align: middle">
+            <img class="dashboard-button-content" src="{{databaseIcon}}" />
+            <span class="dashboard-button-content">
+                Edit Data
+            </span>
+        </div>
+    </button>
+    <br />
+    <button pButton class="dashboard-button"
+            style="background: #0E639C; color: #ffffff; width: 125px; margin: 3px; text-align: left; border-width: 0px"
+            (click)="scriptCreate()" label=" ">
+        <div style="vertical-align: middle">
+            <img class="dashboard-button-content" src="{{databaseIcon}}" />
+            <span class="dashboard-button-content">
+                Script Create
+            </span>
+        </div>
+    </button>
+</div>
+</div>
