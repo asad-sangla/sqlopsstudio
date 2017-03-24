@@ -329,10 +329,6 @@ export class AppComponent {
         self.totalElapsedTimeSpan = event.data;
         self.complete = true;
         self.messagesAdded = true;
-
-        setTimeout(function(){
-            self.refreshResultsets();
-        }, 1);
     }
 
     handleMessage(self: AppComponent, event: any): void {
@@ -596,6 +592,8 @@ export class AppComponent {
                     }
                 }
             }
+
+            self.cd.detectChanges();
 
             if (self.firstRender) {
                 let setActive = function() {
