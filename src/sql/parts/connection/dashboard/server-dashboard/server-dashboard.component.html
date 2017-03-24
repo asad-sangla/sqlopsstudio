@@ -5,6 +5,6 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<p-breadcrumb [model]="breadCrumbItems"></p-breadcrumb>
+<server-profile [connection]='connection'></server-profile>
 
-<router-outlet (activate)='onActivate($event)'></router-outlet>
+<server-command-window></server-command-window>

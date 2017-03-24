@@ -396,7 +396,9 @@
 
 .ui-breadcrumb ul li .ui-menuitem-link {
     text-decoration: none;
+    color: #8f8f8f;
 }
+
 /* Button */
 .ui-button {
     display: inline-block;

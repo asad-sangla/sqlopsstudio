@@ -4217,7 +4217,7 @@ button.ui-button::-moz-focus-inner {
 }
 
 #server-command-window {
-    height: 50px;
+    height: 40px;
 }
 
 #server-command-window .ui-dropdown .ui-dropdown-label {

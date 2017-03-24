@@ -5,6 +5,8 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<p-breadcrumb [model]="breadCrumbItems"></p-breadcrumb>
-
-<router-outlet (activate)='onActivate($event)'></router-outlet>
+<div id="serverprofile">
+	<h1>Server Details</h1>
+	Server Name: {{connection?.serverName}} <br />
+	Active Database: <a style='color: #8f8f8f;' [routerLink]="['/database-dashboard']">{{connection?.databaseName}}</a>
+</div>

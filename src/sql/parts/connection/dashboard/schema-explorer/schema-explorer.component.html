@@ -9,7 +9,7 @@
     <input class="dashboard-search-box" #gb type="text" pInputText size="50" placeholder="Search connection metadata">
 </div>
 
-<div style="display: flex; flex-flow: row wrap; height: calc(100% - 200px); overflow: auto">
+<div style="display: flex; flex-flow: row wrap; height: calc(100% - 250px); overflow: auto">
 <div style="order: 1; width: calc(100% - 138px); overflow: auto" >
     <p-dataTable [value]="objectMetadata" [globalFilter]="gb" #dt selectionMode="single"
                  [(selection)]="selectedObject" [tableStyle]="{'overflow': 'auto'}">

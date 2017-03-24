@@ -5,6 +5,14 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<p-breadcrumb [model]="breadCrumbItems"></p-breadcrumb>
+<connection-profile [connection]='connection'></connection-profile>
 
-<router-outlet (activate)='onActivate($event)'></router-outlet>
+<server-command-window></server-command-window>
+
+<schema-explorer #schemaExplorer
+	[ownerUri]='ownerUri'
+	[connection]='connection'
+	[metadataService]='metadataService'
+	[scriptingService]='scriptingService'
+	[queryEditorService]='queryEditorService'>
+</schema-explorer>

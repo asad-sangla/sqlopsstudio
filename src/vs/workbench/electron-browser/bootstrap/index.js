@@ -33,8 +33,10 @@ const PrimeNg = require('primeng/primeng');
 // Set temporary globals for angular relative path fix
 // TODO make it so these don't need to be globals
 const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
+const AngularCommon = require('@angular/common');
 const AngularCore = require('@angular/core');
 const AngularPlatformBrowser = require('@angular/platform-browser');
+const AngularRouter = require('@angular/router');
 const Rx = require('rxjs/Rx');
 
 process.lazyEnv = new Promise(function (resolve) {

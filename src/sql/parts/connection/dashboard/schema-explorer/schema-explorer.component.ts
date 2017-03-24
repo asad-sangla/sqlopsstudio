@@ -5,10 +5,12 @@
 
 import 'vs/css!sql/parts/connection/dashboard/schema-explorer/schema-explorer.component';
 import { ChangeDetectorRef, OnInit } from '@angular/core';
-import { IMetadataService } from 'sql/parts/metadata/metadataService';
-import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IMetadataService } from 'sql/parts/metadata/metadataService';
+import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+
 import data = require('data');
 
 declare let AngularCore;
@@ -49,7 +51,7 @@ export class ObjectMetadataWrapper {
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/schema-explorer/schema-explorer.component.html'),
 	styleUrls: [require.toUrl('sql/parts/connection/dashboard/schema-explorer/schema-explorer.component.css')]
 })
-export class SchemaExplorerComponent implements OnInit {
+export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 
 	@AngularCore.Input() public connection: IConnectionProfile;
 	@AngularCore.Input() public metadataService: IMetadataService;
@@ -69,7 +71,9 @@ export class SchemaExplorerComponent implements OnInit {
 
 	public ngOnInit(): void {
 		this.objectMetadata = [];
+	}
 
+	public stateInitialized(): void {
 		const self = this;
 		this.metadataService.getMetadata('1', this.ownerUri).then(result => {
 			self.objectMetadata = ObjectMetadataWrapper.createFromObjectMetadata(result.objectMetadata);
