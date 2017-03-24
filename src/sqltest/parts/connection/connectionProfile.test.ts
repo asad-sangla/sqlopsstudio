@@ -6,8 +6,8 @@
 'use strict';
 
 
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import data = require('data');
 import * as assert from 'assert';
 

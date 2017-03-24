@@ -8,9 +8,9 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 import { TPromise } from 'vs/base/common/winjs.base';
 import Event from 'vs/base/common/event';
 import data = require('data');
-import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import Severity from 'vs/base/common/severity';
 
 export const VIEWLET_ID = 'workbench.view.connections';

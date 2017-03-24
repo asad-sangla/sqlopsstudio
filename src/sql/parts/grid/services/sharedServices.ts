@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as Utils from 'sql/parts/connection/node/utils';
+import * as Utils from 'sql/parts/connection/common/utils';
 
 export class DBCellValue {
 	displayValue: string;

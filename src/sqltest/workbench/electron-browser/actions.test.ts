@@ -5,13 +5,13 @@
 'use strict';
 
 import { TestConnectionManagementService } from 'sqltest/stubs/connectionManagementService.test';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
-import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { QueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { TestQuickOpenService } from 'vs/workbench/test/browser/quickopen.test';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
-import * as Utils from 'sql/parts/connection/node/utils';
+import * as Utils from 'sql/parts/connection/common/utils';
 import URI from 'vs/base/common/uri';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';

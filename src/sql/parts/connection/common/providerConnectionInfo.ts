@@ -6,7 +6,7 @@
 'use strict';
 
 import data = require('data');
-import * as interfaces from 'sql/parts/connection/node/interfaces';
+import * as interfaces from 'sql/parts/connection/common/interfaces';
 import { ConnectionOptionSpecialType } from 'sql/parts/connection/common/connectionManagement';
 
 export class ProviderConnectionInfo implements data.ConnectionInfo {

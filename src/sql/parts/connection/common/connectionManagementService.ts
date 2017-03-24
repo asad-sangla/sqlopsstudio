@@ -6,7 +6,7 @@
 
 import nls = require('vs/nls');
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import {
@@ -32,9 +32,9 @@ import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
 import * as data from 'data';
-import * as ConnectionContracts from 'sql/parts/connection/node/connection';
+import * as ConnectionContracts from 'sql/parts/connection/common/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
-import { ConnectionFactory } from 'sql/parts/connection/node/connectionFactory';
+import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import Event, { Emitter } from 'vs/base/common/event';
 
 export class ConnectionManagementService implements IConnectionManagementService {

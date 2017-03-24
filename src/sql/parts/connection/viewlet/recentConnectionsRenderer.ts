@@ -3,20 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 'use strict';
-import * as vscode from 'vscode';
 import dom = require('vs/base/browser/dom');
-import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { ITree, IDataSource, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACCEPT_BUBBLE_DOWN, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
-import { TPromise } from 'vs/base/common/winjs.base';
-import { Action } from 'vs/base/common/actions';
-import nls = require('vs/nls');
-import errors = require('vs/base/common/errors');
+import { ITree, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
-import { QueryEditorService } from 'sql/parts/editor/queryEditorService';
-import { IConnectionProfileGroupTemplateData, IConnectionTemplateData } from 'sql/parts/connection/electron-browser/templateData';
+import { IConnectionTemplateData } from 'sql/parts/connection/viewlet/templateData';
 const $ = dom.$;
 
 /**

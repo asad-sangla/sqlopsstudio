@@ -14,9 +14,9 @@ import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/co
 import { withElementById } from 'vs/base/browser/builder';
 import { SqlConnectionController } from 'sql/parts/connection/connectionDialog/sqlConnectionController';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Severity from 'vs/base/common/severity';
 import data = require('data');

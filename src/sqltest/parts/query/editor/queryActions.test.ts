@@ -15,8 +15,8 @@ import { TestEditorGroupService } from 'vs/workbench/test/workbenchTestServices'
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
-import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 

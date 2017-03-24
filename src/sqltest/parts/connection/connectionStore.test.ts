@@ -5,19 +5,19 @@
 'use strict';
 
 import * as TypeMoq from 'typemoq';
-import { ConnectionConfig } from 'sql/parts/connection/node/connectionconfig';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { ConnectionConfig } from 'sql/parts/connection/common/connectionconfig';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
-import * as Constants from 'sql/parts/connection/node/constants';
+import * as Constants from 'sql/parts/connection/common/constants';
 import { StorageTestService } from 'sqltest/stubs/storageTestService';
-import { ConnectionStore } from 'sql/parts/connection/node/connectionStore';
+import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
 import { CredentialsService } from 'sql/parts/credentials/credentialsService';
 import * as assert from 'assert';
 import { Memento } from 'vs/workbench/common/memento';
-import * as Utils from 'sql/parts/connection/node/utils';
+import * as Utils from 'sql/parts/connection/common/utils';
 import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import data = require('data');
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { Emitter } from 'vs/base/common/event';
 
 suite('SQL ConnectionStore tests', () => {

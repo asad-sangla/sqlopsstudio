@@ -6,7 +6,7 @@
 import 'vs/css!sql/parts/connection/dashboard/schema-explorer/schema-explorer.component';
 import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';

@@ -8,8 +8,8 @@
 import { IConnectionProfile } from './interfaces';
 import { ConnectionProfileGroup } from './connectionProfileGroup';
 import data = require('data');
-import { ProviderConnectionInfo } from 'sql/parts/connection/node/providerConnectionInfo';
-import * as interfaces from 'sql/parts/connection/node/interfaces';
+import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
+import * as interfaces from 'sql/parts/connection/common/interfaces';
 
 // Concrete implementation of the IConnectionProfile interface
 

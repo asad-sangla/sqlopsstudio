@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IConnectionManagementService, IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
-import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import data = require('data');
 
 // Test stubs for commonly used objects

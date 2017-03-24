@@ -5,7 +5,7 @@
 
 'use strict';
 
-import * as interfaces from 'sql/parts/connection/node/interfaces';
+import * as interfaces from 'sql/parts/connection/common/interfaces';
 
 // TODO: this class might not be needed.
 // The only method in this class needed to be changed to be more generic for all providers

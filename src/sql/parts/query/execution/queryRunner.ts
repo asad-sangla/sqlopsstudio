@@ -14,7 +14,7 @@ import { EventEmitter } from 'events';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
-import * as Utils from 'sql/parts/connection/node/utils';
+import * as Utils from 'sql/parts/connection/common/utils';
 
 /*
 * Query Runner class which handles running a query, reports the results to the content manager,

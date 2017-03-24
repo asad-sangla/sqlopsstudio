@@ -17,7 +17,7 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
-import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
+import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { Memento } from 'vs/workbench/common/memento';
 import { Builder } from 'vs/base/browser/builder';
 import { RunQueryAction, ListDatabasesActionItem } from 'sql/parts/query/execution/queryActions';

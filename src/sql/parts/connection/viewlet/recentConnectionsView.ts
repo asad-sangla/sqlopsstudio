@@ -10,9 +10,9 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
-import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
+import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
+import { TreeUtils } from 'sql/parts/connection/viewlet/recentConnectionsController';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';

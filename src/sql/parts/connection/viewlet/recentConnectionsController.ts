@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import * as errors from 'vs/base/common/errors';
 import { TPromise } from 'vs/base/common/winjs.base';
 import WinJS = require('vs/base/common/winjs.base');
 import nls = require('vs/nls');
@@ -15,22 +14,20 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegistry';
 import { IAction } from 'vs/base/common/actions';
-import { IActionProvider } from 'vs/base/parts/tree/browser/actionsRenderer';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
-import { ServerTreeRenderer, ServerTreeDataSource } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
-import { RecentConnectionsRenderer, RecentConnectionsDragAndDrop } from 'sql/parts/connection/electron-browser/recentConnectionsRenderer';
+import { ServerTreeRenderer, ServerTreeDataSource } from 'sql/parts/connection/viewlet/serverTreeRenderer';
+import { RecentConnectionsDragAndDrop } from 'sql/parts/connection/viewlet/recentConnectionsRenderer';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
-import { AddServerAction, NewQueryAction } from 'sql/parts/connection/electron-browser/connectionTreeAction';
+import { AddServerAction, NewQueryAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
 import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 
 /**

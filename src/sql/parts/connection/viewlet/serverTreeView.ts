@@ -13,12 +13,11 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
-import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
-import { ConnectionProfile } from '../node/connectionProfile';
-import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
-import { AddServerAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/connection/electron-browser/connectionTreeAction';
-import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop } from 'sql/parts/connection/electron-browser/serverTreeRenderer';
-import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/electron-browser/serverTreeController';
+import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
+import { TreeUtils } from 'sql/parts/connection/viewlet/recentConnectionsController';
+import { AddServerAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
+import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop } from 'sql/parts/connection/viewlet/serverTreeRenderer';
+import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/viewlet/serverTreeController';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { TreeExplorerViewletState} from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';

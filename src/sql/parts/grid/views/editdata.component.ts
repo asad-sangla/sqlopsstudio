@@ -11,9 +11,9 @@ import 'vs/css!sql/parts/grid/media/slickGrid';
 
 import { ElementRef, QueryList, ChangeDetectorRef } from '@angular/core';
 import { IGridDataRow, ISlickRange, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
-import * as Constants from 'sql/parts/connection/node/constants';
-import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/node/interfaces';
-import * as Utils from 'sql/parts/connection/node/utils';
+import * as Constants from 'sql/parts/connection/common/constants';
+import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/common/interfaces';
+import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 import * as Services from 'sql/parts/grid/services/sharedServices';

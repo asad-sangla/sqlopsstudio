@@ -6,10 +6,7 @@
 'use strict';
 
 
-import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import  * as Utils  from 'sql/parts/connection/node/utils';
-import data = require('data');
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import * as assert from 'assert';
 
 suite('SQL ConnectionProfileGroup tests', () => {

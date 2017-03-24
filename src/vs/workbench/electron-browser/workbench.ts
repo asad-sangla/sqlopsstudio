@@ -95,7 +95,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
 import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
-import { ConnectionManagementService } from 'sql/parts/connection/node/connectionManagementService';
+import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import { ErrorMessageService } from 'sql/parts/common/errorMessageService';
 

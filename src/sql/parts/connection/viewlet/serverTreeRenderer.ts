@@ -3,20 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 'use strict';
-import dom = require('vs/base/browser/dom');
-import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { append, $ } from 'vs/base/browser/dom';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ITree, IDataSource, IRenderer, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACCEPT_BUBBLE_DOWN, DRAG_OVER_REJECT } from 'vs/base/parts/tree/browser/tree';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { TPromise } from 'vs/base/common/winjs.base';
 import errors = require('vs/base/common/errors');
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
-import { IConnectionProfileGroupTemplateData, IConnectionTemplateData } from 'sql/parts/connection/electron-browser/templateData';
+import { IConnectionProfileGroupTemplateData, IConnectionTemplateData } from 'sql/parts/connection/viewlet/templateData';
 import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
-import { ChangeConnectionAction, NewQueryAction } from 'sql/parts/connection/electron-browser/connectionTreeAction';
-const $ = dom.$;
+import { ChangeConnectionAction, NewQueryAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
+
 
 /**
  * Renders the tree items.
@@ -65,9 +64,9 @@ export class ServerTreeRenderer implements IRenderer {
 	public renderTemplate(tree: ITree, templateId: string, container: HTMLElement): any {
 
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
-			const root = dom.append(container, $('.editor-group'));
-			const serverName = dom.append(root, $('span.name'));
-			const databaseName = dom.append(root, $('div.author.ellipsis'));
+			const root = append(container, $('.editor-group'));
+			const serverName = append(root, $('span.name'));
+			const databaseName = append(root, $('div.author.ellipsis'));
 			if (!this._isCompact) {
 				const actionOptions = { icon: true, label: true };
 				const actionbar = new ActionBar(root, {
@@ -97,8 +96,8 @@ export class ServerTreeRenderer implements IRenderer {
 		}
 		else {
 			const groupTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
-			groupTemplate.root = dom.append(container, $('.server-group'));
-			groupTemplate.name = dom.append(groupTemplate.root, $('span.name'));
+			groupTemplate.root = append(container, $('.server-group'));
+			groupTemplate.name = append(groupTemplate.root, $('span.name'));
 			return groupTemplate;
 		}
 	}

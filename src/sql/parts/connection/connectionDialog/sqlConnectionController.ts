@@ -9,7 +9,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { IConnectionComponentCallbacks, IConnectionComponentController, IConnectionResult } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import { SqlConnectionWidget } from 'sql/parts/connection/connectionDialog/sqlConnectionWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import data = require('data');
 
 export class SqlConnectionController implements IConnectionComponentController {

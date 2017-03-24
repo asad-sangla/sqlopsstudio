@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!./media/extensions';
+import 'vs/css!sql/parts/connection/viewlet/media/extensions';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
@@ -54,7 +54,7 @@ const openViewletKb: IKeybindings = {
 
 // Viewlet
 const viewletDescriptor = new ViewletDescriptor(
-	'sql/parts/connection/electron-browser/connectionViewlet',
+	'sql/parts/connection/viewlet/connectionViewlet',
 	'ConnectionViewlet',
 	VIEWLET_ID,
 	'Connections',

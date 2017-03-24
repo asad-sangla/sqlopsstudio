@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import * as errors from 'vs/base/common/errors';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { ITree, ContextMenuEvent } from 'vs/base/parts/tree/browser/tree';
 import treedefaults = require('vs/base/parts/tree/browser/treeDefaults');
@@ -13,16 +12,14 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegistry';
 import { IAction } from 'vs/base/common/actions';
-import { Keybinding } from 'vs/base/common/keyCodes';
-import { IActionProvider } from 'vs/base/parts/tree/browser/actionsRenderer';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { DragMouseEvent, IMouseEvent } from 'vs/base/browser/mouseEvent';
+import { IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ConnectionProfileGroup } from '../node/connectionProfileGroup';
-import { ConnectionProfile } from '../node/connectionProfile';
+import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
+import { ConnectionProfile } from '../common/connectionProfile';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
-import { TreeUtils } from 'sql/parts/connection/electron-browser/recentConnectionsController';
+import { TreeUtils } from 'sql/parts/connection/viewlet/recentConnectionsController';
 
 /**
  * Extends the tree controller to handle clicks on the tree elements

@@ -7,15 +7,15 @@
 
 
 import * as TypeMoq from 'typemoq';
-import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/node/connectionconfig';
-import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/node/interfaces';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/common/connectionconfig';
+import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/common/interfaces';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
-import * as Constants from 'sql/parts/connection/node/constants';
-import { IConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
+import * as Constants from 'sql/parts/connection/common/constants';
+import { IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as assert from 'assert';
 import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';

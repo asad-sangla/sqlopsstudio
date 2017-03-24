@@ -4,9 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import vscode = require('vscode');
 import data = require('data');
-import * as Constants from 'sql/parts/connection/node/constants';
+import * as Constants from 'sql/parts/connection/common/constants';
 
 // interfaces
 export enum ContentType {

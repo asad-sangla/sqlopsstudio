@@ -122,7 +122,7 @@ import 'vs/workbench/parts/welcome/overlay/browser/welcomeOverlay';
 
 // SQL
 import 'sql/workbench/api/node/sqlExtHost.contribution';
-import 'sql/parts/connection/electron-browser/connection.contribution';
-import 'sql/parts/connection/electron-browser/connectionViewlet';
-import 'sql/parts/query/electron-browser/query.contribution';
+import 'sql/parts/connection/common/connection.contribution';
+import 'sql/parts/connection/viewlet/connectionViewlet';
+import 'sql/parts/query/common/query.contribution';
 import 'sql/workbench/electron-browser/main.contribution';

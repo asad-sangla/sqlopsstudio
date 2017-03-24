@@ -7,12 +7,12 @@ import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService, IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
-import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 
 export class ChangeConnectionAction extends Action {
 

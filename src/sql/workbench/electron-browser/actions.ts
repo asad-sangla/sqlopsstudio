@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';

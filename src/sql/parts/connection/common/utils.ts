@@ -5,7 +5,7 @@
 
 'use strict';
 
-import * as Constants from 'sql/parts/connection/node/constants';
+import * as Constants from 'sql/parts/connection/common/constants';
 import { IConnectionProfile, IConnectionProfileStore } from './interfaces';
 
 // CONSTANTS //////////////////////////////////////////////////////////////////////////////////////

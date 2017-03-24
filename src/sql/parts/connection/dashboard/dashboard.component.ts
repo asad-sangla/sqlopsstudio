@@ -3,7 +3,7 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService, DashboardParameterWrapper } from 'sql/parts/connection/common/connectionManagement';
 import { IDashboardPage } from 'sql/parts/connection/dashboard/common/dashboard';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';

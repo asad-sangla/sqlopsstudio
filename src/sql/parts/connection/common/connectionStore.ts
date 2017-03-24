@@ -9,7 +9,7 @@ import Constants = require('./constants');
 import ConnInfo = require('./connectionInfo');
 import Utils = require('./utils');
 import { ConnectionCredentials } from './connectionCredentials';
-import { ConnectionProfile } from '../node/connectionProfile';
+import { ConnectionProfile } from '../common/connectionProfile';
 import { IConnectionProfile, CredentialsQuickPickItemType } from './interfaces';
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 import { IConnectionConfig } from './iconnectionconfig';

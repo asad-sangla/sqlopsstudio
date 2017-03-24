@@ -16,7 +16,7 @@ import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionOptionSpecialType } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
 

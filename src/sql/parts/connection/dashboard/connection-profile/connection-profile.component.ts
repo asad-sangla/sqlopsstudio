@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OnInit } from '@angular/core';
-import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 
 declare let AngularCore;

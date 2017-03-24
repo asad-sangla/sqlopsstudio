@@ -5,8 +5,8 @@
 
 'use strict';
 
-import Constants = require('sql/parts/connection/node/constants');
-import Utils = require('sql/parts/connection/node/utils');
+import Constants = require('sql/parts/connection/common/constants');
+import Utils = require('sql/parts/connection/common/utils');
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
