@@ -9,11 +9,10 @@ import { Action } from 'vs/base/common/actions';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IConnectionProfile } from 'sql/parts/connection/node/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/node/connectionProfileGroup';
-import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 
 export class ChangeConnectionAction extends Action {
 
@@ -101,11 +100,12 @@ export class AddServerAction extends Action {
 			password: undefined,
 			authenticationType: undefined,
 			groupId: undefined,
-			groupName: element.fullName,
+			groupFullName: element.fullName,
 			savePassword: undefined,
 			getUniqueId: undefined,
 			providerName: '',
-			options: {}
+			options: {},
+			saveProfile: true
 		};
 		this._connectionManagementService.newConnection(undefined, connection);
 		return TPromise.as(true);
@@ -180,8 +180,7 @@ export class NewQueryAction extends Action {
 	public static ID = 'registeredServers.newQuery';
 	public static LABEL = localize('newQuery', 'New Query');
 	private _connectionProfile: ConnectionProfile;
-	get connectionProfile(): ConnectionProfile
-	{
+	get connectionProfile(): ConnectionProfile {
 		return this._connectionProfile;
 	}
 	set connectionProfile(profile: ConnectionProfile) {

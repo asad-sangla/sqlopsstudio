@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 'use strict';
 
 import { IConnectionProfile } from './interfaces';
@@ -16,13 +17,11 @@ import data = require('data');
  * @interface IConnectionConfig
  */
 export interface IConnectionConfig {
-	addConnection(profile: IConnectionProfile): Promise<void>;
+	addConnection(profile: IConnectionProfile): Promise<IConnectionProfile>;
 	getConnections(getWorkspaceConnections: boolean): ConnectionProfile[];
-	removeConnection(profile: IConnectionProfile): Promise<boolean>;
 	getAllGroups(): IConnectionProfileGroup[];
 	changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void>;
 	changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void>;
 	setCachedMetadata(cachedMetaData: data.DataProtocolServerCapabilities[]): void;
 	getCapabilities(providerName: string);
-	getGroupName(groupId: string): string;
 }

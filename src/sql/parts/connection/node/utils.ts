@@ -127,7 +127,7 @@ export function isSameProfile(currentProfile: IConnectionProfile, expectedProfil
 		&& isSameDatabase(expectedProfile.databaseName, currentProfile.databaseName)
 		&& isSameAuthenticationType(expectedProfile.authenticationType, currentProfile.authenticationType)
 		&& expectedProfile.userName === currentProfile.userName
-		&& expectedProfile.groupName === currentProfile.groupName;
+		&& expectedProfile.groupFullName === currentProfile.groupFullName;
 }
 
 export function isSameProfileStore(currentProfile: IConnectionProfileStore, expectedProfile: IConnectionProfileStore) {

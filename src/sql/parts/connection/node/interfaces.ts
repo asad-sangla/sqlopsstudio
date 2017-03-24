@@ -61,16 +61,18 @@ export interface IConnectionProfile extends data.ConnectionInfo {
 	password: string;
 	authenticationType: string;
 	savePassword: boolean;
-	groupName: string;
+	groupFullName: string;
 	groupId: string;
 	getUniqueId(): string;
 	providerName: string;
+	saveProfile: boolean
 };
 
 export interface IConnectionProfileStore {
 	options: {};
 	groupId: string;
 	providerName: string;
+	savePassword: boolean;
 };
 
 export enum CredentialsQuickPickItemType {

@@ -53,6 +53,12 @@ export class ConnectionFactory {
 		return connectionInfo;
 	}
 
+	public updateConnection(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
+		let connectionInfo: ConnectionManagementInfo = this._connections[id];
+		connectionInfo.connectionProfile = connection;
+		return connectionInfo;
+	}
+
 	public onConnectionComplete(summary: data.ConnectionInfoSummary): ConnectionManagementInfo {
 		let connection = this._connections[summary.ownerUri];
 		connection.serviceTimer.end();

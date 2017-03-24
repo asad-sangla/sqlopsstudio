@@ -128,10 +128,10 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		for (var index = 0; index < idNames.length; index++) {
 			let value = this.options[idNames[index]];
 			value = value ? value : '';
-			idValues.push(value);
+			idValues.push(`${idNames[index]}:${value}`);
 		}
 
-		return this.providerName + '_' + idValues.join('_') + '_';
+		return 'providerName:' + this.providerName + ProviderConnectionInfo.idSeparator + idValues.join(ProviderConnectionInfo.idSeparator);
 	}
 
 	public getSpecialTypeOptionName(type: number): string {
@@ -152,6 +152,10 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 
 	public getProviderOptions(): data.ConnectionOption[] {
 		return this._serverCapabilities.connectionProvider.options;
+	}
+
+	public static get idSeparator(): string {
+		return '|';
 	}
 }
 

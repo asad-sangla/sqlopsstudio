@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 'use strict';
 
 import { IConnectionProfile } from './interfaces';
 import { ConnectionProfileGroup } from './connectionProfileGroup';
-import * as utils from './utils';
 import data = require('data');
 import { ProviderConnectionInfo } from 'sql/parts/connection/node/providerConnectionInfo';
 import * as interfaces from 'sql/parts/connection/node/interfaces';
@@ -21,15 +21,22 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	public parent: ConnectionProfileGroup = null;
 	private _id: string;
 	public savePassword: boolean;
-	public groupName: string;
+	private _groupName: string;
 	public groupId: string;
+	public saveProfile: boolean;
 
 	public constructor(serverCapabilities?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
 		super(serverCapabilities, model);
 		if (model) {
 			this.groupId = model.groupId;
-			this.groupName = model.groupName;
+			this.groupFullName = model.groupFullName;
 			this.savePassword = model.savePassword;
+			this.saveProfile = model.saveProfile;
+		} else {
+			//Default for a new connection
+			this.savePassword = false;
+			this.saveProfile = true;
+			this._groupName = ConnectionProfile.RootGroupName;
 		}
 	}
 
@@ -52,10 +59,24 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		this._id = value;
 	}
 
+	public get groupFullName(): string {
+		return this._groupName;
+	}
+
+	public set groupFullName(value: string) {
+		this._groupName = value;
+	}
+
+	public get isAddedToRootGroup(): boolean {
+		return (this._groupName === ConnectionProfile.RootGroupName);
+	}
+
 	public clone(): ConnectionProfile {
 		let instance = new ConnectionProfile(this._serverCapabilities, this);
 		return instance;
 	}
+
+	public static RootGroupName: string = '/';
 
 	public withoutPassword(): ConnectionProfile {
 		let clone = this.clone();
@@ -65,7 +86,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 
 	public getUniqueId(): string {
 		let id = super.getUniqueId();
-		return id + this.groupId;
+		return id + ProviderConnectionInfo.idSeparator + 'group:' + this.groupId;
 	}
 
 	/**
@@ -88,12 +109,13 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			authenticationType: this.authenticationType,
 			getUniqueId: undefined,
 			groupId: this.groupId,
-			groupName: this.groupName,
+			groupFullName: this.groupFullName,
 			password: this.password,
 			providerName: this.providerName,
 			savePassword: this.savePassword,
 			userName: this.userName,
-			options: this.options
+			options: this.options,
+			saveProfile: this.saveProfile
 		};
 
 		return result;
@@ -104,6 +126,8 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		connectionInfo.options = profile.options;
 		connectionInfo.groupId = profile.groupId;
 		connectionInfo.providerName = profile.providerName;
+		connectionInfo.saveProfile = true;
+		connectionInfo.savePassword = profile.savePassword;
 		return connectionInfo;
 	}
 
@@ -118,7 +142,8 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		let profile: interfaces.IConnectionProfileStore = {
 			options: {},
 			groupId: connectionProfile.groupId,
-			providerName: connectionInfo.providerName
+			providerName: connectionInfo.providerName,
+			savePassword: connectionInfo.savePassword
 		};
 
 		profile.options = connectionInfo.options;

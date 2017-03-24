@@ -21,11 +21,12 @@ suite('SQL ProviderConnectionInfo tests', () => {
 		password: 'password',
 		authenticationType: '',
 		savePassword: true,
-		groupName: 'g2/g2-2',
+		groupFullName: 'g2/g2-2',
 		groupId: undefined,
 		getUniqueId: undefined,
 		providerName: 'MSSQL',
-		options: undefined
+		options: undefined,
+		saveProfile: true
 	};
 
 	setup(() => {
@@ -187,7 +188,7 @@ suite('SQL ProviderConnectionInfo tests', () => {
 
 	test('getUniqueId should create a valid unique id', () => {
 		let conn = new ProviderConnectionInfo(msSQLCapabilities, connectionProfile);
-		let expectedId = 'MSSQL__database_new server_user_';
+		let expectedId = 'providerName:MSSQL|authenticationType:|databaseName:database|serverName:new server|userName:user';
 		let id = conn.getUniqueId();
 		assert.equal(id, expectedId);
 	});

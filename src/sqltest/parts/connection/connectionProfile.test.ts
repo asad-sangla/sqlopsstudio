@@ -21,11 +21,12 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		password: 'password',
 		authenticationType: '',
 		savePassword: true,
-		groupName: 'g2/g2-2',
+		groupFullName: 'g2/g2-2',
 		groupId: 'group id',
 		getUniqueId: undefined,
 		providerName: 'MSSQL',
-		options: {}
+		options: {},
+		saveProfile: true
 	};
 
 	setup(() => {
@@ -112,7 +113,7 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		conn.password = connectionProfile.password;
 		conn.userName = connectionProfile.userName;
 		conn.groupId = connectionProfile.groupId;
-		conn.groupName = connectionProfile.groupName;
+		conn.groupFullName = connectionProfile.groupFullName;
 		conn.savePassword = connectionProfile.savePassword;
 		assert.equal(conn.serverName, connectionProfile.serverName);
 		assert.equal(conn.databaseName, connectionProfile.databaseName);
@@ -120,7 +121,7 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		assert.equal(conn.password, connectionProfile.password);
 		assert.equal(conn.userName, connectionProfile.userName);
 		assert.equal(conn.groupId, connectionProfile.groupId);
-		assert.equal(conn.groupName, connectionProfile.groupName);
+		assert.equal(conn.groupFullName, connectionProfile.groupFullName);
 		assert.equal(conn.savePassword, connectionProfile.savePassword);
 	});
 
@@ -133,13 +134,13 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		assert.equal(conn.password, connectionProfile.password);
 		assert.equal(conn.userName, connectionProfile.userName);
 		assert.equal(conn.groupId, connectionProfile.groupId);
-		assert.equal(conn.groupName, connectionProfile.groupName);
+		assert.equal(conn.groupFullName, connectionProfile.groupFullName);
 		assert.equal(conn.savePassword, connectionProfile.savePassword);
 	});
 
 	test('getUniqueId should create a valid unique id', () => {
 		let conn = new ConnectionProfile(msSQLCapabilities, connectionProfile);
-		let expectedId = 'MSSQL__database_new server_user_group id';
+		let expectedId = 'providerName:MSSQL|authenticationType:|databaseName:database|serverName:new server|userName:user|group:group id';
 		let id = conn.getUniqueId();
 		assert.equal(id, expectedId);
 	});

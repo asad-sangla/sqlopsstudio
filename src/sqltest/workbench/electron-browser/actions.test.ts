@@ -28,7 +28,7 @@ suite('SQL Actions Tests', () => {
 		// Setting up test connection profiles
 		connection = new ConnectionProfile(undefined, {
 			savePassword: false,
-			groupName: 'testGroup',
+			groupFullName: 'testGroup',
 			serverName: 'testServerName',
 			databaseName: 'testDatabaseName',
 			authenticationType: 'inetgrated',
@@ -37,7 +37,8 @@ suite('SQL Actions Tests', () => {
 			groupId: undefined,
 			getUniqueId: undefined,
 			providerName: 'MSSQL',
-			options: {}
+			options: {},
+			saveProfile: true
 		});
 		connection.id = 'testID';
 		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');

@@ -7,7 +7,7 @@
 
 
 import * as TypeMoq from 'typemoq';
-import { ConnectionConfig } from 'sql/parts/connection/node/connectionconfig';
+import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/node/connectionconfig';
 import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/node/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/node/connectionProfile';
 import { ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
@@ -34,7 +34,7 @@ suite('SQL ConnectionConfig tests', () => {
 		workspace: [{
 			name: 'g1',
 			id: 'g1',
-			parentId: ''
+			parentId: 'ROOT'
 		},
 		{
 			name: 'g1-1',
@@ -43,9 +43,13 @@ suite('SQL ConnectionConfig tests', () => {
 		}
 		],
 		user: [{
+			name: 'ROOT',
+			id: 'ROOT',
+			parentId: ''
+		}, {
 			name: 'g2',
 			id: 'g2',
-			parentId: ''
+			parentId: 'ROOT'
 		},
 		{
 			name: 'g2-1',
@@ -115,7 +119,8 @@ suite('SQL ConnectionConfig tests', () => {
 				authenticationType: ''
 			},
 			providerName: 'MSSQL',
-			groupId: undefined
+			groupId: 'test',
+			savePassword: true
 		}
 
 
@@ -129,7 +134,8 @@ suite('SQL ConnectionConfig tests', () => {
 				authenticationType: ''
 			},
 			providerName: 'MSSQL',
-			groupId: undefined
+			groupId: 'test',
+			savePassword: true
 		}, {
 			options: {
 				serverName: 'server3',
@@ -139,7 +145,8 @@ suite('SQL ConnectionConfig tests', () => {
 				authenticationType: ''
 			},
 			providerName: 'MSSQL',
-			groupId: undefined
+			groupId: 'test',
+			savePassword: true
 		}
 		],
 		value: [
@@ -322,11 +329,12 @@ suite('SQL ConnectionConfig tests', () => {
 			password: 'password',
 			authenticationType: '',
 			savePassword: true,
-			groupName: undefined,
+			groupFullName: undefined,
 			groupId: undefined,
 			getUniqueId: undefined,
 			providerName: 'MSSQL',
-			options: {}
+			options: {},
+			saveProfile: true
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
@@ -334,10 +342,13 @@ suite('SQL ConnectionConfig tests', () => {
 		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
 			Constants.connectionsArrayName))
 			.returns(() => connections);
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
+			.returns(() => configValueToConcat);
 
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
-		config.addConnection(connectionProfile).then(success => {
+		config.addConnection(connectionProfile).then(savedConnectionProfile => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
 			done();
@@ -357,10 +368,11 @@ suite('SQL ConnectionConfig tests', () => {
 			authenticationType: profileFromConfig.options['authenticationType'],
 			groupId: profileFromConfig.groupId,
 			savePassword: true,
-			groupName: undefined,
+			groupFullName: undefined,
 			getUniqueId: undefined,
 			providerName: 'MSSQL',
-			options: {}
+			options: {},
+			saveProfile: true
 		};
 
 		let expectedNumberOfConnections = connections.user.length;
@@ -368,6 +380,9 @@ suite('SQL ConnectionConfig tests', () => {
 		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
 			Constants.connectionsArrayName))
 			.returns(() => connections);
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
+			.returns(() => configValueToConcat);
 
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
@@ -389,11 +404,12 @@ suite('SQL ConnectionConfig tests', () => {
 			password: 'password',
 			authenticationType: '',
 			savePassword: true,
-			groupName: 'g2/g2-2',
+			groupFullName: 'g2/g2-2',
 			groupId: undefined,
 			getUniqueId: undefined,
 			providerName: 'MSSQL',
-			options: {}
+			options: {},
+			saveProfile: true
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
@@ -445,7 +461,7 @@ suite('SQL ConnectionConfig tests', () => {
 		assert.equal(allConnections.length, connections.user.length);
 	});
 
-	test('getConnections should return connections from user settings given getWorkspaceConnections set to false', () => {
+	test('getConnections update the capabilities in each profile when the provider capabilities is registered', () => {
 		let oldOptionName: string = 'oldOptionName';
 		let optionsMetadataFromConfig = capabilities[0].connectionProvider.options.concat({
 			name: oldOptionName,
@@ -472,7 +488,7 @@ suite('SQL ConnectionConfig tests', () => {
 		};
 		capabilitiesFromConfig.push(msSQLCapabilities2);
 		let connectionUsingOldMetadata = connections.user.map(c => {
-			c.options[oldOptionName] = 'test';
+			c.options[oldOptionName] = 'oldOptionValue';
 			return c;
 		});
 		let configValue = Object.assign(connections, { user: connectionUsingOldMetadata });
@@ -487,14 +503,53 @@ suite('SQL ConnectionConfig tests', () => {
 		let allConnections = config.getConnections(false);
 		allConnections.forEach(element => {
 			assert.notEqual(element.serverName, undefined);
-			assert.notEqual(element.getUniqueId().indexOf('test_'), -1);
+			assert.notEqual(element.getUniqueId().indexOf('oldOptionValue|'), -1);
 		});
 
 		onProviderRegistered.fire(msSQLCapabilities);
 		allConnections.forEach(element => {
 			assert.notEqual(element.serverName, undefined);
-			assert.equal(element.getUniqueId().indexOf('test_'), -1);
+			assert.equal(element.getUniqueId().indexOf('oldOptionValue|'), -1);
 		});
+	});
+
+	test('saveGroup should save the new groups to tree and return the id of the last group name', () => {
+		let config = new ConnectionConfig(undefined, undefined, undefined, undefined);
+		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
+		let expectedLength = configValueToConcat.user.length + 2;
+		let newGroups: string = 'ROOT/g1/g1-1';
+
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		assert.notEqual(result, undefined);
+		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
+		let newGroup = result.groups.find(g => g.name === 'g1-1');
+		assert.equal(result.newGroupId, newGroup.id, 'The groups id is invalid');
+	});
+
+	test('saveGroup should only add the groups that are not in the tree', () => {
+		let config = new ConnectionConfig(undefined, undefined, undefined, undefined);
+		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
+		let expectedLength = configValueToConcat.user.length + 1;
+		let newGroups: string = 'ROOT/g2/g2-5';
+
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		assert.notEqual(result, undefined);
+		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
+		let newGroup = result.groups.find(g => g.name === 'g2-5');
+		assert.equal(result.newGroupId, newGroup.id, 'The groups id is invalid');
+	});
+
+	test('saveGroup should not add any new group if tree already has all the groups in the full path', () => {
+		let config = new ConnectionConfig(undefined, undefined, undefined, undefined);
+		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
+		let expectedLength = configValueToConcat.user.length;
+		let newGroups: string = 'ROOT/g2/g2-1';
+
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		assert.notEqual(result, undefined);
+		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
+		let newGroup = result.groups.find(g => g.name === 'g2-1');
+		assert.equal(result.newGroupId, newGroup.id, 'The groups id is invalid');
 	});
 });
 

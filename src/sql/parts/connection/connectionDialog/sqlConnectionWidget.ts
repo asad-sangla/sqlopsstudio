@@ -217,12 +217,13 @@ export class SqlConnectionWidget {
 			this._databaseNameInputBox.value = this.getModelValue(connectionInfo.databaseName);
 			this._userNameInputBox.value = this.getModelValue(connectionInfo.userName);
 			this._passwordInputBox.value = this.getModelValue(connectionInfo.password);
-			this._serverGroupInputBox.value = this.getModelValue(connectionInfo.groupName);
+			this._serverGroupInputBox.value = this.getModelValue(connectionInfo.groupFullName);
 			this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
+			this._saveConnectionCheckbox.checked = connectionInfo.saveProfile;
 			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
 				var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
 				authTypeOption.categoryValues.forEach(c => {
-					if(c.name === connectionInfo.authenticationType) {
+					if (c.name === connectionInfo.authenticationType) {
 						this._authTypeSelectBox.selectWithOptionName(c.displayName);
 					}
 				});
@@ -263,7 +264,7 @@ export class SqlConnectionWidget {
 		var authType: string;
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
 		authTypeOption.categoryValues.forEach(c => {
-			if(c.displayName === this._authTypeSelectBox.value) {
+			if (c.displayName === this._authTypeSelectBox.value) {
 				authType = c.name;
 			}
 		});
@@ -309,8 +310,9 @@ export class SqlConnectionWidget {
 			model.password = this.password;
 			model.authenticationType = this.authenticationType;
 			model.savePassword = this._rememberPasswordCheckBox.checked;
-			model.groupName = this.serverGroup;
+			model.groupFullName = this.serverGroup;
 			model.groupId = undefined;
+			model.saveProfile = this._saveConnectionCheckbox.checked;
 		}
 		return validInputs;
 	}

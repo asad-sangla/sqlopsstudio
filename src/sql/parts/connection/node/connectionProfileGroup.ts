@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 'use strict';
 
 import { ConnectionProfile } from './connectionProfile';
-import data = require('data');
+import * as Utils from './utils';
 
 export interface IConnectionProfileGroup {
 	id: string;
@@ -25,20 +25,24 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 		public id: string
 	) {
 		this.parentId = _parent ? _parent.id : undefined;
+		if (this.name === ConnectionProfileGroup.RootGroupName) {
+			this.name = '';
+		}
 	}
 
 	public static GroupNameSeparator: string = '/';
+	public static RootGroupName: string = 'ROOT';
 
 	public toObject(): IConnectionProfileGroup {
 		let subgroups = undefined;
 		if (this.children) {
 			subgroups = [];
 			this.children.forEach((group) => {
-			subgroups.push(group.toObject());
-		});
+				subgroups.push(group.toObject());
+			});
 		}
 
-		return Object.assign({},{name: this.name, id: this.id, parentId: this.parentId, children: subgroups});
+		return Object.assign({}, { name: this.name, id: this.id, parentId: this.parentId, children: subgroups });
 	}
 
 	public get groupName(): string {
@@ -110,5 +114,18 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 
 	public getParent(): ConnectionProfileGroup {
 		return this._parent;
+	}
+
+	public static getGroupFullNameParts(groupFullName: string): string[] {
+		groupFullName = groupFullName ? groupFullName : '';
+		let groupNames: string[] = groupFullName.split(ConnectionProfileGroup.GroupNameSeparator);
+		groupNames = groupNames.filter(g => !Utils.isEmpty(g));
+		if (groupNames.length === 0) {
+			groupNames.push('ROOT');
+		} else if (groupNames[0].toUpperCase() !== 'ROOT') {
+			groupNames.unshift('ROOT');
+		}
+		groupNames[0] = 'ROOT';
+		return groupNames;
 	}
 }

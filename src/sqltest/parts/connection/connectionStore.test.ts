@@ -45,10 +45,11 @@ suite('SQL ConnectionStore tests', () => {
 			password: 'asdf!@#$',
 			savePassword: true,
 			groupId: '',
-			groupName: '',
+			groupFullName: '',
 			getUniqueId: undefined,
 			providerName: 'MSSQL',
-			options: {}
+			options: {},
+			saveProfile: true
 		});
 
 		defaultUnnamedProfile = Object.assign({}, {
@@ -59,10 +60,11 @@ suite('SQL ConnectionStore tests', () => {
 			password: 'asdf!@#$',
 			savePassword: true,
 			groupId: '',
-			groupName: '',
+			groupFullName: '',
 			getUniqueId: undefined,
 			providerName: 'MSSQL',
-			options: {}
+			options: {},
+			saveProfile: true
 		});
 
 		let momento = new Memento('ConnectionManagement');

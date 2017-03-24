@@ -31,6 +31,8 @@ import data = require('data');
 export class ConnectionStore {
 
 	private _memento: any;
+	private _groupIdToFullNameMap: { [groupId: string]: string };
+	private _groupFullNameToIdMap: { [groupId: string]: string };
 
 	constructor(
 		private _storageService: IStorageService,
@@ -43,6 +45,8 @@ export class ConnectionStore {
 	) {
 
 		this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
+		this._groupIdToFullNameMap = {};
+		this._groupFullNameToIdMap = {};
 
 		if (!this._connectionConfig) {
 			let cachedServerCapabilities = this.getCachedServerCapabilities();
@@ -154,8 +158,9 @@ export class ConnectionStore {
 				savedProfile = this.getProfileWithoutPassword(profile);
 			}
 
-			self._connectionConfig.addConnection(savedProfile)
-				.then(() => {
+			self.saveProfileToConfig(savedProfile)
+				.then(savedConnectionProfile => {
+					profile = savedConnectionProfile;
 					// Only save if we successfully added the profile
 					return self.saveProfilePasswordIfNeeded(profile);
 					// And resolve / reject at the end of the process
@@ -171,6 +176,15 @@ export class ConnectionStore {
 					reject(err);
 				});
 		});
+	}
+
+	private saveProfileToConfig(profile: IConnectionProfile): Promise<IConnectionProfile> {
+		const self = this;
+		if (profile.saveProfile) {
+			return self._connectionConfig.addConnection(profile);
+		} else {
+			return self.addUnSavedConnection(profile);
+		}
 	}
 
 	private getCachedServerCapabilities(): data.DataProtocolServerCapabilities[] {
@@ -214,8 +228,11 @@ export class ConnectionStore {
 				this._capabilitiesService.onProviderRegisteredEvent((serverCapabilities) => {
 					connectionProfile.onProviderRegistered(serverCapabilities);
 				});
-				if (!connectionProfile.groupName && connectionProfile.groupId) {
-					connectionProfile.groupName = this._connectionConfig.getGroupName(connectionProfile.groupId);
+				if (Utils.isEmpty(connectionProfile.groupFullName) && connectionProfile.groupId) {
+					connectionProfile.groupFullName = this.getGroupFullName(connectionProfile.groupId);
+				}
+				if (Utils.isEmpty(connectionProfile.groupId) && connectionProfile.groupFullName) {
+					connectionProfile.groupId = this.getGroupId(connectionProfile.groupFullName);
 				}
 				return connectionProfile;
 			} else {
@@ -257,6 +274,21 @@ export class ConnectionStore {
 		return this.convertConfigValuesToConnectionProfiles(configValues);
 	}
 
+	/**
+	 * Gets the list of unsaved connections. These will not include the password - a separate call to
+	 * {addSavedPassword} is needed to fill that before connecting
+	 *
+	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
+	 */
+	public getUnSavedConnections(): ConnectionProfile[] {
+		let configValues: IConnectionProfile[] = this._memento['UNSAVED_CONNECTIONS'];
+		if (!configValues) {
+			configValues = [];
+		}
+
+		return this.convertConfigValuesToConnectionProfiles(configValues);
+	}
+
 	public getProfileWithoutPassword(conn: IConnectionProfile): ConnectionProfile {
 		let savedConn: ConnectionProfile = this.convertToConnectionProfile(conn);
 		savedConn = savedConn.withoutPassword();
@@ -289,21 +321,45 @@ export class ConnectionStore {
 		return new Promise<void>((resolve, reject) => {
 			// Get all profiles
 			let configValues = self.getActiveConnections();
-			let savedProfile: ConnectionProfile = this.getProfileWithoutPassword(conn);
-
-			// Remove the connection from the list if it already exists
-			configValues = configValues.filter(value => value.getUniqueId() !== savedProfile.getUniqueId());
-
-			configValues.unshift(savedProfile);
-
-
-			let configToSave = configValues.map(c => {
-				return c.toIConnectionProfile();
-			});
+			let configToSave = this.addToConnectionList(conn, configValues);
 			self._memento['ACTIVE_CONNECTIONS'] = configToSave;
 			self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
 			resolve(undefined);
 		});
+	}
+
+	/**
+	 * Adds a connection to the active connections list.
+	 * Password values are stored to a separate credential store if the "savePassword" option is true
+	 *
+	 * @param {IConnectionCredentials} conn the connection to add
+	 * @returns {Promise<void>} a Promise that returns when the connection was saved
+	 */
+	public addUnSavedConnection(conn: IConnectionProfile): Promise<IConnectionProfile> {
+
+		const self = this;
+		return new Promise<IConnectionProfile>((resolve, reject) => {
+			// Get all profiles
+			let configValues = self.getUnSavedConnections();
+			let configToSave = this.addToConnectionList(conn, configValues);
+			self._memento['UNSAVED_CONNECTIONS'] = configToSave;
+			resolve(conn);
+		});
+	}
+
+	private addToConnectionList(conn: IConnectionProfile, list: ConnectionProfile[]): IConnectionProfile[] {
+		let savedProfile: ConnectionProfile = this.getProfileWithoutPassword(conn);
+
+		// Remove the connection from the list if it already exists
+		list = list.filter(value => value.getUniqueId() !== savedProfile.getUniqueId());
+
+		list.unshift(savedProfile);
+
+		let newList = list.map(c => {
+			let connectionProfile = c.toIConnectionProfile();
+			return connectionProfile;
+		});
+		return newList;
 	}
 
 	/**
@@ -388,48 +444,6 @@ export class ConnectionStore {
 		});
 	}
 
-	/**
-	 * Removes a profile from the user settings and deletes any related password information
-	 * from the credential store
-	 *
-	 * @param {IConnectionProfile} profile the profile to be removed
-	 * @param {Boolean} keepCredentialStore optional value to keep the credential store after a profile removal
-	 * @returns {Promise<boolean>} true if successful
-	 */
-	public removeProfile(profile: IConnectionProfile, keepCredentialStore: boolean = false): Promise<boolean> {
-		const self = this;
-		return new Promise<boolean>((resolve, reject) => {
-			self._connectionConfig.removeConnection(profile).then(profileFound => {
-				resolve(profileFound);
-			}).catch(err => {
-				reject(err);
-			});
-		}).then(profileFound => {
-			// Remove the profile from the recently used list if necessary
-			return new Promise<boolean>((resolve, reject) => {
-				self.removeRecentlyUsed(profile).then(() => {
-					self.removeActiveConnection(profile).then(() => {
-						resolve(profileFound);
-					}).catch(err => {
-						reject(err);
-					});
-				}).catch(err => {
-					reject(err);
-				});
-			});
-		}).then(profileFound => {
-			// Now remove password from credential store. Currently do not care about status unless an error occurred
-			if (profile.savePassword === true && !keepCredentialStore) {
-				let credentialId = this.formatCredentialId(profile, ConnectionStore.CRED_PROFILE_USER);
-				self._credentialService.deleteCredential(credentialId).then(undefined, rejected => {
-					throw new Error(rejected);
-				});
-			}
-
-			return profileFound;
-		});
-	}
-
 	public getConnectionProfileGroups(): ConnectionProfileGroup[] {
 		let profilesInConfiguration = this._connectionConfig.getConnections(true);
 		let groups = this._connectionConfig.getAllGroups();
@@ -444,9 +458,11 @@ export class ConnectionStore {
 		if (children) {
 			children.map(group => {
 				let connectionGroup = new ConnectionProfileGroup(group.name, parent, group.id);
+				this.addGroupFullNameToMap(group.id, connectionGroup.fullName);
 				let connectionsForGroup = connections.filter(conn => conn.groupId === connectionGroup.id);
 				var conns = [];
 				connectionsForGroup.forEach((conn) => {
+					conn.groupFullName = connectionGroup.fullName;
 					conns.push(conn);
 				});
 				connectionGroup.addConnections(conns);
@@ -483,5 +499,18 @@ export class ConnectionStore {
 
 	public changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
 		return this._connectionConfig.changeGroupIdForConnection(source, targetGroupId);
+	}
+
+	private addGroupFullNameToMap(groupId: string, groupFullName: string): void {
+		this._groupIdToFullNameMap[groupId] = groupFullName;
+		this._groupFullNameToIdMap[groupFullName] = groupId;
+	}
+
+	private getGroupFullName(groupId: string): string {
+		return this._groupIdToFullNameMap[groupId];
+	}
+
+	private getGroupId(groupFullName: string): string {
+		return this._groupFullNameToIdMap[groupFullName];
 	}
 }

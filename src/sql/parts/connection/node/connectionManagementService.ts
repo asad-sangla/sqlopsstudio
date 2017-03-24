@@ -124,7 +124,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			//If there's an open connection with the same id then don't connect again
 			return this.connect(uri, connection).then(connected => {
 				if (connected) {
-					this.saveToSettings(connection).then(value => {
+					this.saveToSettings(uri, connection).then(value => {
 						if (value) {
 							this._onAddConnectionProfile.fire();
 						}
@@ -208,26 +208,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private getActiveEditorUri(): string {
-		try {
-			let activeEditor = this._editorService.getActiveEditor();
-			if (activeEditor !== undefined) {
-				return this.getActiveEditorInputResource();
-			} else {
-				return undefined;
-			}
-		} catch (e) {
-			return undefined;
-		}
-	}
-
-	private saveToSettings(connection: IConnectionProfile): Promise<boolean> {
+	private saveToSettings(id: string, connection: IConnectionProfile): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			this._connectionStore.saveProfile(connection).then(result => {
+			this._connectionStore.saveProfile(connection).then(savedProfile => {
+				this._connectionFactory.updateConnection(savedProfile, id);
 				return resolve(true);
 			});
 		});
-
 	}
 
 	/**
@@ -317,6 +304,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					resolve(status);
 				}, (error) => {
 					owner.onConnectReject();
+					reject(error);
 				});
 			});
 		});
