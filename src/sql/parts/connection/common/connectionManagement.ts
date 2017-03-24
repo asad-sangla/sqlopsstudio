@@ -102,7 +102,6 @@ export interface INewConnectionParams {
 	connectionType: ConnectionType;
 	input?: IConnectableInput;
 	runQueryOnCompletion?: boolean;
-	disconnectExistingConnection?: boolean;
 }
 
 export interface IConnectableInput {

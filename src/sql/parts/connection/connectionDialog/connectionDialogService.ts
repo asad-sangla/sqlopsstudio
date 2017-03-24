@@ -72,11 +72,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			if (params && params.connectionType === ConnectionType.default) {
 				this.handleDefaultOnConnect(result.connection);
 			} else if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
-				if (params.disconnectExistingConnection) {
-					this.handleQueryEditorOnChangeConnection(params, result.connection);
-				} else {
-					this.handleQueryEditorOnConnect(params, result.connection);
-				}
+				this.handleQueryEditorOnConnect(params, result.connection);
 			}
 		} else {
 			this._connectionDialog.showError('Missing required fields');
@@ -106,29 +102,10 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			if (connected) {
 				this._connectionDialog.close();
 			}
-
 		}).catch(err => {
 			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
 			this._connectionDialog.resetConnection();
 		});
-	}
-
-	private handleQueryEditorOnChangeConnection(params: INewConnectionParams, connection: IConnectionProfile): void {
-		this._connectionManagementService.disconnectEditor(params.input, true)
-			.then(disconnected => {
-				if (disconnected) {
-					return this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, connection);
-				}
-				return false;
-			})
-			.then(connected => {
-				if (connected) {
-					this._connectionDialog.close();
-				}
-			}).catch(err => {
-				this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
-				this._connectionDialog.resetConnection();
-			});
 	}
 
 	private get sqlUiController(): SqlConnectionController {

@@ -28,7 +28,7 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
 import {
 	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
-	DisconnectDatabaseAction, ConnectDatabaseAction, ChangeConnectionAction
+	DisconnectDatabaseAction, ConnectDatabaseAction
 } from 'sql/parts/query/execution/queryActions';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
@@ -70,7 +70,7 @@ export class QueryEditor extends BaseEditor {
 	private _cancelQueryAction: CancelQueryAction;
 	private _connectDatabaseAction: ConnectDatabaseAction;
 	private _disconnectDatabaseAction: DisconnectDatabaseAction;
-	private _changeConnectionAction: ChangeConnectionAction;
+	private _changeConnectionAction: ConnectDatabaseAction;
 	private _listDatabasesAction: ListDatabasesAction;
 
 	constructor(
@@ -258,9 +258,9 @@ export class QueryEditor extends BaseEditor {
 		// Create Actions for the toolbar
 		this._runQueryAction = this._instantiationService.createInstance(RunQueryAction, this);
 		this._cancelQueryAction = this._instantiationService.createInstance(CancelQueryAction, this);
-		this._connectDatabaseAction = this._instantiationService.createInstance(ConnectDatabaseAction, this);
+		this._connectDatabaseAction = this._instantiationService.createInstance(ConnectDatabaseAction, this, false);
 		this._disconnectDatabaseAction = this._instantiationService.createInstance(DisconnectDatabaseAction, this);
-		this._changeConnectionAction = this._instantiationService.createInstance(ChangeConnectionAction, this);
+		this._changeConnectionAction = this._instantiationService.createInstance(ConnectDatabaseAction, this, true);
 		this._listDatabasesAction = this._instantiationService.createInstance(ListDatabasesAction, this);
 
 		// Create HTML Elements for the taskbar
@@ -590,7 +590,7 @@ export class QueryEditor extends BaseEditor {
 		return this._disconnectDatabaseAction;
 	}
 
-	public get changeConnectionAction(): ChangeConnectionAction{
+	public get changeConnectionAction(): ConnectDatabaseAction {
 		return this._changeConnectionAction;
 	}
 }

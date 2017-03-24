@@ -72,12 +72,11 @@ export abstract class QueryTaskbarAction extends Action {
 	 * Connects the given editor to it's current URI.
 	 * Public for testing only.
 	 */
-	protected connectEditor(editor: QueryEditor, runQueryOnCompletion?: boolean, disconnectExistingConnection?: boolean): void {
+	protected connectEditor(editor: QueryEditor, runQueryOnCompletion?: boolean): void {
 		let params: INewConnectionParams = {
 			input: editor.currentQueryInput,
 			connectionType: ConnectionType.queryEditor,
 			runQueryOnCompletion: runQueryOnCompletion ? runQueryOnCompletion : false,
-			disconnectExistingConnection: disconnectExistingConnection ? disconnectExistingConnection : false
 		};
 		this._connectionManagementService.newConnection(params);
 	}
@@ -162,7 +161,7 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
 		editor: QueryEditor,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
-		super(connectionManagementService, editor, CancelQueryAction.ID, DisconnectDatabaseAction.EnabledClass);
+		super(connectionManagementService, editor, DisconnectDatabaseAction.ID, DisconnectDatabaseAction.EnabledClass);
 		this.label = nls.localize('disconnectDatabaseLabel', 'Disconnect');
 	}
 
@@ -179,45 +178,26 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
  */
 export class ConnectDatabaseAction extends QueryTaskbarAction {
 
-	public static EnabledClass = 'connectDatabase';
+	public static EnabledDefaultClass = 'connectDatabase';
+	public static EnabledChangeClass = 'changeConnectionDatabase';
 	public static ID = 'connectDatabaseAction';
 
 	constructor(
 		editor: QueryEditor,
+		isChangeConnectionAction: boolean,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
-		super(connectionManagementService, editor, CancelQueryAction.ID, ConnectDatabaseAction.EnabledClass);
+		let enabledClass: string = ConnectDatabaseAction.EnabledDefaultClass;
+		if (isChangeConnectionAction) {
+			enabledClass = ConnectDatabaseAction.EnabledChangeClass;
+		}
+
+		super(connectionManagementService, editor, ConnectDatabaseAction.ID, enabledClass);
 		this.label = nls.localize('connectDatabaseLabel', 'Connect');
 	}
 
 	public run(): TPromise<void> {
-		if (!this.isConnected(this.editor)) {
-			this.connectEditor(this.editor, false);
-		}
-		return TPromise.as(null);
-	}
-}
-
-/**
- * Action class that launches a connection dialogue for the current query file
- */
-export class ChangeConnectionAction extends QueryTaskbarAction {
-
-	public static EnabledClass = 'changeConnectionDatabase';
-	public static ID = 'changeConnectionDatabaseAction';
-
-	constructor(
-		editor: QueryEditor,
-		@IConnectionManagementService connectionManagementService: IConnectionManagementService
-	) {
-		super(connectionManagementService, editor, CancelQueryAction.ID, ChangeConnectionAction.EnabledClass);
-		this.label = nls.localize('changeConnectionDatabaseLabel', 'Change Connection');
-	}
-
-	public run(): TPromise<void> {
-		if (this.isConnected(this.editor)) {
-			this.connectEditor(this.editor, false, true);
-		}
+		this.connectEditor(this.editor);
 		return TPromise.as(null);
 	}
 }

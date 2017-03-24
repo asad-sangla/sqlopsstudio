@@ -8,7 +8,7 @@
 import { IConnectionManagementService, ConnectionType, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import { RunQueryAction, CancelQueryAction, ListDatabasesActionItem,
-	DisconnectDatabaseAction, ConnectDatabaseAction, ChangeConnectionAction, QueryTaskbarAction
+	DisconnectDatabaseAction, ConnectDatabaseAction, QueryTaskbarAction
 } from 'sql/parts/query/execution/queryActions';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { TestEditorGroupService } from 'vs/workbench/test/workbenchTestServices';
@@ -196,7 +196,7 @@ suite('SQL QueryAction Tests', () => {
 		done();
 	});
 
-	test('ConnectDatabaseAction opens dialog only if URI is not connected', (done) => {
+	test('ConnectDatabaseAction opens dialog regardless of URI connection state', (done) => {
 		// ... Create assert variables
 		let isConnected: boolean = undefined;
 		let connectionParams: INewConnectionParams = undefined;
@@ -216,7 +216,7 @@ suite('SQL QueryAction Tests', () => {
 		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAnyString())).returns(() => isConnected);
 
 		// If I call run on ConnectDatabaseAction when I am not connected
-		let queryAction: ConnectDatabaseAction = new ConnectDatabaseAction(editor.object, connectionManagementService.object);
+		let queryAction: ConnectDatabaseAction = new ConnectDatabaseAction(editor.object, false, connectionManagementService.object);
 		isConnected = false;
 		queryAction.run();
 
@@ -231,23 +231,27 @@ suite('SQL QueryAction Tests', () => {
 		isConnected = true;
 		queryAction.run();
 
-		// The conneciton dialog should not open
-		assert.equal(countCalledShowDialog, 1, 'run should not call showDialog');
+		// The conneciton dialog should open again with the correct parameter details
+		assert.equal(countCalledShowDialog, 2, 'run should call showDialog');
+		assert.equal(connectionParams.connectionType, ConnectionType.queryEditor, 'connectionType should be queryEditor');
+		assert.equal(connectionParams.runQueryOnCompletion, false, 'runQueryOnCompletion should be false`');
+		assert.equal(connectionParams.input.uri, testUri, 'URI should be set to the test URI');
+		assert.equal(connectionParams.input, editor.object.currentQueryInput, 'Editor should be set to the mock editor');
 		done();
 	});
 
-	test('ChangeConnectionAction disconnects then connects only if URI is connected', (done) => {
+	test('ChangeConnectionAction connects regardless of URI being connected', (done) => {
 		// ... Create assert variables
-		let queryAction: ChangeConnectionAction = undefined;
+		let queryAction: ConnectDatabaseAction = undefined;
 		let isConnected: boolean = undefined;
 		let connectionParams: INewConnectionParams = undefined;
-		let calledShowDialog: boolean = false;
+		let calledShowDialog: number = 0;
 
 		// ... Mock "showDialog" ConnectionDialogService
 		let connectionDialogService = TypeMoq.Mock.ofType(ConnectionDialogService, TypeMoq.MockBehavior.Loose);
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined))
 		.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
-			calledShowDialog = true;
+			calledShowDialog++;
 			connectionParams = params;
 		});
 
@@ -257,15 +261,8 @@ suite('SQL QueryAction Tests', () => {
 		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAnyString())).returns(() => isConnected);
 
 		// If I call run on ChangeConnectionAction when I am not connected
-		queryAction = new ChangeConnectionAction(editor.object, connectionManagementService.object);
+		queryAction = new ConnectDatabaseAction(editor.object, false, connectionManagementService.object);
 		isConnected = false;
-		queryAction.run();
-
-		// The conneciton dialog should not open and disconnectEditor should not be called
-		assert.equal(calledShowDialog, 0, 'showDialog should not be called when URI is not connected');
-
-		// Then if I call run on ChangeConnectionAction when I am connected
-		isConnected = true;
 		queryAction.run();
 
 		// The conneciton dialog should open with the params set as below
@@ -274,7 +271,16 @@ suite('SQL QueryAction Tests', () => {
 		assert.equal(connectionParams.runQueryOnCompletion, false, 'runQueryOnCompletion should be false`');
 		assert.equal(connectionParams.input.uri, testUri, 'URI should be set to the test URI');
 		assert.equal(connectionParams.input, editor.object.currentQueryInput, 'Editor should be set to the mock editor');
-		assert.equal(connectionParams.disconnectExistingConnection, true, 'disconnectExistingConnection should be set to true');
+		// Then if I call run on ChangeConnectionAction when I am connected
+		isConnected = true;
+		queryAction.run();
+
+		// The conneciton dialog should open with the params set as below
+		assert.equal(calledShowDialog, 2, 'showDialog should be called when URI is connected');
+		assert.equal(connectionParams.connectionType, ConnectionType.queryEditor, 'connectionType should be queryEditor');
+		assert.equal(connectionParams.runQueryOnCompletion, false, 'runQueryOnCompletion should be false`');
+		assert.equal(connectionParams.input.uri, testUri, 'URI should be set to the test URI');
+		assert.equal(connectionParams.input, editor.object.currentQueryInput, 'Editor should be set to the mock editor');
 		done();
 	});
 
