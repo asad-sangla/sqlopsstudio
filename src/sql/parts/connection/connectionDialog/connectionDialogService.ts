@@ -20,6 +20,7 @@ import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Severity from 'vs/base/common/severity';
 import data = require('data');
+import nls = require('vs/nls');
 
 export interface IConnectionResult {
 	isValid: boolean;
@@ -81,7 +82,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private handleOnCancel(params: INewConnectionParams): void {
 		if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
-			params.input.onConnectReject();
+			params.input.onConnectReject(nls.localize('connectionCancelled', 'Connection Cancelled'));
 		}
 		this._connectionDialog.resetConnection();
 	}

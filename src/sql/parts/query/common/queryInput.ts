@@ -9,6 +9,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
+import { IMessageService, Severity, IMessageWithAction } from 'vs/platform/message/common/message';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
@@ -34,7 +35,8 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 
 	constructor(private name: string, private description: string, private _sql: UntitledEditorInput, private _results: QueryResultsInput,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IQueryModelService private _queryModelService: IQueryModelService
+		@IQueryModelService private _queryModelService: IQueryModelService,
+		@IMessageService private _messageService: IMessageService
 	) {
 		super();
 		this._setup = false;
@@ -134,9 +136,10 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._updateTaskbar.fire();
 	}
 
-	public onConnectReject(): void {
+	public onConnectReject(error: any): void {
 		this.onDisconnect();
 		this._updateTaskbar.fire();
+		this._messageService.show(Severity.Error, error);
 	}
 
 	public onConnectSuccess(runQueryOnCompletion: boolean): void {

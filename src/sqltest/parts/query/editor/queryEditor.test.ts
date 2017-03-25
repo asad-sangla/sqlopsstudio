@@ -101,14 +101,14 @@ suite('SQL QueryEditor Tests', () => {
 		let uri: URI = URI.parse(filePath);
 		let fileInput = new UntitledEditorInput(uri, false, '', instantiationService.object, undefined, undefined);
 		let queryResultsInput: QueryResultsInput = new QueryResultsInput(uri.fsPath);
-		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput, undefined, undefined);
+		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput, undefined, undefined, undefined);
 
 		// Create a QueryInput to compare to the previous one
 		let filePath2 = 'someFile2.sql';
 		let uri2: URI = URI.parse(filePath2);
 		let fileInput2 = new UntitledEditorInput(uri2, false, '', instantiationService.object, undefined, undefined);
 		let queryResultsInput2: QueryResultsInput = new QueryResultsInput(uri2.fsPath);
-		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2, undefined, undefined);
+		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2, undefined, undefined, undefined);
 
 		// Mock IMessageService
 		messageService = TypeMoq.Mock.ofType(TestMessageService, TypeMoq.MockBehavior.Loose);
@@ -323,7 +323,8 @@ suite('SQL QueryEditor Tests', () => {
 				fileInput,
 				undefined,
 				undefined,
-				queryModelService.object
+				queryModelService.object,
+				undefined
 			);
 		});
 

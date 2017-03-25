@@ -289,8 +289,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public connectEditor(owner: IConnectableInput, runQueryOnCompletion: boolean, connection: ConnectionProfile | IConnectionProfile): Promise<boolean> {
-		// If we are passed a ConnectionProfile, we must only pass the info below or the connection will reject
-
 		// Retrieve saved password if needed
 		return new Promise<boolean>((resolve, reject) => {
 			this._connectionStore.addSavedPassword(connection).then(newConnection => {
@@ -299,13 +297,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 					if (status) {
 						owner.onConnectSuccess(runQueryOnCompletion);
 					} else {
-						owner.onConnectReject();
+						owner.onConnectReject('Connection Not Accepted');
 					}
 					resolve(status);
 				}, (error) => {
-					owner.onConnectReject();
+					owner.onConnectReject(error);
 					reject(error);
 				});
+			}, (error) => {
+				owner.onConnectReject(error);
+				reject(error);
 			});
 		});
 	}
