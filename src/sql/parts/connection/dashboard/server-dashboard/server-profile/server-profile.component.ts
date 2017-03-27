@@ -10,9 +10,10 @@ declare let AngularCore;
 
 @AngularCore.Component({
   selector: 'server-profile',
-  templateUrl: require.toUrl('sql/parts/connection/dashboard/server-profile/server-profile.component.html'),
-  styleUrls: [require.toUrl('sql/parts/connection/dashboard/server-profile/server-profile.component.css')]
+  templateUrl: require.toUrl('sql/parts/connection/dashboard/server-dashboard/server-profile/server-profile.component.html'),
+  styleUrls: [require.toUrl('sql/parts/connection/dashboard/server-dashboard/server-profile/server-profile.component.css')]
 })
+
 export class ServerProfileComponent implements OnInit {
 
 @AngularCore.Input() public connection: IConnectionProfile;

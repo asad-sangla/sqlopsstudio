@@ -5,8 +5,8 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<server-profile [connection]='connection'></server-profile>
-
-<server-command-window> </server-command-window>
-
-<server-properties-window [connection]='connection'></server-properties-window>
+<div id="serverprofile">
+	<h1>Server Details</h1>
+	Server Name: {{connection.serverName}} <br>
+	Active Database: <a style='color: #8f8f8f;' [routerLink]="['/database-dashboard']">{{connection?.databaseName}}</a>
+</div>

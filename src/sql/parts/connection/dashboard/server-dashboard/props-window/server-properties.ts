@@ -1,12 +1,14 @@
-<!--
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
--->
 
-<div id="serverprofile">
-	<h1>Server Details</h1>
-	Server Name: {{connection?.serverName}} <br />
-	Active Database: <a style='color: #8f8f8f;' [routerLink]="['/database-dashboard']">{{connection?.databaseName}}</a>
-</div>
+export class ServerProperties {
+	key: string;
+	value: string;
+
+	constructor(key: string, value: string){
+		this.key = key;
+		this.value = value;
+	}
+}

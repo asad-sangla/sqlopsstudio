@@ -1,0 +1,17 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+<div style="display: inline-block; margin-top: 10px">
+    <h1>{{connection.serverName}} Properties</h1>
+</div>
+<div style="display: inline-block; margin-left: 2em">
+    <button pButton type="button" class="ui-button-info" label="Edit" icon="fa fa-pencil-square-o"></button>
+</div>
+<input class="dashboard-search-box" #gb type="text" pInputText size="50" placeholder="Search Property">
+<p-dataTable [value]="properties" [rows]="14" [paginator]="true" [globalFilter]="gb" #dt >
+    <p-column field="key" header="Property"></p-column>
+    <p-column field="value" header="Value"></p-column>
+</p-dataTable>

@@ -7,4 +7,14 @@
 
 <p-breadcrumb [model]="breadCrumbItems"></p-breadcrumb>
 
+<app-server-dashboard [connection]="connection"></app-server-dashboard>
+
+<schema-explorer
+	[ownerUri]='ownerUri'
+	[connection]='connection'
+	[metadataService]='metadataService'
+	[scriptingService]='scriptingService'
+	[queryEditorService]='queryEditorService'>
+</schema-explorer>
+
 <router-outlet (activate)='onActivate($event)'></router-outlet>

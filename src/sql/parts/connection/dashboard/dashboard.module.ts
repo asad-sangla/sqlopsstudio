@@ -8,10 +8,11 @@ import { Routes } from '@angular/router';
 import { AppComponent } from './dashboard.component';
 import { ConnectionProfileComponent } from './connection-profile/connection-profile.component';
 import { SchemaExplorerComponent } from './schema-explorer/schema-explorer.component';
-import { ServerCommandWindowComponent } from './server-command-window/server-command-window.component';
+import { ServerPropsWindowComponent } from './server-dashboard/props-window/props-window.component';
 import { DatabaseDashboardComponent } from './database-dashboard/database-dashboard.component';
 import { ServerDashboardComponent } from './server-dashboard/server-dashboard.component';
-import { ServerProfileComponent } from './server-profile/server-profile.component';
+import { ServerProfileComponent } from './server-dashboard/server-profile/server-profile.component';
+import { ServerCommandWindowComponent } from './server-dashboard/command-window/command-window.component';
 
 declare let AngularPlatformBrowser;
 declare let AngularCommon;
@@ -36,9 +37,10 @@ const appRoutes: Routes = [
     AppComponent,
     ConnectionProfileComponent,
     SchemaExplorerComponent,
-    ServerCommandWindowComponent,
-    DatabaseDashboardComponent,
     ServerDashboardComponent,
+    ServerCommandWindowComponent,
+    ServerPropsWindowComponent,
+    DatabaseDashboardComponent,
     ServerProfileComponent
   ],
   imports: [
@@ -48,6 +50,8 @@ const appRoutes: Routes = [
     PrimeNg.SharedModule,
     PrimeNg.ButtonModule,
     PrimeNg.DropdownModule,
+    PrimeNg.MessagesModule,
+    PrimeNg.DataListModule,
     PrimeNg.BreadcrumbModule,
     <ModuleWithProviders>AngularRouter.RouterModule.forRoot(appRoutes)
   ],

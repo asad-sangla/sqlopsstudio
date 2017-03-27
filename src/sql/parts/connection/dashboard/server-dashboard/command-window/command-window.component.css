@@ -2806,7 +2806,7 @@ button.ui-button::-moz-focus-inner {
 }
 .ui-messages {
     border: 1px solid;
-    margin: .5em 0;
+    margin: 1.5em 0;
     padding: 1em 1em 1em .5em;
     display: none;
     position: relative;
@@ -4214,10 +4214,6 @@ button.ui-button::-moz-focus-inner {
 
 .ui-treetable tbody .ui-treetable-row td input {
     outline: 0 none;
-}
-
-#server-command-window {
-    height: 40px;
 }
 
 #server-command-window .ui-dropdown .ui-dropdown-label {

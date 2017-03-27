@@ -20,7 +20,7 @@ declare let AngularCore;
 })
 export class ServerDashboardComponent implements OnInit, IDashboardPage {
 
-	public connection: IConnectionProfile;
+	@AngularCore.Input() public connection: IConnectionProfile;
 
 	constructor() { }
 

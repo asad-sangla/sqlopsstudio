@@ -6,10 +6,11 @@
 -->
 
 <h1> Server Commands </h1>
+<p-messages [value]="messages"></p-messages>
 <div id="server-command-window">
-    <button pButton type="button" class="ui-button-success" label="Create Database" icon="fa fa-plus"></button>
-    <button pButton type="button" class="ui-button-danger" label="Delete Database" icon="fa fa-close"></button>
-    <button pButton type="button" class="ui-button-primary" label="Refresh Server" icon="fa fa-refresh"></button>
+    <button pButton type="button" class="ui-button-success" label="Create Database" icon="fa fa-plus" (click)="clear()"></button>
+    <button pButton type="button" class="ui-button-danger" label="Delete Database" icon="fa fa-close" (click)="deleteDatabase()"></button>
+    <button pButton type="button" class="ui-button-primary" label="Refresh Server" icon="fa fa-refresh" (click)="refreshDatabase()"></button>
     <p-dropdown [options]="databases" placeholder="Connect Database" [filter]="true"></p-dropdown>
 </div>
 
