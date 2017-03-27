@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/grid/media/color-theme-dark';
+import 'vs/css!sql/parts/grid/media/slickColorTheme';
 import 'vs/css!sql/parts/grid/media/flexbox';
 import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';

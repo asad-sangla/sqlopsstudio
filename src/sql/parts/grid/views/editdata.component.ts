@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/grid/media/color-theme-dark';
+import 'vs/css!sql/parts/grid/media/slickColorTheme';
 import 'vs/css!sql/parts/grid/media/flexbox';
 import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import { ElementRef, QueryList, ChangeDetectorRef } from '@angular/core';
+import { ElementRef, QueryList, ChangeDetectorRef, OnInit } from '@angular/core';
 import { IGridDataRow, ISlickRange, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
 import * as Constants from 'sql/parts/connection/common/constants';
 import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/common/interfaces';
@@ -70,7 +70,7 @@ const template = `
     `]
 })
 
-export class EditDataComponent {
+export class EditDataComponent implements OnInit {
     // CONSTANTS
     // tslint:disable-next-line:no-unused-variable
     private scrollTimeOutTime = 200;

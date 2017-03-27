@@ -28,8 +28,19 @@
 .queryTaskbar {
 	width: 100%;
 	height: 28px;
-	background-color: #2D2D2D;
 	position: relative;
+}
+
+.vs .queryTaskbar {
+	background-color: #ECECEC;
+}
+
+.vs-dark .queryTaskbar {
+	background-color: #2D2D2D;
+}
+
+.hc-black .queryTaskbar {
+	border-bottom: 1px solid #6FC3DF;
 }
 
 .queryTaskbar .monaco-toolbar .monaco-action-bar.animated .actions-container {
@@ -59,9 +70,9 @@
  }
 
 .queryTaskbarSeparator {
-    width: 1px;
-    background-color:#555;
-    margin-right: 6px;
+	width: 1px;
+	background-color:#555;
+	margin-right: 6px;
 	margin-top: 3px;
 }
 

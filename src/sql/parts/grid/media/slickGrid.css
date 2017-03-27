@@ -98,10 +98,6 @@
 	color: #ABABAB
 }
 
-.grid .slick-cell .grid-cell-value-container.missing-value {
-	color: lightgray
-}
-
 .grid .slick-cell .grid-cell-value-container.context {
 	color: darkblue;
 	font-style: italic
