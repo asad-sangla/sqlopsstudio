@@ -8,7 +8,8 @@
 import { Disposable } from 'vs/base/common/lifecycle';
 import { Dimension } from 'vs/base/browser/builder';
 import Event, { Emitter } from 'vs/base/common/event';
-import { IHorizontalSashLayoutProvider, ISashEvent, Orientation, VSash, Sash } from 'vs/base/browser/ui/sash/sash';
+import { IHorizontalSashLayoutProvider, IVerticalSashLayoutProvider,
+	ISashEvent, Orientation, VSash, Sash } from 'vs/base/browser/ui/sash/sash';
 // There is no need to import the sash CSS - 'vs/base/browser/ui/sash/sash' already includes it
 
 /**
@@ -18,22 +19,22 @@ import { IHorizontalSashLayoutProvider, ISashEvent, Orientation, VSash, Sash } f
 export interface IFlexibleSash {
 
 	// Get the value of the CSS property denoted by getMajorPosition()
-	getMajorPositionValue(): number;
-
-	// Get the CSS property that describes how to layout this sash
-	getMajorPositionName(): string;
-
-	// Get the CSS property that describes the dynamic size of this sash
-	getMajorDimensionName(): string;
-
-	// Get the CSS property that describes the static size of this sash
-	getMinorDimensionName(): string;
+	getSplitPoint(): number;
 
 	// Sets the Dimension containing the height and width of the editor this sash will separate
 	setDimenesion(dimension: Dimension);
 
-	// Creates a Dimension object with the given majorDimension and minorDimension of this sash.
-	createDimension(majorDimension: number, minorDimension: number): Dimension;
+	// Re-calculates the width and height of the sash
+	layout(): void;
+
+	// Hides the sash
+	hide(): void;
+
+	// Shows/unhides the sash
+	show(): void;
+
+	// Sets the top or left property of this sash
+	setEdge(edge: number);
 
 	// Fired when the position of this sash changes
 	onPositionChange: Event<number>;
@@ -44,35 +45,114 @@ export interface IFlexibleSash {
  * Triggers onPositionChange event when the position is changed. Implements IFlexibleSash to enable classes to be
  * agnostic of the fact that this sash is vertical.
  */
-export class VerticalFlexibleSash extends VSash implements IFlexibleSash {
 
-	private majorPosition: string = 'left';
-	private majorDimension: string = 'width';
-	private minorDimension: string = 'height';
 
-	constructor(container: HTMLElement, minWidth: number) {
-		super(container, minWidth);
+export class VerticalFlexibleSash extends Disposable implements IVerticalSashLayoutProvider, IFlexibleSash {
+
+	private sash: Sash;
+	private ratio: number;
+	private startPosition: number;
+	private position: number;
+	private dimension: Dimension;
+	private top: number;
+
+	private _onPositionChange: Emitter<number> = new Emitter<number>();
+	public get onPositionChange(): Event<number> { return this._onPositionChange.event; }
+
+	constructor(container: HTMLElement, private minWidth: number) {
+		super();
+		this.ratio = 0.5;
+		this.top = 0;
+		this.sash = new Sash(container, this);
+
+		this._register(this.sash.addListener2('start', () => this.onSashDragStart()));
+		this._register(this.sash.addListener2('change', (e: ISashEvent) => this.onSashDrag(e)));
+		this._register(this.sash.addListener2('end', () => this.onSashDragEnd()));
+		this._register(this.sash.addListener2('reset', () => this.onSashReset()));
 	}
 
-	public getMajorPositionValue(): number {
+	public getSplitPoint(): number {
 		return this.getVerticalSashLeft();
 	}
 
-	public getMajorPositionName(): string {
-		return this.majorPosition;
+	public layout(): void {
+		this.sash.layout();
 	}
 
-	public getMajorDimensionName(): string {
-		return this.majorDimension;
+	public show(): void {
+		this.sash.show();
 	}
 
-	public getMinorDimensionName(): string {
-		return this.minorDimension;
+	public hide(): void {
+		this.sash.hide();
 	}
 
-	public createDimension(majorDimension: number, minorDimension: number): Dimension {
-		return new Dimension(majorDimension, minorDimension);
+	public getVerticalSashTop(): number {
+		return this.top;
 	}
+
+	public getVerticalSashLeft(): number {
+		return this.position;
+	}
+
+	public getVerticalSashHeight(): number {
+		return this.dimension.height;
+	}
+
+	public setDimenesion(dimension: Dimension) {
+		this.dimension = dimension;
+		this.compute(this.ratio);
+	}
+
+	public setEdge(edge: number) {
+		this.top = edge;
+	}
+
+	private onSashDragStart(): void {
+		this.startPosition = this.position;
+	}
+
+	private onSashDrag(e: ISashEvent): void {
+		this.compute((this.startPosition + (e.currentX - e.startX)) / this.dimension.width);
+	}
+
+	private compute(ratio: number) {
+		this.computeSashPosition(ratio);
+		this.ratio = this.position / this.dimension.width;
+		this._onPositionChange.fire(this.position);
+	}
+
+	private onSashDragEnd(): void {
+		this.sash.layout();
+	}
+
+	private onSashReset(): void {
+		this.ratio = 0.5;
+		this._onPositionChange.fire(this.position);
+		this.sash.layout();
+	}
+
+	private computeSashPosition(sashRatio: number = this.ratio) {
+		let contentWidth = this.dimension.width;
+		let sashPosition = Math.floor((sashRatio || 0.5) * contentWidth);
+		let midPoint = Math.floor(0.5 * contentWidth);
+
+		if (contentWidth > this.minWidth * 2) {
+			if (sashPosition < this.minWidth) {
+				sashPosition = this.minWidth;
+			}
+			if (sashPosition > contentWidth - this.minWidth) {
+				sashPosition = contentWidth - this.minWidth;
+			}
+		} else {
+			sashPosition = midPoint;
+		}
+		if (this.position !== sashPosition) {
+			this.position = sashPosition;
+			this.sash.layout();
+		}
+	}
+
 }
 
 /**
@@ -87,10 +167,7 @@ export class HorizontalFlexibleSash extends Disposable implements IHorizontalSas
 	private startPosition: number;
 	private position: number;
 	private dimension: Dimension;
-
-	private majorPosition: string = 'top';
-	private majorDimension: string = 'height';
-	private minorDimension: string = 'width';
+	private left: number;
 
 	private _onPositionChange: Emitter<number> = new Emitter<number>();
 	public get onPositionChange(): Event<number> { return this._onPositionChange.event; }
@@ -98,6 +175,7 @@ export class HorizontalFlexibleSash extends Disposable implements IHorizontalSas
 	constructor(container: HTMLElement, private minHeight: number) {
 		super();
 		this.ratio = 0.5;
+		this.left = 0;
 		this.sash = new Sash(container, this, { orientation: Orientation.HORIZONTAL });
 
 		this._register(this.sash.addListener2('start', () => this.onSashDragStart()));
@@ -106,32 +184,28 @@ export class HorizontalFlexibleSash extends Disposable implements IHorizontalSas
 		this._register(this.sash.addListener2('reset', () => this.onSashReset()));
 	}
 
-	public getMajorPositionValue(): number {
+	public getSplitPoint(): number {
 		return this.getHorizontalSashTop();
 	}
 
-	public getMajorPositionName(): string {
-		return this.majorPosition;
-	}
-
-	public getMajorDimensionName(): string {
-		return this.majorDimension;
-	}
-
-	public getMinorDimensionName(): string {
-		return this.minorDimension;
-	}
-
-	public createDimension(majorDimension: number, minorDimension: number): Dimension {
-		return new Dimension(minorDimension, majorDimension);
-	}
-
-	public getHorizontalSashLeft?(): number {
-		return 0;
+	public getHorizontalSashLeft(): number {
+		return this.left;
 	}
 
 	public getHorizontalSashTop(): number {
 		return this.position;
+	}
+
+	public layout(): void {
+		this.sash.layout();
+	}
+
+	public show(): void {
+		this.sash.show();
+	}
+
+	public hide(): void {
+		this.sash.hide();
 	}
 
 	public getHorizontalSashWidth?(): number {
@@ -141,6 +215,10 @@ export class HorizontalFlexibleSash extends Disposable implements IHorizontalSas
 	public setDimenesion(dimension: Dimension) {
 		this.dimension = dimension;
 		this.compute(this.ratio);
+	}
+
+	public setEdge(edge: number) {
+		this.left = edge;
 	}
 
 	private onSashDragStart(): void {

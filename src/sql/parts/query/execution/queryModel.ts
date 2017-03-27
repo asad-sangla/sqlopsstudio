@@ -30,6 +30,7 @@ export interface IQueryModelService {
 
 	getDataService(uri: string): DataService;
 	refreshResultsets(uri: string): void;
+	resizeResultsets(uri: string): void;
 	onAngularLoaded(uri: string): void;
 
 	save(uri: string, batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void;

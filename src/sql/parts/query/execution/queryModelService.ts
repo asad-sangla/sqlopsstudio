@@ -17,6 +17,7 @@ import Severity from 'vs/base/common/severity';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ISelectionData, ResultSetSubset } from 'data';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
+import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 
 interface QueryEvent {
 	type: string;
@@ -79,11 +80,19 @@ export class QueryModelService implements IQueryModelService {
 		return dataService;
 	}
 
+	/**
+	 * Force all grids to re-render. This is needed to re-render the grids when switching
+	 * between different URIs.
+	 */
 	public refreshResultsets(uri: string): void {
-		let dataService = this._queryInfoMap.get(uri).dataService;
-		if (dataService) {
-			dataService.refreshGridsObserver.next();
-		}
+		this._fireGridContentEvent(uri, GridContentEvents.RefreshContents);
+	}
+
+	/**
+	 * Resize the grid UI to fit the current screen size.
+	 */
+	public resizeResultsets(uri: string): void {
+		this._fireGridContentEvent(uri, GridContentEvents.ResizeContents);
 	}
 
 	/**
@@ -299,6 +308,19 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	// PRIVATE METHODS //////////////////////////////////////////////////////
+
+	private _fireGridContentEvent(uri: string, type: string): void {
+		let info: QueryInfo = this._queryInfoMap.get(uri);
+
+		if (info && info.dataServiceReady) {
+			let service: DataService = this.getDataService(uri);
+			if (service) {
+				// There is no need to queue up these events like there is for the query events because
+				// if the DataService is not yet ready there will be no grid content to update
+				service.gridContentObserver.next(type);
+			}
+		}
+	}
 
 	private _fireQueryEvent(uri: string, type: string, data?: any) {
 		let info: QueryInfo = this._queryInfoMap.get(uri);

@@ -9,7 +9,7 @@ import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import { ElementRef, QueryList, ChangeDetectorRef } from '@angular/core';
+import { ElementRef, QueryList, ChangeDetectorRef, OnInit } from '@angular/core';
 import { IGridDataRow, ISlickRange, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
 import * as Constants from 'sql/parts/connection/common/constants';
 import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/common/interfaces';
@@ -17,21 +17,21 @@ import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 import * as Services from 'sql/parts/grid/services/sharedServices';
+import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 
 declare let AngularCore;
 declare let rangy;
 
 AngularCore.enableProdMode();
 
-// TODO remove style="width: 98%; padding-left: 10px; padding-top: 10px;"
 const template = `
-<div class="fullsize vertBox" style="width: 98%; padding-left: 10px; padding-top: 10px;">
+<div class="fullsize vertBox edgesPadding">
     <div *ngIf="dataSets.length > 0" id="resultspane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!resultActive" (click)="resultActive = !resultActive">
         <span> {{Constants.resultPaneLabel}} </span>
         <span class="queryResultsShortCut"> {{resultShortcut}} </span>
     </div>
     <div id="results" *ngIf="renderedDataSets.length > 0" class="results vertBox scrollable"
-         (onScroll)="onScroll($event)" [class.hidden]="!resultActive">
+         (onScroll)="onScroll($event)" [scrollEnabled]="scrollEnabled" [class.hidden]="!resultActive">
         <div class="boxRow content horzBox slickgrid" *ngFor="let dataSet of renderedDataSets; let i = index"
             [style.max-height]="dataSet.maxHeight" [style.min-height]="dataSet.minHeight">
             <slick-grid #slickgrid id="slickgrid_{{i}}" [columnDefinitions]="dataSet.columnDefinitions"
@@ -66,7 +66,7 @@ const template = `
     </div>
     <div id="messages" class="scrollable messages" [class.hidden]="!messageActive && dataSets.length !== 0"
         (contextmenu)="openMessagesContextMenu($event)">
-        <br>
+        <div class="messagesTopSpacing"></div>
         <table id="messageTable" class="resultsMessageTable">
             <colgroup>
                 <col span="1" class="wideResultsMessage">
@@ -110,11 +110,12 @@ const template = `
     `]
 })
 
-export class AppComponent {
+export class AppComponent implements OnInit {
     // CONSTANTS
     // tslint:disable-next-line:no-unused-variable
     private scrollTimeOutTime = 200;
     private windowSize = 50;
+    private messagePaneHeight = 22;
     // tslint:disable-next-line:no-unused-variable
     private maxScrollGrids = 8;
     // tslint:disable-next-line:no-unused-variable
@@ -240,9 +241,8 @@ export class AppComponent {
     private renderedDataSets: IGridDataSet[] = this.placeHolderDataSets;
     private messages: IMessage[] = [];
     private scrollTimeOut: number;
-    private messagesAdded = false;
     private resizing = false;
-    private resizeHandleTop = 0;
+    private resizeHandleTop: string = '0';
     private scrollEnabled = true;
     // tslint:disable-next-line:no-unused-variable
     private resultActive = true;
@@ -250,8 +250,6 @@ export class AppComponent {
     private _messageActive = true;
     // tslint:disable-next-line:no-unused-variable
     private firstRender = true;
-    // tslint:disable-next-line:no-unused-variable
-    private resultsScrollTop = 0;
     // tslint:disable-next-line:no-unused-variable
     private activeGrid = 0;
     private totalElapsedTimeSpan: number;
@@ -278,7 +276,6 @@ export class AppComponent {
         ) {
             this.dataService = parameterService.dataService;
         }
-
 
     /**
      * Called by Angular when the object is initialized
@@ -308,8 +305,18 @@ export class AppComponent {
             self.cd.detectChanges();
         });
 
-        this.dataService.refreshGridsObserver.subscribe(() => {
-            self.refreshResultsets();
+        this.dataService.gridContentObserver.subscribe((type) => {
+            switch (type) {
+                case GridContentEvents.RefreshContents:
+                     self.refreshResultsets();
+                    break;
+                case GridContentEvents.ResizeContents:
+                    self.resizeGrids();
+                    break;
+                default:
+                    console.error('Unexpected grid content event type "' + type + '" sent');
+                    break;
+            }
         });
 
         this.dataService.onAngularLoaded();
@@ -322,17 +329,17 @@ export class AppComponent {
         self.renderedDataSets = self.placeHolderDataSets;
         self.totalElapsedTimeSpan = undefined;
         self.complete = false;
-        self.messagesAdded = false;
     }
 
     handleComplete(self: AppComponent, event: any): void {
         self.totalElapsedTimeSpan = event.data;
         self.complete = true;
-        self.messagesAdded = true;
     }
 
     handleMessage(self: AppComponent, event: any): void {
         self.messages.push(event.data);
+        self.cd.detectChanges();
+        this.scrollMessages();
     }
 
     handleResultSet(self: AppComponent, event: any): void {
@@ -355,12 +362,17 @@ export class AppComponent {
         };
 
         // Precalculate the max height and min height
-        let maxHeight = resultSet.rowCount < self._defaultNumShowingRows
-            ? Math.max((resultSet.rowCount + 1) * self._rowHeight, self.dataIcons.length * 30) + 10
-            : 'inherit';
-        let minHeight = resultSet.rowCount > self._defaultNumShowingRows
-            ? (self._defaultNumShowingRows + 1) * self._rowHeight + 10
-            : maxHeight;
+        let maxHeight: string = 'inherit';
+        if (resultSet.rowCount < self._defaultNumShowingRows) {
+            let maxHeightNumber: number = Math.max((resultSet.rowCount + 1) * self._rowHeight, self.dataIcons.length * 30) + 10;
+            maxHeight = maxHeightNumber.toString() + 'px';
+        }
+
+        let minHeight: string = maxHeight;
+        if (resultSet.rowCount > self._defaultNumShowingRows) {
+            let minHeightNumber: number = (self._defaultNumShowingRows + 1) * self._rowHeight + 10;
+            minHeight = minHeightNumber.toString() + 'px';
+        }
 
         // Store the result set from the event
         let dataSet: IGridDataSet = {
@@ -398,15 +410,7 @@ export class AppComponent {
         undefinedDataSet.dataRows = undefined;
         undefinedDataSet.resized = new AngularCore.EventEmitter();
         self.placeHolderDataSets.push(undefinedDataSet);
-        self.messagesAdded = true;
         self.onScroll(0);
-    }
-
-    ngAfterViewChecked(): void {
-        if (this.messagesAdded) {
-            this.messagesAdded = false;
-            this.scrollMessages();
-        }
     }
 
     /**
@@ -615,25 +619,84 @@ export class AppComponent {
      */
     setupResizeBind(): void {
         const self = this;
-        let $resizeHandle = $(self._el.nativeElement.querySelector('#messageResizeHandle'));
-        let $messagePane = $(self._el.nativeElement.querySelector('#messages'));
+
+        let resizeHandleElement: HTMLElement = self._el.nativeElement.querySelector('#messageResizeHandle');
+        let $resizeHandle = $(resizeHandleElement);
+        let $messages = $(self._el.nativeElement.querySelector('#messages'));
+
         $resizeHandle.bind('dragstart', (e) => {
             self.resizing = true;
-            self.resizeHandleTop = e.pageY;
+            self.resizeHandleTop = self.calculateResizeHandleTop(e.pageY);
+            self.cd.detectChanges();
             return true;
         });
 
         $resizeHandle.bind('drag', (e) => {
-            self.resizeHandleTop = e.pageY;
+            // Update the animation if the drag is within the allowed range.
+            if (self.isDragWithinAllowedRange(e.pageY, resizeHandleElement)) {
+                self.resizeHandleTop = self.calculateResizeHandleTop(e.pageY);
+                self.resizing = true;
+                self.cd.detectChanges();
+
+            // Stop the animation if the drag is out of the allowed range.
+            // The animation is resumed when the drag comes back into the allowed range.
+            } else {
+                self.resizing = false;
+            }
         });
 
         $resizeHandle.bind('dragend', (e) => {
             self.resizing = false;
-            // redefine the min size for the messages based on the final position
-            $messagePane.css('min-height', $(window).height() - (e.pageY + 22));
-            self.cd.detectChanges();
-            self.resizeGrids();
+            // Redefine the min size for the messages based on the final position
+            // if the drag is within the allowed rang
+            if (self.isDragWithinAllowedRange(e.pageY, resizeHandleElement)) {
+                let minHeightNumber = this.getMessagePaneHeightFromDrag(e.pageY);
+                $messages.css('min-height', minHeightNumber + 'px');
+                self.cd.detectChanges();
+                self.resizeGrids();
+
+            // Otherwise just update the UI to show that the drag is complete
+            } else {
+                self.cd.detectChanges();
+            }
         });
+    }
+
+    /**
+     * Returns true if the resize of the messagepane given by the drag at top=eventPageY is valid,
+     * false otherwise. A drag is valid if it is below the bottom of the resultspane and
+     * this.messagePaneHeight pixels above the bottom of the entire angular component.
+     */
+    isDragWithinAllowedRange(eventPageY: number, resizeHandle: HTMLElement): boolean {
+        let resultspaneElement: HTMLElement = this._el.nativeElement.querySelector('#resultspane');
+        let minHeight = this.getMessagePaneHeightFromDrag(eventPageY);
+
+        if (resultspaneElement &&
+            minHeight > 0 &&
+            resultspaneElement.getBoundingClientRect().bottom < eventPageY
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Calculates the position of the top of the resize handle given the Y-axis drag
+     * coordinate as eventPageY.
+     */
+    calculateResizeHandleTop(eventPageY: number): string {
+        let resultsWindowTop: number = this._el.nativeElement.getBoundingClientRect().top;
+        let relativeTop: number = eventPageY - resultsWindowTop;
+        return relativeTop + 'px';
+    }
+
+    /**
+     * Returns the height the message pane would be if it were resized so that its top would be set to eventPageY.
+     * This will return a negative value if eventPageY is below the bottom limit.
+     */
+    getMessagePaneHeightFromDrag(eventPageY: number): number {
+        let bottomDragLimit: number = this._el.nativeElement.getBoundingClientRect().bottom - this.messagePaneHeight;
+        return bottomDragLimit - eventPageY;
     }
 
     /**

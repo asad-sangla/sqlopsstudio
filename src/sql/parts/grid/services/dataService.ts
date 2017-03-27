@@ -18,11 +18,11 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
  */
 export class DataService {
 	public queryEventObserver: Subject<any>;
-	public refreshGridsObserver: Subject<any>;
+	public gridContentObserver: Subject<any>;
 
 	constructor(private _queryModel: IQueryModelService, private _uri: string) {
 		this.queryEventObserver = new Rx.Subject();
-		this.refreshGridsObserver = new Rx.Subject();
+		this.gridContentObserver = new Rx.Subject();
 	}
 
 	/**

@@ -17,6 +17,7 @@ import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 import * as Services from 'sql/parts/grid/services/sharedServices';
+import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 
 declare let AngularCore;
 declare let rangy;
@@ -259,8 +260,18 @@ export class EditDataComponent {
             self.cd.detectChanges();
         });
 
-        this.dataService.refreshGridsObserver.subscribe(() => {
-            self.refreshResultsets();
+        this.dataService.gridContentObserver.subscribe((type) => {
+            switch (type) {
+                case GridContentEvents.RefreshContents:
+                     self.refreshResultsets();
+                    break;
+                case GridContentEvents.ResizeContents:
+                    self.resizeGrids();
+                    break;
+                default:
+                    console.error('Unexpected grid content event type "' + type + '" sent');
+                    break;
+            }
         });
 
         this.dataService.onAngularLoaded();
