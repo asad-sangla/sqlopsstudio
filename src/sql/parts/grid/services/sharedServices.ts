@@ -10,7 +10,7 @@ export class DBCellValue {
 	isNull: boolean;
 
 	public static isDBCellValue(object: any): boolean {
-    	return (object.displayValue !== undefined && object.isNull !== undefined);
+    	return (object !== undefined && object.displayValue !== undefined && object.isNull !== undefined);
 	}
 }
 
@@ -48,6 +48,9 @@ export function textFormatter(row: number, cell: any, value: any, columnDef: any
 		} else {
 			cellClasses += ' missing-value';
 		}
+	} else if (typeof value === 'string'){
+		valueToDisplay = value;
+
 	}
 
 	return `<span title="${valueToDisplay}" class="${cellClasses}">${valueToDisplay}</span>`;

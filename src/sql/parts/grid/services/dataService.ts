@@ -9,7 +9,7 @@ import { Observable, Subject, Observer } from 'rxjs/Rx';
 declare let Rx;
 
 import { ISlickRange } from 'angular2-slickgrid';
-import { ISelectionData, ResultSetSubset } from 'data';
+import { ISelectionData, ResultSetSubset, EditUpdateCellResult } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 
 /**
@@ -19,10 +19,12 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 export class DataService {
 	public queryEventObserver: Subject<any>;
 	public gridContentObserver: Subject<any>;
+	private editQueue: Promise<any>;
 
 	constructor(private _queryModel: IQueryModelService, private _uri: string) {
 		this.queryEventObserver = new Rx.Subject();
 		this.gridContentObserver = new Rx.Subject();
+		this.editQueue = Promise.resolve();
 	}
 
 	/**
@@ -39,6 +41,48 @@ export class DataService {
 			self._queryModel.getRows(self._uri, rowStart, numberOfRows, batchId, resultId).then(results => {
 				observer.next(results);
 			});
+		});
+	}
+
+	updateCell(rowId: number, columnId: number, newValue: string): void {
+		const self = this;
+		self.editQueue = self.editQueue.then(() => {
+			self._queryModel.updateCell(self._uri, rowId, columnId, newValue);
+		});
+	}
+
+	commitEdit(): void {
+		const self = this;
+		self.editQueue = self.editQueue.then(() => {
+			self._queryModel.commitEdit(self._uri);
+		});
+	}
+
+	createRow(): void {
+		const self = this;
+		self.editQueue = self.editQueue.then(() => {
+			self._queryModel.createRow(self._uri);
+		});
+	}
+
+	deleteRow(rowId: number): void {
+		const self = this;
+		self.editQueue = self.editQueue.then(() => {
+			self._queryModel.deleteRow(self._uri, rowId);
+		});
+	}
+
+	revertCell(rowId: number, columnId: number): void {
+		const self = this;
+		self.editQueue = self.editQueue.then(() => {
+			self._queryModel.revertCell(self._uri, rowId, columnId);
+		});
+	}
+
+	revertRow(rowId: number): void {
+		const self = this;
+		self.editQueue = self.editQueue.then(() => {
+			self._queryModel.revertRow(self._uri, rowId);
 		});
 	}
 

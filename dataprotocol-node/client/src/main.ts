@@ -90,7 +90,7 @@ import {
 		EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
 		EditDeleteRowRequest, EditDeleteRowParams,
 		EditDisposeRequest, EditDisposeParams,
-		EditInitializeRequest, EditInitializeParams,
+		EditInitializeRequest, EditInitializeParams, EditInitializeFiltering,
 		EditRevertCellRequest, EditRevertCellParams, EditRevertCellResult,
 		EditRevertRowRequest, EditRevertRowParams,
 		EditSessionReadyNotification, EditSessionReadyParams,
@@ -1476,7 +1476,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(EditCommitRequest.type, error);
-						return Promise.resolve(null);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1489,7 +1489,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(EditCreateRowRequest.type, error);
-						return Promise.resolve(null);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1502,7 +1502,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(EditDeleteRowRequest.type, error);
-						return Promise.resolve(null);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1515,20 +1515,21 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(EditDisposeRequest.type, error);
-						return Promise.resolve(null);
+						return Promise.reject(error);
 					}
 				);
 			},
 
-			initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void> {
-				let params: EditInitializeParams = {ownerUri: ownerUri, objectName: objectName, objectType: objectType};
+			initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+				let filters: EditInitializeFiltering = {LimitResults: rowLimit};
+				let params: EditInitializeParams = {ownerUri: ownerUri, objectName: objectName, objectType: objectType, filters: filters};
 				return self.doSendRequest(connection, EditInitializeRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;
 					},
 					(error) => {
 						self.logFailedRequest(EditInitializeRequest.type, error);
-						return Promise.resolve(null);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1541,7 +1542,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(EditRevertCellRequest.type, error);
-						return Promise.resolve(null);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1554,7 +1555,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(EditRevertRowRequest.type, error);
-						return Promise.resolve(null);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1567,15 +1568,15 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(EditUpdateCellRequest.type, error);
-						return Promise.resolve(null);
+						return Promise.reject(error);
 					}
 				);
 			},
 
 			// Edit Data Event Handlers
-			registerOnEditSessionReady(handler: (ownerUri: string, success: boolean) => any): void {
+			registerOnEditSessionReady(handler: (ownerUri: string, success: boolean, message: string) => any): void {
 				connection.onNotification(EditSessionReadyNotification.type, (params: EditSessionReadyParams) => {
-					handler(params.ownerUri, params.success);
+					handler(params.ownerUri, params.success, params.message);
 				});
 			},
 		};

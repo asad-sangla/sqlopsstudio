@@ -155,9 +155,9 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
-	$initializeEdit(handle: number, ownerUri: string, objectName: string, objectType: string): Thenable<void> {
+	$initializeEdit(handle: number, ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 		return this._runWithProvider(handle, provider => {
-			return provider.queryProvider.initializeEdit(ownerUri, objectName, objectType);
+			return provider.queryProvider.initializeEdit(ownerUri, objectName, objectType, rowLimit);
 		});
 	}
 
@@ -179,8 +179,8 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
-	$onEditSessionReady(handle: number, ownerUri: string, success: boolean): void {
-		this._proxy.$onEditSessionReady(handle, ownerUri, success);
+	$onEditSessionReady(handle: number, ownerUri: string, success: boolean, message: string): void {
+		this._proxy.$onEditSessionReady(handle, ownerUri, success, message);
 	}
 
 	// Metadata handlers

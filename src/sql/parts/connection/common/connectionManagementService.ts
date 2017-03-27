@@ -296,13 +296,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise<boolean>((resolve, reject) => {
 			this._connectionStore.addSavedPassword(connection).then(newConnection => {
 				owner.onConnectStart();
-				return this.connect(owner.uri, newConnection).then(status => {
-					if (status) {
+				return this.connect(owner.uri, newConnection).then(connected => {
+					if (connected) {
 						owner.onConnectSuccess(runQueryOnCompletion);
 					} else {
 						owner.onConnectReject('Connection Not Accepted');
 					}
-					resolve(status);
+					resolve(connected);
 				}, (error) => {
 					owner.onConnectReject(error);
 					reject(error);

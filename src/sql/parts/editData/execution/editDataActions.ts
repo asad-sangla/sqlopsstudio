@@ -11,6 +11,7 @@ import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
+import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import nls = require('vs/nls');
 import * as dom from 'vs/base/browser/dom';
 const $ = dom.$;
@@ -66,7 +67,8 @@ export class RefreshTableAction extends EditDataAction {
 
 	constructor(editor: EditDataEditor,
 		@IQueryModelService private _queryModelService: IQueryModelService,
-		@IConnectionManagementService _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService _connectionManagementService: IConnectionManagementService,
+		@IMessageService private _messageService: IMessageService
 	) {
 		super(editor, RefreshTableAction.ID, RefreshTableAction.EnabledClass, _connectionManagementService);
 		this.label = nls.localize('refresh', 'Refresh');
@@ -74,10 +76,12 @@ export class RefreshTableAction extends EditDataAction {
 
 	public run(): TPromise<void> {
 		if (this.isConnected(this.editor)) {
-			this._queryModelService.disposeEdit(this.editor.editDataInput);
-			this._queryModelService.initializeEdit(this.editor.editDataInput);
-		} else {
-			// TODO: notify user they are in an unconnected state
+			let input = this.editor.editDataInput;
+			this._queryModelService.disposeEdit(input.uri).then((result) => {
+				this._queryModelService.initializeEdit(input.uri, input.tableName, input.objectType, input.rowLimit);
+			}, error => {
+				this._messageService.show(Severity.Error, nls.localize('disposeEditFailure', 'Dipose Edit Failed With Error: ') + error);
+			});
 		}
 		return TPromise.as(null);
 	}
@@ -101,7 +105,8 @@ export class StopRefreshTableAction extends EditDataAction {
 	}
 
 	public run(): TPromise<void> {
-
+		let input = this.editor.editDataInput;
+		this._queryModelService.disposeEdit(input.uri);
 		return TPromise.as(null);
 	}
 }

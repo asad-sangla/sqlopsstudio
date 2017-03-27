@@ -34,6 +34,7 @@ import {
 	ChangeMaxRowsAction, ChangeMaxRowsActionItem} from 'sql/parts/editData/execution/editDataActions';
 import { append, $ } from 'vs/base/browser/dom';
 import { AppModule } from 'sql/parts/grid/views/editdata.module';
+import * as nls from 'vs/nls';
 
 declare let AngularPlatformBrowserDynamic;
 
@@ -183,7 +184,7 @@ export class EditDataEditor extends BaseEditor {
 
 		// Create HTML Elements for the taskbar
 		let separator = QueryTaskbar.createTaskbarSeparator();
-		let textSeperator = QueryTaskbar.createTaskbarText('Max Rows:');
+		let textSeperator = QueryTaskbar.createTaskbarText(nls.localize('maxRowTaskbar', 'Max Rows:'));
 
 		// Set the content in the order we desire
 		let content: ITaskbarContent[] = [

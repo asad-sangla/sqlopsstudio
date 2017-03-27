@@ -15,6 +15,7 @@ import { IQueryManagementService } from 'sql/parts/query/common/queryManagement'
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import * as Utils from 'sql/parts/connection/common/utils';
+import data = require('data');
 
 /*
 * Query Runner class which handles running a query, reports the results to the content manager,
@@ -223,7 +224,7 @@ export default class QueryRunner {
 	/*
 	 * Handle a session ready event for Edit Data
 	 */
-	initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void> {
+	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 		const self = this;
 
 		// Update internal state to show that we're executing the query
@@ -231,7 +232,7 @@ export default class QueryRunner {
 		this._totalElapsedMilliseconds = 0;
 		// TODO issue #228 add statusview callbacks here
 
-		return this._queryManagementService.initializeEdit(ownerUri, objectName, objectType).then(result => {
+		return this._queryManagementService.initializeEdit(ownerUri, objectName, objectType, rowLimit).then(result => {
 			// The query has started, so lets fire up the result pane
 			self.eventEmitter.emit('start');
 			self._queryManagementService.registerRunner(self, ownerUri);
@@ -246,8 +247,40 @@ export default class QueryRunner {
 		});
 	}
 
-	public handleEditSessionReady(ownerUri: string, success: boolean): void {
-		this.eventEmitter.emit('editSessionReady', ownerUri, success);
+	public handleEditSessionReady(ownerUri: string, success: boolean, message: string): void {
+		this.eventEmitter.emit('editSessionReady', ownerUri, success, message);
+	}
+
+	public updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult> {
+		return this._queryManagementService.updateCell(ownerUri, rowId, columnId, newValue);
+	}
+
+	public commitEdit(ownerUri): Thenable<void> {
+		return this._queryManagementService.commitEdit(ownerUri);
+	}
+
+	public createRow(ownerUri: string): Thenable<data.EditCreateRowResult> {
+		return this._queryManagementService.createRow(ownerUri).then(result => {
+			return result;
+		});
+	}
+
+	public deleteRow(ownerUri: string, rowId: number): Thenable<void> {
+		return this._queryManagementService.deleteRow(ownerUri, rowId);
+	}
+
+	public revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult> {
+		return this._queryManagementService.revertCell(ownerUri, rowId, columnId).then(result => {
+			return result;
+		});
+	}
+
+	public revertRow(ownerUri: string, rowId: number): Thenable<void> {
+		return this._queryManagementService.revertRow(ownerUri, rowId);
+	}
+
+	public disposeEdit(ownerUri: string): Thenable<void> {
+		return this._queryManagementService.disposeEdit(ownerUri);
 	}
 
 	/**

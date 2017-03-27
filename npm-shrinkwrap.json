@@ -58,9 +58,9 @@
       "resolved": "https://registry.npmjs.org/angular-in-memory-web-api/-/angular-in-memory-web-api-0.1.17.tgz"
     },
     "angular2-slickgrid": {
-      "version": "1.2.2",
-      "from": "angular2-slickgrid@1.2.2",
-      "resolved": "github:microsoft/angular2-slickgrid"
+      "version": "1.2.3",
+      "from": "angular2-slickgrid@1.2.3",
+      "resolved": "git://github.com/Microsoft/angular2-slickgrid.git#master"
     },
     "bootstrap": {
       "version": "3.3.6",

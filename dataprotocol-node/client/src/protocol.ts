@@ -1221,9 +1221,13 @@ export interface EditDisposeResult {}
 export namespace EditInitializeRequest {
 	export const type: RequestType<EditInitializeParams, EditInitializeResult, void> = {get method(): string {return 'edit/initialize';}};
 }
+export interface EditInitializeFiltering {
+    LimitResults?: number;
+}
 export interface EditInitializeParams extends EditSessionOperationParams {
-	objectName: string;
-	objectType: string;
+    filters: EditInitializeFiltering;
+    objectName: string;
+    objectType: string;
 }
 export interface EditInitializeResult {}
 
@@ -1252,6 +1256,7 @@ export namespace EditSessionReadyNotification {
 export interface EditSessionReadyParams {
 	ownerUri: string;
 	success: boolean;
+	message: string;
 }
 
 // edit/updateCell ----------------------------------------------------------------------------

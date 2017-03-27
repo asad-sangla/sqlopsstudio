@@ -35,7 +35,7 @@
     "rxjs": "5.0.1",
     "systemjs": "^0.19.40",
     "zone.js": "^0.6.26",
-    "angular2-slickgrid": "github:microsoft/angular2-slickgrid#1.2.2",
+    "angular2-slickgrid": "git://github.com/Microsoft/angular2-slickgrid.git#master",
     "applicationinsights": "0.17.0",
     "bootstrap": "3.3.6",
     "chokidar": "bpasero/chokidar#vscode",

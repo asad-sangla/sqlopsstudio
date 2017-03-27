@@ -24,15 +24,25 @@ export interface IQueryManagementService {
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
 
+	// Callbacks
 	onQueryComplete(result: data.QueryExecuteCompleteNotificationResult): void;
 	onBatchStart(batchInfo: data.QueryExecuteBatchNotificationParams): void;
 	onBatchComplete(batchInfo: data.QueryExecuteBatchNotificationParams): void;
 	onResultSetComplete( resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void;
 	onMessage(message: data.QueryExecuteMessageParams): void;
 
+	// Edit Data Callbacks
+	onEditSessionReady(ownerUri: string, success: boolean, message: string): void;
+
 	// Edit Data Functions
-	initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void>;
-	onEditSessionReady(ownerUri: string, success: boolean): void;
+	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void>;
+	disposeEdit(ownerUri: string): Thenable<void>;
+	updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult>;
+	commitEdit(ownerUri): Thenable<void>;
+	createRow(ownerUri: string): Thenable<data.EditCreateRowResult>;
+	deleteRow(ownerUri: string, rowId: number): Thenable<void>;
+	revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult>;
+	revertRow(ownerUri: string, rowId: number): Thenable<void>;
 }
 
 /*
@@ -44,8 +54,15 @@ export interface QueryRequestHandler {
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
 
-	// Edit Data Functions
-	initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void>;
+	// Edit Data actions
+	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void>;
+	disposeEdit(ownerUri: string): Thenable<void>;
+	updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult>;
+	commitEdit(ownerUri): Thenable<void>;
+	createRow(ownerUri: string): Thenable<data.EditCreateRowResult>;
+	deleteRow(ownerUri: string, rowId: number): Thenable<void>;
+	revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult>;
+	revertRow(ownerUri: string, rowId: number): Thenable<void>;
 }
 
 export class QueryManagementService implements IQueryManagementService {
@@ -165,15 +182,57 @@ export class QueryManagementService implements IQueryManagementService {
 	}
 
 	// Edit Data Functions
-	public initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void> {
+	public initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
-			return runner.initializeEdit(ownerUri, objectName, objectType);
+			return runner.initializeEdit(ownerUri, objectName, objectType, rowLimit);
 		});
 	}
 
-	public onEditSessionReady(ownerUri: string, success: boolean): void {
+	public onEditSessionReady(ownerUri: string, success: boolean, message: string): void {
 		this._notify(ownerUri, (runner: QueryRunner) => {
-			runner.handleEditSessionReady(ownerUri, success);
-		})
+			runner.handleEditSessionReady(ownerUri, success, message);
+		});
+	}
+
+	public updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.updateCell(ownerUri, rowId, columnId, newValue);
+		});
+	}
+
+	public commitEdit(ownerUri: string): Thenable<void> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.commitEdit(ownerUri);
+		});
+	}
+
+	public createRow(ownerUri: string): Thenable<data.EditCreateRowResult> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.createRow(ownerUri);
+		});
+	}
+
+	public deleteRow(ownerUri: string, rowId: number): Thenable<void> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.deleteRow(ownerUri, rowId);
+		});
+	}
+
+	public disposeEdit(ownerUri: string): Thenable<void> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.disposeEdit(ownerUri);
+		});
+	}
+
+	public revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.revertCell(ownerUri, rowId, columnId);
+		});
+	}
+
+	public revertRow(ownerUri: string, rowId: number): Thenable<void> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.revertRow(ownerUri, rowId);
+		});
 	}
 }

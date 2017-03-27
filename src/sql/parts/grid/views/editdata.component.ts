@@ -41,6 +41,14 @@ const template = `
                         (mousedown)="navigateToGrid(i)"
                         [selectionModel]="selectionModel"
                         [plugins]="slickgridPlugins"
+                        (cellEditBegin)="onCellEditBegin($event)"
+                        (cellEditExit)="onCellEditEnd($event)"
+                        (rowEditBegin)="onRowEditBegin($event)"
+                        (rowEditExit)="onRowEditEnd($event)"
+                        [isColumnEditable]="onIsColumnEditable"
+                        [isCellEditValid]="onIsCellEditValid"
+                        [overrideCellFn]="overrideCellFn"
+                        enableEditing="true"
                         class="boxCol content vertBox slickgrid">
             </slick-grid>
         </div>
@@ -210,6 +218,15 @@ export class EditDataComponent {
     //@ViewChild('messagescontextmenu') messagesContextMenu: MessagesContextMenu;
     @AngularCore.ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
 
+    // Edit Data functions
+    public onCellEditEnd: (event: {row: number, column: number, newValue: any}) => void;
+    public onCellEditBegin: (event: {row: number, column: number}) => void;
+    public onRowEditBegin: (event: {row: number}) => void;
+    public onRowEditEnd: (event: {row: number}) => void;
+    public onIsCellEditValid: (row: number, column: number, newValue: any) => boolean;
+    public onIsColumnEditable: (column: number) => boolean;
+    public overrideCellFn: (rowNumber, columnId, value?, data?) => string;
+
     set messageActive(input: boolean) {
         this._messageActive = input;
         if (this.resultActive) {
@@ -285,16 +302,49 @@ export class EditDataComponent {
         self.totalElapsedTimeSpan = undefined;
         self.complete = false;
         self.messagesAdded = false;
+
+        // Hooking up edit functions
+        this.onIsCellEditValid = (row, column, value): boolean => {
+            // TODO Validate edit inputs
+            return true;
+        };
+
+        this.onCellEditEnd = (event: {row: number, column: number, newValue: any}): void => {
+            self.dataService.updateCell(event.row, event.column, event.newValue);
+        };
+
+        this.onCellEditBegin = (event: {row: number, column: number}): void => {
+
+        };
+
+        this.onRowEditBegin = (event: {row: number}): void => {
+
+        };
+
+        this.onRowEditEnd = (event: {row: number}): void => {
+            self.dataService.commitEdit();
+        };
+
+        this.onIsColumnEditable = (column: number): boolean => {
+            // TODO should all rows be editable?
+            return true;
+        };
+
+        this.overrideCellFn = (rowNumber, columnId, value?, data?): string => {
+            let returnVal = '';
+            if (Services.DBCellValue.isDBCellValue(value)) {
+                returnVal = value.displayValue;
+            } else if (typeof value === 'string') {
+                returnVal = value;
+            }
+            return returnVal;
+        };
     }
 
     handleComplete(self: EditDataComponent, event: any): void {
         self.totalElapsedTimeSpan = event.data;
         self.complete = true;
         self.messagesAdded = true;
-
-        setTimeout(function(){
-            self.refreshResultsets();
-        }, 1);
     }
 
 	handleEditSessionReady(self, event): void {
@@ -489,61 +539,6 @@ export class EditDataComponent {
         input.remove();
     }
 
-/*
-	 enterGridEditSession(): void {
-        let grids: SlickGrid[] = this.slickgrids.toArray();
-        if (grids.length === 0) {
-            return;
-        }
-
-        let grid: SlickGrid = grids[0];
-        // grid.ed
-    }
-
-    endGridEditSession(): void {
-        let grids: SlickGrid[] = this.slickgrids.toArray();
-        if (grids.length === 0) {
-            return;
-        }
-
-        let grid: SlickGrid = grids[0];
-        // grid.endEditSession();
-    }
-
-    onCellEditEnd(event: {row: number, column: number, newValue: any}): void {
-        if (event !== undefined) {
-            console.log(event.newValue);
-        }
-    }
-
-    onCellEditBegin(event: {row: number, column: number}): void {
-        if (event !== undefined) {
-            console.log(event.row + ', '  + event.column);
-        }
-    }
-
-    onRowEditBegin(event: {row: number}): void {
-        if (event !== undefined) {
-            console.log(event.row);
-        }
-    }
-
-    onRowEditEnd(event: {row: number}): void {
-        if (event !== undefined) {
-            console.log(event.row);
-        }
-    }
-
-    onIsCellEditValid(row: number, column: number, newValue: any): boolean {
-        console.log(row);
-        return true;
-    }
-
-    onIsColumnEditable(column: number): boolean {
-        return true;
-    }
-*/
-
     /**
      * Add handler for clicking on xml link
      */
@@ -610,6 +605,8 @@ export class EditDataComponent {
                     }
                 }
             }
+
+            self.cd.detectChanges();
 
             if (self.firstRender) {
                 let setActive = function() {

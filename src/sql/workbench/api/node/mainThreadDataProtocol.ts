@@ -81,8 +81,29 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			disposeQuery(ownerUri: string): Thenable<void> {
 				return self._proxy.$disposeQuery(handle, ownerUri);
 			},
-			initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void> {
-				return self._proxy.$initializeEdit(handle, ownerUri, objectName, objectType);
+			initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+				return self._proxy.$initializeEdit(handle, ownerUri, objectName, objectType, rowLimit);
+			},
+			updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult> {
+				return self._proxy.$updateCell(handle, ownerUri, rowId, columnId, newValue);
+			},
+			commitEdit(ownerUri): Thenable<void> {
+				return self._proxy.$commitEdit(handle, ownerUri);
+			},
+			createRow(ownerUri: string): Thenable<data.EditCreateRowResult> {
+				return self._proxy.$createRow(handle, ownerUri);
+			},
+			deleteRow(ownerUri: string, rowId: number): Thenable<void> {
+				return self._proxy.$deleteRow(handle, ownerUri, rowId);
+			},
+			disposeEdit(ownerUri: string): Thenable<void> {
+				return self._proxy.$disposeEdit(handle, ownerUri);
+			},
+			revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult> {
+				return self._proxy.$revertCell(handle, ownerUri, rowId, columnId);
+			},
+			revertRow(ownerUri: string, rowId: number): Thenable<void> {
+				return self._proxy.$revertRow(handle, ownerUri, rowId);
 			}
 		});
 
@@ -132,16 +153,14 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	public $onBatchComplete(handle: number, batchInfo: data.QueryExecuteBatchNotificationParams): void {
 		this._queryManagementService.onBatchComplete(batchInfo);
 	}
-
 	public $onResultSetComplete(handle: number, resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void {
 		this._queryManagementService.onResultSetComplete(resultSetInfo);
 	}
 	public $onQueryMessage(handle: number, message: data.QueryExecuteMessageParams): void {
 		this._queryManagementService.onMessage(message);
 	}
-
-	public $onEditSessionReady(handle: number, ownerUri: string, success: boolean): void {
-		this._queryManagementService.onEditSessionReady(ownerUri, success);
+	public $onEditSessionReady(handle: number, ownerUri: string, success: boolean, message: string): void {
+		this._queryManagementService.onEditSessionReady(ownerUri, success, message);
 	}
 
 	public $unregisterProvider(handle: number): TPromise<any> {

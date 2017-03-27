@@ -15,7 +15,9 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import Event, { Emitter } from 'vs/base/common/event';
-import { ISelectionData, ResultSetSubset } from 'data';
+import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSessionReadyParams } from 'data';
+import { TPromise } from 'vs/base/common/winjs.base';
+import nls = require('vs/nls');
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 
@@ -52,12 +54,12 @@ export class QueryModelService implements IQueryModelService {
 	private _queryInfoMap: Map<string, QueryInfo>;
 	private _onRunQueryStart: Emitter<string>;
 	private _onRunQueryComplete: Emitter<string>;
-	private _onEditSessionReady: Emitter<{ownerUri: string, success: boolean}>;
+	private _onEditSessionReady: Emitter<EditSessionReadyParams>;
 
 	// EVENTS /////////////////////////////////////////////////////////////
 	public get onRunQueryStart(): Event<string> { return this._onRunQueryStart.event; }
 	public get onRunQueryComplete(): Event<string> { return this._onRunQueryComplete.event; }
-	public get onEditSessionReady(): Event<{ownerUri: string, success: boolean}> { return this._onEditSessionReady.event; }
+	public get onEditSessionReady(): Event<EditSessionReadyParams> { return this._onEditSessionReady.event; }
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
@@ -67,7 +69,7 @@ export class QueryModelService implements IQueryModelService {
 		this._queryInfoMap = new Map<string, QueryInfo>();
 		this._onRunQueryStart = new Emitter<string>();
 		this._onRunQueryComplete = new Emitter<string>();
-		this._onEditSessionReady = new Emitter<{ownerUri: string, success: boolean}>();
+		this._onEditSessionReady = new Emitter<EditSessionReadyParams>();
 	}
 
 	// IQUERYMODEL /////////////////////////////////////////////////////////
@@ -238,11 +240,10 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	// EDIT DATA METHODS /////////////////////////////////////////////////////
-	initializeEdit(owner: EditDataInput): void {
+	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): void {
 		// Reuse existing query runner if it exists
 		let queryRunner: QueryRunner;
 		let info: QueryInfo;
-		let ownerUri = owner.uri;
 
 		if (this._queryInfoMap.has(ownerUri)) {
 			info = this._queryInfoMap.get(ownerUri);
@@ -285,8 +286,8 @@ export class QueryModelService implements IQueryModelService {
 				this._onRunQueryStart.fire(ownerUri);
 				this._fireQueryEvent(ownerUri, 'start');
 			});
-			queryRunner.eventEmitter.on('editSessionReady', (ownerUri, success) => {
-				this._onEditSessionReady.fire({ownerUri: ownerUri, success: success});
+			queryRunner.eventEmitter.on('editSessionReady', (ownerUri, success, message) => {
+				this._onEditSessionReady.fire({ownerUri: ownerUri, success: success, message: message});
 				this._fireQueryEvent(ownerUri, 'editSessionReady');
 			});
 
@@ -296,18 +297,90 @@ export class QueryModelService implements IQueryModelService {
 			this._queryInfoMap.set(ownerUri, info);
 		}
 
-		queryRunner.initializeEdit(ownerUri, owner.tableName, 'TABLE');
+		queryRunner.initializeEdit(ownerUri, objectName, objectType, rowLimit);
 	}
 
 	public cancelInitializeEdit(input: QueryRunner | string): void {
 		// TODO: Implement query cancellation service
 	}
 
-	public disposeEdit(owner: EditDataInput): void {
-		// TODO: Implement edit session disposal service
+	public disposeEdit(ownerUri: string): Thenable<void> {
+		// Get existing query runner
+		let queryRunner = this._getQueryRunner(ownerUri);
+		if (queryRunner) {
+			return queryRunner.disposeEdit(ownerUri);
+		}
+		return TPromise.as(null);
+	}
+
+	public updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult> {
+		// Get existing query runner
+		let queryRunner = this._getQueryRunner(ownerUri);
+		if (queryRunner) {
+			return queryRunner.updateCell(ownerUri, rowId, columnId, newValue).then((result) => result, error => {
+				this._messageService.show(Severity.Error, nls.localize('commitEditFailed', 'Commit Edit Data Failed With Error: ') + error.message);
+			});
+		}
+		return TPromise.as(null);
+	}
+
+	public commitEdit(ownerUri): Thenable<void> {
+		// Get existing query runner
+		let queryRunner = this._getQueryRunner(ownerUri);
+		if (queryRunner) {
+			return queryRunner.commitEdit(ownerUri).then(() => {}, error => {
+				this._messageService.show(Severity.Error, nls.localize('commitEditFailed', 'Commit Edit Data Failed With Error: ') + error.message);
+			});
+		}
+		return TPromise.as(null);
+	}
+
+	public createRow(ownerUri: string): void {
+		// Get existing query runner
+		let queryRunner = this._getQueryRunner(ownerUri);
+		if (queryRunner) {
+			queryRunner.createRow(ownerUri);
+		}
+	}
+
+	public deleteRow(ownerUri: string, rowId: number): void {
+		// Get existing query runner
+		let queryRunner = this._getQueryRunner(ownerUri);
+		if (queryRunner) {
+			queryRunner.deleteRow(ownerUri, rowId);
+		}
+	}
+
+	public revertCell(ownerUri: string, rowId: number, columnId: number): void {
+		// Get existing query runner
+		let queryRunner = this._getQueryRunner(ownerUri);
+		if (queryRunner) {
+			queryRunner.revertCell(ownerUri, rowId, columnId);
+		}
+	}
+
+	public revertRow(ownerUri: string, rowId: number): void {
+		// Get existing query runner
+		let queryRunner = this._getQueryRunner(ownerUri);
+		if (queryRunner) {
+			queryRunner.revertRow(ownerUri, rowId);
+		}
 	}
 
 	// PRIVATE METHODS //////////////////////////////////////////////////////
+
+	private _getQueryRunner(ownerUri): QueryRunner {
+		let queryRunner: QueryRunner = undefined;
+		if (this._queryInfoMap.has(ownerUri)) {
+			let existingRunner = this._queryInfoMap.get(ownerUri).queryRunner;
+			// If the query is not already executing then set it up
+			if (!existingRunner.isExecuting) {
+				queryRunner = this._queryInfoMap.get(ownerUri).queryRunner;
+			}
+		}
+		// return undefined if not found or is already executing
+		return queryRunner;
+	}
 
 	private _fireGridContentEvent(uri: string, type: string): void {
 		let info: QueryInfo = this._queryInfoMap.get(uri);

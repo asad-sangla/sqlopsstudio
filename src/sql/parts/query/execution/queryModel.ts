@@ -7,9 +7,8 @@ import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import Event from 'vs/base/common/event';
-import { ISelectionData, ResultSetSubset } from 'data';
+import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSessionReadyParams } from 'data';
 
 export const SERVICE_ID = 'queryModelService';
 
@@ -43,8 +42,17 @@ export interface IQueryModelService {
 	onRunQueryStart: Event<string>;
 	onRunQueryComplete: Event<string>;
 
+
 	// Edit Data Functions
-	initializeEdit(owner: EditDataInput): void;
-	disposeEdit(owner: EditDataInput): void;
-	onEditSessionReady: Event<{ownerUri: string, success: boolean}>;
+	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): void;
+	disposeEdit(ownerUri: string): Thenable<void>;
+	updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult>;
+	commitEdit(ownerUri): Thenable<void>;
+	createRow(ownerUri: string): void;
+	deleteRow(ownerUri: string, rowId: number): void;
+	revertCell(ownerUri: string, rowId: number, columnId: number): void;
+	revertRow(ownerUri: string, rowId: number): void;
+
+	// Edit Data Callbacks
+	onEditSessionReady: Event<EditSessionReadyParams>;
 }

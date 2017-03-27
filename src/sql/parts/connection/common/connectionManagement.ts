@@ -117,7 +117,7 @@ export interface INewConnectionParams {
 export interface IConnectableInput {
 	uri: string;
 	onConnectStart(): void;
-	onConnectReject(error: any): void;
+	onConnectReject(error?: string): void;
 	onConnectSuccess(runQueryOnCompletion: boolean): void;
 	onDisconnect(): void;
 }

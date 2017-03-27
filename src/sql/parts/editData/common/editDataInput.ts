@@ -6,11 +6,14 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput,  EditorModel, ConfirmResult } from 'vs/workbench/common/editor';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
+import { EditSessionReadyParams } from 'data';
 import URI from 'vs/base/common/uri';
+import nls = require('vs/nls');
 
 /**
  * Input for the EditDataEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
@@ -26,10 +29,13 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	private _stopButtonEnabled: boolean;
 	private _setup: boolean;
 	private _toDispose: IDisposable[];
+	private _rowLimit: number;
+	private _objectType: string;
 
 	constructor(private _uri: URI, private _tableName,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IQueryModelService private _queryModelService: IQueryModelService
+		@IQueryModelService private _queryModelService: IQueryModelService,
+		@IMessageService private _messageService: IMessageService
 	) {
 		super();
 		this._visible = false;
@@ -40,6 +46,10 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 		this._stopButtonEnabled = false;
 		this._refreshButtonEnabled = false;
 		this._toDispose = [];
+
+		//TODO remove hardcoded values and determine these based on context
+		this._rowLimit = 10;
+		this._objectType = 'TABLE';
 
 		// Attach to event callbacks
 		if (this._queryModelService) {
@@ -57,7 +67,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 			this._toDispose.push(
 				this._queryModelService.onEditSessionReady((result) => {
 					if (self.uri === result.ownerUri) {
-						self.initEditEnd(result.success);
+						self.initEditEnd(result);
 					}
 				})
 			);
@@ -75,6 +85,8 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	public get hasBootstrapped(): boolean { return this._hasBootstrapped; }
 	public get visible(): boolean { return this._visible; }
 	public get setup(): boolean{ return this._setup; }
+	public get rowLimit(): number { return this._rowLimit; }
+	public get objectType(): string { return this._objectType; }
 	public getTypeId(): string { return EditDataInput.ID; }
 	public setVisibleTrue(): void { this._visible = true; }
 	public setBootstrappedTrue(): void { this._hasBootstrapped = true; }
@@ -94,14 +106,14 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 		this._updateTaskbar.fire(this);
 	}
 
-	public initEditEnd(success: boolean): void {
-		if (success) {
+	public initEditEnd(result: EditSessionReadyParams): void {
+		if (result.success) {
 			this._refreshButtonEnabled = true;
 			this._stopButtonEnabled = false;
 		} else {
-			this._refreshButtonEnabled = true;
+			this._refreshButtonEnabled = false;
 			this._stopButtonEnabled = false;
-			// TODO: handle initializeEdit failure and notify user or error
+			this._messageService.show(Severity.Error, result.message);
 		}
 		this._updateTaskbar.fire(this);
 	}
@@ -110,12 +122,14 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 		// TODO: Indicate connection started
 	}
 
-	public onConnectReject(): void {
-		// TODO: deal with connection failure
+	public onConnectReject(error?: string): void {
+		if (error) {
+			this._messageService.show(Severity.Error, nls.localize('connectionFailure','Edit Data Session Failed To Connect'));
+		}
 	}
 
 	public onConnectSuccess(runQueryOnCompletion: boolean): void {
-		this._queryModelService.initializeEdit(this);
+		this._queryModelService.initializeEdit(this.uri, this.tableName, this._objectType, this._rowLimit);
 		this._showTableView.fire(this);
 	}
 
@@ -150,9 +164,12 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	}
 
 	public close(): void {
-		this._connectionManagementService.disconnectEditor(this, true).then(() => {
-			this.dispose();
-			super.close();
+		// Dipose our edit session then disconnect our input
+		this._queryModelService.disposeEdit(this.uri).then(() => {
+			this._connectionManagementService.disconnectEditor(this, true).then(() => {
+				this.dispose();
+				super.close();
+			});
 		});
 	}
 }

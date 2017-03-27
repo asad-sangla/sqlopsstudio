@@ -9,7 +9,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
-import { IMessageService, Severity, IMessageWithAction } from 'vs/platform/message/common/message';
+import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
@@ -136,7 +136,11 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._updateTaskbar.fire();
 	}
 
-	public onConnectReject(error: any): void {
+
+	public onConnectReject(error?: string): void {
+		if (error) {
+			this._messageService.show(Severity.Error, error);
+		}
 		this.onDisconnect();
 		this._updateTaskbar.fire();
 		this._messageService.show(Severity.Error, error);

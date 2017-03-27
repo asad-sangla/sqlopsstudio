@@ -303,6 +303,7 @@ declare module 'data' {
 		getQueryRows(rowData: QueryExecuteSubsetParams): Thenable<QueryExecuteSubsetResult>;
 		disposeQuery(ownerUri: string): Thenable<void>;
 
+		// Notifications
 		registerOnQueryComplete(handler: (result: QueryExecuteCompleteNotificationResult) => any): void;
 		registerOnBatchStart(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any): void;
 		registerOnBatchComplete(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any): void;
@@ -314,13 +315,13 @@ declare module 'data' {
 		createRow(ownerUri: string): Thenable<EditCreateRowResult>;
 		deleteRow(ownerUri: string, rowId: number): Thenable<void>;
 		disposeEdit(ownerUri: string): Thenable<void>;
-		initializeEdit(ownerUri: string, objectName: string, objectType: string): Thenable<void>;
+		initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void>;
 		revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult>;
 		revertRow(ownerUri: string, rowId: number): Thenable<void>;
 		updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult>;
 
 		// Edit Data Notifications
-		registerOnEditSessionReady(handler: (ownerUri: string, success: boolean) => any): void;
+		registerOnEditSessionReady(handler: (ownerUri: string, success: boolean, message: string) => any): void;
 	}
 
 	export interface IDbColumn {
@@ -473,7 +474,11 @@ declare module 'data' {
 	export interface EditDisposeResult { }
 
 	// edit/initialize ----------------------------------------------------------------------------
+	export interface EditInitializeFiltering {
+		LimitResults?: number;
+	}
 	export interface EditInitializeParams extends IEditSessionOperationParams {
+		filters: EditInitializeFiltering;
 		objectName: string;
 		objectType: string;
 	}
@@ -496,6 +501,7 @@ declare module 'data' {
 	export interface EditSessionReadyParams {
 		ownerUri: string;
 		success: boolean;
+		message: string;
 	}
 
 	// edit/updateCell ----------------------------------------------------------------------------

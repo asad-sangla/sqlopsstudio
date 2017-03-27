@@ -114,7 +114,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Initializes a new edit data session for the requested table/view
 	 */
-	$initializeEdit(handle: number, ownerUri: string, objectName: string, objectType: string): Thenable<void> { throw ni(); }
+	$initializeEdit(handle: number, ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> { throw ni(); }
 
 	/**
 	 * Reverts any pending changes for the requested cell and returns the original value
@@ -130,6 +130,11 @@ export abstract class ExtHostDataProtocolShape {
 	 * Updates a cell value in the requested row. Returns if there are any corrections to the value
 	 */
 	$updateCell(handle: number, ownerUri: string, rowId: number, columId: number, newValue: string): Thenable<data.EditUpdateCellResult> { throw ni(); }
+
+	/**
+	 * Diposes an initialized edit session and cleans up pending edits
+	 */
+	$disposeEdit(handle: number, ownerUri: string): Thenable<void> { throw ni(); }
 }
 
 /**
@@ -157,7 +162,7 @@ export abstract class MainThreadDataProtocolShape {
 	/**
 	 * Callback when a session has completed initialization
 	 */
-	$onEditSessionReady(handle: number, ownerUri: string, success: boolean) { throw ni(); }
+	$onEditSessionReady(handle: number, ownerUri: string, success: boolean, message: string) { throw ni(); }
 }
 
 export abstract class MainThreadCredentialManagementShape {
