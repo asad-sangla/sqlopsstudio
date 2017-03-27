@@ -220,6 +220,7 @@ export class SqlConnectionWidget {
 			this._serverGroupInputBox.value = this.getModelValue(connectionInfo.groupFullName);
 			this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
 			this._saveConnectionCheckbox.checked = connectionInfo.saveProfile;
+			this.onSaveConnectionChecked(false);
 			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
 				var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
 				authTypeOption.categoryValues.forEach(c => {

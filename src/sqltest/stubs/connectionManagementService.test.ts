@@ -92,4 +92,12 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile> {
 		return new Promise<IConnectionProfile>(() => connectionProfile);
 	}
+
+	cancelConnection(connection: IConnectionProfile): Thenable<boolean> {
+		return undefined;
+	}
+
+	cancelEditorConnection(owner: IConnectableInput): Thenable<boolean> {
+		return undefined;
+	}
 }

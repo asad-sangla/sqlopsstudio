@@ -109,6 +109,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		if (!params) {
 			params = { connectionType: ConnectionType.default };
 		}
+		if (!model && params.input && params.input.uri) {
+			model = this._connectionFactory.getConnectionProfile(params.input.uri);
+		}
 		this._connectionDialogService.showDialog(this, params, model);
 	}
 
@@ -117,7 +120,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public addConnectionProfile(connection: IConnectionProfile): Promise<boolean> {
-		let uri = this._connectionFactory.getUniqueUri(connection);
+		let uri = this._connectionFactory.getConnectionManagementId(connection);
 
 		return new Promise<boolean>((resolve, reject) => {
 			this._statusService.setStatusMessage('Connecting...');
@@ -312,26 +315,22 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public connectProfile(connectionProfile: ConnectionProfile): Promise<boolean> {
-		let uri = this._connectionFactory.getUniqueUri(connectionProfile);
+		let uri = this._connectionFactory.getConnectionManagementId(connectionProfile);
 
-		// Retreive saved password if needed
+		// Retrieve saved password if needed
 		return new Promise<boolean>((resolve, reject) => {
 			this._statusService.setStatusMessage('Connecting...');
 			this._connectionStore.addSavedPassword(connectionProfile).then(newConnection => {
-				if (!this._connectionFactory.hasConnection(connectionProfile, uri)) {
-					return this.connect(uri, connectionProfile).then(connected => {
-						if (connected) {
-							this._onConnect.fire();
-							this.showDashboard(uri, connectionProfile);
-						}
-						resolve(connected);
-					}).catch(err => {
-						reject(err);
-						this._connectionFactory.deleteConnection(uri);
-					});
-				} else {
-					return resolve(true);
-				}
+				return this.connect(uri, connectionProfile).then(connected => {
+					if (connected) {
+						this._onConnect.fire();
+						this.showDashboard(uri, connectionProfile);
+					}
+					resolve(connected);
+				}).catch(err => {
+					reject(err);
+					this._connectionFactory.deleteConnection(uri);
+				});
 			});
 		});
 	}
@@ -355,14 +354,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 						// If the user wants to cancel, then disconnect
 						if (result) {
 							owner.onDisconnect();
-							resolve(self.doCancelConnect(owner));
+							resolve(self.cancelEditorConnection(owner));
 						}
 						// If the user does not want to cancel, then ignore
 						resolve(false);
 					});
 				} else {
 					owner.onDisconnect();
-					resolve(self.doCancelConnect(owner));
+					resolve(self.cancelEditorConnection(owner));
 				}
 			}
 			// If the URI is disconnected, ensure the UI state is consistent and resolve true
@@ -439,27 +438,37 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private doCancelConnect(owner: IConnectableInput): Thenable<boolean> {
+	public cancelConnection(connection: IConnectionProfile): Thenable<boolean> {
+		let fileUri = this._connectionFactory.getConnectionManagementId(connection);
+		return this.cancelConnectionForUri(fileUri);
+	}
+
+	public cancelConnectionForUri(fileUri: string): Thenable<boolean> {
+		const self = this;
+		return new Promise<boolean>((resolve, reject) => {
+			// Create a new set of cancel connection params with our file URI
+			let cancelParams: ConnectionContracts.CancelConnectParams = new ConnectionContracts.CancelConnectParams();
+			cancelParams.ownerUri = fileUri;
+
+			this._connectionFactory.deleteConnection(fileUri);
+			// Send connection cancellation request
+			resolve(self.sendCancelRequest(fileUri));
+		});
+	}
+
+	public cancelEditorConnection(owner: IConnectableInput): Thenable<boolean> {
 		const self = this;
 		let fileUri: string = owner.uri;
-
 		return new Promise<boolean>((resolve, reject) => {
-			// Check if we are still conecting after user input
 			if (self.isConnecting(fileUri)) {
-				// Create a new set of cancel connection params with our file URI
-				let cancelParams: ConnectionContracts.CancelConnectParams = new ConnectionContracts.CancelConnectParams();
-				cancelParams.ownerUri = fileUri;
-
-				this._connectionFactory.deleteConnection(fileUri);
-				// Send connection cancellation request
-				resolve(self.sendCancelRequest(fileUri));
+				this.cancelConnectionForUri(fileUri).then(result => {
+					resolve(result);
+				});
 			} else {
-				// If we are not connecting anymore let disconnect handle the next steps
 				resolve(self.disconnectEditor(owner));
 			}
 		});
 	}
-
 	// Is a certain file URI connected?
 	public isConnected(fileUri: string): boolean {
 		return this._connectionFactory.isConnected(fileUri);

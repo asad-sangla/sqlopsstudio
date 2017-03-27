@@ -24,7 +24,7 @@ export class ConnectionFactory {
 		}
 	}
 
-	public hasConnection(connectionInfo: IConnectionProfile, id: string): Boolean {
+	public hasConnection(id: string): Boolean {
 		return !!this.findConnection(id);
 	}
 
@@ -75,7 +75,7 @@ export class ConnectionFactory {
 		return (id in this._connections && this._connections[id].connecting);
 	}
 
-	public getUniqueUri(connection: IConnectionProfile): string {
+	public getConnectionManagementId(connection: IConnectionProfile): string {
 
 		let id = connection.getUniqueId();
 		let uri = 'connection://' + (id ? id : connection.serverName + ':' + connection.databaseName);

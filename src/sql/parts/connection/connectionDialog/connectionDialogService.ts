@@ -51,9 +51,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _connectionDialog: ConnectionDialogWidget;
 	private _sqlConnectionController: SqlConnectionController;
 	private _model: ConnectionProfile;
+	private _params: INewConnectionParams;
+	private _inputModel: IConnectionProfile;
 	private _capabilitiesMaps: { [providerDisplayName: string]: data.DataProtocolServerCapabilities };
 	private _providerNameToDisplayNameMap: { [providerDisplayName: string]: string };
 	private _providerTypes: string[];
+	private _defaultProviderName: string = 'MSSQL';
 
 	constructor(
 		@IPartService private _partService: IPartService,
@@ -64,6 +67,13 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this._capabilitiesMaps = {};
 		this._providerNameToDisplayNameMap = {};
 		this._providerTypes = [];
+		if (_capabilitiesService) {
+			_capabilitiesService.onProviderRegisteredEvent((capabilities => {
+				if (capabilities.providerName === this._defaultProviderName) {
+					this.showDialogWithModel();
+				}
+			}));
+		}
 	}
 
 	private handleOnConnect(params: INewConnectionParams): void {
@@ -82,7 +92,10 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private handleOnCancel(params: INewConnectionParams): void {
 		if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
-			params.input.onConnectReject(nls.localize('connectionCancelled', 'Connection Cancelled'));
+			this._connectionManagementService.cancelEditorConnection(params.input);
+			params.input.onConnectReject(nls.localize('connectionCancelled', 'Connection Cancelled'))
+		} else {
+			this._connectionManagementService.cancelConnection(this._model);
 		}
 		this._connectionDialog.resetConnection();
 	}
@@ -145,8 +158,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private UpdateModelServerCapabilities(model: IConnectionProfile) {
-		let providerName = model ? model.providerName : 'MSSQL';
-		providerName = providerName ? providerName : 'MSSQL';
+		let providerName = model ? model.providerName : this._defaultProviderName;
+		providerName = providerName ? providerName : this._defaultProviderName;
 		if (model && !model.providerName) {
 			model.providerName = providerName;
 		}
@@ -154,24 +167,47 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this._model = new ConnectionProfile(serverCapabilities, model);
 	}
 
+	private cacheCapabilities(capabilities: data.DataProtocolServerCapabilities) {
+		if (capabilities) {
+			this._providerTypes.push(capabilities.providerDisplayName);
+			this._capabilitiesMaps[capabilities.providerName] = capabilities;
+			this._providerNameToDisplayNameMap[capabilities.providerName] = capabilities.providerDisplayName;
+		}
+	}
+
+	private showDialogWithModel(): TPromise<void> {
+		return new TPromise<void>(() => {
+			if (this._defaultProviderName in this._capabilitiesMaps) {
+				this.UpdateModelServerCapabilities(this._inputModel);
+				// If connecting from a query editor set "save connection" to false
+				if (this._params && this._params.input && this._params.connectionType === ConnectionType.queryEditor) {
+					this._model.saveProfile = false;
+				}
+				this.doShowDialog(this._params);
+			}
+		});
+	}
+
 	public showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
 		this._connectionManagementService = connectionManagementService;
+		this._params = params;
+		this._inputModel = model;
 
 		// only create the provider maps first time the dialog gets called
 		if (this._providerTypes.length === 0) {
 			let capabilities = this._capabilitiesService.getCapabilities();
 			capabilities.forEach(c => {
-				this._providerTypes.push(c.providerDisplayName);
-				this._capabilitiesMaps[c.providerName] = c;
-				this._providerNameToDisplayNameMap[c.providerName] = c.providerDisplayName;
+				this.cacheCapabilities(c);
 			});
 		}
 
 		this.UpdateModelServerCapabilities(model);
+		// If connecting from a query editor set "save connection" to false
+		if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
+			this._model.saveProfile = false;
+		}
 
-		return new TPromise<void>(() => {
-			this.doShowDialog(params);
-		});
+		return this.showDialogWithModel();
 	}
 
 	private doShowDialog(params: INewConnectionParams): TPromise<void> {

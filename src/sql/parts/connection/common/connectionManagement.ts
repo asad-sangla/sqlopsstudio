@@ -67,6 +67,16 @@ export interface IConnectionManagementService {
 	registerProvider(providerId: string, provider: data.ConnectionProvider): void;
 
 	getConnectionProfile(fileUri: string): IConnectionProfile;
+
+	/**
+	 * Cancels the connection
+	 */
+	cancelConnection(connection: IConnectionProfile): Thenable<boolean>;
+
+	/**
+	 * Cancels the connection for the editor
+	 */
+	cancelEditorConnection(owner: IConnectableInput): Thenable<boolean>;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
@@ -78,7 +88,7 @@ export interface IConnectionDialogService {
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');
 export interface IErrorMessageService {
 	_serviceBrand: any;
-	showDialog(container: HTMLElement,  severity: Severity, headerTitle: string, message: string): void;
+	showDialog(container: HTMLElement, severity: Severity, headerTitle: string, message: string): void;
 }
 
 export enum ConnectionOptionType {
@@ -123,8 +133,7 @@ export enum ConnectionType {
 	queryEditor = 1
 }
 
-export enum MetadataType
-{
+export enum MetadataType {
 	Table = 0,
 	View = 1,
 	SProc = 2,
