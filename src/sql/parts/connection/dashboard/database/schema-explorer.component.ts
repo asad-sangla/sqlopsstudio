@@ -79,7 +79,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 		const self = this;
 		this.metadataService.getMetadata('1', this.ownerUri).then(result => {
 			self.objectMetadata = ObjectMetadataWrapper.createFromObjectMetadata(result.objectMetadata);
-			this.changeDetectorRef.detectChanges();
+			self.changeDetectorRef.detectChanges();
 		});
 	}
 
