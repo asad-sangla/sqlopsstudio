@@ -33,6 +33,13 @@ export abstract class ExtHostDataProtocolShape {
 	$cancelConnect(handle:number, connectionUri: string): Thenable<boolean> { throw ni(); }
 
 	/**
+	 * List databases for a data source using the provided connectionUri string.
+	 * @param handle the handle to use when looking up a provider
+	 * @param connectionUri URI identifying a connected resource
+	 */
+	$listDatabases(handle: number, connectionUri: string): Thenable<data.ListDatabasesResult> { throw ni(); }
+
+	/**
 	 * Callback when a connection request has completed
 	 */
 	$onConnectComplete(handle:number, connectionInfoSummary: data.ConnectionInfoSummary): void { throw ni(); }
@@ -153,6 +160,7 @@ export abstract class MainThreadDataProtocolShape {
 	$unregisterProvider(handle: number): TPromise<any> { throw ni(); }
 	$onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void { throw ni(); }
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
+	$onConnectionChangeNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo): void { throw ni(); }
 	$onQueryComplete(handle: number, result: data.QueryExecuteCompleteNotificationResult): void { throw ni(); }
 	$onBatchStart(handle: number, batchInfo: data.QueryExecuteBatchNotificationParams): void { throw ni(); }
 	$onBatchComplete(handle: number, batchInfo: data.QueryExecuteBatchNotificationParams): void { throw ni(); }

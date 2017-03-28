@@ -119,9 +119,13 @@ declare module 'data' {
 
 		cancelConnect(connectionUri: string): Thenable<boolean>;
 
+		listDatabases(connectionUri: string): Thenable<ListDatabasesResult>;
+
 		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any);
 
 		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);
+
+		registerOnConnectionChanged(handler: (changedConnInfo: ChangedConnectionInfo) => any);
 	}
 
 	export enum ConnectionOptionType {
@@ -170,6 +174,26 @@ declare module 'data' {
 
 	export interface ConnectionProviderOptions  {
 		options: ConnectionOption[];
+	}
+
+	// List Databases Request ----------------------------------------------------------------------
+	export interface ListDatabasesResult {
+		databaseNames: Array<string>;
+	}
+
+	/**
+	 * Information about a connection changed event for a resource represented by a URI
+	 */
+	export interface ChangedConnectionInfo {
+		/**
+		 * Owner URI of the connection that changed.
+		 */
+		connectionUri: string;
+
+		/**
+		 * Summary of details containing any connection changes.
+		 */
+		connection: ConnectionSummary;
 	}
 
 	export interface DataProtocolServerCapabilities {

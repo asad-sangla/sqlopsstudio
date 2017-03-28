@@ -22,7 +22,8 @@ import {
 		DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
 		DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider,
 		ScriptingProvider, ProviderMetadata, ScriptingResult,
-		QueryProvider, QueryCancelResult as VQueryCancelResult, ObjectMetadata
+		QueryProvider, QueryCancelResult as VQueryCancelResult, ObjectMetadata,
+		ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo
 } from 'data';
 
 import {
@@ -78,6 +79,8 @@ import {
 		ConnectionRequest, ConnectParams,
 		DisconnectRequest, DisconnectParams,
 		CancelConnectRequest, CancelConnectParams,
+		ListDatabasesRequest, ListDatabasesParams, ListDatabasesResult,
+		ConnectionChangedNotification, ConnectionChangedParams,
 		ConnectionCompleteNotification, IntelliSenseReadyNotification,
 		MetadataQueryRequest, ScriptingScriptAsRequest,
 		QueryCancelRequest, QueryCancelResult, QueryCancelParams,
@@ -1334,7 +1337,7 @@ export class LanguageClient {
 			},
 
 			cancelConnect(connUri: string): Thenable<boolean> {
-				let params: CancelConnectParams  = {
+				let params: CancelConnectParams = {
 					ownerUri: connUri
 				};
 
@@ -1345,6 +1348,22 @@ export class LanguageClient {
 					(error) => {
 						self.logFailedRequest(CancelConnectRequest.type, error);
 						return Promise.resolve(false);
+					}
+				);
+			},
+
+			listDatabases(connectionUri: string): Thenable<VListDatabasesResult> {
+				let params: ListDatabasesParams = {
+					ownerUri: connectionUri
+				};
+
+				return self.doSendRequest(connection, ListDatabasesRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(ListDatabasesRequest.type, error);
+						return Promise.resolve(undefined);
 					}
 				);
 			},
@@ -1366,6 +1385,15 @@ export class LanguageClient {
 			registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any) {
 				connection.onNotification(IntelliSenseReadyNotification.type, (params: IntelliSenseReadyParams) => {
 					handler(params.ownerUri);
+				});
+			},
+
+			registerOnConnectionChanged(handler: (changedConnInfo: ChangedConnectionInfo) => any) {
+				connection.onNotification(ConnectionChangedNotification.type, (params: ConnectionChangedParams) => {
+					handler({
+						connectionUri: params.ownerUri,
+						connection: params.connection
+					});
 				});
 			}
 		};

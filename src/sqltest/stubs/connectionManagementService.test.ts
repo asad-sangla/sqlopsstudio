@@ -16,6 +16,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	onAddConnectionProfile = undefined;
 	onDeleteConnectionProfile = undefined;
 	onConnect = undefined;
+	onConnectionChanged = undefined;
 
 	registerProvider(providerId: string, provider: data.ConnectionProvider): void {
 
@@ -38,6 +39,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
+
+	}
+
+	public onConnectionChangedNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
 
 	}
 
@@ -91,6 +96,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile> {
 		return new Promise<IConnectionProfile>(() => connectionProfile);
+	}
+
+	public listDatabases(connectionUri: string): Thenable<data.ListDatabasesResult> {
+		return Promise.resolve(undefined);
 	}
 
 	cancelConnection(connection: IConnectionProfile): Thenable<boolean> {

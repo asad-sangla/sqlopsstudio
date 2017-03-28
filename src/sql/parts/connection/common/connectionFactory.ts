@@ -67,6 +67,17 @@ export class ConnectionFactory {
 		return connection;
 	}
 
+	public onConnectionChanged(changedConnInfo: data.ChangedConnectionInfo): IConnectionProfile {
+		let connection = this._connections[changedConnInfo.connectionUri];
+		if (connection && connection.connectionProfile) {
+			connection.connectionProfile.serverName = changedConnInfo.connection.serverName;
+			connection.connectionProfile.databaseName = changedConnInfo.connection.databaseName;
+			connection.connectionProfile.userName = changedConnInfo.connection.userName;
+			return connection.connectionProfile;
+		}
+		return undefined;
+	}
+
 	public isConnected(id: string): boolean {
 		return (id in this._connections && this._connections[id].connectionId && Utils.isNotEmpty(this._connections[id].connectionId));
 	}

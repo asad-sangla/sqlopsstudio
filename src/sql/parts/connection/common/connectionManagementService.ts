@@ -11,7 +11,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import {
 	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
-	ConnectionType, IConnectableInput
+	ConnectionType, IConnectableInput, IConnectionChangedParams
 } from 'sql/parts/connection/common/connectionManagement';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
@@ -50,6 +50,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onAddConnectionProfile: Emitter<void>;
 	private _onDeleteConnectionProfile: Emitter<void>;
 	private _onConnect: Emitter<void>;
+	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
 
 	constructor(
 		private _connectionMemento: Memento,
@@ -82,6 +83,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onAddConnectionProfile = new Emitter<void>();
 		this._onDeleteConnectionProfile = new Emitter<void>();
 		this._onConnect = new Emitter<void>();
+		this._onConnectionChanged = new Emitter<IConnectionChangedParams>();
 
 		this.disposables.push(this._onAddConnectionProfile);
 		this.disposables.push(this._onDeleteConnectionProfile);
@@ -98,6 +100,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public get onConnect(): Event<void> {
 		return this._onConnect.event;
+	}
+
+	public get onConnectionChanged(): Event<IConnectionChangedParams> {
+		return this._onConnectionChanged.event;
 	}
 
 	// Connection Provider Registration
@@ -211,7 +217,22 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
+	private sendListDatabasesRequest(uri: string): Thenable<data.ListDatabasesResult> {
+		// TODO: support URI -> Provider lookup. Currently this isn't supported in the API so
+		// hard-coding the provider number
+		let providerKey = '1';
+		return new Promise((resolve, reject) => {
+			let provider = this._providers[providerKey];
+			provider.listDatabases(uri).then(result => {
+				resolve(result);
+			}, error => {
+				reject(error);
+			});
+		});
+	}
+
 	private saveToSettings(id: string, connection: IConnectionProfile): Promise<boolean> {
+
 		return new Promise<boolean>((resolve, reject) => {
 			this._connectionStore.saveProfile(connection).then(savedProfile => {
 				this._connectionFactory.updateConnection(savedProfile, id);
@@ -249,6 +270,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 			connection.connectHandler(false, info.messages);
 		}
 		this._statusService.setStatusMessage('Updating IntelliSense cache');
+	}
+
+	public onConnectionChangedNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
+		let profile: IConnectionProfile = this._connectionFactory.onConnectionChanged(changedConnInfo);
+		if (profile) {
+			this._onConnectionChanged.fire(<IConnectionChangedParams> {
+				connectionInfo: profile,
+				connectionUri: changedConnInfo.connectionUri
+			});
+		}
 	}
 
 	private _updateConnectionInfoOnSuccess(connection: ConnectionManagementInfo, info: data.ConnectionInfoSummary): void {
@@ -481,5 +512,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public getConnectionProfile(fileUri: string): IConnectionProfile {
 		return this._connectionFactory.isConnected(fileUri) ? this._connectionFactory.getConnectionProfile(fileUri) : undefined;
+	}
+
+	public listDatabases(connectionUri: string): Thenable<data.ListDatabasesResult> {
+		const self = this;
+		if (self.isConnected(connectionUri)) {
+			return self.sendListDatabasesRequest(connectionUri);
+		}
+		return Promise.resolve(undefined);
 	}
 }

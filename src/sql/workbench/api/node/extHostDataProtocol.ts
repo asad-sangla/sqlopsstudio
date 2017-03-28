@@ -80,12 +80,23 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
+	$listDatabases(handle: number, connectionUri: string): Thenable<data.ListDatabasesResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.connectionProvider ? provider.connectionProvider.listDatabases(connectionUri)
+											   : undefined;
+		});
+	 }
+
 	$onConnectComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
 		this._proxy.$onConnectionComplete(handle, connectionInfoSummary);
 	}
 
 	public $onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
 		this._proxy.$onIntelliSenseCacheComplete(handle, connectionUri);
+	}
+
+	public $onConnectionChanged(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
+		this._proxy.$onConnectionChangeNotification(handle, changedConnInfo);
 	}
 
 	// Query Management handlers

@@ -12,6 +12,7 @@ import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import nls = require('vs/nls');
 import * as dom from 'vs/base/browser/dom';
@@ -278,10 +279,21 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 	}
 
 	public onConnected(): void {
+		let dbName = this._getCurrentDatabaseName();
+		this.updateConnection(dbName);
+	}
+
+	public onConnectionChanged(updatedConnection: IConnectionProfile): void {
+		if (updatedConnection) {
+			this.updateConnection(updatedConnection.databaseName);
+		}
+	}
+
+	private updateConnection(databaseName: string) {
 		this._isConnected = true;
 		// TODO: query the connection service for a cached list of databases on the server
 		this._databases = [];
-		this._currentDatabaseName = this._getCurrentDatabaseName();
+		this._currentDatabaseName = databaseName;
 		if (this._currentDatabaseName) {
 			this._databases.push(this._currentDatabaseName);
 		}
@@ -305,8 +317,15 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 	}
 
 	private _registerListeners(): void {
+		let self = this;
 		this.toDispose.push(this.selectBox.onDidSelect(databaseName => {
 			// TODO hook this up. We will need to inject services into this class
+		}));
+		this.toDispose.push(this._connectionManagementService.onConnectionChanged((connChanged) => {
+			let uri = self._getConnectedQueryEditorUri(self.editor);
+			if (uri && uri === connChanged.connectionUri) {
+				self.onConnectionChanged(connChanged.connectionInfo);
+			}
 		}));
 	}
 

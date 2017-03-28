@@ -61,6 +61,10 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 						extHostDataProvider.$onIntelliSenseCacheComplete(provider.handle, connectionUri);
 					});
 
+					provider.connectionProvider.registerOnConnectionChanged((changedConnInfo: data.ChangedConnectionInfo) => {
+						extHostDataProvider.$onConnectionChanged(provider.handle, changedConnInfo);
+					});
+
 					// Query callbacks
 					provider.queryProvider.registerOnQueryComplete((result: data.QueryExecuteCompleteNotificationResult ) => {
 						extHostDataProvider.$onQueryComplete(provider.handle, result);

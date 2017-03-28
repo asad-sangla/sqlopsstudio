@@ -30,6 +30,7 @@ export interface IConnectionManagementService {
 	onAddConnectionProfile: Event<void>;
 	onDeleteConnectionProfile: Event<void>;
 	onConnect: Event<void>;
+	onConnectionChanged: Event<IConnectionChangedParams>;
 
 	newConnection(params?: INewConnectionParams, model?: IConnectionProfile): void;
 
@@ -38,6 +39,8 @@ export interface IConnectionManagementService {
 	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void;
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
+
+	onConnectionChangedNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo);
 
 	getConnectionGroups(): ConnectionProfileGroup[];
 
@@ -60,6 +63,8 @@ export interface IConnectionManagementService {
 	disconnectEditor(owner: IConnectableInput, force?: boolean): Promise<boolean>;
 
 	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile>;
+
+	listDatabases(connectionUri: string): Thenable<data.ListDatabasesResult>;
 
 	/**
 	 * Register a connection provider
@@ -138,4 +143,9 @@ export enum MetadataType {
 	View = 1,
 	SProc = 2,
 	Function = 3
+}
+
+export interface IConnectionChangedParams {
+	connectionUri: string;
+	connectionInfo: IConnectionProfile;
 }

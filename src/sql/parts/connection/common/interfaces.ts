@@ -64,7 +64,7 @@ export interface IConnectionProfile extends data.ConnectionInfo {
 	groupId: string;
 	getUniqueId(): string;
 	providerName: string;
-	saveProfile: boolean
+	saveProfile: boolean;
 };
 
 export interface IConnectionProfileStore {

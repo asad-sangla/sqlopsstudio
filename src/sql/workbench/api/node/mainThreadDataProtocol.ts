@@ -57,6 +57,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			},
 			cancelConnect(connectionUri: string): Thenable<boolean> {
 				return self._proxy.$cancelConnect(handle, connectionUri);
+			},
+			listDatabases(connectionUri: string): Thenable<data.ListDatabasesResult> {
+				return self._proxy.$listDatabases(handle, connectionUri);
 			}
 		});
 
@@ -141,6 +144,10 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 
 	public $onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
 		this._connectionManagementService.onIntelliSenseCacheComplete(handle, connectionUri);
+	}
+
+	public $onConnectionChangeNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
+		this._connectionManagementService.onConnectionChangedNotification(handle, changedConnInfo);
 	}
 
 	// Query Management handlers
