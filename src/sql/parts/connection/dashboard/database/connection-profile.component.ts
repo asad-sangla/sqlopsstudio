@@ -6,15 +6,15 @@
 import { OnInit } from '@angular/core';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
+
 declare let AngularCore;
 
 @AngularCore.Component({
-  selector: 'server-profile',
-  templateUrl: require.toUrl('sql/parts/connection/dashboard/server-dashboard/server-profile/server-profile.component.html'),
-  styleUrls: [require.toUrl('sql/parts/connection/dashboard/server-dashboard/server-profile/server-profile.component.css')]
+  selector: 'connection-profile',
+  templateUrl: require.toUrl('sql/parts/connection/dashboard/database/connection-profile.component.html'),
+  styleUrls: [require.toUrl('sql/parts/connection/dashboard/database/connection-profile.component.css')]
 })
-
-export class ServerProfileComponent implements OnInit {
+export class ConnectionProfileComponent implements OnInit {
 
 @AngularCore.Input() public connection: IConnectionProfile;
 

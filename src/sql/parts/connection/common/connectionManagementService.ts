@@ -406,7 +406,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 */
 
 	// Connect an open URI to a connection profile
-	private connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
+	public connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
 		const self = this;
 
 		return new Promise<boolean>((resolve, reject) => {

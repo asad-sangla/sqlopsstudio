@@ -4220,6 +4220,10 @@ button.ui-button::-moz-focus-inner {
     height: 50px;
 }
 
+#server-properties-datatable {
+    height: 150px;
+}
+
 #server-command-window .ui-dropdown .ui-dropdown-label {
     background-color: #5cb85c;
     border-color: #5cb85c;

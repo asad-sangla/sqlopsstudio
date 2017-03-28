@@ -3,10 +3,8 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/connection/dashboard/server-dashboard/command-window/command-window.component';
+import 'vs/css!sql/parts/connection/dashboard/server/server-command-window.component';
 import 'vs/css!sql/parts/connection/dashboard/media/font-awesome-4.7.0/css/font-awesome';
-import { Component } from '@angular/core';
-import data = require('data');
 
 declare let AngularCore;
 
@@ -15,8 +13,8 @@ declare let AngularCore;
  */
 @AngularCore.Component({
 	selector: 'server-command-window',
-	templateUrl: require.toUrl('sql/parts/connection/dashboard/server-dashboard/command-window/command-window.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/server-dashboard/command-window/command-window.component.css')]
+	templateUrl: require.toUrl('sql/parts/connection/dashboard/server/server-command-window.component.html'),
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/server/server-command-window.component.css')]
 })
 
 export class ServerCommandWindowComponent {

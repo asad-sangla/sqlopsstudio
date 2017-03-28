@@ -18,6 +18,12 @@ export interface IMetadataService {
 
 	getMetadata(providerId: string, connectionUri: string): Thenable<data.ProviderMetadata>;
 
+	getDatabaseNames(providerId: string, connectionUri: string): Thenable<string[]>;
+
+	getTableInfo(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]>;
+
+	getViewInfo(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]>;
+
 	/**
 	 * Register a metadata provider
 	 */
@@ -28,7 +34,7 @@ export class MetadataService implements IMetadataService {
 
 	public _serviceBrand: any;
 
-	private disposables: IDisposable[] = [];
+	private _disposables: IDisposable[] = [];
 
 	private _providers: { [handle: string]: data.MetadataProvider; } = Object.create(null);
 
@@ -44,6 +50,33 @@ export class MetadataService implements IMetadataService {
 		return Promise.resolve(undefined);
 	}
 
+	public getDatabaseNames(providerId: string, connectionUri: string): Thenable<string[]> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.getDatabases(connectionUri);
+		}
+
+		return Promise.resolve(undefined);
+	}
+
+	public getTableInfo(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.getTableInfo(connectionUri, metadata);
+		}
+
+		return Promise.resolve(undefined);
+	}
+
+	public getViewInfo(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.getViewInfo(connectionUri, metadata);
+		}
+
+		return Promise.resolve(undefined);
+	}
+
 	/**
 	 * Register a metadata provider
 	 */
@@ -52,6 +85,6 @@ export class MetadataService implements IMetadataService {
 	}
 
 	public dispose(): void {
-		this.disposables = dispose(this.disposables);
+		this._disposables = dispose(this._disposables);
 	}
 }

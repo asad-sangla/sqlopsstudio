@@ -330,6 +330,63 @@ export class ScriptingScriptAsResult {
 	public script: string;
 }
 
+
+
+export class ColumnMetadata {
+
+	hasExtendedProperties: boolean;
+
+	defaultValue: string;
+
+	/// <summary>
+	/// Escaped identifier for the name of the column
+	/// </summary>
+	escapedName: string;
+
+	/// <summary>
+	/// Whether or not the column is computed
+	/// </summary>
+	isComputed: boolean;
+
+	/// <summary>
+	/// Whether or not the column is deterministically computed
+	/// </summary>
+	isDeterministic: boolean;
+
+	/// <summary>
+	/// Whether or not the column is an identity column
+	/// </summary>
+	isIdentity: boolean;
+
+	/// <summary>
+	/// The ordinal ID of the column
+	/// </summary>
+	ordinal: number;
+
+	/// <summary>
+	/// Whether or not the column is calculated on the server side. This could be a computed
+	/// column or a identity column.
+	/// </summary>
+	isCalculated: boolean;
+
+	/// <summary>
+	/// Whether or not the column is used in a key to uniquely identify a row
+	/// </summary>
+	isKey: boolean;
+
+	/// <summary>
+	/// Whether or not the column can be trusted for uniqueness
+	/// </summary>
+	isTrustworthyForUniqueness: boolean;
+
+}
+
+export class TableMetadata {
+
+	columns: ColumnMetadata[];
+
+}
+
 /**
  * Position in a text document expressed as zero-based line and character offset.
  */

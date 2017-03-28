@@ -51,7 +51,17 @@ export abstract class ExtHostDataProtocolShape {
 
 	$getServerCapabilities(handle:number, client: data.DataProtocolClientCapabilities): Thenable<data.DataProtocolServerCapabilities> { throw ni(); }
 
+	/**
+	 * Metadata service methods
+	 *
+	 */
 	$getMetadata(handle: number, connectionUri: string): Thenable<data.ProviderMetadata> { throw ni(); }
+
+	$getDatabases(handle: number, connectionUri: string): Thenable<string[]> { throw ni(); }
+
+	$getTableInfo(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> { throw ni(); }
+
+	$getViewInfo(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> { throw ni(); }
 
 	/**
 	 * Scripting methods

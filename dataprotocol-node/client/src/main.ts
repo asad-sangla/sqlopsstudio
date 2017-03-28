@@ -82,7 +82,7 @@ import {
 		ListDatabasesRequest, ListDatabasesParams, ListDatabasesResult,
 		ConnectionChangedNotification, ConnectionChangedParams,
 		ConnectionCompleteNotification, IntelliSenseReadyNotification,
-		MetadataQueryRequest, ScriptingScriptAsRequest,
+		TableMetadataRequest, ViewMetadataRequest, MetadataQueryRequest, ScriptingScriptAsRequest,
 		QueryCancelRequest, QueryCancelResult, QueryCancelParams,
 		QueryExecuteRequest, QueryExecuteSubsetResult, QueryExecuteSubsetParams,
 		QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
@@ -1616,6 +1616,42 @@ export class LanguageClient {
 					self._p2c.asProviderMetadata,
 					(error) => {
 						self.logFailedRequest(MetadataQueryRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getDatabases(connectionUri: string): Thenable<string[]> {
+				return self.doSendRequest(connection, ListDatabasesRequest.type,
+						self._c2p.asListDatabasesParams(connectionUri), undefined).then(
+					(result) => {
+						return result.databaseNames;
+					},
+					(error) => {
+						self.logFailedRequest(ListDatabasesRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getTableInfo(connectionUri: string, metadata: ObjectMetadata) {
+				return self.doSendRequest(connection, TableMetadataRequest.type,
+						self._c2p.asTableMetadataParams(connectionUri, metadata), undefined).then(
+					(result) => {
+						return result.columns;
+					},
+					(error) => {
+						self.logFailedRequest(TableMetadataRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getViewInfo(connectionUri: string, metadata: ObjectMetadata) {
+				return self.doSendRequest(connection, ViewMetadataRequest.type,
+						self._c2p.asTableMetadataParams(connectionUri, metadata), undefined).then(
+					(result) => {
+						return result.columns;
+					},
+					(error) => {
+						self.logFailedRequest(ViewMetadataRequest.type, error);
 						return Promise.resolve(undefined);
 					}
 				);

@@ -113,6 +113,15 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		this._metadataService.registerProvider(providerId, <data.MetadataProvider> {
 			getMetadata(connectionUri: string): Thenable<data.ProviderMetadata> {
 				return self._proxy.$getMetadata(handle, connectionUri);
+			},
+			getDatabases(connectionUri: string): Thenable<string[]> {
+				return self._proxy.$getDatabases(handle, connectionUri);
+			},
+			getTableInfo(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
+				return self._proxy.$getTableInfo(handle, connectionUri, metadata);
+			},
+			getViewInfo(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
+				return self._proxy.$getViewInfo(handle, connectionUri, metadata);
 			}
 		});
 

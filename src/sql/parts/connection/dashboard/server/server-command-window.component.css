@@ -4216,6 +4216,10 @@ button.ui-button::-moz-focus-inner {
     outline: 0 none;
 }
 
+#server-command-window {
+    height: 40px;
+}
+
 #server-command-window .ui-dropdown .ui-dropdown-label {
     background-color: #5cb85c;
     border-color: #5cb85c;

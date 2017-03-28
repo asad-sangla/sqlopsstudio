@@ -5,14 +5,13 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<connection-profile [connection]='connection'></connection-profile>
-
 <server-command-window></server-command-window>
 
-<schema-explorer #schemaExplorer
+<objectmetadata-explorer #objectMetadataExplorer
 	[ownerUri]='ownerUri'
+	[objectMetadata]='objectMetadata'
 	[connection]='connection'
 	[metadataService]='metadataService'
 	[scriptingService]='scriptingService'
 	[queryEditorService]='queryEditorService'>
-</schema-explorer>
+</objectmetadata-explorer>

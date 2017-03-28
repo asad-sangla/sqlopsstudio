@@ -68,6 +68,10 @@ export interface Converter {
 
 	asMetadataQueryParams(connectionUri: string) : ls.MetadataQueryParams;
 
+	asListDatabasesParams(connectionUri: string) : proto.ListDatabasesParams;
+
+	asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata) : proto.TableMetadataParams;
+
 	asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata) : ls.ScriptingScriptAsParams;
 }
 
@@ -334,6 +338,20 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asListDatabasesParams(connectionUri: string) : proto.ListDatabasesParams {
+		return <proto.ListDatabasesParams> {
+			ownerUri: connectionUri
+		};
+	}
+
+	function asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata) : proto.TableMetadataParams {
+		return <proto.TableMetadataParams> {
+			ownerUri: connectionUri,
+			schema: metadata.schema,
+			objectName: metadata.name
+		};
+	}
+
 	function asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata) : ls.ScriptingScriptAsParams {
 		return <ls.ScriptingScriptAsParams> {
 			ownerUri: connectionUri,
@@ -370,6 +388,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asCapabilitiesParams,
 		asConnectionParams,
 		asMetadataQueryParams,
+		asTableMetadataParams,
+		asListDatabasesParams,
 		asScriptingScriptAsParams
 	};
 }

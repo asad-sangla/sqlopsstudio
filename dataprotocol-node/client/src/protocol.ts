@@ -21,6 +21,7 @@ import {
 		FormattingOptions, DocumentLink,
 		ConnectionDetails, ServerInfo,
 		ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams,
+		ColumnMetadata,
 		ConnectionProviderOptions, DataProtocolServerCapabilities,
 		CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
 		ScriptingScriptAsParams, ScriptingScriptAsResult,
@@ -1033,6 +1034,35 @@ export class ListDatabasesResult {
 // List databases request callback declaration
 export namespace ListDatabasesRequest {
 	export const type: RequestType<ListDatabasesParams, ListDatabasesResult, void> = { get method(): string { return 'connection/listdatabases'; } };
+}
+
+// ------------------------------- < Table Metadata Request > ---------------------------------------
+
+// Table metadata request format
+export class TableMetadataParams {
+	// Connection information to use for querying master
+	public ownerUri: string;
+
+	public schema: string;
+
+	public  objectName: string;
+}
+
+// Table metadata response format
+export class TableMetadataResult {
+	public columns: ColumnMetadata[];
+}
+
+// Table metadata request callback declaration
+export namespace TableMetadataRequest {
+	export const type: RequestType<TableMetadataParams, TableMetadataResult, void> = { get method(): string { return 'metadata/table'; } };
+}
+
+// ------------------------------- < View Metadata Request > ---------------------------------------
+
+// Table metadata request callback declaration
+export namespace ViewMetadataRequest {
+	export const type: RequestType<TableMetadataParams, TableMetadataResult, void> = { get method(): string { return 'metadata/view'; } };
 }
 
 /**

@@ -3,9 +3,10 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/connection/dashboard/schema-explorer/schema-explorer.component';
+import 'vs/css!sql/parts/connection/dashboard/database/schema-explorer.component';
 import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
+import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
@@ -48,11 +49,12 @@ export class ObjectMetadataWrapper {
  */
 @AngularCore.Component({
 	selector: 'schema-explorer',
-	templateUrl: require.toUrl('sql/parts/connection/dashboard/schema-explorer/schema-explorer.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/schema-explorer/schema-explorer.component.css')]
+	templateUrl: require.toUrl('sql/parts/connection/dashboard/database/schema-explorer.component.html'),
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/database/schema-explorer.component.css')]
 })
 export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 
+	@AngularCore.Input() public loading: boolean;
 	@AngularCore.Input() public connection: IConnectionProfile;
 	@AngularCore.Input() public metadataService: IMetadataService;
 	@AngularCore.Input() public scriptingService: IScriptingService;
@@ -79,6 +81,12 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 			self.objectMetadata = ObjectMetadataWrapper.createFromObjectMetadata(result.objectMetadata);
 			this.changeDetectorRef.detectChanges();
 		});
+	}
+
+	public isBrowseEnabled(): boolean {
+		return this.selectedObject
+			&& (this.selectedObject.metadata.metadataType === MetadataType.Table
+			|| this.selectedObject.metadata.metadataType === MetadataType.View);
 	}
 
 	/**

@@ -9,9 +9,11 @@ import { IDashboardPage } from 'sql/parts/connection/dashboard/common/dashboard'
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
-import { DatabaseDashboardComponent } from './database-dashboard/database-dashboard.component';
-import { ServerDashboardComponent } from './server-dashboard/server-dashboard.component';
+import { DatabaseDashboardComponent } from './database/database-dashboard.component';
+import { ServerDashboardComponent } from './server/server-dashboard.component';
+import { ObjectDashboardComponent } from './object/object-dashboard.component';
 import { MenuItem } from 'primeng/primeng';
+import data = require('data');
 
 declare let AngularCore;
 
@@ -28,6 +30,14 @@ export class AppComponent {
 
 	private breadCrumbItems: MenuItem[];
 
+	private currentDatabaseName: string;
+
+	private currentObjectMetadata: data.ObjectMetadata;
+
+	private loading: boolean = false;
+
+	private databasePage: DatabaseDashboardComponent;
+
 	constructor(
 		@AngularCore.Inject('DashboardParameters') private dashboardParameters: DashboardParameterWrapper,
 		@AngularCore.Inject('ConnectionService') private connectionService: IConnectionManagementService,
@@ -36,23 +46,75 @@ export class AppComponent {
 		@AngularCore.Inject('QueryEditorService') private queryEditorService: IQueryEditorService) {
 			this.ownerUri = dashboardParameters.ownerUri;
 			this.connection = dashboardParameters.connection;
+			this.currentDatabaseName = this.connection.databaseName;
             this.breadCrumbItems = [];
 	}
 
-	 onActivate(component: any) {
-        let page = component as IDashboardPage;
-        if (page) {
-            page.injectState(this.ownerUri, this.connection, this.connectionService,
-				this.metadataService, this.scriptingService, this.queryEditorService);
-        }
+	public onActivate(component: any) {
 
-        if (component instanceof DatabaseDashboardComponent) {
-            this.breadCrumbItems = [];
-            this.breadCrumbItems.push({label: component.connection.serverName, routerLink: ['/server-dashboard'] });
-            this.breadCrumbItems.push({label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
-        } else if (component instanceof ServerDashboardComponent) {
-			this.breadCrumbItems = [];
-            this.breadCrumbItems.push({label: component.connection.serverName, routerLink: ['/server-dashboard'] });
-        }
+		this.databasePage = (component instanceof DatabaseDashboardComponent) ? component : undefined;
+
+		let page = component as IDashboardPage;
+		if (page) {
+			page.injectState(this.ownerUri, this.currentObjectMetadata, this.connection, this.connectionService,
+				this.metadataService, this.scriptingService, this.queryEditorService,
+				this.loading);
+		}
+
+		if (component instanceof DatabaseDashboardComponent) {
+			this.databasePage = component;
+			this.onActivateDatabasePage(component);
+		} else if (component instanceof ServerDashboardComponent) {
+			this.onActivateServerPage(component);
+		} else if (component instanceof ObjectDashboardComponent) {
+			this.onActivateObjectPage(component);
+		}
     }
+
+	public onDeactivate(component: any) {
+		this.databasePage = undefined;
+
+        if (component instanceof ServerDashboardComponent) {
+			if (component.databaseExplorer.selectedObject
+				&& this.currentDatabaseName.toLowerCase() !== component.databaseExplorer.selectedObject.toLowerCase()) {
+				this.currentDatabaseName = component.databaseExplorer.selectedObject;
+				this.onDatabaseChanged();
+			}
+        } else if (component instanceof DatabaseDashboardComponent) {
+			if (component.schemaExplorer.selectedObject) {
+				this.currentObjectMetadata = component.schemaExplorer.selectedObject.metadata;
+			}
+		}
+
+    }
+
+	public onActivateDatabasePage(component: DatabaseDashboardComponent) {
+		this.breadCrumbItems = [];
+		this.breadCrumbItems.push({label: component.connection.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
+	}
+
+	public onActivateServerPage(component: ServerDashboardComponent) {
+		this.breadCrumbItems = [];
+		this.breadCrumbItems.push({label: component.connection.serverName, routerLink: ['/server-dashboard'] });
+	}
+
+	public onActivateObjectPage(component: ObjectDashboardComponent) {
+		this.breadCrumbItems = [];
+		this.breadCrumbItems.push({label: component.connection.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
+		this.breadCrumbItems.push({label: this.currentObjectMetadata.schema + '.' + this.currentObjectMetadata.name, routerLink: ['/object-dashboard'] });
+	}
+
+	private onDatabaseChanged(): void {
+		this.loading = true;
+		this.ownerUri = 'dashboard://browseconn:' + this.connection.serverName + ';' + this.currentDatabaseName;
+
+		this.connection.databaseName = this.currentDatabaseName;
+
+		this.connectionService.connect(this.ownerUri, this.connection).then(status => {
+			this.loading = false;
+			this.databasePage.onConnectionChanged();
+		});
+	}
 }

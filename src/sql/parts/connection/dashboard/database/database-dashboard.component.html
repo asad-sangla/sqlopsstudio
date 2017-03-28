@@ -5,8 +5,15 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<server-profile [connection]='connection'></server-profile>
+<connection-profile [connection]='connection'></connection-profile>
 
-<server-command-window> </server-command-window>
+<server-command-window></server-command-window>
 
-<server-properties-window [connection]='connection'></server-properties-window>
+<schema-explorer #schemaExplorer
+	[loading]="loading"
+	[ownerUri]='ownerUri'
+	[connection]='connection'
+	[metadataService]='metadataService'
+	[scriptingService]='scriptingService'
+	[queryEditorService]='queryEditorService'>
+</schema-explorer>

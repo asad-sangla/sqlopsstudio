@@ -32,6 +32,8 @@ export interface IConnectionManagementService {
 	onConnect: Event<void>;
 	onConnectionChanged: Event<IConnectionChangedParams>;
 
+	connect(uri: string, connection: IConnectionProfile): Promise<boolean>;
+
 	newConnection(params?: INewConnectionParams, model?: IConnectionProfile): void;
 
 	addConnectionProfile(connection: IConnectionProfile): Promise<boolean>;

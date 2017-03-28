@@ -146,7 +146,7 @@ declare module 'data' {
 	}
 
 	export interface CategoryValue {
-    	displayName: string;
+		displayName: string;
 		name: string;
 	}
 
@@ -234,12 +234,72 @@ declare module 'data' {
 		schema: string;
 	}
 
+	export interface ColumnMetadata {
+
+		hasExtendedProperties: boolean;
+
+ 		defaultValue: string;
+
+		/// <summary>
+		/// Escaped identifier for the name of the column
+		/// </summary>
+		escapedName: string;
+
+		/// <summary>
+		/// Whether or not the column is computed
+		/// </summary>
+		isComputed: boolean;
+
+		/// <summary>
+		/// Whether or not the column is deterministically computed
+		/// </summary>
+		isDeterministic: boolean;
+
+		/// <summary>
+		/// Whether or not the column is an identity column
+		/// </summary>
+		isIdentity: boolean;
+
+		/// <summary>
+		/// The ordinal ID of the column
+		/// </summary>
+		ordinal: number;
+
+		/// <summary>
+		/// Whether or not the column is calculated on the server side. This could be a computed
+		/// column or a identity column.
+		/// </summary>
+		isCalculated: boolean;
+
+		/// <summary>
+		/// Whether or not the column is used in a key to uniquely identify a row
+		/// </summary>
+		isKey: boolean;
+
+		/// <summary>
+		/// Whether or not the column can be trusted for uniqueness
+		/// </summary>
+		isTrustworthyForUniqueness: boolean;
+	}
+
+	export interface TableMetadata {
+
+		columns: ColumnMetadata;
+
+	}
+
 	export interface ProviderMetadata {
 		objectMetadata: ObjectMetadata[];
 	}
 
 	export interface MetadataProvider {
 		getMetadata(connectionUri: string): Thenable<ProviderMetadata>;
+
+		getDatabases(connectionUri: string): Thenable<string[]>;
+
+		getTableInfo(connectionUri: string, metadata: ObjectMetadata): Thenable<ColumnMetadata[]>;
+
+		getViewInfo(connectionUri: string, metadata: ObjectMetadata): Thenable<ColumnMetadata[]>;
 	}
 
 	export interface ScriptingResult {
@@ -301,7 +361,7 @@ declare module 'data' {
 
 		readCredential(credentialId: string): Thenable<Credential>;
 
-    	deleteCredential(credentialId: string): Thenable<boolean>;
+		deleteCredential(credentialId: string): Thenable<boolean>;
 	}
 
 	/**

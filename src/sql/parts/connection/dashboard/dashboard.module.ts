@@ -6,13 +6,15 @@
 import { ModuleWithProviders} from '@angular/core';
 import { Routes } from '@angular/router';
 import { AppComponent } from './dashboard.component';
-import { ConnectionProfileComponent } from './connection-profile/connection-profile.component';
-import { SchemaExplorerComponent } from './schema-explorer/schema-explorer.component';
-import { ServerPropsWindowComponent } from './server-dashboard/props-window/props-window.component';
-import { DatabaseDashboardComponent } from './database-dashboard/database-dashboard.component';
-import { ServerDashboardComponent } from './server-dashboard/server-dashboard.component';
-import { ServerProfileComponent } from './server-dashboard/server-profile/server-profile.component';
-import { ServerCommandWindowComponent } from './server-dashboard/command-window/command-window.component';
+import { ConnectionProfileComponent } from './database/connection-profile.component';
+import { SchemaExplorerComponent } from './database/schema-explorer.component';
+import { DatabaseExplorerComponent } from './server/database-explorer.component';
+import { ObjectMetadataExplorerComponent } from './object/objectmetadata-explorer.component';
+import { ServerPropertiesWindowComponent } from './server/server-properties-window.component';
+import { DatabaseDashboardComponent } from './database/database-dashboard.component';
+import { ServerDashboardComponent } from './server/server-dashboard.component';
+import { ObjectDashboardComponent } from './object/object-dashboard.component';
+import { ServerCommandWindowComponent } from './server/server-command-window.component';
 
 declare let AngularPlatformBrowser;
 declare let AngularCommon;
@@ -24,6 +26,7 @@ declare let PrimeNg;
 const appRoutes: Routes = [
   { path: 'database-dashboard', component: DatabaseDashboardComponent },
   { path: 'server-dashboard', component: ServerDashboardComponent },
+  { path: 'object-dashboard', component: ObjectDashboardComponent },
   { path: '',
     redirectTo: '/database-dashboard',
     pathMatch: 'full'
@@ -39,9 +42,11 @@ const appRoutes: Routes = [
     SchemaExplorerComponent,
     ServerDashboardComponent,
     ServerCommandWindowComponent,
-    ServerPropsWindowComponent,
+    ServerPropertiesWindowComponent,
     DatabaseDashboardComponent,
-    ServerProfileComponent
+    DatabaseExplorerComponent,
+    ObjectMetadataExplorerComponent,
+    ObjectDashboardComponent
   ],
   imports: [
     AngularPlatformBrowser.BrowserModule,
