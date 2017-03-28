@@ -215,15 +215,13 @@ export class ConnectionConfig implements IConnectionConfig {
 
 	public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
 		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
-		let updatedGroups = groups.map(g => {
+		groups = groups.map(g => {
 			if (g.id === source.id) {
 				g.parentId = target.id;
 			}
 			return g;
 		});
-
-		return this.writeUserConfiguration(Constants.connectionGroupsArrayName, updatedGroups);
-
+		return this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups);
 	}
 
 	public changeGroupIdForConnection(profile: IConnectionProfile, newGroupID: string): Promise<void> {

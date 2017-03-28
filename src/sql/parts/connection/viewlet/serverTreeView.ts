@@ -110,14 +110,15 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	private structuralTreeUpdate(): void {
 		const self = this;
 		let groups = this._connectionManagementService.getConnectionGroups();
-		// TODO@Isidor temporary workaround due to a partial tree refresh issue
-		this.fullRefreshNeeded = true;
-		const treeInput =  new ConnectionProfileGroup('root', null, 'root');
-		treeInput.addGroups(groups);
-		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
-			self.fullRefreshNeeded = false;
-			self.tree.getFocus();
-		}, errors.onUnexpectedError);
+		if (groups && groups.length > 0) {
+			let treeInput = groups[0];
+			treeInput.name = 'root';
+			(treeInput !== this.tree.getInput() ?
+					this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
+				self.fullRefreshNeeded = false;
+				self.tree.getFocus();
+			}, errors.onUnexpectedError);
+		}
 	}
 
 	private onError(err: any): void {

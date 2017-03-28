@@ -52,11 +52,18 @@ export class ChangeConnectionAction extends Action {
 	}
 
 	private setLabel(): void {
+		if (!this._connectionProfile) {
+			this.label = 'Connect';
+			return ;
+		}
 		let uri = this.ConnectionUri + this._connectionProfile.getUniqueId();
 		this.label = this._connectionManagementService.isConnected(uri) ? 'Disconnect' : 'Connect';
 	}
 
 	run(): TPromise<any> {
+		if (!this._connectionProfile) {
+			return TPromise.as(true);
+		}
 		let uri = this.ConnectionUri + this._connectionProfile.getUniqueId();
 		if (this._connectionManagementService.isConnected(uri)) {
 			this.label = 'Connect';

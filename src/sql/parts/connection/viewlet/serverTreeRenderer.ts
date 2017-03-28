@@ -281,25 +281,26 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 
 		let isDropToItself = source && targetConnectionProfileGroup && (source instanceof ConnectionProfileGroup) && source.name === targetConnectionProfileGroup.name;
 		let isDropToSameLevel = oldParent && oldParent.equals(targetConnectionProfileGroup);
-		return (targetConnectionProfileGroup && targetConnectionProfileGroup.name !== 'root' && !isDropToSameLevel && !isDropToItself);
+		return ( !isDropToSameLevel && !isDropToItself);
 	}
 
 	/**
 	 * Sets tree input and renders tree
 	 */
 	public renderTree(tree: ITree): void {
-		let treeInput = new ConnectionProfileGroup('root', null, 'root');
 		let groups = this.connectionManagementService.getConnectionGroups();
-		treeInput.addGroups(groups);
-		if (treeInput !== tree.getInput()) {
-			tree.setInput(treeInput).done(() => {
-				tree.getFocus();
-			}, errors.onUnexpectedError);
-		} else {
-			tree.refresh().done(() => {
-				tree.getFocus();
-			}, errors.onUnexpectedError);
+		if (groups && groups.length > 0) {
+			let treeInput = groups[0];
+			treeInput.name = 'root';
+			if (treeInput !== tree.getInput()) {
+				tree.setInput(treeInput).done(() => {
+					tree.getFocus();
+				}, errors.onUnexpectedError);
+			} else {
+				tree.refresh().done(() => {
+					tree.getFocus();
+				}, errors.onUnexpectedError);
+			}
 		}
-
 	}
 }
