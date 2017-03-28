@@ -529,7 +529,9 @@ export class QueryEditor extends BaseEditor {
 	}
 
 	private _doLayoutSql() {
-		this._sqlEditor.layout(new Dimension(this._dimension.width, this._dimension.height - this._taskbarHeight));
+		if (this._dimension) {
+			this._sqlEditor.layout(new Dimension(this._dimension.width, this._dimension.height - this._taskbarHeight));
+		}
 	}
 
 	private _resizeGridContents(): void {
