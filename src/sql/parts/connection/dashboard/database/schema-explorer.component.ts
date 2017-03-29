@@ -3,7 +3,7 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/connection/dashboard/database/schema-explorer.component';
+import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
 import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';

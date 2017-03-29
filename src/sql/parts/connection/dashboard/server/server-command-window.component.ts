@@ -3,7 +3,7 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/connection/dashboard/server/server-command-window.component';
+import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
 import 'vs/css!sql/parts/connection/dashboard/media/font-awesome-4.7.0/css/font-awesome';
 
 declare let AngularCore;

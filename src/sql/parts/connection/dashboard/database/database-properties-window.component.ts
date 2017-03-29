@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/connection/dashboard/database/database-properties-window.component';
+import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
 import { OnInit } from '@angular/core';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { DatabaseProperties } from 'sql/parts/connection/dashboard/database/database-properties';
