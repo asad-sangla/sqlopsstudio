@@ -12,6 +12,7 @@ import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/conne
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import Severity from 'vs/base/common/severity';
+import { ISelectionData } from 'data';
 
 export const VIEWLET_ID = 'workbench.view.connections';
 
@@ -56,7 +57,7 @@ export interface IConnectionManagementService {
 
 	getAdvancedProperties(): data.ConnectionOption[];
 
-	connectEditor(editor: IConnectableInput, runQueryOnCompletion: boolean, connection: ConnectionProfile | IConnectionProfile): Promise<boolean>;
+	connectEditor(editor: IConnectableInput, connection: IConnectionProfile, params?: INewConnectionParams): Promise<boolean>;
 
 	connectProfile(connection: ConnectionProfile): Promise<boolean>;
 
@@ -119,13 +120,14 @@ export interface INewConnectionParams {
 	connectionType: ConnectionType;
 	input?: IConnectableInput;
 	runQueryOnCompletion?: boolean;
+	querySelection?: ISelectionData;
 }
 
 export interface IConnectableInput {
 	uri: string;
 	onConnectStart(): void;
 	onConnectReject(error?: string): void;
-	onConnectSuccess(runQueryOnCompletion: boolean): void;
+	onConnectSuccess(params?: INewConnectionParams): void;
 	onDisconnect(): void;
 }
 
@@ -137,7 +139,7 @@ export class DashboardParameterWrapper {
 
 export enum ConnectionType {
 	default = 0,
-	queryEditor = 1
+	editor = 1
 }
 
 export enum MetadataType {

@@ -5,15 +5,15 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput,  EditorModel, ConfirmResult, EncodingMode, IEncodingSupport } from 'vs/workbench/common/editor';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { IDisposable } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
 import URI from 'vs/base/common/uri';
+import { ISelectionData } from 'data';
 
 /**
  * Input for the QueryEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
@@ -119,10 +119,9 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._sql.setEncoding(encoding, mode);
 	}
 
-
 	// State update funtions
-	public runQuery(): void {
-		this._queryModelService.runQuery(this.uri, undefined, this.uri);
+	public runQuery(selection: ISelectionData): void {
+		this._queryModelService.runQuery(this.uri, selection, this.uri);
 		this.showQueryResultsEditor();
 	}
 
@@ -136,7 +135,6 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._updateTaskbar.fire();
 	}
 
-
 	public onConnectReject(error?: string): void {
 		if (error) {
 			this._messageService.show(Severity.Error, error);
@@ -146,7 +144,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._messageService.show(Severity.Error, error);
 	}
 
-	public onConnectSuccess(runQueryOnCompletion: boolean): void {
+	public onConnectSuccess(params?: INewConnectionParams): void {
 		this._runQueryEnabled = true;
 		this._connectEnabled = false;
 		this._disconnectEnabled = true;
@@ -154,8 +152,9 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._listDatabasesConnected = true;
 
 		let isRunningQuery = this._queryModelService.isRunningQuery(this.uri);
-		if (!isRunningQuery && runQueryOnCompletion) {
-			this.runQuery();
+		if (!isRunningQuery && params && params.runQueryOnCompletion) {
+			let selection: ISelectionData = params ? params.querySelection : undefined;
+			this.runQuery(selection);
 		}
 		this._updateTaskbar.fire();
 	}

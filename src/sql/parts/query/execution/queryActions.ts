@@ -11,9 +11,8 @@ import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { ISelectionData } from 'data';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import nls = require('vs/nls');
 import * as dom from 'vs/base/browser/dom';
 const $ = dom.$;
@@ -73,11 +72,12 @@ export abstract class QueryTaskbarAction extends Action {
 	 * Connects the given editor to it's current URI.
 	 * Public for testing only.
 	 */
-	protected connectEditor(editor: QueryEditor, runQueryOnCompletion?: boolean): void {
+	protected connectEditor(editor: QueryEditor, runQueryOnCompletion?: boolean, selection?: ISelectionData): void {
 		let params: INewConnectionParams = {
 			input: editor.currentQueryInput,
-			connectionType: ConnectionType.queryEditor,
+			connectionType: ConnectionType.editor,
 			runQueryOnCompletion: runQueryOnCompletion ? runQueryOnCompletion : false,
+			querySelection: selection
 		};
 		this._connectionManagementService.newConnection(params);
 	}
@@ -94,8 +94,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 	constructor(
 		editor: QueryEditor,
 		@IQueryModelService private _queryModelService: IQueryModelService,
-		@IConnectionManagementService connectionManagementService: IConnectionManagementService,
-		@IEditorGroupService private editorGroupService: IEditorGroupService
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, RunQueryAction.ID, RunQueryAction.EnabledClass);
 		this.label = nls.localize('runQueryLabel', 'Run Query');
@@ -108,7 +107,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 		} else {
 			// If we are not already connected, prompt for conneciton and run the query if the
 			// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
-			this.connectEditor(this.editor, true);
+			this.connectEditor(this.editor, true, this.editor.getSelection());
 		}
 		return TPromise.as(null);
 	}
@@ -119,7 +118,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 		}
 
 		if (this.isConnected(editor)) {
-			editor.currentQueryInput.runQuery();
+			editor.currentQueryInput.runQuery(editor.getSelection());
 		}
 	}
 }

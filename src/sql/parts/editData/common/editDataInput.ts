@@ -7,7 +7,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput,  EditorModel, ConfirmResult } from 'vs/workbench/common/editor';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
-import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
@@ -128,7 +128,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 		}
 	}
 
-	public onConnectSuccess(runQueryOnCompletion: boolean): void {
+	public onConnectSuccess(params?: INewConnectionParams): void {
 		this._queryModelService.initializeEdit(this.uri, this.tableName, this._objectType, this._rowLimit);
 		this._showTableView.fire(this);
 	}

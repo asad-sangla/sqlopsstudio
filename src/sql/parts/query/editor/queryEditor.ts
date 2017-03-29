@@ -34,8 +34,10 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import { Action } from 'vs/base/common/actions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
+import { ISelectionData } from 'data';
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+
 
 /**
  * Editor that hosts 2 sub-editors: A TextResourceEditor for SQL file editing, and a QueryResultsEditor
@@ -83,7 +85,7 @@ export class QueryEditor extends BaseEditor {
 		@IContextMenuService private _contextMenuService: IContextMenuService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IEditorDescriptorService private _editorDescriptorService: IEditorDescriptorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
+		@IEditorGroupService private _editorGroupService: IEditorGroupService,
 		editorOrientation?: Orientation
 	) {
 		super(QueryEditor.ID, _telemetryService);
@@ -185,6 +187,7 @@ export class QueryEditor extends BaseEditor {
 			this.sash.layout();
 		}
 
+		this._doLayout();
 		this._resizeGridContents();
 	}
 
@@ -226,6 +229,8 @@ export class QueryEditor extends BaseEditor {
 			return;
 		}
 
+		this._editorGroupService.pinEditor(this.position, this.input);
+
 		let input = <QueryInput>this.input;
 		this._createSash(this.getContainer().getHTMLElement());
 		this._createResultsEditorContainer();
@@ -236,6 +241,33 @@ export class QueryEditor extends BaseEditor {
 				this._setResultsEditorVisible();
 				this._doLayout();
 			});
+	}
+
+	/**
+	 * Returns the underlying SQL editor's text selection in a 0-indexed format. Returns undefined if there
+	 * is no selected text.
+	 */
+	public getSelection(): ISelectionData {
+		if (this._sqlEditor && this._sqlEditor.getControl()) {
+			let vscodeSelection = this._sqlEditor.getControl().getSelection();
+
+			// If the selection is a range of characters rather than just a cursor position, return the range
+			let isRange: boolean =
+				!(vscodeSelection.getStartPosition().lineNumber === vscodeSelection.getEndPosition().lineNumber &&
+				vscodeSelection.getStartPosition().column === vscodeSelection.getEndPosition().column);
+			if (isRange) {
+				let sqlToolsServiceSelection: ISelectionData = {
+					startLine: vscodeSelection.getStartPosition().lineNumber - 1,
+					startColumn: vscodeSelection.getStartPosition().column - 1,
+					endLine: vscodeSelection.getEndPosition().lineNumber - 1,
+					endColumn: vscodeSelection.getEndPosition().column - 1,
+				};
+				return sqlToolsServiceSelection;
+			}
+		}
+
+		// Otherwise return undefined because there is no selected text
+		return undefined;
 	}
 
 	get uri(): string {

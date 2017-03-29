@@ -8,7 +8,7 @@
 import { EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 import { IMessageService } from 'vs/platform/message/common/message';
-import { TestMessageService } from 'vs/workbench/test/workbenchTestServices';
+import { TestMessageService, TestEditorGroupService } from 'vs/workbench/test/workbenchTestServices';
 import { IEditorDescriptor, EditorInput } from 'vs/workbench/common/editor';
 import { TPromise } from 'vs/base/common/winjs.base';
 import URI from 'vs/base/common/uri';
@@ -17,6 +17,7 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
+import { INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { Memento } from 'vs/workbench/common/memento';
 import { Builder } from 'vs/base/browser/builder';
@@ -46,7 +47,7 @@ suite('SQL QueryEditor Tests', () => {
 			undefined,
 			queryModelService,
 			editorDescriptorService.object,
-			connectionManagementService.object);
+			undefined);
 	};
 
 	setup(() => {
@@ -74,7 +75,7 @@ suite('SQL QueryEditor Tests', () => {
 			return new TPromise((resolve) => resolve(mockEditor));
 		});
 		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((input) => {
-			return new TPromise((resolve) => resolve(new RunQueryAction(undefined, undefined, undefined, undefined)));
+			return new TPromise((resolve) => resolve(new RunQueryAction(undefined, undefined, undefined)));
 		});
 		// Setup hook to capture calls to create the listDatabase action
 		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((classDef, editor, action) => {
@@ -84,7 +85,7 @@ suite('SQL QueryEditor Tests', () => {
 				}
 			}
 			// Default
-			return new RunQueryAction(undefined, undefined, undefined, undefined);
+			return new RunQueryAction(undefined, undefined, undefined);
 		});
 
 		// Mock EditorDescriptorService to give us a mock editor description
@@ -169,12 +170,16 @@ suite('SQL QueryEditor Tests', () => {
 			.then(() => done(), (err) => done(err));
 	});
 
-	test('showQueryResultsEditor creates all components', (done) => {
-		// Setup
+	test('showQueryResultsEditor creates all components and pins editor', (done) => {
+		// Mock EditorGroupService to get call count of pinEditor
+		let editorGroupService = TypeMoq.Mock.ofType(TestEditorGroupService, TypeMoq.MockBehavior.Loose);
+
+		// Make the call to showQueryResultsEditor thenable
 		let showQueryResultsEditor = function () {
 			return editor._showQueryResultsEditor();
 		};
 
+		// Make the asserts thenable
 		let assertInput = function () {
 			assert.equal(!!editor.taskbar, true);
 			assert.equal(!!editor.taskbarContainer, true);
@@ -185,15 +190,23 @@ suite('SQL QueryEditor Tests', () => {
 			assert.equal(!!editor.resultsEditorContainer, true);
 			assert.equal(!!editor.sash, true);
 			assert.equal(!!editor._isResultsEditorVisible(), true);
+			editorGroupService.verify(x => x.pinEditor(undefined, TypeMoq.It.isAny()), TypeMoq.Times.once());
 		};
 
 		// If I create a QueryEditor
-		let editor: QueryEditor = getQueryEditor();
+		let editor: QueryEditor = new QueryEditor(
+			undefined,
+			instantiationService.object,
+			undefined,
+			undefined,
+			queryModelService,
+			editorDescriptorService.object,
+			editorGroupService.object);
 		editor.create(parentBuilder);
 
 		return editor.setInput(queryInput) // Then I set the input
 			.then(showQueryResultsEditor) // Then call showQueryResultsEditor
-			.then(assertInput) // Both editor windows should be created
+			.then(assertInput) // Both editor windows should be created, and the editor should be pinned
 			.then(() => done(), (err) => done(err));
 	});
 
@@ -298,7 +311,7 @@ suite('SQL QueryEditor Tests', () => {
 
 			queryActionInstantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((input) => {
 				// Default
-				return new RunQueryAction(undefined, undefined, undefined, undefined);
+				return new RunQueryAction(undefined, undefined, undefined);
 			});
 
 			// Setup hook to capture calls to create the listDatabase action
@@ -311,7 +324,7 @@ suite('SQL QueryEditor Tests', () => {
 					}
 				}
 				// Default
-				return new RunQueryAction(undefined, undefined, undefined, undefined);
+				return new RunQueryAction(undefined, undefined, undefined);
 			});
 
 			let fileInput = new UntitledEditorInput(URI.parse('testUri'), false, '', instantiationService.object, undefined, undefined);
@@ -343,7 +356,8 @@ suite('SQL QueryEditor Tests', () => {
 		});
 
 		test('Taskbar buttons are set correctly upon connect', (done) => {
-			queryInput.onConnectSuccess(false);
+			let params: INewConnectionParams = { connectionType: ConnectionType.editor, runQueryOnCompletion: false };
+			queryInput.onConnectSuccess(params);
 			queryModelService.setup(x => x.isRunningQuery(TypeMoq.It.isAny())).returns(() => false);
 			assert.equal(queryInput.runQueryEnabled, true, 'runQueryAction button should be enabled');
 			assert.equal(queryInput.cancelQueryEnabled, false, 'cancelQueryAction button should not be enabled');

@@ -5,6 +5,7 @@
 
 'use strict';
 
+import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import Constants = require('sql/parts/connection/common/constants');
 import Utils = require('sql/parts/connection/common/utils');
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
@@ -18,8 +19,6 @@ import Event, { Emitter } from 'vs/base/common/event';
 import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSessionReadyParams } from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
 import nls = require('vs/nls');
-import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
-import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 
 interface QueryEvent {
 	type: string;

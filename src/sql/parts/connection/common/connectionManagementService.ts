@@ -322,14 +322,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
 
-	public connectEditor(owner: IConnectableInput, runQueryOnCompletion: boolean, connection: ConnectionProfile | IConnectionProfile): Promise<boolean> {
+	public connectEditor(owner: IConnectableInput, connection: IConnectionProfile, params?: INewConnectionParams): Promise<boolean> {
 		// Retrieve saved password if needed
 		return new Promise<boolean>((resolve, reject) => {
 			this._connectionStore.addSavedPassword(connection).then(newConnection => {
 				owner.onConnectStart();
 				return this.connect(owner.uri, newConnection).then(connected => {
 					if (connected) {
-						owner.onConnectSuccess(runQueryOnCompletion);
+						owner.onConnectSuccess(params);
 					} else {
 						owner.onConnectReject('Connection Not Accepted');
 					}

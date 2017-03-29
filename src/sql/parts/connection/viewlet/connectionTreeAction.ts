@@ -9,7 +9,7 @@ import { Action } from 'vs/base/common/actions';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IConnectionManagementService, IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
@@ -212,7 +212,8 @@ export class NewQueryAction extends Action {
 		}
 		this.queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
 			// Connect our editor to the input connection
-			this.connectionManagementService.connectEditor(owner, false, this._connectionProfile);
+			let params: INewConnectionParams = { connectionType: ConnectionType.editor, runQueryOnCompletion: false };
+			this.connectionManagementService.connectEditor(owner, this._connectionProfile, params);
 		});
 		return TPromise.as(true);
 	}

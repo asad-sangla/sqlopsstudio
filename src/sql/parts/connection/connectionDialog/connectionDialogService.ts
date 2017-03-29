@@ -82,7 +82,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		if (result.isValid) {
 			if (params && params.connectionType === ConnectionType.default) {
 				this.handleDefaultOnConnect(result.connection);
-			} else if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
+			} else if (params && params.input && params.connectionType === ConnectionType.editor) {
 				this.handleQueryEditorOnConnect(params, result.connection);
 			}
 		} else {
@@ -91,7 +91,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleOnCancel(params: INewConnectionParams): void {
-		if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
+		if (params && params.input && params.connectionType === ConnectionType.editor) {
 			this._connectionManagementService.cancelEditorConnection(params.input);
 			params.input.onConnectReject(nls.localize('connectionCancelled', 'Connection Cancelled'))
 		} else {
@@ -112,7 +112,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleQueryEditorOnConnect(params: INewConnectionParams, connection: IConnectionProfile): void {
-		this._connectionManagementService.connectEditor(params.input, params.runQueryOnCompletion, connection).then(connected => {
+		this._connectionManagementService.connectEditor(params.input, connection, params).then(connected => {
 			if (connected) {
 				this._connectionDialog.close();
 			}
@@ -180,7 +180,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			if (this._defaultProviderName in this._capabilitiesMaps) {
 				this.UpdateModelServerCapabilities(this._inputModel);
 				// If connecting from a query editor set "save connection" to false
-				if (this._params && this._params.input && this._params.connectionType === ConnectionType.queryEditor) {
+				if (this._params && this._params.input && this._params.connectionType === ConnectionType.editor) {
 					this._model.saveProfile = false;
 				}
 				this.doShowDialog(this._params);
@@ -203,7 +203,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 		this.UpdateModelServerCapabilities(model);
 		// If connecting from a query editor set "save connection" to false
-		if (params && params.input && params.connectionType === ConnectionType.queryEditor) {
+		if (params && params.input && params.connectionType === ConnectionType.editor) {
 			this._model.saveProfile = false;
 		}
 

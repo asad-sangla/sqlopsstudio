@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
@@ -43,7 +43,8 @@ export class EditDataAction extends Action {
 					// open an edit data session on that table
 					this.queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
 						// Connect our editor
-						this.connectionManagementService.connectEditor(owner, true, connectionProfile);
+						let params: INewConnectionParams = { connectionType: ConnectionType.editor, runQueryOnCompletion: true };
+						this.connectionManagementService.connectEditor(owner, connectionProfile, params);
 					});
 				}
 			});
