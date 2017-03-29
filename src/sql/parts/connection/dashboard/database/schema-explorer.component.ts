@@ -50,7 +50,7 @@ export class ObjectMetadataWrapper {
 @AngularCore.Component({
 	selector: 'schema-explorer',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/database/schema-explorer.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/database/schema-explorer.component.css')]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
 })
 export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 

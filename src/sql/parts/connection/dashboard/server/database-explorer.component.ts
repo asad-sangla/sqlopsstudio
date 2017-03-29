@@ -19,7 +19,7 @@ declare let AngularCore;
 @AngularCore.Component({
 	selector: 'database-explorer',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/server/database-explorer.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/server/database-explorer.component.css')]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
 })
 export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 

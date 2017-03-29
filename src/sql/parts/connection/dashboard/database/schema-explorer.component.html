@@ -16,7 +16,7 @@
         <p-column header="Type" field="metadata.metadataTypeName" hidden="true"></p-column>
         <p-column header="Schema" field="metadata.schema" hidden="true"></p-column>
         <p-column header="" field="metadata.name">
-            <template let-col let-dataitem="rowData" pTemplate type="body">
+            <template let-col let-dataitem="rowData" pTemplate="body">
                 <div style="display: flex; flex-flow: row">
                     <div style="order: 1">
                         <img class="dashboard-button-content" src="{{databaseIcon}}" />

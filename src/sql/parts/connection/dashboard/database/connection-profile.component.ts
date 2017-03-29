@@ -12,7 +12,7 @@ declare let AngularCore;
 @AngularCore.Component({
   selector: 'connection-profile',
   templateUrl: require.toUrl('sql/parts/connection/dashboard/database/connection-profile.component.html'),
-  styleUrls: [require.toUrl('sql/parts/connection/dashboard/database/connection-profile.component.css')]
+  styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
 })
 export class ConnectionProfileComponent implements OnInit {
 

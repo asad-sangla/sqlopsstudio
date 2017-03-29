@@ -12,7 +12,7 @@ declare let AngularCore;
 @AngularCore.Component({
   selector: 'server-properties-window',
   templateUrl: require.toUrl('sql/parts/connection/dashboard/server/server-properties-window.component.html'),
-  styleUrls: [ require.toUrl('sql/parts/connection/dashboard/server/server-properties-window.component.css') ]
+  styleUrls: [ require.toUrl('sql/parts/connection/dashboard/media/dashboard.css') ]
 })
 
 

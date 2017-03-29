@@ -20,7 +20,7 @@ declare let AngularCore;
 @AngularCore.Component({
 	selector: 'connection-dashboard',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/dashboard.component.html'),
-	styleUrl: require.toUrl('sql/parts/connection/dashboard/dashboard.component.css')
+	styleUrl: require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')
 })
 export class AppComponent {
 

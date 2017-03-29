@@ -14,7 +14,7 @@ declare let AngularCore;
 @AngularCore.Component({
 	selector: 'server-command-window',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/server/server-command-window.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/server/server-command-window.component.css')]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
 })
 
 export class ServerCommandWindowComponent {

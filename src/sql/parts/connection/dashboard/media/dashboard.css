@@ -3,7 +3,75 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
- .ui-widget * {
+#connprofile {
+	height: 100px;
+}
+
+#server-command-window {
+    height: 40px;
+}
+
+#server-command-window .ui-dropdown .ui-dropdown-label {
+    background-color: #5cb85c;
+    border-color: #5cb85c;
+    color: #ffffff;
+    width: auto;
+}
+
+#server-command-window .ui-dropdown-trigger {
+    background-color: rgb(221,221,221);
+    color: #000000;
+}
+
+#server-command-window .ui-dropdown-list {
+     background-color: rgb(221,221,221);
+     color: #000000;
+}
+
+#server-command-window .ui-dropdown-filter-container {
+    width: 100%;
+    background-color: rgb(221,221,221);
+}
+
+.dashboard-search-box {
+	width: 100%;
+	height: 28px;
+	line-height: 18px;
+	box-sizing: border-box;
+	padding: 4px;
+	border: 1px solid transparent;
+	-webkit-appearance: textfield;
+}
+
+.dashboard-button {
+    background: #0E639C;
+    color: #ffffff;
+    width: 125px;
+    margin: 3px;
+    text-align: left;
+    border-width: 0px;
+}
+
+.dashboard-button:hover {
+    background: #006BB3;
+    color: #ffffff;
+    width: 125px;
+    margin: 3px;
+    text-align: left;
+    border-width: 0px;
+}
+
+.dashboard-button-content {
+  vertical-align: middle;
+  padding: 5px 0px 5px 0px;
+}
+
+
+/**
+ * PrimeNg theming CSS styles below
+ */
+
+.ui-widget * {
     box-sizing: border-box;
 }
 .ui-helper-hidden {
@@ -362,7 +430,9 @@
 
 .ui-breadcrumb ul li .ui-menuitem-link {
     text-decoration: none;
+    color: #8f8f8f;
 }
+
 /* Button */
 .ui-button {
     display: inline-block;
@@ -382,25 +452,27 @@
 
 /*button text element */
 .ui-button .ui-button-text {
-    display: block;
     line-height: normal;
+    display: none
 }
 
 .ui-button-text-only .ui-button-text {
-    padding: .25em 1em;
+    padding: 0px;
+    text-indent: -9999999px;
+    display: none
 }
 
 .ui-button-icon-only .ui-button-text {
-    padding: .25em;
+    padding: 0;
     text-indent: -9999999px;
 }
 
 .ui-button-text-icon-left .ui-button-text {
-    padding: .25em 1em .25em 2.1em;
+    padding: 0px;
 }
 
 .ui-button-text-icon-right .ui-button-text {
-    padding: .25em 2.1em .25em 1em;
+    padding: 0px;
 }
 
 /*button icon element(s) */
@@ -1033,6 +1105,16 @@ button.ui-button::-moz-focus-inner {
     table-layout: fixed;
 }
 
+.ui-datatable .ui-state-highlight {
+    background: #156090;
+    color: #ffffff;
+}
+
+.ui-datatable tr:hover {
+	background: #373a3c;
+    color: #ffffff;
+}
+
 .ui-datatable .ui-datatable-header,
 .ui-datatable .ui-datatable-caption,
 .ui-datatable .ui-datatable-footer {
@@ -1282,7 +1364,7 @@ button.ui-button::-moz-focus-inner {
     margin: 0;
 }
 
-.ui-datatable-scrollable-wrapper {
+ui-datatable-scrollable-wrapper {
     position: relative;
 }
 
@@ -2806,7 +2888,7 @@ button.ui-button::-moz-focus-inner {
 }
 .ui-messages {
     border: 1px solid;
-    margin: 1.5em 0;
+    margin: .5em 0;
     padding: 1em 1em 1em .5em;
     display: none;
     position: relative;
@@ -4216,28 +4298,5 @@ button.ui-button::-moz-focus-inner {
     outline: 0 none;
 }
 
-#server-command-window {
-    height: 40px;
-}
 
-#server-command-window .ui-dropdown .ui-dropdown-label {
-    background-color: #5cb85c;
-    border-color: #5cb85c;
-    color: #ffffff;
-    width: auto;
-}
 
-#server-command-window .ui-dropdown-trigger {
-    background-color: rgb(221,221,221);
-    color: #000000;
-}
-
-#server-command-window .ui-dropdown-list {
-     background-color: rgb(221,221,221);
-     color: #000000;
-}
-
-#server-command-window .ui-dropdown-filter-container {
-    width: 100%;
-    background-color: rgb(221,221,221);
-}

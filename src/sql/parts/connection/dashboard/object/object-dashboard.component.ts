@@ -18,7 +18,7 @@ declare let AngularCore;
 @AngularCore.Component({
 	selector: 'app-object-dashboard',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/object/object-dashboard.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/object/object-dashboard.component.css')]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
 })
 export class ObjectDashboardComponent implements IDashboardPage {
 
