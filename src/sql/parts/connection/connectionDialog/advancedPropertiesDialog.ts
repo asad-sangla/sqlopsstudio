@@ -23,7 +23,6 @@ import { KeyCode } from 'vs/base/common/keyCodes';
 
 export interface IAdvancedDialogCallbacks {
 	onOk: () => void;
-	onCancel: () => void;
 	onClose: () => void;
 }
 
@@ -168,7 +167,6 @@ export class AdvancedPropertiesDialog {
 	}
 
 	public cancel() {
-		this._callbacks.onCancel();
 		this.close();
 	}
 

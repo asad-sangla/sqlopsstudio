@@ -12,7 +12,7 @@ import { Builder, $ } from 'vs/base/browser/builder';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 
-suite('Advanced properties dialog tests', () => {
+suite('Advanced properties helper tests', () => {
 	var possibleInputs: string[];
 	let options: { [name: string]: any };
 	var categoryProperty: data.ConnectionOption;

@@ -93,9 +93,18 @@ td.advancedDialog-input.select-container {
 }
 
 .advanced-dialog .dialogErrorMessage {
-	color: red;
 	overflow: hidden;
 	padding-left: 10px;
 	overflow-y: auto;
 	max-height: 50px;
+}
+
+.advanced-dialog .errorIcon {
+	float: left;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+
+.advanced-dialog .error-icon {
+	content: url(status-error.svg);
 }

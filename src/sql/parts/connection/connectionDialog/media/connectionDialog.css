@@ -108,7 +108,6 @@
 }
 
 .connection-dialog-widget .dialogErrorMessage {
-	color: red;
 	overflow: hidden;
 }
 
@@ -145,4 +144,14 @@
 	padding-left: 15px;
 	padding-top: 15px;
 	overflow-y: hidden;
+}
+
+.connection-dialog-widget .errorIcon {
+	float: left;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+
+.connection-dialog-widget .error-icon {
+	content: url(status-error.svg);
 }

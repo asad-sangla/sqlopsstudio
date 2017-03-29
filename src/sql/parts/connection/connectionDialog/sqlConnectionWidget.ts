@@ -31,9 +31,8 @@ export class SqlConnectionWidget {
 	private _advancedButton: Button;
 	private _saveConnectionCheckbox: Checkbox;
 	private _callbacks: IConnectionComponentCallbacks;
-	private _windowsAuthTypeDisplayName: string;
-	private _sqlAuthTypeDisplayName: string;
-	private _authenticationOptions: string[];
+	private _windowsAuthTypeDisplayName: string = 'Integrated Auth';
+	private _sqlAuthTypeDisplayName: string = 'SQL Login';
 	private _authTypeSelectBox: ConnectionDialogSelectBox;
 	private _toDispose: lifecycle.IDisposable[];
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
@@ -49,8 +48,6 @@ export class SqlConnectionWidget {
 		}
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		this._sqlAuthTypeDisplayName = authTypeOption.categoryValues[0].displayName;
-		this._windowsAuthTypeDisplayName = authTypeOption.categoryValues[1].displayName;
 		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
 	}
 
@@ -270,13 +267,6 @@ export class SqlConnectionWidget {
 			}
 		});
 		return authType;
-	}
-
-	public set authenticationType(authenticationType: string) {
-		let index = this._authenticationOptions.indexOf(authenticationType);
-		if (index >= 0) {
-			this._authTypeSelectBox.select(index);
-		}
 	}
 
 	private validateInputs(): boolean {

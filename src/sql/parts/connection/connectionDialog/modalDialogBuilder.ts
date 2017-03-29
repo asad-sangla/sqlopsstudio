@@ -16,6 +16,7 @@ export class ModalDialogBuilder {
 	private _modalHeader: Builder;
 	private _errorMessageLabel: IconLabel;
 	private _spinnerElement: HTMLElement;
+	private _errorIconElement: HTMLElement;
 
 	constructor(private _id: string,
 		private _title: string,
@@ -74,6 +75,11 @@ export class ModalDialogBuilder {
 	}
 
 	public showError(err: string) {
+		if (err === '') {
+			this._errorIconElement.setAttribute('style', 'visibility: hidden');
+		} else {
+			this._errorIconElement.setAttribute('style', 'visibility: visible');
+		}
 		this._errorMessageLabel.setValue(err);
 	}
 
@@ -89,7 +95,14 @@ export class ModalDialogBuilder {
 
 	public addErrorMessage(): void {
 		this._modelBody.div({ class: 'dialogErrorMessage', id: 'dialogErrorMessage' }, (errorMessageContainer) => {
-			this._errorMessageLabel = new IconLabel(errorMessageContainer.getHTMLElement());
+			errorMessageContainer.div({ class: 'errorIcon' }, (iconContainer) => {
+				iconContainer.element('img', { 'class': 'error-icon' });
+				this._errorIconElement = iconContainer.getHTMLElement();
+				this._errorIconElement.setAttribute('style', 'visibility: hidden');
+			});
+			errorMessageContainer.div({ class: 'errorMessage' }, (messageContainer) => {
+				this._errorMessageLabel = new IconLabel(messageContainer.getHTMLElement());
+			});
 		});
 	}
 

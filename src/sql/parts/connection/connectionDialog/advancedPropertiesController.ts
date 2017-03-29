@@ -24,7 +24,13 @@ export class AdvancedPropertiesController {
 
 	public showDialog(providerOptions: data.ConnectionOption[], container: HTMLElement, options: { [name: string]: any }): void {
 		this._options = options;
-		var connectionPropertiesMaps = {};
+		this._container = container;
+		var connectionPropertiesMaps = this.groupConnectionPropertiesByCategory(providerOptions);
+		this.advancedDialog.open(connectionPropertiesMaps, this._options);
+	}
+
+	public groupConnectionPropertiesByCategory(providerOptions: data.ConnectionOption[]): { [category: string]: data.ConnectionOption[] } {
+		var connectionPropertiesMaps: { [category: string]: data.ConnectionOption[] } = {};
 		for (var i = 0; i < providerOptions.length; i++) {
 			var property = providerOptions[i];
 			var groupName = property.groupName;
@@ -38,23 +44,21 @@ export class AdvancedPropertiesController {
 				connectionPropertiesMaps[groupName] = [property];
 			}
 		}
-		this._container = container;
-		this.doShowDialog(connectionPropertiesMaps);
+		return connectionPropertiesMaps;
 	}
 
-	private doShowDialog(connectionPropertiesMaps: { [category: string]: data.ConnectionOption[] }): void {
+	public get advancedDialog() {
 		if (!this._advancedDialog) {
 			this._advancedDialog = new AdvancedPropertiesDialog(this._container, {
-				onCancel: () => { },
 				onOk: () => this.handleOnOk(),
 				onClose: () => this._onCloseAdvancedProperties()
 			});
 			this._advancedDialog.create();
 		}
-		return this._advancedDialog.open(connectionPropertiesMaps, this._options);
+		return this._advancedDialog;
 	}
 
-	public updateAdvancedOption(options: { [name: string]: any }): void {
-		this._options = options;
+	public set advancedDialog(dialog: AdvancedPropertiesDialog) {
+		this._advancedDialog = dialog;
 	}
 }
