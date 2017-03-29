@@ -5,12 +5,20 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<connection-profile [connection]='connection'> </connection-profile>
+<div id="server-properties-window" style="display: flex; flex-flow: row; height:150px; overflow: auto; width: 100%">
+	<div style="order: 1; margin: 5px; min-width: 125px">
+		<img src="{{serverPageImage}}" />
+	</div>
 
-<div style="display: inline-block">
-	<database-command-window style="display: inline-block; float:right; text-align: center; width: 30%"></database-command-window>
-	<database-properties-window style="display: inline-block; float:left; text-align: center; width: 70%"></database-properties-window>
+	<div style="order: 2; margin: 5px">
+		<database-properties-window></database-properties-window>
+	</div>
+
+	<div id="database-command-window" style="order: 3; margin: 5px; flex: 1;">
+		<database-command-window></database-command-window>
+	</div>
 </div>
+
 
 <schema-explorer #schemaExplorer
 	[loading]="loading"

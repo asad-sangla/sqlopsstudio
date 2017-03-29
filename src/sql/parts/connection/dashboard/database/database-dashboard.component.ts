@@ -29,6 +29,7 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 	public scriptingService: IScriptingService;
 	public queryEditorService: IQueryEditorService;
 	public loading: boolean = false;
+    public serverPageImage: string = require.toUrl('sql/parts/connection/dashboard/media/server-page.svg');
 
 	@AngularCore.ViewChild('schemaExplorer') schemaExplorer: SchemaExplorerComponent;
 

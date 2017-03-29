@@ -4,13 +4,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div id="server-properties-window">
-    <div style="display: inline-block; margin-top: 10px; text-align: center">
-        <h1>Database Properties</h1>
+
+<div style="text-align: center; text-decoration: underline">
+    Database Properties
+</div>
+<div style="display: flex; flex-flow: row; height:120px; overflow: auto">
+    <div style="order: 1; margin: 5px">
+    <span style="font-weight: bold">Database Name</span> <span style="font-style: italic">master</span> <br />
+    <span style="font-weight: bold">Status</span> <span style="font-style: italic">Normal</span> <br />
+    <span style="font-weight: bold">Owner</span> <span style="font-style: italic">sa</span> <br />
+    <span style="font-weight: bold">Size</span> <span style="font-style: italic">14.38MB</span> <br />
+    <span style="font-weight: bold">Space Available</span> <span style="font-style: italic">0.55MB</span> <br />
     </div>
-    <input class="dashboard-search-box" #gb type="text" pInputText size="50" placeholder="Search Property">
-    <p-dataTable [value]="properties" [rows]="14" [globalFilter]="gb" #dt >
-        <p-column field="key" header="Property"></p-column>
-        <p-column field="value" header="Value"></p-column>
-    </p-dataTable>
+    <div style="order: 2; margin: 5px">
+    <span style="font-weight: bold">Number of Users</span>  <span style="font-style: italic">10</span> <br />
+    <span style="font-weight: bold">Compatibility level</span>  <span style="font-style: italic">SQL Server 2016 (130)</span> <br />
+    <span style="font-weight: bold">Last Database Backup</span>  <span style="font-style: italic">8/12/2016 4:41:58 PM</span> <br />
+    </div>
 </div>
