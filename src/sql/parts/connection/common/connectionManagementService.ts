@@ -148,7 +148,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean> {
+	public showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean> {
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
 			let dashboardInput: DashboardInput = self._instantiationService.createInstance(DashboardInput, uri, connection);
@@ -345,6 +345,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
+	public isRecent(connectionProfile: ConnectionProfile): boolean {
+		let recentConnections = this._connectionStore.getRecentlyUsedConnections()
+		recentConnections = recentConnections.filter(con => {return connectionProfile.id === con.getUniqueId();});
+		// TODO: modify condition after recent connections fix
+		return (recentConnections.length >= 1);
+	}
+
+
 	public connectProfile(connectionProfile: ConnectionProfile): Promise<boolean> {
 		let uri = this._connectionFactory.getConnectionManagementId(connectionProfile);
 
@@ -501,7 +509,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 	// Is a certain file URI connected?
-	public isConnected(fileUri: string): boolean {
+	public isConnected(fileUri: string, connectionProfile?: ConnectionProfile): boolean {
+		if (connectionProfile) {
+			fileUri = this._connectionFactory.getConnectionManagementId(connectionProfile);
+		}
 		return this._connectionFactory.isConnected(fileUri);
 	}
 

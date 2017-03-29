@@ -413,3 +413,9 @@
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
+
+/* Add space beneath the button */
+
+.server-explorer-viewlet .monaco-text-button {
+margin-bottom: 10px;
+}

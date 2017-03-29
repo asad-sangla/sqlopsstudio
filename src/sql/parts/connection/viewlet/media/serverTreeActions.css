@@ -15,26 +15,27 @@
 
 /* Temporarily uses same icon for recent and active connections */
 .monaco-workbench .active-connections-action,
-.monaco-workbench .recent-connections-action {
-	background-image: url('Compare.svg');
-}
-
 .vs-dark .monaco-workbench .active-connections-action,
-.hc-black .monaco-workbench .active-connections-action,
+.hc-black .monaco-workbench .active-connections-action{
+	background-image: url('status-added.svg');
+}
+.monaco-workbench .recent-connections-action,
 .vs-dark .monaco-workbench .recent-connections-action,
 .hc-black .monaco-workbench .recent-connections-action {
-	background-image: url('Compare_inverse.svg');
+	background-image: url('status-renamed.svg');
 }
 
 /* toggle icon */
 .monaco-workbench .active-connections-action-set,
-.monaco-workbench .recent-connections-action-set{
-	background-image: url('Compare.svg');
+.vs-dark .monaco-workbench .active-connections-action-set,
+.hc-black .monaco-workbench .recent-connections-action {
+	background-image: url('status-added.svg');
 	opacity: 0.5;
 }
 
-.vs-dark .monaco-workbench .active-connections-action-set,
+.monaco-workbench .recent-connections-action-set,
+.vs-dark .monaco-workbench .recent-connections-action-set,
 .hc-black .monaco-workbench .recent-connections-action-set {
-	background-image: url('Compare_inverse.svg');
+	background-image: url('status-renamed.svg');
 	opacity: 0.5;
 }

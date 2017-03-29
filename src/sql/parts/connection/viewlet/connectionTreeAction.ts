@@ -11,6 +11,7 @@ import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService, IConnectableInput, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { ServerTreeView } from 'sql/parts/connection/viewlet/serverTreeView';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 
@@ -127,10 +128,20 @@ export class ActiveConnectionsFilterAction extends Action {
 	public static LABEL = localize('activeConnections', "Active Connections");
 	private static enabledClass = 'active-connections-action';
 	private static disabledClass = 'active-connections-action-set';
+	private _isSet: boolean;
+	public get isSet(): boolean {
+		return this._isSet;
+	}
+	public set isSet(value: boolean) {
+		this._isSet = value;
+		this.class = (!this._isSet) ?
+			ActiveConnectionsFilterAction.enabledClass : ActiveConnectionsFilterAction.disabledClass;
+	}
 
 	constructor(
 		id: string,
 		label: string,
+		private view: ServerTreeView,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
@@ -138,9 +149,14 @@ export class ActiveConnectionsFilterAction extends Action {
 	}
 
 	public run(element: ConnectionProfileGroup): TPromise<boolean> {
-		//TODO
+		if (this.class === ActiveConnectionsFilterAction.enabledClass) {
+			// show active connections in the tree
+			this.view.showFilteredTree('active');
+		} else {
+			// show full tree
+			this.view.structuralTreeUpdate();
+		}
 		this.toggleClass();
-		console.log('Show active connections ');
 		return TPromise.as(true);
 	}
 
@@ -156,27 +172,43 @@ export class ActiveConnectionsFilterAction extends Action {
 export class RecentConnectionsFilterAction extends Action {
 	public static ID = 'registeredServers.recentConnections';
 	public static LABEL = localize('recentConnections', "Recent Connections");
-	private static enabledClass = 'active-connections-action';
-	private static disabledClass = 'active-connections-action-set';
-
+	private static enabledClass = 'recent-connections-action';
+	private static disabledClass = 'recent-connections-action-set';
+	private _isSet: boolean;
+	public get isSet(): boolean {
+		return this._isSet;
+	}
+	public set isSet(value: boolean) {
+		this._isSet = value;
+		this.class = (!this._isSet) ?
+			RecentConnectionsFilterAction.enabledClass : RecentConnectionsFilterAction.disabledClass;
+	}
 	constructor(
 		id: string,
 		label: string,
+		private view: ServerTreeView,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
 		this.class = 'recent-connections-action';
+		this._isSet = false;
 	}
 
 	public run(element: ConnectionProfileGroup): TPromise<boolean> {
-		//TODO
-		this.toggleClass();
-		console.log('Show recent connections');
+		if (this.class === RecentConnectionsFilterAction.enabledClass) {
+			// show recent connections in the tree
+			this.view.showFilteredTree('recent');
+			this.isSet = true;
+		} else {
+			// show full tree
+			this.view.structuralTreeUpdate();
+			this.isSet = false;
+		}
 		return TPromise.as(true);
 	}
 
 	private toggleClass() {
-		this.class = (this.class === RecentConnectionsFilterAction.disabledClass) ?
+		this.class = (!this.isSet) ?
 			RecentConnectionsFilterAction.enabledClass : RecentConnectionsFilterAction.disabledClass;
 	}
 }

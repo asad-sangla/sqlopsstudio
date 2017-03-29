@@ -169,6 +169,9 @@ export class TreeUtils {
 				if (!connectionManagementService.isConnected(uri)) {
 					connectionManagementService.connectProfile(connectionProfile);
 				}
+				else {
+					connectionManagementService.showDashboard(uri, connectionProfile);
+				}
 			}
 		}
 	}

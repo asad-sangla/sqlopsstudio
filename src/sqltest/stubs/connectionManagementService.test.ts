@@ -70,7 +70,11 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
-	isConnected(fileUri: string): boolean {
+	isConnected(fileUri: string, connectionProfile?: ConnectionProfile): boolean {
+		return false;
+	}
+
+	isRecent(connectionProfile: ConnectionProfile): boolean {
 		return false;
 	}
 
@@ -108,5 +112,9 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	cancelEditorConnection(owner: IConnectableInput): Thenable<boolean> {
 		return undefined;
+	}
+
+	showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean> {
+		return new Promise(() => true);
 	}
 }

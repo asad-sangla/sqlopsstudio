@@ -61,7 +61,9 @@ export interface IConnectionManagementService {
 
 	connectProfile(connection: ConnectionProfile): Promise<boolean>;
 
-	isConnected(fileUri: string): boolean;
+	isRecent(connectionProfile: ConnectionProfile): boolean;
+
+	isConnected(fileUri: string, connectionProfile?: ConnectionProfile): boolean;
 
 	disconnectEditor(owner: IConnectableInput, force?: boolean): Promise<boolean>;
 
@@ -85,6 +87,8 @@ export interface IConnectionManagementService {
 	 * Cancels the connection for the editor
 	 */
 	cancelEditorConnection(owner: IConnectableInput): Thenable<boolean>;
+
+	showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean>;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
