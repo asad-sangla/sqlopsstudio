@@ -5,9 +5,12 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<connection-profile [connection]='connection'></connection-profile>
+<connection-profile [connection]='connection'> </connection-profile>
 
-<server-command-window></server-command-window>
+<div style="display: inline-block">
+	<database-command-window style="display: inline-block; float:right; text-align: center; width: 30%"></database-command-window>
+	<database-properties-window style="display: inline-block; float:left; text-align: center; width: 70%"></database-properties-window>
+</div>
 
 <schema-explorer #schemaExplorer
 	[loading]="loading"

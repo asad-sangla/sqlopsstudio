@@ -4,13 +4,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div id="server-properties-window">
+
+<div id="database-command-window">
     <div style="display: inline-block; margin-top: 10px; text-align: center">
-        <h1>Server Properties</h1>
+        <h1>Tasks</h1>
     </div>
-    <input class="dashboard-search-box" #gb type="text" pInputText size="50" placeholder="Search Property">
-    <p-dataTable [value]="properties" [rows]="14" [globalFilter]="gb" #dt >
-        <p-column field="key" header="Property"></p-column>
-        <p-column field="value" header="Value"></p-column>
-    </p-dataTable>
+    <div id="command-buttons">
+         <div style="margin-bottom: 15px">
+            <a href="javascript:;" >Backup</a> <br>
+        </div>
+        <div style="margin-bottom: 15px">
+            <a href="javascript:;">Restore</a>
+        </div>
+        <div style="margin-bottom: 15px">
+            <a href="javascript:;">Edit Properties</a>
+        </div>
+    </div>
 </div>

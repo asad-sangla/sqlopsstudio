@@ -5,9 +5,12 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<server-command-window></server-command-window>
+<connection-profile [connection]='connection'></connection-profile>
 
-<server-properties-window [connection]='connection'></server-properties-window>
+<div style="display: inline-block">
+	<server-command-window style="display: inline-block; float:right; text-align: center; width: 30%"> </server-command-window>
+	<server-properties-window style="display: inline-block; float:left; text-align: center; width: 70%"></server-properties-window>
+</div>
 
 <database-explorer #databaseExplorer
 	[ownerUri]='ownerUri'
@@ -16,3 +19,4 @@
 	[scriptingService]='scriptingService'
 	[queryEditorService]='queryEditorService'>
 </database-explorer>
+

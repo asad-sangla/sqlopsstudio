@@ -5,7 +5,12 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<server-command-window></server-command-window>
+
+<div id="serverprofile">
+	<h1>Server Details</h1>
+	Server Name: {{connection?.serverName}} <br>
+	Active Database: <a style='color: #8f8f8f;' [routerLink]="['/database-dashboard']">{{connection?.databaseName}}</a>
+</div>
 
 <objectmetadata-explorer #objectMetadataExplorer
 	[ownerUri]='ownerUri'
@@ -15,3 +20,4 @@
 	[scriptingService]='scriptingService'
 	[queryEditorService]='queryEditorService'>
 </objectmetadata-explorer>
+

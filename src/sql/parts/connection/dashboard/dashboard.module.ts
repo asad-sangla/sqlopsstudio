@@ -10,11 +10,15 @@ import { ConnectionProfileComponent } from './database/connection-profile.compon
 import { SchemaExplorerComponent } from './database/schema-explorer.component';
 import { DatabaseExplorerComponent } from './server/database-explorer.component';
 import { ObjectMetadataExplorerComponent } from './object/objectmetadata-explorer.component';
-import { ServerPropertiesWindowComponent } from './server/server-properties-window.component';
 import { DatabaseDashboardComponent } from './database/database-dashboard.component';
 import { ServerDashboardComponent } from './server/server-dashboard.component';
 import { ObjectDashboardComponent } from './object/object-dashboard.component';
 import { ServerCommandWindowComponent } from './server/server-command-window.component';
+import { ServerPropertiesWindowComponent } from './server/server-properties-window.component';
+import { DatabaseCommandWindowComponent } from './database/database-command-window.component';
+import { DatabasePropertiesWindowComponent } from './database/database-properties-window.component';
+
+
 
 declare let AngularPlatformBrowser;
 declare let AngularCommon;
@@ -44,6 +48,8 @@ const appRoutes: Routes = [
     ServerCommandWindowComponent,
     ServerPropertiesWindowComponent,
     DatabaseDashboardComponent,
+    DatabaseCommandWindowComponent,
+    DatabasePropertiesWindowComponent,
     DatabaseExplorerComponent,
     ObjectMetadataExplorerComponent,
     ObjectDashboardComponent

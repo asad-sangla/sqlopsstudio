@@ -1,11 +1,14 @@
-<!--
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
--->
 
-<p-breadcrumb [model]="breadCrumbItems"></p-breadcrumb>
+export class DatabaseProperties {
+	key: string;
+	value: string;
 
-<router-outlet (activate)='onActivate($event)' (deactivate)='onDeactivate($event)'></router-outlet>
-
+	constructor(key: string, value: string){
+		this.key = key;
+		this.value = value;
+	}
+}

@@ -5,7 +5,9 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<p-breadcrumb [model]="breadCrumbItems"></p-breadcrumb>
-
-<router-outlet (activate)='onActivate($event)' (deactivate)='onDeactivate($event)'></router-outlet>
-
+<div id="connprofile">
+<h1>Connection Details</h1>
+Server Name: {{connection?.serverName}}
+<br />
+Database Name: {{connection?.databaseName}}
+</div>
