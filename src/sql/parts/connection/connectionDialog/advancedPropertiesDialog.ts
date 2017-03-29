@@ -11,12 +11,10 @@ import 'vs/css!./media/advancedProperties';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
-import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { SplitView, FixedCollapsibleView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
-import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
+import { AdvancedPropertiesHelper, IAdvancedPropertyElement } from 'sql/parts/connection/connectionDialog/advancedPropertiesHelper';
 import data = require('data');
 import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
 import DOM = require('vs/base/browser/dom');
@@ -27,12 +25,6 @@ export interface IAdvancedDialogCallbacks {
 	onOk: () => void;
 	onCancel: () => void;
 	onClose: () => void;
-}
-
-interface IAdvancedPropertyElement {
-	advancedPropertyWidget: any;
-	advancedProperty: data.ConnectionOption;
-	propertyValue: any;
 }
 
 class OptionPropertiesView extends FixedCollapsibleView {
@@ -69,8 +61,6 @@ export class AdvancedPropertiesDialog {
 	private _callbacks: IAdvancedDialogCallbacks;
 	private _okButton: Button;
 	private _closeButton: Button;
-	private _trueInputValue: string = 'True';
-	private _falseInputValue: string = 'False';
 	private _toDispose: lifecycle.IDisposable[];
 	private _advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement };
 	private _propertyTitle: Builder;
@@ -122,72 +112,8 @@ export class AdvancedPropertiesDialog {
 		for (var i = 0; i < connectionOptions.length; i++) {
 			var property: data.ConnectionOption = connectionOptions[i];
 			var rowContainer = ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input');
-			this.createAdvancedProperty(property, rowContainer);
+			AdvancedPropertiesHelper.createAdvancedProperty(property, rowContainer, this._options, this._advancedPropertiesMap, (name) => this.onAdvancedPropertyLinkClicked(name));
 		}
-	}
-
-	private createAdvancedProperty(property: data.ConnectionOption, rowContainer: Builder): void {
-		var optionValue = property.defaultValue;
-		if (this._options[property.name]) {
-			optionValue = this._options[property.name];
-		}
-		var propertyWidget: any;
-		var inputElement: HTMLElement;
-		switch (property.valueType) {
-			case ConnectionOptionType.number:
-				propertyWidget = ConnectionDialogHelper.appendInputBox(rowContainer, {
-					validationOptions: {
-						validation: (value: string) => !ConnectionDialogHelper.isNumeric(value) ? ({ type: MessageType.ERROR, content: 'Invalid input.  Numeric value expected.' }) : null
-					}
-				});
-				propertyWidget.value = optionValue;
-				inputElement = this.findElement(rowContainer, 'input');
-				break;
-			case ConnectionOptionType.category:
-			case ConnectionOptionType.boolean:
-				let categoryValues: string[];
-				let possibleInputs= [];
-				if (property.valueType === ConnectionOptionType.boolean) {
-					categoryValues = [this._trueInputValue, this._falseInputValue];
-				} else {
-					categoryValues = property.categoryValues.map(c => c.name);
-				}
-				if (optionValue === null || optionValue === undefined) {
-					if (property.isRequired) {
-						optionValue = categoryValues[0];
-					} else {
-						optionValue = '';
-						possibleInputs.push('');
-					}
-				}
-				categoryValues.forEach(v => possibleInputs.push(v));
-				propertyWidget = new ConnectionDialogSelectBox(possibleInputs, optionValue.toString());
-				ConnectionDialogHelper.appendInputSelectBox(rowContainer, propertyWidget);
-				inputElement = this.findElement(rowContainer, 'select-box');
-				break;
-			case ConnectionOptionType.string:
-			case ConnectionOptionType.password:
-				propertyWidget = ConnectionDialogHelper.appendInputBox(rowContainer);
-				propertyWidget.value = optionValue;
-				if (property.valueType === ConnectionOptionType.password) {
-					propertyWidget.inputElement.type = 'password';
-				}
-				inputElement = this.findElement(rowContainer, 'input');
-		}
-		this._advancedPropertiesMap[property.name] = { advancedPropertyWidget: propertyWidget, advancedProperty: property, propertyValue: optionValue };
-		inputElement.onfocus = () => this.onAdvancedPropertyLinkClicked(property.name);
-	}
-
-	private findElement(container: Builder, className: string): HTMLElement {
-		var elementBuilder: Builder = container;
-		while (elementBuilder.getHTMLElement()) {
-			var htmlElement = elementBuilder.getHTMLElement();
-			if (htmlElement.className === className) {
-				break;
-			}
-			elementBuilder = elementBuilder.child(0);
-		}
-		return elementBuilder.getHTMLElement();
 	}
 
 	private createBackButton(container: Builder): void {
@@ -221,48 +147,6 @@ export class AdvancedPropertiesDialog {
 		return this._options;
 	}
 
-	private updateProperties(): void {
-		for (var key in this._advancedPropertiesMap) {
-			var propertyElement: IAdvancedPropertyElement = this._advancedPropertiesMap[key];
-			if (propertyElement.advancedPropertyWidget.value !== propertyElement.propertyValue) {
-				if (ConnectionDialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value) && this._options[key]) {
-					delete this._options[key];
-				}
-				if (!ConnectionDialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value)) {
-					if (propertyElement.advancedProperty.valueType === ConnectionOptionType.boolean) {
-						this._options[key] = (propertyElement.advancedPropertyWidget.value === this._trueInputValue) ? true : false;
-					} else {
-						this._options[key] = propertyElement.advancedPropertyWidget.value;
-					}
-				}
-			}
-		}
-	}
-
-	private validateInputs(): string {
-		let errorMsg = '';
-		let missingInputMsg = ': Cannot be empty.\n';
-		let requiredNumberInput = ': Requires number as an input.\n';
-		for (var key in this._advancedPropertiesMap) {
-			var propertyElement: IAdvancedPropertyElement = this._advancedPropertiesMap[key];
-			var widget = propertyElement.advancedPropertyWidget;
-			var isInputBox = (propertyElement.advancedProperty.valueType === ConnectionOptionType.string ||
-				propertyElement.advancedProperty.valueType === ConnectionOptionType.password ||
-				propertyElement.advancedProperty.valueType === ConnectionOptionType.number );
-
-			if (propertyElement.advancedProperty.valueType === ConnectionOptionType.number) {
-				if (!widget.isInputValid()) {
-					errorMsg += propertyElement.advancedProperty.displayName + requiredNumberInput;
-				}
-			}
-			if (propertyElement.advancedProperty.isRequired && ConnectionDialogHelper.isEmptyString(widget.value) && isInputBox) {
-				widget.showMessage({ type: MessageType.ERROR, content: 'Missing required input.' });
-				errorMsg += propertyElement.advancedProperty.displayName + missingInputMsg;
-			}
-		}
-		return errorMsg;
-	}
-
 	public hideError() {
 		this._dialog.showError('');
 	}
@@ -272,9 +156,9 @@ export class AdvancedPropertiesDialog {
 	}
 
 	public ok(): void {
-		var errorMsg = this.validateInputs();
+		var errorMsg = AdvancedPropertiesHelper.validateInputs(this._advancedPropertiesMap);
 		if (ConnectionDialogHelper.isEmptyString(errorMsg)) {
-			this.updateProperties();
+			AdvancedPropertiesHelper.updateProperties(this._options, this._advancedPropertiesMap);
 			this._callbacks.onOk();
 			this.close();
 		} else {
