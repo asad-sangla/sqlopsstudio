@@ -310,7 +310,18 @@ export class EditDataComponent implements OnInit {
         };
 
         this.onCellEditEnd = (event: {row: number, column: number, newValue: any}): void => {
-            self.dataService.updateCell(event.row, event.column, event.newValue);
+            self.setCellDirty(event.row, event.column);
+            self.dataService.updateCell(event.row, event.column, event.newValue)
+            .then(result => result,
+                error => {
+                    this.setRowClean(event.row);
+                    let slick: any = self.slickgrids.toArray()[0];
+                    let grid = slick._grid;
+                    let forceEdit = true;
+                    self.refreshResultsets();
+                    grid.gotoCell(event.row, event.column, forceEdit);
+                }
+            );
         };
 
         this.onCellEditBegin = (event: {row: number, column: number}): void => {
@@ -322,7 +333,13 @@ export class EditDataComponent implements OnInit {
         };
 
         this.onRowEditEnd = (event: {row: number}): void => {
-            self.dataService.commitEdit();
+            // Commit any pending edits
+            self.dataService.commitEdit().then(result => {
+                this.setRowClean(event.row);
+            }, error => {
+                this.setRowClean(event.row);
+                self.refreshResultsets();
+            });
         };
 
         this.onIsColumnEditable = (column: number): boolean => {
@@ -339,6 +356,18 @@ export class EditDataComponent implements OnInit {
             }
             return returnVal;
         };
+    }
+
+    // Temporary implementations to showcase functionality
+    setCellDirty(row: number, column: number): void {
+        // Change cell color
+        $($($('.grid-canvas').children()[row]).children()[column+1]).addClass('dirtyCell').removeClass('selected');
+        // Change row header color
+        $($($('.grid-canvas').children()[row]).children()[0]).addClass('dirtyRowHeader');
+    }
+
+    setRowClean(row: number): void {
+        $($($('.grid-canvas').children()[row]).children()).removeClass('dirtyCell');
     }
 
     handleComplete(self: EditDataComponent, event: any): void {

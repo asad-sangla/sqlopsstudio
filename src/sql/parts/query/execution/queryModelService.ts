@@ -317,7 +317,8 @@ export class QueryModelService implements IQueryModelService {
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
 			return queryRunner.updateCell(ownerUri, rowId, columnId, newValue).then((result) => result, error => {
-				this._messageService.show(Severity.Error, nls.localize('commitEditFailed', 'Commit Edit Data Failed With Error: ') + error.message);
+				this._messageService.show(Severity.Error, nls.localize('updateCellFailed', 'Update Cell Edit Data Failed With Error: ') + error.message);
+				return Promise.reject(error);
 			});
 		}
 		return TPromise.as(null);
@@ -329,6 +330,7 @@ export class QueryModelService implements IQueryModelService {
 		if (queryRunner) {
 			return queryRunner.commitEdit(ownerUri).then(() => {}, error => {
 				this._messageService.show(Severity.Error, nls.localize('commitEditFailed', 'Commit Edit Data Failed With Error: ') + error.message);
+				return Promise.reject(error);
 			});
 		}
 		return TPromise.as(null);

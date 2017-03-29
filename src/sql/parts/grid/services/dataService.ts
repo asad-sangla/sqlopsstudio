@@ -11,6 +11,7 @@ declare let Rx;
 import { ISlickRange } from 'angular2-slickgrid';
 import { ISelectionData, ResultSetSubset } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { TPromise } from 'vs/base/common/winjs.base';
 
 /**
  * DataService handles the interactions between QueryModel and app.component. Thus, it handles
@@ -44,18 +45,32 @@ export class DataService {
 		});
 	}
 
-	updateCell(rowId: number, columnId: number, newValue: string): void {
+	updateCell(rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult> {
 		const self = this;
 		self.editQueue = self.editQueue.then(() => {
-			self._queryModel.updateCell(self._uri, rowId, columnId, newValue);
+			return self._queryModel.updateCell(self._uri, rowId, columnId, newValue).then(result => {
+				return result;
+			}, error => {
+				// Start our editQueue over due to the rejected promise
+				self.editQueue = Promise.resolve();
+				return Promise.reject(error);
+			});
 		});
+		return self.editQueue;
 	}
 
-	commitEdit(): void {
+	commitEdit(): Thenable<void> {
 		const self = this;
 		self.editQueue = self.editQueue.then(() => {
-			self._queryModel.commitEdit(self._uri);
+			return self._queryModel.commitEdit(self._uri).then(result => {
+				return result;
+			}, error => {
+				// Start our editQueue over due to the rejected promise
+				self.editQueue = Promise.resolve();
+				return Promise.reject(error);
+			});
 		});
+		return self.editQueue;
 	}
 
 	createRow(): void {
