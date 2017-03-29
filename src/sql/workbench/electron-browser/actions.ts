@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionCompletionOptions, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
@@ -36,18 +36,22 @@ export class EditDataAction extends Action {
 		let tableRequest = (con: ConnectionProfile) => {
 			return this.quickOpenService.input(
 				{
-						placeHolder: nls.localize('tableName', 'table name')
+					placeHolder: nls.localize('tableName', 'table name')
 				})
-			.then((tableName) => {
-				if(tableName) {
-					// open an edit data session on that table
-					this.queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
-						// Connect our editor
-						let params: INewConnectionParams = { connectionType: ConnectionType.editor, runQueryOnCompletion: true };
-						this.connectionManagementService.connectEditor(owner, connectionProfile, params);
-					});
-				}
-			});
+				.then((tableName) => {
+					if (tableName) {
+						// open an edit data session on that table
+						this.queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
+							// Connect our editor
+							let options: IConnectionCompletionOptions = {
+								params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true },
+								saveToSettings: false,
+								showDashboard: false
+							};
+							this.connectionManagementService.connectWithOwner(connectionProfile, owner, options);
+						});
+					}
+				});
 		};
 
 		if (!connectionProfile) {
@@ -55,18 +59,18 @@ export class EditDataAction extends Action {
 			let connectionList: ConnectionProfile[] = [];
 			this.connectionManagementService.getConnectionGroups()
 				.map(group => group.connections
-				.map(con => connectionList.push(con)));
+					.map(con => connectionList.push(con)));
 
 			let conIds = connectionList.map(x => x.id);
 
 			// select a connection from the drop down
-			this.quickOpenService.pick(conIds, {placeHolder: nls.localize('connectionProfile','connection profile'), ignoreFocusLost: true}).then((connection) => {
+			this.quickOpenService.pick(conIds, { placeHolder: nls.localize('connectionProfile', 'connection profile'), ignoreFocusLost: true }).then((connection) => {
 				// get connection
 				let conProfile: ConnectionProfile = connectionList.find(x => x.id === connection);
 				if (conProfile) {
 					// making sure a table name was returned, otherwise we will ask once more
 					tableRequest(conProfile).then(tableName => {
-						if(!tableName) {
+						if (!tableName) {
 							tableRequest(conProfile);
 						}
 					});

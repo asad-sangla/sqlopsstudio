@@ -25,7 +25,7 @@ import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
 import { ServerTreeRenderer, ServerTreeDataSource } from 'sql/parts/connection/viewlet/serverTreeRenderer';
 import { RecentConnectionsDragAndDrop } from 'sql/parts/connection/viewlet/recentConnectionsRenderer';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 import { AddServerAction, NewQueryAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
 import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
@@ -159,17 +159,23 @@ export class TreeUtils {
 	 */
 	public static OnTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService) {
 		let selection = tree.getSelection();
-		const connectionUri = 'connection://';
+
 		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
 			let connectionProfile = <ConnectionProfile>selection[0];
 			let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
 			let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
 			if (isDoubleClick) {
-				let uri =  connectionUri + connectionProfile.getUniqueId();
-				if (!connectionManagementService.isConnected(uri)) {
-					connectionManagementService.connectProfile(connectionProfile);
+				if (!connectionManagementService.isProfileConnected(connectionProfile)) {
+					let options: IConnectionCompletionOptions = {
+						params: undefined,
+						saveToSettings: false,
+						showDashboard: true
+					};
+					connectionManagementService.connect(connectionProfile, undefined, options);
 				}
 				else {
+					const connectionUri = 'connection://';
+					let uri =  connectionUri + connectionProfile.getUniqueId();
 					connectionManagementService.showDashboard(uri, connectionProfile);
 				}
 			}

@@ -44,7 +44,9 @@ export class ConnectionStore {
 		private _connectionConfig?: IConnectionConfig
 	) {
 
-		this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
+		if (_context) {
+			this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
+		}
 		this._groupIdToFullNameMap = {};
 		this._groupFullNameToIdMap = {};
 
@@ -117,7 +119,7 @@ export class ConnectionStore {
 	public addSavedPassword(credentialsItem: IConnectionProfile): Promise<IConnectionProfile> {
 		let self = this;
 		return new Promise<IConnectionProfile>((resolve, reject) => {
-			if (ConnectionCredentials.isPasswordBasedCredential(credentialsItem)
+			if (credentialsItem.savePassword && ConnectionCredentials.isPasswordBasedCredential(credentialsItem)
 				&& Utils.isEmpty(credentialsItem.password)) {
 
 				let credentialId = this.formatCredentialIdForCred(credentialsItem, undefined);
@@ -160,7 +162,7 @@ export class ConnectionStore {
 
 			self.saveProfileToConfig(savedProfile)
 				.then(savedConnectionProfile => {
-					profile = savedConnectionProfile;
+
 					// Only save if we successfully added the profile
 					return self.saveProfilePasswordIfNeeded(profile);
 					// And resolve / reject at the end of the process
@@ -171,7 +173,7 @@ export class ConnectionStore {
 					// this is needed to support immediate connections
 					ConnInfo.fixupConnectionCredentials(profile);
 					this.saveCachedServerCapabilities();
-					resolve(profile);
+					resolve(savedProfile);
 				}, err => {
 					reject(err);
 				});
@@ -246,16 +248,6 @@ export class ConnectionStore {
 	 * To be called before shutdown.
 	 */
 	public saveActiveConnectionsToRecent(): void {
-		let activeConnections: IConnectionProfile[] = this._memento['ACTIVE_CONNECTIONS'];
-		let recentConnections: IConnectionProfile[] = this._memento['RECENT_CONNECTIONS'];
-		recentConnections = activeConnections.concat(recentConnections);
-		let maxConnections = this.getMaxRecentConnectionsCount();
-		// Remove last element if needed
-		if (recentConnections.length > maxConnections) {
-			recentConnections = recentConnections.slice(0, maxConnections);
-		}
-
-		this._memento['RECENT_CONNECTIONS'] = recentConnections;
 		this._memento['ACTIVE_CONNECTIONS'] = [];
 	}
 
@@ -316,16 +308,39 @@ export class ConnectionStore {
 	 * @returns {Promise<void>} a Promise that returns when the connection was saved
 	 */
 	public addActiveConnection(conn: IConnectionProfile): Promise<void> {
+		return this.addConnectionToMemento(conn, 'ACTIVE_CONNECTIONS', undefined, true).then(() => {
+			let maxConnections = this.getMaxRecentConnectionsCount();
+			return this.addConnectionToMemento(conn, 'RECENT_CONNECTIONS', maxConnections);
+		});
+	}
 
+	private addConnectionToMemento(conn: IConnectionProfile, mementoKey: string, maxConnections?: number, savePassword?: boolean): Promise<void> {
 		const self = this;
 		return new Promise<void>((resolve, reject) => {
 			// Get all profiles
-			let configValues = self.getActiveConnections();
+			let configValues = self.getConnectionsFromMemento(mementoKey);
 			let configToSave = this.addToConnectionList(conn, configValues);
-			self._memento['ACTIVE_CONNECTIONS'] = configToSave;
-			self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
+			if (maxConnections) {
+				// Remove last element if needed
+				if (configToSave.length > maxConnections) {
+					configToSave = configToSave.slice(0, maxConnections);
+				}
+			}
+			self._memento[mementoKey] = configToSave;
+			if (savePassword) {
+				self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
+			}
 			resolve(undefined);
 		});
+	}
+
+	private getConnectionsFromMemento(mementoKey: string): ConnectionProfile[] {
+		let configValues: IConnectionProfile[] = this._memento[mementoKey];
+		if (!configValues) {
+			configValues = [];
+		}
+
+		return this.convertConfigValuesToConnectionProfiles(configValues);
 	}
 
 	/**
@@ -511,6 +526,9 @@ export class ConnectionStore {
 	}
 
 	private getGroupId(groupFullName: string): string {
+		if (groupFullName === ConnectionProfileGroup.GroupNameSeparator) {
+			groupFullName = "";
+		}
 		return this._groupFullNameToIdMap[groupFullName];
 	}
 }

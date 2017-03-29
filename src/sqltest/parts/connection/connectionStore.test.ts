@@ -165,8 +165,8 @@ suite('SQL ConnectionStore tests', () => {
 		defaultNamedConnectionProfile = new ConnectionProfile(msSQLCapabilities, defaultNamedProfile);
 	});
 
-	test('addActiveConnection should not limit saves to the MaxRecentConnections amount', (done) => {
-		// Given 3 is the max # creds
+	test('addActiveConnection should limit recent connection saves to the MaxRecentConnections amount', (done) => {
+		// Given 5 is the max # creds
 		let numCreds = 6;
 
 		// setup memento for MRU to return a list we have access to
@@ -184,8 +184,12 @@ suite('SQL ConnectionStore tests', () => {
 			promise = promise.then(() => {
 				return connectionStore.addActiveConnection(connectionProfile);
 			}).then(() => {
-				let current = connectionStore.getActiveConnections();
-				assert.equal(current.length, i + 1, `expect all credentials to be saved ${current.length}|${i + 1} `);
+				let current = connectionStore.getRecentlyUsedConnections();
+				if (i >= maxRecent) {
+					assert.equal(current.length, maxRecent, `expect only top ${maxRecent} creds to be saved`);
+				} else {
+					assert.equal(current.length, i + 1, `expect all credentials to be saved ${current.length}|${i + 1} `);
+				}
 				assert.equal(current[0].serverName, cred.serverName, 'Expect most recently saved item to be first in list');
 				assert.ok(Utils.isEmpty(current[0].password));
 			});
@@ -211,6 +215,7 @@ suite('SQL ConnectionStore tests', () => {
 		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
 			credentialStore.object, capabilitiesService.object, connectionConfig.object);
 		connectionStore.clearActiveConnections();
+		connectionStore.clearRecentlyUsed();
 		let promise = Promise.resolve();
 		let cred = Object.assign({}, defaultNamedProfile, { serverName: defaultNamedProfile.serverName + 1 });
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, cred);
@@ -221,7 +226,7 @@ suite('SQL ConnectionStore tests', () => {
 		}).then(() => {
 			return connectionStore.addActiveConnection(connectionProfile);
 		}).then(() => {
-			let current = connectionStore.getActiveConnections();
+			let current = connectionStore.getRecentlyUsedConnections();
 			assert.equal(current.length, 2, 'expect 2 unique credentials to have been added');
 			assert.equal(current[0].serverName, cred.serverName, 'Expect most recently saved item to be first in list');
 			assert.ok(Utils.isEmpty(current[0].password));
@@ -245,6 +250,7 @@ suite('SQL ConnectionStore tests', () => {
 		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
 			credentialStore.object, capabilitiesService.object, connectionConfig.object);
 		connectionStore.clearActiveConnections();
+		connectionStore.clearRecentlyUsed();
 		let integratedCred = Object.assign({}, defaultNamedProfile, {
 			serverName: defaultNamedProfile.serverName + 'Integrated',
 			authenticationType: 'Integrated',
@@ -263,7 +269,7 @@ suite('SQL ConnectionStore tests', () => {
 			expectedCredCount++;
 			return connectionStore.addActiveConnection(connectionProfile);
 		}).then(() => {
-			let current = connectionStore.getActiveConnections();
+			let current = connectionStore.getRecentlyUsedConnections();
 			// Then verify that since its password based we save the password
 			credentialStore.verify(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			assert.strictEqual(capturedCreds.password, defaultNamedProfile.password);
@@ -276,7 +282,7 @@ suite('SQL ConnectionStore tests', () => {
 			let integratedCredConnectionProfile = new ConnectionProfile(msSQLCapabilities, integratedCred);
 			return connectionStore.addActiveConnection(integratedCredConnectionProfile);
 		}).then(() => {
-			let current = connectionStore.getActiveConnections();
+			let current = connectionStore.getRecentlyUsedConnections();
 			// then expect no to have credential store called, but MRU count upped to 2
 			credentialStore.verify(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			assert.equal(current.length, expectedCredCount, `expect ${expectedCredCount} unique credentials to have been added`);
@@ -286,7 +292,7 @@ suite('SQL ConnectionStore tests', () => {
 			let noPwdCredConnectionProfile = new ConnectionProfile(msSQLCapabilities, noPwdCred);
 			return connectionStore.addActiveConnection(noPwdCredConnectionProfile);
 		}).then(() => {
-			let current = connectionStore.getActiveConnections();
+			let current = connectionStore.getRecentlyUsedConnections();
 			// then expect no to have credential store called, but MRU count upped to 3
 			credentialStore.verify(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			assert.equal(current.length, expectedCredCount, `expect ${expectedCredCount} unique credentials to have been added`);
@@ -300,7 +306,7 @@ suite('SQL ConnectionStore tests', () => {
 			credentialStore.object, capabilitiesService.object, connectionConfig.object);
 
 		// When we clear the connections list and get the list of available connection items
-		connectionStore.clearActiveConnections().then(() => {
+		Promise.all([connectionStore.clearActiveConnections(), connectionStore.clearRecentlyUsed]).then(() => {
 			// Expect no connection items
 			let result = connectionStore.getActiveConnections();
 			let expectedCount = 0; // 1 for create connection profile

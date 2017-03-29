@@ -11,7 +11,7 @@ import { ThrottledDelayer } from 'vs/base/common/async';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { Builder, Dimension } from 'vs/base/browser/builder';
-import { Viewlet,  IViewletView } from 'vs/workbench/browser/viewlet';
+import { Viewlet, IViewletView } from 'vs/workbench/browser/viewlet';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { append, $, addStandardDisposableListener, EventType, addClass, removeClass, toggleClass } from 'vs/base/browser/dom';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -67,10 +67,10 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
 
 		this.connectionButton = new Button(this.viewletContainer);
-    	this.connectionButton.label = 'New Connection';
-    	this.connectionButton.addListener2('click', () => {
-       		this.newConnection();
-    	});
+		this.connectionButton.label = 'New Connection';
+		this.connectionButton.addListener2('click', () => {
+			this.newConnection();
+		});
 
 		this.splitView = new SplitView(this.viewletContainer.getHTMLElement());
 		this.serverTreeView = this.instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
@@ -113,7 +113,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	}
 
 	private newConnection(): void {
-		this.connectionManagementService.newConnection();
+		this.connectionManagementService.showConnectionDialog();
 	}
 
 	private setModel(model: number[]) {

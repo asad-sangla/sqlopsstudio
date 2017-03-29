@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionManagementService, IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
@@ -22,20 +22,12 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	}
 
-	newConnection(): void {
-
-	}
-
-	addConnectionProfile(connection: IConnectionProfile): Promise<boolean>{
-		return new Promise(() => true);
+	showConnectionDialog(): Promise<void> {
+		return undefined;
 	}
 
 	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
 
-	}
-
-	connect(uri: string, connection: IConnectionProfile): Promise<boolean> {
-		return new Promise(() => true);
 	}
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
@@ -78,15 +70,23 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return false;
 	}
 
-	connectProfile(connection: ConnectionProfile): Promise<boolean>{
+	isProfileConnected(connectionProfile: IConnectionProfile): boolean {
+		return false;
+	}
+
+	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean> {
 		return new Promise(() => true);
 	}
 
-	connectEditor(owner: IConnectableInput, connection: IConnectionProfile, params: INewConnectionParams): Promise<boolean>{
+	connectWithOwner(connection: IConnectionProfile, owner: IConnectableInput, options?: IConnectionCompletionOptions, ): Promise<boolean> {
+		return new Promise(() => true);
+	}
+
+	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean> {
 		return new Promise<boolean>(() => true);
 	}
 
-	disconnectEditor(owner: IConnectableInput): Promise<boolean>{
+	disconnectEditor(owner: IConnectableInput): Promise<boolean> {
 		return new Promise<boolean>(() => true);
 	}
 

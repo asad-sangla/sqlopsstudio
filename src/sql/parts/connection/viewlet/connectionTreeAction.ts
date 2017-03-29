@@ -9,7 +9,7 @@ import { Action } from 'vs/base/common/actions';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IConnectionManagementService, IConnectableInput, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput, IConnectionCompletionOptions, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { ServerTreeView } from 'sql/parts/connection/viewlet/serverTreeView';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -17,7 +17,6 @@ import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionPr
 
 export class ChangeConnectionAction extends Action {
 
-	readonly ConnectionUri = 'connection://';
 	private static EnabledClass = 'extension-action update';
 	private static DisabledClass = `${ChangeConnectionAction.EnabledClass} disabled`;
 	private static Label = localize('ConnectAction', "Connect");
@@ -55,22 +54,25 @@ export class ChangeConnectionAction extends Action {
 	private setLabel(): void {
 		if (!this._connectionProfile) {
 			this.label = 'Connect';
-			return ;
+			return;
 		}
-		let uri = this.ConnectionUri + this._connectionProfile.getUniqueId();
-		this.label = this._connectionManagementService.isConnected(uri) ? 'Disconnect' : 'Connect';
+		this.label = this._connectionManagementService.isProfileConnected(this._connectionProfile) ? 'Disconnect' : 'Connect';
 	}
 
 	run(): TPromise<any> {
 		if (!this._connectionProfile) {
 			return TPromise.as(true);
 		}
-		let uri = this.ConnectionUri + this._connectionProfile.getUniqueId();
-		if (this._connectionManagementService.isConnected(uri)) {
+		if (this._connectionManagementService.isProfileConnected(this._connectionProfile)) {
 			this.label = 'Connect';
 			return TPromise.as(true);
 		}
-		this._connectionManagementService.connectProfile(this._connectionProfile).then((value) => {
+		let options: IConnectionCompletionOptions = {
+			params: undefined,
+			saveToSettings: false,
+			showDashboard: true
+		};
+		this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((value) => {
 			if (value) {
 				this.update();
 			}
@@ -115,7 +117,7 @@ export class AddServerAction extends Action {
 			options: {},
 			saveProfile: true
 		};
-		this._connectionManagementService.newConnection(undefined, connection);
+		this._connectionManagementService.showConnectionDialog(undefined, connection);
 		return TPromise.as(true);
 	}
 }
@@ -244,8 +246,12 @@ export class NewQueryAction extends Action {
 		}
 		this.queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
 			// Connect our editor to the input connection
-			let params: INewConnectionParams = { connectionType: ConnectionType.editor, runQueryOnCompletion: false };
-			this.connectionManagementService.connectEditor(owner, this._connectionProfile, params);
+			let options: IConnectionCompletionOptions = {
+				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false },
+				saveToSettings: false,
+				showDashboard: false
+			};
+			this.connectionManagementService.connectWithOwner(this._connectionProfile, owner, options);
 		});
 		return TPromise.as(true);
 	}

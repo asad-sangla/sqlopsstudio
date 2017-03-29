@@ -79,7 +79,7 @@ export abstract class QueryTaskbarAction extends Action {
 			runQueryOnCompletion: runQueryOnCompletion ? runQueryOnCompletion : false,
 			querySelection: selection
 		};
-		this._connectionManagementService.newConnection(params);
+		this._connectionManagementService.showConnectionDialog(params);
 	}
 }
 

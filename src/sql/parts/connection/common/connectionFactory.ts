@@ -11,6 +11,8 @@ import * as data from 'data';
 
 export class ConnectionFactory {
 	private _connections: { [id: string]: ConnectionManagementInfo };
+	public static readonly DefaultUriPrefix: string = 'connection://';
+	public static readonly DashboardUriPrefix: string = 'dashboard://';
 
 	constructor() {
 		this._connections = {};
@@ -22,6 +24,11 @@ export class ConnectionFactory {
 		} else {
 			return undefined;
 		}
+	}
+
+	public findConnectionProfile(connectionProfile: IConnectionProfile): ConnectionManagementInfo {
+		let id = this.getConnectionManagementId(connectionProfile);
+		return this.findConnection(id);
 	}
 
 	public hasConnection(id: string): Boolean {
@@ -56,6 +63,11 @@ export class ConnectionFactory {
 	public updateConnection(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
 		let connectionInfo: ConnectionManagementInfo = this._connections[id];
 		connectionInfo.connectionProfile = connection;
+		if (this.isDefaultTypeUri(id)) {
+			let newId = this.getConnectionManagementId(connection);
+			this._connections[newId] = connectionInfo;
+			this.deleteConnection(id);
+		}
 		return connectionInfo;
 	}
 
@@ -92,5 +104,8 @@ export class ConnectionFactory {
 		let uri = 'connection://' + (id ? id : connection.serverName + ':' + connection.databaseName);
 
 		return uri;
+	}
+	public isDefaultTypeUri(uri: string): boolean {
+		return uri && uri.startsWith(ConnectionFactory.DefaultUriPrefix);
 	}
 }

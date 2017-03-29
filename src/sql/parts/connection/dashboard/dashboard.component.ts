@@ -5,6 +5,7 @@
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService, DashboardParameterWrapper } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import { IDashboardPage } from 'sql/parts/connection/dashboard/common/dashboard';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
@@ -108,11 +109,11 @@ export class AppComponent {
 
 	private onDatabaseChanged(): void {
 		this.loading = true;
-		this.ownerUri = 'dashboard://browseconn:' + this.connection.serverName + ';' + this.currentDatabaseName;
+		this.ownerUri = ConnectionFactory.DashboardUriPrefix + 'browseconn:' + this.connection.serverName + ';' + this.currentDatabaseName;
 
 		this.connection.databaseName = this.currentDatabaseName;
 
-		this.connectionService.connect(this.ownerUri, this.connection).then(status => {
+		this.connectionService.connect(this.connection, this.ownerUri).then(status => {
 			this.loading = false;
 			this.databasePage.onConnectionChanged();
 		});

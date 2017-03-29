@@ -20,6 +20,21 @@ export interface IConnectionsViewlet extends IViewlet {
 	search(text: string): void;
 }
 
+export interface IConnectionCompletionOptions {
+	saveToSettings: boolean;
+	showDashboard: boolean;
+	params: INewConnectionParams;
+
+}
+
+export interface IConnectionCallbacks {
+	onConnectStart(): void;
+	onConnectReject(error?: string): void;
+	onConnectSuccess(params?: INewConnectionParams): void;
+	onDisconnect(): void;
+
+}
+
 export const SERVICE_ID = 'connectionManagementService';
 
 export const IConnectionManagementService = createDecorator<IConnectionManagementService>(SERVICE_ID);
@@ -33,12 +48,29 @@ export interface IConnectionManagementService {
 	onConnect: Event<void>;
 	onConnectionChanged: Event<IConnectionChangedParams>;
 
-	connect(uri: string, connection: IConnectionProfile): Promise<boolean>;
+	/**
+	 * Opens the connection dialog to create new connection
+	 */
+	showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile): Promise<void>;
 
-	newConnection(params?: INewConnectionParams, model?: IConnectionProfile): void;
+	/**
+	 * Connect using an owner (editors)
+	 */
+	connectWithOwner(connection: IConnectionProfile, owner: IConnectableInput, options?: IConnectionCompletionOptions, ): Promise<boolean>;
 
-	addConnectionProfile(connection: IConnectionProfile): Promise<boolean>;
+	/**
+	 * Load the password and opens a new connection
+	 */
+	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean>;
 
+	/**
+	 * Opens a new connection and save the profile in settings
+	 */
+	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean>;
+
+	/**
+	 * Adds the successful connection to MRU and send the connection error back to the connection handler for failed connections
+	 */
 	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void;
 
 	onIntelliSenseCacheComplete(handle: number, connectionUri: string): void;
@@ -57,9 +89,12 @@ export interface IConnectionManagementService {
 
 	getAdvancedProperties(): data.ConnectionOption[];
 
-	connectEditor(editor: IConnectableInput, connection: IConnectionProfile, params?: INewConnectionParams): Promise<boolean>;
+	isConnected(fileUri: string): boolean;
 
-	connectProfile(connection: ConnectionProfile): Promise<boolean>;
+	/**
+	 * Returns true if the connection profile is connected
+	 */
+	isProfileConnected(connectionProfile: IConnectionProfile): boolean;
 
 	isRecent(connectionProfile: ConnectionProfile): boolean;
 

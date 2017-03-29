@@ -131,9 +131,11 @@ suite('SQL ConnectionFactory tests', () => {
 	test('updateConnection should update the connection info', () => {
 		let expected = connectionProfile.groupId + '1';
 
-		let updatedConnection = Object.assign({}, connectionProfile, { groupId: expected });
+		let updatedConnection = Object.assign({}, connectionProfile, { groupId: expected, getUniqueId: () => connectionProfile.getUniqueId() + expected });
 		connections.updateConnection(updatedConnection, connection1Id);
-		let actual = connections.getConnectionProfile(connection1Id).groupId;
+
+		let newId = connections.getConnectionManagementId(updatedConnection);
+		let actual = connections.getConnectionProfile(newId).groupId;
 		assert.equal(actual, expected);
 	});
 });

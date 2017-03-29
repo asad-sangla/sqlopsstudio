@@ -7,7 +7,7 @@
 
 import {
 	IConnectionDialogService, IConnectionManagementService, IErrorMessageService,
-	ConnectionType, INewConnectionParams
+	ConnectionType, INewConnectionParams, IConnectionCompletionOptions
 } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
@@ -80,11 +80,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this.handleProviderOnConnecting();
 		var result = this.sqlUiController.validateConnection();
 		if (result.isValid) {
-			if (params && params.connectionType === ConnectionType.default) {
-				this.handleDefaultOnConnect(result.connection);
-			} else if (params && params.input && params.connectionType === ConnectionType.editor) {
-				this.handleQueryEditorOnConnect(params, result.connection);
-			}
+			this.handleDefaultOnConnect(params, result.connection);
 		} else {
 			this._connectionDialog.showError('Missing required fields');
 		}
@@ -93,26 +89,22 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private handleOnCancel(params: INewConnectionParams): void {
 		if (params && params.input && params.connectionType === ConnectionType.editor) {
 			this._connectionManagementService.cancelEditorConnection(params.input);
-			params.input.onConnectReject(nls.localize('connectionCancelled', 'Connection Cancelled'))
+			params.input.onConnectReject(nls.localize('connectionCancelled', 'Connection Cancelled'));
 		} else {
 			this._connectionManagementService.cancelConnection(this._model);
 		}
 		this._connectionDialog.resetConnection();
 	}
 
-	private handleDefaultOnConnect(connection: IConnectionProfile): void {
-		this._connectionManagementService.addConnectionProfile(connection).then(connected => {
-			if (connected) {
-				this._connectionDialog.close();
-			}
-		}).catch(err => {
-			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
-			this._connectionDialog.resetConnection();
-		});
-	}
-
-	private handleQueryEditorOnConnect(params: INewConnectionParams, connection: IConnectionProfile): void {
-		this._connectionManagementService.connectEditor(params.input, connection, params).then(connected => {
+	private handleDefaultOnConnect(params: INewConnectionParams, connection: IConnectionProfile): void {
+		let uri: string = params && params.input ? params.input.uri : undefined;
+		let fromEditor = params && params.connectionType === ConnectionType.editor;
+		let options: IConnectionCompletionOptions = {
+			params: params,
+			saveToSettings: !fromEditor,
+			showDashboard: !fromEditor,
+		};
+		this._connectionManagementService.connectAndSaveProfile(connection, uri, options, params.input).then(connected => {
 			if (connected) {
 				this._connectionDialog.close();
 			}
