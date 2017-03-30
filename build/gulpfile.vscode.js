@@ -75,7 +75,7 @@ const vscodeResources = [
 	'out-build/vs/workbench/parts/welcome/page/**/*.html',
 	'out-build/vs/workbench/services/files/**/*.exe',
 	'out-build/vs/workbench/services/files/**/*.md',
-	'out-build/sql/parts/grid/views/{slick.dragrowselector.js,slick.autosizecolumn.js}',
+	'out-build/sql/parts/grid/directives/{slick.dragrowselector.js,slick.autosizecolumn.js}',
 	'!**/test/**'
 ];
 

@@ -10,22 +10,19 @@ import { EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { append, $ } from 'vs/base/browser/dom';
 import { DashboardInput } from './dashboardInput';
 import { DashboardModule } from './dashboard.module';
-import { IConnectionManagementService, DashboardParameterWrapper } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
-
-declare let AngularPlatformBrowserDynamic;
-
+import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
+import { DashboardComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 
 export class DashboardEditor extends BaseEditor {
 
-	private static _parameterWrapper: DashboardParameterWrapper = new DashboardParameterWrapper();
-
 	public static ID: string = 'workbench.editor.connectiondashboard';
+	public static AngularSelectorString: string = 'connection-dashboard';
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -33,7 +30,8 @@ export class DashboardEditor extends BaseEditor {
 		@IConnectionManagementService private _connectionService: IConnectionManagementService,
 		@IMetadataService private _metadataService: IMetadataService,
 		@IScriptingService private _scriptingService: IScriptingService,
-		@IQueryEditorService private _queryEditorService: IQueryEditorService
+		@IQueryEditorService private _queryEditorService: IQueryEditorService,
+		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
 		super(DashboardEditor.ID, telemetryService);
 	}
@@ -62,9 +60,9 @@ export class DashboardEditor extends BaseEditor {
 			return TPromise.as(undefined);
 		}
 
-		// if (!input.hasInitialized) {
+		if (!input.hasInitialized) {
 			this.bootstrapAngular(input);
-		// }
+		}
 
 		return super.setInput(input, options);
 	}
@@ -74,23 +72,18 @@ export class DashboardEditor extends BaseEditor {
 	 */
 	private bootstrapAngular(input: DashboardInput): void {
 
-		DashboardEditor._parameterWrapper.ownerUri = input.getUri();
-		DashboardEditor._parameterWrapper.connection = input.getConnectionProfile();
-
 		input.setHasInitialized();
 
-		const parent = this.getContainer().getHTMLElement();
-		append(parent, $('connection-dashboard'));
-
-		// Bootstrap the angular content
-		let providers = [
-			{ provide: 'ConnectionService', useValue: this._connectionService },
-			{ provide: 'MetadataService', useValue: this._metadataService },
-			{ provide: 'ScriptingService', useValue: this._scriptingService },
-			{ provide: 'QueryEditorService', useValue: this._queryEditorService },
-			{ provide: 'DashboardParameters', useValue: DashboardEditor._parameterWrapper }
-		];
-		AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(DashboardModule);
+		// Get the bootstrap params and perform the bootstrap
+		let params: DashboardComponentParams = {
+			connection: input.getConnectionProfile()
+		};
+		this._bootstrapService.bootstrap(
+			DashboardModule,
+			this.getContainer().getHTMLElement(),
+			DashboardEditor.AngularSelectorString,
+			input.getUri(),
+			params);
 	}
 
 	public dispose(): void {

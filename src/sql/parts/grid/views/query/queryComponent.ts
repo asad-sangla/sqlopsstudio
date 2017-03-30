@@ -9,97 +9,26 @@ import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import { ElementRef, QueryList, ChangeDetectorRef, OnInit } from '@angular/core';
-import { IGridDataRow, ISlickRange, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
-import * as Constants from 'sql/parts/connection/common/constants';
-import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
-import { DataService } from 'sql/parts/grid/services/dataService';
-import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
+import * as Constants from 'sql/parts/connection/common/constants';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
+
+import { ElementRef, QueryList, ChangeDetectorRef, OnInit } from '@angular/core';
+import { IGridDataRow, ISlickRange, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
+import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/common/interfaces';
+import { DataService } from 'sql/parts/grid/services/dataService';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
+import { QueryComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 
 declare let AngularCore;
 declare let rangy;
 
 AngularCore.enableProdMode();
 
-const template = `
-<div class="fullsize vertBox edgesPadding">
-    <div *ngIf="dataSets.length > 0" id="resultspane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!resultActive" (click)="resultActive = !resultActive">
-        <span> {{Constants.resultPaneLabel}} </span>
-        <span class="queryResultsShortCut"> {{resultShortcut}} </span>
-    </div>
-    <div id="results" *ngIf="renderedDataSets.length > 0" class="results vertBox scrollable"
-         (onScroll)="onScroll($event)" [scrollEnabled]="scrollEnabled" [class.hidden]="!resultActive">
-        <div class="boxRow content horzBox slickgrid" *ngFor="let dataSet of renderedDataSets; let i = index"
-            [style.max-height]="dataSet.maxHeight" [style.min-height]="dataSet.minHeight">
-            <slick-grid #slickgrid id="slickgrid_{{i}}" [columnDefinitions]="dataSet.columnDefinitions"
-                        [ngClass]="i === activeGrid ? 'active' : ''"
-                        [dataRows]="dataSet.dataRows"
-                        (contextMenu)="openContextMenu($event, dataSet.batchId, dataSet.resultId, i)"
-                        enableAsyncPostRender="true"
-                        showDataTypeIcon="false"
-                        showHeader="true"
-                        [resized]="dataSet.resized"
-                        (mousedown)="navigateToGrid(i)"
-                        [selectionModel]="selectionModel"
-                        [plugins]="slickgridPlugins"
-                        class="boxCol content vertBox slickgrid">
-            </slick-grid>
-            <span class="boxCol content vertBox">
-                <div class="boxRow content maxHeight" *ngFor="let icon of dataIcons">
-                    <div *ngIf="icon.showCondition()" class="gridIconContainer">
-                        <a class="gridIcon" href="#"
-                        (click)="icon.functionality(dataSet.batchId, dataSet.resultId, i)"
-                        [title]="icon.hoverText()" [ngClass]="icon.icon()">
-                        </a>
-                    </div>
-                </div>
-            </span>
-        </div>
-    </div>
-    <div id="messagepane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!messageActive" (click)="messageActive = !messageActive" style="position: relative">
-        <div id="messageResizeHandle" class="resizableHandle"></div>
-        <span> {{Constants.messagePaneLabel}} </span>
-        <span class="queryResultsShortCut"> {{messageShortcut}} </span>
-    </div>
-    <div id="messages" class="scrollable messages" [class.hidden]="!messageActive && dataSets.length !== 0"
-        (contextmenu)="openMessagesContextMenu($event)">
-        <div class="messagesTopSpacing"></div>
-        <table id="messageTable" class="resultsMessageTable">
-            <colgroup>
-                <col span="1" class="wideResultsMessage">
-            </colgroup>
-            <tbody>
-                <template ngFor let-message [ngForOf]="messages">
-                    <tr class='messageRow'>
-                        <td><span *ngIf="!Utils.isNumber(message.batchId)">[{{message.time}}]</span></td>
-                        <td class="resultsMessageValue" [class.errorMessage]="message.isError" [class.batchMessage]="Utils.isNumber(message.batchId)">{{message.message}} <a class="queryLink" *ngIf="message.link" href="#">{{message.link.text}}</a>
-                        </td>
-                    </tr>
-                </template>
-                <tr id='executionSpinner' *ngIf="!complete">
-                    <td><span *ngIf="messages.length === 0">[{{startString}}]</span></td>
-                    <td>
-                        <img src="../../../../sql/parts/grid/media/progress_36x_animation.gif" height="18px" />
-                        <span style="vertical-align: bottom">{{Constants.executeQueryLabel}}</span>
-                    </td>
-                </tr>
-                <tr *ngIf="complete">
-                    <td></td>
-                    <td>{{Utils.formatString(Constants.elapsedTimeLabel, totalElapsedTimeSpan)}}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div id="resizeHandle" [class.hidden]="!resizing" [style.top]="resizeHandleTop"></div>
-</div>
-`;
-
 @AngularCore.Component({
     selector: 'slickgrid-container',
-    template: template,
+	templateUrl: require.toUrl('sql/parts/grid/views/query/queryTemplate.html'),
     styles: [`
     .errorMessage {
         color: var(--color-error);
@@ -110,7 +39,7 @@ const template = `
     `]
 })
 
-export class AppComponent implements OnInit {
+export class QueryComponent implements OnInit {
     // CONSTANTS
     // tslint:disable-next-line:no-unused-variable
     private scrollTimeOutTime = 200;
@@ -130,6 +59,9 @@ export class AppComponent implements OnInit {
     private Constants = Constants;
     // tslint:disable-next-line:no-unused-variable
     private Utils = Utils;
+    // tslint:disable-next-line:no-unused-variable
+    private progressAnimationUri = require.toUrl('sql/parts/grid/media/progress_36x_animation.gif');
+
     // the function implementations of keyboard available events
     private shortcutfunc = { /*
         'event.toggleResultPane': () => {
@@ -271,11 +203,14 @@ export class AppComponent implements OnInit {
 
     constructor(
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
-        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private cd: ChangeDetectorRef,
-        @AngularCore.Inject('ParameterService') parameterService: IQueryParameterService,
-        ) {
-            this.dataService = parameterService.dataService;
-        }
+        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private _cd: ChangeDetectorRef,
+        @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+    ) {
+        let uri: string = this._el.nativeElement.id;
+		this._el.nativeElement.removeAttribute('id');
+        let queryParameters: QueryComponentParams = this._bootstrapService.getBootstrapParams(uri);
+        this.dataService = queryParameters.dataService;
+    }
 
     /**
      * Called by Angular when the object is initialized
@@ -302,7 +237,7 @@ export class AppComponent implements OnInit {
                     console.error('Unexpected query event type "' + event.type + '" sent');
                     break;
             }
-            self.cd.detectChanges();
+            self._cd.detectChanges();
         });
 
         this.dataService.gridContentObserver.subscribe((type) => {
@@ -322,7 +257,7 @@ export class AppComponent implements OnInit {
         this.dataService.onAngularLoaded();
     }
 
-    handleStart(self: AppComponent, event: any): void {
+    handleStart(self: QueryComponent, event: any): void {
         self.messages = [];
         self.dataSets = [];
         self.placeHolderDataSets =  [];
@@ -331,18 +266,18 @@ export class AppComponent implements OnInit {
         self.complete = false;
     }
 
-    handleComplete(self: AppComponent, event: any): void {
+    handleComplete(self: QueryComponent, event: any): void {
         self.totalElapsedTimeSpan = event.data;
         self.complete = true;
     }
 
-    handleMessage(self: AppComponent, event: any): void {
+    handleMessage(self: QueryComponent, event: any): void {
         self.messages.push(event.data);
-        self.cd.detectChanges();
+        self._cd.detectChanges();
         this.scrollMessages();
     }
 
-    handleResultSet(self: AppComponent, event: any): void {
+    handleResultSet(self: QueryComponent, event: any): void {
         let resultSet = event.data;
 
         // Setup a function for generating a promise to lookup result subsets
@@ -420,9 +355,9 @@ export class AppComponent implements OnInit {
     refreshResultsets(): void {
         let tempRenderedDataSets = this.renderedDataSets;
         this.renderedDataSets = [];
-        this.cd.detectChanges();
+        this._cd.detectChanges();
         this.renderedDataSets = tempRenderedDataSets;
-        this.cd.detectChanges();
+        this._cd.detectChanges();
     }
 
     /**
@@ -597,7 +532,7 @@ export class AppComponent implements OnInit {
                 }
             }
 
-            self.cd.detectChanges();
+            self._cd.detectChanges();
 
             if (self.firstRender) {
                 let setActive = function() {
@@ -627,7 +562,7 @@ export class AppComponent implements OnInit {
         $resizeHandle.bind('dragstart', (e) => {
             self.resizing = true;
             self.resizeHandleTop = self.calculateResizeHandleTop(e.pageY);
-            self.cd.detectChanges();
+            self._cd.detectChanges();
             return true;
         });
 
@@ -636,7 +571,7 @@ export class AppComponent implements OnInit {
             if (self.isDragWithinAllowedRange(e.pageY, resizeHandleElement)) {
                 self.resizeHandleTop = self.calculateResizeHandleTop(e.pageY);
                 self.resizing = true;
-                self.cd.detectChanges();
+                self._cd.detectChanges();
 
             // Stop the animation if the drag is out of the allowed range.
             // The animation is resumed when the drag comes back into the allowed range.
@@ -652,12 +587,12 @@ export class AppComponent implements OnInit {
             if (self.isDragWithinAllowedRange(e.pageY, resizeHandleElement)) {
                 let minHeightNumber = this.getMessagePaneHeightFromDrag(e.pageY);
                 $messages.css('min-height', minHeightNumber + 'px');
-                self.cd.detectChanges();
+                self._cd.detectChanges();
                 self.resizeGrids();
 
             // Otherwise just update the UI to show that the drag is complete
             } else {
-                self.cd.detectChanges();
+                self._cd.detectChanges();
             }
         });
     }

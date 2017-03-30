@@ -10,14 +10,12 @@ import { Builder, Dimension } from 'vs/base/browser/builder';
 import { EditorOptions } from 'vs/workbench/common/editor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { append, $ } from 'vs/base/browser/dom';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import { AppModule } from 'sql/parts/grid/views/app.module';
+import { QueryModule } from 'sql/parts/grid/views/query/queryModule';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
-
-declare let AngularPlatformBrowserDynamic;
+import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
+import { QueryComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 
 export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareEditorVisible', false);
 
@@ -26,12 +24,13 @@ export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareE
  */
 export class QueryResultsEditor extends BaseEditor {
 
-	static ID: string = 'workbench.editor.queryResultsEditor';
+	public static ID: string = 'workbench.editor.queryResultsEditor';
+	public static AngularSelectorString: string = 'slickgrid-container.slickgridContainer';
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
-		@IQueryParameterService private _angularParameterService: IQueryParameterService
+		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
 		super(QueryResultsEditor.ID, telemetryService);
 	}
@@ -62,16 +61,20 @@ export class QueryResultsEditor extends BaseEditor {
 		if (!dataService) {
 			throw new Error('DataService not found for URI: ' + uri);
 		}
-		this._angularParameterService.dataService = dataService;
 
+		// Mark that we have bootstrapped
 		input.setBootstrappedTrue();
 
-		const parent = this.getContainer().getHTMLElement();
-		append(parent, $('slickgrid-container.slickgridContainer'));
-
-		// Bootstrap the angular content
-		let providers = [{ provide: 'ParameterService', useValue: this._angularParameterService }];
-		AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
+		// Get the bootstrap params and perform the bootstrap
+		let params: QueryComponentParams = {
+			dataService: dataService
+		};
+		this._bootstrapService.bootstrap(
+			QueryModule,
+			this.getContainer().getHTMLElement(),
+			QueryResultsEditor.AngularSelectorString,
+			uri,
+			params);
 	}
 
 	public dispose(): void {

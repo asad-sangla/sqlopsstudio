@@ -15,9 +15,11 @@ import * as Constants from 'sql/parts/connection/common/constants';
 import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
-import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
+import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+
 
 declare let AngularCore;
 declare let rangy;
@@ -241,11 +243,13 @@ export class EditDataComponent implements OnInit {
     constructor(
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private cd: ChangeDetectorRef,
-        @AngularCore.Inject('ParameterService') parameterService: IQueryParameterService,
-        ) {
-            this.dataService = parameterService.dataService;
-        }
-
+        @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+    ) {
+        let uri: string = this._el.nativeElement.id;
+		this._el.nativeElement.removeAttribute('id');
+        let editDataParameters: EditDataComponentParams = this._bootstrapService.getBootstrapParams(uri);
+        this.dataService = editDataParameters.dataService;
+    }
 
     /**
      * Called by Angular when the object is initialized

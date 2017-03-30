@@ -4,20 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/query/editor/media/queryEditor';
+
 import { TPromise } from 'vs/base/common/winjs.base';
-import * as strings from 'vs/base/common/strings';
 import * as DOM from 'vs/base/browser/dom';
+import * as nls from 'vs/nls';
 import { Builder, Dimension } from 'vs/base/browser/builder';
 
-import { EditorInput, EditorOptions } from 'vs/workbench/common/editor';
-import { BaseEditor, EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
-import { IEditorControl, Position } from 'vs/platform/editor/common/editor';
+import { EditorOptions } from 'vs/workbench/common/editor';
+import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
+import { Position } from 'vs/platform/editor/common/editor';
 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
@@ -28,21 +27,21 @@ import { Action } from 'vs/base/common/actions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { IQueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 import {
 	RefreshTableAction, StopRefreshTableAction,
 	ChangeMaxRowsAction, ChangeMaxRowsActionItem} from 'sql/parts/editData/execution/editDataActions';
-import { append, $ } from 'vs/base/browser/dom';
 import { AppModule } from 'sql/parts/grid/views/editdata.module';
-import * as nls from 'vs/nls';
-
-declare let AngularPlatformBrowserDynamic;
+import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
+import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 
 /**
  * Editor that hosts an action bar and a resultSetInput for an edit data session
  */
 export class EditDataEditor extends BaseEditor {
+
 	public static ID: string = 'workbench.editor.editDataEditor';
+	public static AngularSelectorString: string = 'slickgrid-container.slickgridContainer';
+
 	private _dimension: Dimension;
 	private _resultsEditorContainer: HTMLElement;
 	private _taskbar: QueryTaskbar;
@@ -60,7 +59,7 @@ export class EditDataEditor extends BaseEditor {
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IEditorDescriptorService private _editorDescriptorService: IEditorDescriptorService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IQueryParameterService private _angularParameterService: IQueryParameterService
+		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
 		super(EditDataEditor.ID, _telemetryService);
 	}
@@ -289,17 +288,21 @@ export class EditDataEditor extends BaseEditor {
 			if (!dataService) {
 				throw new Error('DataService not found for URI: ' + uri);
 			}
-			this._angularParameterService.dataService = dataService;
 
-			this.editDataInput.setBootstrappedTrue();
+			// Mark that we have bootstrapped
+			input.setBootstrappedTrue();
 
-			const parent = this._resultsEditorContainer;
-			append(parent, $('slickgrid-container.slickgridContainer'));
-
-			// Bootstrap the angular content
-			let providers = [{ provide: 'ParameterService', useValue: this._angularParameterService }];
-			AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(AppModule);
-
+			// Get the bootstrap params and perform the bootstrap
+			const parent = this.getContainer().getHTMLElement();
+			let params: EditDataComponentParams = {
+				dataService: dataService
+			};
+			this._bootstrapService.bootstrap(
+				AppModule,
+				parent,
+				EditDataEditor.AngularSelectorString,
+				uri,
+				params);
 		}
 		return TPromise.as<void>(null);
 	}

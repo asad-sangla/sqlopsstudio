@@ -99,12 +99,12 @@ import { ConnectionManagementService } from 'sql/parts/connection/common/connect
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import { ErrorMessageService } from 'sql/parts/common/errorMessageService';
 
+import { IBootstrapService, BootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import { ICapabilitiesService, CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
 import { IMetadataService, MetadataService } from 'sql/parts/metadata/metadataService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
-import { IQueryParameterService, QueryParameterService } from 'sql/parts/query/execution/queryParameterService';
 import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IQueryManagementService, QueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IEditorDescriptorService, EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
@@ -564,11 +564,11 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IConnectionManagementService, connectionManagementService);
 		serviceCollection.set(IQueryManagementService, this.instantiationService.createInstance(QueryManagementService));
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
-		serviceCollection.set(IQueryParameterService, this.instantiationService.createInstance(QueryParameterService));
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));
 		serviceCollection.set(IEditorDescriptorService, this.instantiationService.createInstance(EditorDescriptorService));
 		serviceCollection.set(IMetadataService, this.instantiationService.createInstance(MetadataService));
 		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));
+		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 
 		this.toDispose.push(connectionManagementService);
 		this.toShutdown.push(connectionManagementService);

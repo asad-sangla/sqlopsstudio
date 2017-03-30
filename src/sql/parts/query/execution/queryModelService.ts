@@ -6,8 +6,10 @@
 'use strict';
 
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
+import nls = require('vs/nls');
 import Constants = require('sql/parts/connection/common/constants');
 import Utils = require('sql/parts/connection/common/utils');
+
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
@@ -18,7 +20,6 @@ import Severity from 'vs/base/common/severity';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSessionReadyParams } from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
-import nls = require('vs/nls');
 
 interface QueryEvent {
 	type: string;

@@ -3,8 +3,11 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
+import { MenuItem } from 'primeng/primeng';
+import data = require('data');
+
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { IConnectionManagementService, DashboardParameterWrapper } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import { IDashboardPage } from 'sql/parts/connection/dashboard/common/dashboard';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
@@ -13,8 +16,9 @@ import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { DatabaseDashboardComponent } from './database/database-dashboard.component';
 import { ServerDashboardComponent } from './server/server-dashboard.component';
 import { ObjectDashboardComponent } from './object/object-dashboard.component';
-import { MenuItem } from 'primeng/primeng';
-import data = require('data');
+import { ElementRef } from '@angular/core';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
+import { DashboardComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 
 declare let AngularCore;
 
@@ -39,16 +43,30 @@ export class AppComponent {
 
 	private databasePage: DatabaseDashboardComponent;
 
+	private connectionService: IConnectionManagementService;
+
+	private metadataService: IMetadataService;
+
+	private scriptingService: IScriptingService;
+
+	private queryEditorService: IQueryEditorService;
+
 	constructor(
-		@AngularCore.Inject('DashboardParameters') private dashboardParameters: DashboardParameterWrapper,
-		@AngularCore.Inject('ConnectionService') private connectionService: IConnectionManagementService,
-		@AngularCore.Inject('MetadataService') private metadataService: IMetadataService,
-		@AngularCore.Inject('ScriptingService') private scriptingService: IScriptingService,
-		@AngularCore.Inject('QueryEditorService') private queryEditorService: IQueryEditorService) {
-			this.ownerUri = dashboardParameters.ownerUri;
-			this.connection = dashboardParameters.connection;
-			this.currentDatabaseName = this.connection.databaseName;
-            this.breadCrumbItems = [];
+        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
+        @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+	) {
+        this.ownerUri = this._el.nativeElement.id;
+		this._el.nativeElement.removeAttribute('id');
+        let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this.ownerUri);
+
+		this.connectionService = this._bootstrapService.connectionManagementService;
+		this.metadataService = this._bootstrapService.metadataService;
+		this.scriptingService = this._bootstrapService.scriptingService;
+		this.queryEditorService = this._bootstrapService.queryEditorService;
+
+		this.connection = dashboardParameters.connection;
+		this.currentDatabaseName = this.connection.databaseName;
+		this.breadCrumbItems = [];
 	}
 
 	public onActivate(component: any) {

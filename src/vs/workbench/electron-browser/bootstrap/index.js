@@ -176,8 +176,8 @@ function main() {
 	const rootUrl = appRoot + '/out';
 
 	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
-	createScript(rootUrl + '/sql/parts/grid/views/slick.dragrowselector.js', undefined);
-	createScript(rootUrl + '/sql/parts/grid/views/slick.autosizecolumn.js', undefined);
+	createScript(rootUrl + '/sql/parts/grid/directives/slick.dragrowselector.js', undefined);
+	createScript(rootUrl + '/sql/parts/grid/directives/slick.autosizecolumn.js', undefined);
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation
