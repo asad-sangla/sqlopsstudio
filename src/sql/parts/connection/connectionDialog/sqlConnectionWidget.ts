@@ -31,8 +31,8 @@ export class SqlConnectionWidget {
 	private _advancedButton: Button;
 	private _saveConnectionCheckbox: Checkbox;
 	private _callbacks: IConnectionComponentCallbacks;
-	private _windowsAuthTypeDisplayName: string = 'Integrated Auth';
-	private _sqlAuthTypeDisplayName: string = 'SQL Login';
+	private _integratedAuthTypeName: string = 'Integrated';
+	private _sqlAuthTypeName: string = 'SqlLogin';
 	private _authTypeSelectBox: ConnectionDialogSelectBox;
 	private _toDispose: lifecycle.IDisposable[];
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
@@ -155,8 +155,11 @@ export class SqlConnectionWidget {
 	}
 
 	private onAuthTypeSelected(selectedAuthType: string) {
+		var integratedAuthTypeDisplayName = this.getAuthTypeDisplayName(this._integratedAuthTypeName);
+		var sqlAuthTypeDisplayName = this.getAuthTypeDisplayName(this._sqlAuthTypeName);
+
 		switch (selectedAuthType) {
-			case this._windowsAuthTypeDisplayName:
+			case integratedAuthTypeDisplayName:
 				this._userNameInputBox.disable();
 				this._passwordInputBox.disable();
 				this._userNameInputBox.hideMessage();
@@ -164,7 +167,7 @@ export class SqlConnectionWidget {
 				this._userNameInputBox.value = '';
 				this._passwordInputBox.value = '';
 				break;
-			case this._sqlAuthTypeDisplayName:
+			case sqlAuthTypeDisplayName:
 				this._userNameInputBox.enable();
 				this._passwordInputBox.enable();
 			default:
@@ -219,15 +222,33 @@ export class SqlConnectionWidget {
 			this._saveConnectionCheckbox.checked = connectionInfo.saveProfile;
 			this.onSaveConnectionChecked(false);
 			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
-				var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-				authTypeOption.categoryValues.forEach(c => {
-					if (c.name === connectionInfo.authenticationType) {
-						this._authTypeSelectBox.selectWithOptionName(c.displayName);
-					}
-				});
+				var authTypeDisplayName = this.getAuthTypeDisplayName(connectionInfo.authenticationType);
+				this._authTypeSelectBox.selectWithOptionName(authTypeDisplayName);
 				this.onAuthTypeSelected(this._authTypeSelectBox.value);
 			}
 		}
+	}
+
+	private getAuthTypeDisplayName(authTypeName: string) {
+		var displayName: string;
+		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
+		authTypeOption.categoryValues.forEach(c => {
+			if (c.name === authTypeName) {
+				displayName = c.displayName;
+			}
+		});
+		return displayName;
+	}
+
+	private getAuthTypeName(authTypeDisplayName: string) {
+		var authTypeName: string;
+		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
+		authTypeOption.categoryValues.forEach(c => {
+			if (c.displayName === authTypeDisplayName) {
+				authTypeName = c.name;
+			}
+		});
+		return authTypeName;
 	}
 
 	public handleOnConnecting(): void {
@@ -259,20 +280,14 @@ export class SqlConnectionWidget {
 	}
 
 	public get authenticationType(): string {
-		var authType: string;
-		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		authTypeOption.categoryValues.forEach(c => {
-			if (c.displayName === this._authTypeSelectBox.value) {
-				authType = c.name;
-			}
-		});
-		return authType;
+		return this.getAuthTypeName(this._authTypeSelectBox.value);
 	}
 
 	private validateInputs(): boolean {
 		let validInputs = true;
 		let option: data.ConnectionOption;
-		if (this._authTypeSelectBox.value === this._sqlAuthTypeDisplayName) {
+		var sqlAuthTypeDisplayName = this.getAuthTypeDisplayName(this._sqlAuthTypeName);
+		if (this._authTypeSelectBox.value === sqlAuthTypeDisplayName) {
 			option = this._optionsMaps[ConnectionOptionSpecialType.userName];
 			if (ConnectionDialogHelper.isEmptyString(this.userName) && option.isRequired) {
 				validInputs = false;
