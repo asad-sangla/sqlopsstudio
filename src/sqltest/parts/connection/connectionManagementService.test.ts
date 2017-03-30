@@ -9,7 +9,7 @@ import * as assert from 'assert';
 import data = require('data');
 import * as TypeMoq from 'typemoq';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
-import { ConnectionManagementService } from 'sql/parts/connection/common/ConnectionManagementService';
+import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 import { WorkbenchEditorService } from 'vs/workbench/services/editor/browser/editorService';
