@@ -270,6 +270,20 @@ export class QueryEditor extends BaseEditor {
 		return undefined;
 	}
 
+	/**
+	 * Calls the run method of this editor's RunQueryAction
+	 */
+	public runQuery(): void {
+		this._runQueryAction.run();
+	}
+
+	/**
+	 * Calls the run method of this editor's CancelQueryAction
+	 */
+	public cancelQuery(): void {
+		this._cancelQueryAction.run();
+	}
+
 	get uri(): string {
 		let input: QueryInput = <QueryInput>this.input;
 		return input ? input.getQueryResultsInputResource() : undefined;

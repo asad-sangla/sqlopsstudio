@@ -7,6 +7,9 @@ import { Registry } from 'vs/platform/platform';
 import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/common/editor';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
+import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
+import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
+import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
@@ -14,7 +17,7 @@ import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
-
+import { RunQueryKeyboardAction, CancelQueryKeyboardAction } from 'sql/parts/query/execution/keyboardQueryActions';
 
 // Editor
 const queryResultsEditorDescriptor = new EditorDescriptor(
@@ -48,3 +51,26 @@ const editDataEditorDescriptor = new EditorDescriptor(
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 	.registerEditor(editDataEditorDescriptor, [new SyncDescriptor(EditDataInput)]);
+
+// Query Actions
+Registry.as<IWorkbenchActionRegistry>(Extensions.WorkbenchActions)
+	.registerWorkbenchAction(
+		new SyncActionDescriptor(
+			RunQueryKeyboardAction,
+			RunQueryKeyboardAction.ID,
+			RunQueryKeyboardAction.LABEL,
+			{ primary: KeyCode.F5 }
+		),
+		RunQueryKeyboardAction.LABEL
+	);
+
+Registry.as<IWorkbenchActionRegistry>(Extensions.WorkbenchActions)
+	.registerWorkbenchAction(
+		new SyncActionDescriptor(
+			CancelQueryKeyboardAction,
+			CancelQueryKeyboardAction.ID,
+			CancelQueryKeyboardAction.LABEL,
+			{ primary: KeyMod.Alt | KeyCode.PauseBreak }
+		),
+		CancelQueryKeyboardAction.LABEL
+	);
