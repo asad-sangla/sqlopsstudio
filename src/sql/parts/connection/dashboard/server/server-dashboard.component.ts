@@ -30,6 +30,7 @@ export class ServerDashboardComponent implements IDashboardPage {
 	public metadataService: IMetadataService;
 	public scriptingService: IScriptingService;
 	public queryEditorService: IQueryEditorService;
+	public serverPageImage: string = require.toUrl('sql/parts/connection/dashboard/media/server-page.svg');
 
 	constructor(@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef) {
 	}

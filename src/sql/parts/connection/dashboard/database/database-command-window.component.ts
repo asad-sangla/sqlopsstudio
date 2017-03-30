@@ -19,8 +19,6 @@ declare let AngularCore;
 
 export class DatabaseCommandWindowComponent {
 
-	public messages: any;
-
 	constructor() {
 	}
 

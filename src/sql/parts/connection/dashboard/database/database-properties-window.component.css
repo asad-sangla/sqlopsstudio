@@ -4219,7 +4219,3 @@ button.ui-button::-moz-focus-inner {
 #server-properties-window .ui-datatable .ui-datatable-data > tr > td {
     border: none;
 }
-
-#server-properties-window {
-    margin-bottom: 30px;
-}
