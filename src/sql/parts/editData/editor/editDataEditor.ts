@@ -89,6 +89,7 @@ export class EditDataEditor extends BaseEditor {
 		if (!newInput.setup) {
 			this._register(newInput.updateTaskbar((owner) => this._updateTaskbar(owner)));
 			this._register(newInput.showTableView(() => this._showTableView()));
+			newInput.onRowDropDownSet(this._changeMaxRowsActionItem.defaultRowCount);
 			newInput.setupComplete();
 		}
 
@@ -203,7 +204,7 @@ export class EditDataEditor extends BaseEditor {
 		let actionID = ChangeMaxRowsAction.ID;
 		if (action.id === actionID) {
 			if (!this._changeMaxRowsActionItem) {
-				this._changeMaxRowsActionItem = this._instantiationService.createInstance(ChangeMaxRowsActionItem, null, action);
+				this._changeMaxRowsActionItem = this._instantiationService.createInstance(ChangeMaxRowsActionItem, this);
 			}
 			return this._changeMaxRowsActionItem;
 		}

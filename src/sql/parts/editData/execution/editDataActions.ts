@@ -141,6 +141,7 @@ export class ChangeMaxRowsAction extends EditDataAction {
 export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem {
 
 	public actionRunner: IActionRunner;
+	public defaultRowCount: number;
 	private container: HTMLElement;
 	private start: HTMLElement;
 	private selectBox: SelectBox;
@@ -149,20 +150,20 @@ export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem
 	private _options: string[];
 	private _currentOptionsIndex: number;
 
-	constructor() {
+	constructor(private _editor: EditDataEditor) {
 		super();
-		this._options = ['200', '1000', 'all'];
-		this._currentOptionsIndex = 1;
+		this._options = ['10', '200', '1000'];
+		this._currentOptionsIndex = 0;
 		this.toDispose = [];
 		this.selectBox = new SelectBox([], -1);
 		this._registerListeners();
 		this._refreshOptions();
+		this.defaultRowCount = Number(this._options[this._currentOptionsIndex]);
 	}
 
 	public render(container: HTMLElement): void {
 		this.container = container;
 		this.selectBox.render(dom.append(container, $('.configuration.listDatabasesSelectBox')));
-
 	}
 
 	public setActionContext(context: any): void {
@@ -190,8 +191,8 @@ export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem
 	}
 
 	private _registerListeners(): void {
-		this.toDispose.push(this.selectBox.onDidSelect(databaseName => {
-			// TODO hook this up. We will need to inject services into this class
+		this.toDispose.push(this.selectBox.onDidSelect(selection => {
+			this._editor.editDataInput.onRowDropDownSet(Number(selection));
 		}));
 	}
 }

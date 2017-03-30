@@ -41,7 +41,6 @@ const template = `
                         showHeader="true"
                         [resized]="dataSet.resized"
                         (mousedown)="navigateToGrid(i)"
-                        [selectionModel]="selectionModel"
                         [plugins]="slickgridPlugins"
                         (cellEditBegin)="onCellEditBegin($event)"
                         (cellEditExit)="onCellEditEnd($event)"
@@ -309,21 +308,27 @@ export class EditDataComponent implements OnInit {
 
         // Hooking up edit functions
         this.onIsCellEditValid = (row, column, value): boolean => {
-            // TODO Validate edit inputs
+            // TODO can only run sync code
             return true;
         };
 
         this.onCellEditEnd = (event: {row: number, column: number, newValue: any}): void => {
-            self.setCellDirty(event.row, event.column);
             self.dataService.updateCell(event.row, event.column, event.newValue)
-            .then(result => result,
-                error => {
-                    this.setRowClean(event.row);
+            .then(
+                // TODO callbacks to workaround onIsCellEditValid not supporting async code
+                result => {
                     let slick: any = self.slickgrids.toArray()[0];
                     let grid = slick._grid;
-                    let forceEdit = true;
+                    self.setCellDirty(grid, event.row, event.column+1);
+                },
+                error => {
+                    // TODO create formal slickgrid api for these actions
+                    this.setGridClean();
                     self.refreshResultsets();
-                    grid.gotoCell(event.row, event.column, forceEdit);
+                    let slick: any = self.slickgrids.toArray()[0];
+                    let grid = slick._grid;
+                    grid.focus();
+                    grid.gotoCell(event.row, event.column+1, true);
                 }
             );
         };
@@ -337,18 +342,28 @@ export class EditDataComponent implements OnInit {
         };
 
         this.onRowEditEnd = (event: {row: number}): void => {
-            // Commit any pending edits
             self.dataService.commitEdit().then(result => {
-                this.setRowClean(event.row);
+                this.setGridClean();
             }, error => {
-                this.setRowClean(event.row);
+                // TODO create formal slickgrid api for these actions
+                this.setGridClean();
                 self.refreshResultsets();
+                let slick: any = self.slickgrids.toArray()[0];
+                let grid = slick._grid;
+                grid.focus();
+                grid.gotoCell(event.row, 0, true);
             });
         };
 
         this.onIsColumnEditable = (column: number): boolean => {
-            // TODO should all rows be editable?
-            return true;
+            let result = false;
+            // Check that our variables exist
+            if (column !== undefined && !!this.dataSets[0] && !!this.dataSets[0].columnDefinitions[column]) {
+                result = this.dataSets[0].columnDefinitions[column].isEditable;
+            }
+
+            // If no column definition exists then the row is not editable
+            return result;
         };
 
         this.overrideCellFn = (rowNumber, columnId, value?, data?): string => {
@@ -363,15 +378,18 @@ export class EditDataComponent implements OnInit {
     }
 
     // Temporary implementations to showcase functionality
-    setCellDirty(row: number, column: number): void {
+    setCellDirty(grid: any, row: number, column: number): void {
         // Change cell color
-        $($($('.grid-canvas').children()[row]).children()[column+1]).addClass('dirtyCell').removeClass('selected');
+        $(grid.getCellNode(row, column)).addClass('dirtyCell').removeClass('selected');
         // Change row header color
-        $($($('.grid-canvas').children()[row]).children()[0]).addClass('dirtyRowHeader');
+        $(grid.getCellNode(row, 0)).addClass('dirtyRowHeader').removeClass('selected');
     }
 
-    setRowClean(row: number): void {
-        $($($('.grid-canvas').children()[row]).children()).removeClass('dirtyCell');
+    setGridClean(): void {
+        // Remove dirty classes from the entire table
+        let allRows = $($('.grid-canvas').children());
+        let allCells = $(allRows.children());
+        allCells.removeClass('dirtyCell').removeClass('dirtyRowHeader');
     }
 
     handleComplete(self: EditDataComponent, event: any): void {
@@ -439,7 +457,8 @@ export class EditDataComponent implements OnInit {
                         : c.columnName,
                     type: self.stringToFieldType('string'),
                     formatter: isLinked ? Services.hyperLinkFormatter : Services.textFormatter,
-                    asyncPostRender: isLinked ? self.linkHandler(linkType) : undefined
+                    asyncPostRender: isLinked ? self.linkHandler(linkType) : undefined,
+                    isEditable: c.isUpdatable
                 };
             })
         };

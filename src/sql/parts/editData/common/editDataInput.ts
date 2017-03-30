@@ -47,8 +47,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 		this._refreshButtonEnabled = false;
 		this._toDispose = [];
 
-		//TODO remove hardcoded values and determine these based on context
-		this._rowLimit = 10;
+		//TODO determine is this is a table or a view
 		this._objectType = 'TABLE';
 
 		// Attach to event callbacks
@@ -135,6 +134,10 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 
 	public onDisconnect(): void {
 		// TODO: deal with disconnections
+	}
+
+	public onRowDropDownSet(rows: number) {
+		this._rowLimit = rows;
 	}
 
 	// Boiler Plate Functions
