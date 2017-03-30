@@ -167,6 +167,7 @@ export class EditDataEditor extends BaseEditor {
 		if (owner.matches(this.editDataInput)) {
 			this._refreshTableAction.enabled = owner.refreshButtonEnabled;
 			this._stopRefreshTableAction.enabled = owner.stopButtonEnabled;
+			this._changeMaxRowsActionItem.setCurrentOptionIndex = owner.rowLimit;
 		}
 	}
 
@@ -294,7 +295,7 @@ export class EditDataEditor extends BaseEditor {
 			input.setBootstrappedTrue();
 
 			// Get the bootstrap params and perform the bootstrap
-			const parent = this.getContainer().getHTMLElement();
+			const parent = this._resultsEditorContainer;
 			let params: EditDataComponentParams = {
 				dataService: dataService
 			};

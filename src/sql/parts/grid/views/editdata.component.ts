@@ -35,7 +35,6 @@ const template = `
             <slick-grid #slickgrid id="slickgrid_{{i}}" [columnDefinitions]="dataSet.columnDefinitions"
                         [ngClass]="i === activeGrid ? 'active' : ''"
                         [dataRows]="dataSet.dataRows"
-                        (contextMenu)="openContextMenu($event, dataSet.batchId, dataSet.resultId, i)"
                         enableAsyncPostRender="true"
                         showDataTypeIcon="false"
                         showHeader="true"

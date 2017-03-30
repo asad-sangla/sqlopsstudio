@@ -13,6 +13,7 @@ import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import URI from 'vs/base/common/uri';
 import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 const fs = require('fs');
 
 export const IQueryEditorService = createDecorator<QueryEditorService>('QueryEditorService');
@@ -40,7 +41,8 @@ export class QueryEditorService implements IQueryEditorService {
 	constructor(
 		@IUntitledEditorService private untitledEditorService: IUntitledEditorService,
 		@IInstantiationService private instantiationService: IInstantiationService,
-		@IWorkbenchEditorService private editorService: IWorkbenchEditorService) {
+		@IWorkbenchEditorService private editorService: IWorkbenchEditorService,
+		@IEditorGroupService private editorGroupService: IEditorGroupService) {
 	}
 
 	/**
@@ -143,6 +145,12 @@ export class QueryEditorService implements IQueryEditorService {
 		}
 
 		// TODO: check if this document name already exists in any open documents tabs
+		let fileNames: string[] = [];
+		this.editorGroupService.getStacksModel().groups.map(group => group.getEditors().map(editor => fileNames.push(editor.getName())));
+		while (fileNames.find(x => x.toUpperCase() === filePath.toUpperCase())) {
+			counter++;
+			filePath = editDataFileName(counter);
+		}
 
         return filePath;
     }

@@ -174,6 +174,11 @@ export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem
 		return true;
 	}
 
+	public set setCurrentOptionIndex(selection: number) {
+		this._currentOptionsIndex = this._options.findIndex(x => x === selection.toString());
+		this._refreshOptions();
+	}
+
 	public focus(): void {
 		this.start.focus();
 	}
@@ -192,6 +197,7 @@ export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem
 
 	private _registerListeners(): void {
 		this.toDispose.push(this.selectBox.onDidSelect(selection => {
+			this._currentOptionsIndex = this._options.findIndex(x => x === selection);
 			this._editor.editDataInput.onRowDropDownSet(Number(selection));
 		}));
 	}
