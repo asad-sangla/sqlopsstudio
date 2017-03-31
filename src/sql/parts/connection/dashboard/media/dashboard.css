@@ -3,34 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+#command-window {
+    width: 150px;
+    float: right;
+}
+
+#command-header {
+    text-align: center;
+    text-decoration: underline;
+    margin-top: 10px;
+}
+
+#command-tasks {
+    order: 3;
+    margin: 5px;
+    text-align: left;
+}
+
+#command-tasks .task-button {
+    color: #afafaf;
+    margin-bottom: 15px;
+    text-decoration: underline;
+}
+
 #connprofile {
 	height: 100px;
 }
 
 #server-command-window {
     height: 40px;
-}
-
-#server-command-window .ui-dropdown .ui-dropdown-label {
-    background-color: #5cb85c;
-    border-color: #5cb85c;
-    color: #ffffff;
-    width: auto;
-}
-
-#server-command-window .ui-dropdown-trigger {
-    background-color: rgb(221,221,221);
-    color: #000000;
-}
-
-#server-command-window .ui-dropdown-list {
-     background-color: rgb(221,221,221);
-     color: #000000;
-}
-
-#server-command-window .ui-dropdown-filter-container {
-    width: 100%;
-    background-color: rgb(221,221,221);
 }
 
 .dashboard-search-box {
