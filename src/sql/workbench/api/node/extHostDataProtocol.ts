@@ -190,6 +190,12 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		});
 	}
 
+	$getEditRows(handle: number, rowData: data.EditSubsetParams): Thenable<data.EditSubsetResult> {
+		return this._runWithProvider(handle, (provider) => {
+			return provider.queryProvider.getEditRows(rowData);
+		});
+	}
+
 	$onEditSessionReady(handle: number, ownerUri: string, success: boolean, message: string): void {
 		this._proxy.$onEditSessionReady(handle, ownerUri, success, message);
 	}

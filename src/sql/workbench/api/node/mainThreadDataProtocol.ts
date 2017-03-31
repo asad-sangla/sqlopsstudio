@@ -107,6 +107,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			},
 			revertRow(ownerUri: string, rowId: number): Thenable<void> {
 				return self._proxy.$revertRow(handle, ownerUri, rowId);
+			},
+			getEditRows(rowData: data.EditSubsetParams): Thenable<data.EditSubsetResult> {
+				return self._proxy.$getEditRows(handle, rowData);
 			}
 		});
 

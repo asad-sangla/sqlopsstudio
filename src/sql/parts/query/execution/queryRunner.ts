@@ -5,10 +5,17 @@
 
 'use strict';
 
-import { BatchSummary, QueryCancelResult,
-    QueryExecuteCompleteNotificationResult, QueryExecuteSubsetResult, QueryExecuteResultSetCompleteNotificationParams,
-    QueryExecuteSubsetParams, QueryExecuteMessageParams, QueryExecuteBatchNotificationParams,
-    ISelectionData } from 'data';
+import {
+	BatchSummary,
+	QueryCancelResult,
+	QueryExecuteBatchNotificationParams,
+    QueryExecuteCompleteNotificationResult,
+	QueryExecuteResultSetCompleteNotificationParams,
+	QueryExecuteMessageParams,
+	QueryExecuteSubsetParams, QueryExecuteSubsetResult,
+	EditSubsetParams, EditSubsetResult,
+    ISelectionData
+} from 'data';
 
 import { EventEmitter } from 'events';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
@@ -210,13 +217,11 @@ export default class QueryRunner {
 
 		return new Promise<QueryExecuteSubsetResult>((resolve, reject) => {
 			self._queryManagementService.getQueryRows(rowData).then(result => {
-				if (result.message) {
-					// TODO localize
-					self._messageService.show(Severity.Error, 'Something went wrong getting more rows: ' + result.message);
-					reject();
-				} else {
-					resolve(result);
-				}
+				resolve(result);
+			}, error => {
+				// TODO localize
+				self._messageService.show(Severity.Error, 'Something went wrong getting more rows: ' + error);
+				reject(error);
 			});
 		});
 	}
@@ -224,7 +229,7 @@ export default class QueryRunner {
 	/*
 	 * Handle a session ready event for Edit Data
 	 */
-	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+	public initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 		const self = this;
 
 		// Update internal state to show that we're executing the query
@@ -244,6 +249,30 @@ export default class QueryRunner {
 
 			// TODO localize
 			self._messageService.show(Severity.Error, 'Init Edit Execution failed: ' + error);
+		});
+	}
+
+	/**
+	 * Retrieves a number of rows from an edit session
+	 * @param rowStart     The index of the row to start returning (inclusive)
+	 * @param numberOfRows The number of rows to return
+	 */
+	public getEditRows(rowStart: number, numberOfRows: number): Thenable<EditSubsetResult> {
+		const self = this;
+		let rowData: EditSubsetParams = {
+			ownerUri: this.uri,
+			rowCount: numberOfRows,
+			rowStartIndex: rowStart
+		};
+
+		return new Promise<EditSubsetResult>((resolve, reject) => {
+			self._queryManagementService.getEditRows(rowData).then(result => {
+				resolve(result);
+			}, error => {
+				// TODO localize
+				self._messageService.show(Severity.Error, `Something went wrong getting more rows: ${error}`);
+				reject(error);
+			});
 		});
 	}
 

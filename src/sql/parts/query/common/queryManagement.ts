@@ -43,6 +43,7 @@ export interface IQueryManagementService {
 	deleteRow(ownerUri: string, rowId: number): Thenable<void>;
 	revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult>;
 	revertRow(ownerUri: string, rowId: number): Thenable<void>;
+	getEditRows(rowData: data.EditSubsetParams): Thenable<data.EditSubsetResult>;
 }
 
 /*
@@ -63,6 +64,7 @@ export interface QueryRequestHandler {
 	deleteRow(ownerUri: string, rowId: number): Thenable<void>;
 	revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult>;
 	revertRow(ownerUri: string, rowId: number): Thenable<void>;
+	getEditRows(rowData: data.EditSubsetParams): Thenable<data.EditSubsetResult>;
 }
 
 export class QueryManagementService implements IQueryManagementService {
@@ -233,6 +235,12 @@ export class QueryManagementService implements IQueryManagementService {
 	public revertRow(ownerUri: string, rowId: number): Thenable<void> {
 		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
 			return runner.revertRow(ownerUri, rowId);
+		});
+	}
+
+	public getEditRows(rowData: data.EditSubsetParams): Thenable<data.EditSubsetResult> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.getEditRows(rowData);
 		});
 	}
 }

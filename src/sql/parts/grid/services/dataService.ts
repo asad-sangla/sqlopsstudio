@@ -9,7 +9,7 @@ import { Observable, Subject, Observer } from 'rxjs/Rx';
 declare let Rx;
 
 import { ISlickRange } from 'angular2-slickgrid';
-import { ISelectionData, ResultSetSubset, EditUpdateCellResult } from 'data';
+import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSubsetResult } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { TPromise } from 'vs/base/common/winjs.base';
 
@@ -30,16 +30,31 @@ export class DataService {
 
 	/**
 	 * Get a specified number of rows starting at a specified row for
-	 * the current results set
+	 * the current results set. Used for query results only.
 	 * @param start The starting row or the requested rows
 	 * @param numberOfRows The amount of rows to return
 	 * @param batchId The batch id of the batch you are querying
 	 * @param resultId The id of the result you want to get the rows for
 	 */
-	getRows(rowStart: number, numberOfRows: number, batchId: number, resultId: number): Observable<ResultSetSubset> {
+	getQueryRows(rowStart: number, numberOfRows: number, batchId: number, resultId: number): Observable<ResultSetSubset> {
 		const self = this;
 		return Rx.Observable.create(function (observer: Observer<ResultSetSubset>) {
-			self._queryModel.getRows(self._uri, rowStart, numberOfRows, batchId, resultId).then(results => {
+			self._queryModel.getQueryRows(self._uri, rowStart, numberOfRows, batchId, resultId).then(results => {
+				observer.next(results);
+			});
+		});
+	}
+
+	/**
+	 * Get a specified number of rows starting at a specified row. Should only
+	 * be used for edit sessions.
+	 * @param rowStart	The row to start retrieving from (inclusive)
+	 * @param numberOfRows	The maximum number of rows to return
+	 */
+	getEditRows(rowStart: number, numberOfRows: number): Observable<EditSubsetResult> {
+		const self = this;
+		return Rx.Observable.create(function (observer: Observer<EditSubsetResult>) {
+			self._queryModel.getEditRows(self._uri, rowStart, numberOfRows).then(results => {
 				observer.next(results);
 			});
 		});

@@ -18,7 +18,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import Event, { Emitter } from 'vs/base/common/event';
-import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSessionReadyParams } from 'data';
+import { ISelectionData, ResultSetSubset, EditSubsetResult, EditUpdateCellResult, EditSessionReadyParams } from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 interface QueryEvent {
@@ -112,9 +112,15 @@ export class QueryModelService implements IQueryModelService {
 	/**
 	 * Get more data rows from the current resultSets from the service layer
 	 */
-	public getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset> {
+	public getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset> {
 		return this._queryInfoMap.get(uri).queryRunner.getQueryRows(rowStart, numberOfRows, batchId, resultId).then(results => {
 			return results.resultSubset;
+		});
+	}
+
+	public getEditRows(uri: string, rowStart: number, numberOfRows: number) {
+		return this._queryInfoMap.get(uri).queryRunner.getEditRows(rowStart, numberOfRows).then(results => {
+			return results;
 		});
 	}
 

@@ -318,7 +318,8 @@ export class EditDataComponent implements OnInit {
                 result => {
                     let slick: any = self.slickgrids.toArray()[0];
                     let grid = slick._grid;
-                    self.setCellDirty(grid, event.row, event.column+1);
+                    self.setCellDirtyState(grid, event.row, event.column+1, result.cell.isDirty);
+                    self.setRowDirtyState(grid, event.row, result.isRowDirty);
                 },
                 error => {
                     // TODO create formal slickgrid api for these actions
@@ -377,11 +378,22 @@ export class EditDataComponent implements OnInit {
     }
 
     // Temporary implementations to showcase functionality
-    setCellDirty(grid: any, row: number, column: number): void {
-        // Change cell color
-        $(grid.getCellNode(row, column)).addClass('dirtyCell').removeClass('selected');
-        // Change row header color
-        $(grid.getCellNode(row, 0)).addClass('dirtyRowHeader').removeClass('selected');
+    setCellDirtyState(grid: any, row: number, column: number, dirtyState: boolean): void {
+        if (dirtyState) {
+            // Change cell color
+            $(grid.getCellNode(row, column)).addClass('dirtyCell').removeClass('selected');
+        } else {
+            $(grid.getCellNode(row,column)).removeClass('dirtyCell');
+        }
+    }
+
+    setRowDirtyState(grid: any, row: number, dirtyState:boolean): void {
+        if (dirtyState) {
+            // Change row header color
+            $(grid.getCellNode(row, 0)).addClass('dirtyRowHeader');
+        } else {
+            $(grid.getCellNode(row, 0)).removeClass('dirtyRowHeader');
+        }
     }
 
     setGridClean(): void {
@@ -411,14 +423,10 @@ export class EditDataComponent implements OnInit {
         // Setup a function for generating a promise to lookup result subsets
         let loadDataFunction = (offset: number, count: number): Promise<IGridDataRow[]> => {
             return new Promise<IGridDataRow[]>((resolve, reject) => {
-                self.dataService.getRows(offset, count, resultSet.batchId, resultSet.id).subscribe(rows => {
-                    let gridData: IGridDataRow[] = [];
-                    for (let row = 0; row < rows.rows.length; row++) {
-                        // Push row values onto end of gridData for slickgrid
-                        gridData.push({
-                            values: rows.rows[row]
-                        });
-                    }
+                self.dataService.getEditRows(offset, count).subscribe(result => {
+                    let gridData: IGridDataRow[] = result.subset.map(row => {
+                        return {values: row.cells, row: row.id};
+                    });
                     resolve(gridData);
                 });
             });

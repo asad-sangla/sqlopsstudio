@@ -25,7 +25,8 @@ import {
 		ConnectionProviderOptions, DataProtocolServerCapabilities,
 		CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
 		ScriptingScriptAsParams, ScriptingScriptAsResult,
-		BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData
+		BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
+		DbCellValue, EditCell, EditRow
 	} from 'dataprotocol-languageserver-types';
 
 
@@ -1084,6 +1085,7 @@ export namespace CapabiltiesDiscoveryRequest {
 	export const type: RequestType<CapabiltiesDiscoveryParams, CapabiltiesDiscoveryResult, void> = { get method(): string { return 'capabilities/list'; } };
 }
 
+// Query Execution ================================================================================
 // ------------------------------- < Query Cancellation Request > ------------------------------------
 export namespace QueryCancelRequest {
 	export const type: RequestType<QueryCancelParams, QueryCancelResult, void> = { get method(): string { return 'query/cancel'; } };
@@ -1186,7 +1188,7 @@ export interface QueryExecuteSubsetParams {
 
 export interface ResultSetSubset {
 	rowCount: number;
-	rows: any[][];
+	rows: DbCellValue[][];
 }
 
 export interface QueryExecuteSubsetResult {
@@ -1214,6 +1216,11 @@ export interface EditSessionOperationParams {
 
 export interface EditRowOperationParams extends EditSessionOperationParams {
 	rowId: number;
+}
+
+export interface EditCellResult {
+	cell: EditCell;
+	isRowDirty: boolean;
 }
 
 // edit/commit --------------------------------------------------------------------------------
@@ -1268,8 +1275,7 @@ export namespace EditRevertCellRequest {
 export interface EditRevertCellParams extends EditRowOperationParams {
 	columnId: number;
 }
-export interface EditRevertCellResult {
-	newValue: string;
+export interface EditRevertCellResult extends EditCellResult {
 }
 
 // edit/revertRow -----------------------------------------------------------------------------
@@ -1297,9 +1303,17 @@ export interface EditUpdateCellParams extends EditRowOperationParams {
 	columnId: number;
 	newValue: string;
 }
-export interface EditUpdateCellResult {
-	hasCorrections: boolean;
-	isNull: boolean;
-	isRevert: boolean;
-	newValue: string;
+export interface EditUpdateCellResult extends EditCellResult {}
+
+// edit/subset ------------------------------------------------------------------------------------
+export namespace EditSubsetRequest {
+	export const type: RequestType<EditSubsetParams, EditSubsetResult, void> = {get method(): string {return 'edit/subset';}};
+}
+export interface EditSubsetParams extends EditSessionOperationParams {
+	rowStartIndex: number;
+	rowCount: number;
+}
+export interface EditSubsetResult {
+	rowCount: number;
+	subset: EditRow[];
 }

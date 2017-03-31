@@ -8,7 +8,13 @@ import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import Event from 'vs/base/common/event';
-import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSessionReadyParams } from 'data';
+import {
+	ISelectionData,
+	ResultSetSubset,
+	EditUpdateCellResult,
+	EditSessionReadyParams,
+	EditSubsetResult
+} from 'data';
 
 export const SERVICE_ID = 'queryModelService';
 
@@ -22,7 +28,7 @@ export interface IQueryModelService {
 
 	getConfig(): Promise<{ [key: string]: any }>;
 	getShortcuts(): Promise<any>;
-	getRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
+	getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
 	runQuery(uri: string, selection: ISelectionData, title: string): void;
 	cancelQuery(input: QueryRunner | string): void;
 	isRunningQuery(uri: string): boolean;
@@ -52,6 +58,7 @@ export interface IQueryModelService {
 	deleteRow(ownerUri: string, rowId: number): void;
 	revertCell(ownerUri: string, rowId: number, columnId: number): void;
 	revertRow(ownerUri: string, rowId: number): void;
+	getEditRows(ownerUri: string, rowStart: number, numberOfRows: number): Thenable<EditSubsetResult>;
 
 	// Edit Data Callbacks
 	onEditSessionReady: Event<EditSessionReadyParams>;

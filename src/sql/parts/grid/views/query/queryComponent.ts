@@ -283,7 +283,7 @@ export class QueryComponent implements OnInit {
         // Setup a function for generating a promise to lookup result subsets
         let loadDataFunction = (offset: number, count: number): Promise<IGridDataRow[]> => {
             return new Promise<IGridDataRow[]>((resolve, reject) => {
-                self.dataService.getRows(offset, count, resultSet.batchId, resultSet.id).subscribe(rows => {
+                self.dataService.getQueryRows(offset, count, resultSet.batchId, resultSet.id).subscribe(rows => {
                     let gridData: IGridDataRow[] = [];
                     for (let row = 0; row < rows.rows.length; row++) {
                         // Push row values onto end of gridData for slickgrid

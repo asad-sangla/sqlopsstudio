@@ -101,6 +101,7 @@ export function createApiFactory(initData: IInitData, threadService: IThreadServ
 				dataprotocol,
 				ConnectionOptionType: sqlExtHostTypes.ConnectionOptionType,
 				ConnectionOptionSpecialType: sqlExtHostTypes.ConnectionOptionSpecialType,
+				EditRowState: sqlExtHostTypes.EditRowState,
 				MetadataType: sqlExtHostTypes.MetadataType
 			};
 		}

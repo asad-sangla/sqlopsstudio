@@ -30,3 +30,10 @@ export enum MetadataType
 	SProc = 2,
 	Function = 3
 }
+
+export enum EditRowState {
+	clean = 0,
+	dirtyInsert = 1,
+	dirtyDelete = 2,
+	dirtyUpdate = 3
+}

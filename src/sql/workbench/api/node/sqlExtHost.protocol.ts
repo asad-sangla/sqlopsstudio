@@ -149,6 +149,11 @@ export abstract class ExtHostDataProtocolShape {
 	$updateCell(handle: number, ownerUri: string, rowId: number, columId: number, newValue: string): Thenable<data.EditUpdateCellResult> { throw ni(); }
 
 	/**
+	 * Gets a subset of rows in a result set, merging pending edit changes in order to display in the UI
+	 */
+	$getEditRows(handle: number, rowData: data.EditSubsetParams): Thenable<data.EditSubsetResult> { throw ni(); }
+
+	/**
 	 * Diposes an initialized edit session and cleans up pending edits
 	 */
 	$disposeEdit(handle: number, ownerUri: string): Thenable<void> { throw ni(); }

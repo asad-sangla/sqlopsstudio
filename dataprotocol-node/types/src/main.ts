@@ -262,6 +262,33 @@ export interface QueryExecuteBatchNotificationParams {
 	ownerUri: string;
 }
 
+export interface DbCellValue {
+	displayValue: string;
+	isNull: boolean;
+}
+
+export enum EditRowState {
+	clean = 0,
+	dirtyInsert = 1,
+	dirtyDelete = 2,
+	dirtyUpdate = 3
+}
+
+export interface EditRow {
+	cells: DbCellValue[];
+	id: number;
+	isDirty: boolean;
+	state: EditRowState;
+}
+
+export interface EditCell extends DbCellValue {
+	isDirty: boolean;
+}
+
+export interface EditCell extends DbCellValue {
+
+}
+
 export class MetadataQueryParams {
 	/**
 	 * Owner URI of the connection that changed.

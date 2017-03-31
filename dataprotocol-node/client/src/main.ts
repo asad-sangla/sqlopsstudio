@@ -86,8 +86,8 @@ import {
 		QueryCancelRequest, QueryCancelResult, QueryCancelParams,
 		QueryExecuteRequest, QueryExecuteSubsetResult, QueryExecuteSubsetParams,
 		QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
-		QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryDisposeResult, QueryExecuteCompleteNotificationResult,
-		QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResult, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
+		QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
+		QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
 		QueryExecuteSubsetRequest,
 		EditCommitRequest, EditCommitParams,
 		EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
@@ -97,7 +97,8 @@ import {
 		EditRevertCellRequest, EditRevertCellParams, EditRevertCellResult,
 		EditRevertRowRequest, EditRevertRowParams,
 		EditSessionReadyNotification, EditSessionReadyParams,
-		EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult
+		EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult,
+		EditSubsetRequest, EditSubsetParams, EditSubsetResult
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -1597,6 +1598,18 @@ export class LanguageClient {
 					(error) => {
 						self.logFailedRequest(EditUpdateCellRequest.type, error);
 						return Promise.reject(error);
+					}
+				);
+			},
+
+			getEditRows(rowData: EditSubsetParams): Thenable<EditSubsetResult> {
+				return self.doSendRequest(connection, EditSubsetRequest.type, rowData, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(EditSubsetRequest.type, error);
+						return Promise.resolve([]);
 					}
 				);
 			},

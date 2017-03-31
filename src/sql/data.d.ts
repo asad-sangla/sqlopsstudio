@@ -403,6 +403,7 @@ declare module 'data' {
 		revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult>;
 		revertRow(ownerUri: string, rowId: number): Thenable<void>;
 		updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult>;
+		getEditRows(rowData: EditSubsetParams): Thenable<EditSubsetResult>;
 
 		// Edit Data Notifications
 		registerOnEditSessionReady(handler: (ownerUri: string, success: boolean, message: string) => any): void;
@@ -478,6 +479,24 @@ declare module 'data' {
 		executionStart: string;
 	}
 
+	export enum EditRowState {
+		clean = 0,
+		dirtyInsert = 1,
+		dirtyDelete = 2,
+		dirtyUpdate = 3
+	}
+
+	export interface EditRow {
+		cells: DbCellValue[];
+		id: number;
+		isDirty: boolean;
+		state: EditRowState;
+	}
+
+	export interface EditCell extends DbCellValue {
+		isDirty: boolean;
+	}
+
 	export interface QueryExecuteCompleteNotificationResult {
 		ownerUri: string;
 		batchSummaries: BatchSummary[];
@@ -514,13 +533,17 @@ declare module 'data' {
 		rowsCount: number;
 	}
 
+	export interface DbCellValue {
+		displayValue: string;
+		isNull: boolean;
+	}
+
 	export interface ResultSetSubset {
 		rowCount: number;
-		rows: any[][];
+		rows: DbCellValue[][];
 	}
 
 	export interface QueryExecuteSubsetResult {
-		message: string;
 		resultSubset: ResultSetSubset;
 	}
 
@@ -536,6 +559,11 @@ declare module 'data' {
 
 	export interface IEditRowOperationParams extends IEditSessionOperationParams {
 		rowId: number;
+	}
+
+	export interface EditCellResult {
+		cell: EditCell;
+		isRowDirty: boolean;
 	}
 
 	// edit/commit --------------------------------------------------------------------------------
@@ -573,8 +601,7 @@ declare module 'data' {
 	export interface EditRevertCellParams extends IEditRowOperationParams {
 		columnId: number;
 	}
-	export interface EditRevertCellResult {
-		newValue: string;
+	export interface EditRevertCellResult extends EditCellResult {
 	}
 
 	// edit/revertRow -----------------------------------------------------------------------------
@@ -594,10 +621,16 @@ declare module 'data' {
 		newValue: string;
 	}
 
-	export interface EditUpdateCellResult {
-		hasCorrections: boolean;
-		isNull: boolean;
-		isRevert: boolean;
-		newValue: string;
+	export interface EditUpdateCellResult extends EditCellResult{
+	}
+
+	// edit/subset --------------------------------------------------------------------------------
+	export interface EditSubsetParams extends IEditSessionOperationParams {
+		rowStartIndex: number;
+		rowCount: number;
+	}
+	export interface EditSubsetResult {
+		rowCount: number;
+		subset: EditRow[];
 	}
 }
