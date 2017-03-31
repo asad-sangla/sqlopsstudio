@@ -155,17 +155,13 @@ export class ActiveConnectionsFilterAction extends Action {
 		if (this.class === ActiveConnectionsFilterAction.enabledClass) {
 			// show active connections in the tree
 			this.view.showFilteredTree('active');
+			this.isSet = true;
 		} else {
 			// show full tree
-			this.view.structuralTreeUpdate();
+			this.view.refreshTree();
+			this.isSet = false;
 		}
-		this.toggleClass();
 		return TPromise.as(true);
-	}
-
-	private toggleClass() {
-		this.class = (this.class === ActiveConnectionsFilterAction.disabledClass) ?
-			ActiveConnectionsFilterAction.enabledClass : ActiveConnectionsFilterAction.disabledClass;
 	}
 }
 
@@ -204,19 +200,12 @@ export class RecentConnectionsFilterAction extends Action {
 			this.isSet = true;
 		} else {
 			// show full tree
-			this.view.structuralTreeUpdate();
+			this.view.refreshTree();
 			this.isSet = false;
 		}
 		return TPromise.as(true);
 	}
-
-	private toggleClass() {
-		this.class = (!this.isSet) ?
-			RecentConnectionsFilterAction.enabledClass : RecentConnectionsFilterAction.disabledClass;
-	}
 }
-
-
 
 export class NewQueryAction extends Action {
 	public static ID = 'registeredServers.newQuery';

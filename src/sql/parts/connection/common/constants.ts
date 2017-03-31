@@ -276,3 +276,6 @@ export const elapsedTimeLabel = 'Total execution time: {0}';
 
 /** Warning message for save icons */
 export const msgCannotSaveMultipleSelections = 'Save results command cannot be used with multiple selections.';
+
+/**Unsaved connections Id */
+export const unsavedGroupId = 'unsaved';

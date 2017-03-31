@@ -10,12 +10,12 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
-import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { TreeUtils } from 'sql/parts/connection/viewlet/recentConnectionsController';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
+import {TreeCreationUtils} from 'sql/parts/connection/viewlet/TreeCreationUtils';
+import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/TreeUpdateUtils';
 const $ = builder.$;
 
 /**
@@ -48,43 +48,24 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 	public renderBody(container: HTMLElement): void {
 		this.treeContainer = super.renderViewTree(container);
 		dom.addClass(this.treeContainer, 'explorer-servers');
-		this.tree = TreeUtils.createConnectionTree(this.treeContainer, this._instantiationService, false);
-		this.toDispose.push(this.tree.addListener2('selection', (event) => TreeUtils.OnTreeSelect(
+		this.tree = TreeCreationUtils.createConnectionTree(this.treeContainer, this._instantiationService, false);
+		this.toDispose.push(this.tree.addListener2('selection', (event) => TreeUpdateUtils.OnTreeSelect(
 			event,
 			this.tree,
 			this._connectionManagementService
 		)));
-		const self = this;
 		// Refresh Tree when these events are emitted
 		this._connectionManagementService.onAddConnectionProfile(() => {
-			self.structuralTreeUpdate();
+			TreeUpdateUtils.structuralTreeUpdate(this.tree, this.viewKey, this._connectionManagementService);
 		});
 		this._connectionManagementService.onConnect(() => {
-			self.structuralTreeUpdate();
+			TreeUpdateUtils.structuralTreeUpdate(this.tree, this.viewKey, this._connectionManagementService);
 		});
 		this._connectionManagementService.onDeleteConnectionProfile(() => {
-			self.structuralTreeUpdate();
+			TreeUpdateUtils.structuralTreeUpdate(this.tree, this.viewKey, this._connectionManagementService);
 		});
 
-		this.structuralTreeUpdate();
-	}
-
-	/**
-	 * Set input for the tree.
-	 */
-	private structuralTreeUpdate(): void {
-		let groups;
-		if (this.viewKey === 'recent') {
-			groups = this._connectionManagementService.getRecentConnections();
-		} else if (this.viewKey === 'active') {
-			groups = this._connectionManagementService.getActiveConnections();
-		}
-
-		const treeInput =  new ConnectionProfileGroup('root', null, 'root');
-		treeInput.addConnections(TreeUtils.convertToConnectionProfile(groups));
-		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
-			this.tree.getFocus();
-		}, errors.onUnexpectedError);
+		TreeUpdateUtils.structuralTreeUpdate(this.tree, this.viewKey, this._connectionManagementService);
 	}
 
 	private onError(err: any): void {

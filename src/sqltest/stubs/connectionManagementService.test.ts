@@ -51,11 +51,15 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
+	getUnsavedConnections(): ConnectionProfile[] {
+		return [];
+	}
+
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void> {
 		return Promise.resolve();
 	}
 
-	changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
+	changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void> {
 		return Promise.resolve();
 	}
 

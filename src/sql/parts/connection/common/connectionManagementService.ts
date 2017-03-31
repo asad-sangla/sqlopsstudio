@@ -330,6 +330,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.getActiveConnections();
 	}
 
+	public getUnsavedConnections(): ConnectionProfile[] {
+		return this._connectionStore.getUnSavedConnections();
+	}
+
 	public getAdvancedProperties(): data.ConnectionOption[] {
 
 		let capabilities = this._capabilitiesService.getCapabilities();
@@ -470,7 +474,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.changeGroupIdForConnectionGroup(source, target);
 	}
 
-	public changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
+	public changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void> {
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
 	}
 

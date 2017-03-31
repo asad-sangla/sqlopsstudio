@@ -441,6 +441,22 @@ export class ConnectionStore {
 		});
 	}
 
+	/**
+	 * Remove a connection profile from the unsave connections list.
+	 */
+	private removeUnsavedConnection(id: string): void {
+		// Get all profiles
+		let configValues: ConnectionProfile[] = this.getUnSavedConnections();
+		// Remove the connection from the list if it already exists
+		configValues = configValues.filter(value => value.getUniqueId() !== id);
+		let newList = configValues.map(c => {
+			let connectionProfile = c.toIConnectionProfile();
+			return connectionProfile;
+		});
+
+		this._memento['UNSAVED_CONNECTIONS'] = newList;
+	}
+
 	private saveProfilePasswordIfNeeded(profile: IConnectionProfile): Promise<boolean> {
 		if (!profile.savePassword) {
 			return Promise.resolve(true);
@@ -520,8 +536,19 @@ export class ConnectionStore {
 		return this._connectionConfig.changeGroupIdForConnectionGroup(source, target);
 	}
 
-	public changeGroupIdForConnection(source: IConnectionProfile, targetGroupId: string): Promise<void> {
-		return this._connectionConfig.changeGroupIdForConnection(source, targetGroupId);
+	public changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void> {
+		let oldId = source.getUniqueId();
+		let oldParentId = source.parent.id;
+		return new Promise<void>((resolve, reject) => {
+			this._connectionConfig.changeGroupIdForConnection(source, targetGroupId).then(() => {
+				if (oldParentId === Constants.unsavedGroupId) {
+					this.removeUnsavedConnection(oldId);
+				}
+				resolve();
+			}, (error => {
+				reject(error);
+			}));
+		});
 	}
 
 	private addGroupFullNameToMap(groupId: string, groupFullName: string): void {
@@ -535,7 +562,7 @@ export class ConnectionStore {
 
 	private getGroupId(groupFullName: string): string {
 		if (groupFullName === ConnectionProfileGroup.GroupNameSeparator) {
-			groupFullName = "";
+			groupFullName = '';
 		}
 		return this._groupFullNameToIdMap[groupFullName];
 	}

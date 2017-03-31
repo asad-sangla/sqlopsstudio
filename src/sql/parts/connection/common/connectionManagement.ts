@@ -80,11 +80,13 @@ export interface IConnectionManagementService {
 
 	getRecentConnections(): ConnectionProfile[];
 
+	getUnsavedConnections(): ConnectionProfile[];
+
 	getActiveConnections(): data.ConnectionInfo[];
 
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
 
-	changeGroupIdForConnection(source: IConnectionProfile, targetGroupName: string): Promise<void>;
+	changeGroupIdForConnection(source: ConnectionProfile, targetGroupName: string): Promise<void>;
 
 	getAdvancedProperties(): data.ConnectionOption[];
 

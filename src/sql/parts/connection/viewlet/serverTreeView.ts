@@ -2,28 +2,25 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 import 'vs/css!./media/serverTreeActions';
 import nls = require('vs/nls');
-import * as data from 'data';
 import errors = require('vs/base/common/errors');
 import { IActionRunner, IAction } from 'vs/base/common/actions';
 import dom = require('vs/base/browser/dom');
-import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
-import { TreeUtils } from 'sql/parts/connection/viewlet/recentConnectionsController';
 import { AddServerAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
-import { ServerTreeRenderer, ServerTreeDataSource, ServerTreeDragAndDrop } from 'sql/parts/connection/viewlet/serverTreeRenderer';
-import { ServerTreeController, ServerTreeActionProvider } from 'sql/parts/connection/viewlet/serverTreeController';
-import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
-import { TreeExplorerViewletState } from 'vs/workbench/parts/explorers/browser/views/treeExplorerViewer';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
+import { ITree } from 'vs/base/parts/tree/browser/tree';
+import {TreeCreationUtils} from 'sql/parts/connection/viewlet/TreeCreationUtils';
+import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/TreeUpdateUtils';
 const $ = builder.$;
 
 /**
@@ -31,8 +28,6 @@ const $ = builder.$;
  */
 export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 
-	private fullRefreshNeeded: boolean;
-	private viewletState: TreeExplorerViewletState;
 	public messages: builder.Builder;
 	private addServerAction: IAction;
 	private recentConnectionsFilterAction: RecentConnectionsFilterAction;
@@ -45,7 +40,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService private messageService: IMessageService
 	) {
-		super(actionRunner, 22 * 15, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
+		super(actionRunner, 22 * 26, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
 		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
 			AddServerAction.ID,
 			AddServerAction.LABEL);
@@ -80,34 +75,18 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		this.treeContainer = super.renderViewTree(container);
 		dom.addClass(this.treeContainer, 'explorer-servers');
 
-		const dataSource = this.instantiationService.createInstance(ServerTreeDataSource);
-		this.viewletState = new TreeExplorerViewletState();
-		const actionProvider = this.instantiationService.createInstance(ServerTreeActionProvider);
-		const renderer = this.instantiationService.createInstance(ServerTreeRenderer, false);
-		const controller = this.instantiationService.createInstance(ServerTreeController, actionProvider);
-		const dnd = this.instantiationService.createInstance(ServerTreeDragAndDrop);
-		const filter = new DefaultFilter();
-		const sorter = null;
-		const accessibilityProvider = new DefaultAccessibilityProvider();
-
-		this.tree = new Tree(this.treeContainer, {
-			dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider
-		}, {
-				indentPixels: 10,
-				twistiePixels: 20,
-				ariaLabel: nls.localize({ key: 'treeAriaLabel', comment: ['Registered Servers'] }, "Registered Servers")
-			});
+		this.tree = TreeCreationUtils.createRegisteredServersTree(this.treeContainer, this.instantiationService);
 		this.toDispose.push(this.tree.addListener2('selection', (event) => this.onSelected(event)));
 		const self = this;
 		// Refresh Tree when these events are emitted
 		this._connectionManagementService.onAddConnectionProfile(() => {
-			self.structuralTreeUpdate();
+			self.refreshTree();
 		});
 		this._connectionManagementService.onDeleteConnectionProfile(() => {
-			self.structuralTreeUpdate();
+			self.refreshTree();
 		});
 
-		this.structuralTreeUpdate();
+		self.refreshTree();
 	}
 
 	/**
@@ -117,22 +96,9 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		return [this.addServerAction, this.activeConnectionsFilterAction, this.recentConnectionsFilterAction];
 	}
 
-	/**
-	 * Set input for the tree.
-	 */
-	public structuralTreeUpdate(): void {
-		const self = this;
+	public refreshTree(): void {
 		this.messages.hide();
-		let groups = this._connectionManagementService.getConnectionGroups();
-		if (groups && groups.length > 0) {
-			let treeInput = groups[0];
-			treeInput.name = 'root';
-			(treeInput !== this.tree.getInput() ?
-				this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
-					self.fullRefreshNeeded = false;
-					self.tree.getFocus();
-				}, errors.onUnexpectedError);
-		}
+		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
 	}
 
 	/**
@@ -185,7 +151,6 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		}
 		let treeInput = filteredResults[0];
 		this.tree.setInput(treeInput).done(() => {
-			self.fullRefreshNeeded = false;
 			self.tree.getFocus();
 			self.tree.expandAll();
 		}, errors.onUnexpectedError);
@@ -200,7 +165,7 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 	}
 
 	private onSelected(event: any): void {
-		TreeUtils.OnTreeSelect(event, this.tree, this._connectionManagementService);
+		TreeUpdateUtils.OnTreeSelect(event, this.tree, this._connectionManagementService);
 	}
 
 	private onError(err: any): void {

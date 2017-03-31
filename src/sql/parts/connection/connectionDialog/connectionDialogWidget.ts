@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-
 import 'vs/css!./media/bootstrap';
 import 'vs/css!./media/bootstrap-theme';
 import 'vs/css!./media/connectionDialog';
@@ -18,10 +17,11 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
-import { TreeUtils } from 'sql/parts/connection/viewlet/recentConnectionsController';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
+import {TreeCreationUtils} from 'sql/parts/connection/viewlet/TreeCreationUtils';
+import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/TreeUpdateUtils';
 import data = require('data');
 
 export interface IConnectionDialogCallbacks {
@@ -140,13 +140,13 @@ export class ConnectionDialogWidget {
 
 			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
 				divContainer.element('div', { class: 'explorer-servers' }, (treeContainer: Builder) => {
-					let recentConnectionTree = TreeUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true);
+					let recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true);
 					recentConnectionTree.addListener2('selection', (event: any) => this.OnRecentConnectionClick(event));
 					recentConnectionTree.addListener2('selection',
 						(event: any) => {
 							this.onRecentConnectionDoubleClick(event, recentConnectionTree);
 						});
-					TreeUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService).then(() => {
+					TreeUpdateUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService).then(() => {
 						// call layout with view height
 						recentConnectionTree.layout(300);
 						divContainer.append(recentConnectionTree.getHTMLElement());
@@ -161,7 +161,7 @@ export class ConnectionDialogWidget {
 		let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
 		let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
 		if (isDoubleClick) {
-			TreeUtils.OnTreeSelect(event, recentConnectionTree, this._connectionManagementService);
+			TreeUpdateUtils.OnTreeSelect(event, recentConnectionTree, this._connectionManagementService);
 			this.close();
 		}
 	}

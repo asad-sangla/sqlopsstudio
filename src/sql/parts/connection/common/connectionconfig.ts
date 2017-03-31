@@ -224,17 +224,21 @@ export class ConnectionConfig implements IConnectionConfig {
 		return this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups);
 	}
 
-	public changeGroupIdForConnection(profile: IConnectionProfile, newGroupID: string): Promise<void> {
+	public changeGroupIdForConnection(profile: ConnectionProfile, newGroupID: string): Promise<void> {
 
 		let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
 		let providerCapabilities = this.getCapabilities(profile.providerName);
-
-		profiles.forEach((value) => {
-			let configProf = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-			if (configProf.getUniqueId() === profile.getUniqueId()) {
-				value.groupId = newGroupID;
-			}
-		});
+		if (profile.parent.id === Constants.unsavedGroupId) {
+			profile.groupId = newGroupID;
+			profiles.push(ConnectionProfile.convertToProfileStore(providerCapabilities, profile));
+		} else {
+			profiles.forEach((value) => {
+				let configProf = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
+				if (configProf.getUniqueId() === profile.getUniqueId()) {
+					value.groupId = newGroupID;
+				}
+			});
+		}
 		return this.writeUserConfiguration(Constants.connectionsArrayName, profiles);
 	}
 

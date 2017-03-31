@@ -107,6 +107,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 			this.children = [];
 		}
 		groups.forEach((group) => {
+			this.children = this.children.filter((grp) => { return group.id !== grp.id;});
 			group._parent = this;
 			this.children.push(group);
 		});
