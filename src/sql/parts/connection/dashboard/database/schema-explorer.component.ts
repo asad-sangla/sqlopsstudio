@@ -101,14 +101,14 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 			this.scriptingService.scriptAsSelect('1', this.ownerUri, this.selectedObject.metadata).then(result => {
 				if (result && result.script) {
 					this.queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
-						// Connect our editor
+						// Connect our editor to the input connection
 						let options: IConnectionCompletionOptions = {
-							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true },
+							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
 							saveToSettings: false,
-							showDashboard: false
+							showDashboard: false,
+							showConnectionDialogOnError: true
 						};
-
-						this.connectionService.connectWithOwner(this.connection, owner, options);
+						this.connectionService.connect(this.connection, owner.uri, options);
 					});
 				}
 			});
@@ -123,12 +123,13 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 			this.queryEditorService.newEditDataEditor(this.selectedObject.metadata.name).then((owner: EditDataInput) => {
 				// Connect our editor
 				let options: IConnectionCompletionOptions = {
-					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true },
+					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
 					saveToSettings: false,
-					showDashboard: false
+					showDashboard: false,
+					showConnectionDialogOnError: true
 				};
 
-				this.connectionService.connectWithOwner(this.connection, owner, options);
+				this.connectionService.connect(this.connection, owner.uri, options);
 			});
 		}
 	}

@@ -226,7 +226,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 				uri: uri
 			};
 		}
-		input.uri = uri;
 		return this.tryConnect(connection, input, options);
 	}
 
