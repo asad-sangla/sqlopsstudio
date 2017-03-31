@@ -103,10 +103,14 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			params: params,
 			saveToSettings: !fromEditor,
 			showDashboard: !fromEditor,
+			showConnectionDialogOnError: false
 		};
-		this._connectionManagementService.connectAndSaveProfile(connection, uri, options, params.input).then(connected => {
-			if (connected) {
+		this._connectionManagementService.connectAndSaveProfile(connection, uri, options, params.input).then(connectionResult => {
+			if (connectionResult && connectionResult.connected) {
 				this._connectionDialog.close();
+			} else {
+				this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', connectionResult.error);
+				this._connectionDialog.resetConnection();
 			}
 		}).catch(err => {
 			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
@@ -168,7 +172,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private showDialogWithModel(): TPromise<void> {
-		return new TPromise<void>(() => {
+		return new TPromise<void>((resolve, reject) => {
 			if (this._defaultProviderName in this._capabilitiesMaps) {
 				this.UpdateModelServerCapabilities(this._inputModel);
 				// If connecting from a query editor set "save connection" to false
@@ -177,10 +181,17 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				}
 				this.doShowDialog(this._params);
 			}
+			let none: void;
+			resolve(none);
 		});
 	}
 
-	public showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model?: IConnectionProfile): TPromise<void> {
+	public showDialog(
+		connectionManagementService: IConnectionManagementService,
+		params: INewConnectionParams,
+		model?: IConnectionProfile,
+		error?: string): TPromise<void> {
+
 		this._connectionManagementService = connectionManagementService;
 		this._params = params;
 		this._inputModel = model;
@@ -199,7 +210,11 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			this._model.saveProfile = false;
 		}
 
-		return this.showDialogWithModel();
+		return this.showDialogWithModel().then(() => {
+			if (error && error !== '') {
+				this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', error);
+			}
+		});
 	}
 
 	private doShowDialog(params: INewConnectionParams): TPromise<void> {

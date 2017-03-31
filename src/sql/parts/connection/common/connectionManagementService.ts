@@ -11,7 +11,8 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import {
 	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
-	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionChangedParams
+	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionChangedParams,
+	IConnectionResult
 } from 'sql/parts/connection/common/connectionManagement';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { Memento } from 'vs/workbench/common/memento';
@@ -32,7 +33,6 @@ import * as data from 'data';
 import * as ConnectionContracts from 'sql/parts/connection/common/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
-import { ConnectionCredentials } from 'sql/parts/connection/common/connectionCredentials';
 import Event, { Emitter } from 'vs/base/common/event';
 
 export class ConnectionManagementService implements IConnectionManagementService {
@@ -120,7 +120,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * @param params Include the uri, type of connection
 	 * @param model the existing connection profile to create a new one from
 	 */
-	public showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile): Promise<void> {
+	public showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, error?: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			if (!params) {
 				params = { connectionType: ConnectionType.default };
@@ -128,7 +128,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			if (!model && params.input && params.input.uri) {
 				model = this._connectionFactory.getConnectionProfile(params.input.uri);
 			}
-			this._connectionDialogService.showDialog(this, params, model).then(() => {
+			this._connectionDialogService.showDialog(this, params, model, error).then(() => {
 				resolve();
 			}, error => {
 				reject();
@@ -145,31 +145,63 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	/**
-	 * Making a connection assigned to an owner
+	 * Loads the  password and try to connect. If fails, shows the dialog so user can change the connection
 	 * @param Connection Profile
 	 * @param owner of the connection. Can be the editors
 	 * @param options to use after the connection is complete
 	 */
-	public connectWithOwner(connection: IConnectionProfile, owner: IConnectableInput, options?: IConnectionCompletionOptions): Promise<boolean> {
-		return new Promise<boolean>((resolve, reject) => {
+	private tryConnect(connection: IConnectionProfile, owner: IConnectableInput, options?: IConnectionCompletionOptions): Promise<IConnectionResult> {
+		return new Promise<IConnectionResult>((resolve, reject) => {
+			// Load the password if it's not already loaded
 			this._connectionStore.addSavedPassword(connection).then(newConnection => {
-				if (Utils.isEmpty(newConnection.password) && ConnectionCredentials.isPasswordBasedCredential(newConnection)) {
-					let params: INewConnectionParams = options && options.params ? options.params : {
-						connectionType: this._connectionFactory.isDefaultTypeUri(owner.uri) ? ConnectionType.editor : ConnectionType.default,
-						input: owner,
-						runQueryOnCompletion: false
-					};
-					this.showConnectionDialog(params, connection).then(() => {
-						resolve(true);
-					}, connectionDialogError => {
-						reject(connectionDialogError);
-					});
+				// If the password is required and still not loaded show the dialog
+				if (Utils.isEmpty(newConnection.password) && this._connectionStore.isPasswordRequired(newConnection)) {
+					resolve(this.showConnectionDialogOnError(connection, owner, { connected: false, error: undefined }, options));
 				} else {
-					resolve(this.connectWithOptions(newConnection, owner.uri, options, owner));
+					// Try to connect
+					this.connectWithOptions(newConnection, owner.uri, options, owner).then(connectionResult => {
+						if (!connectionResult.connected) {
+							// If connection fails show the dialog
+							resolve(this.showConnectionDialogOnError(connection, owner, connectionResult, options));
+						} else {
+							//Resolve with the connection result
+							resolve(connectionResult);
+						}
+					}).catch(connectionError => {
+						reject(connectionError);
+					});
 				}
 			}).catch(err => {
 				reject(err);
 			});
+		});
+	}
+
+	/**
+	 * If showing the dialog on error is set to true in the options, shows the dialog with the error
+	 * otherwise does nothing
+	 */
+	private showConnectionDialogOnError(
+		connection: IConnectionProfile,
+		owner: IConnectableInput,
+		connectionResult: IConnectionResult,
+		options?: IConnectionCompletionOptions): Promise<IConnectionResult> {
+
+		return new Promise<IConnectionResult>((resolve, reject) => {
+			if (options && options.showConnectionDialogOnError) {
+				let params: INewConnectionParams = options && options.params ? options.params : {
+					connectionType: this._connectionFactory.isDefaultTypeUri(owner.uri) ? ConnectionType.default : ConnectionType.editor,
+					input: owner,
+					runQueryOnCompletion: false
+				};
+				this.showConnectionDialog(params, connection, connectionResult.error).then(() => {
+					resolve(connectionResult);
+				}).catch(err => {
+					reject(err);
+				});
+			} else {
+				resolve(connectionResult);
+			}
 		});
 	}
 
@@ -180,27 +212,37 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * @param options to be used after the connection is completed
 	 * @param callbacks to call after the connection is completed
 	 */
-	public connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean> {
-		let input: IConnectableInput = {
-			onConnectReject: callbacks ? callbacks.onConnectReject : undefined,
-			onConnectStart: callbacks ? callbacks.onConnectStart : undefined,
-			onConnectSuccess: callbacks ? callbacks.onConnectSuccess : undefined,
-			onDisconnect: callbacks ? callbacks.onDisconnect : undefined,
-			uri: uri
-		};
-		return this.connectWithOwner(connection, input, options);
+	public connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
+		if (Utils.isEmpty(uri)) {
+			uri = this._connectionFactory.getConnectionManagementId(connection);
+		}
+		let input: IConnectableInput = options && options.params ? options.params.input : undefined;
+		if (!input) {
+			input = {
+				onConnectReject: callbacks ? callbacks.onConnectReject : undefined,
+				onConnectStart: callbacks ? callbacks.onConnectStart : undefined,
+				onConnectSuccess: callbacks ? callbacks.onConnectSuccess : undefined,
+				onDisconnect: callbacks ? callbacks.onDisconnect : undefined,
+				uri: uri
+			};
+		}
+		input.uri = uri;
+		return this.tryConnect(connection, input, options);
 	}
 
 	/**
-	 * Opens a new connection and save the profile in the settings
+	 * Opens a new connection and saves the profile in the settings.
+	 * This method doesn't load the password because it only gets called from the
+	 * connection dialog and password should be already in the profile
 	 */
 	public connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks):
-		Promise<boolean> {
+		Promise<IConnectionResult> {
 		if (!options) {
 			options = {
 				saveToSettings: true,
 				showDashboard: false,
-				params: undefined
+				params: undefined,
+				showConnectionDialogOnError: false
 			};
 		}
 		options.saveToSettings = true;
@@ -208,7 +250,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	private connectWithOptions(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks):
-		Promise<boolean> {
+		Promise<IConnectionResult> {
 		if (Utils.isEmpty(uri)) {
 			uri = this._connectionFactory.getConnectionManagementId(connection);
 		}
@@ -224,19 +266,20 @@ export class ConnectionManagementService implements IConnectionManagementService
 			options = {
 				saveToSettings: false,
 				showDashboard: false,
-				params: undefined
+				params: undefined,
+				showConnectionDialogOnError: false
 			};
 		}
 
-		return new Promise<boolean>((resolve, reject) => {
+		return new Promise<IConnectionResult>((resolve, reject) => {
 			if (this._statusService) {
 				this._statusService.setStatusMessage('Connecting...');
 			}
 			if (callbacks.onConnectStart) {
 				callbacks.onConnectStart();
 			}
-			return this.createNewConnection(uri, connection).then(connected => {
-				if (connected) {
+			return this.createNewConnection(uri, connection).then(connectionResult => {
+				if (connectionResult && connectionResult.connected) {
 					if (callbacks.onConnectSuccess) {
 						callbacks.onConnectSuccess(options.params);
 					}
@@ -256,7 +299,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 						callbacks.onConnectReject('Connection Not Accepted');
 					}
 				}
-				resolve(connected);
+				resolve(connectionResult);
 			}).catch(err => {
 				reject(err);
 				if (callbacks.onConnectReject) {
@@ -269,7 +312,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	public showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean> {
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
-			let dashboardInput: DashboardInput = self._instantiationService.createInstance(DashboardInput, uri, connection);
+			let dashboardInput: DashboardInput = self._instantiationService ? self._instantiationService.createInstance(DashboardInput, uri, connection) : undefined;
 			self._editorService.openEditor(dashboardInput, { pinned: true }, false);
 			resolve(true);
 		});
@@ -432,8 +475,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public isRecent(connectionProfile: ConnectionProfile): boolean {
-		let recentConnections = this._connectionStore.getRecentlyUsedConnections()
-		recentConnections = recentConnections.filter(con => {return connectionProfile.id === con.getUniqueId();});
+		let recentConnections = this._connectionStore.getRecentlyUsedConnections();
+		recentConnections = recentConnections.filter(con => { return connectionProfile.id === con.getUniqueId(); });
 		// TODO: modify condition after recent connections fix
 		return (recentConnections.length >= 1);
 	}
@@ -477,19 +520,19 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 */
 
 	// Connect an open URI to a connection profile
-	private createNewConnection(uri: string, connection: IConnectionProfile): Promise<boolean> {
+	private createNewConnection(uri: string, connection: IConnectionProfile): Promise<IConnectionResult> {
 		const self = this;
 
-		return new Promise<boolean>((resolve, reject) => {
+		return new Promise<IConnectionResult>((resolve, reject) => {
 			let connectionInfo = this._connectionFactory.addConnection(connection, uri);
 			// Setup the handler for the connection complete notification to call
 			connectionInfo.connectHandler = ((connectResult, error) => {
 				if (error) {
 					// Connection to the server failed
 					this._connectionFactory.deleteConnection(uri);
-					reject(error);
+					resolve({ connected: connectResult, error: error });
 				} else {
-					resolve(connectResult);
+					resolve({ connected: connectResult, error: error });
 				}
 			});
 

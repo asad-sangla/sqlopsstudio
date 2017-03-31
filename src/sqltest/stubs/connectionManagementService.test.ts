@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionManagementService, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionResult }
+	from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
@@ -74,16 +75,12 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return false;
 	}
 
-	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean> {
+	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
 		return new Promise(() => true);
 	}
 
-	connectWithOwner(connection: IConnectionProfile, owner: IConnectableInput, options?: IConnectionCompletionOptions, ): Promise<boolean> {
-		return new Promise(() => true);
-	}
-
-	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean> {
-		return new Promise<boolean>(() => true);
+	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
+		return new Promise<IConnectionResult>(() => true);
 	}
 
 	disconnectEditor(owner: IConnectableInput): Promise<boolean> {

@@ -8,7 +8,6 @@
 import Constants = require('./constants');
 import ConnInfo = require('./connectionInfo');
 import Utils = require('./utils');
-import { ConnectionCredentials } from './connectionCredentials';
 import { ConnectionProfile } from '../common/connectionProfile';
 import { IConnectionProfile, CredentialsQuickPickItemType } from './interfaces';
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
@@ -106,6 +105,15 @@ export class ConnectionStore {
 	}
 
 	/**
+	 * Returns true if the password is required
+	 * @param connection profile
+	 */
+	public isPasswordRequired(connection: IConnectionProfile): boolean {
+		let connectionProfile = this.convertToConnectionProfile(connection);
+		return connectionProfile.isPasswordRequired();
+	}
+
+	/**
 	 * Gets all connection profiles stored in the user settings
 	 * Profiles from workspace will be included if getWorkspaceProfiles is passed as true
 	 * Note: connections will not include password value
@@ -119,7 +127,7 @@ export class ConnectionStore {
 	public addSavedPassword(credentialsItem: IConnectionProfile): Promise<IConnectionProfile> {
 		let self = this;
 		return new Promise<IConnectionProfile>((resolve, reject) => {
-			if (credentialsItem.savePassword && ConnectionCredentials.isPasswordBasedCredential(credentialsItem)
+			if (credentialsItem.savePassword && this.isPasswordRequired(credentialsItem)
 				&& Utils.isEmpty(credentialsItem.password)) {
 
 				let credentialId = this.formatCredentialIdForCred(credentialsItem, undefined);
@@ -162,7 +170,7 @@ export class ConnectionStore {
 
 			self.saveProfileToConfig(savedProfile)
 				.then(savedConnectionProfile => {
-
+					profile.groupId = savedConnectionProfile.groupId;
 					// Only save if we successfully added the profile
 					return self.saveProfilePasswordIfNeeded(profile);
 					// And resolve / reject at the end of the process
@@ -173,7 +181,7 @@ export class ConnectionStore {
 					// this is needed to support immediate connections
 					ConnInfo.fixupConnectionCredentials(profile);
 					this.saveCachedServerCapabilities();
-					resolve(savedProfile);
+					resolve(profile);
 				}, err => {
 					reject(err);
 				});
@@ -291,7 +299,7 @@ export class ConnectionStore {
 	private convertToConnectionProfile(conn: IConnectionProfile): ConnectionProfile {
 		let savedConn: ConnectionProfile = undefined;
 		let connectionProfileInstance = conn as ConnectionProfile;
-		if (connectionProfileInstance) {
+		if (connectionProfileInstance && conn instanceof ConnectionProfile) {
 			savedConn = connectionProfileInstance;
 		} else {
 			savedConn = new ConnectionProfile(this._connectionConfig.getCapabilities(conn.providerName), conn);
@@ -366,7 +374,7 @@ export class ConnectionStore {
 		let savedProfile: ConnectionProfile = this.getProfileWithoutPassword(conn);
 
 		// Remove the connection from the list if it already exists
-		list = list.filter(value => value.getUniqueId() !== savedProfile.getUniqueId());
+		list = list.filter(value => value && value.getUniqueId() !== savedProfile.getUniqueId());
 
 		list.unshift(savedProfile);
 

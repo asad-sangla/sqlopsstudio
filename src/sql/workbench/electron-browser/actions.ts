@@ -44,11 +44,12 @@ export class EditDataAction extends Action {
 						this.queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
 							// Connect our editor
 							let options: IConnectionCompletionOptions = {
-								params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true },
+								params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
 								saveToSettings: false,
-								showDashboard: false
+								showDashboard: false,
+								showConnectionDialogOnError: true
 							};
-							this.connectionManagementService.connectWithOwner(connectionProfile, owner, options);
+							this.connectionManagementService.connect(connectionProfile, owner.uri, options);
 						});
 					}
 				});

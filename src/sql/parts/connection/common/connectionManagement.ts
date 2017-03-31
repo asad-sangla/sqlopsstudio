@@ -24,7 +24,12 @@ export interface IConnectionCompletionOptions {
 	saveToSettings: boolean;
 	showDashboard: boolean;
 	params: INewConnectionParams;
+	showConnectionDialogOnError: boolean;
+}
 
+export interface IConnectionResult {
+	connected: boolean;
+	error: string;
 }
 
 export interface IConnectionCallbacks {
@@ -32,7 +37,6 @@ export interface IConnectionCallbacks {
 	onConnectReject(error?: string): void;
 	onConnectSuccess(params?: INewConnectionParams): void;
 	onDisconnect(): void;
-
 }
 
 export const SERVICE_ID = 'connectionManagementService';
@@ -51,22 +55,17 @@ export interface IConnectionManagementService {
 	/**
 	 * Opens the connection dialog to create new connection
 	 */
-	showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile): Promise<void>;
-
-	/**
-	 * Connect using an owner (editors)
-	 */
-	connectWithOwner(connection: IConnectionProfile, owner: IConnectableInput, options?: IConnectionCompletionOptions, ): Promise<boolean>;
+	showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, error?: string): Promise<void>;
 
 	/**
 	 * Load the password and opens a new connection
 	 */
-	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean>;
+	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult>;
 
 	/**
 	 * Opens a new connection and save the profile in settings
 	 */
-	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<boolean>;
+	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult>;
 
 	/**
 	 * Adds the successful connection to MRU and send the connection error back to the connection handler for failed connections
@@ -129,7 +128,7 @@ export interface IConnectionManagementService {
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
 export interface IConnectionDialogService {
 	_serviceBrand: any;
-	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model: IConnectionProfile): TPromise<void>;
+	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model: IConnectionProfile, error?: string): TPromise<void>;
 }
 
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');

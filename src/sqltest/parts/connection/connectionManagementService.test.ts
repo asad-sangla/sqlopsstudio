@@ -8,21 +8,22 @@
 import * as assert from 'assert';
 import data = require('data');
 import * as TypeMoq from 'typemoq';
-import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
+import { ConnectionDialogTestService } from 'sqltest/stubs/connectionDialogTestService';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
+import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
-import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
-import { WorkbenchEditorService } from 'vs/workbench/services/editor/browser/editorService';
+import { WorkbenchEditorTestService } from 'sqltest/stubs/workbenchEditorTestService';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { INewConnectionParams, ConnectionType, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
+import { INewConnectionParams, ConnectionType, IConnectionCompletionOptions, IConnectionResult } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 suite('SQL ConnectionManagementService tests', () => {
 
-	let connectionDialogService: TypeMoq.Mock<ConnectionDialogService>;
+	let connectionDialogService: TypeMoq.Mock<ConnectionDialogTestService>;
 	let connectionStore: TypeMoq.Mock<ConnectionStore>;
-	let instantiationService: TypeMoq.Mock<InstantiationService>;
-	let workbenchEditorService: TypeMoq.Mock<WorkbenchEditorService>;
+	let workbenchEditorService: TypeMoq.Mock<WorkbenchEditorTestService>;
+	let connectionFactory: ConnectionFactory;
+	let none: void;
 
 	let connectionProfile: IConnectionProfile = {
 		serverName: 'new server',
@@ -33,7 +34,7 @@ suite('SQL ConnectionManagementService tests', () => {
 		savePassword: true,
 		groupFullName: 'g2/g2-2',
 		groupId: 'group id',
-		getUniqueId: undefined,
+		getUniqueId: () => { return 'connectionId'; },
 		providerName: 'MSSQL',
 		options: {},
 		saveProfile: true
@@ -41,25 +42,26 @@ suite('SQL ConnectionManagementService tests', () => {
 
 	let connectionManagementService: ConnectionManagementService;
 	setup(() => {
-		connectionDialogService = TypeMoq.Mock.ofType(ConnectionDialogService);
+		connectionDialogService = TypeMoq.Mock.ofType(ConnectionDialogTestService);
 		connectionStore = TypeMoq.Mock.ofType(ConnectionStore);
-		instantiationService = TypeMoq.Mock.ofType(InstantiationService);
-		workbenchEditorService = TypeMoq.Mock.ofType(WorkbenchEditorService);
+		workbenchEditorService = TypeMoq.Mock.ofType(WorkbenchEditorTestService);
+		connectionFactory = new ConnectionFactory();
 
-		let none: void;
 
-		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(none));
-		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined)).returns(() => TPromise.as(none));
+		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined)).returns(() => TPromise.as(none));
+		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined, undefined)).returns(() => TPromise.as(none));
+		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(none));
+		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny())).returns(() => TPromise.as(none));
 		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.isAny())).returns(() => Promise.resolve(connectionProfile));
 		connectionStore.setup(x => x.addActiveConnection(TypeMoq.It.isAny())).returns(() => Promise.resolve());
 		connectionStore.setup(x => x.saveProfile(TypeMoq.It.isAny())).returns(() => Promise.resolve(connectionProfile));
-		workbenchEditorService.setup(x => x.openEditor(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(undefined));
+		workbenchEditorService.setup(x => x.openEditor(undefined, TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(undefined));
 
 		connectionManagementService = new ConnectionManagementService(
 			undefined,
 			connectionStore.object,
 			connectionDialogService.object,
-			instantiationService.object,
+			undefined,
 			workbenchEditorService.object,
 			undefined,
 			undefined,
@@ -72,18 +74,18 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined);
 	});
 
-	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string): void {
+	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string): void {
 		if (connectionProfile) {
 			connectionDialogService.verify(x => x.showDialog(
 				TypeMoq.It.isAny(),
-				TypeMoq.It.is<INewConnectionParams>(p => p.connectionType === connectionType && ((uri === undefined && p.input === undefined) || p.input.uri === uri)),
-				TypeMoq.It.is<IConnectionProfile>(c => c.serverName === connectionProfile.serverName)), TypeMoq.Times.once());
+				TypeMoq.It.is<INewConnectionParams>(p => p.connectionType === connectionType && (uri === undefined || p.input.uri === uri)),
+				TypeMoq.It.is<IConnectionProfile>(c => c.serverName === connectionProfile.serverName), error), TypeMoq.Times.once());
 
 		} else {
 			connectionDialogService.verify(x => x.showDialog(
 				TypeMoq.It.isAny(),
 				TypeMoq.It.is<INewConnectionParams>(p => p.connectionType === connectionType && ((uri === undefined && p.input === undefined) || p.input.uri === uri)),
-				undefined), TypeMoq.Times.once());
+				undefined, error), TypeMoq.Times.once());
 		}
 	}
 
@@ -93,38 +95,39 @@ suite('SQL ConnectionManagementService tests', () => {
 				connectionStore.verify(x => x.saveProfile(TypeMoq.It.isAny()), TypeMoq.Times.once());
 			}
 			if (options.showDashboard) {
-				workbenchEditorService.verify(x => x.openEditor(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
+				workbenchEditorService.verify(x => x.openEditor(undefined, TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			}
 		}
 
-		if (fromDialog !== undefined && fromDialog) {
+		if (fromDialog !== undefined && !fromDialog) {
 			connectionStore.verify(x => x.addSavedPassword(TypeMoq.It.isAny()), TypeMoq.Times.once());
 		}
 	}
 
-	function connect(uri: string, options?: IConnectionCompletionOptions, fromDialog?: boolean): Promise<boolean> {
-		return new Promise<boolean>((resolve, reject) => {
+	function connect(uri: string, options?: IConnectionCompletionOptions, fromDialog?: boolean, connection?: IConnectionProfile, error?: string): Promise<IConnectionResult> {
+		let connectionToUse = connection ? connection : connectionProfile;
+		return new Promise<IConnectionResult>((resolve, reject) => {
 			connectionManagementService.onConnectionRequestSent(() => {
 				let info: data.ConnectionInfoSummary = {
-					connectionId: 'id',
+					connectionId: error ? undefined : 'id',
 					connectionSummary: {
-						databaseName: connectionProfile.databaseName,
-						serverName: connectionProfile.serverName,
-						userName: connectionProfile.userName
+						databaseName: connectionToUse.databaseName,
+						serverName: connectionToUse.serverName,
+						userName: connectionToUse.userName
 					},
-					errorMessage: undefined,
+					errorMessage: error,
 					errorNumber: undefined,
-					messages: undefined,
-					ownerUri: uri,
+					messages: error,
+					ownerUri: uri ? uri : connectionFactory.getConnectionManagementId(connectionToUse),
 					serverInfo: undefined
 				};
 				connectionManagementService.onConnectionComplete(0, info);
 			});
 			connectionManagementService.cancelConnectionForUri(uri).then(() => {
 				if (fromDialog) {
-					resolve(connectionManagementService.connectAndSaveProfile(connectionProfile, uri, options));
+					resolve(connectionManagementService.connectAndSaveProfile(connectionToUse, uri, options));
 				} else {
-					resolve(connectionManagementService.connect(connectionProfile, uri, options));
+					resolve(connectionManagementService.connect(connectionToUse, uri, options));
 				}
 			});
 		});
@@ -192,7 +195,8 @@ suite('SQL ConnectionManagementService tests', () => {
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
 			saveToSettings: true,
-			showDashboard: false
+			showDashboard: false,
+			showConnectionDialogOnError: false
 		};
 
 		connect(uri, options).then(() => {
@@ -208,12 +212,47 @@ suite('SQL ConnectionManagementService tests', () => {
 		let uri: string = 'Editor Uri';
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
-			saveToSettings: true,
-			showDashboard: false
+			saveToSettings: false,
+			showDashboard: true,
+			showConnectionDialogOnError: false
 		};
 
 		connect(uri, options).then(() => {
 			verifyOptions(options);
+			done();
+		}).catch(err => {
+			assert.fail(err);
+			done();
+		});
+	});
+
+	test('connect should pass the params in options to onConnectSuccess callback', done => {
+		let uri: string = 'Editor Uri';
+		let paramsInOnConnectSuccess: INewConnectionParams;
+		let options: IConnectionCompletionOptions = {
+			params: {
+				connectionType: ConnectionType.editor,
+				input: {
+					onConnectSuccess: (params?: INewConnectionParams) => {
+						paramsInOnConnectSuccess = params;
+					},
+					onConnectReject: undefined,
+					onConnectStart: undefined,
+					onDisconnect: undefined,
+					uri: uri
+				},
+				querySelection: undefined,
+				runQueryOnCompletion: false
+			},
+			saveToSettings: true,
+			showDashboard: false,
+			showConnectionDialogOnError: true
+		};
+
+		connect(uri, options).then(() => {
+			verifyOptions(options);
+			assert.notEqual(paramsInOnConnectSuccess, undefined);
+			assert.equal(paramsInOnConnectSuccess.connectionType, options.params.connectionType);
 			done();
 		}).catch(err => {
 			assert.fail(err);
@@ -226,7 +265,132 @@ suite('SQL ConnectionManagementService tests', () => {
 		let options: IConnectionCompletionOptions = undefined;
 
 		connect(uri, options, true).then(() => {
-			verifyOptions(options);
+			verifyOptions(options, true);
+			done();
+		}).catch(err => {
+			assert.fail(err);
+			done();
+		});
+	});
+
+	test('connect with undefined uri and options should connect using the default uri', done => {
+		let uri: undefined;
+		let options: IConnectionCompletionOptions = undefined;
+
+		connect(uri, options).then(() => {
+			assert.equal(connectionManagementService.isProfileConnected(connectionProfile), true);
+			done();
+		}).catch(err => {
+			assert.fail(err);
+			done();
+		});
+	});
+
+	test('failed connection should open the dialog if connection fails', done => {
+		let uri: undefined;
+		let error: string = 'error';
+		let expectedConnection: boolean = false;
+		let expectedError: string = error;
+		let options: IConnectionCompletionOptions = {
+			params: undefined,
+			saveToSettings: false,
+			showDashboard: false,
+			showConnectionDialogOnError: true
+		};
+
+		connect(uri, options, false, connectionProfile, error).then(result => {
+			assert.equal(result.connected, expectedConnection);
+			assert.equal(result.error, expectedError);
+			verifyShowDialog(connectionProfile, ConnectionType.default, uri, error);
+			done();
+		}).catch(err => {
+			assert.fail(err);
+			done();
+		});
+	});
+
+	test('failed connection should not open the dialog if the option is set to false even if connection fails', done => {
+		let uri: undefined;
+		let error: string = 'error when options set to false';
+		let expectedConnection: boolean = false;
+		let expectedError: string = error;
+		let options: IConnectionCompletionOptions = {
+			params: undefined,
+			saveToSettings: false,
+			showDashboard: false,
+			showConnectionDialogOnError: false
+		};
+
+		connect(uri, options, false, connectionProfile, error).then(result => {
+			assert.equal(result.connected, expectedConnection);
+			assert.equal(result.error, expectedError);
+			// TODO: not sure how to verify not called
+			done();
+		}).catch(err => {
+			assert.fail(err);
+			done();
+		});
+	});
+
+
+	test('connect when password is empty and required should open the dialog', done => {
+		let uri: undefined;
+		let expectedConnection: boolean = false;
+		let expectedError: string = undefined;
+		let options: IConnectionCompletionOptions = {
+			params: undefined,
+			saveToSettings: false,
+			showDashboard: false,
+			showConnectionDialogOnError: true
+		};
+
+		let connectionProfileWithoutPassword = Object.assign(connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
+		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
+			c => c.serverName === connectionProfileWithoutPassword.serverName))).returns(() => Promise.resolve(connectionProfileWithoutPassword));
+		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
+
+		connect(uri, options, false, connectionProfileWithoutPassword).then(result => {
+			assert.equal(result.connected, expectedConnection);
+			assert.equal(result.error, expectedError);
+			verifyShowDialog(connectionProfileWithoutPassword, ConnectionType.default, uri, expectedError);
+			done();
+		}).catch(err => {
+			assert.fail(err);
+			done();
+		});
+	});
+
+	test('connect from editor when empty password when it is required should open the dialog', done => {
+		let uri: 'editor 3';
+		let expectedConnection: boolean = false;
+		let expectedError: string = undefined;
+		let options: IConnectionCompletionOptions = {
+			params: {
+				connectionType: ConnectionType.editor,
+				input: {
+					onConnectSuccess: undefined,
+					onConnectReject: undefined,
+					onConnectStart: undefined,
+					onDisconnect: undefined,
+					uri: uri
+				},
+				querySelection: undefined,
+				runQueryOnCompletion: false
+			},
+			saveToSettings: true,
+			showDashboard: false,
+			showConnectionDialogOnError: true
+		};
+
+		let connectionProfileWithoutPassword = Object.assign(connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
+		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
+			c => c.serverName === connectionProfileWithoutPassword.serverName))).returns(() => Promise.resolve(connectionProfileWithoutPassword));
+		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
+
+		connect(uri, options, false, connectionProfileWithoutPassword).then(result => {
+			assert.equal(result.connected, expectedConnection);
+			assert.equal(result.error, expectedError);
+			verifyShowDialog(connectionProfileWithoutPassword, ConnectionType.editor, uri, expectedError);
 			done();
 		}).catch(err => {
 			assert.fail(err);

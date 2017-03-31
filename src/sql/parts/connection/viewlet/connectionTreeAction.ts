@@ -70,10 +70,11 @@ export class ChangeConnectionAction extends Action {
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
 			saveToSettings: false,
-			showDashboard: true
+			showDashboard: true,
+			showConnectionDialogOnError: true
 		};
-		this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((value) => {
-			if (value) {
+		this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
+			if (connectionResult && connectionResult.connected) {
 				this.update();
 			}
 		});
@@ -247,11 +248,12 @@ export class NewQueryAction extends Action {
 		this.queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
 			// Connect our editor to the input connection
 			let options: IConnectionCompletionOptions = {
-				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false },
+				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
 				saveToSettings: false,
-				showDashboard: false
+				showDashboard: false,
+				showConnectionDialogOnError: true
 			};
-			this.connectionManagementService.connectWithOwner(this._connectionProfile, owner, options);
+			this.connectionManagementService.connect(this._connectionProfile, owner.uri, options);
 		});
 		return TPromise.as(true);
 	}

@@ -15,6 +15,8 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 
 	providerName: string;
 	protected _serverCapabilities: data.DataProtocolServerCapabilities;
+	private static readonly MsSqlProviderName: string = 'MSSQL';
+	private static readonly SqlAuthentication = 'SqlLogin';
 
 	public constructor(serverCapabilities?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
 		this.options = {};
@@ -95,6 +97,16 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 	public setOptionValue(name: string, value: any): void {
 		//TODO: validate
 		this.options[name] = value;
+	}
+
+	public isPasswordRequired(): boolean {
+		let optionMetadata = this._serverCapabilities.connectionProvider.options.find(
+			option => option.specialValueType === ConnectionOptionSpecialType.password);
+		let isPasswordRequired: boolean = optionMetadata.isRequired;
+		if (this.providerName === ProviderConnectionInfo.MsSqlProviderName) {
+			isPasswordRequired = this.authenticationType === ProviderConnectionInfo.SqlAuthentication && optionMetadata.isRequired;
+		}
+		return isPasswordRequired;
 	}
 
 	private getSpecialTypeOptionValue(type: number): string {

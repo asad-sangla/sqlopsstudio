@@ -169,13 +169,14 @@ export class TreeUtils {
 					let options: IConnectionCompletionOptions = {
 						params: undefined,
 						saveToSettings: false,
-						showDashboard: true
+						showDashboard: true,
+						showConnectionDialogOnError: true
 					};
 					connectionManagementService.connect(connectionProfile, undefined, options);
 				}
 				else {
 					const connectionUri = 'connection://';
-					let uri =  connectionUri + connectionProfile.getUniqueId();
+					let uri = connectionUri + connectionProfile.getUniqueId();
 					connectionManagementService.showDashboard(uri, connectionProfile);
 				}
 			}

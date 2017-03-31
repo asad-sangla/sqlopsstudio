@@ -318,4 +318,76 @@ suite('SQL ConnectionStore tests', () => {
 			done(err);
 		});
 	});
+
+	test('isPasswordRequired should return true for MSSQL SqlLogin', () => {
+
+		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
+			credentialStore.object, capabilitiesService.object, connectionConfig.object);
+
+		let expected: boolean = true;
+		let actual = connectionStore.isPasswordRequired(defaultNamedProfile);
+
+		assert.equal(expected, actual);
+	});
+
+	test('isPasswordRequired should return true for MSSQL SqlLogin for connection profile object', () => {
+		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
+			credentialStore.object, capabilitiesService.object, connectionConfig.object);
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, defaultNamedProfile);
+		let expected: boolean = true;
+		let actual = connectionStore.isPasswordRequired(connectionProfile);
+
+		assert.equal(expected, actual);
+	});
+
+	test('isPasswordRequired should return false if the password is not required in capabilities', () => {
+		let providerName: string = 'providername';
+		let connectionProvider: data.ConnectionProviderOptions = {
+			options: msSQLCapabilities.connectionProvider.options.map(o => {
+				if (o.name === 'password') {
+					o.isRequired = false;
+				}
+				return o;
+			})
+		};
+		let providerCapabilities = {
+			protocolVersion: '1',
+			providerName: providerName,
+			providerDisplayName: providerName,
+			connectionProvider: connectionProvider
+		};
+		connectionConfig.setup(x => x.getCapabilities(providerName)).returns(() => providerCapabilities);
+
+		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
+			credentialStore.object, capabilitiesService.object, connectionConfig.object);
+		let connectionProfile: IConnectionProfile = Object.assign(defaultNamedProfile, { providerName: providerName });
+		let expected: boolean = false;
+		let actual = connectionStore.isPasswordRequired(connectionProfile);
+
+		assert.equal(expected, actual);
+	});
+
+	test('saveProfile should save the password after the profile is saved', done => {
+		let password: string = 'asdf!@#$';
+		let groupId: string = 'group id';
+		let connectionProfile: IConnectionProfile = Object.assign({}, defaultNamedProfile, { password: password });
+		let savedConnection: IConnectionProfile = Object.assign({}, connectionProfile, { groupId: groupId, password: '' });
+		connectionConfig.setup(x => x.addConnection(TypeMoq.It.isAny())).returns(() => Promise.resolve(savedConnection));
+		credentialStore.setup(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve(true));
+
+		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
+			credentialStore.object, capabilitiesService.object, connectionConfig.object);
+
+		connectionStore.saveProfile(connectionProfile).then(profile => {
+			// add connection should be called with a profile without password
+			connectionConfig.verify(x => x.addConnection(TypeMoq.It.is<IConnectionProfile>(c => c.password === '')), TypeMoq.Times.once());
+			credentialStore.verify(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
+			assert.equal(profile.password, password, 'The returned profile should still keep the password');
+			assert.equal(profile.groupId, groupId, 'Group id should be set in the profile');
+			done();
+		}).catch(err => {
+			assert.fail(err);
+			done(err);
+		});
+	});
 });

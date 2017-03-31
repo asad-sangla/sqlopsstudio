@@ -88,41 +88,41 @@ export class AppComponent {
 		} else if (component instanceof ObjectDashboardComponent) {
 			this.onActivateObjectPage(component);
 		}
-    }
+	}
 
 	public onDeactivate(component: any) {
 		this.databasePage = undefined;
 
-        if (component instanceof ServerDashboardComponent) {
+		if (component instanceof ServerDashboardComponent) {
 			if (component.databaseExplorer.selectedObject
 				&& this.currentDatabaseName.toLowerCase() !== component.databaseExplorer.selectedObject.toLowerCase()) {
 				this.currentDatabaseName = component.databaseExplorer.selectedObject;
 				this.onDatabaseChanged();
 			}
-        } else if (component instanceof DatabaseDashboardComponent) {
+		} else if (component instanceof DatabaseDashboardComponent) {
 			if (component.schemaExplorer.selectedObject) {
 				this.currentObjectMetadata = component.schemaExplorer.selectedObject.metadata;
 			}
 		}
 
-    }
+	}
 
 	public onActivateDatabasePage(component: DatabaseDashboardComponent) {
 		this.breadCrumbItems = [];
-		this.breadCrumbItems.push({label: component.connection.serverName, routerLink: ['/server-dashboard'] });
-		this.breadCrumbItems.push({label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
 	}
 
 	public onActivateServerPage(component: ServerDashboardComponent) {
 		this.breadCrumbItems = [];
-		this.breadCrumbItems.push({label: component.connection.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
 	}
 
 	public onActivateObjectPage(component: ObjectDashboardComponent) {
 		this.breadCrumbItems = [];
-		this.breadCrumbItems.push({label: component.connection.serverName, routerLink: ['/server-dashboard'] });
-		this.breadCrumbItems.push({label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
-		this.breadCrumbItems.push({label: this.currentObjectMetadata.schema + '.' + this.currentObjectMetadata.name, routerLink: ['/object-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
+		this.breadCrumbItems.push({ label: this.currentObjectMetadata.schema + '.' + this.currentObjectMetadata.name, routerLink: ['/object-dashboard'] });
 	}
 
 	private onDatabaseChanged(): void {
@@ -131,9 +131,11 @@ export class AppComponent {
 
 		this.connection.databaseName = this.currentDatabaseName;
 
-		this.connectionService.connect(this.connection, this.ownerUri).then(status => {
-			this.loading = false;
-			this.databasePage.onConnectionChanged();
+		this.connectionService.connect(this.connection, this.ownerUri).then(connectionResult => {
+			if (connectionResult && connectionResult.connected) {
+				this.loading = false;
+				this.databasePage.onConnectionChanged();
+			}
 		});
 	}
 }

@@ -60,13 +60,21 @@ export class ConnectionFactory {
 		return connectionInfo;
 	}
 
+	/**
+	 * Call after a connection is saved to settings. It's only for default url connections
+	 * which their id is generated from connection options. The group id is used in the generated id.
+	 * when the connection is stored, the group id get assigned to the profile and it can change the id
+	 * So for those kind of connections, we need to add the new id and the connection
+	 */
 	public updateConnection(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
 		let connectionInfo: ConnectionManagementInfo = this._connections[id];
-		connectionInfo.connectionProfile = connection;
-		if (this.isDefaultTypeUri(id)) {
+		if (connectionInfo && this.isDefaultTypeUri(id)) {
+			connectionInfo.connectionProfile = connection;
 			let newId = this.getConnectionManagementId(connection);
-			this._connections[newId] = connectionInfo;
-			this.deleteConnection(id);
+			if (newId !== id) {
+				this._connections[newId] = connectionInfo;
+				this.deleteConnection(id);
+			}
 		}
 		return connectionInfo;
 	}
