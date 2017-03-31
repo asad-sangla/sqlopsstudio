@@ -6,11 +6,13 @@
 import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
 import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
-import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
+import { MetadataType, IConnectableInput, IConnectionManagementService,
+		IConnectionCompletionOptions, ConnectionType  } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 
 import data = require('data');
 
@@ -59,7 +61,9 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 	@AngularCore.Input() public metadataService: IMetadataService;
 	@AngularCore.Input() public scriptingService: IScriptingService;
 	@AngularCore.Input() public queryEditorService: IQueryEditorService;
+	@AngularCore.Input() public connectionService: IConnectionManagementService;
 	@AngularCore.Input() public ownerUri: string;
+
 
 	public objectMetadata: ObjectMetadataWrapper[];
 
@@ -96,8 +100,35 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 		if (this.selectedObject) {
 			this.scriptingService.scriptAsSelect('1', this.ownerUri, this.selectedObject.metadata).then(result => {
 				if (result && result.script) {
-					this.queryEditorService.newSqlEditor(result.script);
+					this.queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
+						// Connect our editor
+						let options: IConnectionCompletionOptions = {
+							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true },
+							saveToSettings: false,
+							showDashboard: false
+						};
+
+						this.connectionService.connectWithOwner(this.connection, owner, options);
+					});
 				}
+			});
+		}
+	}
+
+	/**
+	 * Opens a new Edit Data session
+	 */
+	public editData(): void {
+		if (this.selectedObject) {
+			this.queryEditorService.newEditDataEditor(this.selectedObject.metadata.name).then((owner: EditDataInput) => {
+				// Connect our editor
+				let options: IConnectionCompletionOptions = {
+					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true },
+					saveToSettings: false,
+					showDashboard: false
+				};
+
+				this.connectionService.connectWithOwner(this.connection, owner, options);
 			});
 		}
 	}
