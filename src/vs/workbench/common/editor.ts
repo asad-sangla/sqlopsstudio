@@ -259,7 +259,7 @@ export abstract class EditorInput implements IEditorInput {
 	 * Subclasses can set this to false if it does not make sense to split the editor input.
 	 */
 	public supportsSplitEditor(): boolean {
-		return true;
+		return false; // TODO reenable when multiple Angular components of the same type can be open simultaneously
 	}
 
 	/**
