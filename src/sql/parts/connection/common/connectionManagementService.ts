@@ -49,6 +49,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onAddConnectionProfile: Emitter<void>;
 	private _onDeleteConnectionProfile: Emitter<void>;
 	private _onConnect: Emitter<void>;
+	private _onDisconnect: Emitter<string>;
 	private _onConnectRequestSent: Emitter<void>;
 	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
 
@@ -83,6 +84,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onAddConnectionProfile = new Emitter<void>();
 		this._onDeleteConnectionProfile = new Emitter<void>();
 		this._onConnect = new Emitter<void>();
+		this._onDisconnect = new Emitter<string>();
 		this._onConnectionChanged = new Emitter<IConnectionChangedParams>();
 		this._onConnectRequestSent = new Emitter<void>();
 
@@ -101,6 +103,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public get onConnect(): Event<void> {
 		return this._onConnect.event;
+	}
+
+	public get onDisconnect(): Event<string> {
+		return this._onDisconnect.event;
 	}
 
 	public get onConnectionChanged(): Event<IConnectionChangedParams> {
@@ -471,7 +477,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public shutdown(): void {
-		this._connectionStore.saveActiveConnectionsToRecent();
+		this._connectionStore.clearActiveConnections();
+		this._connectionStore.clearUnsavedConnections();
 		this._connectionMemento.saveMemento();
 	}
 
@@ -569,7 +576,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private doDisconnect(fileUri: string) {
+	private doDisconnect(fileUri: string): Promise<boolean> {
 		const self = this;
 
 		return new Promise<boolean>((resolve, reject) => {
@@ -581,6 +588,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				// If the request was sent
 				if (result) {
 					this._connectionFactory.deleteConnection(fileUri);
+					this._onDisconnect.fire(fileUri);
 					// TODO: show diconnection in status statusview
 					// self.statusView.notConnected(fileUri);
 
@@ -591,6 +599,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 				resolve(result);
 			});
 		});
+	}
+
+	public disconnectProfile(connection: ConnectionProfile): Promise<boolean> {
+		let uri = this._connectionFactory.getConnectionManagementId(connection);
+		return this.doDisconnect(uri);
+		// close all dashboards
 	}
 
 	public cancelConnection(connection: IConnectionProfile): Thenable<boolean> {

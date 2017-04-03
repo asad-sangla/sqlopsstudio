@@ -226,7 +226,7 @@ export class ConnectionStore {
 	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
 	 */
 	public getRecentlyUsedConnections(): ConnectionProfile[] {
-		let configValues: IConnectionProfile[] = this._memento['RECENT_CONNECTIONS'];
+		let configValues: IConnectionProfile[] = this._memento[Constants.recentConnections];
 		if (!configValues) {
 			configValues = [];
 		}
@@ -257,21 +257,13 @@ export class ConnectionStore {
 	}
 
 	/**
-	 * Moves all the active connections to recent connections list and clears active connections list.
-	 * To be called before shutdown.
-	 */
-	public saveActiveConnectionsToRecent(): void {
-		this._memento['ACTIVE_CONNECTIONS'] = [];
-	}
-
-	/**
 	 * Gets the list of active connections. These will not include the password - a separate call to
 	 * {addSavedPassword} is needed to fill that before connecting
 	 *
 	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
 	 */
 	public getActiveConnections(): ConnectionProfile[] {
-		let configValues: IConnectionProfile[] = this._memento['ACTIVE_CONNECTIONS'];
+		let configValues: IConnectionProfile[] = this._memento[Constants.activeConnections];
 		if (!configValues) {
 			configValues = [];
 		}
@@ -286,7 +278,7 @@ export class ConnectionStore {
 	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
 	 */
 	public getUnSavedConnections(): ConnectionProfile[] {
-		let configValues: IConnectionProfile[] = this._memento['UNSAVED_CONNECTIONS'];
+		let configValues: IConnectionProfile[] = this._memento[Constants.unsavedConnections];
 		if (!configValues) {
 			configValues = [];
 		}
@@ -313,9 +305,9 @@ export class ConnectionStore {
 	 * @returns {Promise<void>} a Promise that returns when the connection was saved
 	 */
 	public addActiveConnection(conn: IConnectionProfile): Promise<void> {
-		return this.addConnectionToMemento(conn, 'ACTIVE_CONNECTIONS', undefined, true).then(() => {
+		return this.addConnectionToMemento(conn, Constants.activeConnections, undefined, true).then(() => {
 			let maxConnections = this.getMaxRecentConnectionsCount();
-			return this.addConnectionToMemento(conn, 'RECENT_CONNECTIONS', maxConnections);
+			return this.addConnectionToMemento(conn, Constants.recentConnections, maxConnections);
 		});
 	}
 
@@ -362,7 +354,7 @@ export class ConnectionStore {
 			// Get all profiles
 			let configValues = self.getUnSavedConnections();
 			let configToSave = this.addToConnectionList(conn, configValues);
-			self._memento['UNSAVED_CONNECTIONS'] = configToSave;
+			self._memento[Constants.unsavedConnections] = configToSave;
 			resolve(conn);
 		});
 	}
@@ -385,23 +377,22 @@ export class ConnectionStore {
 	/**
 	 * Clear all recently used connections from the MRU list.
 	 */
-	public clearRecentlyUsed(): Promise<void> {
-		const self = this;
-		return new Promise<void>((resolve, reject) => {
-			self._memento['RECENT_CONNECTIONS'] = [];
-			resolve();
-		});
+	public clearRecentlyUsed(): void {
+		this._memento[Constants.recentConnections] = [];
 	}
 
 	/**
 	 * Clear all active connections from the MRU list.
 	 */
-	public clearActiveConnections(): Promise<void> {
-		const self = this;
-		return new Promise<void>((resolve, reject) => {
-			self._memento['ACTIVE_CONNECTIONS'] = [];
-			resolve();
-		});
+	public clearActiveConnections(): void {
+		this._memento[Constants.activeConnections] = [];
+	}
+
+	/**
+	 * Clear all unsaved connections
+	 */
+	public clearUnsavedConnections(): void {
+		this._memento[Constants.unsavedConnections] = [];
 	}
 
 	/**
@@ -417,7 +408,7 @@ export class ConnectionStore {
 			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
 
 			// Update the MRU list
-			self._memento['RECENT_CONNECTIONS'] = configValues;
+			self._memento[Constants.recentConnections] = configValues;
 		});
 	}
 
@@ -434,7 +425,7 @@ export class ConnectionStore {
 			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
 
 			// Update the Active list
-			self._memento['ACTIVE_CONNECTIONS'] = configValues;
+			self._memento[Constants.activeConnections] = configValues;
 		});
 	}
 

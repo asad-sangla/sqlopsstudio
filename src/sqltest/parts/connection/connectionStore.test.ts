@@ -299,24 +299,23 @@ suite('SQL ConnectionStore tests', () => {
 		}).then(() => done(), err => done(err));
 	});
 
-	test('can clear recent connections list', (done) => {
+	test('can clear connections list', (done) => {
 		connectionConfig.setup(x => x.getConnections(TypeMoq.It.isAny())).returns(() => []);
 
 		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
 			credentialStore.object, capabilitiesService.object, connectionConfig.object);
 
 		// When we clear the connections list and get the list of available connection items
-		Promise.all([connectionStore.clearActiveConnections(), connectionStore.clearRecentlyUsed]).then(() => {
-			// Expect no connection items
-			let result = connectionStore.getActiveConnections();
-			let expectedCount = 0; // 1 for create connection profile
-			assert.equal(result.length, expectedCount);
-
-			// Then test is complete
-			done();
-		}, err => {
-			done(err);
-		});
+		connectionStore.clearActiveConnections();
+		connectionStore.clearRecentlyUsed();
+		// Expect no connection items
+		let result = connectionStore.getActiveConnections();
+		let expectedCount = 0; // 1 for create connection profile
+		assert.equal(result.length, expectedCount);
+		result = connectionStore.getRecentlyUsedConnections();
+		assert.equal(result.length, expectedCount);
+		// Then test is complete
+		done();
 	});
 
 	test('isPasswordRequired should return true for MSSQL SqlLogin', () => {

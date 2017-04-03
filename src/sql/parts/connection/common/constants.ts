@@ -279,3 +279,8 @@ export const msgCannotSaveMultipleSelections = 'Save results command cannot be u
 
 /**Unsaved connections Id */
 export const unsavedGroupId = 'unsaved';
+
+/* Memento constants */
+export const activeConnections = 'ACTIVE_CONNECTIONS';
+export const recentConnections = 'RECENT_CONNECTIONS';
+export const unsavedConnections = 'UNSAVED_CONNECTIONS';

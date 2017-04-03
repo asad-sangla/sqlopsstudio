@@ -18,6 +18,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	onDeleteConnectionProfile = undefined;
 	onConnect = undefined;
 	onConnectionChanged = undefined;
+	onDisconnect = undefined;
 
 	registerProvider(providerId: string, provider: data.ConnectionProvider): void {
 
@@ -88,6 +89,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 
 	disconnectEditor(owner: IConnectableInput): Promise<boolean> {
+		return new Promise<boolean>(() => true);
+	}
+
+	disconnectProfile(connection: ConnectionProfile): Promise<boolean> {
 		return new Promise<boolean>(() => true);
 	}
 

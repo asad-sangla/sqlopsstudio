@@ -50,6 +50,7 @@ export interface IConnectionManagementService {
 	onAddConnectionProfile: Event<void>;
 	onDeleteConnectionProfile: Event<void>;
 	onConnect: Event<void>;
+	onDisconnect: Event<any>;
 	onConnectionChanged: Event<IConnectionChangedParams>;
 
 	/**
@@ -102,6 +103,8 @@ export interface IConnectionManagementService {
 	isConnected(fileUri: string, connectionProfile?: ConnectionProfile): boolean;
 
 	disconnectEditor(owner: IConnectableInput, force?: boolean): Promise<boolean>;
+
+	disconnectProfile(connection: ConnectionProfile): Promise<boolean>;
 
 	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile>;
 

@@ -11,21 +11,21 @@ import dom = require('vs/base/browser/dom');
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
+import { CollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
 import { AddServerAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
-import {TreeCreationUtils} from 'sql/parts/connection/viewlet/treeCreationUtils';
-import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/treeUpdateUtils';
+import { TreeCreationUtils } from 'sql/parts/connection/viewlet/treeCreationUtils';
+import { TreeUpdateUtils } from 'sql/parts/connection/viewlet/treeUpdateUtils';
 const $ = builder.$;
 
 /**
  * ServerTreeview implements the dynamic tree view.
  */
-export class ServerTreeView extends AdaptiveCollapsibleViewletView {
+export class ServerTreeView extends CollapsibleViewletView {
 
 	public messages: builder.Builder;
 	private addServerAction: IAction;
@@ -37,9 +37,9 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IMessageService private messageService: IMessageService
+		@IMessageService messageService: IMessageService
 	) {
-		super(actionRunner, 22 * 26, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), keybindingService, contextMenuService);
+		super(actionRunner, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), messageService, keybindingService, contextMenuService);
 		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
 			AddServerAction.ID,
 			AddServerAction.LABEL);
@@ -78,12 +78,14 @@ export class ServerTreeView extends AdaptiveCollapsibleViewletView {
 		this.toDispose.push(this.tree.addListener2('selection', (event) => this.onSelected(event)));
 		const self = this;
 		// Refresh Tree when these events are emitted
-		this._connectionManagementService.onAddConnectionProfile(() => {
+		this.toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {
 			self.refreshTree();
-		});
-		this._connectionManagementService.onDeleteConnectionProfile(() => {
+			})
+		);
+		this.toDispose.push(this._connectionManagementService.onDeleteConnectionProfile(() => {
 			self.refreshTree();
-		});
+			})
+		);
 
 		self.refreshTree();
 	}

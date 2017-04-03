@@ -416,6 +416,6 @@
 
 /* Add space beneath the button */
 
-.server-explorer-viewlet .monaco-text-button {
-margin-bottom: 10px;
+.new-connection .monaco-text-button {
+margin-bottom: 2px;
 }

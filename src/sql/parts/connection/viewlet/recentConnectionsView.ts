@@ -14,8 +14,8 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
-import {TreeCreationUtils} from 'sql/parts/connection/viewlet/treeCreationUtils';
-import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/treeUpdateUtils';
+import { TreeCreationUtils } from 'sql/parts/connection/viewlet/treeCreationUtils';
+import { TreeUpdateUtils } from 'sql/parts/connection/viewlet/treeUpdateUtils';
 const $ = builder.$;
 
 /**
@@ -55,15 +55,15 @@ export class RecentConnectionsView extends AdaptiveCollapsibleViewletView {
 			this._connectionManagementService
 		)));
 		// Refresh Tree when these events are emitted
-		this._connectionManagementService.onAddConnectionProfile(() => {
+		this.toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {
 			TreeUpdateUtils.structuralTreeUpdate(this.tree, this.viewKey, this._connectionManagementService);
-		});
-		this._connectionManagementService.onConnect(() => {
+		}));
+		this.toDispose.push(this._connectionManagementService.onConnect(() => {
 			TreeUpdateUtils.structuralTreeUpdate(this.tree, this.viewKey, this._connectionManagementService);
-		});
-		this._connectionManagementService.onDeleteConnectionProfile(() => {
+		}));
+		this.toDispose.push(this._connectionManagementService.onDeleteConnectionProfile(() => {
 			TreeUpdateUtils.structuralTreeUpdate(this.tree, this.viewKey, this._connectionManagementService);
-		});
+		}));
 
 		TreeUpdateUtils.structuralTreeUpdate(this.tree, this.viewKey, this._connectionManagementService);
 	}

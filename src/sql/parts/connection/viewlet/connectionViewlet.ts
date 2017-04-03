@@ -29,11 +29,13 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	private searchDelayer: ThrottledDelayer<any>;
 	private root: HTMLElement;
-	private messageBox: HTMLElement;
+	private searchBox: HTMLInputElement;
+	private disposables: IDisposable[] = [];
 	private connectionButton: Button;
 	private views: IViewletView[];
 	private serverTreeView: ServerTreeView;
 	private viewletContainer: Builder;
+	private newConnectionContainer: Builder;
 	private splitView: SplitView;
 
 	constructor(
@@ -77,8 +79,13 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		super.create(parent);
 		parent.addClass('extensions-viewlet');
 		this.root = parent.getHTMLElement();
+		this.newConnectionContainer = parent.div().addClass('new-connection');
 
-		this.messageBox = append(this.root, $('.message'));
+		this.connectionButton = new Button(this.newConnectionContainer);
+		this.connectionButton.label = 'New Connection';
+		this.connectionButton.addListener2('click', () => {
+			this.newConnection();
+		});
 
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
 
@@ -90,15 +97,16 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 			});
 		}
 
+		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
 		this.splitView = new SplitView(this.viewletContainer.getHTMLElement());
 		this.serverTreeView = this.instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
-		this.splitView.addView(this.serverTreeView, 20);
-		this.views.push(this.serverTreeView);
+		this.splitView.addView(this.serverTreeView);
 		this.serverTreeView.create().then(() => {
 			this.updateTitleArea();
 			this.setVisible(this.isVisible()).then(() => this.focus());
 		});
 		this.serverTreeView.setVisible(true);
+		this.views.push(this.serverTreeView);
 		return TPromise.as(null);
 	}
 
@@ -110,8 +118,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		return super.setVisible(visible).then(() => {
 			if (visible) {
 				this.serverTreeView.setVisible(visible);
-			} else {
-				this.setModel([]);
 			}
 		});
 	}
@@ -131,16 +137,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	private newConnection(): void {
 		this.connectionManagementService.showConnectionDialog();
-	}
-
-	private setModel(model: number[]) {
-		toggleClass(this.messageBox, 'hidden', model.length > 0);
-
-		if (model.length === 0 && this.isVisible()) {
-			this.messageBox.textContent = localize('no extensions found', "No extensions found.");
-		} else {
-			this.messageBox.textContent = '';
-		}
 	}
 
 	private onError(err: any): void {

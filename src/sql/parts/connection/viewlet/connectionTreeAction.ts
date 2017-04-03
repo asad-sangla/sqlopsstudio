@@ -9,17 +9,21 @@ import { Action } from 'vs/base/common/actions';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IConnectionManagementService, IConnectableInput, IConnectionCompletionOptions, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput, IConnectionCompletionOptions, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { ServerTreeView } from 'sql/parts/connection/viewlet/serverTreeView';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
+import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
+import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 
 export class ChangeConnectionAction extends Action {
 
 	private static EnabledClass = 'extension-action update';
 	private static DisabledClass = `${ChangeConnectionAction.EnabledClass} disabled`;
-	private static Label = localize('ConnectAction', "Connect");
+	private static Label = localize('ConnectAction', 'Connect');
 	private _disposables: IDisposable[] = [];
 	private _connectionProfile: ConnectionProfile;
 	get connectionProfile(): ConnectionProfile {
@@ -32,13 +36,20 @@ export class ChangeConnectionAction extends Action {
 
 	constructor(
 		@IInstantiationService private _instanstiationService: IInstantiationService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IEditorGroupService private _editorGroupService: EditorPart,
 	) {
 		super('registeredConnections.connect', ChangeConnectionAction.Label, ChangeConnectionAction.DisabledClass, false);
 		const self = this;
-		this._connectionManagementService.onConnect(() => {
-			self.onConnect();
-		});
+		this._disposables.push(this._connectionManagementService.onConnect(() => {
+				self.onConnect();
+			})
+		);
+		this._disposables.push(this._connectionManagementService.onDisconnect((uri) => {
+				self.setLabel();
+				self.closeDashboard(uri);
+			})
+		);
 	}
 
 	private update(): void {
@@ -49,6 +60,22 @@ export class ChangeConnectionAction extends Action {
 
 	private onConnect(): void {
 		this.setLabel();
+	}
+
+	private closeDashboard(uri: string): void {
+		let model = this._editorGroupService.getStacksModel();
+		model.groups.map(group => {
+			if (group instanceof EditorGroup) {
+				group.getEditors().map(editor => {
+					if (editor instanceof DashboardInput) {
+						if (editor.getUri() === uri) {
+							let position = model.positionOfGroup(group);
+							this._editorGroupService.closeEditor(position, editor);
+						}
+					}
+				});
+			}
+		});
 	}
 
 	private setLabel(): void {
@@ -64,21 +91,23 @@ export class ChangeConnectionAction extends Action {
 			return TPromise.as(true);
 		}
 		if (this._connectionManagementService.isProfileConnected(this._connectionProfile)) {
-			this.label = 'Connect';
+			this._connectionManagementService.disconnectProfile(this._connectionProfile);
+			return TPromise.as(true);
+		} else {
+			let options: IConnectionCompletionOptions = {
+				params: undefined,
+				saveToSettings: false,
+				showDashboard: true,
+				showConnectionDialogOnError: true
+			};
+			this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
+				if (connectionResult && connectionResult.connected) {
+					this.update();
+				}
+			});
 			return TPromise.as(true);
 		}
-		let options: IConnectionCompletionOptions = {
-			params: undefined,
-			saveToSettings: false,
-			showDashboard: true,
-			showConnectionDialogOnError: true
-		};
-		this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
-			if (connectionResult && connectionResult.connected) {
-				this.update();
-			}
-		});
-		return TPromise.as(true);
+
 	}
 
 	dispose(): void {
