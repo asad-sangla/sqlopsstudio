@@ -45,9 +45,9 @@ export class ChangeConnectionAction extends Action {
 				self.onConnect();
 			})
 		);
-		this._disposables.push(this._connectionManagementService.onDisconnect((uri) => {
+		this._disposables.push(this._connectionManagementService.onDisconnect((disconnectParams) => {
 				self.setLabel();
-				self.closeDashboard(uri);
+				self.closeDashboard(disconnectParams.connectionUri);
 			})
 		);
 	}

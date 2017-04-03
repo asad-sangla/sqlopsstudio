@@ -7,15 +7,22 @@ import { Action, IActionItem, IActionRunner } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
+import Event, { Emitter } from 'vs/base/common/event';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
-import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import { IMessageService, Severity } from 'vs/platform/message/common/message';
+import { IConnectionManagementService, INewConnectionParams, ConnectionType, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
+import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
-import { ISelectionData } from 'data';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
+import { DbListComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { DbListModule, GetUniqueDbListUri, DBListAngularSelectorString } from 'sql/parts/common/dblist/dblist.module';
+import { ISelectionData } from 'data';
 import nls = require('vs/nls');
 import * as dom from 'vs/base/browser/dom';
 const $ = dom.$;
+
+declare let AngularPlatformBrowserDynamic;
 
 /**
  * Action class that query-based Actions will extend. This base class automatically handles activating and
@@ -228,33 +235,44 @@ export class ListDatabasesAction extends QueryTaskbarAction {
  * Action item that handles the dropdown (combobox) that lists the available databases.
  * Based off StartDebugActionItem.
  */
-export class ListDatabasesActionItem extends EventEmitter implements IActionItem {
+export class ListDatabasesActionItem extends EventEmitter implements IActionItem, IDbListInterop {
 	public static ID = 'listDatabaseQueryActionItem';
+
+	// MEMBER VARIABLES ////////////////////////////////////////////////////
+	private _onDatabaseChanged = new Emitter<string>();
 
 	public actionRunner: IActionRunner;
 	private container: HTMLElement;
-	private selectBox: SelectBox;
 	private toDispose: IDisposable[];
 	private context: any;
-	private _databases: string[];
 	private _currentDatabaseName: string;
 	private _isConnected: boolean;
 
+	// EVENTS /////////////////////////////////////////////////////////////
+	public get onDatabaseChanged(): Event<string> { return this._onDatabaseChanged.event; }
+
+	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
 		private editor: QueryEditor,
 		private action: ListDatabasesAction,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IQueryModelService private _queryModelService: IQueryModelService) {
+		@IBootstrapService private _bootstrapService: IBootstrapService,
+		@IMessageService private _messageService: IMessageService) {
 		super();
 		this.toDispose = [];
-		this.selectBox = new SelectBox([], -1);
-		this._databases = [];
-		this._registerListeners();
 	}
 
 	public render(container: HTMLElement): void {
 		this.container = container;
-		this.selectBox.render(dom.append(container, $('.configuration.listDatabasesSelectBox')));
+
+		// Get the bootstrap params and perform the bootstrap
+		let params: DbListComponentParams = { dbListInterop: this };
+		this._bootstrapService.bootstrap(
+			DbListModule,
+			container,
+			DBListAngularSelectorString,
+			GetUniqueDbListUri(),
+			params);
 	}
 
 	public setActionContext(context: any): void {
@@ -266,7 +284,7 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 	}
 
 	public focus(): void {
-		this.selectBox.focus();
+		this.container.focus();
 	}
 
 	public blur(): void {
@@ -275,6 +293,45 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	public dispose(): void {
 		this.toDispose = dispose(this.toDispose);
+	}
+
+	/**
+	 * Returns the URI of the given editor if it is not undefined and is connected.
+	 */
+	private _getConnectedQueryEditorUri(editor: QueryEditor): string {
+		if (!editor || !editor.uri) {
+			return undefined;
+		}
+		return this._connectionManagementService.isConnected(editor.uri) ? editor.uri : undefined;
+	}
+
+	public lookupUri(id: string): string {
+		return this.editor ? this.editor.uri : undefined;
+	}
+
+	public databaseSelected(dbName: string): void {
+		let self = this;
+		let uri = this._getConnectedQueryEditorUri(this.editor);
+		if (uri) {
+			let profile = this._connectionManagementService.getConnectionProfile(uri);
+			if (profile) {
+				this._connectionManagementService.changeDatabase(this.editor.uri, dbName).then(result => {
+					if (!result) {
+						// Change database failed. Ideally would revert to original, but for now reflect actual
+						// behavior by notifying of a disconnect. Note: we should ideally handle this via global notification
+						// to simplify control flow
+						self._showChangeDatabaseFailed();
+					}
+				}, error => {
+						self._showChangeDatabaseFailed();
+				});
+			}
+		}
+	}
+
+	private _showChangeDatabaseFailed() {
+		this.onDisconnect();
+		this._messageService.show(Severity.Error, 'Failed to change database');
 	}
 
 	public onConnected(): void {
@@ -290,42 +347,16 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	private updateConnection(databaseName: string) {
 		this._isConnected = true;
-		// TODO: query the connection service for a cached list of databases on the server
-		this._databases = [];
 		this._currentDatabaseName = databaseName;
 		if (this._currentDatabaseName) {
-			this._databases.push(this._currentDatabaseName);
 		}
-		this._refreshDatabaseList();
+		this._onDatabaseChanged.fire(databaseName);
 	}
 
 	public onDisconnect(): void {
 		this._isConnected = false;
 		this._currentDatabaseName = undefined;
-		this._databases = [];
-		this._refreshDatabaseList();
-	}
-
-	private _refreshDatabaseList(): void {
-		// Use object copy to ensure that we update the list of options in the
-		// selectedElement. Otherwise may fail to refresh the list
-		let dbs = this._databases.slice();
-		// Get selected index - will return -1 if not found
-		let selected = this._databases.indexOf(this._currentDatabaseName);
-		this.selectBox.setOptions(dbs, selected);
-	}
-
-	private _registerListeners(): void {
-		let self = this;
-		this.toDispose.push(this.selectBox.onDidSelect(databaseName => {
-			// TODO hook this up. We will need to inject services into this class
-		}));
-		this.toDispose.push(this._connectionManagementService.onConnectionChanged((connChanged) => {
-			let uri = self._getConnectedQueryEditorUri(self.editor);
-			if (uri && uri === connChanged.connectionUri) {
-				self.onConnectionChanged(connChanged.connectionInfo);
-			}
-		}));
+		this._onDatabaseChanged.fire(undefined);
 	}
 
 	private _getCurrentDatabaseName() {
@@ -339,27 +370,9 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		return undefined;
 	}
 
-	/**
-	 * Returns the URI of the given editor if it is not undefined and is connected.
-	 */
-	private _getConnectedQueryEditorUri(editor: QueryEditor): string {
-		if (!editor || !editor.uri) {
-			return undefined;
-		}
-		return this._connectionManagementService.isConnected(editor.uri) ? editor.uri : undefined;
-	}
-
-
 	// TESTING PROPERTIES ////////////////////////////////////////////////////////////
 	public get currentDatabaseName(): string {
 		return this._currentDatabaseName;
-	}
-
-	/**
-	 * public for testing purposes only
-	 */
-	public _setSelectBox(box: SelectBox): void {
-		this.selectBox = box;
 	}
 
 }

@@ -35,6 +35,7 @@ const PrimeNg = require('primeng/primeng');
 const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
 const AngularCommon = require('@angular/common');
 const AngularCore = require('@angular/core');
+const AngularForms = require('@angular/forms');
 const AngularPlatformBrowser = require('@angular/platform-browser');
 const AngularRouter = require('@angular/router');
 const Rx = require('rxjs/Rx');

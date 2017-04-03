@@ -37,6 +37,7 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { ISelectionData } from 'data';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { IConnectionManagementService, } from 'sql/parts/connection/common/connectionManagement';
 
 
 /**

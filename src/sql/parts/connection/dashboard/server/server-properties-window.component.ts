@@ -3,6 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
+import 'vs/css!sql/media/primeng';
+
 import { OnInit } from '@angular/core';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ServerProperties } from 'sql/parts/connection/dashboard/server/server-properties';
@@ -12,7 +15,7 @@ declare let AngularCore;
 @AngularCore.Component({
   selector: 'server-properties-window',
   templateUrl: require.toUrl('sql/parts/connection/dashboard/server/server-properties-window.component.html'),
-  styleUrls: [ require.toUrl('sql/parts/connection/dashboard/media/dashboard.css') ]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 
 

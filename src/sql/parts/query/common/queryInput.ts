@@ -39,6 +39,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		@IMessageService private _messageService: IMessageService
 	) {
 		super();
+		let self = this;
 		this._setup = false;
 		this._updateTaskbar = new Emitter<void>();
 		this._showQueryResultsEditor = new Emitter<void>();
@@ -50,8 +51,6 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 
 		// Attach to event callbacks
 		if (this._queryModelService) {
-			let self = this;
-
 			// Register callbacks for the Actions
 			this._toDispose.push(
 					this._queryModelService.onRunQueryStart(uri => {
@@ -68,6 +67,14 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 					}
 				})
 			);
+		}
+
+		if (this._connectionManagementService) {
+			this._toDispose.push(self._connectionManagementService.onDisconnect(result => {
+				if (result.connectionUri === self.uri) {
+					self.onDisconnect();
+				}
+			}));
 		}
 
 		this.onDisconnect();

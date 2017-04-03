@@ -17,6 +17,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	onAddConnectionProfile = undefined;
 	onDeleteConnectionProfile = undefined;
 	onConnect = undefined;
+	onDisconnect = undefined;
 	onConnectionChanged = undefined;
 	onDisconnect = undefined;
 
@@ -121,6 +122,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 
 	showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean> {
+		return new Promise(() => true);
+	}
+
+	changeDatabase(connectionUri: string, databaseName: string): Thenable<boolean> {
 		return new Promise(() => true);
 	}
 }

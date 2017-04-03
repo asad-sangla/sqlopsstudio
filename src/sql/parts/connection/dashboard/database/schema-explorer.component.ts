@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
+import 'vs/css!sql/media/primeng';
 import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
 import { MetadataType, IConnectableInput, IConnectionManagementService,
@@ -52,7 +53,7 @@ export class ObjectMetadataWrapper {
 @AngularCore.Component({
 	selector: 'schema-explorer',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/database/schema-explorer.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 

@@ -45,7 +45,7 @@ suite('SQL QueryEditor Tests', () => {
 			instantiationService.object,
 			undefined,
 			undefined,
-			queryModelService,
+			undefined,
 			editorDescriptorService.object,
 			undefined);
 	};
@@ -81,7 +81,7 @@ suite('SQL QueryEditor Tests', () => {
 		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns((classDef, editor, action) => {
 			if (classDef.ID) {
 				if (classDef.ID === 'listDatabaseQueryActionItem') {
-					return new ListDatabasesActionItem(editor, action, connectionManagementService.object, undefined);
+					return new ListDatabasesActionItem(editor, action, connectionManagementService.object, undefined, undefined);
 				}
 			}
 			// Default
@@ -199,7 +199,7 @@ suite('SQL QueryEditor Tests', () => {
 			instantiationService.object,
 			undefined,
 			undefined,
-			queryModelService,
+			undefined,
 			editorDescriptorService.object,
 			editorGroupService.object);
 		editor.create(parentBuilder);
@@ -319,7 +319,7 @@ suite('SQL QueryEditor Tests', () => {
 			.returns((definition, editor, action, selectBox) => {
 				if (definition.ID) {
 					if (definition.ID === 'listDatabaseQueryActionItem') {
-						let item = new ListDatabasesActionItem(editor, action, queryConnectionService.object, undefined);
+						let item = new ListDatabasesActionItem(editor, action, queryConnectionService.object, undefined, undefined);
 						return item;
 					}
 				}

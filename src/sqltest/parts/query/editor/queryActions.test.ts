@@ -399,11 +399,8 @@ suite('SQL QueryAction Tests', () => {
 
 		editor.setup(x => x.uri).returns(() => testUri);
 
-		let selectBoxMock = TypeMoq.Mock.ofType(SelectBox, TypeMoq.MockBehavior.Loose, [], -1);
-
 		// If I query without having initialized anything, state should be clear
-		listItem = new ListDatabasesActionItem(editor.object, undefined, connectionManagementService.object, undefined);
-		listItem._setSelectBox(selectBoxMock.object);
+		listItem = new ListDatabasesActionItem(editor.object, undefined, connectionManagementService.object, undefined, undefined);
 
 		assert.equal(listItem.isEnabled(), false, 'do not expect dropdown enabled unless connected');
 		assert.equal(listItem.currentDatabaseName, undefined, 'do not expect dropdown to have entries unless connected');

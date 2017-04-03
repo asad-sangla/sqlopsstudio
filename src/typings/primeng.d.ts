@@ -38,4 +38,8 @@ declare module 'primeng/primeng' {
 		target?: string;
 	}
 
+	export interface SelectItem {
+		label: string;
+		value: any;
+	}
 }

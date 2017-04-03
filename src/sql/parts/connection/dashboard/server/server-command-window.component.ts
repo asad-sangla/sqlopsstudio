@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
+import 'vs/css!sql/media/primeng';
 import 'vs/css!sql/parts/connection/dashboard/media/font-awesome-4.7.0/css/font-awesome';
 
 declare let AngularCore;
@@ -14,7 +15,7 @@ declare let AngularCore;
 @AngularCore.Component({
 	selector: 'server-command-window',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/server/server-command-window.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 
 export class ServerCommandWindowComponent {

@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
+import 'vs/css!sql/media/primeng';
+
 import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -19,7 +21,7 @@ declare let AngularCore;
 @AngularCore.Component({
 	selector: 'database-explorer',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/server/database-explorer.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 

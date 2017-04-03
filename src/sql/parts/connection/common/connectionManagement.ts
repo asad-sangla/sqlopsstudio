@@ -50,7 +50,7 @@ export interface IConnectionManagementService {
 	onAddConnectionProfile: Event<void>;
 	onDeleteConnectionProfile: Event<void>;
 	onConnect: Event<void>;
-	onDisconnect: Event<any>;
+	onDisconnect: Event<IConnectionParams>;
 	onConnectionChanged: Event<IConnectionChangedParams>;
 
 	/**
@@ -123,11 +123,17 @@ export interface IConnectionManagementService {
 	cancelConnection(connection: IConnectionProfile): Thenable<boolean>;
 
 	/**
+	 * Changes the database for an active connection
+	 */
+	changeDatabase(connectionUri: string, databaseName: string): Thenable<boolean>;
+
+	/**
 	 * Cancels the connection for the editor
 	 */
 	cancelEditorConnection(owner: IConnectableInput): Thenable<boolean>;
 
 	showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean>;
+
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
@@ -185,8 +191,10 @@ export enum MetadataType {
 	SProc = 2,
 	Function = 3
 }
-
-export interface IConnectionChangedParams {
+export interface IConnectionParams {
 	connectionUri: string;
+}
+
+export interface IConnectionChangedParams extends IConnectionParams {
 	connectionInfo: IConnectionProfile;
 }

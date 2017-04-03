@@ -3,6 +3,9 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
+import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
+import 'vs/css!sql/media/primeng';
+
 import { MenuItem } from 'primeng/primeng';
 import data = require('data');
 
@@ -25,7 +28,7 @@ declare let AngularCore;
 @AngularCore.Component({
 	selector: 'connection-dashboard',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/dashboard.component.html'),
-	styleUrl: require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class AppComponent {
 

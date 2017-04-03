@@ -12,7 +12,7 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import {
 	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
 	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionChangedParams,
-	IConnectionResult
+	IConnectionParams, IConnectionResult
 } from 'sql/parts/connection/common/connectionManagement';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { Memento } from 'vs/workbench/common/memento';
@@ -49,7 +49,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onAddConnectionProfile: Emitter<void>;
 	private _onDeleteConnectionProfile: Emitter<void>;
 	private _onConnect: Emitter<void>;
-	private _onDisconnect: Emitter<string>;
+	private _onDisconnect: Emitter<IConnectionParams>;
 	private _onConnectRequestSent: Emitter<void>;
 	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
 
@@ -84,7 +84,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onAddConnectionProfile = new Emitter<void>();
 		this._onDeleteConnectionProfile = new Emitter<void>();
 		this._onConnect = new Emitter<void>();
-		this._onDisconnect = new Emitter<string>();
+		this._onDisconnect = new Emitter<IConnectionParams>();
 		this._onConnectionChanged = new Emitter<IConnectionChangedParams>();
 		this._onConnectRequestSent = new Emitter<void>();
 
@@ -105,7 +105,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._onConnect.event;
 	}
 
-	public get onDisconnect(): Event<string> {
+	public get onDisconnect(): Event<IConnectionParams> {
 		return this._onDisconnect.event;
 	}
 
@@ -242,7 +242,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				uri: uri
 			};
 		}
-		
+
 
 		if (uri !== input.uri) {
 			//TODO: this should never happen. If the input is already passed, it should have the uri
@@ -588,7 +588,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				// If the request was sent
 				if (result) {
 					this._connectionFactory.deleteConnection(fileUri);
-					this._onDisconnect.fire(fileUri);
+					this._notifyDisconnected(fileUri);
 					// TODO: show diconnection in status statusview
 					// self.statusView.notConnected(fileUri);
 
@@ -666,5 +666,33 @@ export class ConnectionManagementService implements IConnectionManagementService
 			return self.sendListDatabasesRequest(connectionUri);
 		}
 		return Promise.resolve(undefined);
+	}
+
+	public changeDatabase(connectionUri: string, databaseName: string): Thenable<boolean> {
+		let self = this;
+		let profile = this.getConnectionProfile(connectionUri);
+		if (profile) {
+			// TODO should we clone this before altering? What happens if it fails?
+			profile.databaseName = databaseName;
+			return this.createNewConnection(connectionUri, profile).then(result => {
+				if (!result || !result.connected) {
+					// Note: Ideally this wouldn't disconnect on failure, but that's a separate issue that should
+					// be addressed in the future
+					self._notifyDisconnected(connectionUri);
+					return false;
+				}
+				return true;
+			}, err => {
+				self._notifyDisconnected(connectionUri);
+				return false;
+			});
+		}
+		return Promise.resolve(undefined);
+	}
+
+	private _notifyDisconnected(connectionUri: string): void {
+		this._onDisconnect.fire(<IConnectionParams> {
+			connectionUri: connectionUri
+		});
 	}
 }

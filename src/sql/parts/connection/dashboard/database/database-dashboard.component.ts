@@ -3,6 +3,9 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
+import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
+import 'vs/css!sql/media/primeng';
+
 import { ChangeDetectorRef } from '@angular/core';
 import { IDashboardPage } from 'sql/parts/connection/dashboard/common/dashboard';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -18,7 +21,7 @@ declare let AngularCore;
 @AngularCore.Component({
 	selector: 'app-database-dashboard',
 	templateUrl: require.toUrl('sql/parts/connection/dashboard/database/database-dashboard.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css')]
+	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class DatabaseDashboardComponent implements IDashboardPage {
 
