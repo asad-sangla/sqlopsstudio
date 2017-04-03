@@ -7,7 +7,7 @@
 
 import data = require('data');
 import * as interfaces from 'sql/parts/connection/common/interfaces';
-import { ConnectionOptionSpecialType } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionOptionSpecialType, ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
 
 export class ProviderConnectionInfo implements data.ConnectionInfo {
 
@@ -128,22 +128,24 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 				}
 			});
 		} else {
-			idNames = ['0', '1', '2', '3'];
+			// This should never happen but just incase the serverCapabilities was not ready at this time
+			idNames = ['authenticationType', 'database', 'server', 'user'];
 		}
 
 		idNames = idNames.filter(x => x !== undefined);
 
-		//Sort to make sure with the ids at the same order every time otherwise the ids would be different
+		//Sort to make sure using names in the same order every time otherwise the ids would be different
 		idNames.sort();
 
 		let idValues: string[] = [];
 		for (var index = 0; index < idNames.length; index++) {
 			let value = this.options[idNames[index]];
 			value = value ? value : '';
-			idValues.push(`${idNames[index]}:${value}`);
+			idValues.push(`${idNames[index]}${ProviderConnectionInfo.nameValueSeparator}${value}`);
 		}
 
-		return 'providerName:' + this.providerName + ProviderConnectionInfo.idSeparator + idValues.join(ProviderConnectionInfo.idSeparator);
+		return 'providerName' + ProviderConnectionInfo.nameValueSeparator +
+		this.providerName + ProviderConnectionInfo.idSeparator + idValues.join(ProviderConnectionInfo.idSeparator);
 	}
 
 	public getSpecialTypeOptionName(type: number): string {
@@ -162,12 +164,54 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		}
 	}
 
+	public get authenticationTypeDisplayName(): string {
+		let optionMetadata = this._serverCapabilities.connectionProvider.options.find(o => o.specialValueType === ConnectionOptionSpecialType.authType);
+		let authType = this.authenticationType;
+		let displayName: string = authType;
+
+		if (optionMetadata && optionMetadata.categoryValues) {
+			optionMetadata.categoryValues.forEach(element => {
+				if (element.name === authType) {
+					displayName = element.displayName;
+				}
+			});
+		}
+		return displayName;
+	}
+
 	public getProviderOptions(): data.ConnectionOption[] {
 		return this._serverCapabilities.connectionProvider.options;
 	}
 
 	public static get idSeparator(): string {
 		return '|';
+	}
+
+	public static get nameValueSeparator(): string {
+		return ':';
+	}
+
+	public get titleParts(): string[] {
+		let parts: string[] = [];
+		// Always put these three on top. TODO: maybe only for MSSQL?
+		parts.push(this.serverName);
+		parts.push(this.databaseName);
+		parts.push(this.authenticationTypeDisplayName);
+
+		this._serverCapabilities.connectionProvider.options.forEach(element => {
+			if (element.specialValueType !== ConnectionOptionSpecialType.serverName &&
+			element.specialValueType !== ConnectionOptionSpecialType.databaseName &&
+			element.specialValueType !== ConnectionOptionSpecialType.authType &&
+			element.specialValueType !== ConnectionOptionSpecialType.password &&
+			element.isIdentity && element.valueType === ConnectionOptionType.string) {
+				let value = this.getOptionValue(element.name);
+				if (value) {
+					parts.push(value);
+				}
+			}
+		});
+
+		return parts;
 	}
 }
 

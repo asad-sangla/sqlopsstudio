@@ -199,4 +199,14 @@ suite('SQL ProviderConnectionInfo tests', () => {
 
 		assert.notEqual(conn.getUniqueId(), conn2.getUniqueId());
 	});
+
+	test('titleParts should return server, database and auth type as first items', () => {
+		let conn = new ProviderConnectionInfo(msSQLCapabilities, connectionProfile);
+		let titleParts = conn.titleParts;
+		assert.equal(titleParts.length, 4);
+		assert.equal(titleParts[0], connectionProfile.serverName);
+		assert.equal(titleParts[1], connectionProfile.databaseName);
+		assert.equal(titleParts[2], connectionProfile.authenticationType);
+		assert.equal(titleParts[3], connectionProfile.userName);
+	});
 });

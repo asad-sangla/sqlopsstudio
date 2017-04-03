@@ -84,7 +84,8 @@ export class ConnectionStore {
 	 * @returns {string} formatted string with server, DB and username
 	 */
 	public formatCredentialId(connectionProfile: IConnectionProfile, itemType?: string): string {
-		let connectionProfileInstance: ConnectionProfile = this.convertToConnectionProfile(connectionProfile);
+		let connectionProfileInstance: ConnectionProfile = ConnectionProfile.convertToConnectionProfile(
+			this._connectionConfig.getCapabilities(connectionProfile.providerName), connectionProfile);
 		if (Utils.isEmpty(connectionProfileInstance.getConnectionInfoId())) {
 			throw new Error('Missing Id, which is required');
 		}
@@ -109,8 +110,12 @@ export class ConnectionStore {
 	 * @param connection profile
 	 */
 	public isPasswordRequired(connection: IConnectionProfile): boolean {
-		let connectionProfile = this.convertToConnectionProfile(connection);
-		return connectionProfile.isPasswordRequired();
+		if (connection) {
+			let connectionProfile = ConnectionProfile.convertToConnectionProfile(this._connectionConfig.getCapabilities(connection.providerName), connection);
+			return connectionProfile.isPasswordRequired();
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -290,22 +295,14 @@ export class ConnectionStore {
 	}
 
 	public getProfileWithoutPassword(conn: IConnectionProfile): ConnectionProfile {
-		let savedConn: ConnectionProfile = this.convertToConnectionProfile(conn);
-		savedConn = savedConn.withoutPassword();
+		if (conn) {
+			let savedConn: ConnectionProfile = ConnectionProfile.convertToConnectionProfile(this._connectionConfig.getCapabilities(conn.providerName), conn);
+			savedConn = savedConn.withoutPassword();
 
-		return savedConn;
-	}
-
-	private convertToConnectionProfile(conn: IConnectionProfile): ConnectionProfile {
-		let savedConn: ConnectionProfile = undefined;
-		let connectionProfileInstance = conn as ConnectionProfile;
-		if (connectionProfileInstance && conn instanceof ConnectionProfile) {
-			savedConn = connectionProfileInstance;
+			return savedConn;
 		} else {
-			savedConn = new ConnectionProfile(this._connectionConfig.getCapabilities(conn.providerName), conn);
+			return undefined;
 		}
-
-		return savedConn;
 	}
 
 	/**

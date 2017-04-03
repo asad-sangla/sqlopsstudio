@@ -76,7 +76,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		return instance;
 	}
 
-	public static RootGroupName: string = '/';
+	public static readonly RootGroupName: string = '/';
 
 	public withoutPassword(): ConnectionProfile {
 		let clone = this.clone();
@@ -86,11 +86,11 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 
 	public getUniqueId(): string {
 		let id = super.getUniqueId();
-		return id + ProviderConnectionInfo.idSeparator + 'group:' + this.groupId;
+		return id + ProviderConnectionInfo.idSeparator + 'group' + ProviderConnectionInfo.nameValueSeparator + this.groupId;
 	}
 
 	/**
-	 * Returns the unique id for the connection that doesn't include group name
+	 * Returns the unique id for the connection that doesn't include the group name
 	 */
 	public getConnectionInfoId(): string {
 		return super.getUniqueId();
@@ -131,24 +131,40 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		return connectionInfo;
 	}
 
+	public static convertToConnectionProfile(serverCapabilities: data.DataProtocolServerCapabilities, conn: IConnectionProfile): ConnectionProfile {
+		if (conn) {
+			let connectionProfile: ConnectionProfile = undefined;
+			let connectionProfileInstance = conn as ConnectionProfile;
+			if (connectionProfileInstance && conn instanceof ConnectionProfile) {
+				connectionProfile = connectionProfileInstance;
+			} else {
+				connectionProfile = new ConnectionProfile(serverCapabilities, conn);
+			}
+
+			return connectionProfile;
+		} else {
+			return undefined;
+		}
+	}
+
 	public static convertToProfileStore(
 		serverCapabilities: data.DataProtocolServerCapabilities,
 		connectionProfile: IConnectionProfile): interfaces.IConnectionProfileStore {
+		if (connectionProfile) {
+			let connectionInfo = ConnectionProfile.convertToConnectionProfile(serverCapabilities, connectionProfile);
+			let profile: interfaces.IConnectionProfileStore = {
+				options: {},
+				groupId: connectionProfile.groupId,
+				providerName: connectionInfo.providerName,
+				savePassword: connectionInfo.savePassword
+			};
 
-		let connectionInfo = connectionProfile as ConnectionProfile;
-		if (!connectionInfo) {
-			connectionInfo = new ConnectionProfile(serverCapabilities, connectionProfile);
+			profile.options = connectionInfo.options;
+
+			return profile;
+		} else {
+			return undefined;
 		}
-		let profile: interfaces.IConnectionProfileStore = {
-			options: {},
-			groupId: connectionProfile.groupId,
-			providerName: connectionInfo.providerName,
-			savePassword: connectionInfo.savePassword
-		};
-
-		profile.options = connectionInfo.options;
-
-		return profile;
 	}
 
 }

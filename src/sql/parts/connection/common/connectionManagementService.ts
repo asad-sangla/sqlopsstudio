@@ -236,6 +236,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 				uri: uri
 			};
 		}
+		
+
+		if (uri !== input.uri) {
+			//TODO: this should never happen. If the input is already passed, it should have the uri
+			Utils.logDebug(`the given uri is different that the input uri. ${uri}|${input.uri}`)
+		}
 		return this.tryConnect(connection, input, options);
 	}
 
