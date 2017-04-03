@@ -57,7 +57,7 @@ const viewletDescriptor = new ViewletDescriptor(
 	'sql/parts/connection/viewlet/connectionViewlet',
 	'ConnectionViewlet',
 	VIEWLET_ID,
-	'Connections',
+	'Servers',
 	'extensions',
 	0
 );
@@ -73,7 +73,7 @@ registry.registerWorkbenchAction(
 		OpenConnectionsViewletAction.ID,
 		OpenConnectionsViewletAction.LABEL,
 		openViewletKb),
-	'View: Show Connections',
+	'View: Show Servers',
 	localize('view', "View")
 );
 

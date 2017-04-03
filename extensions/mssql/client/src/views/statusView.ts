@@ -1,6 +1,5 @@
 import vscode = require('vscode');
 import Constants = require('../models/constants');
-import ConnInfo = require('../models/connectionInfo');
 import * as ConnectionContracts from '../models/contracts/connection';
 import Interfaces = require('../models/interfaces');
 import * as Utils from '../models/utils';
@@ -87,59 +86,21 @@ export default class StatusView implements vscode.Disposable {
     }
 
     public show(fileUri: string): void {
-        let bar = this.getStatusBar(fileUri);
-        this.showStatusBarItem(fileUri, bar.statusConnection);
-        this.showStatusBarItem(fileUri, bar.statusQuery);
-        this.showStatusBarItem(fileUri, bar.statusLanguageService);
     }
 
     public notConnected(fileUri: string): void {
-        let bar = this.getStatusBar(fileUri);
-        bar.statusConnection.text = Constants.notConnectedLabel;
-        bar.statusConnection.tooltip = Constants.notConnectedTooltip;
-        bar.statusConnection.command = Constants.cmdConnect;
-        this.showStatusBarItem(fileUri, bar.statusConnection);
-        bar.statusLanguageService.text = '';
-        this.showStatusBarItem(fileUri, bar.statusLanguageService);
     }
 
     public connecting(fileUri: string, connCreds: Interfaces.IConnectionCredentials): void {
-        let bar = this.getStatusBar(fileUri);
-        bar.statusConnection.command = Constants.cmdDisconnect;
-        bar.statusConnection.tooltip = Constants.connectingTooltip + ConnInfo.getTooltip(connCreds);
-        this.showStatusBarItem(fileUri, bar.statusConnection);
-        this.showProgress(fileUri, Constants.connectingLabel, bar.statusConnection);
     }
 
     public connectSuccess(fileUri: string, connCreds: Interfaces.IConnectionCredentials, serverInfo: ConnectionContracts.ServerInfo): void {
-        let bar = this.getStatusBar(fileUri);
-        bar.statusConnection.command = Constants.cmdChooseDatabase;
-        bar.statusConnection.text = ConnInfo.getConnectionDisplayString(connCreds);
-        bar.statusConnection.tooltip = ConnInfo.getTooltip(connCreds, serverInfo);
-        this.showStatusBarItem(fileUri, bar.statusConnection);
     }
 
     public connectError(fileUri: string, credentials: Interfaces.IConnectionCredentials, error: ConnectionContracts.ConnectionCompleteParams): void {
-        let bar = this.getStatusBar(fileUri);
-        bar.statusConnection.command = Constants.cmdConnect;
-        bar.statusConnection.text = Constants.connectErrorLabel;
-        if (error.errorNumber && error.errorMessage && !Utils.isEmpty(error.errorMessage)) {
-            bar.statusConnection.tooltip = Constants.connectErrorTooltip + credentials.server + '\n' +
-                                        Constants.connectErrorCode + error.errorNumber + '\n' +
-                                        Constants.connectErrorMessage + error.errorMessage;
-        } else {
-            bar.statusConnection.tooltip = Constants.connectErrorTooltip + credentials.server + '\n' +
-                                        Constants.connectErrorMessage + error.messages;
-        }
-        this.showStatusBarItem(fileUri, bar.statusConnection);
     }
 
     public executingQuery(fileUri: string): void {
-        let bar = this.getStatusBar(fileUri);
-        bar.statusQuery.command = undefined;
-        bar.statusQuery.tooltip = Constants.executeQueryLabel;
-        this.showStatusBarItem(fileUri, bar.statusQuery);
-        this.showProgress(fileUri, Constants.executeQueryLabel, bar.statusQuery);
     }
 
     public executedQuery(fileUri: string): void {
@@ -171,27 +132,6 @@ export default class StatusView implements vscode.Disposable {
         newStatus: string,
         getCurrentStatus: () => string,
         updateMessage:  (message: string) => void): void {
-        switch (newStatus) {
-            case Constants.definitionRequestedStatus:
-                setTimeout(() => {
-                    if (getCurrentStatus() !== Constants.definitionRequestCompletedStatus) {
-                        updateMessage(Constants.gettingDefinitionMessage);
-                    }
-                }, 500);
-                break;
-            case Constants.definitionRequestCompletedStatus:
-                updateMessage('');
-                break;
-            case Constants.updatingIntelliSenseStatus:
-                updateMessage(Constants.updatingIntelliSenseLabel);
-                break;
-            case Constants.intelliSenseUpdatedStatus:
-                updateMessage('');
-                break;
-            default:
-                Utils.logDebug(`Language service status changed. ${newStatus}`);
-                break;
-        }
     }
 
     /**
@@ -256,20 +196,5 @@ export default class StatusView implements vscode.Disposable {
     }
 
     private showProgress(fileUri: string, statusText: string, statusBarItem: vscode.StatusBarItem): void {
-        const self = this;
-        let index = 0;
-        let progressTicks = [ '|', '/', '-', '\\'];
-
-        let bar = this.getStatusBar(fileUri);
-        bar.progressTimerId = setInterval(() => {
-            index++;
-            if (index > 3) {
-                index = 0;
-            }
-
-            let progressTick = progressTicks[index];
-            statusBarItem.text = statusText + ' ' + progressTick;
-            self.showStatusBarItem(fileUri, statusBarItem);
-        }, 200);
     }
 }

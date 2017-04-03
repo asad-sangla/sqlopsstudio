@@ -34,6 +34,7 @@ import * as ConnectionContracts from 'sql/parts/connection/common/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import Event, { Emitter } from 'vs/base/common/event';
+import { ISplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -54,10 +55,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 	constructor(
 		private _connectionMemento: Memento,
 		private _connectionStore: ConnectionStore,
+		@ISplashScreenService private _splashScreen: ISplashScreenService,
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
-		@IStatusbarService private _statusService: IStatusbarService,
 		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
 		@IStorageService private _storageService: IStorageService,
 		@ITelemetryService private _telemetryService: ITelemetryService,
@@ -65,7 +66,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
 		@ICredentialsService private _credentialsService: ICredentialsService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
-		@IQuickOpenService private quickOpenService: IQuickOpenService
+		@IQuickOpenService private _quickOpenService: IQuickOpenService
 	) {
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
 		if (!this._connectionMemento) {
@@ -110,9 +111,18 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._onConnectRequestSent.event;
 	}
 
+	private _providerCount: number = 0;
+
 	// Connection Provider Registration
 	public registerProvider(providerId: string, provider: data.ConnectionProvider): void {
 		this._providers[providerId] = provider;
+
+		// temporarily close splash screen when a connection provider has been registered
+		// @todo remove this code once a proper initialization event is available (karlb 4/1/2017)
+		++this._providerCount;
+		if (this._providerCount === 1) {
+			this._splashScreen.hideSplashScreen();
+		}
 	}
 
 	/**
@@ -271,9 +281,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 
 		return new Promise<IConnectionResult>((resolve, reject) => {
-			if (this._statusService) {
-				this._statusService.setStatusMessage('Connecting...');
-			}
 			if (callbacks.onConnectStart) {
 				callbacks.onConnectStart();
 			}
@@ -427,15 +434,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 		let connection = this._connectionFactory.onConnectionComplete(info);
 
 		if (Utils.isNotEmpty(info.connectionId)) {
-			self._updateConnectionInfoOnSuccess(connection, info);
+			if (info.connectionSummary && info.connectionSummary.databaseName) {
+				connection.connectionProfile.databaseName = info.connectionSummary.databaseName;
+			}
+			connection.serverInfo = info.serverInfo;
+
 			connection.connectHandler(true);
 			let activeConnection = connection.connectionProfile;
 			self.tryAddActiveConnection(connection, activeConnection);
 		} else {
 			connection.connectHandler(false, info.messages);
-		}
-		if (this._statusService) {
-			this._statusService.setStatusMessage('Updating IntelliSense cache');
 		}
 	}
 
@@ -449,15 +457,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 	}
 
-	private _updateConnectionInfoOnSuccess(connection: ConnectionManagementInfo, info: data.ConnectionInfoSummary): void {
-		if (info.connectionSummary && info.connectionSummary.databaseName) {
-			connection.connectionProfile.databaseName = info.connectionSummary.databaseName;
-		}
-		connection.serverInfo = info.serverInfo;
-	}
-
 	public onIntelliSenseCacheComplete(handle: number, connectionUri: string): void {
-		this._statusService.setStatusMessage('Connection Complete ' + connectionUri);
 	}
 
 	public dispose(): void {
@@ -556,7 +556,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				{ key: nls.localize('no', 'No'), value: false }
 			];
 
-			self.quickOpenService.pick(choices.map(x => x.key), { placeHolder: nls.localize('cancelConnetionConfirmation', 'Are you sure you want to cancel this connection?'), ignoreFocusLost: true }).then((choice) => {
+			self._quickOpenService.pick(choices.map(x => x.key), { placeHolder: nls.localize('cancelConnetionConfirmation', 'Are you sure you want to cancel this connection?'), ignoreFocusLost: true }).then((choice) => {
 				let confirm = choices.find(x => x.key === choice);
 				resolve(confirm && confirm.value);
 			});

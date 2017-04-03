@@ -60,10 +60,10 @@ suite('SQL ConnectionManagementService tests', () => {
 		connectionManagementService = new ConnectionManagementService(
 			undefined,
 			connectionStore.object,
+			undefined,
 			connectionDialogService.object,
 			undefined,
 			workbenchEditorService.object,
-			undefined,
 			undefined,
 			undefined,
 			undefined,

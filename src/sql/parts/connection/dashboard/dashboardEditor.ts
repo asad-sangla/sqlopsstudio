@@ -18,11 +18,11 @@ import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import { DashboardComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { AppComponent } from "./dashboard.component";
 
 export class DashboardEditor extends BaseEditor {
 
 	public static ID: string = 'workbench.editor.connectiondashboard';
-	public static AngularSelectorString: string = 'connection-dashboard';
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -60,12 +60,13 @@ export class DashboardEditor extends BaseEditor {
 			return TPromise.as(undefined);
 		}
 
-		if (!input.hasInitialized) {
+		//if (!input.hasInitialized) {
 			this.bootstrapAngular(input);
-		}
+		//}
 
 		return super.setInput(input, options);
 	}
+
 
 	/**
 	 * Load the angular components and record for this input that we have done so
@@ -76,12 +77,13 @@ export class DashboardEditor extends BaseEditor {
 
 		// Get the bootstrap params and perform the bootstrap
 		let params: DashboardComponentParams = {
+			ownerUri: input.getUri(),
 			connection: input.getConnectionProfile()
 		};
 		this._bootstrapService.bootstrap(
 			DashboardModule,
 			this.getContainer().getHTMLElement(),
-			DashboardEditor.AngularSelectorString,
+			AppComponent.AngularSelectorString,
 			input.getUri(),
 			params);
 	}

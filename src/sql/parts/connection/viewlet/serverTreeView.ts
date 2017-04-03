@@ -14,13 +14,12 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { AdaptiveCollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
 import { AddServerAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
-import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
-import { ITree } from 'vs/base/parts/tree/browser/tree';
-import {TreeCreationUtils} from 'sql/parts/connection/viewlet/TreeCreationUtils';
-import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/TreeUpdateUtils';
+import {TreeCreationUtils} from 'sql/parts/connection/viewlet/treeCreationUtils';
+import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/treeUpdateUtils';
 const $ = builder.$;
 
 /**

@@ -17,8 +17,13 @@
 			}
 		</style>
 
+	<script src="../../../../sql/parts/grid/load/loadJquery.js"></script>
+	<script src="../../../../../node_modules/slickgrid/lib/jquery.event.drag-2.2.js"></script>
+	<script src="../../../../../node_modules/slickgrid/lib/jquery-ui-1.9.2.js"></script>
+
 	</head>
 	<body class="monaco-shell vs-dark" aria-label="">
+
 		<script>
 			(function() {
 					try {
@@ -34,11 +39,13 @@
 					}
 				})();
 		</script>
+
+		<div class="splash-screen-content">
+			Loading Carbon dependencies...
+		</div>
+
 	</body>
 
 	<!-- Startup via index.js -->
-	<script src="../../../../sql/parts/grid/load/loadJquery.js"></script>
-	<script src="../../../../../node_modules/slickgrid/lib/jquery.event.drag-2.2.js"></script>
-	<script src="../../../../../node_modules/slickgrid/lib/jquery-ui-1.9.2.js"></script>
 	<script src="index.js"></script>
 </html>

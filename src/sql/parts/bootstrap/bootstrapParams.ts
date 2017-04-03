@@ -10,13 +10,15 @@ export interface BootstrapParams {
 }
 
 export interface QueryComponentParams extends BootstrapParams {
-	dataService:  DataService;
+	dataService: DataService;
 }
 
 export interface EditDataComponentParams extends BootstrapParams {
-	dataService:  DataService;
+	dataService: DataService;
 }
 
 export interface DashboardComponentParams extends BootstrapParams {
+	ownerUri: string;
+
 	connection: IConnectionProfile;
 }

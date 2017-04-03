@@ -109,6 +109,9 @@ import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryE
 import { IQueryManagementService, QueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IEditorDescriptorService, EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { IScriptingService, ScriptingService } from 'sql/parts/scripting/scriptingService';
+import { ISplashScreenService, SplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
+
+
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
 export const InZenModeContext = new RawContextKey<boolean>('inZenMode', false);
@@ -211,6 +214,8 @@ export class Workbench implements IPartService {
 		wasSideBarVisible: boolean;
 		wasPanelVisible: boolean;
 	};
+
+	private splashScreenService: ISplashScreenService;
 
 	constructor(
 		parent: HTMLElement,
@@ -379,6 +384,8 @@ export class Workbench implements IPartService {
 
 			// Join viewlet, panel and editor promises
 			TPromise.join(compositeAndEditorPromises).then(() => workbenchDone(), error => workbenchDone(error));
+
+			this.splashScreenService.showSplashScreen();
 		} catch (error) {
 
 			// Print out error
@@ -556,6 +563,8 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IQuickOpenService, this.quickOpen);
 
 		// SQL Tools services
+		this.splashScreenService = this.instantiationService.createInstance(SplashScreenService);
+		serviceCollection.set(ISplashScreenService, this.splashScreenService);
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
 		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));

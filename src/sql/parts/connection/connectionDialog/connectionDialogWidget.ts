@@ -20,8 +20,8 @@ import { KeyCode } from 'vs/base/common/keyCodes';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
-import {TreeCreationUtils} from 'sql/parts/connection/viewlet/TreeCreationUtils';
-import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/TreeUpdateUtils';
+import {TreeCreationUtils} from 'sql/parts/connection/viewlet/treeCreationUtils';
+import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/treeUpdateUtils';
 import data = require('data');
 
 export interface IConnectionDialogCallbacks {

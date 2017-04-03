@@ -55,8 +55,7 @@ export class AppComponent {
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
         @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
-        this.ownerUri = this._el.nativeElement.id;
-		this._el.nativeElement.removeAttribute('id');
+        this.ownerUri = this._el.nativeElement.parentElement.getAttribute('bootstrap-id');
         let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this.ownerUri);
 
 		this.connectionService = this._bootstrapService.connectionManagementService;
@@ -65,8 +64,22 @@ export class AppComponent {
 		this.queryEditorService = this._bootstrapService.queryEditorService;
 
 		this.connection = dashboardParameters.connection;
+		this.ownerUri = dashboardParameters.ownerUri;
 		this.currentDatabaseName = this.connection.databaseName;
 		this.breadCrumbItems = [];
+	}
+
+	public static AngularSelectorString: string = 'connection-dashboard';
+
+	private static nextSelectorId: number = 0;
+
+	public static getNextAngularSelectorString(): string {
+		++this.nextSelectorId;
+		return this.getCurrentAngularSelectorString();
+	}
+
+	public static getCurrentAngularSelectorString(): string {
+		return AppComponent.AngularSelectorString + this.nextSelectorId;
 	}
 
 	public onActivate(component: any) {
@@ -107,15 +120,15 @@ export class AppComponent {
 
 	}
 
+	public onActivateServerPage(component: ServerDashboardComponent) {
+		this.breadCrumbItems = [];
+		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
+	}
+
 	public onActivateDatabasePage(component: DatabaseDashboardComponent) {
 		this.breadCrumbItems = [];
 		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
 		this.breadCrumbItems.push({ label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
-	}
-
-	public onActivateServerPage(component: ServerDashboardComponent) {
-		this.breadCrumbItems = [];
-		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
 	}
 
 	public onActivateObjectPage(component: ObjectDashboardComponent) {

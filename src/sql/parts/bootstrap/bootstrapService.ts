@@ -76,6 +76,8 @@ export class BootstrapService implements IBootstrapService {
 		selector.id = id;
 		append(container, selector);
 
+		container.setAttribute('bootstrap-id', id);
+
 		// Associate the params
 		this._bootstrapParameterMap[id] = params;
 

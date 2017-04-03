@@ -22,21 +22,17 @@ import Severity from 'vs/base/common/severity';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { IConnectionsViewlet, IConnectionManagementService, VIEWLET_ID } from 'sql/parts/connection/common/connectionManagement';
 import { ServerTreeView } from 'sql/parts/connection/viewlet/serverTreeView';
-import { RecentConnectionsView } from 'sql/parts/connection/viewlet/recentConnectionsView';
 import { SplitView } from 'vs/base/browser/ui/splitview/splitview';
+import { ConnectionProfileGroup } from "../common/connectionProfileGroup";
 
 export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	private searchDelayer: ThrottledDelayer<any>;
 	private root: HTMLElement;
-	private searchBox: HTMLInputElement;
 	private messageBox: HTMLElement;
-	private disposables: IDisposable[] = [];
 	private connectionButton: Button;
 	private views: IViewletView[];
 	private serverTreeView: ServerTreeView;
-	private recentConnView: RecentConnectionsView;
-	private activeConnView: RecentConnectionsView;
 	private viewletContainer: Builder;
 	private splitView: SplitView;
 
@@ -52,31 +48,52 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.views = [];
 	}
 
-	create(parent: Builder): TPromise<void> {
+	private hasRegisteredServers(): boolean {
+		return this.doHasRegisteredServers(this.connectionManagementService.getConnectionGroups());
+	}
+
+	private doHasRegisteredServers(root: ConnectionProfileGroup[]): boolean {
+
+		if (!root || root.length === 0) {
+			return false;
+		}
+
+		for (let i = 0; root.length; ++i) {
+			let item = root[i];
+
+			if (item.connections && item.connections.length > 0) {
+				return true;
+			}
+
+			if (this.doHasRegisteredServers(item.children)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public create(parent: Builder): TPromise<void> {
 		super.create(parent);
 		parent.addClass('extensions-viewlet');
 		this.root = parent.getHTMLElement();
-		const header = append(this.root, $('.header'));
-		this.searchBox = append(header, $<HTMLInputElement>('input.search-box'));
-		this.searchBox.placeholder = 'Find Server';
-		this.disposables.push(addStandardDisposableListener(this.searchBox, EventType.FOCUS, () => addClass(this.searchBox, 'synthetic-focus')));
-		this.disposables.push(addStandardDisposableListener(this.searchBox, EventType.BLUR, () => removeClass(this.searchBox, 'synthetic-focus')));
 
 		this.messageBox = append(this.root, $('.message'));
 
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
 
-		this.connectionButton = new Button(this.viewletContainer);
-		this.connectionButton.label = 'New Connection';
-		this.connectionButton.addListener2('click', () => {
-			this.newConnection();
-		});
+		if (!this.hasRegisteredServers()) {
+			this.connectionButton = new Button(this.viewletContainer);
+			this.connectionButton.label = 'Add Server';
+			this.connectionButton.addListener2('click', () => {
+				this.newConnection();
+			});
+		}
 
 		this.splitView = new SplitView(this.viewletContainer.getHTMLElement());
 		this.serverTreeView = this.instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
 		this.splitView.addView(this.serverTreeView, 20);
 		this.views.push(this.serverTreeView);
-		this.views.push(this.recentConnView);
 		this.serverTreeView.create().then(() => {
 			this.updateTitleArea();
 			this.setVisible(this.isVisible()).then(() => this.focus());

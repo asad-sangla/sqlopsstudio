@@ -14,8 +14,8 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
-import {TreeCreationUtils} from 'sql/parts/connection/viewlet/TreeCreationUtils';
-import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/TreeUpdateUtils';
+import {TreeCreationUtils} from 'sql/parts/connection/viewlet/treeCreationUtils';
+import {TreeUpdateUtils} from 'sql/parts/connection/viewlet/treeUpdateUtils';
 const $ = builder.$;
 
 /**
