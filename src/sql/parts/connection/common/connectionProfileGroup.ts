@@ -107,7 +107,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 			this.children = [];
 		}
 		groups.forEach((group) => {
-			this.children = this.children.filter((grp) => { return group.id !== grp.id;});
+			this.children = this.children.filter((grp) => { return group.id !== grp.id; });
 			group._parent = this;
 			this.children.push(group);
 		});
@@ -128,5 +128,19 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 		}
 		groupNames[0] = 'ROOT';
 		return groupNames;
+	}
+
+	public static isRoot(name: string): boolean {
+		return (Utils.isEmpty(name) || name.toUpperCase() === ConnectionProfileGroup.RootGroupName ||
+			name === ConnectionProfileGroup.GroupNameSeparator);
+	}
+
+	public static sameGroupName(name1: string, name2: string): boolean {
+		let sameGroupName: boolean =
+			((Utils.isEmpty(name1) && Utils.isEmpty(name2)) ||
+				name1.toUpperCase() === name2.toUpperCase() ||
+				(ConnectionProfileGroup.isRoot(name1) && ConnectionProfileGroup.isRoot(name2)));
+
+		return sameGroupName;
 	}
 }

@@ -9,7 +9,7 @@ import Constants = require('./constants');
 import ConnInfo = require('./connectionInfo');
 import Utils = require('./utils');
 import { ConnectionProfile } from '../common/connectionProfile';
-import { IConnectionProfile, CredentialsQuickPickItemType } from './interfaces';
+import { IConnectionProfile, CredentialsQuickPickItemType } from 'sql/parts/connection/common/interfaces';
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
 import { IConnectionConfig } from './iconnectionconfig';
 import { ConnectionConfig } from './connectionconfig';
@@ -204,7 +204,7 @@ export class ConnectionStore {
 
 	private getCachedServerCapabilities(): data.DataProtocolServerCapabilities[] {
 		if (this._memento) {
-			let metadata: data.DataProtocolServerCapabilities[] = this._memento['OPTIONS_METADATA'];
+			let metadata: data.DataProtocolServerCapabilities[] = this._memento[Constants.capabilitiesOptions];
 			return metadata;
 		} else {
 			return undefined;
@@ -215,7 +215,7 @@ export class ConnectionStore {
 	private saveCachedServerCapabilities(): void {
 		if (this._memento) {
 			let capabilities = this._capabilitiesService.getCapabilities();
-			this._memento['OPTIONS_METADATA'] = capabilities;
+			this._memento[Constants.capabilitiesOptions] = capabilities;
 		}
 	}
 
@@ -243,11 +243,15 @@ export class ConnectionStore {
 				this._capabilitiesService.onProviderRegisteredEvent((serverCapabilities) => {
 					connectionProfile.onProviderRegistered(serverCapabilities);
 				});
-				if (Utils.isEmpty(connectionProfile.groupFullName) && connectionProfile.groupId) {
-					connectionProfile.groupFullName = this.getGroupFullName(connectionProfile.groupId);
-				}
-				if (Utils.isEmpty(connectionProfile.groupId) && connectionProfile.groupFullName) {
-					connectionProfile.groupId = this.getGroupId(connectionProfile.groupFullName);
+				if (connectionProfile.saveProfile) {
+					if (Utils.isEmpty(connectionProfile.groupFullName) && connectionProfile.groupId) {
+						connectionProfile.groupFullName = this.getGroupFullName(connectionProfile.groupId);
+					}
+					if (Utils.isEmpty(connectionProfile.groupId) && connectionProfile.groupFullName) {
+						connectionProfile.groupId = this.getGroupId(connectionProfile.groupFullName);
+					} else if (Utils.isEmpty(connectionProfile.groupId) && Utils.isEmpty(connectionProfile.groupFullName)) {
+						connectionProfile.groupId = this.getGroupId('');
+					}
 				}
 				return connectionProfile;
 			} else {
@@ -311,7 +315,7 @@ export class ConnectionStore {
 		});
 	}
 
-	private addConnectionToMemento(conn: IConnectionProfile, mementoKey: string, maxConnections?: number, savePassword?: boolean): Promise<void> {
+	public addConnectionToMemento(conn: IConnectionProfile, mementoKey: string, maxConnections?: number, savePassword?: boolean): Promise<void> {
 		const self = this;
 		return new Promise<void>((resolve, reject) => {
 			// Get all profiles
@@ -331,7 +335,7 @@ export class ConnectionStore {
 		});
 	}
 
-	private getConnectionsFromMemento(mementoKey: string): ConnectionProfile[] {
+	public getConnectionsFromMemento(mementoKey: string): ConnectionProfile[] {
 		let configValues: IConnectionProfile[] = this._memento[mementoKey];
 		if (!configValues) {
 			configValues = [];
@@ -363,7 +367,14 @@ export class ConnectionStore {
 		let savedProfile: ConnectionProfile = this.getProfileWithoutPassword(conn);
 
 		// Remove the connection from the list if it already exists
-		list = list.filter(value => value && value.getUniqueId() !== savedProfile.getUniqueId());
+		list = list.filter(value => {
+			let equal = value && value.getConnectionInfoId() === savedProfile.getConnectionInfoId();
+			if (equal && savedProfile.saveProfile) {
+				equal = value.groupId === savedProfile.groupId ||
+					ConnectionProfileGroup.sameGroupName(value.groupFullName, savedProfile.groupFullName);
+			}
+			return !equal;
+		});
 
 		list.unshift(savedProfile);
 
@@ -380,6 +391,11 @@ export class ConnectionStore {
 	public clearRecentlyUsed(): void {
 		this._memento[Constants.recentConnections] = [];
 	}
+
+	public clearFromMemento(name: string): void {
+		this._memento[name] = [];
+	}
+
 
 	/**
 	 * Clear all active connections from the MRU list.
@@ -442,7 +458,7 @@ export class ConnectionStore {
 			return connectionProfile;
 		});
 
-		this._memento['UNSAVED_CONNECTIONS'] = newList;
+		this._memento[Constants.unsavedConnections] = newList;
 	}
 
 	private saveProfilePasswordIfNeeded(profile: IConnectionProfile): Promise<boolean> {
@@ -471,8 +487,11 @@ export class ConnectionStore {
 		});
 	}
 
-	public getConnectionProfileGroups(): ConnectionProfileGroup[] {
-		let profilesInConfiguration = this._connectionConfig.getConnections(true);
+	public getConnectionProfileGroups(withoutConnections?: boolean): ConnectionProfileGroup[] {
+		let profilesInConfiguration: ConnectionProfile[];
+		if (!withoutConnections) {
+			profilesInConfiguration = this._connectionConfig.getConnections(true);
+		}
 		let groups = this._connectionConfig.getAllGroups();
 
 		let connectionProfileGroups = this.convertToConnectionGroup(groups, profilesInConfiguration, undefined);
@@ -486,13 +505,15 @@ export class ConnectionStore {
 			children.map(group => {
 				let connectionGroup = new ConnectionProfileGroup(group.name, parent, group.id);
 				this.addGroupFullNameToMap(group.id, connectionGroup.fullName);
-				let connectionsForGroup = connections.filter(conn => conn.groupId === connectionGroup.id);
-				var conns = [];
-				connectionsForGroup.forEach((conn) => {
-					conn.groupFullName = connectionGroup.fullName;
-					conns.push(conn);
-				});
-				connectionGroup.addConnections(conns);
+				if (connections) {
+					let connectionsForGroup = connections.filter(conn => conn.groupId === connectionGroup.id);
+					var conns = [];
+					connectionsForGroup.forEach((conn) => {
+						conn.groupFullName = connectionGroup.fullName;
+						conns.push(conn);
+					});
+					connectionGroup.addConnections(conns);
+				}
 
 				let childrenGroups = this.convertToConnectionGroup(groups, connections, connectionGroup);
 				connectionGroup.addGroups(childrenGroups);
@@ -540,11 +561,21 @@ export class ConnectionStore {
 	}
 
 	private addGroupFullNameToMap(groupId: string, groupFullName: string): void {
-		this._groupIdToFullNameMap[groupId] = groupFullName;
-		this._groupFullNameToIdMap[groupFullName] = groupId;
+		if (groupId) {
+			this._groupIdToFullNameMap[groupId] = groupFullName;
+		}
+		if (groupFullName !== undefined) {
+			this._groupFullNameToIdMap[groupFullName.toUpperCase()] = groupId;
+		}
 	}
 
 	private getGroupFullName(groupId: string): string {
+		if (groupId in this._groupIdToFullNameMap) {
+			return this._groupIdToFullNameMap[groupId];
+		} else {
+			// Load the cache
+			this.getConnectionProfileGroups(true);
+		}
 		return this._groupIdToFullNameMap[groupId];
 	}
 
@@ -552,6 +583,15 @@ export class ConnectionStore {
 		if (groupFullName === ConnectionProfileGroup.GroupNameSeparator) {
 			groupFullName = '';
 		}
-		return this._groupFullNameToIdMap[groupFullName];
+		let key = groupFullName.toUpperCase();
+		let result: string = '';
+		if (key in this._groupFullNameToIdMap) {
+			result = this._groupFullNameToIdMap[key];
+		} else {
+			// Load the cache
+			this.getConnectionProfileGroups(true);
+			result = this._groupFullNameToIdMap[key];
+		}
+		return result;
 	}
 }

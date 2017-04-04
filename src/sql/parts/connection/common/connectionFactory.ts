@@ -5,17 +5,41 @@
 'use strict';
 
 import { ConnectionManagementInfo } from './connectionManagementInfo';
+import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IConnectionProfile } from './interfaces';
 import Utils = require('./utils');
 import * as data from 'data';
 
 export class ConnectionFactory {
+
 	private _connections: { [id: string]: ConnectionManagementInfo };
 	public static readonly DefaultUriPrefix: string = 'connection://';
 	public static readonly DashboardUriPrefix: string = 'dashboard://';
+	private _providerCapabilitiesMap: { [providerName: string]: data.DataProtocolServerCapabilities };
 
-	constructor() {
+	constructor( @ICapabilitiesService private _capabilitiesService: ICapabilitiesService) {
 		this._connections = {};
+		this._providerCapabilitiesMap = {};
+	}
+
+	public getCapabilities(providerName: string): data.DataProtocolServerCapabilities {
+		let result: data.DataProtocolServerCapabilities;
+
+		if (providerName in this._providerCapabilitiesMap) {
+			result = this._providerCapabilitiesMap[providerName];
+		} else {
+			let capabilities = this._capabilitiesService.getCapabilities();
+			if (capabilities) {
+				let providerCapabilities = capabilities.find(c => c.providerName === providerName);
+				if (providerCapabilities) {
+					this._providerCapabilitiesMap[providerName] = providerCapabilities;
+					result = providerCapabilities;
+				}
+			}
+		}
+
+		return result;
 	}
 
 	public findConnection(id: string): ConnectionManagementInfo {
@@ -42,17 +66,19 @@ export class ConnectionFactory {
 		}
 	}
 
-	public getConnectionProfile(id: string): IConnectionProfile {
+	public getConnectionProfile(id: string): ConnectionProfile {
 		let connectionInfoForId = this.findConnection(id);
 		return connectionInfoForId ? connectionInfoForId.connectionProfile : undefined;
 	}
 
 	public addConnection(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
+		// Always create a copy and save that in the list
+		let connectionProfile = new ConnectionProfile(this.getCapabilities(connection.providerName), connection);
 		const self = this;
 		let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
 		connectionInfo.extensionTimer = new Utils.Timer();
 		connectionInfo.intelliSenseTimer = new Utils.Timer();
-		connectionInfo.connectionProfile = connection;
+		connectionInfo.connectionProfile = connectionProfile;
 		connectionInfo.connecting = true;
 		self._connections[id] = connectionInfo;
 		connectionInfo.serviceTimer = new Utils.Timer();
@@ -66,10 +92,10 @@ export class ConnectionFactory {
 	 * when the connection is stored, the group id get assigned to the profile and it can change the id
 	 * So for those kind of connections, we need to add the new id and the connection
 	 */
-	public updateConnection(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
+	public updateGroupId(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
 		let connectionInfo: ConnectionManagementInfo = this._connections[id];
 		if (connectionInfo && this.isDefaultTypeUri(id)) {
-			connectionInfo.connectionProfile = connection;
+			connectionInfo.connectionProfile.groupId = connection.groupId;
 			let newId = this.getConnectionManagementId(connection);
 			if (newId !== id) {
 				this._connections[newId] = connectionInfo;

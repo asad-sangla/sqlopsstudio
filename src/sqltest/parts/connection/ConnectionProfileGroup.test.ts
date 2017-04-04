@@ -53,44 +53,96 @@ suite('SQL ConnectionProfileGroup tests', () => {
 	});
 
 	test('getGroupFullNameParts should return a list With ROOT in it given /', () => {
-		let groupFullName: string = "/";
+		let groupFullName: string = '/';
 		let expected: string[] = [ConnectionProfileGroup.RootGroupName];
 		let actual = ConnectionProfileGroup.getGroupFullNameParts(groupFullName);
 		assert.deepEqual(actual, expected);
 	});
 
 	test('getGroupFullNameParts should add ROOT as first item if not added already and string starts with /', () => {
-		let groupFullName: string = "/Groups/Group1";
+		let groupFullName: string = '/Groups/Group1';
 		let expected: string[] = [ConnectionProfileGroup.RootGroupName, 'Groups', 'Group1'];
 		let actual = ConnectionProfileGroup.getGroupFullNameParts(groupFullName);
 		assert.deepEqual(actual, expected);
 	});
 
 	test('getGroupFullNameParts should add ROOT as first item if not added already', () => {
-		let groupFullName: string = "Groups/Group1";
+		let groupFullName: string = 'Groups/Group1';
 		let expected: string[] = [ConnectionProfileGroup.RootGroupName, 'Groups', 'Group1'];
 		let actual = ConnectionProfileGroup.getGroupFullNameParts(groupFullName);
 		assert.deepEqual(actual, expected);
 	});
 
 	test('getGroupFullNameParts should not add ROOT if already added and string starts with /', () => {
-		let groupFullName: string = "/ROOT/Groups/Group1";
+		let groupFullName: string = '/ROOT/Groups/Group1';
 		let expected: string[] = [ConnectionProfileGroup.RootGroupName, 'Groups', 'Group1'];
 		let actual = ConnectionProfileGroup.getGroupFullNameParts(groupFullName);
 		assert.deepEqual(actual, expected);
 	});
 
 	test('getGroupFullNameParts should not add ROOT if already added', () => {
-		let groupFullName: string = "ROOT/Groups/Group1";
+		let groupFullName: string = 'ROOT/Groups/Group1';
 		let expected: string[] = [ConnectionProfileGroup.RootGroupName, 'Groups', 'Group1'];
 		let actual = ConnectionProfileGroup.getGroupFullNameParts(groupFullName);
 		assert.deepEqual(actual, expected);
 	});
 
 	test('getGroupFullNameParts should not add ROOT if already added and it is not uppercase', () => {
-		let groupFullName: string = "rOOT/Groups/Group1";
+		let groupFullName: string = 'rOOT/Groups/Group1';
 		let expected: string[] = [ConnectionProfileGroup.RootGroupName, 'Groups', 'Group1'];
 		let actual = ConnectionProfileGroup.getGroupFullNameParts(groupFullName);
+		assert.deepEqual(actual, expected);
+	});
+
+	test('isRoot should return true given empty string', () => {
+		let name: string = '';
+		let expected: boolean = true;
+		let actual = ConnectionProfileGroup.isRoot(name);
+		assert.deepEqual(actual, expected);
+	});
+
+	test('isRoot should return true given null', () => {
+		let name: string = undefined;
+		let expected: boolean = true;
+		let actual = ConnectionProfileGroup.isRoot(name);
+		assert.deepEqual(actual, expected);
+	});
+
+	test('isRoot should return true given /', () => {
+		let name: string = '/';
+		let expected: boolean = true;
+		let actual = ConnectionProfileGroup.isRoot(name);
+		assert.deepEqual(actual, expected);
+	});
+
+	test('isRoot should return true given root', () => {
+		let name: string = 'root';
+		let expected: boolean = true;
+		let actual = ConnectionProfileGroup.isRoot(name);
+		assert.deepEqual(actual, expected);
+	});
+
+	test('sameGroupName should return true given root', () => {
+		let name1: string = '/';
+		let name2: string = '';
+		let expected: boolean = true;
+		let actual = ConnectionProfileGroup.sameGroupName(name1, name2);
+		assert.deepEqual(actual, expected);
+	});
+
+	test('sameGroupName should return true given same group names', () => {
+		let name1: string = '/group1';
+		let name2: string = '/Group1';
+		let expected: boolean = true;
+		let actual = ConnectionProfileGroup.sameGroupName(name1, name2);
+		assert.deepEqual(actual, expected);
+	});
+
+	test('sameGroupName should return false given two different groups', () => {
+		let name1: string = '/';
+		let name2: string = '/Group1';
+		let expected: boolean = false;
+		let actual = ConnectionProfileGroup.sameGroupName(name1, name2);
 		assert.deepEqual(actual, expected);
 	});
 });

@@ -19,6 +19,7 @@ import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService'
 import data = require('data');
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { Emitter } from 'vs/base/common/event';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 
 suite('SQL ConnectionStore tests', () => {
 	let defaultNamedProfile: IConnectionProfile;
@@ -161,6 +162,19 @@ suite('SQL ConnectionStore tests', () => {
 		capabilitiesService.setup(x => x.getCapabilities()).returns(() => capabilities);
 		capabilitiesService.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);
 		connectionConfig.setup(x => x.getCapabilities('MSSQL')).returns(() => msSQLCapabilities);
+		let groups: IConnectionProfileGroup[] = [
+			{
+				id: 'root',
+				name: 'root',
+				parentId: ''
+			},
+			{
+				id: 'g1',
+				name: 'g1',
+				parentId: 'root'
+			}
+		];
+		connectionConfig.setup(x => x.getAllGroups()).returns(() => groups);
 
 		defaultNamedConnectionProfile = new ConnectionProfile(msSQLCapabilities, defaultNamedProfile);
 	});
@@ -359,7 +373,7 @@ suite('SQL ConnectionStore tests', () => {
 
 		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
 			credentialStore.object, capabilitiesService.object, connectionConfig.object);
-		let connectionProfile: IConnectionProfile = Object.assign(defaultNamedProfile, { providerName: providerName });
+		let connectionProfile: IConnectionProfile = Object.assign({}, defaultNamedProfile, { providerName: providerName });
 		let expected: boolean = false;
 		let actual = connectionStore.isPasswordRequired(connectionProfile);
 
@@ -388,5 +402,47 @@ suite('SQL ConnectionStore tests', () => {
 			assert.fail(err);
 			done(err);
 		});
+	});
+
+	test('addConnectionToMemento should not add duplicate items', () => {
+		let connectionStore = new ConnectionStore(storageServiceMock.object, context.object, undefined, workspaceConfigurationServiceMock.object,
+			credentialStore.object, capabilitiesService.object, connectionConfig.object);
+		let mementoKey = 'RECENT_CONNECTIONS2';
+		connectionStore.clearFromMemento(mementoKey);
+		let connectionProfile: IConnectionProfile = Object.assign({}, defaultNamedProfile);
+		connectionStore.addConnectionToMemento(connectionProfile, mementoKey);
+
+		connectionProfile = Object.assign({}, defaultNamedProfile, { authenticationType: 'Integrated', userName: '' });
+		connectionStore.addConnectionToMemento(connectionProfile, mementoKey);
+
+		let currentList = connectionStore.getConnectionsFromMemento(mementoKey);
+		assert.equal(currentList.length, 2, 'Adding same connection with different auth');
+
+		connectionProfile = Object.assign({}, defaultNamedProfile, { groupFullName: 'new group' });
+		connectionStore.addConnectionToMemento(connectionProfile, mementoKey);
+
+		currentList = connectionStore.getConnectionsFromMemento(mementoKey);
+		assert.equal(currentList.length, 3, 'Adding same connection with different group name');
+
+		connectionProfile = Object.assign({}, defaultNamedProfile,
+			{ groupFullName: defaultNamedProfile.groupFullName.toUpperCase() });
+		connectionStore.addConnectionToMemento(connectionProfile, mementoKey);
+
+		currentList = connectionStore.getConnectionsFromMemento(mementoKey);
+		assert.equal(currentList.length, 3, 'Adding same connection with same group name but uppercase');
+
+		connectionProfile = Object.assign({}, defaultNamedProfile,
+			{ groupFullName: '' });
+		connectionStore.addConnectionToMemento(connectionProfile, mementoKey);
+
+		currentList = connectionStore.getConnectionsFromMemento(mementoKey);
+		assert.equal(currentList.length, 3, 'Adding same connection with group empty string');
+
+		connectionProfile = Object.assign({}, defaultNamedProfile,
+			{ groupFullName: '/' });
+		connectionStore.addConnectionToMemento(connectionProfile, mementoKey);
+
+		currentList = connectionStore.getConnectionsFromMemento(mementoKey);
+		assert.equal(currentList.length, 3, 'Adding same connection with group /');
 	});
 });

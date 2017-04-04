@@ -172,6 +172,14 @@ suite('SQL ProviderConnectionInfo tests', () => {
 		assert.equal(conn.userName, conn2.userName);
 	});
 
+	test('Changing the cloned object should not change the original one', () => {
+		let conn = new ProviderConnectionInfo(msSQLCapabilities, connectionProfile);
+
+		let conn2 = conn.clone();
+		conn2.serverName = conn.serverName + '1';
+		assert.notEqual(conn.serverName, conn2.serverName);
+	});
+
 	test('constructor should initialize the options given a valid model with options', () => {
 		let options = {};
 		options['encrypt'] = 'test value';

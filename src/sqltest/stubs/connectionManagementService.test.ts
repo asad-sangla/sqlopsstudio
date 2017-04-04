@@ -19,7 +19,6 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	onConnect = undefined;
 	onDisconnect = undefined;
 	onConnectionChanged = undefined;
-	onDisconnect = undefined;
 
 	registerProvider(providerId: string, provider: data.ConnectionProvider): void {
 

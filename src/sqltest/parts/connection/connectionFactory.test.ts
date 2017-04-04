@@ -9,8 +9,12 @@ import * as assert from 'assert';
 import data = require('data');
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { CapabilitiesTestService } from 'sqltest/stubs/capabilitiesTestService';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
 let connections: ConnectionFactory;
+let capabilitiesService: CapabilitiesTestService;
+let connectionProfileObject: ConnectionProfile;
 let connectionProfile: IConnectionProfile = {
 	serverName: 'new server',
 	databaseName: 'database',
@@ -45,7 +49,10 @@ let connection2Id: string;
 
 suite('SQL ConnectionFactory tests', () => {
 	setup(() => {
-		connections = new ConnectionFactory();
+		capabilitiesService = new CapabilitiesTestService();
+		connectionProfileObject = new ConnectionProfile(capabilitiesService.getCapabilities().find(x => x.providerName === 'MSSQL')
+			, connectionProfile);
+		connections = new ConnectionFactory(capabilitiesService);
 		connection1Id = connections.getConnectionManagementId(connectionProfile);
 		connection2Id = 'connection2Id';
 		connections.addConnection(connectionProfile, connection1Id);
@@ -61,9 +68,9 @@ suite('SQL ConnectionFactory tests', () => {
 
 	test('findConnection should return connection given valid id', () => {
 		let id: string = connection1Id;
-		let expected = connectionProfile;
+		let expected = connectionProfileObject;
 		let actual = connections.findConnection(id);
-		assert.equal(actual.connectionProfile, expected);
+		assert.deepEqual(actual.connectionProfile, expected);
 	});
 
 	test('getConnectionProfile should return undefined given invalid id', () => {
@@ -75,9 +82,9 @@ suite('SQL ConnectionFactory tests', () => {
 
 	test('getConnectionProfile should return connection given valid id', () => {
 		let id: string = connection1Id;
-		let expected = connectionProfile;
+		let expected = connectionProfileObject;
 		let actual = connections.getConnectionProfile(id);
-		assert.equal(actual, expected);
+		assert.deepEqual(actual, expected);
 	});
 
 	test('hasConnection should return false given invalid id', () => {
@@ -132,7 +139,7 @@ suite('SQL ConnectionFactory tests', () => {
 		let expected = connectionProfile.groupId + '1';
 
 		let updatedConnection = Object.assign({}, connectionProfile, { groupId: expected, getUniqueId: () => connectionProfile.getUniqueId() + expected });
-		connections.updateConnection(updatedConnection, connection1Id);
+		connections.updateGroupId(updatedConnection, connection1Id);
 
 		let newId = connections.getConnectionManagementId(updatedConnection);
 		let actual = connections.getConnectionProfile(newId).groupId;

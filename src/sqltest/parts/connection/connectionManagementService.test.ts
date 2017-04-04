@@ -16,13 +16,16 @@ import { WorkbenchEditorTestService } from 'sqltest/stubs/workbenchEditorTestSer
 import { TPromise } from 'vs/base/common/winjs.base';
 import { INewConnectionParams, ConnectionType, IConnectionCompletionOptions, IConnectionResult } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { CapabilitiesTestService } from 'sqltest/stubs/capabilitiesTestService';
 
 suite('SQL ConnectionManagementService tests', () => {
 
+	let capabilitiesService: CapabilitiesTestService;
 	let connectionDialogService: TypeMoq.Mock<ConnectionDialogTestService>;
 	let connectionStore: TypeMoq.Mock<ConnectionStore>;
 	let workbenchEditorService: TypeMoq.Mock<WorkbenchEditorTestService>;
 	let connectionFactory: ConnectionFactory;
+
 	let none: void;
 
 	let connectionProfile: IConnectionProfile = {
@@ -39,23 +42,32 @@ suite('SQL ConnectionManagementService tests', () => {
 		options: {},
 		saveProfile: true
 	};
+	let connectionProfileWithoutPassword: IConnectionProfile =
+		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
 
 	let connectionManagementService: ConnectionManagementService;
 	setup(() => {
+
+		capabilitiesService = new CapabilitiesTestService();
 		connectionDialogService = TypeMoq.Mock.ofType(ConnectionDialogTestService);
 		connectionStore = TypeMoq.Mock.ofType(ConnectionStore);
 		workbenchEditorService = TypeMoq.Mock.ofType(WorkbenchEditorTestService);
-		connectionFactory = new ConnectionFactory();
+		connectionFactory = new ConnectionFactory(capabilitiesService);
 
 
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined)).returns(() => TPromise.as(none));
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined, undefined)).returns(() => TPromise.as(none));
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(none));
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny())).returns(() => TPromise.as(none));
-		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.isAny())).returns(() => Promise.resolve(connectionProfile));
+
 		connectionStore.setup(x => x.addActiveConnection(TypeMoq.It.isAny())).returns(() => Promise.resolve());
 		connectionStore.setup(x => x.saveProfile(TypeMoq.It.isAny())).returns(() => Promise.resolve(connectionProfile));
 		workbenchEditorService.setup(x => x.openEditor(undefined, TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(undefined));
+		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
+			c => c.serverName === connectionProfile.serverName))).returns(() => Promise.resolve(connectionProfile));
+		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
+			c => c.serverName === connectionProfileWithoutPassword.serverName))).returns(() => Promise.resolve(connectionProfileWithoutPassword));
+		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
 
 		connectionManagementService = new ConnectionManagementService(
 			undefined,
@@ -70,11 +82,12 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined,
 			undefined,
 			undefined,
-			undefined,
+			capabilitiesService,
 			undefined);
 	});
 
 	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string): void {
+
 		if (connectionProfile) {
 			connectionDialogService.verify(x => x.showDialog(
 				TypeMoq.It.isAny(),
@@ -87,9 +100,11 @@ suite('SQL ConnectionManagementService tests', () => {
 				TypeMoq.It.is<INewConnectionParams>(p => p.connectionType === connectionType && ((uri === undefined && p.input === undefined) || p.input.uri === uri)),
 				undefined, error), TypeMoq.Times.once());
 		}
+
 	}
 
 	function verifyOptions(options?: IConnectionCompletionOptions, fromDialog?: boolean): void {
+
 		if (options) {
 			if (options.saveToSettings) {
 				connectionStore.verify(x => x.saveProfile(TypeMoq.It.isAny()), TypeMoq.Times.once());
@@ -102,11 +117,14 @@ suite('SQL ConnectionManagementService tests', () => {
 		if (fromDialog !== undefined && !fromDialog) {
 			connectionStore.verify(x => x.addSavedPassword(TypeMoq.It.isAny()), TypeMoq.Times.once());
 		}
+
 	}
 
 	function connect(uri: string, options?: IConnectionCompletionOptions, fromDialog?: boolean, connection?: IConnectionProfile, error?: string): Promise<IConnectionResult> {
 		let connectionToUse = connection ? connection : connectionProfile;
 		return new Promise<IConnectionResult>((resolve, reject) => {
+			let id = connectionToUse.getUniqueId();
+			let defaultUri = 'connection://' + (id ? id : connection.serverName + ':' + connection.databaseName);
 			connectionManagementService.onConnectionRequestSent(() => {
 				let info: data.ConnectionInfoSummary = {
 					connectionId: error ? undefined : 'id',
@@ -118,7 +136,7 @@ suite('SQL ConnectionManagementService tests', () => {
 					errorMessage: error,
 					errorNumber: undefined,
 					messages: error,
-					ownerUri: uri ? uri : connectionFactory.getConnectionManagementId(connectionToUse),
+					ownerUri: uri ? uri : defaultUri,
 					serverInfo: undefined
 				};
 				connectionManagementService.onConnectionComplete(0, info);
@@ -344,11 +362,6 @@ suite('SQL ConnectionManagementService tests', () => {
 			showConnectionDialogOnError: true
 		};
 
-		let connectionProfileWithoutPassword = Object.assign(connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
-		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
-			c => c.serverName === connectionProfileWithoutPassword.serverName))).returns(() => Promise.resolve(connectionProfileWithoutPassword));
-		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
-
 		connect(uri, options, false, connectionProfileWithoutPassword).then(result => {
 			assert.equal(result.connected, expectedConnection);
 			assert.equal(result.error, expectedError);
@@ -381,11 +394,6 @@ suite('SQL ConnectionManagementService tests', () => {
 			showDashboard: false,
 			showConnectionDialogOnError: true
 		};
-
-		let connectionProfileWithoutPassword = Object.assign(connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
-		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
-			c => c.serverName === connectionProfileWithoutPassword.serverName))).returns(() => Promise.resolve(connectionProfileWithoutPassword));
-		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
 
 		connect(uri, options, false, connectionProfileWithoutPassword).then(result => {
 			assert.equal(result.connected, expectedConnection);

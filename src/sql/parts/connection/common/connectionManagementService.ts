@@ -78,7 +78,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				_configurationEditService, this._workspaceConfigurationService, this._credentialsService, this._capabilitiesService);
 		}
 
-		this._connectionFactory = new ConnectionFactory();
+		this._connectionFactory = new ConnectionFactory(this._capabilitiesService);
 
 		// Setting up our event emitters
 		this._onAddConnectionProfile = new Emitter<void>();
@@ -307,6 +307,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 								this._onAddConnectionProfile.fire();
 							}
 						});
+					} else {
+						connection.saveProfile = false;
 					}
 					if (options.showDashboard) {
 						this.showDashboard(uri, connection);
@@ -419,7 +421,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 		return new Promise<boolean>((resolve, reject) => {
 			this._connectionStore.saveProfile(connection).then(savedProfile => {
-				this._connectionFactory.updateConnection(savedProfile, id);
+				this._connectionFactory.updateGroupId(savedProfile, id);
 				return resolve(true);
 			});
 		});

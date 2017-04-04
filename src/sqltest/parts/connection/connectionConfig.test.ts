@@ -491,7 +491,7 @@ suite('SQL ConnectionConfig tests', () => {
 			c.options[oldOptionName] = 'oldOptionValue';
 			return c;
 		});
-		let configValue = Object.assign(connections, { user: connectionUsingOldMetadata });
+		let configValue = Object.assign({}, connections, { user: connectionUsingOldMetadata });
 		let capabilitiesService2: TypeMoq.Mock<CapabilitiesService> = TypeMoq.Mock.ofType(CapabilitiesService);
 		capabilitiesService2.setup(x => x.getCapabilities()).returns(() => []);
 		capabilitiesService2.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);
