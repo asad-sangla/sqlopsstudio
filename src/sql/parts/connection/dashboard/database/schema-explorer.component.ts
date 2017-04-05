@@ -94,6 +94,18 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 			|| this.selectedObject.metadata.metadataType === MetadataType.View);
 	}
 
+	public isExecuteEnabled(): boolean {
+		return this.selectedObject
+			&& (this.selectedObject.metadata.metadataType === MetadataType.SProc);
+	}
+
+	public executeProcedure(): void {
+		if (this.selectedObject) {
+			let executeString = "EXEC " + this.selectedObject.metadata.name;
+			this.queryEditorService.newSqlEditor(executeString);
+		}
+	}
+
 	/**
 	 * Select the top rows from an object
 	 */
