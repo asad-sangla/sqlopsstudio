@@ -68,7 +68,8 @@ const indentationFilter = [
 	'!extensions/**/themes/**',
 	'!extensions/**/colorize-fixtures/**',
 	'!extensions/vscode-api-tests/testWorkspace/**',
-	'!**/*.gif'
+	'!**/*.gif',
+	'!**/test-results.xml'
 ];
 
 const copyrightFilter = [
