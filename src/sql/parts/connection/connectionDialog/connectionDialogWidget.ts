@@ -161,8 +161,7 @@ export class ConnectionDialogWidget {
 		let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
 		let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
 		if (isDoubleClick) {
-			TreeUpdateUtils.OnTreeSelect(event, recentConnectionTree, this._connectionManagementService);
-			this.close();
+			this.connect();
 		}
 	}
 

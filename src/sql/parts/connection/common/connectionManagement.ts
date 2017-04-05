@@ -134,6 +134,7 @@ export interface IConnectionManagementService {
 
 	showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean>;
 
+	closeDashboard(uri: string): void;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

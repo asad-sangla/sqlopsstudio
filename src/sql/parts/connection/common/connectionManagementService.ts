@@ -5,6 +5,7 @@
 'use strict';
 
 import nls = require('vs/nls');
+import * as errors from 'vs/base/common/errors';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -15,6 +16,7 @@ import {
 	IConnectionParams, IConnectionResult
 } from 'sql/parts/connection/common/connectionManagement';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
+import { Position } from 'vs/platform/editor/common/editor';
 import { Memento } from 'vs/workbench/common/memento';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
@@ -28,13 +30,18 @@ import { ConnectionManagementInfo } from './connectionManagementInfo';
 import Utils = require('./utils');
 import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
-import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
 import * as data from 'data';
 import * as ConnectionContracts from 'sql/parts/connection/common/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ISplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
+import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
+import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
+import { DashboardEditor } from 'sql/parts/connection/dashboard/dashboardEditor';
+import URI from 'vs/base/common/uri';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -67,7 +74,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
 		@ICredentialsService private _credentialsService: ICredentialsService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
-		@IQuickOpenService private _quickOpenService: IQuickOpenService
+		@IQuickOpenService private _quickOpenService: IQuickOpenService,
+		@IEditorGroupService private _editorGroupService: IEditorGroupService
 	) {
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
 		if (!this._connectionMemento) {
@@ -333,9 +341,65 @@ export class ConnectionManagementService implements IConnectionManagementService
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
 			let dashboardInput: DashboardInput = self._instantiationService ? self._instantiationService.createInstance(DashboardInput, uri, connection) : undefined;
-			self._editorService.openEditor(dashboardInput, { pinned: true }, false);
+			// if dashboard uri is already open, focus on that tab
+			let found = self.focusDashboard(uri);
+			if (!found) {
+				self._editorService.openEditor(dashboardInput, { pinned: true }, false);
+			}
 			resolve(true);
 		});
+	}
+
+	private focusDashboard(uri): boolean {
+		let found: boolean = false;
+		let options = {
+			preserveFocus: false,
+			revealIfVisible: true,
+			revealInCenterIfOutsideViewport: true,
+			pinned: true
+		};
+		let model = this._editorGroupService.getStacksModel();
+		// check if editor is already present
+		if (model) {
+			model.groups.map(group => {
+				if (group instanceof EditorGroup) {
+					group.getEditors().map(editor => {
+						if (editor instanceof DashboardInput) {
+							if (editor.getUri() === uri) {
+								// change focus to the matched editor
+								let position = model.positionOfGroup(group);
+								this._editorGroupService.activateGroup(model.groupAt(position));
+								this._editorService.openEditor(editor, options, position)
+									.done(() => {
+									this._editorGroupService.activateGroup(model.groupAt(position));
+									found = true;
+								}, errors.onUnexpectedError);
+							}
+						}
+					});
+				}
+			});
+		}
+		return found;
+	}
+
+	public closeDashboard(uri: string): void {
+		let model = this._editorGroupService.getStacksModel();
+		if (model) {
+			model.groups.map(group => {
+				if (group instanceof EditorGroup) {
+					group.getEditors().map(editor => {
+						if (editor instanceof DashboardInput) {
+							if (editor.getUri() === uri && this._editorGroupService instanceof EditorPart) {
+								// close matched editor
+								let position = model.positionOfGroup(group);
+								this._editorGroupService.closeEditor(position, editor);
+							}
+						}
+					});
+				}
+			});
+		}
 	}
 
 	public getConnectionGroups(): ConnectionProfileGroup[] {
@@ -693,7 +757,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	private _notifyDisconnected(connectionUri: string): void {
-		this._onDisconnect.fire(<IConnectionParams> {
+		this._onDisconnect.fire(<IConnectionParams>{
 			connectionUri: connectionUri
 		});
 	}

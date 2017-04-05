@@ -47,7 +47,7 @@ export class ChangeConnectionAction extends Action {
 		);
 		this._disposables.push(this._connectionManagementService.onDisconnect((disconnectParams) => {
 				self.setLabel();
-				self.closeDashboard(disconnectParams.connectionUri);
+				self._connectionManagementService.closeDashboard(disconnectParams.connectionUri);
 			})
 		);
 	}
@@ -62,21 +62,7 @@ export class ChangeConnectionAction extends Action {
 		this.setLabel();
 	}
 
-	private closeDashboard(uri: string): void {
-		let model = this._editorGroupService.getStacksModel();
-		model.groups.map(group => {
-			if (group instanceof EditorGroup) {
-				group.getEditors().map(editor => {
-					if (editor instanceof DashboardInput) {
-						if (editor.getUri() === uri) {
-							let position = model.positionOfGroup(group);
-							this._editorGroupService.closeEditor(position, editor);
-						}
-					}
-				});
-			}
-		});
-	}
+
 
 	private setLabel(): void {
 		if (!this._connectionProfile) {

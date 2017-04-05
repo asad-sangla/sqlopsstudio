@@ -16,7 +16,9 @@ import { WorkbenchEditorTestService } from 'sqltest/stubs/workbenchEditorTestSer
 import { TPromise } from 'vs/base/common/winjs.base';
 import { INewConnectionParams, ConnectionType, IConnectionCompletionOptions, IConnectionResult } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { EditorGroupTestService } from 'sqltest/stubs/editorGroupService';
 import { CapabilitiesTestService } from 'sqltest/stubs/capabilitiesTestService';
+
 
 suite('SQL ConnectionManagementService tests', () => {
 
@@ -24,6 +26,7 @@ suite('SQL ConnectionManagementService tests', () => {
 	let connectionDialogService: TypeMoq.Mock<ConnectionDialogTestService>;
 	let connectionStore: TypeMoq.Mock<ConnectionStore>;
 	let workbenchEditorService: TypeMoq.Mock<WorkbenchEditorTestService>;
+	let editorGroupService: TypeMoq.Mock<EditorGroupTestService>;
 	let connectionFactory: ConnectionFactory;
 
 	let none: void;
@@ -52,8 +55,8 @@ suite('SQL ConnectionManagementService tests', () => {
 		connectionDialogService = TypeMoq.Mock.ofType(ConnectionDialogTestService);
 		connectionStore = TypeMoq.Mock.ofType(ConnectionStore);
 		workbenchEditorService = TypeMoq.Mock.ofType(WorkbenchEditorTestService);
+		editorGroupService = TypeMoq.Mock.ofType(EditorGroupTestService);
 		connectionFactory = new ConnectionFactory(capabilitiesService);
-
 
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined)).returns(() => TPromise.as(none));
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined, undefined)).returns(() => TPromise.as(none));
@@ -63,6 +66,7 @@ suite('SQL ConnectionManagementService tests', () => {
 		connectionStore.setup(x => x.addActiveConnection(TypeMoq.It.isAny())).returns(() => Promise.resolve());
 		connectionStore.setup(x => x.saveProfile(TypeMoq.It.isAny())).returns(() => Promise.resolve(connectionProfile));
 		workbenchEditorService.setup(x => x.openEditor(undefined, TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(undefined));
+		editorGroupService.setup(x => x.getStacksModel()).returns(() => undefined);
 		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
 			c => c.serverName === connectionProfile.serverName))).returns(() => Promise.resolve(connectionProfile));
 		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
@@ -83,7 +87,8 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined,
 			undefined,
 			capabilitiesService,
-			undefined);
+			undefined,
+			editorGroupService.object);
 	});
 
 	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string): void {

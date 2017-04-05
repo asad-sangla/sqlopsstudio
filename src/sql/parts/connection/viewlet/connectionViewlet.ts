@@ -86,9 +86,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.connectionButton.addListener2('click', () => {
 			this.newConnection();
 		});
-
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
-
 		if (!this.hasRegisteredServers()) {
 			this.connectionButton = new Button(this.viewletContainer);
 			this.connectionButton.label = 'Add Server';
@@ -97,7 +95,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 			});
 		}
 
-		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
 		this.splitView = new SplitView(this.viewletContainer.getHTMLElement());
 		this.serverTreeView = this.instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
 		this.splitView.addView(this.serverTreeView);
