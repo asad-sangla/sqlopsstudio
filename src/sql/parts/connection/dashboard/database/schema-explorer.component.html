@@ -36,11 +36,11 @@
 <div style="order: 2;width: 133px; vertical-align: top">
     <div *ngIf="isBrowseEnabled()" >
         <button pButton class="dashboard-button"
-                style="background: #0E639C; color: #ffffff; width: 125px; margin: 3px; text-align: left; border-width: 0px"
+                style="background: #0E639C; color: #ffffff; width: 125px; margin: 3px; text-align: left; border-width: 0px; height:34px"
                 type="button" [routerLink]="['/object-dashboard']" label=" " >
             <div style="vertical-align: middle">
-                <img class="dashboard-button-content" src="{{databaseIcon}}" />
                 <span class="dashboard-button-content">
+                    <i class="fa fa-search fa-lg" style="color: gold; padding-left: 4px; padding-right: 3px"></i>
                     Browse
                 </span>
             </div>
@@ -77,22 +77,22 @@
             <button *ngIf="selectedObject" pButton class="dashboard-button"
                     style="background: #0E639C; color: #ffffff; width: 125px; margin: 3px; text-align: left; border-width: 0px"
                 (click)="editData()" label=" ">
-                <div style="vertical-align: middle">
-                    <img class="dashboard-button-content" src="{{databaseIcon}}" />
-                    <span class="dashboard-button-content">
-                        Edit Data
-                    </span>
-                </div>
+              <div style="vertical-align: middle">
+                  <span class="dashboard-button-content">
+                      <i class="fa fa-pencil-square-o fa-lg" style="color: gold; padding-left: 4px; padding-right: 3px"></i>
+                      Edit Data
+                  </span>
+              </div>
             </button>
         </div>
     </div>
     <div *ngIf="selectedObject" >
         <button *ngIf="selectedObject" pButton class="dashboard-button"
-                style="background: #0E639C; color: #ffffff; width: 125px; margin: 3px; text-align: left; border-width: 0px"
+                style="background: #0E639C; color: #ffffff; width: 125px; margin: 3px; text-align: left; border-width: 0px; height:34px"
                 (click)="scriptCreate()" label=" ">
             <div style="vertical-align: middle">
-                <img class="dashboard-button-content" src="{{databaseIcon}}" />
                 <span class="dashboard-button-content">
+                     <i class="fa fa-file-code-o fa-lg" style="color: gold; padding-left: 4px; padding-right: 3px"></i>
                     Script Create
                 </span>
             </div>
