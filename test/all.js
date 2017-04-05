@@ -164,6 +164,8 @@ function main() {
 
 	loader.config(loaderConfig);
 
+	require('zone.js');
+
 	global.define = loader;
 	global.document = jsdom.jsdom('<!doctype html><html><body></body></html>');
 	global.self = global.window = global.document.parentWindow;
@@ -173,6 +175,18 @@ function main() {
 	global.Node = global.window.Node;
 	global.navigator = global.window.navigator;
 	global.XMLHttpRequest = global.window.XMLHttpRequest;
+	global.Event = global.window.Event;
+
+	require('reflect-metadata');
+	global.window.Reflect = global.Reflect;
+	global.window.Zone = global.Zone;
+	global.PrimeNg = require('primeng/primeng');
+	global.AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
+	global.AngularCore = require('@angular/core');
+	global.AngularCommon = require('@angular/common');
+	global.AngularForms = require('@angular/forms');
+	global.AngularPlatformBrowser = require('@angular/platform-browser');
+	global.AngularRouter = require('@angular/router');
 
 	var didErr = false;
 	var write = process.stderr.write;
