@@ -8,12 +8,15 @@ import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/un
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
+import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import URI from 'vs/base/common/uri';
 import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { IEditorInput } from 'vs/platform/editor/common/editor';
+
 const fs = require('fs');
 
 export const IQueryEditorService = createDecorator<QueryEditorService>('QueryEditorService');
@@ -32,11 +35,17 @@ export interface IQueryEditorService {
  * Service wrapper for opening and creating SQL documents as sql editor inputs
  */
 export class QueryEditorService implements IQueryEditorService {
+
 	public _serviceBrand: any;
+
 	// file extensions that should be put into query editors
 	private static fileTypes = ['SQL'];
-	// prefic for untitled sql editors
+
+	// prefix for untitled sql editors
 	private static untitledFilePrefix = 'SQLQuery';
+
+	// mode identifier for SQL mode
+	private static sqlModeId = 'sql';
 
 	constructor(
 		@IUntitledEditorService private untitledEditorService: IUntitledEditorService,
@@ -69,12 +78,12 @@ export class QueryEditorService implements IQueryEditorService {
 				let queryInput: QueryInput = this.instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
 
 				this.editorService.openEditor(queryInput, { pinned: true })
-				.then((editor) => {
-					let params = <QueryInput>editor.input;
-					resolve(params);
-				}, (error) => {
-					reject(error);
-				});
+					.then((editor) => {
+						let params = <QueryInput>editor.input;
+						resolve(params);
+					}, (error) => {
+						reject(error);
+					});
 			} catch (error) {
 				reject(error);
 			}
@@ -96,12 +105,12 @@ export class QueryEditorService implements IQueryEditorService {
 				let editDataInput: EditDataInput = this.instantiationService.createInstance(EditDataInput, docUri, tableName);
 
 				this.editorService.openEditor(editDataInput, { pinned: true })
-				.then((editor) => {
-					let params = <EditDataInput>editor.input;
-					resolve(params);
-				}, (error) => {
-					reject(error);
-				});
+					.then((editor) => {
+						let params = <EditDataInput>editor.input;
+						resolve(params);
+					}, (error) => {
+						reject(error);
+					});
 			} catch (error) {
 				reject(error);
 			}
@@ -152,59 +161,96 @@ export class QueryEditorService implements IQueryEditorService {
 			filePath = editDataFileName(counter);
 		}
 
-        return filePath;
-    }
+		return filePath;
+	}
 
-    // These functions are static to reduce extra lines needed in editorService.ts (Vscode code base)
-    public static queryEditorCheck(fileInput: EditorInput, instService: IInstantiationService): EditorInput {
-        if (!!fileInput) {
+	// These functions are static to reduce extra lines needed in editorService.ts (Vscode code base)
+	public static queryEditorCheck(input: EditorInput, instService: IInstantiationService): EditorInput {
+		if (!!input) {
 
-            let uri: string = this.getQueryEditorFileUri(fileInput);
-            if (!!uri) {
-                const queryResultsInput: QueryResultsInput = instService.createInstance(QueryResultsInput, uri);
-                let queryInput: QueryInput = instService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
-                return queryInput;
-            }
-        }
+			let uri: string = this.getQueryEditorFileUri(input);
+			if (!!uri) {
+				const queryResultsInput: QueryResultsInput = instService.createInstance(QueryResultsInput, uri);
+				let queryInput: QueryInput = instService.createInstance(QueryInput, input.getName(), '', input, queryResultsInput);
+				return queryInput;
+			}
+		}
 
-        return fileInput;
-    }
+		return input;
+	}
 
-    /**
-     * If fileInput is a supported query editor file, return it's URI. Otherwise return undefined.
-     */
-    private static getQueryEditorFileUri(fileInput: EditorInput): string {
-        if (!fileInput || !fileInput.getName()) {
-            return undefined;
-        }
+	/**
+	 * If fileInput is a supported query editor file, return it's URI. Otherwise return undefined.
+	 */
+	private static getQueryEditorFileUri(input: EditorInput): string {
+		if (!input || !input.getName()) {
+			return undefined;
+		}
 
-        // if this editor is not already of type queryinput and there is a file extension
-        if (!(fileInput instanceof QueryInput)) {
+		// If this editor is not already of type queryinput
+		if (!(input instanceof QueryInput)) {
 
-            // if it is supported and we can get the URI, return the URI
-            // there is no interface containing getResource, so we must do a typeof check
-            let fileInputCast: any = <any> fileInput;
-            if (!!this.isQueryEditorFile(fileInput) && typeof fileInputCast.getResource === 'function') {
-                let uri: URI = fileInputCast.getResource();
-                if (!!uri && !!uri.toString()) {
-                    return uri.toString();
-                }
-            }
-        }
+			// If this editor has a URI
+			let uri: URI = this.getInputResource(input);
+			if (uri) {
+				let isValidUri = !!uri && !!uri.toString;
+				let isValidInput = this.isQueryEditorFile(input) || this.isUntitledFile(uri);
+				if (isValidUri && isValidInput) {
+					return uri.toString();
+				}
+			}
+		}
 
-        return undefined;
-    }
+		return undefined;
+	}
 
-	private static isQueryEditorFile(fileInput: EditorInput): boolean {
+	private static getInputResource(input: EditorInput): URI {
+		let untitledCast: UntitledEditorInput = <UntitledEditorInput> input;
+		if (untitledCast) {
+			return untitledCast.getResource();
+		}
+
+		let fileCast: FileEditorInput  = <FileEditorInput > input;
+		if (fileCast) {
+			return fileCast.getResource();
+		}
+
+		return undefined;
+	}
+
+	private static isUntitledFile(uri: URI): boolean {
+		if (uri) {
+			return uri.scheme === UntitledEditorInput.SCHEMA;
+		}
+		return false;
+	}
+
+	private static canSetModeToSql(input: IEditorInput): boolean {
+		if (input) {
+			let fileInputCast: any = <any>input;
+			if (fileInputCast && fileInputCast.hasOwnProperty('modeId')) {
+				fileInputCast.modeId = this.sqlModeId;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static doSetModeToSql(input: IEditorInput): void {
+		let fileInputCast: any = <any>input;
+		fileInputCast.modeId = this.sqlModeId;
+	}
+
+	private static isQueryEditorFile(input: EditorInput): boolean {
 		// Check the extension type
-		let lastPeriodIndex = fileInput.getName().lastIndexOf('.');
-		if(lastPeriodIndex > -1) {
-			let extension: string = fileInput.getName().substr(lastPeriodIndex+1).toUpperCase();
+		let lastPeriodIndex = input.getName().lastIndexOf('.');
+		if (lastPeriodIndex > -1) {
+			let extension: string = input.getName().substr(lastPeriodIndex + 1).toUpperCase();
 			return !!this.fileTypes.find(x => x === extension);
 		}
 
 		// Check for untitled file type
-		if (fileInput.getName().includes(this.untitledFilePrefix)) {
+		if (input.getName().includes(this.untitledFilePrefix)) {
 			return true;
 		}
 

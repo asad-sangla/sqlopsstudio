@@ -10,7 +10,7 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import Event, { Emitter } from 'vs/base/common/event';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
-import { IConnectionManagementService, INewConnectionParams, ConnectionType, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -108,13 +108,15 @@ export class RunQueryAction extends QueryTaskbarAction {
 	}
 
 	public run(): TPromise<void> {
-		if (this.isConnected(this.editor)) {
-			// If we are already connected, run the query
-			this.runQuery(this.editor);
-		} else {
-			// If we are not already connected, prompt for conneciton and run the query if the
-			// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
-			this.connectEditor(this.editor, true, this.editor.getSelection());
+		if (!this.editor.isSelectionEmpty()) {
+			if (this.isConnected(this.editor)) {
+				// If we are already connected, run the query
+				this.runQuery(this.editor);
+			} else {
+				// If we are not already connected, prompt for connection and run the query if the
+				// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
+				this.connectEditor(this.editor, true, this.editor.getSelection());
+			}
 		}
 		return TPromise.as(null);
 	}

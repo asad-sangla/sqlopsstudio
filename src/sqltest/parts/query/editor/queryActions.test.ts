@@ -24,19 +24,20 @@ suite('SQL QueryAction Tests', () => {
 
 	let testUri: string = 'testURI';
 	let editor: TypeMoq.Mock<QueryEditor>;
-	let calledShowQueryResultsEditor: boolean = undefined;
+	let calledRunQueryOnInput: boolean = undefined;
 	let testQueryInput: TypeMoq.Mock<QueryInput>;
 
 	setup(() => {
+		// Setup a reusable mock QueryInput
 		testQueryInput = TypeMoq.Mock.ofType(QueryInput, TypeMoq.MockBehavior.Strict);
 		testQueryInput.setup(x => x.uri).returns(() => testUri);
-		testQueryInput.setup(x => x.runQuery(undefined)).callback(() => {
-			calledShowQueryResultsEditor = true;
-		});
+		testQueryInput.setup(x => x.runQuery(undefined)).callback(() => { calledRunQueryOnInput = true; });
 
+		// Setup a reusable mock QueryEditor
 		editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict);
 		editor.setup(x => x.currentQueryInput).returns(() => testQueryInput.object);
 		editor.setup(x => x.getSelection()).returns(() => undefined);
+		editor.setup(x => x.isSelectionEmpty()).returns(() => false);
 	});
 
 	test('setClass sets child CSS class correctly', (done) => {
@@ -77,7 +78,7 @@ suite('SQL QueryAction Tests', () => {
 		done();
 	});
 
-	test('RunQueryAction calls runQuery() and showQueryResultsEditor() only if URI is connected', (done) => {
+	test('RunQueryAction calls runQuery() only if URI is connected', (done) => {
 		// ... Create assert variables
 		let isConnected: boolean = undefined;
 		let connectionParams: INewConnectionParams = undefined;
@@ -106,11 +107,11 @@ suite('SQL QueryAction Tests', () => {
 		// If I call run on RunQueryAction when I am not connected
 		let queryAction: RunQueryAction = new RunQueryAction(editor.object, queryModelService.object, connectionManagementService.object);
 		isConnected = false;
-		calledShowQueryResultsEditor = false;
+		calledRunQueryOnInput = false;
 		queryAction.run();
 
-		// showQueryResultsEditor and runQuery should not be run
-		assert.equal(calledShowQueryResultsEditor, false, 'run should not call showQueryResultsEditor');
+		// runQuery should not be run
+		assert.equal(calledRunQueryOnInput, false, 'run should not call runQuery');
 		testQueryInput.verify(x => x.runQuery(undefined), TypeMoq.Times.never());
 
 		// and the conneciton dialog should open with the correct parameter details
@@ -124,10 +125,52 @@ suite('SQL QueryAction Tests', () => {
 		isConnected = true;
 		queryAction.run();
 
-		// showQueryResultsEditor and runQuery should be run, and the conneciton dialog should not open
-		assert.equal(calledShowQueryResultsEditor, true, 'run should call showQueryResultsEditor');
+		//runQuery should be run, and the conneciton dialog should not open
+		assert.equal(calledRunQueryOnInput, true, 'run should call runQuery');
 		testQueryInput.verify(x => x.runQuery(undefined), TypeMoq.Times.once());
 		assert.equal(countCalledShowDialog, 1, 'run should not call showDialog');
+		done();
+	});
+
+	test('Queries are only run if the QueryEditor selection is not empty', (done) => {
+		// ... Create assert variables
+		let isSelectionEmpty: boolean = undefined;
+		let countCalledRunQuery: number = 0;
+
+		// ... Mock "isSelectionEmpty" in QueryEditor
+		let queryInput: TypeMoq.Mock<QueryInput> = TypeMoq.Mock.ofType(QueryInput, TypeMoq.MockBehavior.Strict);
+		queryInput = TypeMoq.Mock.ofType(QueryInput, TypeMoq.MockBehavior.Strict);
+		queryInput.setup(x => x.uri).returns(() => testUri);
+		queryInput.setup(x => x.runQuery(undefined)).callback(() => {
+			countCalledRunQuery++;
+		});
+		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict);
+		queryEditor.setup(x => x.currentQueryInput).returns(() => queryInput.object);
+		queryEditor.setup(x => x.getSelection()).returns(() => undefined);
+		queryEditor.setup(x => x.isSelectionEmpty()).returns(() => isSelectionEmpty);
+
+		// ... Mock "isConnected" in ConnectionManagementService
+		let connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {});
+		connectionManagementService.callBase = true;
+		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAnyString())).returns(() => true);
+
+		// ... Mock QueryModelService
+		let queryModelService = TypeMoq.Mock.ofType(QueryModelService, TypeMoq.MockBehavior.Loose);
+
+		// If I call run on RunQueryAction when I have a non empty selection
+		let queryAction: RunQueryAction = new RunQueryAction(queryEditor.object, queryModelService.object, connectionManagementService.object);
+		isSelectionEmpty = false;
+		queryAction.run();
+
+		//runQuery should be run
+		assert.equal(countCalledRunQuery, 1, 'runQuery should be called');
+
+		// If I call run on RunQueryAction when I have an empty selection
+		isSelectionEmpty = true;
+		queryAction.run();
+
+		//runQuery should not be run again
+		assert.equal(countCalledRunQuery, 1, 'runQuery should not be called again');
 		done();
 	});
 

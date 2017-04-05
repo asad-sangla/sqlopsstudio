@@ -37,6 +37,7 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { ISelectionData } from 'data';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { CodeEditor } from 'vs/editor/browser/codeEditor';
 
 /**
  * Editor that hosts 2 sub-editors: A TextResourceEditor for SQL file editing, and a QueryResultsEditor
@@ -267,6 +268,21 @@ export class QueryEditor extends BaseEditor {
 
 		// Otherwise return undefined because there is no selected text
 		return undefined;
+	}
+
+	public isSelectionEmpty(): boolean {
+		if (this._sqlEditor && this._sqlEditor.getControl()) {
+			let control = this._sqlEditor.getControl();
+			let codeEditor: CodeEditor = <CodeEditor> control;
+
+			if (codeEditor) {
+				let value = codeEditor.getValue();
+				if (value !== undefined && value.length > 0) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	/**
