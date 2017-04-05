@@ -21,11 +21,14 @@ import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 
 export class ChangeConnectionAction extends Action {
 
-	private static EnabledClass = 'extension-action update';
-	private static DisabledClass = `${ChangeConnectionAction.EnabledClass} disabled`;
-	private static Label = localize('ConnectAction', 'Connect');
+	private static EnabledClass: string = 'extension-action update';
+	private static DisabledClass: string = `${ChangeConnectionAction.EnabledClass} disabled`;
+	private static Label: string = localize('ConnectAction', 'Connect');
 	private _disposables: IDisposable[] = [];
 	private _connectionProfile: ConnectionProfile;
+
+	public parentContainer: HTMLElement;
+
 	get connectionProfile(): ConnectionProfile {
 		return this._connectionProfile;
 	}
@@ -86,7 +89,21 @@ export class ChangeConnectionAction extends Action {
 				showDashboard: true,
 				showConnectionDialogOnError: true
 			};
+
+			// change the tile background color while connection in progress
+			// we'll need to improve this UX later, but this is better than no visibile busy indicator
+			let originalBackground: string;
+			this.enabled = false;
+			if (this.parentContainer) {
+				originalBackground = this.parentContainer.style.background;
+				this.parentContainer.style.background = '#afafaf';
+			}
+
 			this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
+				if (this.parentContainer) {
+					this.parentContainer.style.background = originalBackground;
+				}
+
 				if (connectionResult && connectionResult.connected) {
 					this.update();
 				}

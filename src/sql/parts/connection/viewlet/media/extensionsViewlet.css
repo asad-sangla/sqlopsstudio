@@ -3,6 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+.server-explorer-viewlet .content .busy {
+	background: #ff0000;
+}
+
 .extensions-viewlet {
 	height: 100%;
 }
@@ -377,6 +381,37 @@
 	left: 30px;
 }
 */
+
+.server-explorer-viewlet .monaco-tree-row.expanded .server-group::before {
+    content: ' ';
+    background-image: url(folder-outline.svg);
+	flex-shrink: 0;
+    background-size: 16px;
+    background-position: left center;
+    background-repeat: no-repeat;
+    padding-right: 6px;
+    width: 16px;
+    height: 22px;
+    display: inline-block;
+    -webkit-font-smoothing: antialiased;
+    vertical-align: middle;
+}
+
+.server-explorer-viewlet .monaco-tree-row .server-group::before {
+    content: ' ';
+    background-image: url(folder.svg);
+	flex-shrink: 0;
+    background-size: 16px;
+    background-position: left center;
+    background-repeat: no-repeat;
+    padding-right: 6px;
+    width: 16px;
+    height: 22px;
+    display: inline-block;
+    -webkit-font-smoothing: antialiased;
+    vertical-align: middle;
+}
+
 .monaco-tree .monaco-tree-rows > .monaco-tree-row.expanded > .content:before {
 	background-image: url('expanded.svg');
 }

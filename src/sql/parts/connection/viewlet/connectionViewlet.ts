@@ -48,6 +48,12 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		super(VIEWLET_ID, telemetryService);
 		this.searchDelayer = new ThrottledDelayer(500);
 		this.views = [];
+
+		this.connectionManagementService.onAddConnectionProfile(() => {
+			if (this.connectionButton) {
+				this.connectionButton.getElement().style.display = 'none';
+			}
+		});
 	}
 
 	private hasRegisteredServers(): boolean {
@@ -79,13 +85,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		super.create(parent);
 		parent.addClass('extensions-viewlet');
 		this.root = parent.getHTMLElement();
-		this.newConnectionContainer = parent.div().addClass('new-connection');
-
-		this.connectionButton = new Button(this.newConnectionContainer);
-		this.connectionButton.label = 'New Connection';
-		this.connectionButton.addListener2('click', () => {
-			this.newConnection();
-		});
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
 		if (!this.hasRegisteredServers()) {
 			this.connectionButton = new Button(this.viewletContainer);

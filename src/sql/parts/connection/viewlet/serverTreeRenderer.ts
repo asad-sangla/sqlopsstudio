@@ -69,6 +69,8 @@ export class ServerTreeRenderer implements IRenderer {
 					animated: false
 				});
 				const connectAction = this._instantiationService.createInstance(ChangeConnectionAction);
+				connectAction.parentContainer = container;
+
 				const newQueryAction = this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL);
 				actionbar.push([connectAction, newQueryAction], actionOptions);
 				return {
