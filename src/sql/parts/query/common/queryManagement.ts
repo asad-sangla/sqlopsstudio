@@ -23,6 +23,7 @@ export interface IQueryManagementService {
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
+	saveResults(requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult>;
 
 	// Callbacks
 	onQueryComplete(result: data.QueryExecuteCompleteNotificationResult): void;
@@ -54,6 +55,7 @@ export interface QueryRequestHandler {
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
+	saveResults(requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult>;
 
 	// Edit Data actions
 	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void>;
@@ -151,6 +153,12 @@ export class QueryManagementService implements IQueryManagementService {
 	public disposeQuery(ownerUri: string): Thenable<void> {
 		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
 			return runner.disposeQuery(ownerUri);
+		});
+	}
+
+	public saveResults(requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult> {
+		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+			return runner.saveResults(requestParams);
 		});
 	}
 

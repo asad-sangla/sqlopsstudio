@@ -15,8 +15,8 @@ import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IMessageService } from 'vs/platform/message/common/message';
-import Severity from 'vs/base/common/severity';
+import { IMessageService, Severity } from 'vs/platform/message/common/message';
+import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ISelectionData, ResultSetSubset, EditSubsetResult, EditUpdateCellResult, EditSessionReadyParams } from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -74,7 +74,7 @@ export class QueryModelService implements IQueryModelService {
 
 	// IQUERYMODEL /////////////////////////////////////////////////////////
 	public getDataService(uri: string): DataService {
-		let dataService = this._queryInfoMap.get(uri).dataService;
+		let dataService = this._getQueryInfo(uri).dataService;
 		if (!dataService) {
 			throw new Error('Could not find data service for uri: ' + uri);
 		}
@@ -104,7 +104,7 @@ export class QueryModelService implements IQueryModelService {
 	 * angular is listening for them.
 	 */
 	public onAngularLoaded(uri: string) {
-		let info = this._queryInfoMap.get(uri);
+		let info = this._getQueryInfo(uri);
 		info.dataServiceReady = true;
 		this._sendQueuedEvents(uri);
 	}
@@ -113,7 +113,7 @@ export class QueryModelService implements IQueryModelService {
 	 * Get more data rows from the current resultSets from the service layer
 	 */
 	public getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset> {
-		return this._queryInfoMap.get(uri).queryRunner.getQueryRows(rowStart, numberOfRows, batchId, resultId).then(results => {
+		return this._getQueryInfo(uri).queryRunner.getQueryRows(rowStart, numberOfRows, batchId, resultId).then(results => {
 			return results.resultSubset;
 		});
 	}
@@ -130,9 +130,6 @@ export class QueryModelService implements IQueryModelService {
 
 	public getShortcuts(): Promise<any> {
 		return undefined;
-	}
-
-	public save(uri: string, batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void {
 	}
 
 	public openLink(uri: string, content: string, columnName: string, linkType: string): void {
@@ -153,7 +150,7 @@ export class QueryModelService implements IQueryModelService {
 	public isRunningQuery(uri: string): boolean {
 		return !this._queryInfoMap.has(uri)
 			? false
-			: this._queryInfoMap.get(uri).queryRunner.isExecuting;
+			: this._getQueryInfo(uri).queryRunner.isExecuting;
 	}
 
 	/**
@@ -165,7 +162,7 @@ export class QueryModelService implements IQueryModelService {
 		let info: QueryInfo;
 
 		if (this._queryInfoMap.has(uri)) {
-			info = this._queryInfoMap.get(uri);
+			info = this._getQueryInfo(uri);
 			let existingRunner: QueryRunner = info.queryRunner;
 
 			// If the query is already in progress, don't attempt to send it
@@ -209,7 +206,7 @@ export class QueryModelService implements IQueryModelService {
 
 			info = new QueryInfo();
 			info.queryRunner = queryRunner;
-			info.dataService = new DataService(this, uri);
+			info.dataService = this._instantiationService.createInstance(DataService, uri);
 			this._queryInfoMap.set(uri, info);
 		}
 
@@ -221,7 +218,7 @@ export class QueryModelService implements IQueryModelService {
 
 		if (typeof input === 'string') {
 			if (this._queryInfoMap.has(input)) {
-				queryRunner = this._queryInfoMap.get(input).queryRunner;
+				queryRunner = this._getQueryInfo(input).queryRunner;
 			}
 		} else {
 			queryRunner = input;
@@ -252,7 +249,7 @@ export class QueryModelService implements IQueryModelService {
 		let info: QueryInfo;
 
 		if (this._queryInfoMap.has(ownerUri)) {
-			info = this._queryInfoMap.get(ownerUri);
+			info = this._getQueryInfo(ownerUri);
 			let existingRunner: QueryRunner = info.queryRunner;
 
 			// If the initialization is already in progress
@@ -299,7 +296,7 @@ export class QueryModelService implements IQueryModelService {
 
 			info = new QueryInfo();
 			info.queryRunner = queryRunner;
-			info.dataService = new DataService(this, ownerUri);
+			info.dataService = this._instantiationService.createInstance(DataService, ownerUri);
 			this._queryInfoMap.set(ownerUri, info);
 		}
 
@@ -380,10 +377,10 @@ export class QueryModelService implements IQueryModelService {
 	private _getQueryRunner(ownerUri): QueryRunner {
 		let queryRunner: QueryRunner = undefined;
 		if (this._queryInfoMap.has(ownerUri)) {
-			let existingRunner = this._queryInfoMap.get(ownerUri).queryRunner;
+			let existingRunner = this._getQueryInfo(ownerUri).queryRunner;
 			// If the query is not already executing then set it up
 			if (!existingRunner.isExecuting) {
-				queryRunner = this._queryInfoMap.get(ownerUri).queryRunner;
+				queryRunner = this._getQueryInfo(ownerUri).queryRunner;
 			}
 		}
 		// return undefined if not found or is already executing
@@ -391,7 +388,7 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	private _fireGridContentEvent(uri: string, type: string): void {
-		let info: QueryInfo = this._queryInfoMap.get(uri);
+		let info: QueryInfo = this._getQueryInfo(uri);
 
 		if (info && info.dataServiceReady) {
 			let service: DataService = this.getDataService(uri);
@@ -404,7 +401,7 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	private _fireQueryEvent(uri: string, type: string, data?: any) {
-		let info: QueryInfo = this._queryInfoMap.get(uri);
+		let info: QueryInfo = this._getQueryInfo(uri);
 
 		if (info.dataServiceReady) {
 			let service: DataService = this.getDataService(uri);
@@ -419,10 +416,14 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	private _sendQueuedEvents(uri: string): void {
-		let info: QueryInfo = this._queryInfoMap.get(uri);
+		let info: QueryInfo = this._getQueryInfo(uri);
 		while (info.queryEventQueue.length > 0) {
 			let event: QueryEvent = info.queryEventQueue.shift();
 			this._fireQueryEvent(uri, event.type, event.data);
 		}
+	}
+
+	private _getQueryInfo(uri: string): QueryInfo {
+		return this._queryInfoMap.get(uri);
 	}
 }

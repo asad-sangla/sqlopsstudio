@@ -184,6 +184,19 @@ export class EditDataComponent implements OnInit {
                     this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
                 }
             }
+        },
+        {
+            showCondition: () => { return true; },
+            icon: () => { return 'saveExcel'; },
+            hoverText: () => { return Constants.saveExcelLabel; },
+            functionality: (batchId, resultId, index) => {
+                let selection = this.slickgrids.toArray()[index].getSelectedRanges();
+                if (selection.length <= 1) {
+                    this.handleContextClick({type: 'saveexcel', batchId: batchId, resultId: resultId, index: index, selection: selection});
+                } else {
+                    this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
+                }
+            }
         }
     ];
     // tslint:disable-next-line:no-unused-variable
@@ -519,6 +532,9 @@ export class EditDataComponent implements OnInit {
                 break;
             case 'savejson':
                 this.dataService.sendSaveRequest(event.batchId, event.resultId, 'json', event.selection);
+                break;
+            case 'saveexcel':
+                this.dataService.sendSaveRequest(event.batchId, event.resultId, 'excel', event.selection);
                 break;
             case 'selectall':
                 this.activeGrid = event.index;

@@ -141,6 +141,12 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		this._proxy.$onQueryMessage(handle, message);
 	}
 
+	$saveResults(handle: number, requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult> {
+		return this._runWithProvider(handle, (provider) => {
+			return provider.queryProvider.saveResults(requestParams);
+		});
+	 }
+
 	// Edit Data handlers
 	$commitEdit(handle: number, ownerUri: string): Thenable<void> {
 		return this._runWithProvider(handle, provider => {

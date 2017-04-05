@@ -11,7 +11,8 @@ declare let Rx;
 import { ISlickRange } from 'angular2-slickgrid';
 import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSubsetResult } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { TPromise } from 'vs/base/common/winjs.base';
+import { ResultSerializer } from 'sql/parts/query/common/resultSerializer';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 /**
  * DataService handles the interactions between QueryModel and app.component. Thus, it handles
@@ -21,8 +22,11 @@ export class DataService {
 	public queryEventObserver: Subject<any>;
 	public gridContentObserver: Subject<any>;
 	private editQueue: Promise<any>;
-
-	constructor(private _queryModel: IQueryModelService, private _uri: string) {
+	constructor(
+		private _uri: string,
+		@IInstantiationService private _instantiationService: IInstantiationService,
+        @IQueryModelService private _queryModel: IQueryModelService
+	) {
 		this.queryEventObserver = new Rx.Subject();
 		this.gridContentObserver = new Rx.Subject();
 		this.editQueue = Promise.resolve();
@@ -123,6 +127,8 @@ export class DataService {
 	 * @param resultId The id of the result to save as csv
 	 */
 	sendSaveRequest(batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void {
+		let serializer = this._instantiationService.createInstance(ResultSerializer);
+        serializer.saveResults(this._uri, batchIndex, resultSetNumber, format, selection);
 	}
 
 	/**

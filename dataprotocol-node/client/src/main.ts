@@ -23,7 +23,9 @@ import {
 		DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider,
 		ScriptingProvider, ProviderMetadata, ScriptingResult,
 		QueryProvider, QueryCancelResult as VQueryCancelResult, ObjectMetadata,
-		ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo
+		ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo,
+		SaveResultRequestResult as VSaveResultRequestResult,
+		SaveResultsRequestParams as VSaveResultsRequestParams
 } from 'data';
 
 import {
@@ -88,7 +90,8 @@ import {
 		QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
 		QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
 		QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
-		QueryExecuteSubsetRequest,
+		QueryExecuteSubsetRequest, SaveResultRequestResult, SaveResultsRequestParams, SaveResultsAsCsvRequest, SaveResultsAsJsonRequest, SaveResultsAsExcelRequest,
+
 		EditCommitRequest, EditCommitParams,
 		EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
 		EditDeleteRowRequest, EditDeleteRowParams,
@@ -1494,7 +1497,42 @@ export class LanguageClient {
 					});
 				});
 			},
-
+			saveResults(requestParams: VSaveResultsRequestParams): Thenable<VSaveResultRequestResult> {
+				switch(requestParams.resultFormat) {
+					case 'csv':
+						return self.doSendRequest(connection, SaveResultsAsCsvRequest.type, requestParams, undefined).then(
+							(result) => {
+								return result;
+							},
+							(error) => {
+								self.logFailedRequest(EditCommitRequest.type, error);
+								return Promise.reject(error);
+							}
+						);
+					case 'json':
+						return self.doSendRequest(connection, SaveResultsAsJsonRequest.type, requestParams, undefined).then(
+							(result) => {
+								return result;
+							},
+							(error) => {
+								self.logFailedRequest(EditCommitRequest.type, error);
+								return Promise.reject(error);
+							}
+						);
+					case 'excel':
+						return self.doSendRequest(connection, SaveResultsAsExcelRequest.type, requestParams, undefined).then(
+							(result) => {
+								return result;
+							},
+							(error) => {
+								self.logFailedRequest(EditCommitRequest.type, error);
+								return Promise.reject(error);
+							}
+						);
+					default:
+						return Promise.reject('unsupported format');
+				}
+			},
 
 			// Edit Data Requests
 			commitEdit(ownerUri: string): Thenable<void> {

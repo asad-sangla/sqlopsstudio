@@ -386,6 +386,7 @@ declare module 'data' {
 		runQuery(ownerUri: string, selection: ISelectionData): Thenable<void>;
 		getQueryRows(rowData: QueryExecuteSubsetParams): Thenable<QueryExecuteSubsetResult>;
 		disposeQuery(ownerUri: string): Thenable<void>;
+		saveResults(requestParams: SaveResultsRequestParams): Thenable<SaveResultRequestResult>;
 
 		// Notifications
 		registerOnQueryComplete(handler: (result: QueryExecuteCompleteNotificationResult) => any): void;
@@ -548,6 +549,27 @@ declare module 'data' {
 	}
 
 	export interface QueryCancelResult {
+		messages: string;
+	}
+
+	// Save Results ===============================================================================
+	export interface SaveResultsRequestParams {
+		/**
+		 * 'csv', 'json', 'excel'
+		 */
+		resultFormat: string;
+		ownerUri: string;
+		filePath: string;
+		batchIndex: number;
+		resultSetIndex: number;
+		rowStartIndex: number;
+		rowEndIndex: number;
+		columnStartIndex: number;
+		columnEndIndex: number;
+		includeHeaders?: boolean;
+	}
+
+	export interface SaveResultRequestResult {
 		messages: string;
 	}
 

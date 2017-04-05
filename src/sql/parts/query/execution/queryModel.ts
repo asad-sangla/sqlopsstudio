@@ -38,7 +38,6 @@ export interface IQueryModelService {
 	resizeResultsets(uri: string): void;
 	onAngularLoaded(uri: string): void;
 
-	save(uri: string, batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void;
 	openLink(uri: string, content: string, columnName: string, linkType: string): void;
 	copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void;
 	setEditorSelection(uri: string, selection: ISelectionData): void;

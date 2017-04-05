@@ -1196,6 +1196,44 @@ export interface QueryExecuteSubsetResult {
 	resultSubset: ResultSetSubset;
 }
 
+
+// --------------------------------- < Save Results as CSV Request > ------------------------------------------
+export interface SaveResultsRequestParams {
+	ownerUri: string;
+	filePath: string;
+	batchIndex: number;
+	resultSetIndex: number;
+	rowStartIndex: number;
+	rowEndIndex: number;
+	columnStartIndex: number;
+	columnEndIndex: number;
+	includeHeaders?: boolean;
+}
+
+export class SaveResultRequestResult {
+	messages: string;
+}
+// save results in csv format
+export namespace SaveResultsAsCsvRequest {
+    export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveCsv'; } };
+}
+// --------------------------------- </ Save Results as CSV Request > ------------------------------------------
+
+// --------------------------------- < Save Results as JSON Request > ------------------------------------------
+// save results in json format
+export namespace SaveResultsAsJsonRequest {
+    export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveJson'; } };
+}
+// --------------------------------- </ Save Results as JSON Request > ------------------------------------------
+
+// --------------------------------- < Save Results as Excel Request > ------------------------------------------
+// save results in Excel format
+export namespace SaveResultsAsExcelRequest {
+    export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveExcel'; } };
+}
+// --------------------------------- </ Save Results as Excel Request > ------------------------------------------
+
+
 // ------------------------------- < Metadata Events > ------------------------------------
 
 export namespace MetadataQueryRequest {

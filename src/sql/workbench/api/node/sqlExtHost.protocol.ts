@@ -113,7 +113,12 @@ export abstract class ExtHostDataProtocolShape {
 	 */
 	$onQueryMessage(handle: number, message: data.QueryExecuteMessageParams): void { throw ni(); }
 
-		/**
+	/**
+	 * Requests saving of the results from a result set into a specific format (CSV, JSON, Excel)
+	 */
+	$saveResults(handle: number, requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult> { throw ni(); }
+
+	/**
 	 * Commits all pending edits in an edit session
 	 */
 	$commitEdit(handle: number, ownerUri: string): Thenable<void> { throw ni(); }
