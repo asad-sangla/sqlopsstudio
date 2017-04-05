@@ -188,7 +188,6 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._updateTaskbar.fire();
 	}
 
-
 	// Clean up functions
 	public dispose(): void {
 		this._sql.dispose();

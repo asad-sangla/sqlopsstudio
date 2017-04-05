@@ -193,9 +193,14 @@ export class QueryEditorService implements IQueryEditorService {
 			// If this editor has a URI
 			let uri: URI = this.getInputResource(input);
 			if (uri) {
-				let isValidUri = !!uri && !!uri.toString;
-				let isValidInput = this.isQueryEditorFile(input) || this.isUntitledFile(uri);
+				let isValidUri: boolean = !!uri && !!uri.toString;
+				let isUntitled: boolean = this.isUntitledFile(uri);
+				let isValidInput = this.isQueryEditorFile(input) || isUntitled;
+
 				if (isValidUri && isValidInput) {
+					if (isUntitled) {
+						this.setModeToSql(input);
+					}
 					return uri.toString();
 				}
 			}
@@ -229,20 +234,11 @@ export class QueryEditorService implements IQueryEditorService {
 		return false;
 	}
 
-	private static canSetModeToSql(input: IEditorInput): boolean {
-		if (input) {
-			let fileInputCast: any = <any>input;
-			if (fileInputCast && fileInputCast.hasOwnProperty('modeId')) {
-				fileInputCast.modeId = this.sqlModeId;
-				return true;
-			}
+	private static setModeToSql(input: IEditorInput): void {
+		if (input && input instanceof UntitledEditorInput) {
+			let inputCast: any = <any>input;
+			inputCast.modeId = this.sqlModeId;
 		}
-		return false;
-	}
-
-	private static doSetModeToSql(input: IEditorInput): void {
-		let fileInputCast: any = <any>input;
-		fileInputCast.modeId = this.sqlModeId;
 	}
 
 	private static isQueryEditorFile(input: EditorInput): boolean {

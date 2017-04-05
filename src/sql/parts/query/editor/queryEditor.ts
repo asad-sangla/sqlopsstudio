@@ -11,8 +11,8 @@ import { Builder, Dimension } from 'vs/base/browser/builder';
 
 import { EditorInput, EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor, EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
-import { IEditorControl, Position } from 'vs/platform/editor/common/editor';
-import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from '../views/flexibleSash';
+import { IEditorControl, Position, IEditor } from 'vs/platform/editor/common/editor';
+import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from 'sql/parts/query/views/flexibleSash';
 import { Orientation } from 'vs/base/browser/ui/sash/sash';
 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -413,27 +413,47 @@ export class QueryEditor extends BaseEditor {
 	 * This will create only the SQL editor if the results editor does not yet exist for the
 	 * given QueryInput.
 	 */
-	private _setNewInput(newInput: QueryInput, options?: EditorOptions): TPromise<void> {
-		// If both editors exist, create a joined promise and wait for both editors to be created
-		if (this._isResultsEditorVisible()) {
-			return TPromise.join([
-				this._createEditor(<QueryResultsInput>newInput.results, this._resultsEditorContainer),
-				this._createEditor(<UntitledEditorInput>newInput.sql, this._sqlEditorContainer)
-			]).then(result => {
-				this._onResultsEditorCreated(<QueryResultsEditor>result[0], newInput.results, options);
-				this._onSqlEditorCreated(<TextResourceEditor>result[1], newInput.sql, options);
-				this._doLayout();
-			});
+	private _setNewInput(newInput: QueryInput, options?: EditorOptions): TPromise<any> {
 
-			// If only the sql editor exists, create a promise and wait for the sql editor to be created
+		// Promises that will ensure proper ordering of editor creation logic
+		let createEditors: () => TPromise<any>;
+		let onEditorsCreated: (result) => TPromise<any>;
+
+		// If both editors exist, create joined promises - one for each editor
+		if (this._isResultsEditorVisible()) {
+			createEditors = () => {
+				return TPromise.join([
+					this._createEditor(<QueryResultsInput>newInput.results, this._resultsEditorContainer),
+					this._createEditor(<UntitledEditorInput>newInput.sql, this._sqlEditorContainer)
+				]);
+			};
+			onEditorsCreated = (result: IEditor[]) => {
+				return TPromise.join([
+					this._onResultsEditorCreated(<QueryResultsEditor>result[0], newInput.results, options),
+					this._onSqlEditorCreated(<TextResourceEditor>result[1], newInput.sql, options)
+				]);
+			};
+
+		// If only the sql editor exists, create a promise and wait for the sql editor to be created
 		} else {
-			this._createEditor(<UntitledEditorInput>newInput.sql, this._sqlEditorContainer)
-				.then(result => {
-					this._onSqlEditorCreated(<TextResourceEditor>result, newInput.sql, options);
-					this._doLayout();
-				});
-			return TPromise.as(null);
+			createEditors = () => {
+				return this._createEditor(<UntitledEditorInput>newInput.sql, this._sqlEditorContainer);
+			};
+			onEditorsCreated = (result: TextResourceEditor) => {
+				return this._onSqlEditorCreated(result, newInput.sql, options);
+			};
 		}
+
+		// Create a promise to re render the layout after the editor creation logic
+		let doLayout: () => TPromise<any> = () => {
+			this._doLayout();
+			return TPromise.as(undefined);
+		};
+
+		// Run all three steps synchronously
+		return createEditors()
+			.then(onEditorsCreated)
+			.then(doLayout);
 	}
 
 	/**
