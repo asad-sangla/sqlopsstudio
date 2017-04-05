@@ -15,16 +15,16 @@
                  [(selection)]="selectedObject" [tableStyle]="{'overflow': 'auto'}">
         <p-column header="" field="escapedName">
             <template let-col let-dataitem="rowData" pTemplate="body">
-                <div style="display: flex; flex-flow: row">
-                    <div style="order: 1">
+                <span style="display: flex; flex-flow: row">
+                    <span style="order: 1">
                         <img class="dashboard-button-content" src="{{databaseIcon}}" />
-                    </div>
-                    <div style="order: 2">
+                    </span>
+                    <span style="order: 2">
                         <span class="dashboard-button-content">
                             {{dataitem.escapedName}}
                         </span>
-                    </div>
-                </div>
+                    </span>
+                </span>
             </template>
         </p-column>
     </p-dataTable>
