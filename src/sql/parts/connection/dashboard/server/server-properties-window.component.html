@@ -10,11 +10,11 @@
 </div>
 <div style="display: flex; flex-flow: row; height:120px; overflow: auto">
     <div style="order: 1; margin: 5px">
-    <span style="font-weight: bold">Server Name</span> <span style="font-style: italic">SQLTOOLS2016</span> <br />
-    <span style="font-weight: bold">Status</span> <span style="font-style: italic">Normal</span> <br />
-    <span style="font-weight: bold">Owner</span> <span style="font-style: italic">sa</span> <br />
-    <span style="font-weight: bold">Size</span> <span style="font-style: italic">14.38MB</span> <br />
-    <span style="font-weight: bold">Space Available</span> <span style="font-style: italic">0.55MB</span> <br />
+    <span style="font-weight: bold">Server Name</span> <span style="font-style: italic">{{connection?.connectionProfile.serverName}}</span> <br />
+    <span style="font-weight: bold">Server Version</span> <span style="font-style: italic">{{connection?.connecting}}</span> <br />
+    <span style="font-weight: bold">Is Cloud</span> <span style="font-style: italic">{{connection?.serverInfo.isCloud}}</span> <br />
+    <span style="font-weight: bold">Azure Version</span> <span style="font-style: italic">{{connection?.serverInfo.azureVersion}}</span> <br />
+    <span style="font-weight: bold">Operating System</span> <span style="font-style: italic">{{connection?.serverInfo.osVersion}}</span> <br />
     </div>
     <div style="order: 2; margin: 5px">
     <span style="font-weight: bold">Number of Users</span>  <span style="font-style: italic">10</span> <br />

@@ -14,6 +14,7 @@ import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { DatabaseExplorerComponent } from './database-explorer.component';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import data = require('data');
 
 declare let AngularCore;
@@ -28,7 +29,7 @@ export class ServerDashboardComponent implements IDashboardPage {
 	@AngularCore.ViewChild('databaseExplorer') databaseExplorer: DatabaseExplorerComponent;
 
 	public ownerUri: string;
-	public connection: IConnectionProfile;
+	public connection: ConnectionManagementInfo;
 	public connectionService: IConnectionManagementService;
 	public metadataService: IMetadataService;
 	public scriptingService: IScriptingService;
@@ -41,14 +42,14 @@ export class ServerDashboardComponent implements IDashboardPage {
 	public injectState(
 		ownerUri: string,
 		objectMetadata: data.ObjectMetadata,
-		connectionProfile: IConnectionProfile,
+		connectionInfo: ConnectionManagementInfo,
 		connectionService: IConnectionManagementService,
 		metadataService: IMetadataService,
 		scriptingService: IScriptingService,
 		queryEditorService: IQueryEditorService,
 		loading: boolean): void {
 			this.ownerUri = ownerUri;
-			this.connection = connectionProfile;
+			this.connection = connectionInfo;
 			this.connectionService = connectionService;
 			this.metadataService = metadataService;
 			this.scriptingService = scriptingService;

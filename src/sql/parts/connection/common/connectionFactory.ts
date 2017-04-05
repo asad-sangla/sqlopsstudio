@@ -110,6 +110,7 @@ export class ConnectionFactory {
 		connection.serviceTimer.end();
 		connection.connecting = false;
 		connection.connectionId = summary.connectionId;
+		connection.serverInfo = summary.serverInfo;
 		return connection;
 	}
 

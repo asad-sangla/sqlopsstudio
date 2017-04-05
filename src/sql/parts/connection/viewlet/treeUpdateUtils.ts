@@ -10,7 +10,9 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import WinJS = require('vs/base/common/winjs.base');
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import * as Constants from 'sql/parts/connection/common/constants';
+import * as Utils from 'sql/parts/connection/common/utils';
 
 const $ = builder.$;
 export class TreeUpdateUtils {
@@ -37,7 +39,16 @@ export class TreeUpdateUtils {
 				}
 				else {
 					let uri = ConnectionFactory.DefaultUriPrefix + connectionProfile.getUniqueId();
-					connectionManagementService.showDashboard(uri, connectionProfile);
+					var connectionInfo = new ConnectionManagementInfo();
+					connectionInfo.extensionTimer = new Utils.Timer();
+					connectionInfo.intelliSenseTimer = new Utils.Timer();
+					connectionInfo.connecting = true;
+					connectionInfo.serviceTimer = new Utils.Timer();
+					connectionInfo.connectionProfile = connectionProfile;
+					if (connectionManagementService.getConnectionInfo(uri)) {
+						connectionInfo.serverInfo = connectionManagementService.getConnectionInfo(uri).serverInfo;
+					}
+					connectionManagementService.showDashboard(uri, connectionInfo);
 				}
 			}
 		}

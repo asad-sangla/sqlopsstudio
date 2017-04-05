@@ -59,6 +59,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onDisconnect: Emitter<IConnectionParams>;
 	private _onConnectRequestSent: Emitter<void>;
 	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
+	private _connectionInfo: ConnectionManagementInfo;
 
 	constructor(
 		private _connectionMemento: Memento,
@@ -95,6 +96,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onDisconnect = new Emitter<IConnectionParams>();
 		this._onConnectionChanged = new Emitter<IConnectionChangedParams>();
 		this._onConnectRequestSent = new Emitter<void>();
+		this._connectionInfo = new ConnectionManagementInfo();
 
 		this.disposables.push(this._onAddConnectionProfile);
 		this.disposables.push(this._onDeleteConnectionProfile);
@@ -319,7 +321,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 						connection.saveProfile = false;
 					}
 					if (options.showDashboard) {
-						this.showDashboard(uri, connection);
+						this.showDashboard(uri, this._connectionInfo);
 					}
 					this._onConnect.fire();
 				} else {
@@ -337,7 +339,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	public showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean> {
+	public showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
 			let dashboardInput: DashboardInput = self._instantiationService ? self._instantiationService.createInstance(DashboardInput, uri, connection) : undefined;
@@ -523,6 +525,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		} else {
 			connection.connectHandler(false, info.messages);
 		}
+		this._connectionInfo = connection;
 	}
 
 	public onConnectionChangedNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
@@ -724,6 +727,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public getConnectionProfile(fileUri: string): IConnectionProfile {
 		return this._connectionFactory.isConnected(fileUri) ? this._connectionFactory.getConnectionProfile(fileUri) : undefined;
+	}
+
+	public getConnectionInfo(fileUri: string): ConnectionManagementInfo {
+		return this._connectionFactory.isConnected(fileUri) ? this._connectionInfo : undefined;
 	}
 
 	public listDatabases(connectionUri: string): Thenable<data.ListDatabasesResult> {

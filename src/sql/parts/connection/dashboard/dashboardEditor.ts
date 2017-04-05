@@ -77,8 +77,8 @@ export class DashboardEditor extends BaseEditor {
 
 		// Get the bootstrap params and perform the bootstrap
 		let params: DashboardComponentParams = {
-			ownerUri: input.getUri(),
-			connection: input.getConnectionProfile()
+			connection: input.getConnectionInfo(),
+			ownerUri: input.getUri()
 		};
 		this._bootstrapService.bootstrap(
 			DashboardModule,

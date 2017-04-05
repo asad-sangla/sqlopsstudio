@@ -8,6 +8,7 @@ import { IConnectionManagementService, IConnectableInput, IConnectionCompletionO
 import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import data = require('data');
 
 // Test stubs for commonly used objects
@@ -103,6 +104,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return undefined;
 	}
 
+	getConnectionInfo(fileUri: string): ConnectionManagementInfo {
+		return undefined;
+	}
+
 	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile> {
 		return new Promise<IConnectionProfile>(() => connectionProfile);
 	}
@@ -119,7 +124,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return undefined;
 	}
 
-	showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean> {
+	showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
 		return new Promise(() => true);
 	}
 

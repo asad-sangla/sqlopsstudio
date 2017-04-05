@@ -22,6 +22,7 @@ import { ObjectDashboardComponent } from './object/object-dashboard.component';
 import { ElementRef } from '@angular/core';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
 import { DashboardComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 declare let AngularCore;
 
@@ -34,7 +35,7 @@ export class AppComponent {
 
 	public ownerUri: string;
 
-	public connection: IConnectionProfile;
+	public connection: ConnectionManagementInfo;
 
 	private breadCrumbItems: MenuItem[];
 
@@ -67,8 +68,8 @@ export class AppComponent {
 		this.queryEditorService = this._bootstrapService.queryEditorService;
 
 		this.connection = dashboardParameters.connection;
+		this.currentDatabaseName = this.connection.connectionProfile.databaseName;
 		this.ownerUri = dashboardParameters.ownerUri;
-		this.currentDatabaseName = this.connection.databaseName;
 		this.breadCrumbItems = [];
 	}
 
@@ -125,29 +126,30 @@ export class AppComponent {
 
 	public onActivateServerPage(component: ServerDashboardComponent) {
 		this.breadCrumbItems = [];
-		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.connectionProfile.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.connectionProfile.databaseName, routerLink: ['/database-dashboard'] });
 	}
 
 	public onActivateDatabasePage(component: DatabaseDashboardComponent) {
 		this.breadCrumbItems = [];
-		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
-		this.breadCrumbItems.push({ label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.connectionProfile.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.connectionProfile.databaseName, routerLink: ['/database-dashboard'] });
 	}
 
 	public onActivateObjectPage(component: ObjectDashboardComponent) {
 		this.breadCrumbItems = [];
-		this.breadCrumbItems.push({ label: component.connection.serverName, routerLink: ['/server-dashboard'] });
-		this.breadCrumbItems.push({ label: component.connection.databaseName, routerLink: ['/database-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.connectionProfile.serverName, routerLink: ['/server-dashboard'] });
+		this.breadCrumbItems.push({ label: component.connection.connectionProfile.databaseName, routerLink: ['/database-dashboard'] });
 		this.breadCrumbItems.push({ label: this.currentObjectMetadata.schema + '.' + this.currentObjectMetadata.name, routerLink: ['/object-dashboard'] });
 	}
 
 	private onDatabaseChanged(): void {
 		this.loading = true;
-		this.ownerUri = ConnectionFactory.DashboardUriPrefix + 'browseconn:' + this.connection.serverName + ';' + this.currentDatabaseName;
+		this.ownerUri = ConnectionFactory.DashboardUriPrefix + 'browseconn:' + this.connection.connectionProfile.serverName + ';' + this.currentDatabaseName;
 
-		this.connection.databaseName = this.currentDatabaseName;
+		this.connection.connectionProfile.databaseName = this.currentDatabaseName;
 
-		this.connectionService.connect(this.connection, this.ownerUri).then(connectionResult => {
+		this.connectionService.connect(this.connection.connectionProfile, this.ownerUri).then(connectionResult => {
 			if (connectionResult && connectionResult.connected) {
 				this.loading = false;
 				this.databasePage.onConnectionChanged();

@@ -13,6 +13,7 @@ import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import Severity from 'vs/base/common/severity';
 import { ISelectionData } from 'data';
+import { ConnectionManagementInfo } from './connectionManagementInfo';
 
 export const VIEWLET_ID = 'workbench.view.connections';
 
@@ -117,6 +118,8 @@ export interface IConnectionManagementService {
 
 	getConnectionProfile(fileUri: string): IConnectionProfile;
 
+	getConnectionInfo(fileUri: string): ConnectionManagementInfo;
+
 	/**
 	 * Cancels the connection
 	 */
@@ -132,7 +135,7 @@ export interface IConnectionManagementService {
 	 */
 	cancelEditorConnection(owner: IConnectableInput): Thenable<boolean>;
 
-	showDashboard(uri: string, connection: IConnectionProfile): Promise<boolean>;
+	showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean>;
 
 	closeDashboard(uri: string): void;
 }

@@ -8,13 +8,14 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import data = require('data');
 
 export interface IDashboardPage {
     injectState(
 		ownerUri: string,
 		objectMetadata: data.ObjectMetadata,
-		connectionProfile: IConnectionProfile,
+		connectionInfo: ConnectionManagementInfo,
 		connectionService: IConnectionManagementService,
 		metadataService: IMetadataService,
 		scriptingService: IScriptingService,
