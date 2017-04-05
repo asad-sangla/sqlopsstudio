@@ -9,7 +9,7 @@ import { Observable, Subject, Observer } from 'rxjs/Rx';
 declare let Rx;
 
 import { ISlickRange } from 'angular2-slickgrid';
-import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSubsetResult } from 'data';
+import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSubsetResult, EditCreateRowResult } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { ResultSerializer } from 'sql/parts/query/common/resultSerializer';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -92,32 +92,60 @@ export class DataService {
 		return self.editQueue;
 	}
 
-	createRow(): void {
+	createRow(): Thenable<EditCreateRowResult> {
 		const self = this;
 		self.editQueue = self.editQueue.then(() => {
-			self._queryModel.createRow(self._uri);
+			return self._queryModel.createRow(self._uri).then(result => {
+				return result;
+			}, error => {
+				// Start our editQueue over due to the rejected promise
+				self.editQueue = Promise.resolve();
+				return Promise.reject(error);
+			});
 		});
+		return self.editQueue;
 	}
 
-	deleteRow(rowId: number): void {
+	deleteRow(rowId: number): Thenable<void> {
 		const self = this;
 		self.editQueue = self.editQueue.then(() => {
-			self._queryModel.deleteRow(self._uri, rowId);
+			return self._queryModel.deleteRow(self._uri, rowId).then(result => {
+				return result;
+			}, error => {
+				// Start our editQueue over due to the rejected promise
+				self.editQueue = Promise.resolve();
+				return Promise.reject(error);
+			});
 		});
+		return self.editQueue;
 	}
 
-	revertCell(rowId: number, columnId: number): void {
+	revertCell(rowId: number, columnId: number): Thenable<void> {
 		const self = this;
 		self.editQueue = self.editQueue.then(() => {
-			self._queryModel.revertCell(self._uri, rowId, columnId);
+			return self._queryModel.revertCell(self._uri, rowId, columnId).then(result => {
+				return result;
+			}, error => {
+				// Start our editQueue over due to the rejected promise
+				self.editQueue = Promise.resolve();
+				return Promise.reject(error);
+			});
 		});
+		return self.editQueue;
 	}
 
-	revertRow(rowId: number): void {
+	revertRow(rowId: number): Thenable<void> {
 		const self = this;
 		self.editQueue = self.editQueue.then(() => {
-			self._queryModel.revertRow(self._uri, rowId);
+			return self._queryModel.revertRow(self._uri, rowId).then(result => {
+				return result;
+			}, error => {
+				// Start our editQueue over due to the rejected promise
+				self.editQueue = Promise.resolve();
+				return Promise.reject(error);
+			});
 		});
+		return self.editQueue;
 	}
 
 	/**

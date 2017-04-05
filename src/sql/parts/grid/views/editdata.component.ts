@@ -23,6 +23,7 @@ import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 
 declare let AngularCore;
 declare let rangy;
+declare let jQuery
 
 AngularCore.enableProdMode();
 
@@ -39,7 +40,6 @@ const template = `
                         showDataTypeIcon="false"
                         showHeader="true"
                         [resized]="dataSet.resized"
-                        (mousedown)="navigateToGrid(i)"
                         [plugins]="slickgridPlugins"
                         (cellEditBegin)="onCellEditBegin($event)"
                         (cellEditExit)="onCellEditEnd($event)"
@@ -72,141 +72,23 @@ const template = `
 
 export class EditDataComponent implements OnInit {
     // CONSTANTS
-    // tslint:disable-next-line:no-unused-variable
+    // tslint:disable:no-unused-variable
     private scrollTimeOutTime = 200;
     private windowSize = 50;
-    // tslint:disable-next-line:no-unused-variable
-    private maxScrollGrids = 8;
-    // tslint:disable-next-line:no-unused-variable
     private selectionModel = 'DragRowSelectionModel';
-    // tslint:disable-next-line:no-unused-variable
     private slickgridPlugins = ['AutoColumnSize'];
-    // tslint:disable-next-line:no-unused-variable
     private _rowHeight = 29;
-    // tslint:disable-next-line:no-unused-variable
     private _defaultNumShowingRows = 8;
-    // tslint:disable-next-line:no-unused-variable
     private Constants = Constants;
-    // tslint:disable-next-line:no-unused-variable
     private Utils = Utils;
-    // the function implementations of keyboard available events
-    private shortcutfunc = { /*
-        'event.toggleResultPane': () => {
-            this.resultActive = !this.resultActive;
-        },
-        'event.toggleMessagePane': () => {
-            this.messageActive = !this.messageActive;
-        },
-        'event.nextGrid': () => {
-            this.navigateToGrid(this.activeGrid + 1);
-        },
-        'event.prevGrid': () => {
-            this.navigateToGrid(this.activeGrid - 1);
-        },
-        'event.copySelection': () => {
-            let range: IRange = this.getSelectedRangeUnderMessages();
-            let messageText = range ? range.text() : '';
-            if (messageText.length > 0) {
-                this.executeCopy(messageText);
-            } else {
-                let activeGrid = this.activeGrid;
-                let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
-                this.dataService.copyResults(selection, this.renderedDataSets[activeGrid].batchId, this.renderedDataSets[activeGrid].resultId);
-            }
-        },
-        'event.copyWithHeaders': () => {
-            let activeGrid = this.activeGrid;
-            let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
-            this.dataService.copyResults(selection, this.renderedDataSets[activeGrid].batchId,
-                this.renderedDataSets[activeGrid].resultId, true);
-        },
-        'event.maximizeGrid': () => {
-            this.magnify(this.activeGrid);
-        },
-        'event.selectAll': () => {
-            this.slickgrids.toArray()[this.activeGrid].selection = true;
-        },
-        'event.saveAsCSV': () => {
-            let activeGrid = this.activeGrid;
-            let batchId = this.renderedDataSets[activeGrid].batchId;
-            let resultId = this.renderedDataSets[activeGrid].resultId;
-            let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
-            this.dataService.sendSaveRequest(batchId, resultId, 'csv', selection);
-        },
-        'event.saveAsJSON': () => {
-            let activeGrid = this.activeGrid;
-            let batchId = this.renderedDataSets[activeGrid].batchId;
-            let resultId = this.renderedDataSets[activeGrid].resultId;
-            let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
-            this.dataService.sendSaveRequest(batchId, resultId, 'json', selection);
-        }
-    */};
-    // tslint:disable-next-line:no-unused-variable
-    private dataIcons: IGridIcon[] = [
-        {
-            showCondition: () => { return this.dataSets.length > 1; },
-            icon: () => {
-                return this.renderedDataSets.length === 1
-                    ? 'exitFullScreen'
-                    : 'extendFullScreen';
-            },
-            hoverText: () => {
-                return this.renderedDataSets.length === 1
-                    ? Constants.restoreLabel
-                    : Constants.maximizeLabel;
-            },
-            functionality: (batchId, resultId, index) => {
-                this.magnify(index);
-            }
-        },
-        {
-            showCondition: () => { return true; },
-            icon: () => { return 'saveCsv'; },
-            hoverText: () => { return Constants.saveCSVLabel; },
-            functionality: (batchId, resultId, index) => {
-                let selection = this.slickgrids.toArray()[index].getSelectedRanges();
-                if (selection.length <= 1) {
-                    this.handleContextClick({type: 'savecsv', batchId: batchId, resultId: resultId, index: index, selection: selection});
-                } else {
-                    this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
-                }
-            }
-        },
-        {
-            showCondition: () => { return true; },
-            icon: () => { return 'saveJson'; },
-            hoverText: () => { return Constants.saveJSONLabel; },
-            functionality: (batchId, resultId, index) => {
-                let selection = this.slickgrids.toArray()[index].getSelectedRanges();
-                if (selection.length <= 1) {
-                    this.handleContextClick({type: 'savejson', batchId: batchId, resultId: resultId, index: index, selection: selection});
-                } else {
-                    this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
-                }
-            }
-        },
-        {
-            showCondition: () => { return true; },
-            icon: () => { return 'saveExcel'; },
-            hoverText: () => { return Constants.saveExcelLabel; },
-            functionality: (batchId, resultId, index) => {
-                let selection = this.slickgrids.toArray()[index].getSelectedRanges();
-                if (selection.length <= 1) {
-                    this.handleContextClick({type: 'saveexcel', batchId: batchId, resultId: resultId, index: index, selection: selection});
-                } else {
-                    this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
-                }
-            }
-        }
-    ];
-    // tslint:disable-next-line:no-unused-variable
     private startString = new Date().toLocaleTimeString();
+    // tslint:enable
 
     // FIELDS
     // Service for interaction with the IQueryModel
     private dataService: DataService;
     // All datasets
-    private dataSets: IGridDataSet[] = [];
+    private dataSet: IGridDataSet;
     // Place holder data sets to buffer between data sets and rendered data sets
     private placeHolderDataSets: IGridDataSet[] = [];
     // Datasets currently being rendered on the DOM
@@ -215,20 +97,16 @@ export class EditDataComponent implements OnInit {
     private scrollTimeOut: number;
     private messagesAdded = false;
     private scrollEnabled = true;
-    // tslint:disable-next-line:no-unused-variable
     private resultActive = true;
-    // tslint:disable-next-line:no-unused-variable
     private _messageActive = true;
-    // tslint:disable-next-line:no-unused-variable
     private firstRender = true;
-    // tslint:disable-next-line:no-unused-variable
     private resultsScrollTop = 0;
-    // tslint:disable-next-line:no-unused-variable
     private activeGrid = 0;
     private totalElapsedTimeSpan: number;
     private complete = false;
-    //@AngularCore.ViewChild('contextmenu') contextMenu: ContextMenu;
-    //@ViewChild('messagescontextmenu') messagesContextMenu: MessagesContextMenu;
+    private newRow: {exists: boolean, rowIndex: number} = {exists: false, rowIndex: undefined};
+    private idMapping: { [row: number]: number } = {};
+
     @AngularCore.ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
 
     // Edit Data functions
@@ -239,6 +117,7 @@ export class EditDataComponent implements OnInit {
     public onIsCellEditValid: (row: number, column: number, newValue: any) => boolean;
     public onIsColumnEditable: (column: number) => boolean;
     public overrideCellFn: (rowNumber, columnId, value?, data?) => string;
+    public loadDataFunction: (offset: number, count: number) => Promise<IGridDataRow[]>;
 
     set messageActive(input: boolean) {
         this._messageActive = input;
@@ -311,7 +190,7 @@ export class EditDataComponent implements OnInit {
 
     handleStart(self: EditDataComponent, event: any): void {
         self.messages = [];
-        self.dataSets = [];
+        self.dataSet = undefined;
         self.placeHolderDataSets =  [];
         self.renderedDataSets = self.placeHolderDataSets;
         self.totalElapsedTimeSpan = undefined;
@@ -325,29 +204,49 @@ export class EditDataComponent implements OnInit {
         };
 
         this.onCellEditEnd = (event: {row: number, column: number, newValue: any}): void => {
-            self.dataService.updateCell(event.row, event.column, event.newValue)
+            // Update the cell accordingly
+            self.dataService.updateCell(this.idMapping[event.row], event.column, event.newValue)
             .then(
-                // TODO callbacks to workaround onIsCellEditValid not supporting async code
                 result => {
-                    let slick: any = self.slickgrids.toArray()[0];
-                    let grid = slick._grid;
-                    self.setCellDirtyState(grid, event.row, event.column+1, result.cell.isDirty);
-                    self.setRowDirtyState(grid, event.row, result.isRowDirty);
+                    self.setCellDirtyState(event.row, event.column+1, result.cell.isDirty);
+                    self.setRowDirtyState(event.row, result.isRowDirty);
                 },
                 error => {
-                    // TODO create formal slickgrid api for these actions
-                    this.setGridClean();
-                    self.refreshResultsets();
-                    let slick: any = self.slickgrids.toArray()[0];
-                    let grid = slick._grid;
-                    grid.focus();
-                    grid.gotoCell(event.row, event.column+1, true);
+                    if (!this.newRow.exists) {
+                        this.setGridClean();
+                        this.refreshResultsets();
+                    } else {
+                        let slick: any = self.slickgrids.toArray()[0];
+                        let grid = slick._grid;
+                        self.setCellDirtyState(event.row, event.column+1, true);
+                        self.setRowDirtyState(event.row, true);
+                    }
+                    this.focusCell(event.row, event.column+1);
                 }
             );
         };
 
         this.onCellEditBegin = (event: {row: number, column: number}): void => {
+            // Check if we tried to leave our 'create row' session
+            if(this.leaveCreateRow(event.row)) {
+                // Try to commit pending edits if we have left
+                self.dataService.commitEdit().then(result => {
+                    this.setGridClean();
+                    this.newRow.exists = false;
+                    // If we tried to leave into the null row then start a new edition session
+                    if (this.isNullRow(event.row)) {
+                        this.addRow(event.row, 1);
+                    }
+                }, error => {
+                    // Upon error prevent user from leaving the create session
+                    this.focusCell(this.dataSet.totalRows-2, event.column+1);
+                });
 
+            // If we started editing a new cell in a 'new row' and we are not in a create session
+            } else if (this.isNullRow(event.row) && !this.newRow.exists) {
+                // Add a new row to slickgrid
+                this.addRow(event.row, 1);
+            }
         };
 
         this.onRowEditBegin = (event: {row: number}): void => {
@@ -355,24 +254,28 @@ export class EditDataComponent implements OnInit {
         };
 
         this.onRowEditEnd = (event: {row: number}): void => {
-            self.dataService.commitEdit().then(result => {
-                this.setGridClean();
-            }, error => {
-                // TODO create formal slickgrid api for these actions
-                this.setGridClean();
-                self.refreshResultsets();
-                let slick: any = self.slickgrids.toArray()[0];
-                let grid = slick._grid;
-                grid.focus();
-                grid.gotoCell(event.row, 0, true);
-            });
+            // Check if we left a new row
+            if (!this.newRow.exists) {
+                self.dataService.commitEdit().then(result => {
+                    this.setGridClean();
+                }, error => {
+                    // TODO create formal slickgrid api for these actions
+                    this.setGridClean();
+                    this.dataService.revertRow(self.idMapping[event.row])
+                    .then(
+                        result => {
+                            this.refreshResultsets();
+                            this.focusCell(event.row, 1);
+                    });
+                });
+            }
         };
 
         this.onIsColumnEditable = (column: number): boolean => {
             let result = false;
             // Check that our variables exist
-            if (column !== undefined && !!this.dataSets[0] && !!this.dataSets[0].columnDefinitions[column]) {
-                result = this.dataSets[0].columnDefinitions[column].isEditable;
+            if (column !== undefined && !!this.dataSet && !!this.dataSet.columnDefinitions[column]) {
+                result = this.dataSet.columnDefinitions[column].isEditable;
             }
 
             // If no column definition exists then the row is not editable
@@ -388,32 +291,25 @@ export class EditDataComponent implements OnInit {
             }
             return returnVal;
         };
-    }
 
-    // Temporary implementations to showcase functionality
-    setCellDirtyState(grid: any, row: number, column: number, dirtyState: boolean): void {
-        if (dirtyState) {
-            // Change cell color
-            $(grid.getCellNode(row, column)).addClass('dirtyCell').removeClass('selected');
-        } else {
-            $(grid.getCellNode(row,column)).removeClass('dirtyCell');
-        }
-    }
+        // Setup a function for generating a promise to lookup result subsets
+        this.loadDataFunction = (offset: number, count: number): Promise<IGridDataRow[]> => {
+            return new Promise<IGridDataRow[]>((resolve, reject) => {
+                self.dataService.getEditRows(offset, count).subscribe(result => {
+                    let rowIndex = offset;
+                    let gridData: IGridDataRow[] = result.subset.map(row => {
+                        this.idMapping[rowIndex] = row.id;
+                        rowIndex++;
+                        return {values: row.cells, row: row.id};
+                    });
 
-    setRowDirtyState(grid: any, row: number, dirtyState:boolean): void {
-        if (dirtyState) {
-            // Change row header color
-            $(grid.getCellNode(row, 0)).addClass('dirtyRowHeader');
-        } else {
-            $(grid.getCellNode(row, 0)).removeClass('dirtyRowHeader');
-        }
-    }
-
-    setGridClean(): void {
-        // Remove dirty classes from the entire table
-        let allRows = $($('.grid-canvas').children());
-        let allCells = $(allRows.children());
-        allCells.removeClass('dirtyCell').removeClass('dirtyRowHeader');
+                    // Append a NULL row to the end of gridData
+                    let lastRow = gridData[gridData.length-1];
+                    gridData.push({values: lastRow.values.map(cell => {return {displayValue: 'NULL', isNull: false};}), row: lastRow.row+1});
+                    resolve(gridData);
+                });
+            });
+        };
     }
 
     handleComplete(self: EditDataComponent, event: any): void {
@@ -431,27 +327,13 @@ export class EditDataComponent implements OnInit {
     }
 
     handleResultSet(self: EditDataComponent, event: any): void {
+        // Add an extra 'new row'
+        event.data.rowCount++;
         let resultSet = event.data;
 
-        // Setup a function for generating a promise to lookup result subsets
-        let loadDataFunction = (offset: number, count: number): Promise<IGridDataRow[]> => {
-            return new Promise<IGridDataRow[]>((resolve, reject) => {
-                self.dataService.getEditRows(offset, count).subscribe(result => {
-                    let gridData: IGridDataRow[] = result.subset.map(row => {
-                        return {values: row.cells, row: row.id};
-                    });
-                    resolve(gridData);
-                });
-            });
-        };
-
         // Precalculate the max height and min height
-        let maxHeight = resultSet.rowCount < self._defaultNumShowingRows
-            ? Math.max((resultSet.rowCount + 1) * self._rowHeight, self.dataIcons.length * 30) + 10
-            : 'inherit';
-        let minHeight = resultSet.rowCount > self._defaultNumShowingRows
-            ? (self._defaultNumShowingRows + 1) * self._rowHeight + 10
-            : maxHeight;
+        let maxHeight = this.getMaxHeight(resultSet.rowCount);
+        let minHeight = this.getMinHeight(resultSet.rowCount);
 
         // Store the result set from the event
         let dataSet: IGridDataSet = {
@@ -464,7 +346,7 @@ export class EditDataComponent implements OnInit {
             dataRows: new VirtualizedCollection(
                 self.windowSize,
                 resultSet.rowCount,
-                loadDataFunction,
+                this.loadDataFunction,
                 index => { return { values: [] }; }
             ),
             columnDefinitions: resultSet.columnInfo.map((c, i) => {
@@ -482,7 +364,7 @@ export class EditDataComponent implements OnInit {
                 };
             })
         };
-        self.dataSets.push(dataSet);
+        self.dataSet = dataSet;
 
         // Create a dataSet to render without rows to reduce DOM size
         let undefinedDataSet = JSON.parse(JSON.stringify(dataSet));
@@ -520,64 +402,6 @@ export class EditDataComponent implements OnInit {
                 break;
         }
         return fieldtype;
-    }
-
-      /**
-     * Send save result set request to service
-     */
-    handleContextClick(event: {type: string, batchId: number, resultId: number, index: number, selection: ISlickRange[]}): void {
-        switch (event.type) {
-            case 'savecsv':
-                this.dataService.sendSaveRequest(event.batchId, event.resultId, 'csv', event.selection);
-                break;
-            case 'savejson':
-                this.dataService.sendSaveRequest(event.batchId, event.resultId, 'json', event.selection);
-                break;
-            case 'saveexcel':
-                this.dataService.sendSaveRequest(event.batchId, event.resultId, 'excel', event.selection);
-                break;
-            case 'selectall':
-                this.activeGrid = event.index;
-                this.shortcutfunc['event.selectAll']();
-                break;
-            case 'copySelection':
-                this.dataService.copyResults(event.selection, event.batchId, event.resultId);
-                break;
-            case 'copyWithHeaders':
-                this.dataService.copyResults(event.selection, event.batchId, event.resultId, true);
-                break;
-            default:
-                break;
-        }
-    }
-
-    openContextMenu(event: {x: number, y: number}, batchId, resultId, index): void {
-        /*
-        let selection = this.slickgrids.toArray()[index].getSelectedRanges();
-        this.contextMenu.show(event.x, event.y, batchId, resultId, index, selection);
-        */
-    }
-
-    /**
-     * Perform copy and do other actions for context menu on the messages component
-     */
-    handleMessagesContextClick(event: {type: string, selectedRange: IRange}): void {
-        switch (event.type) {
-            case 'copySelection':
-                let selectedText = event.selectedRange.text();
-                this.executeCopy(selectedText);
-                break;
-            default:
-                break;
-        }
-    }
-
-    openMessagesContextMenu(event: any): void {
-        /*
-        event.preventDefault();
-        let selectedRange: IRange = this.getSelectedRangeUnderMessages();
-        this.messagesContextMenu.show(event.clientX, event.clientY, selectedRange);
-        */
     }
 
     getSelectedRangeUnderMessages(): IRange {
@@ -656,30 +480,12 @@ export class EditDataComponent implements OnInit {
         const self = this;
         clearTimeout(self.scrollTimeOut);
         this.scrollTimeOut = setTimeout(() => {
-            if (self.dataSets.length < self.maxScrollGrids) {
-                self.scrollEnabled = false;
-                for (let i = 0; i < self.placeHolderDataSets.length; i++) {
-                    self.placeHolderDataSets[i].dataRows = self.dataSets[i].dataRows;
-                    self.placeHolderDataSets[i].resized.emit();
-                }
-            } else {
-                let gridHeight = self._el.nativeElement.getElementsByTagName('slick-grid')[0].offsetHeight;
-                let tabHeight = self._el.nativeElement.querySelector('#results').offsetHeight;
-                let numOfVisibleGrids = Math.ceil((tabHeight / gridHeight)
-                    + ((scrollTop % gridHeight) / gridHeight));
-                let min = Math.floor(scrollTop / gridHeight);
-                let max = min + numOfVisibleGrids;
-                for (let i = 0; i < self.placeHolderDataSets.length; i++) {
-                    if (i >= min && i < max) {
-                        if (self.placeHolderDataSets[i].dataRows === undefined) {
-                            self.placeHolderDataSets[i].dataRows = self.dataSets[i].dataRows;
-                            self.placeHolderDataSets[i].resized.emit();
-                        }
-                    } else if (self.placeHolderDataSets[i].dataRows !== undefined) {
-                        self.placeHolderDataSets[i].dataRows = undefined;
-                    }
-                }
+            self.scrollEnabled = false;
+            for (let i = 0; i < self.placeHolderDataSets.length; i++) {
+                self.placeHolderDataSets[i].dataRows = self.dataSet.dataRows;
+                self.placeHolderDataSets[i].resized.emit();
             }
+
 
             self.cd.detectChanges();
 
@@ -696,34 +502,6 @@ export class EditDataComponent implements OnInit {
                 });
             }
         }, self.scrollTimeOutTime);
-    }
-
-    /**
-     * Sets up the resize for the messages/results panes bar
-     */
-    setupResizeBind(): void {
-        /*
-        const self = this;
-        let $resizeHandle = $(self._el.nativeElement.querySelector('#messageResizeHandle'));
-        let $messagePane = $(self._el.nativeElement.querySelector('#messages'));
-        $resizeHandle.bind('dragstart', (e) => {
-            self.resizing = true;
-            self.resizeHandleTop = e.pageY;
-            return true;
-        });
-
-        $resizeHandle.bind('drag', (e) => {
-            self.resizeHandleTop = e.pageY;
-        });
-
-        $resizeHandle.bind('dragend', (e) => {
-            self.resizing = false;
-            // redefine the min size for the messages based on the final position
-            $messagePane.css('min-height', $(window).height() - (e.pageY + 22));
-            self.cd.detectChanges();
-            self.resizeGrids();
-        });
-        */
     }
 
     /**
@@ -746,70 +524,14 @@ export class EditDataComponent implements OnInit {
         });
     }
 
-    /**
-     *
-     */
     keyEvent(e): void {
-        /*
-        const self = this;
-        if (e.detail) {
-            e.which = e.detail.which;
-            e.ctrlKey = e.detail.ctrlKey;
-            e.metaKey = e.detail.metaKey;
-            e.altKey = e.detail.altKey;
-            e.shiftKey = e.detail.shiftKey;
+        // If the esc key was pressed while in a create session
+        if (e.keyCode === jQuery.ui.keyCode.ESCAPE && this.newRow.exists) {
+            // revert our last new row
+            this.dataService.revertRow(this.idMapping[this.newRow.rowIndex]);
+            this.newRow.exists = false;
+            this.removeRow(this.newRow.rowIndex-1, 1);
         }
-        let eString = this.shortcuts.buildEventString(e);
-        this.shortcuts.getEvent(eString).then((result) => {
-            if (result) {
-                let eventName = <string> result;
-                self.shortcutfunc[eventName]();
-                e.stopImmediatePropagation();
-            }
-        });
-        */
-    }
-
-    /**
-     * Handles rendering and unrendering necessary resources in order to properly
-     * navigate from one grid another. Should be called any time grid navigation is performed
-     * @param targetIndex The index in the renderedDataSets to navigate to
-     * @returns A boolean representing if the navigation was successful
-     */
-    navigateToGrid(targetIndex: number): boolean {
-        // check if the target index is valid
-        if (targetIndex >= this.renderedDataSets.length || targetIndex < 0) {
-            return false;
-        }
-
-        // Deselect any text since we are navigating to a new grid
-        // Do this even if not switching grids, since this covers clicking on the grid after message selection
-        rangy.getSelection().removeAllRanges();
-
-        // check if you are actually trying to change navigation
-        if (this.activeGrid === targetIndex) {
-            return false;
-        }
-
-        this.slickgrids.toArray()[this.activeGrid].selection = false;
-        this.slickgrids.toArray()[targetIndex].setActive();
-        this.activeGrid = targetIndex;
-
-        // scrolling logic
-        let resultsWindow = $('#results');
-        let scrollTop = resultsWindow.scrollTop();
-        let scrollBottom = scrollTop + resultsWindow.height();
-        let gridHeight = $(this._el.nativeElement).find('slick-grid').height();
-        if (scrollBottom < gridHeight * (targetIndex + 1)) {
-            scrollTop += (gridHeight * (targetIndex + 1)) - scrollBottom;
-            resultsWindow.scrollTop(scrollTop);
-        }
-        if (scrollTop > gridHeight * targetIndex) {
-            scrollTop = (gridHeight * targetIndex);
-            resultsWindow.scrollTop(scrollTop);
-        }
-
-        return true;
     }
 
     resizeGrids(): void {
@@ -819,5 +541,116 @@ export class EditDataComponent implements OnInit {
                     grid.resized.emit();
                 }
         });
+    }
+
+    // Private Helper Functions ////////////////////////////////////////////////////////////////////////////
+
+    // Checks if input row is our NULL new row
+    private isNullRow(row: number): boolean {
+        // Null row is always at index (totalRows - 1)
+        return (row === this.dataSet.totalRows-1);
+    }
+
+    // Checks if the input row is leaving a create row session
+    private leaveCreateRow(row: number): boolean {
+        // Temp row is always at index (totalRows -1) when it exists
+        return (this.newRow.exists && !(row === this.dataSet.totalRows-2));
+    }
+
+    // Adds CSS classes to slickgrid cells to indicate a dirty state
+    private setCellDirtyState(row: number, column: number, dirtyState: boolean): void {
+        let slick: any = this.slickgrids.toArray()[0];
+        let grid = slick._grid;
+        if (dirtyState) {
+            // Change cell color
+            $(grid.getCellNode(row, column)).addClass('dirtyCell').removeClass('selected');
+        } else {
+            $(grid.getCellNode(row,column)).removeClass('dirtyCell');
+        }
+    }
+
+    // Adds CSS classes to slickgrid rows to indicate a dirty state
+    private setRowDirtyState(row: number, dirtyState:boolean): void {
+        let slick: any = this.slickgrids.toArray()[0];
+        let grid = slick._grid;
+        if (dirtyState) {
+            // Change row header color
+            $(grid.getCellNode(row, 0)).addClass('dirtyRowHeader');
+        } else {
+            $(grid.getCellNode(row, 0)).removeClass('dirtyRowHeader');
+        }
+    }
+
+    // Sets CSS to clean the entire grid of dirty state cells and rows
+    private setGridClean(): void {
+        // Remove dirty classes from the entire table
+        let allRows = $($('.grid-canvas').children());
+        let allCells = $(allRows.children());
+        allCells.removeClass('dirtyCell').removeClass('dirtyRowHeader');
+    }
+
+    // Adds an extra row to the end of slickgrid (just for rendering purposes)
+    // Then sets the focused call afterwards
+    private addRow(row: number, column: number): void {
+        this.dataService.createRow();
+        this.newRow.rowIndex = row;
+        this.newRow.exists = true;
+        // Adding an extra row for 'new row' functionality
+        this.dataSet.totalRows++;
+        this.dataSet.maxHeight = this.getMaxHeight(this.dataSet.totalRows);
+        this.dataSet.minHeight = this.getMinHeight(this.dataSet.totalRows);
+        this.dataSet.dataRows = new VirtualizedCollection(
+            this.windowSize,
+            this.dataSet.totalRows,
+            this.loadDataFunction,
+            index => { return { values: [] }; }
+        );
+        // Refresh grid
+        this.onScroll(0);
+
+        // Set focused cell
+        setTimeout(() => {
+            this.focusCell(row, column);
+            this.setRowDirtyState(row, true);
+        }, this.scrollTimeOutTime);
+    }
+
+    // Adds a row from the end of slickgrid (just for rendering purposes)
+    // Then sets the focused call afterwards
+    private removeRow(row: number, column: number): void {
+        // Removing the new row
+        this.dataSet.totalRows--;
+        this.dataSet.dataRows = new VirtualizedCollection(
+            this.windowSize,
+            this.dataSet.totalRows,
+            this.loadDataFunction,
+            index => { return { values: [] }; }
+        );
+
+        // refresh results view
+        this.onScroll(0);
+
+        // focus the above row
+        setTimeout(() => {
+            this.focusCell(row, column);
+        }, this.scrollTimeOutTime);
+    }
+
+    private focusCell(row: number, column: number): void {
+        let slick: any = this.slickgrids.toArray()[0];
+        let grid = slick._grid;
+        grid.gotoCell(row, column, true);
+    }
+
+    private getMaxHeight(rowCount: number): any {
+        return rowCount < this._defaultNumShowingRows
+            ? ((rowCount + 1) * this._rowHeight) + 10
+            : 'inherit';
+    }
+
+    private getMinHeight(rowCount: number): any {
+        return rowCount > this._defaultNumShowingRows
+            ? (this._defaultNumShowingRows + 1) * this._rowHeight + 10
+            : this.getMaxHeight(rowCount);
     }
 }

@@ -13,7 +13,9 @@ import {
 	ResultSetSubset,
 	EditUpdateCellResult,
 	EditSessionReadyParams,
-	EditSubsetResult
+	EditSubsetResult,
+	EditCreateRowResult,
+	EditRevertCellResult
 } from 'data';
 
 export const SERVICE_ID = 'queryModelService';
@@ -53,10 +55,10 @@ export interface IQueryModelService {
 	disposeEdit(ownerUri: string): Thenable<void>;
 	updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult>;
 	commitEdit(ownerUri): Thenable<void>;
-	createRow(ownerUri: string): void;
-	deleteRow(ownerUri: string, rowId: number): void;
-	revertCell(ownerUri: string, rowId: number, columnId: number): void;
-	revertRow(ownerUri: string, rowId: number): void;
+	createRow(ownerUri: string): Thenable<EditCreateRowResult>;
+	deleteRow(ownerUri: string, rowId: number): Thenable<void>;
+	revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult>;
+	revertRow(ownerUri: string, rowId: number): Thenable<void>;
 	getEditRows(ownerUri: string, rowStart: number, numberOfRows: number): Thenable<EditSubsetResult>;
 
 	// Edit Data Callbacks

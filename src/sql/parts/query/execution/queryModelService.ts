@@ -18,7 +18,8 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import Event, { Emitter } from 'vs/base/common/event';
-import { ISelectionData, ResultSetSubset, EditSubsetResult, EditUpdateCellResult, EditSessionReadyParams } from 'data';
+import { ISelectionData, ResultSetSubset, EditSubsetResult,
+		EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult } from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 interface QueryEvent {
@@ -321,7 +322,7 @@ export class QueryModelService implements IQueryModelService {
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
 			return queryRunner.updateCell(ownerUri, rowId, columnId, newValue).then((result) => result, error => {
-				this._messageService.show(Severity.Error, nls.localize('updateCellFailed', 'Update Cell Edit Data Failed With Error: ') + error.message);
+				this._messageService.show(Severity.Error, nls.localize('updateCellFailed', 'Update cell failed: ') + error.message);
 				return Promise.reject(error);
 			});
 		}
@@ -333,43 +334,47 @@ export class QueryModelService implements IQueryModelService {
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
 			return queryRunner.commitEdit(ownerUri).then(() => {}, error => {
-				this._messageService.show(Severity.Error, nls.localize('commitEditFailed', 'Commit Edit Data Failed With Error: ') + error.message);
+				this._messageService.show(Severity.Error, nls.localize('commitEditFailed', 'Commit row failed: ') + error.message);
 				return Promise.reject(error);
 			});
 		}
 		return TPromise.as(null);
 	}
 
-	public createRow(ownerUri: string): void {
+	public createRow(ownerUri: string): Thenable<EditCreateRowResult> {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
-			queryRunner.createRow(ownerUri);
+			return queryRunner.createRow(ownerUri);
 		}
+		return TPromise.as(null);
 	}
 
-	public deleteRow(ownerUri: string, rowId: number): void {
+	public deleteRow(ownerUri: string, rowId: number): Thenable<void> {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
-			queryRunner.deleteRow(ownerUri, rowId);
+			return queryRunner.deleteRow(ownerUri, rowId);
 		}
+		return TPromise.as(null);
 	}
 
-	public revertCell(ownerUri: string, rowId: number, columnId: number): void {
+	public revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult> {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
-			queryRunner.revertCell(ownerUri, rowId, columnId);
+			return queryRunner.revertCell(ownerUri, rowId, columnId);
 		}
+		return TPromise.as(null);
 	}
 
-	public revertRow(ownerUri: string, rowId: number): void {
+	public revertRow(ownerUri: string, rowId: number): Thenable<void> {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
-			queryRunner.revertRow(ownerUri, rowId);
+			return queryRunner.revertRow(ownerUri, rowId);
 		}
+		return TPromise.as(null);
 	}
 
 	// PRIVATE METHODS //////////////////////////////////////////////////////
