@@ -205,14 +205,18 @@ export class QueryEditorService implements IQueryEditorService {
 	}
 
 	private static getInputResource(input: EditorInput): URI {
-		let untitledCast: UntitledEditorInput = <UntitledEditorInput> input;
-		if (untitledCast) {
-			return untitledCast.getResource();
+		if (input instanceof UntitledEditorInput) {
+			let untitledCast: UntitledEditorInput = <UntitledEditorInput> input;
+			if (untitledCast) {
+				return untitledCast.getResource();
+			}
 		}
 
-		let fileCast: FileEditorInput  = <FileEditorInput > input;
-		if (fileCast) {
-			return fileCast.getResource();
+		if (input instanceof FileEditorInput) {
+			let fileCast: FileEditorInput  = <FileEditorInput > input;
+			if (fileCast) {
+				return fileCast.getResource();
+			}
 		}
 
 		return undefined;
