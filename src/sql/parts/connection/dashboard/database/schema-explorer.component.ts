@@ -106,6 +106,18 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 		}
 	}
 
+	public isTable(metadataType: MetadataType): boolean {
+		return metadataType === MetadataType.Table;
+	}
+
+	public isProcedure(metadataType: MetadataType): boolean {
+		return metadataType === MetadataType.SProc;
+	}
+
+	public isView(metadataType: MetadataType): boolean {
+		return metadataType === MetadataType.View;
+	}
+
 	/**
 	 * Select the top rows from an object
 	 */

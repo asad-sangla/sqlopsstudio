@@ -18,8 +18,16 @@
         <p-column header="" field="metadata.name">
             <template let-col let-dataitem="rowData" pTemplate="body">
                 <span style="display: flex; flex-flow: row">
-                    <span style="order: 1">
-                        <img class="dashboard-button-content" src="{{databaseIcon}}" />
+                    <span style="order: 1; padding-right: 2px">
+                        <div *ngIf="isTable(dataitem.metadata.metadataType)">
+                            <i class="fa fa-table fa-lg" style="color: gold; padding: 4px"></i>
+                        </div>
+                        <div *ngIf="isProcedure(dataitem.metadata.metadataType)">
+                            <i class="fa fa-wrench fa-lg" style="color: gold; padding: 4px"></i>
+                        </div>
+                        <div *ngIf="isView(dataitem.metadata.metadataType)">
+                            <i class="fa fa-binoculars fa-lg" style="color: gold; padding: 4px"></i>
+                        </div>
                     </span>
                     <span style="order: 2">
                         <span class="dashboard-button-content">
