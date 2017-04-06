@@ -34,8 +34,8 @@
 	font-size: 40px;
 }
 
-.monaco-shell .modal-body{
-	height: calc(100% - 108px);
+.monaco-shell .splash-dialog-widget .modal-body{
+	height: 200px;
 }
 
 .footer-table {
