@@ -259,7 +259,7 @@ export abstract class EditorInput implements IEditorInput {
 	 * Subclasses can set this to false if it does not make sense to split the editor input.
 	 */
 	public supportsSplitEditor(): boolean {
-		return true;
+		return false; // TODO reenable when multiple Angular components of the same type can be open simultaneously
 	}
 
 	/**
@@ -684,7 +684,7 @@ export class TextEditorOptions extends EditorOptions {
 				this.editorOptions = Object.create(null);
 				this.editorOptions.renderWhitespace = config.viewInfo.renderWhitespace;
 				this.editorOptions.renderControlCharacters = config.viewInfo.renderControlCharacters;
-				this.editorOptions.wrappingColumn = config.wrappingInfo.isViewportWrapping ? 0 : -1;
+				this.editorOptions.wordWrap = config.wrappingInfo.isViewportWrapping ? 'on' : 'off';
 			}
 		}
 	}

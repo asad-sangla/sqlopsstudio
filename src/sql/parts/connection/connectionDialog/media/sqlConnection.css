@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.custom-checkbox.connection-checkbox {
+	margin-right: 5px;
+	margin-top: 2px;
+	width: 12px;
+	height: 12px;
+}
+
+.custom-checkbox.connection-checkbox.checked {
+	background: url('check.svg') center center no-repeat;
+	border-color:#3C3C3C;
+}
+
+.custom-checkbox.connection-checkbox.unchecked {
+	border-color:#3C3C3C;
+}
+
+.vs-dark.monaco-shell .custom-checkbox.connection-checkbox.checked {
+	background: url('check.svg') center center no-repeat;
+	border-color:#3C3C3C;
+}
+
+.vs-dark.monaco-shell .custom-checkbox.connection-checkbox.unchecked {
+	background-color: #3C3C3C;
+	border-color: #E1E1E1;
+}
+
+.advanced-button {
+	width: 100px;
+	padding-right:8px;
+	padding-bottom: 5px;
+}

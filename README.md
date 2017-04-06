@@ -1,4 +1,4 @@
-# carbon Database Management Tool
+# Carbon Database Management Tool
 
 Carbon is a multi-OS, multi-database management tool.
 

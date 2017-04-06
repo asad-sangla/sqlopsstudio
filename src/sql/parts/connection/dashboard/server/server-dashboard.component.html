@@ -1,0 +1,29 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+
+<div id="server-properties-window" style="display: flex; flex-flow: row; height:150px; overflow: auto; width: 100%">
+	<div style="order: 1; margin: 5px; min-width: 125px">
+		<img src="{{serverPageImage}}" />
+	</div>
+
+	<div style="order: 2; margin: 5px">
+		<server-properties-window [connection]='connection'></server-properties-window>
+	</div>
+
+	<div id="database-command-window" style="order: 3; margin: 5px; flex: 1;">
+		<server-command-window></server-command-window>
+	</div>
+</div>
+
+<database-explorer #databaseExplorer
+	[ownerUri]='ownerUri'
+	[connection]='connection'
+	[metadataService]='metadataService'
+	[scriptingService]='scriptingService'
+	[queryEditorService]='queryEditorService'>
+</database-explorer>
+

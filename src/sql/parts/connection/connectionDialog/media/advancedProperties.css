@@ -1,0 +1,110 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.monaco-shell .advanced-dialog .modal-dialog  {
+	margin: auto auto auto auto;
+	height: calc(100% - 23px);
+	width: 500px;
+	right: -18px;
+	position: absolute;
+	overflow-y: hidden;
+}
+
+.monaco-shell .advanced-dialog .modal-body{
+	height: calc(100% - 138px);
+	overflow-y: auto;
+}
+
+.advancedDialog-label {
+	width: 120px;
+	padding-bottom: 5px;
+}
+
+.advancedDialog-input {
+	width: 200px;
+	padding-bottom: 5px;
+	padding-right: 7px;
+}
+
+.vs-dark.monaco-shell .advanced-dialog .input {
+	background-color: #3C3C3C;
+}
+
+.vs-dark.monaco-shell .advanced-dialog input:disabled {
+	background-color: #E1E1E1;
+}
+
+.advanced-dialog .select-box {
+	width: 321px;
+	height: 25px;
+	color: #6C6C6C;
+	font-size: 11px;
+	border: 1px solid transparent;
+	margin-left: 1px;
+	width: 100%;
+}
+
+.advanced-dialog .modal-title {
+	font-size: 15px;
+}
+
+.vs-dark.monaco-shell .advanced-dialog .select-box {
+	background: #3C3C3C;
+	color: #BBB;
+}
+
+.advanced-dialog .footer-buttons {
+	width: 200px;
+}
+
+#propertiesContent {
+	padding: 15px;
+	height: calc(100% - 150px);
+	overflow-y: auto;
+}
+
+.advanced-dialog .backButtonIcon {
+	content: url('back.svg');
+	width: 20px;
+	padding-right: 10px;
+	float: left;
+	cursor: pointer;
+}
+
+.advanced-dialog .advancedDialog-description {
+	border-top: 1px solid #e5e5e5;
+	padding: 15px;
+	overflow-y: auto;
+}
+
+.advanced-dialog .advancedDialog-description-content {
+	padding: 10px;
+}
+
+.advanced-dialog .advancedDialog-table{
+	width:100%;
+	padding: 10px;
+}
+
+td.advancedDialog-input.select-container {
+	padding-right: 9px;
+}
+
+.advanced-dialog .dialogErrorMessage {
+	overflow: hidden;
+	padding-left: 10px;
+	overflow-y: auto;
+	max-height: 50px;
+}
+
+.advanced-dialog .errorIcon {
+	float: left;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+
+.advanced-dialog .error-icon {
+	content: url(status-error.svg);
+}

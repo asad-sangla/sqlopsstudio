@@ -1,0 +1,157 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Theming */
+.monaco-shell .modal  {
+	background-color: rgba(0,0,0,0.4);
+}
+
+.vs-dark.monaco-shell .modal  {
+	background-color: rgba(74, 73, 73, 0.4);
+}
+
+.vs-dark.monaco-shell .modal-content{
+	background-color: #252526;
+}
+
+.hc-black.monaco-shell .modal-content{
+	background-color: #000;
+}
+
+.monaco-shell .connection-dialog-widget .modal-dialog  {
+	margin: auto auto auto auto;
+	height: calc(100% - 23px);
+	width: 500px;
+	right: -18px;
+	position: absolute;
+	overflow-y: hidden;
+}
+
+.monaco-shell .modal-content{
+	background-color: #F3F3F3;
+	height: 100%;
+	width: calc(100% - 20px);
+	font-size: 11px;
+}
+
+.monaco-shell .modal-body{
+	height: calc(100% - 108px);
+}
+
+.footer-table {
+	align-self: right;
+	border-spacing: 10px;
+}
+
+.footer-button {
+	padding-right:8px;
+	width: 100px;
+}
+
+.connection-label {
+	width: 80px;
+	padding-bottom: 5px;
+}
+
+.connection-input {
+	padding-right:8px;
+	width: 200px;
+	padding-bottom: 5px;
+}
+
+.vs-dark.monaco-shell .connection-dialog-widget .input {
+	background-color: #3C3C3C;
+}
+
+.vs-dark.monaco-shell .connection-dialog-widget input:disabled {
+	background-color: #E1E1E1;
+}
+
+.connection-dialog-widget .select-box {
+	width: 100%;
+	height: 25px;
+	color: #6C6C6C;
+	font-size: 11px;
+	border: 1px solid transparent;
+}
+
+.connection-dialog-widget .modal-title {
+	font-size: 15px;
+	float: left;
+}
+
+.vs-dark.monaco-shell .connection-dialog-widget .select-box {
+	background: #3C3C3C;
+	color: #BBB;
+}
+
+.connection-dialog-widget .footer-buttons {
+	width: 100%;
+}
+
+.connection-dialog-widget .connection-recent {
+	height: calc(100% - 380px);
+	padding: 15px;
+	overflow-y: auto;
+}
+
+.connection-dialog-widget .connection-history-label {
+	font-size: 15px;
+}
+
+.connection-dialog-widget .connection-provider-info {
+	padding-right: 15px;
+	padding-left: 15px;
+	overflow-y: hidden;
+}
+
+.connection-dialog-widget .dialogErrorMessage {
+	overflow: hidden;
+}
+
+.connection-dialog-widget .hiddenSpinner {
+	content: url(progress_36x_animation.gif);
+	width: 20px;
+	height: 20px;
+	visibility: hidden;
+}
+
+.connection-recent-content {
+	height: 100%;
+}
+
+.connection-dialog-widget .spinner {
+	content: url(progress_36x_animation.gif);
+	width: 30px;
+	visibility: visible;
+}
+
+.connection-dialog-widget .footer-spinner {
+	width: 100%;
+	text-align: left;
+}
+
+.connection-dialog-widget .connection-table-content {
+	width:100%;
+	table-layout: fixed;
+}
+
+.connection-dialog-widget .Connection-type {
+	border-top: 1px solid #e5e5e5;
+	padding-right: 15px;
+	padding-left: 15px;
+	padding-top: 15px;
+	overflow-y: hidden;
+}
+
+.connection-dialog-widget .errorIcon {
+	float: left;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+
+.connection-dialog-widget .error-icon {
+	content: url(status-error.svg);
+}

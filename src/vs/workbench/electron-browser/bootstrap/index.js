@@ -14,28 +14,32 @@ const electron = require('electron');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
 
-// Set globals needed by slickgrid and angular
-const _ = require('underscore')._;
-const jQuery = require('jquery');
-jQuery.fn.drag = require('jquery.event.drag');
-
-// Require modules that define their own globals
-require('reflect-metadata');
-require('zone.js');
-
+// SQL global imports
 // Require slickgrid
 require('slickgrid/slick.core');
 const Slick = window.Slick;
 require('slickgrid/slick.grid');
 require('slickgrid/slick.editors');
 
+// Set other globals
+const _ = require('underscore')._;
+const rangy = require('rangy');
+require('reflect-metadata');
+require('zone.js');
+require('bootstrap');
+
+const PrimeNg = require('primeng/primeng');
+
 // Set temporary globals for angular relative path fix
 // TODO make it so these don't need to be globals
 const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
+const AngularCommon = require('@angular/common');
 const AngularCore = require('@angular/core');
+const AngularForms = require('@angular/forms');
 const AngularPlatformBrowser = require('@angular/platform-browser');
-
-require('bootstrap');
+const AngularRouter = require('@angular/router');
+const Rx = require('rxjs/Rx');
+const Figures = require('figures');
 
 process.lazyEnv = new Promise(function (resolve) {
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
@@ -75,7 +79,10 @@ function parseURLQueryArgs() {
 function createScript(src, onload) {
 	const script = document.createElement('script');
 	script.src = src;
-	script.addEventListener('load', onload);
+
+	if (onload) {
+		script.addEventListener('load', onload);
+	}
 
 	const head = document.getElementsByTagName('head')[0];
 	head.insertBefore(script, head.lastChild);
@@ -166,19 +173,13 @@ function main() {
 		webFrame.setZoomLevel(zoomLevel);
 	}
 
-	// Handle high contrast mode
-	if (configuration.highContrast) {
-		var themeStorageKey = 'storage://global/workbench.theme';
-		var hcTheme = 'hc-black vscode-theme-defaults-themes-hc_black-json';
-		if (window.localStorage.getItem(themeStorageKey) !== hcTheme) {
-			window.localStorage.setItem(themeStorageKey, hcTheme);
-			window.document.body.className = 'monaco-shell ' + hcTheme;
-		}
-	}
-
 	// Load the loader and start loading the workbench
 	const appRoot = uriFromPath(configuration.appRoot);
 	const rootUrl = appRoot + '/out';
+
+	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
+	createScript(rootUrl + '/sql/parts/grid/directives/slick.dragrowselector.js', undefined);
+	createScript(rootUrl + '/sql/parts/grid/directives/slick.autosizecolumn.js', undefined);
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation

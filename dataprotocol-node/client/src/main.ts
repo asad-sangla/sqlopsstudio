@@ -14,8 +14,19 @@ import {
 		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
 		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
 		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink, ConnectionInfo, ConnectionInfoSummary, connections
+		DocumentLink as VDocumentLink
 } from 'vscode';
+
+import {
+		ConnectionInfo, ConnectionInfoSummary, dataprotocol, DataProtocolProvider, ConnectionProvider,
+		DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
+		DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider,
+		ScriptingProvider, ProviderMetadata, ScriptingResult,
+		QueryProvider, QueryCancelResult as VQueryCancelResult, ObjectMetadata,
+		ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo,
+		SaveResultRequestResult as VSaveResultRequestResult,
+		SaveResultsRequestParams as VSaveResultsRequestParams
+} from 'data';
 
 import {
 		Message,
@@ -35,7 +46,11 @@ import {
 		SymbolInformation, SymbolKind,
 		CodeLens,
 		FormattingOptions, DocumentLink,
-		ConnectionCompleteParams, IntelliSenseReadyParams
+		ConnectionCompleteParams, IntelliSenseReadyParams,
+		ConnectionProviderOptions, DataProtocolServerCapabilities,
+		ISelectionData, QueryExecuteBatchNotificationParams,
+		MetadataQueryParams, MetadataQueryResult,
+		ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation
 } from 'dataprotocol-languageserver-types';
 
 
@@ -62,9 +77,31 @@ import {
 		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 		RenameRequest, RenameParams,
 		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
+		CapabiltiesDiscoveryRequest,
 		ConnectionRequest, ConnectParams,
 		DisconnectRequest, DisconnectParams,
-		ConnectionCompleteNotification, IntelliSenseReadyNotification
+		CancelConnectRequest, CancelConnectParams,
+		ListDatabasesRequest, ListDatabasesParams, ListDatabasesResult,
+		ConnectionChangedNotification, ConnectionChangedParams,
+		ConnectionCompleteNotification, IntelliSenseReadyNotification,
+		TableMetadataRequest, ViewMetadataRequest, MetadataQueryRequest, ScriptingScriptAsRequest,
+		QueryCancelRequest, QueryCancelResult, QueryCancelParams,
+		QueryExecuteRequest, QueryExecuteSubsetResult, QueryExecuteSubsetParams,
+		QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
+		QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
+		QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
+		QueryExecuteSubsetRequest, SaveResultRequestResult, SaveResultsRequestParams, SaveResultsAsCsvRequest, SaveResultsAsJsonRequest, SaveResultsAsExcelRequest,
+
+		EditCommitRequest, EditCommitParams,
+		EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
+		EditDeleteRowRequest, EditDeleteRowParams,
+		EditDisposeRequest, EditDisposeParams,
+		EditInitializeRequest, EditInitializeParams, EditInitializeFiltering,
+		EditRevertCellRequest, EditRevertCellParams, EditRevertCellResult,
+		EditRevertRowRequest, EditRevertRowParams,
+		EditSessionReadyNotification, EditSessionReadyParams,
+		EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult,
+		EditSubsetRequest, EditSubsetParams, EditSubsetResult
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -174,7 +211,7 @@ function createConnection(input: any, output: any, errorHandler: ConnectionError
 		onDiagnostics: (handler: NotificationHandler<PublishDiagnosticsParams>) => connection.onNotification(PublishDiagnosticsNotification.type, handler),
 
 		dispose: () => connection.dispose()
-	}
+	};
 
 	return result;
 }
@@ -855,7 +892,7 @@ export class LanguageClient {
 				this._childProcess = null;
 				// Remove all markers
 				this.checkProcessDied(toCheck);
-			})
+			});
 		});
 	}
 
@@ -897,7 +934,7 @@ export class LanguageClient {
 						connection.didChangeWatchedFiles({ changes: this._fileEvents });
 					}
 					this._fileEvents = [];
-				})
+				});
 			}, (error) => {
 				this.error(`Notify file events failed.`, error);
 			});
@@ -1249,16 +1286,30 @@ export class LanguageClient {
 		this.hookRenameProvider(documentSelector, connection);
 		this.hookDocumentLinkProvider(documentSelector, connection);
 
-		this.hookConnectionProvider(connection);
+		// hook-up SQL data protocol provider
+		this.hookDataProtocolProvider(connection);
 	}
 
 	private logFailedRequest(type: RequestType<any, any, any>, error: any): void {
 		this.error(`Request ${type.method} failed.`, error);
 	}
 
-	private hookConnectionProvider(connection: IConnection): void {
+	private hookDataProtocolProvider(connection: IConnection): void {
 		let self = this;
-		this._providers.push(connections.registerConnectionProvider({
+
+		let capabilitiesProvider: CapabilitiesProvider = {
+			getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<VDataProtocolServerCapabilities> {
+				return self.doSendRequest(connection, CapabiltiesDiscoveryRequest.type, self._c2p.asCapabilitiesParams(client), undefined).then(
+					self._p2c.asServerCapabilities,
+					(error) => {
+						self.logFailedRequest(ConnectionRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			}
+		};
+
+		let connectionProvider: ConnectionProvider = {
 			handle: -1,
 
 			connect(connUri: string, connInfo: ConnectionInfo): Thenable<boolean> {
@@ -1267,11 +1318,12 @@ export class LanguageClient {
 						return result;
 					},
 					(error) => {
-						this.logFailedRequest(ConnectionRequest.type, error);
-						return Promise.resolve([]);
+						self.logFailedRequest(ConnectionRequest.type, error);
+						return Promise.resolve(false);
 					}
 				);
 			},
+
 			disconnect(connUri: string): Thenable<boolean> {
 				let params: DisconnectParams = {
 					ownerUri: connUri
@@ -1282,8 +1334,40 @@ export class LanguageClient {
 						return result;
 					},
 					(error) => {
-						this.logFailedRequest(DisconnectRequest.type, error);
-						return Promise.resolve([]);
+						self.logFailedRequest(DisconnectRequest.type, error);
+						return Promise.resolve(false);
+					}
+				);
+			},
+
+			cancelConnect(connUri: string): Thenable<boolean> {
+				let params: CancelConnectParams = {
+					ownerUri: connUri
+				};
+
+				return self.doSendRequest(connection, CancelConnectRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(CancelConnectRequest.type, error);
+						return Promise.resolve(false);
+					}
+				);
+			},
+
+			listDatabases(connectionUri: string): Thenable<VListDatabasesResult> {
+				let params: ListDatabasesParams = {
+					ownerUri: connectionUri
+				};
+
+				return self.doSendRequest(connection, ListDatabasesRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(ListDatabasesRequest.type, error);
+						return Promise.resolve(undefined);
 					}
 				);
 			},
@@ -1295,7 +1379,9 @@ export class LanguageClient {
 						connectionId: params.connectionId,
 						messages: params.messages,
 						errorMessage: params.errorMessage,
-						errorNumber: params.errorNumber
+						errorNumber: params.errorNumber,
+						serverInfo: params.serverInfo,
+						connectionSummary: params.connectionSummary
 					});
 				});
 			},
@@ -1304,8 +1390,394 @@ export class LanguageClient {
 				connection.onNotification(IntelliSenseReadyNotification.type, (params: IntelliSenseReadyParams) => {
 					handler(params.ownerUri);
 				});
-			}
+			},
 
+			registerOnConnectionChanged(handler: (changedConnInfo: ChangedConnectionInfo) => any) {
+				connection.onNotification(ConnectionChangedNotification.type, (params: ConnectionChangedParams) => {
+					handler({
+						connectionUri: params.ownerUri,
+						connection: params.connection
+					});
+				});
+			}
+		};
+
+		let queryProvider: QueryProvider = {
+			handle: -1,
+			queryType: 'MSSQL',
+			cancelQuery(ownerUri: string): Thenable<QueryCancelResult> {
+				let params: QueryCancelParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, QueryCancelRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(QueryCancelRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			runQuery(ownerUri: string, selection: ISelectionData): Thenable<void> {
+				let params: QueryExecuteParams = {ownerUri: ownerUri, querySelection: selection };
+				return self.doSendRequest(connection, QueryExecuteRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(QueryExecuteRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			getQueryRows(rowData: QueryExecuteSubsetParams): Thenable<QueryExecuteSubsetResult> {
+				return self.doSendRequest(connection, QueryExecuteSubsetRequest.type, rowData, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(QueryExecuteSubsetRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			disposeQuery(ownerUri: string): Thenable<void>{
+				let params: QueryDisposeParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, QueryDisposeRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(QueryDisposeRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			registerOnQueryComplete(handler: (result: QueryExecuteCompleteNotificationResult) => any) {
+				connection.onNotification(QueryExecuteCompleteNotification.type, (params: QueryExecuteCompleteNotificationResult) => {
+					handler({
+						ownerUri: params.ownerUri,
+						batchSummaries: params.batchSummaries});
+				});
+			},
+
+			registerOnBatchStart(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any) {
+				connection.onNotification(QueryExecuteBatchStartNotification.type, (params: QueryExecuteBatchNotificationParams) => {
+					handler({
+						batchSummary: params.batchSummary,
+						ownerUri: params.ownerUri
+					});
+				});
+			},
+
+			registerOnBatchComplete(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any) {
+				connection.onNotification(QueryExecuteBatchCompleteNotification.type, (params: QueryExecuteBatchNotificationParams) => {
+					handler({
+						batchSummary: params.batchSummary,
+						ownerUri: params.ownerUri
+					});
+				});
+			},
+			registerOnResultSetComplete(handler: (resultSetInfo: QueryExecuteResultSetCompleteNotificationParams) => any) {
+				connection.onNotification(QueryExecuteResultSetCompleteNotification.type, (params: QueryExecuteResultSetCompleteNotificationParams) => {
+					handler({
+						ownerUri: params.ownerUri,
+						resultSetSummary: params.resultSetSummary
+					});
+				});
+			},
+			registerOnMessage(handler: (message: QueryExecuteMessageParams) => any) {
+				connection.onNotification(QueryExecuteMessageNotification.type, (params: QueryExecuteMessageParams) => {
+					handler({
+						message: params.message,
+						ownerUri: params.ownerUri
+					});
+				});
+			},
+			saveResults(requestParams: VSaveResultsRequestParams): Thenable<VSaveResultRequestResult> {
+				switch(requestParams.resultFormat) {
+					case 'csv':
+						return self.doSendRequest(connection, SaveResultsAsCsvRequest.type, requestParams, undefined).then(
+							(result) => {
+								return result;
+							},
+							(error) => {
+								self.logFailedRequest(EditCommitRequest.type, error);
+								return Promise.reject(error);
+							}
+						);
+					case 'json':
+						return self.doSendRequest(connection, SaveResultsAsJsonRequest.type, requestParams, undefined).then(
+							(result) => {
+								return result;
+							},
+							(error) => {
+								self.logFailedRequest(EditCommitRequest.type, error);
+								return Promise.reject(error);
+							}
+						);
+					case 'excel':
+						return self.doSendRequest(connection, SaveResultsAsExcelRequest.type, requestParams, undefined).then(
+							(result) => {
+								return result;
+							},
+							(error) => {
+								self.logFailedRequest(EditCommitRequest.type, error);
+								return Promise.reject(error);
+							}
+						);
+					default:
+						return Promise.reject('unsupported format');
+				}
+			},
+
+			// Edit Data Requests
+			commitEdit(ownerUri: string): Thenable<void> {
+				let params: EditCommitParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, EditCommitRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(EditCommitRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			createRow(ownerUri: string): Thenable<EditCreateRowResult> {
+				let params: EditCreateRowParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, EditCreateRowRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(EditCreateRowRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			deleteRow(ownerUri: string, rowId: number): Thenable<void> {
+				let params: EditDeleteRowParams = {ownerUri: ownerUri, rowId: rowId};
+				return self.doSendRequest(connection, EditDeleteRowRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(EditDeleteRowRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			disposeEdit(ownerUri: string): Thenable<void> {
+				let params: EditDisposeParams = {ownerUri: ownerUri};
+				return self.doSendRequest(connection, EditDisposeRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(EditDisposeRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+				let filters: EditInitializeFiltering = {LimitResults: rowLimit};
+				let params: EditInitializeParams = {ownerUri: ownerUri, objectName: objectName, objectType: objectType, filters: filters};
+				return self.doSendRequest(connection, EditInitializeRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(EditInitializeRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult> {
+				let params: EditRevertCellParams = {ownerUri: ownerUri, rowId: rowId, columnId: columnId};
+				return self.doSendRequest(connection, EditRevertCellRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(EditRevertCellRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			revertRow(ownerUri: string, rowId: number): Thenable<void> {
+				let params: EditRevertRowParams = {ownerUri: ownerUri, rowId: rowId};
+				return self.doSendRequest(connection, EditRevertRowRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(EditRevertRowRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult> {
+				let params: EditUpdateCellParams = {ownerUri: ownerUri, rowId: rowId, columnId: columnId, newValue: newValue};
+				return self.doSendRequest(connection, EditUpdateCellRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(EditUpdateCellRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			getEditRows(rowData: EditSubsetParams): Thenable<EditSubsetResult> {
+				return self.doSendRequest(connection, EditSubsetRequest.type, rowData, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(EditSubsetRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+
+			// Edit Data Event Handlers
+			registerOnEditSessionReady(handler: (ownerUri: string, success: boolean, message: string) => any): void {
+				connection.onNotification(EditSessionReadyNotification.type, (params: EditSessionReadyParams) => {
+					handler(params.ownerUri, params.success, params.message);
+				});
+			},
+		};
+
+		let metadataProvider: MetadataProvider = {
+			getMetadata(connectionUri: string): Thenable<ProviderMetadata> {
+				return self.doSendRequest(connection, MetadataQueryRequest.type,
+						self._c2p.asMetadataQueryParams(connectionUri), undefined).then(
+					self._p2c.asProviderMetadata,
+					(error) => {
+						self.logFailedRequest(MetadataQueryRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getDatabases(connectionUri: string): Thenable<string[]> {
+				return self.doSendRequest(connection, ListDatabasesRequest.type,
+						self._c2p.asListDatabasesParams(connectionUri), undefined).then(
+					(result) => {
+						return result.databaseNames;
+					},
+					(error) => {
+						self.logFailedRequest(ListDatabasesRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getTableInfo(connectionUri: string, metadata: ObjectMetadata) {
+				return self.doSendRequest(connection, TableMetadataRequest.type,
+						self._c2p.asTableMetadataParams(connectionUri, metadata), undefined).then(
+					(result) => {
+						return result.columns;
+					},
+					(error) => {
+						self.logFailedRequest(TableMetadataRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getViewInfo(connectionUri: string, metadata: ObjectMetadata) {
+				return self.doSendRequest(connection, ViewMetadataRequest.type,
+						self._c2p.asTableMetadataParams(connectionUri, metadata), undefined).then(
+					(result) => {
+						return result.columns;
+					},
+					(error) => {
+						self.logFailedRequest(ViewMetadataRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			}
+		};
+
+		let scriptingProvider: ScriptingProvider = {
+			scriptAsSelect(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Select, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			scriptAsCreate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Create, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			scriptAsInsert(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Insert, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Update, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			scriptAsDelete(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
+				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
+						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Delete, metadata), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			}
+		};
+
+		this._providers.push(dataprotocol.registerProvider({
+			handle: -1,
+
+			capabilitiesProvider: capabilitiesProvider,
+
+			connectionProvider: connectionProvider,
+
+			queryProvider: queryProvider,
+
+			metadataProvider: metadataProvider,
+
+			scriptingProvider: scriptingProvider
 		}));
 	}
 

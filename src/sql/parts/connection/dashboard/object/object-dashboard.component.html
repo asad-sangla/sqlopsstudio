@@ -1,0 +1,41 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+
+<div id="serverprofile" style="display: flex; flex-flow: row; height:150px; overflow: auto">
+	<div style="order: 1; margin: 5px; min-width: 125px">
+		<img src="{{serverPageImage}}" />
+	</div>
+
+	<div style="order: 2">
+		<div style="text-align: center; text-decoration: underline">
+			Properties
+		</div>
+		<div style="display: flex; flex-flow: row; height:120px; overflow: auto">
+			<div style="order: 1; margin: 5px">
+				<span style="font-weight: bold">Schema</span> <span style="font-style: italic">{{objectMetadata?.schema}}</span> <br />
+				<span style="font-weight: bold">Name</span> <span style="font-style: italic">{{objectMetadata?.name}}</span> <br />
+				<span style="font-weight: bold">Database Name</span> <span style="font-style: italic">{{connection?.connectionProfile?.databaseName}}</span> <br />
+				<span style="font-weight: bold">Server Name</span>  <span style="font-style: italic">{{connection?.connectionProfile?.serverName}}</span> <br />
+			</div>
+			<div style="order: 2; margin: 5px">
+				<span style="font-weight: bold">Server Version</span> <span style="font-style: italic">{{connection?.serverInfo.serverVersion}}</span> <br />
+				<span style="font-weight: bold">Server Edition</span> <span style="font-style: italic">{{connection?.serverInfo.serverEdition}} {{connection?.serverInfo.serverLevel}}</span> <br />
+				<span style="font-weight: bold">Is Cloud</span> <span style="font-style: italic">{{connection?.serverInfo.isCloud}}</span> <br />
+			</div>
+		</div>
+	</div>
+</div>
+
+<objectmetadata-explorer #objectMetadataExplorer
+	[ownerUri]='ownerUri'
+	[objectMetadata]='objectMetadata'
+	[connection]='connection'
+	[metadataService]='metadataService'
+	[scriptingService]='scriptingService'
+	[queryEditorService]='queryEditorService'>
+</objectmetadata-explorer>
+

@@ -15,7 +15,8 @@ var jsdom = require('jsdom-no-contextify');
 var minimatch = require('minimatch');
 var fs = require('fs');
 var vm = require('vm');
-var TEST_GLOB = '**/test/**/*.test.js';
+var TEST_GLOB = '**/*test*/**/*.test.js';
+var SQL_TEST_GLOB = '**/sqltest/**/*.test.js';
 
 var optimist = require('optimist')
 	.usage('Run the Code tests. All mocha options apply.')
@@ -50,6 +51,8 @@ function main() {
 		baseUrl: path.join(path.dirname(__dirname), 'src'),
 		paths: {
 			'vs': `../${ out }/vs`,
+			'sqltest': `../${ out }/sqltest`,
+			'sql': `../${ out }/sql`,
 			'lib': `../${ out }/lib`,
 			'bootstrap': `../${ out }/bootstrap`
 		},
@@ -64,7 +67,7 @@ function main() {
 		loaderConfig.nodeInstrumenter = function (contents, source) {
 			seenSources[source] = true;
 
-			if (minimatch(source, TEST_GLOB)) {
+			if (minimatch(source, SQL_TEST_GLOB)) {
 				return contents;
 			}
 
@@ -77,7 +80,7 @@ function main() {
 			}
 
 			if (argv.forceLoad) {
-				var allFiles = glob.sync(out + '/vs/**/*.js');
+				var allFiles = glob.sync(out + '/sqltest/**/*.js');
 				allFiles = allFiles.map(function(source) {
 					return path.join(__dirname, '..', source);
 				});
@@ -85,7 +88,7 @@ function main() {
 					if (seenSources[source]) {
 						return false;
 					}
-					if (minimatch(source, TEST_GLOB)) {
+					if (minimatch(source, SQL_TEST_GLOB)) {
 						return false;
 					}
 					if (/fixtures/.test(source)) {
@@ -136,7 +139,9 @@ function main() {
 			for (var entryKey in remappedCoverage) {
 				var entry = remappedCoverage[entryKey];
 				entry.path = fixPath(entry.path);
-				finalCoverage[fixPath(entryKey)] = entry;
+				if (!entry.path.includes('\\vs\\') && !entry.path.includes('/vs/')) {
+					finalCoverage[fixPath(entryKey)] = entry;
+				}
 			}
 
 			var collector = new istanbul.Collector();
@@ -149,7 +154,7 @@ function main() {
 				coveragePath += '-single';
 				reportTypes = ['lcovonly'];
 			} else {
-				reportTypes = ['json', 'lcov', 'html'];
+				reportTypes = ['json', 'lcov', 'html', 'cobertura'];
 			}
 			var reporter = new istanbul.Reporter(null, coveragePath);
 			reporter.addAll(reportTypes);
@@ -158,6 +163,8 @@ function main() {
 	}
 
 	loader.config(loaderConfig);
+
+	require('zone.js');
 
 	global.define = loader;
 	global.document = jsdom.jsdom('<!doctype html><html><body></body></html>');
@@ -168,6 +175,18 @@ function main() {
 	global.Node = global.window.Node;
 	global.navigator = global.window.navigator;
 	global.XMLHttpRequest = global.window.XMLHttpRequest;
+	global.Event = global.window.Event;
+
+	require('reflect-metadata');
+	global.window.Reflect = global.Reflect;
+	global.window.Zone = global.Zone;
+	global.PrimeNg = require('primeng/primeng');
+	global.AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
+	global.AngularCore = require('@angular/core');
+	global.AngularCommon = require('@angular/common');
+	global.AngularForms = require('@angular/forms');
+	global.AngularPlatformBrowser = require('@angular/platform-browser');
+	global.AngularRouter = require('@angular/router');
 
 	var didErr = false;
 	var write = process.stderr.write;

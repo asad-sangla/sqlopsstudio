@@ -8,18 +8,28 @@ import { TPromise, Promise } from 'vs/base/common/winjs.base';
 import nls = require('vs/nls');
 import Paths = require('vs/base/common/paths');
 import Json = require('vs/base/common/json');
+import * as types from 'vs/base/common/types';
 import { IThemeExtensionPoint } from 'vs/platform/theme/common/themeExtensionPoint';
 import { IExtensionService } from 'vs/platform/extensions/common/extensions';
 import { ExtensionsRegistry, ExtensionMessageCollector } from 'vs/platform/extensions/common/extensionsRegistry';
-import { IThemeService, IThemeSetting, IColorTheme, IFileIconTheme, VS_LIGHT_THEME, VS_DARK_THEME, VS_HC_THEME } from 'vs/workbench/services/themes/common/themeService';
+import { IThemeService, IThemeSetting, IColorTheme, IFileIconTheme, VS_LIGHT_THEME, VS_DARK_THEME, VS_HC_THEME, COLOR_THEME_SETTING, ICON_THEME_SETTING } from 'vs/workbench/services/themes/common/themeService';
 import { EditorStylesContribution, SearchViewStylesContribution, TerminalStylesContribution } from 'vs/workbench/services/themes/electron-browser/stylesContributions';
-import { getBaseThemeId } from 'vs/platform/theme/common/themes';
+import { getBaseThemeId, getSyntaxThemeId, isDarkTheme, isLightTheme } from 'vs/platform/theme/common/themes';
 import { IWindowIPCService } from 'vs/workbench/services/window/electron-browser/windowService';
 import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { Registry } from 'vs/platform/platform';
 import { Extensions as JSONExtensions, IJSONContributionRegistry } from 'vs/platform/jsonschemas/common/jsonContributionRegistry';
 import { IJSONSchema } from 'vs/base/common/jsonSchema';
+import errors = require('vs/base/common/errors');
+import { IConfigurationEditingService, ConfigurationTarget } from 'vs/workbench/services/configuration/common/configurationEditing';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry';
+import { IFileService } from 'vs/platform/files/common/files';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { IMessageService } from 'vs/platform/message/common/message';
+import Severity from 'vs/base/common/severity';
+import URI from 'vs/base/common/uri';
 
 import { $ } from 'vs/base/browser/builder';
 import Event, { Emitter } from 'vs/base/common/event';
@@ -30,13 +40,9 @@ import pfs = require('vs/base/node/pfs');
 // implementation
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
+const DEFAULT_THEME_SETTING_VALUE = 'Default Dark+';
 
-const COLOR_THEME_CHANNEL = 'vscode:changeColorTheme';
-const ICON_THEME_CHANNEL = 'vscode:changeIconTheme';
-const COLOR_THEME_PREF = 'workbench.theme';
-const ICON_THEME_PREF = 'workbench.iconTheme';
-
-let defaultBaseTheme = getBaseThemeId(DEFAULT_THEME_ID);
+const defaultBaseTheme = getBaseThemeId(DEFAULT_THEME_ID);
 
 const defaultThemeExtensionId = 'vscode-theme-defaults';
 const oldDefaultThemeExtensionId = 'vscode-theme-colorful-defaults';
@@ -60,8 +66,12 @@ let themesExtPoint = ExtensionsRegistry.registerExtensionPoint<IThemeExtensionPo
 	type: 'array',
 	items: {
 		type: 'object',
-		defaultSnippets: [{ body: { label: '${1:label}', uiTheme: VS_DARK_THEME, path: './themes/${2:id}.tmTheme.' } }],
+		defaultSnippets: [{ body: { label: '${1:label}', id: '${2:id}', uiTheme: VS_DARK_THEME, path: './themes/${3:id}.tmTheme.' } }],
 		properties: {
+			id: {
+				description: nls.localize('vscode.extension.contributes.themes.id', 'Id of the icon theme as used in the user settings.'),
+				type: 'string'
+			},
 			label: {
 				description: nls.localize('vscode.extension.contributes.themes.label', 'Label of the color theme as shown in the UI.'),
 				type: 'string'
@@ -103,20 +113,38 @@ let iconThemeExtPoint = ExtensionsRegistry.registerExtensionPoint<IThemeExtensio
 	}
 });
 
-class IInternalColorThemeData implements IColorTheme {
+class ColorThemeData implements IColorTheme {
 	id: string;
 	label: string;
+	settingsId: string;
 	description?: string;
 	settings?: IThemeSetting[];
 	isLoaded: boolean;
 	path?: string;
 	styleSheetContent?: string;
 	extensionData: ExtensionData;
+
+	isLightTheme() {
+		return isLightTheme(this.id);
+	}
+
+	isDarkTheme() {
+		return isDarkTheme(this.id);
+	}
+
+	getSyntaxThemeId() {
+		return getSyntaxThemeId(this.id);
+	}
+
+	getBaseThemeId() {
+		return getBaseThemeId(this.id);
+	}
 }
 
-class IInternalIconThemeData implements IFileIconTheme {
+interface IInternalIconThemeData extends IFileIconTheme {
 	id: string;
 	label: string;
+	settingsId: string;
 	description?: string;
 	hasFileIcons?: boolean;
 	hasFolderIcons?: boolean;
@@ -170,6 +198,7 @@ interface ExtensionData {
 const noFileIconTheme: IFileIconTheme = {
 	id: '',
 	label: '',
+	settingsId: null,
 	hasFileIcons: false,
 	hasFolderIcons: false,
 	isLoaded: true
@@ -199,7 +228,7 @@ let defaultThemeColors: { [baseTheme: string]: IThemeSetting[] } = {
 export class ThemeService implements IThemeService {
 	_serviceBrand: any;
 
-	private knownColorThemes: IInternalColorThemeData[];
+	private knownColorThemes: ColorThemeData[];
 	private currentColorTheme: IColorTheme;
 	private container: HTMLElement;
 	private onColorThemeChange: Emitter<IColorTheme>;
@@ -209,11 +238,18 @@ export class ThemeService implements IThemeService {
 	private onFileIconThemeChange: Emitter<IFileIconTheme>;
 
 	constructor(
+		container: HTMLElement,
 		@IExtensionService private extensionService: IExtensionService,
-		@IWindowIPCService private windowService: IWindowIPCService,
 		@IStorageService private storageService: IStorageService,
+		@IWindowIPCService private windowService: IWindowIPCService,
+		@IConfigurationService private configurationService: IConfigurationService,
+		@IConfigurationEditingService private configurationEditingService: IConfigurationEditingService,
+		@IEnvironmentService private environmentService: IEnvironmentService,
+		@IFileService private fileService: IFileService,
+		@IMessageService private messageService: IMessageService,
 		@ITelemetryService private telemetryService: ITelemetryService) {
 
+		this.container = container;
 		this.knownColorThemes = [];
 
 		// In order to avoid paint flashing for tokens, because
@@ -222,23 +258,26 @@ export class ThemeService implements IThemeService {
 		let isLightTheme = (Array.prototype.indexOf.call(document.body.classList, 'vs') >= 0);
 		let foreground = isLightTheme ? '#000000' : '#D4D4D4';
 		let background = isLightTheme ? '#ffffff' : '#1E1E1E';
-		this.currentColorTheme = {
-			id: this.storageService.get(COLOR_THEME_PREF, StorageScope.GLOBAL, DEFAULT_THEME_ID),
-			label: '',
-			isLoaded: false,
-			settings: [{
-				settings: {
-					foreground: foreground,
-					background: background
-				}
-			}]
-		};
+
+		let initialTheme = new ColorThemeData();
+		initialTheme.id = isLightTheme ? VS_LIGHT_THEME : VS_DARK_THEME;
+		initialTheme.label = '';
+		initialTheme.settingsId = null;
+		initialTheme.isLoaded = false;
+		initialTheme.settings = [{
+			settings: {
+				foreground: foreground,
+				background: background
+			}
+		}];
+		this.currentColorTheme = initialTheme;
 
 		this.onColorThemeChange = new Emitter<IColorTheme>();
 		this.knownIconThemes = [];
 		this.currentIconTheme = {
 			id: '',
 			label: '',
+			settingsId: null,
 			isLoaded: false,
 			hasFileIcons: false,
 			hasFolderIcons: false
@@ -257,12 +296,6 @@ export class ThemeService implements IThemeService {
 			}
 		});
 
-		windowService.onBroadcast(e => {
-			if (e.channel === COLOR_THEME_CHANNEL && typeof e.payload === 'string') {
-				this.setColorTheme(e.payload, false);
-			}
-		});
-
 		iconThemeExtPoint.setHandler((extensions) => {
 			for (let ext of extensions) {
 				let extensionData = {
@@ -275,10 +308,10 @@ export class ThemeService implements IThemeService {
 			}
 		});
 
-		windowService.onBroadcast(e => {
-			if (e.channel === ICON_THEME_CHANNEL && typeof e.payload === 'string') {
-				this.setFileIconTheme(e.payload, false);
-			}
+		this.migrate().then(_ => {
+			this.initialize().then(null, errors.onUnexpectedError).then(_ => {
+				this.installConfigurationListener();
+			});
 		});
 	}
 
@@ -290,41 +323,96 @@ export class ThemeService implements IThemeService {
 		return this.onFileIconThemeChange.event;
 	}
 
-	public initialize(container: HTMLElement): TPromise<void> {
-		this.container = container;
-
-		let themeId = this.storageService.get(COLOR_THEME_PREF, StorageScope.GLOBAL, null);
-		if (!themeId) {
-			themeId = DEFAULT_THEME_ID;
-			this.storageService.store(COLOR_THEME_PREF, themeId, StorageScope.GLOBAL);
-		}
-		let iconThemeId = this.storageService.get(ICON_THEME_PREF, StorageScope.GLOBAL, null);
-		if (!iconThemeId) {
-			themeId = 'PKief.material-icon-theme-material-icon-theme';
-			this.storageService.store(ICON_THEME_PREF, themeId, StorageScope.GLOBAL);
-		}
-
-		return Promise.join([
-			this.setColorTheme(themeId, false),
-			this.setFileIconTheme(iconThemeId, false)
-		]);
-
+	private backupSettings(): TPromise<string> {
+		let resource = URI.file(this.environmentService.appSettingsPath);
+		let backupFileLocation = URI.file(resource.fsPath + '-' + new Date().getTime() + '.backup');
+		return this.fileService.copyFile(resource, backupFileLocation, true).then(_ => backupFileLocation.fsPath, err => {
+			if (err && err.code === 'ENOENT') {
+				return TPromise.as(null); // ignore, user config file doesn't exist yet
+			}
+			return TPromise.wrapError(err);
+		});
 	}
 
-	public setColorTheme(themeId: string, broadcastToAllWindows: boolean): TPromise<IColorTheme> {
+	private migrate(): TPromise<any> {
+		let legacyColorThemeId = this.storageService.get('workbench.theme', StorageScope.GLOBAL, void 0);
+		let legacyIconThemeId = this.storageService.get('workbench.iconTheme', StorageScope.GLOBAL, void 0);
+		if (types.isUndefined(legacyColorThemeId) && types.isUndefined(legacyIconThemeId)) {
+			return TPromise.as(null);
+		}
+		return this.backupSettings().then(backupLocation => {
+			let promise = TPromise.as(null);
+			if (!types.isUndefined(legacyColorThemeId)) {
+				this.storageService.remove('workbench.theme', StorageScope.GLOBAL);
+				promise = this.findThemeData(legacyColorThemeId, DEFAULT_THEME_ID).then(theme => {
+					let value = theme ? theme.settingsId : DEFAULT_THEME_SETTING_VALUE;
+					return this.writeConfiguration(COLOR_THEME_SETTING, value, ConfigurationTarget.USER).then(null, error => null);
+				});
+			}
+			if (!types.isUndefined(legacyIconThemeId)) {
+				this.storageService.remove('workbench.iconTheme', StorageScope.GLOBAL);
+				promise = promise.then(_ => {
+					return this._findIconThemeData(legacyIconThemeId).then(theme => {
+						let value = theme ? theme.settingsId : null;
+						return this.writeConfiguration(ICON_THEME_SETTING, value, ConfigurationTarget.USER).then(null, error => null);
+					});
+				});
+			}
+			return promise.then(_ => {
+				if (backupLocation) {
+					let message = nls.localize('migration.completed', 'New theme settings have been added to the user settings. Backup available at {0}.', backupLocation);
+					this.messageService.show(Severity.Info, message);
+					console.log(message);
+				}
+			});
+		});
+	}
+
+	private initialize(): TPromise<any> {
+		let colorThemeSetting = this.configurationService.lookup<string>(COLOR_THEME_SETTING).value;
+		let iconThemeSetting = this.configurationService.lookup<string>(ICON_THEME_SETTING).value || '';
+
+		return Promise.join([
+			this.findThemeDataBySettingsId(colorThemeSetting, DEFAULT_THEME_ID).then(theme => {
+				return this.setColorTheme(theme && theme.id, null);
+			}),
+			this.findIconThemeBySettingsId(iconThemeSetting).then(theme => {
+				return this.setFileIconTheme(theme && theme.id, null);
+			}),
+		]);
+	}
+
+	private installConfigurationListener() {
+		this.configurationService.onDidUpdateConfiguration(e => {
+			let colorThemeSetting = this.configurationService.lookup<string>(COLOR_THEME_SETTING).value;
+			if (colorThemeSetting !== this.currentColorTheme.settingsId) {
+				this.findThemeDataBySettingsId(colorThemeSetting, null).then(theme => {
+					if (theme) {
+						this.setColorTheme(theme.id, null);
+					}
+				});
+			}
+
+			let iconThemeSetting = this.configurationService.lookup<string>(ICON_THEME_SETTING).value || '';
+			if (iconThemeSetting !== this.currentIconTheme.settingsId) {
+				this.findIconThemeBySettingsId(iconThemeSetting).then(theme => {
+					this.setFileIconTheme(theme && theme.id, null);
+				});
+			}
+		});
+	}
+
+	public setColorTheme(themeId: string, settingsTarget: ConfigurationTarget): TPromise<IColorTheme> {
 		if (!themeId) {
 			return TPromise.as(null);
 		}
 		if (themeId === this.currentColorTheme.id && this.currentColorTheme.isLoaded) {
-			if (broadcastToAllWindows) {
-				this.windowService.broadcast({ channel: COLOR_THEME_CHANNEL, payload: themeId });
-			}
-			return TPromise.as(this.currentColorTheme);
+			return this.writeColorThemeConfiguration(settingsTarget);
 		}
 
 		themeId = validateThemeId(themeId); // migrate theme ids
 
-		let onApply = (newTheme: IInternalColorThemeData) => {
+		let onApply = (newTheme: ColorThemeData) => {
 			let newThemeId = newTheme.id;
 			if (this.container) {
 				if (this.currentColorTheme) {
@@ -334,45 +422,63 @@ export class ThemeService implements IThemeService {
 			}
 			this.currentColorTheme = newTheme;
 
-			this.storageService.store(COLOR_THEME_PREF, newThemeId, StorageScope.GLOBAL);
-			if (broadcastToAllWindows) {
-				this.windowService.broadcast({ channel: COLOR_THEME_CHANNEL, payload: newThemeId });
-			} else {
-				this.sendTelemetry(newTheme.id, newTheme.extensionData, 'color');
-			}
+			this.sendTelemetry(newTheme.id, newTheme.extensionData, 'color');
+
 			this.onColorThemeChange.fire(this.currentColorTheme);
-			return this.currentColorTheme;
+
+			if (settingsTarget !== ConfigurationTarget.WORKSPACE) {
+				this.windowService.broadcast({ channel: 'vscode:changeColorTheme', payload: newTheme.id });
+			}
+
+			return this.writeColorThemeConfiguration(settingsTarget);
 		};
 
-		return this.applyThemeCSS(themeId, DEFAULT_THEME_ID, onApply);
+		return this.findThemeData(themeId, DEFAULT_THEME_ID).then(themeData => {
+			if (themeData) {
+				return applyTheme(themeData, onApply);
+			}
+			return null;
+		});
+	}
+
+	private writeColorThemeConfiguration(settingsTarget: ConfigurationTarget): TPromise<IFileIconTheme> {
+		if (!types.isUndefinedOrNull(settingsTarget)) {
+			return this.writeConfiguration(COLOR_THEME_SETTING, this.currentColorTheme.settingsId, settingsTarget).then(_ => this.currentColorTheme);
+		}
+		return TPromise.as(this.currentColorTheme);
 	}
 
 	public getColorTheme() {
 		return this.currentColorTheme;
 	}
 
-	private findThemeData(themeId: string, defaultId?: string): TPromise<IInternalColorThemeData> {
+	private findThemeData(themeId: string, defaultId?: string): TPromise<ColorThemeData> {
 		return this.getColorThemes().then(allThemes => {
-			let themes = allThemes.filter(t => t.id === themeId);
-			if (themes.length > 0) {
-				return <IInternalColorThemeData>themes[0];
-			}
-			if (defaultId) {
-				let themes = allThemes.filter(t => t.id === defaultId);
-				if (themes.length > 0) {
-					return <IInternalColorThemeData>themes[0];
+			let defaultTheme = void 0;
+			for (let t of allThemes) {
+				if (t.id === themeId) {
+					return t;
+				}
+				if (t.id === defaultId) {
+					defaultTheme = t;
 				}
 			}
-			return null;
+			return defaultTheme;
 		});
 	}
 
-	private applyThemeCSS(themeId: string, defaultId: string, onApply: (theme: IInternalColorThemeData) => IColorTheme): TPromise<IColorTheme> {
-		return this.findThemeData(themeId, defaultId).then(theme => {
-			if (theme) {
-				return applyTheme(theme, onApply);
+	private findThemeDataBySettingsId(settingsId: string, defaultId: string): TPromise<ColorThemeData> {
+		return this.getColorThemes().then(allThemes => {
+			let defaultTheme = void 0;
+			for (let t of allThemes) {
+				if (t.settingsId === settingsId) {
+					return t;
+				}
+				if (t.id === defaultId) {
+					defaultTheme = t;
+				}
 			}
-			return null;
+			return defaultTheme;
 		});
 	}
 
@@ -392,7 +498,7 @@ export class ThemeService implements IThemeService {
 			return;
 		}
 		themes.forEach(theme => {
-			if (!theme.path || (typeof theme.path !== 'string')) {
+			if (!theme.path || !types.isString(theme.path)) {
 				collector.error(nls.localize(
 					'reqpath',
 					"Expected string in `contributes.{0}.path`. Provided value: {1}",
@@ -407,15 +513,22 @@ export class ThemeService implements IThemeService {
 				collector.warn(nls.localize('invalid.path.1', "Expected `contributes.{0}.path` ({1}) to be included inside extension's folder ({2}). This might make the extension non-portable.", themesExtPoint.name, normalizedAbsolutePath, extensionFolderPath));
 			}
 
+			let baseTheme = theme.uiTheme || defaultBaseTheme;
+
 			let themeSelector = toCSSSelector(extensionData.extensionId + '-' + Paths.normalize(theme.path));
-			this.knownColorThemes.push({
-				id: `${theme.uiTheme || defaultBaseTheme} ${themeSelector}`,
-				label: theme.label || Paths.basename(theme.path),
-				description: theme.description,
-				path: normalizedAbsolutePath,
-				extensionData: extensionData,
-				isLoaded: false
-			});
+			let themeData = new ColorThemeData();
+			themeData.id = `${baseTheme} ${themeSelector}`;
+			themeData.label = theme.label || Paths.basename(theme.path);
+			themeData.settingsId = theme.id || themeData.label;
+			themeData.description = theme.description;
+			themeData.path = normalizedAbsolutePath;
+			themeData.extensionData = extensionData;
+			themeData.isLoaded = false;
+
+			this.knownColorThemes.push(themeData);
+
+			colorThemeSetting.enum.push(themeData.settingsId);
+			colorThemeSetting.enumDescriptions.push(themeData.description || '');
 		});
 	}
 
@@ -429,7 +542,7 @@ export class ThemeService implements IThemeService {
 			return;
 		}
 		iconThemes.forEach(iconTheme => {
-			if (!iconTheme.path || (typeof iconTheme.path !== 'string')) {
+			if (!iconTheme.path || !types.isString(iconTheme.path)) {
 				collector.error(nls.localize(
 					'reqpath',
 					"Expected string in `contributes.{0}.path`. Provided value: {1}",
@@ -438,7 +551,7 @@ export class ThemeService implements IThemeService {
 				));
 				return;
 			}
-			if (!iconTheme.id || (typeof iconTheme.id !== 'string')) {
+			if (!iconTheme.id || !types.isString(iconTheme.id)) {
 				collector.error(nls.localize(
 					'reqid',
 					"Expected string in `contributes.{0}.id`. Provided value: {1}",
@@ -453,14 +566,19 @@ export class ThemeService implements IThemeService {
 				collector.warn(nls.localize('invalid.path.1', "Expected `contributes.{0}.path` ({1}) to be included inside extension's folder ({2}). This might make the extension non-portable.", themesExtPoint.name, normalizedAbsolutePath, extensionFolderPath));
 			}
 
-			this.knownIconThemes.push({
+			let themeData = {
 				id: extensionData.extensionId + '-' + iconTheme.id,
 				label: iconTheme.label || Paths.basename(iconTheme.path),
+				settingsId: iconTheme.id,
 				description: iconTheme.description,
 				path: normalizedAbsolutePath,
 				extensionData: extensionData,
 				isLoaded: false
-			});
+			};
+			this.knownIconThemes.push(themeData);
+
+			iconThemeSetting.enum.push(themeData.settingsId);
+			iconThemeSetting.enumDescriptions.push(themeData.description || '');
 		});
 	}
 
@@ -489,13 +607,10 @@ export class ThemeService implements IThemeService {
 		return this.currentIconTheme;
 	}
 
-	public setFileIconTheme(iconTheme: string, broadcastToAllWindows: boolean): TPromise<IColorTheme> {
+	public setFileIconTheme(iconTheme: string, settingsTarget: ConfigurationTarget): TPromise<IFileIconTheme> {
 		iconTheme = iconTheme || '';
 		if (iconTheme === this.currentIconTheme.id && this.currentIconTheme.isLoaded) {
-			if (broadcastToAllWindows) {
-				this.windowService.broadcast({ channel: ICON_THEME_CHANNEL, payload: iconTheme });
-			}
-			return TPromise.as(this.currentIconTheme);
+			return this.writeFileIconConfiguration(settingsTarget);
 		}
 		let onApply = (newIconTheme: IInternalIconThemeData) => {
 			if (newIconTheme) {
@@ -503,6 +618,7 @@ export class ThemeService implements IThemeService {
 			} else {
 				this.currentIconTheme = noFileIconTheme;
 			}
+
 			if (this.container) {
 				if (newIconTheme) {
 					$(this.container).addClass(fileIconsEnabledClass);
@@ -510,36 +626,68 @@ export class ThemeService implements IThemeService {
 					$(this.container).removeClass(fileIconsEnabledClass);
 				}
 			}
-
-			this.storageService.store(ICON_THEME_PREF, this.currentIconTheme.id, StorageScope.GLOBAL);
-			if (broadcastToAllWindows) {
-				this.windowService.broadcast({ channel: ICON_THEME_CHANNEL, payload: this.currentIconTheme.id });
-			} else if (newIconTheme) {
+			if (newIconTheme) {
 				this.sendTelemetry(newIconTheme.id, newIconTheme.extensionData, 'fileIcon');
 			}
 			this.onFileIconThemeChange.fire(this.currentIconTheme);
-			return this.currentIconTheme;
+			return this.writeFileIconConfiguration(settingsTarget);
 		};
 
-
-		return this._updateIconTheme(iconTheme, onApply);
+		return this._findIconThemeData(iconTheme).then(iconThemeData => {
+			return _applyIconTheme(iconThemeData, onApply);
+		});
 	}
 
-	private _updateIconTheme(iconTheme: string, onApply: (theme: IInternalIconThemeData) => IFileIconTheme): TPromise<IFileIconTheme> {
+	private writeFileIconConfiguration(settingsTarget: ConfigurationTarget): TPromise<IFileIconTheme> {
+		if (!types.isUndefinedOrNull(settingsTarget)) {
+			return this.writeConfiguration(ICON_THEME_SETTING, this.currentIconTheme.settingsId, settingsTarget).then(_ => this.currentIconTheme);
+		}
+		return TPromise.as(this.currentIconTheme);
+	}
+
+	private writeConfiguration(key: string, value: any, settingsTarget: ConfigurationTarget): TPromise<any> {
+		let settings = this.configurationService.lookup(key);
+		if (settingsTarget === ConfigurationTarget.USER) {
+			if (value === settings.user) {
+				return TPromise.as(null); // nothing to do
+			} else if (value === settings.default) {
+				if (types.isUndefined(settings.user)) {
+					return TPromise.as(null); // nothing to do
+				}
+				value = void 0; // remove configuration from user settings
+			}
+		} else if (settingsTarget === ConfigurationTarget.WORKSPACE) {
+			if (value === settings.value) {
+				return TPromise.as(null); // nothing to do
+			}
+		}
+		return this.configurationEditingService.writeConfiguration(settingsTarget, { key, value });
+	}
+
+	private _findIconThemeData(iconTheme: string): TPromise<IInternalIconThemeData> {
 		return this.getFileIconThemes().then(allIconSets => {
-			let iconSetData: IInternalIconThemeData;
 			for (let iconSet of allIconSets) {
 				if (iconSet.id === iconTheme) {
-					iconSetData = <IInternalIconThemeData>iconSet;
-					break;
+					return <IInternalIconThemeData>iconSet;
 				}
 			}
-			return _applyIconTheme(iconSetData, onApply);
+			return null;
+		});
+	}
+
+	private findIconThemeBySettingsId(settingsId: string): TPromise<IFileIconTheme> {
+		return this.getFileIconThemes().then(allIconSets => {
+			for (let iconSet of allIconSets) {
+				if (iconSet.settingsId === settingsId) {
+					return iconSet;
+				}
+			}
+			return null;
 		});
 	}
 }
 
-function _applyIconTheme(data: IInternalIconThemeData, onApply: (theme: IInternalIconThemeData) => IFileIconTheme): TPromise<IFileIconTheme> {
+function _applyIconTheme(data: IInternalIconThemeData, onApply: (theme: IInternalIconThemeData) => TPromise<IFileIconTheme>): TPromise<IFileIconTheme> {
 	if (!data) {
 		_applyRules('', iconThemeRulesClassName);
 		return TPromise.as(onApply(data));
@@ -730,7 +878,7 @@ function toCSSSelector(str: string) {
 	return str;
 }
 
-function applyTheme(theme: IInternalColorThemeData, onApply: (theme: IInternalColorThemeData) => IColorTheme): TPromise<IColorTheme> {
+function applyTheme(theme: ColorThemeData, onApply: (theme: ColorThemeData) => TPromise<IColorTheme>): TPromise<IColorTheme> {
 	if (theme.styleSheetContent) {
 		_applyRules(theme.styleSheetContent, colorThemeRulesClassName);
 		return TPromise.as(onApply(theme));
@@ -757,7 +905,7 @@ function _loadThemeDocument(baseTheme: string, themePath: string): TPromise<IThe
 				return TPromise.wrapError(new Error(nls.localize('error.cannotparsejson', "Problems parsing JSON theme file: {0}", errors.map(e => Json.getParseErrorMessage(e.error)).join(', '))));
 			}
 			if (!Array.isArray(contentValue.settings)) {
-				return TPromise.wrapError(new Error(nls.localize('error.invalidformat', "Problem parsing JSON theme file: {0}. 'settings' is not array.")));
+				return TPromise.wrapError(new Error(nls.localize({ key: 'error.invalidformat', comment: ['{0} will be replaced by a path. "settings" must not be translated.'] }, "Problem parsing JSON theme file: {0}. 'settings' is not array.")));
 			}
 			allSettings = allSettings.concat(contentValue.settings); // will clone
 			if (contentValue.include) {
@@ -1016,3 +1164,32 @@ const schema: IJSONSchema = {
 
 let schemaRegistry = <IJSONContributionRegistry>Registry.as(JSONExtensions.JSONContribution);
 schemaRegistry.registerSchema(schemaId, schema);
+
+// Configuration: Themes
+const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
+
+const colorThemeSetting: IJSONSchema = {
+	type: 'string',
+	description: nls.localize('colorTheme', "Specifies the color theme used in the workbench."),
+	default: DEFAULT_THEME_SETTING_VALUE,
+	enum: [],
+	enumDescriptions: [],
+	errorMessage: nls.localize('colorThemeError', "Theme is unknown or not installed."),
+};
+const iconThemeSetting: IJSONSchema = {
+	type: ['string', 'null'],
+	default: null,
+	description: nls.localize('iconTheme', "Specifies the icon theme used in the workbench."),
+	enum: [null],
+	enumDescriptions: [nls.localize('noIconThemeDesc', 'No file icons')],
+	errorMessage: nls.localize('iconThemeError', "File icon theme is unknown or not installed.")
+};
+configurationRegistry.registerConfiguration({
+	id: 'workbench',
+	order: 7.1,
+	type: 'object',
+	properties: {
+		[COLOR_THEME_SETTING]: colorThemeSetting,
+		[ICON_THEME_SETTING]: iconThemeSetting
+	}
+});

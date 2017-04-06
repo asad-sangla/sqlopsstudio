@@ -1,8 +1,6 @@
 {
   "resolution": "main",
   "tree": {
-    "src": "D:\\repos\\carbon2\\carbon\\node_modules\\@angular\\core\\index.d.ts",
-    "raw": "npm:@angular/core/index.d.ts",
-    "typings": "D:\\repos\\carbon2\\carbon\\node_modules\\@angular\\core\\index.d.ts"
+    "src": "npm:@angular/core/index.d.ts"
   }
 }

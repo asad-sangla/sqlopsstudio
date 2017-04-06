@@ -4,241 +4,234 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-
-import 'vs/css!./bootstrap';
-import 'vs/css!./bootstrap-theme';
-import 'vs/css!./connectionDialog';
+import 'vs/css!./media/bootstrap';
+import 'vs/css!./media/bootstrap-theme';
+import 'vs/css!./media/connectionDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
-import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
+import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import vscode = require('vscode');
-import * as platform from 'vs/base/common/platform';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import DOM = require('vs/base/browser/dom');
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
+import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
+import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
+import { TreeCreationUtils } from 'sql/parts/connection/viewlet/treeCreationUtils';
+import { TreeUpdateUtils } from 'sql/parts/connection/viewlet/treeUpdateUtils';
+import data = require('data');
 
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
 	onCancel: () => void;
+	onShowUiComponent: () => HTMLElement;
+	onInitDialog: () => void;
+	onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => void;
+	onResetConnection: () => void;
 }
 
-export class ConnectionDialogWidget  {
-	private builder: Builder;
-	private container: HTMLElement;
-	private modelElement: HTMLElement;
-	private serverNameInputBox: InputBox;
-	private databaseNameInputBox: InputBox;
-	private userNameInputBox: InputBox;
-	private passwordInputBox: InputBox;
-	private jQuery;
-	private callbacks: IConnectionDialogCallbacks;
-	private model: vscode.ConnectionInfo;
-	private toDispose: lifecycle.IDisposable[];
-	private authTypeSelectBox: SelectBox;
-	private connectButton: Button;
-	private closeButton: Button;
-	private WindowsAuthTypeName: string = 'Windows Authentication';
-	private SqlAuthTypeName: string = 'SQL Server Authentication';
+export class ConnectionDialogWidget {
+	private _builder: Builder;
+	private _container: HTMLElement;
+	private _callbacks: IConnectionDialogCallbacks;
+	private _connectButton: Button;
+	private _closeButton: Button;
+	private _dialog: ModalDialogBuilder;
+	private _providerTypeSelectBox: ConnectionDialogSelectBox;
+	private _toDispose: lifecycle.IDisposable[];
+	private _newConnectionParams: INewConnectionParams;
 
-	constructor(container: HTMLElement, callbacks: IConnectionDialogCallbacks){
-		this.container = container;
-		this.setCallbacks(callbacks);
-		this.toDispose = [];
-		if(platform.isWindows) {
-			this.authTypeSelectBox = new SelectBox( [this.WindowsAuthTypeName, this.SqlAuthTypeName], 0);
-		} else {
-			this.authTypeSelectBox = new SelectBox( [this.SqlAuthTypeName], 0);
-		}
+	constructor(container: HTMLElement,
+		callbacks: IConnectionDialogCallbacks,
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService) {
+		this._container = container;
+		this._callbacks = callbacks;
+		this._toDispose = [];
 	}
 
-	public create(): HTMLElement {
-		this.builder = $().div({}, (div: Builder) => {
-			div.div({class:'modal', id:'connectionDialogModal', 'role':'dialog'}, (dialogContainer) => {
-				dialogContainer.div({class:'modal-dialog ', role:'document'}, (modalDialog) => {
-					modalDialog.div({class:'modal-content'}, (modelContent) => {
-						modelContent.div({class:'modal-header'}, (modalHeader) => {
-							modalHeader.element('button', {type:'button', class:'close', 'data-dismiss':'modal', 'aria-label':'close', 'aria-hidden':'true'}, (menuCloseButton) => {
-									menuCloseButton.innerHtml('&times;');
-							});
-							modalHeader.div({class:'modal-title'}, (modalTitle) => {
-								modalTitle.innerHtml('Connection Dialog');
-							});
-						});
-						modelContent.div({class:'modal-body'}, (modelBody) => {
-							modelBody.element('table', {width:'100%'}, (tableContainer) => {
-								this.serverNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Server Name', 'label', 'input'));
-								this.databaseNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Database Name', 'label', 'input'));
-								this.appendInputSelectBox(this.appendRow(tableContainer, 'Authentication', 'auth-label', 'auth-input'), this.authTypeSelectBox);
-								this.userNameInputBox = this.appendInputBox(this.appendRow(tableContainer, 'User Name', 'auth-label', 'auth-input'));
-								this.passwordInputBox = this.appendInputBox(this.appendRow(tableContainer, 'Password', 'auth-label', 'auth-input'));
-								this.passwordInputBox.inputElement.type = 'password';
-							});
-						});
-						modelContent.div({class:'modal-footer'}, (modelFooter) => {
-							modelFooter.element('table', {align:'right'}, (tableContainer) => {
-								tableContainer.element('tr', {}, (rowContainer) => {
-									this.connectButton = this.createFooterButton(rowContainer, 'Connect');
-									this.connectButton.enabled = false;
-									this.closeButton = this.createFooterButton(rowContainer, 'Cancel');
-								});
-							});
-						});
-					});
-				});
+	public create(providerTypeOptions: string[], selectedProviderType: string): HTMLElement {
+		this._providerTypeSelectBox = new ConnectionDialogSelectBox(providerTypeOptions, selectedProviderType);
+
+		this._dialog = new ModalDialogBuilder('connectionDialogModal', 'Connect to Server', 'connection-dialog-widget', 'connectionDialogBody');
+		this._builder = this._dialog.create();
+		this._dialog.addModalTitle();
+
+		this._dialog.bodyContainer.div({class:'connection-recent', id: 'recentConnection'});
+		this._dialog.addErrorMessage();
+		this._dialog.bodyContainer.div({class:'Connection-type'}, (modelTableContent) => {
+			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
+				ConnectionDialogHelper.appendInputSelectBox(
+					ConnectionDialogHelper.appendRow(tableContainer, 'Connection Type', 'connection-label', 'connection-input'), this._providerTypeSelectBox);
 			});
-		})
-		.addClass('connection-dialog-widget')
-		.build(this.container);
+		});
+
+		this._dialog.bodyContainer.div({class:'connection-provider-info', id: 'connectionProviderInfo'});
+
+		this._connectButton = this.createFooterButton(this._dialog.footerContainer, 'Connect');
+		this._connectButton.enabled = false;
+		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
+
+		this._builder.build(this._container);
 		this.registerListeners();
-		this.modelElement = this.builder.getHTMLElement();
-		this.serverNameInputBox.focus();
+		this.onProviderTypeSelected(this._providerTypeSelectBox.value);
 
-		// TODO getSelected was removed from select box in VS Code 1.9.1
-		// this.authTypeSelected(this.authTypeSelectBox.getSelected());
+		return this._builder.getHTMLElement();
+	}
 
-		return this.modelElement;
+
+	private registerListeners(): void {
+		this._toDispose.push(this._providerTypeSelectBox.onDidSelect(selectedProviderType => {
+			this.onProviderTypeSelected(selectedProviderType);
+		}));
+	}
+
+	private onProviderTypeSelected(selectedProviderType: string) {
+		// Show connection form based on server type
+		jQuery('#connectionProviderInfo').empty();
+		jQuery('#connectionProviderInfo').append(this._callbacks.onShowUiComponent);
 	}
 
 	private createFooterButton(container: Builder, title: string): Button {
 		let button;
-		container.element('td', {class:'footer-button'}, (cellContainer) => {
-			button = new Button(cellContainer);
-			button.label = title;
-			button.addListener2('click', () => {
-				if(title === 'Connect') {
-					this.connect();
-				} else {
-					this.cancel();
-				}
+		container.element('td', (cellContainer) => {
+			cellContainer.div({ class: 'footer-button' }, (buttonContainer) => {
+				button = new Button(buttonContainer);
+				button.label = title;
+				button.addListener2('click', () => {
+					if (title === 'Connect') {
+						this.connect();
+					} else {
+						this.cancel();
+					}
+				});
 			});
+
 		});
 
 		return button;
 	}
 
-	private registerListeners(): void {
-		this.toDispose.push(this.authTypeSelectBox.onDidSelect(selectedAuthType => {
-			this.authTypeSelected(selectedAuthType);
-		}));
-
-		this.toDispose.push(this.serverNameInputBox.onDidChange(serverName => {
-			this.serverNameChanged(serverName);
-		}));
-	}
-
-	private serverNameChanged(serverName: string) {
-		this.connectButton.enabled = !this.isEmptyString(serverName);
-	}
-
-	private authTypeSelected(selectedAuthType: string) {
-		switch (selectedAuthType) {
-			case this.WindowsAuthTypeName:
-                this.userNameInputBox.disable();
-				this.passwordInputBox.disable();
-				break;
-            case this.SqlAuthTypeName:
-				this.userNameInputBox.enable();
-				this.passwordInputBox.enable();
-			default:
-				break;
-		}
-	}
-
-	public getConnection(): vscode.ConnectionInfo {
-		return this.model;
-	}
-
-	public setConnection(model: vscode.ConnectionInfo) {
-		this.serverNameInputBox.value = model.serverName;
-		this.databaseNameInputBox.value = model.databaseName;
-		this.userNameInputBox.value = model.userName;
-		this.passwordInputBox.value = model.password;
-	}
-
-	public getServerName(): string {
-		return this.serverNameInputBox.value;
-	}
-
-	public getDatabaseName(): string {
-		return this.databaseNameInputBox.value;
-	}
-
-	public getUserName(): string {
-		return this.userNameInputBox.value;
-	}
-
-	public getPassword(): string {
-		return this.passwordInputBox.value;
-	}
-
-	public setCallbacks(callbacks: IConnectionDialogCallbacks): void {
-		this.callbacks = callbacks;
-	}
-
-	private appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
-		let cellContainer: Builder;
-		container.element('tr', {}, (rowContainer) => {
-				rowContainer.element('td', {class:'connection-' + labelClass}, (labelCellContainer) => {
-						labelCellContainer.div({}, (labelContainer) => {
-								labelContainer.innerHtml(label);
-						});
-				});
-				rowContainer.element('td', {class:'connection-' + cellContainerClass}, (inputCellContainer) => {
-					cellContainer = inputCellContainer;
-				});
-		});
-
-		return cellContainer;
-	}
-
-	private appendInputBox(container: Builder): InputBox {
-		return new InputBox(container.getHTMLElement(), null, {});
-	}
-
-	private appendInputSelectBox(container: Builder, selectBox: SelectBox): SelectBox {
-		selectBox.render(container.getHTMLElement());
-		return selectBox;
-	}
-
-	private validateInputs(): boolean {
-		return !this.isEmptyString(this.getServerName());
-	}
-
-	private isEmptyString(value: string): boolean {
-		//TODO find a better way to check for empty string
-		return value === undefined || value === '';
-	}
-
 	public connect(): void {
-		if (this.validateInputs()) {
-			this.model = {
-				serverName: this.getServerName(),
-				databaseName: this.getDatabaseName(),
-				userName: this.getUserName(),
-				password: this.getPassword()
-
-			};
-
-			this.callbacks.onConnect();
-			this.close();
-		} else {
-			alert('invalid inputs'); //TODO: message box
-		}
+		this._connectButton.enabled = false;
+		this._dialog.showSpinner();
+		this._callbacks.onConnect();
 	}
 
 	public cancel() {
-		this.callbacks.onCancel();
+		this._callbacks.onCancel();
 		this.close();
 	}
 
 	public close() {
+		this.resetConnection();
+		this.clearRecentConnection();
 		jQuery('#connectionDialogModal').modal('hide');
 	}
 
-	public open() {
-		jQuery('#connectionDialogModal').modal({backdrop:false});
+	private createRecentConnectionsBuilder(): Builder {
+		var recentConnectionBuilder = $().div({ class: 'connection-recent-content' }, (recentConnectionContainer) => {
+			recentConnectionContainer.div({ class: 'connection-history-label' }, (recentTitle) => {
+				recentTitle.innerHtml('Recent History');
+			});
+
+			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
+				divContainer.element('div', { class: 'explorer-servers' }, (treeContainer: Builder) => {
+					let recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true);
+					recentConnectionTree.addListener2('selection', (event: any) => this.OnRecentConnectionClick(event));
+					recentConnectionTree.addListener2('selection',
+						(event: any) => {
+							this.onRecentConnectionDoubleClick(event, recentConnectionTree);
+						});
+					TreeUpdateUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService).then(() => {
+						// call layout with view height
+						recentConnectionTree.layout(300);
+						divContainer.append(recentConnectionTree.getHTMLElement());
+					});
+				});
+			});
+		});
+		return recentConnectionBuilder;
+	}
+
+	private onRecentConnectionDoubleClick(event: any, recentConnectionTree: Tree) {
+		let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
+		let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
+		if (isDoubleClick) {
+			this.connect();
+		}
+	}
+
+	private OnRecentConnectionClick(event: any) {
+		let connectionInfo: IConnectionProfile = event.selection[0];
+		if (connectionInfo) {
+			this._callbacks.onFillinConnectionInputs(connectionInfo);
+		}
+	}
+
+	private clearRecentConnection() {
+		this._builder.off(DOM.EventType.KEY_DOWN);
+		jQuery('#recentConnection').empty();
+	}
+
+	public open(recentConnections: data.ConnectionInfo[]) {
+		this.clearRecentConnection();
+		if (recentConnections.length > 0) {
+			var recentConnectionBuilder = this.createRecentConnectionsBuilder();
+			jQuery('#recentConnection').append(recentConnectionBuilder.getHTMLElement());
+		}
+
+		jQuery('#connectionDialogModal').modal({ backdrop: false, keyboard: true });
+		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Enter)) {
+				if (this._connectButton.enabled) {
+					this.connect();
+				}
+			} else if (event.equals(KeyCode.Escape)) {
+				this.cancel();
+			}
+		});
+		this.initDialog();
+	}
+
+	public set connectButtonEnabled(enable: boolean) {
+		this._connectButton.enabled = enable;
+	}
+
+	public get connectButtonEnabled(): boolean {
+		return this._connectButton.enabled;
+	}
+
+	private initDialog(): void {
+		this._dialog.showError('');
+		this._dialog.hideSpinner();
+		this._callbacks.onInitDialog();
+	}
+
+	public showError(err: string) {
+		this._dialog.showError(err);
+		this.resetConnection();
+	}
+
+	public resetConnection() {
+		this._dialog.hideSpinner();
+		this._connectButton.enabled = true;
+		this._callbacks.onResetConnection();
+	}
+
+	public get newConnectionParams(): INewConnectionParams {
+		return this._newConnectionParams;
+	}
+
+	public set newConnectionParams(params: INewConnectionParams) {
+		this._newConnectionParams = params;
 	}
 
 	public dispose(): void {
-		this.toDispose = lifecycle.dispose(this.toDispose);
+		this._toDispose = lifecycle.dispose(this._toDispose);
 	}
 }

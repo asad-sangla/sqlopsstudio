@@ -266,6 +266,7 @@ suite('Files - TextFileService', () => {
 		}, error => onError(error, done));
 	});
 
+	/* DISABLED FOR HOT EXIT
 	suite('Hot Exit', () => {
 		suite('"onExit" setting', () => {
 			test('should hot exit on non-Mac (reason: CLOSE, windows: single, workspace)', function (done) {
@@ -317,6 +318,7 @@ suite('Files - TextFileService', () => {
 				hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, true, false, true, done);
 			});
 		});
+
 
 		suite('"onExitAndWindowClose" setting', () => {
 			test('should hot exit (reason: CLOSE, windows: single, workspace)', function (done) {
@@ -406,4 +408,5 @@ suite('Files - TextFileService', () => {
 			}, error => onError(error, done));
 		}
 	});
+	*/
 });

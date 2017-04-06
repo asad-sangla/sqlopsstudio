@@ -40,7 +40,8 @@ const eolFilter = [
 	'!**/*.{svg,exe,png,bmp,scpt,bat,cmd,cur,ttf,woff,eot}',
 	'!build/{lib,tslintRules}/**/*.js',
 	'!build/monaco/**',
-	'!build/win32/**'
+	'!build/win32/**',
+	'!**/*.gif'
 ];
 
 const indentationFilter = [
@@ -66,7 +67,9 @@ const indentationFilter = [
 	'!extensions/**/syntaxes/**',
 	'!extensions/**/themes/**',
 	'!extensions/**/colorize-fixtures/**',
-	'!extensions/vscode-api-tests/testWorkspace/**'
+	'!extensions/vscode-api-tests/testWorkspace/**',
+	'!**/*.gif',
+	'!**/test-results.xml'
 ];
 
 const copyrightFilter = [
@@ -86,7 +89,8 @@ const copyrightFilter = [
 	'!**/*.disabled',
 	'!resources/win32/bin/code.js',
 	'!extensions/markdown/media/tomorrow.css',
-	'!extensions/html/server/src/modes/typescript/*'
+	'!extensions/html/server/src/modes/typescript/*',
+	'!**/*.gif'
 ];
 
 const tslintFilter = [

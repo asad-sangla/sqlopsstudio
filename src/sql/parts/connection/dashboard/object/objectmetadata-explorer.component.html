@@ -1,0 +1,36 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+
+<div  style="border-bottom: 0 none">
+    <input class="dashboard-search-box" #gb type="text" pInputText size="50" placeholder="Search object metadata">
+</div>
+
+<div style="display: flex; flex-flow: row wrap; height: calc(100% - 210px); overflow: auto">
+<div style="order: 1; width: calc(100% - 138px); overflow: auto" >
+    <p-dataTable [value]="columns" [globalFilter]="gb" #dt selectionMode="single"
+                 [(selection)]="selectedObject" [tableStyle]="{'overflow': 'auto'}">
+        <p-column header="" field="escapedName">
+            <template let-col let-dataitem="rowData" pTemplate="body">
+                <span style="display: flex; flex-flow: row">
+                    <span style="order: 1">
+                        <img class="dashboard-button-content" src="{{databaseIcon}}" />
+                    </span>
+                    <span style="order: 2">
+                        <span class="dashboard-button-content">
+                            {{dataitem.escapedName}}
+                        </span>
+                    </span>
+                </span>
+            </template>
+        </p-column>
+    </p-dataTable>
+</div>
+
+<div style="order: 2;width: 133px; vertical-align: top">
+<!-- PUT BUTTONS HERE -->
+</div>
+</div>

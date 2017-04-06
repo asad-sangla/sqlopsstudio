@@ -38,6 +38,7 @@ import { IProgressService } from 'vs/platform/progress/common/progress';
 import { EditorStacksModel, EditorGroup, EditorIdentifier, GroupEvent } from 'vs/workbench/common/editor/editorStacksModel';
 import Event, { Emitter } from 'vs/base/common/event';
 import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { QueryEditorService } from 'sql/parts/editor/queryEditorService';
 
 class ProgressMonitor {
 
@@ -103,6 +104,9 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 	private editorOpenToken: number[];
 	private pendingEditorInputsToClose: EditorIdentifier[];
 	private pendingEditorInputCloseTimeout: number;
+
+	private onLayoutEmitter = new Emitter<Dimension>();
+	public onLayout = this.onLayoutEmitter.event;
 
 	constructor(
 		id: string,
@@ -264,10 +268,14 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 			!input ||																		// no input
 			position === null ||															// invalid position
 			Object.keys(this.mapEditorInstantiationPromiseToEditor[position]).length > 0 ||	// pending editor load
-			this.editorGroupsControl.isDragging()												// pending editor DND
+			!this.editorGroupsControl ||													// too early
+			this.editorGroupsControl.isDragging()											// pending editor DND
 		) {
 			return TPromise.as<BaseEditor>(null);
 		}
+
+		// SQL file check
+		input = QueryEditorService.queryEditorCheck(input, this.instantiationService);
 
 		// We need an editor descriptor for the input
 		const descriptor = Registry.as<IEditorRegistry>(EditorExtensions.Editors).getEditor(input);
@@ -1189,6 +1197,8 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 		// Pass to Side by Side Control
 		this.dimension = sizes[1];
 		this.editorGroupsControl.layout(this.dimension);
+
+		this.onLayoutEmitter.fire(dimension);
 
 		return sizes;
 	}

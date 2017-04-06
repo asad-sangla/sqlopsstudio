@@ -36,16 +36,12 @@ import { MainThreadFileSystemEventService } from './mainThreadFileSystemEventSer
 import { MainThreadSCM } from './mainThreadSCM';
 
 // --- other interested parties
-import { MainProcessTextMateSnippet } from 'vs/editor/node/textMate/TMSnippets';
 import { JSONValidationExtensionPoint } from 'vs/platform/jsonschemas/common/jsonValidationExtensionPoint';
 import { LanguageConfigurationFileHandler } from 'vs/editor/node/languageConfigurationExtensionPoint';
 import { SaveParticipant } from './mainThreadSaveParticipant';
 
 // --- registers itself as service
 import './mainThreadHeapService';
-
-// --- SQL contributions
-import { MainThreadConnectionManagement } from 'sql/workbench/api/node/mainThreadConnectionManagement';
 
 export class ExtHostContribution implements IWorkbenchContribution {
 
@@ -70,7 +66,6 @@ export class ExtHostContribution implements IWorkbenchContribution {
 		const col = new InstanceCollection();
 		col.define(MainContext.MainThreadCommands).set(create(MainThreadCommands));
 		col.define(MainContext.MainThreadConfiguration).set(create(MainThreadConfiguration));
-		col.define(MainContext.MainThreadConnectionManagement).set(create(MainThreadConnectionManagement));
 		col.define(MainContext.MainThreadDiagnostics).set(create(MainThreadDiagnostics));
 		col.define(MainContext.MainThreadDocuments).set(create(MainThreadDocuments));
 		col.define(MainContext.MainThreadEditors).set(create(MainThreadEditors));
@@ -94,7 +89,6 @@ export class ExtHostContribution implements IWorkbenchContribution {
 		col.finish(true, this.threadService);
 
 		// Other interested parties
-		create(MainProcessTextMateSnippet);
 		create(JSONValidationExtensionPoint);
 		this.instantiationService.createInstance(LanguageConfigurationFileHandler);
 		create(MainThreadFileSystemEventService);

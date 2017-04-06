@@ -123,7 +123,7 @@ function getRpmPackageArch(arch) {
 }
 
 function prepareRpmPackage(arch) {
-	const binaryDir = '../VSCode-linux-' + arch;
+	const binaryDir = '../carbon-linux-' + arch;
 	const rpmArch = getRpmPackageArch(arch);
 
 	return function () {
@@ -175,8 +175,7 @@ function buildRpmPackage(arch) {
 	return shell.task([
 		'mkdir -p ' + destination,
 		'HOME="$(pwd)/' + destination + '" fakeroot rpmbuild -bb ' + rpmBuildPath + '/SPECS/' + product.applicationName + '.spec --target=' + rpmArch,
-		'cp "' + rpmOut + '/$(ls ' + rpmOut + ')" ' + destination + '/',
-		'createrepo ' + destination
+		'cp "' + rpmOut + '/$(ls ' + rpmOut + ')" ' + destination + '/'
 	]);
 }
 
@@ -185,7 +184,7 @@ function getFlatpakArch(arch) {
 }
 
 function prepareFlatpak(arch) {
-	const binaryDir = '../VSCode-linux-' + arch;
+	const binaryDir = '../carbon-linux-' + arch;
 	const flatpakArch = getFlatpakArch(arch);
 	const destination = '.build/linux/flatpak/' + flatpakArch;
 

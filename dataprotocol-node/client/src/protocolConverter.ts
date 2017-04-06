@@ -5,6 +5,7 @@
 'use strict';
 
 import * as code from 'vscode';
+import * as data from 'data';
 import * as ls from 'dataprotocol-languageserver-types';
 import * as is from './utils/is';
 import ProtocolCompletionItem from './protocolCompletionItem';
@@ -74,7 +75,13 @@ export interface Converter {
 
 	asDocumentLinks(items: ls.DocumentLink[]): code.DocumentLink[];
 
-	asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary;
+	asConnectionSummary(params: ls.ConnectionCompleteParams): data.ConnectionInfoSummary;
+
+	asServerCapabilities(params: ls.CapabiltiesDiscoveryResult): data.DataProtocolServerCapabilities;
+
+	asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata;
+
+	asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult;
 }
 
 export interface URIConverter {
@@ -377,15 +384,117 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return items.map(asDocumentLink);
 	}
 
-	function asConnectionSummary(params: ls.ConnectionCompleteParams): code.ConnectionInfoSummary {
-		let connSummary: code.ConnectionInfoSummary = {
+	function asConnectionSummary(params: ls.ConnectionCompleteParams): data.ConnectionInfoSummary {
+		let connSummary: data.ConnectionInfoSummary = {
 			ownerUri: params.ownerUri,
 			connectionId: params.connectionId,
 			messages: params.messages,
 			errorMessage: params.errorMessage,
-			errorNumber: params.errorNumber
+			errorNumber: params.errorNumber,
+			serverInfo: params.serverInfo,
+			connectionSummary: params.connectionSummary
 		};
 		return connSummary;
+	}
+
+	function asServerCapabilities(result: ls.CapabiltiesDiscoveryResult): data.DataProtocolServerCapabilities {
+		let capabilities: data.DataProtocolServerCapabilities = {
+			protocolVersion: result.capabilities.protocolVersion,
+			providerName: result.capabilities.providerName,
+			providerDisplayName: result.capabilities.providerDisplayName,
+			connectionProvider: undefined
+		};
+
+		if (!!result.capabilities.connectionProvider
+				&& !!result.capabilities.connectionProvider.options
+				&& result.capabilities.connectionProvider.options.length > 0) {
+			capabilities.connectionProvider = <data.ConnectionProviderOptions>{
+				options: new Array<data.ConnectionOption>()
+			};
+			for (let i = 0; i < result.capabilities.connectionProvider.options.length; ++i) {
+				let srcOption: ls.ConnectionOption = result.capabilities.connectionProvider.options[i];
+				let descOption: data.ConnectionOption = {
+					name: srcOption.name,
+					displayName: !!srcOption.displayName ? srcOption.displayName : srcOption.name,
+					description: srcOption.description,
+					groupName: srcOption.groupName,
+					defaultValue: srcOption.defaultValue,
+					categoryValues: srcOption.categoryValues,
+					isIdentity: srcOption.isIdentity,
+					isRequired: srcOption.isRequired,
+					valueType: undefined,
+					specialValueType: undefined
+				};
+
+				if (srcOption.valueType === 'string') {
+					descOption.valueType = data.ConnectionOptionType.string;
+				} else if (srcOption.valueType === 'multistring') {
+					descOption.valueType = data.ConnectionOptionType.multistring;
+				} else if (srcOption.valueType === 'password') {
+					descOption.valueType = data.ConnectionOptionType.password;
+				} else if (srcOption.valueType === 'number') {
+					descOption.valueType = data.ConnectionOptionType.number;
+				} else if (srcOption.valueType === 'boolean') {
+					descOption.valueType = data.ConnectionOptionType.boolean;
+				} else if (srcOption.valueType === 'category') {
+					descOption.valueType = data.ConnectionOptionType.category;
+				}
+
+				if (srcOption.specialValueType === 'serverName') {
+					descOption.specialValueType = data.ConnectionOptionSpecialType.serverName;
+				} else if (srcOption.specialValueType === 'databaseName') {
+					descOption.specialValueType = data.ConnectionOptionSpecialType.databaseName;
+				} else if (srcOption.specialValueType === 'authType') {
+					descOption.specialValueType = data.ConnectionOptionSpecialType.authType;
+				} else if (srcOption.specialValueType === 'userName') {
+					descOption.specialValueType = data.ConnectionOptionSpecialType.userName;
+				} else if (srcOption.specialValueType === 'password') {
+					descOption.specialValueType = data.ConnectionOptionSpecialType.password;
+				}
+
+				capabilities.connectionProvider.options.push(descOption);
+			}
+		}
+
+		return capabilities;
+	}
+
+	function asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata {
+		let objectMetadata: data.ObjectMetadata[] = [];
+
+		for (let i = 0; i < params.metadata.length; ++i) {
+			let metadata:ls.ObjectMetadata = params.metadata[i];
+
+			// the display string should come from the provider
+			// this is temporary mapping (3/13 karlb)
+			let metadataTypeName: string;
+			if (metadata.metadataType === ls.MetadataType.View) {
+				metadataTypeName = 'View';
+			} else if (metadata.metadataType === ls.MetadataType.SProc) {
+				metadataTypeName = 'Procedure';
+			} else if (metadata.metadataType === ls.MetadataType.Function) {
+				metadataTypeName = 'Function';
+			} else {
+				metadataTypeName = 'Table';
+			}
+
+			objectMetadata.push({
+				metadataTypeName: metadataTypeName,
+				metadataType: metadata.metadataType,
+				name: metadata.name,
+				schema: metadata.schema
+			});
+		}
+
+		return <data.ProviderMetadata> {
+			objectMetadata: objectMetadata
+		};
+	}
+
+	function asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult {
+		return <data.ScriptingResult> {
+			script: params.script
+		};
 	}
 
 	return {
@@ -420,7 +529,10 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asWorkspaceEdit,
 		asDocumentLink,
 		asDocumentLinks,
-		asConnectionSummary
+		asConnectionSummary,
+		asServerCapabilities,
+		asProviderMetadata,
+		asScriptingResult
 	};
 }
 

@@ -40,8 +40,8 @@ const nodeModules = ['electron', 'original-fs']
 // Build
 
 const builtInExtensions = [
-	{ name: 'ms-vscode.node-debug', version: '1.9.16' },
-	{ name: 'ms-vscode.node-debug2', version: '1.9.13' }
+	{ name: 'ms-vscode.node-debug', version: '1.10.21' },
+	{ name: 'ms-vscode.node-debug2', version: '1.10.0' }
 ];
 
 const vscodeEntryPoints = _.flatten([
@@ -71,10 +71,19 @@ const vscodeResources = [
 	'out-build/vs/**/markdown.css',
 	'out-build/vs/workbench/parts/tasks/**/*.json',
 	'out-build/vs/workbench/parts/terminal/electron-browser/terminalProcess.js',
-	'out-build/vs/workbench/parts/walkThrough/**/*.md',
-	'out-build/vs/workbench/parts/welcomePage/**/*.html',
+	'out-build/vs/workbench/parts/welcome/walkThrough/**/*.md',
+	'out-build/vs/workbench/parts/welcome/page/**/*.html',
 	'out-build/vs/workbench/services/files/**/*.exe',
 	'out-build/vs/workbench/services/files/**/*.md',
+	'out-build/sql/parts/connection/connectionDialog/media/**',
+	'out-build/sql/parts/common/dblist/**/*.html',
+	'out-build/sql/parts/common/dblist/media/**',
+	'out-build/sql/parts/connection/dashboard/**/*.html',
+	'out-build/sql/parts/connection/dashboard/media/**',
+	'out-build/sql/parts/grid/directives/{slick.dragrowselector.js,slick.autosizecolumn.js}',
+	'out-build/sql/parts/grid/load/loadJquery.js',
+	'out-build/sql/parts/grid/media/**',
+	'out-build/sql/parts/grid/views/**/*.html',
 	'!**/test/**'
 ];
 
@@ -189,7 +198,7 @@ function computeChecksum(filename) {
 function packageTask(platform, arch, opts) {
 	opts = opts || {};
 
-	const destination = path.join(path.dirname(root), 'VSCode') + (platform ? '-' + platform : '') + (arch ? '-' + arch : '');
+	const destination = path.join(path.dirname(root), 'carbon') + (platform ? '-' + platform : '') + (arch ? '-' + arch : '');
 	platform = platform || process.platform;
 	arch = platform === 'win32' ? 'ia32' : arch;
 
@@ -261,6 +270,7 @@ function packageTask(platform, arch, opts) {
 
 		// TODO the API should be copied to `out` during compile, not here
 		const api = gulp.src('src/vs/vscode.d.ts').pipe(rename('out/vs/vscode.d.ts'));
+		const dataApi = gulp.src('src/vs/data.d.ts').pipe(rename('out/sql/data.d.ts'));
 
 		const depsSrc = _.flatten(dependencies
 			.map(function (d) { return ['node_modules/' + d + '/**', '!node_modules/' + d + '/**/{test,tests}/**']; }));
@@ -279,6 +289,7 @@ function packageTask(platform, arch, opts) {
 			productJsonStream,
 			license,
 			api,
+			dataApi,
 			sources,
 			deps
 		);
@@ -322,11 +333,11 @@ function packageTask(platform, arch, opts) {
 
 const buildRoot = path.dirname(root);
 
-gulp.task('clean-vscode-win32', util.rimraf(path.join(buildRoot, 'VSCode-win32')));
-gulp.task('clean-vscode-darwin', util.rimraf(path.join(buildRoot, 'VSCode-darwin')));
-gulp.task('clean-vscode-linux-ia32', util.rimraf(path.join(buildRoot, 'VSCode-linux-ia32')));
-gulp.task('clean-vscode-linux-x64', util.rimraf(path.join(buildRoot, 'VSCode-linux-x64')));
-gulp.task('clean-vscode-linux-arm', util.rimraf(path.join(buildRoot, 'VSCode-linux-arm')));
+gulp.task('clean-vscode-win32', util.rimraf(path.join(buildRoot, 'carbon-win32')));
+gulp.task('clean-vscode-darwin', util.rimraf(path.join(buildRoot, 'carbon-darwin')));
+gulp.task('clean-vscode-linux-ia32', util.rimraf(path.join(buildRoot, 'carbon-linux-ia32')));
+gulp.task('clean-vscode-linux-x64', util.rimraf(path.join(buildRoot, 'carbon-linux-x64')));
+gulp.task('clean-vscode-linux-arm', util.rimraf(path.join(buildRoot, 'carbon-linux-arm')));
 
 gulp.task('vscode-win32', ['optimize-vscode', 'clean-vscode-win32'], packageTask('win32'));
 gulp.task('vscode-darwin', ['optimize-vscode', 'clean-vscode-darwin'], packageTask('darwin'));

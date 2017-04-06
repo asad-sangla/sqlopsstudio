@@ -4,6 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
+const ipcRenderer = require('electron').ipcRenderer;
+
+
 var initData = {};
 
 function styleBody(body) {
@@ -12,13 +15,37 @@ function styleBody(body) {
 	}
 	body.classList.remove('vscode-light', 'vscode-dark', 'vscode-high-contrast');
 	body.classList.add(initData.activeTheme);
-};
+}
 
 function getTarget() {
 	return document.getElementById('_target');
-};
+}
 
-const ipcRenderer = require('electron').ipcRenderer;
+function handleInnerClick(event) {
+	if (!event || !event.view || !event.view.document) {
+		return;
+	}
+	var node = event.target;
+	while (node) {
+		if (node.tagName === "A" && node.href) {
+			var baseElement = event.view.document.getElementsByTagName("base")[0];
+			if (node.getAttribute("href") === "#") {
+				event.view.scrollTo(0, 0);
+			} else if (node.hash && (node.getAttribute("href") === node.hash || (baseElement && node.href.indexOf(baseElement.href) >= 0))) {
+				var scrollTarget = event.view.document.getElementById(node.hash.substr(1, node.hash.length - 1));
+				if (scrollTarget) {
+					scrollTarget.scrollIntoView();
+				}
+			} else {
+				ipcRenderer.sendToHost("did-click-link", node.href);
+			}
+			event.preventDefault();
+			break;
+		}
+		node = node.parentNode;
+	}
+}
+
 
 document.addEventListener("DOMContentLoaded", function (event) {
 	ipcRenderer.on('baseUrl', function (event, value) {
@@ -45,7 +72,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 	// propagate focus
 	ipcRenderer.on('focus', function () {
-		getTarget().contentWindow.focus();
+		const target = getTarget();
+		if (target) {
+			target.contentWindow.focus();
+		}
 	});
 
 	// update iframe-contents
@@ -79,40 +109,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
 			newDocument.head.appendChild(defaultStyles);
 		}
 
-		// script to bubble out link-clicks
-		const defaultScripts = newDocument.createElement('script');
-		defaultScripts.innerHTML = [
-			'document.body.addEventListener("click", function(event) {',
-			'	let node = event.target;',
-			'	while (node) {',
-			'		if (node.tagName === "A" && node.href) {',
-			'			let baseElement = window.document.getElementsByTagName("base")[0];',
-			'			if (node.getAttribute("href") === "#") {',
-			'				window.scrollTo(0, 0);',
-			'			} else if (node.hash && (node.getAttribute("href") === node.hash || (baseElement && node.href.indexOf(baseElement.href) >= 0))) {',
-			'				let scrollTarget = window.document.getElementById(node.hash.substr(1, node.hash.length - 1));',
-			'				if (scrollTarget) {',
-			'					scrollTarget.scrollIntoView();',
-			'				}',
-			'			} else {',
-			'				window.parent.postMessage({ command: "did-click-link", data: node.href }, "file://");',
-			'			}',
-			'			event.preventDefault();',
-			'			break;',
-			'		}',
-			'		node = node.parentNode;',
-			'	}',
-			'});'].join('\n')
-
-
-		newDocument.body.appendChild(defaultScripts);
 		styleBody(newDocument.body);
 
 		const frame = getTarget();
-		frame.setAttribute('id', '_oldTarget')
+		if (frame) {
+			frame.setAttribute('id', '_oldTarget');
+		}
 
 		// keep current scrollTop around and use later
-		const scrollTop = frame.contentDocument.body.scrollTop;
+		const scrollTop = frame && frame.contentDocument && frame.contentDocument.body ? frame.contentDocument.body.scrollTop : 0;
 
 		const newFrame = document.createElement('iframe');
 		newFrame.setAttribute('id', '_target');
@@ -122,21 +127,32 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 		// write new content onto iframe
 		newFrame.contentDocument.open('text/html', 'replace');
+
+		// workaround for https://github.com/Microsoft/vscode/issues/12865
+		// check new scrollTop and reset if neccessary
+		newFrame.contentWindow.addEventListener('DOMContentLoaded', function () {
+			if (newFrame.contentDocument.body && scrollTop !== newFrame.contentDocument.body.scrollTop) {
+				newFrame.contentDocument.body.scrollTop = scrollTop;
+			}
+
+			// bubble out link-clicks
+			if (newFrame.contentDocument.body) {
+				newFrame.contentDocument.body.addEventListener('click', handleInnerClick);
+			}
+
+			if (frame) {
+				document.body.removeChild(frame);
+			}
+
+			newFrame.style.display = 'block';
+		});
+
 		// set DOCTYPE for newDocument explicitly as DOMParser.parseFromString strips it off
 		// and DOCTYPE is needed in the iframe to ensure that the user agent stylesheet is correctly overridden
 		newFrame.contentDocument.write('<!DOCTYPE html>');
 		newFrame.contentDocument.write(newDocument.documentElement.innerHTML);
 		newFrame.contentDocument.close();
 
-		// workaround for https://github.com/Microsoft/vscode/issues/12865
-		// check new scrollTop and reset if neccessary
-		setTimeout(function () {
-			if (newFrame.contentDocument && newFrame.contentDocument.body && scrollTop !== newFrame.contentDocument.body.scrollTop) {
-				newFrame.contentDocument.body.scrollTop = scrollTop;
-			}
-			document.body.removeChild(frame);
-			newFrame.style.display = 'block';
-		}, 0);
 
 		ipcRenderer.sendToHost('did-set-content', stats);
 	});
@@ -144,7 +160,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	// Forward message to the embedded iframe
 	ipcRenderer.on('message', function (event, data) {
 		const target = getTarget();
-		target.contentWindow.postMessage(data, 'file://');
+		if (target) {
+			target.contentWindow.postMessage(data, 'file://');
+		}
 	});
 
 	// forward messages from the embedded iframe

@@ -1,0 +1,456 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.server-explorer-viewlet .content .busy {
+	background: #ff0000;
+}
+
+.extensions-viewlet {
+	height: 100%;
+}
+
+.connection-recent .server-explorer-viewlet {
+	height: calc(100% - 365px);
+}
+
+.extensions-viewlet > .header {
+	height: 38px;
+	box-sizing: border-box;
+	padding: 5px 9px 5px 16px;
+}
+
+.extensions-viewlet > .header > .search-box {
+	width: calc(100% - 30px);
+	height: 28px;
+	line-height: 18px;
+	min-height: 10px;
+	position: absolute;
+	box-sizing: border-box;
+	padding: 4px;
+	border: 1px solid transparent;
+	-webkit-appearance: textfield;
+}
+
+.extensions-viewlet > .extensions {
+	height: calc(100% - 38px);
+}
+
+.extensions-viewlet > .message {
+	padding: 5px 9px 5px 16px;
+	cursor: default;
+}
+
+.extensions-viewlet > .extensions .extension {
+	box-sizing: border-box;
+	width: 100%;
+	height: 100%;
+	padding: 0 11px 0 16px;
+	overflow: hidden;
+	display: flex;
+}
+
+.extensions-viewlet > .extensions .extension > .icon {
+	width: 42px;
+	height: 42px;
+	padding: 10px 14px 10px 0;
+	flex-shrink: 0;
+	object-fit: contain;
+}
+
+.extensions-viewlet.narrow > .extensions .extension > .icon {
+	display: none;
+}
+
+.extensions-viewlet > .extensions .extension.loading > .icon {
+	display: none;
+}
+
+.extensions-viewlet > .extensions .extension > .details {
+	flex: 1;
+	padding: 4px 0;
+	overflow: hidden;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .header-container {
+	height: 19px;
+	display: flex;
+	overflow: hidden;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .header-container > .header {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	overflow: hidden;
+	flex: 1;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .header-container > .header > .name {
+	font-weight: bold;
+	min-width: fit-content;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .header-container > .header > .version {
+	opacity: 0.6;
+	font-size: 80%;
+	padding-left: 6px;
+	flex: 1;
+	min-width: fit-content;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .header-container > .header > .install-count:not(:empty) {
+	font-size: 80%;
+	margin: 0 6px;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .header-container > .header > .install-count > .octicon {
+	font-size: 100%;
+	margin-right: 2px;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .header-container > .header > .ratings {
+	text-align: right;
+}
+
+.extensions-viewlet.narrow > .extensions .extension > .details > .header-container > .header > .ratings,
+.extensions-viewlet.narrow > .extensions .extension > .details > .header-container > .header > .install-count {
+	display: none;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .header-container .extension-status {
+	width: 8px;
+	height: 8px;
+	margin-left: 6px;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .footer {
+	display: flex;
+	justify-content: flex-end;
+	height: 18px;
+	overflow: hidden;
+}
+
+.extensions-viewlet > .extensions .extension > .details > .footer > .author {
+	flex: 1;
+	font-size: 90%;
+	padding-right: 6px;
+	opacity: 0.6;
+	font-weight: 600;
+}
+
+.server-explorer-viewlet .monaco-action-bar > .actions-container {
+	flex-wrap: wrap-reverse;
+}
+
+.server-explorer-viewlet  .monaco-action-bar .action-label {
+	margin-right: 0;
+	margin-left: 0.3em;
+	line-height: 15px;
+}
+
+.extensions-viewlet > .extensions .extension.disabled > .icon,
+.extensions-viewlet > .extensions .extension.disabled > .details > .header-container,
+.extensions-viewlet > .extensions .extension.disabled > .details > .description,
+.extensions-viewlet > .extensions .extension.disabled > .details > .footer > .author {
+	opacity: 0.5;
+}
+
+.extensions-viewlet > .extensions .extension .ellipsis {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.extensions-badge.progress-badge > .badge-content {
+	background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIgdmlld0JveD0iMiAyIDE0IDE0IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDIgMiAxNCAxNCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTkgMTZjLTMuODYgMC03LTMuMTQtNy03czMuMTQtNyA3LTdjMy44NTkgMCA3IDMuMTQxIDcgN3MtMy4xNDEgNy03IDd6bTAtMTIuNmMtMy4wODggMC01LjYgMi41MTMtNS42IDUuNnMyLjUxMiA1LjYgNS42IDUuNiA1LjYtMi41MTIgNS42LTUuNi0yLjUxMi01LjYtNS42LTUuNnptMy44NiA3LjFsLTMuMTYtMS44OTZ2LTMuODA0aC0xLjR2NC41OTZsMy44NCAyLjMwNS43Mi0xLjIwMXoiLz48L3N2Zz4=");
+	background-position: center center;
+	background-repeat: no-repeat;
+}
+
+.hc-black .monaco-workbench .extensions-viewlet > .header > .search-box {
+	border: 1px solid #6FC3DF;
+}
+
+/* --- Registered servers tree viewlet --- */
+.server-explorer-viewlet {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+}
+
+.explorer-servers {
+	height: 100%;
+}
+
+.server-explorer-viewlet .split-view-view {
+	min-height: 22px;
+}
+
+.server-explorer-viewlet .split-view-view .header {
+	min-height: 22px;
+}
+
+.server-explorer-viewlet .explorer-item,
+.server-explorer-viewlet .open-editor,
+.server-explorer-viewlet .editor-group {
+	line-height: 20px;
+}
+
+.server-explorer-viewlet .editor-group {
+	padding-right: 4px;
+}
+
+.server-explorer-viewlet .server-group {
+	height: 32px;
+	line-height: 32px;
+}
+
+.server-explorer-viewlet .explorer-item {
+	display: flex; /* this helps showing the overflow ellipsis (...) even though we use display:inline-block for the labels */
+	flex-wrap: nowrap;
+}
+
+.server-explorer-viewlet .explorer-item > a,
+.server-explorer-viewlet .open-editor,
+.server-explorer-viewlet .editor-group,
+.server-explorer-viewlet .server-group {
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.server-explorer-viewlet .explorer-item,
+.server-explorer-viewlet .explorer-item .monaco-inputbox {
+	flex: 1;
+}
+
+.server-explorer-viewlet .explorer-item::before {
+	flex-shrink: 0; /* fix for https://github.com/Microsoft/vscode/issues/13787 */
+}
+
+.server-explorer-viewlet .explorer-item.explorer-item-edited .label-name {
+	flex: 0; /* do not steal space when label is hidden because we are in edit mode */
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content {
+	display: flex;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content >.editor-group .monaco-action-bar {
+	display: none;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content >.editor-group:hover .monaco-action-bar {
+	display: block;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content >.editor-group:hover .monaco-action-bar > .actions-container{
+	min-width: 150px
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .monaco-action-bar {
+	visibility: hidden;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row:hover > .content .monaco-action-bar,
+.server-explorer-viewlet .explorer-servers .monaco-tree.focused .monaco-tree-row.focused > .content .monaco-action-bar,
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content.dirty > .monaco-action-bar {
+	visibility: visible;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content .monaco-action-bar .action-label {
+	display: block;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content .monaco-action-bar .close-editor-action {
+	width: 8px;
+	height: 22px;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content .monaco-action-bar .action-close-all-files,
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content .monaco-action-bar .save-all {
+	width: 23px;
+	height: 22px;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .open-editor {
+	flex: 1;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .editor-group,
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row > .content > .server-group {
+	flex: 1;
+}
+
+.server-explorer-viewlet .monaco-count-badge {
+	padding: 1px 6px;
+	margin-left: 6px;
+	border-radius: 0; /* goes better when ellipsis shows up on narrow sidebar */
+}
+
+.server-explorer-viewlet .explorer-empty-view {
+	padding: 0 20px 0 20px;
+}
+
+.server-explorer-viewlet .explorer-item .monaco-inputbox {
+	width: 100%;
+	line-height: normal;
+}
+
+.monaco-workbench.linux .server-explorer-viewlet .explorer-item .monaco-inputbox,
+.monaco-workbench.mac .server-explorer-viewlet .explorer-item .monaco-inputbox {
+	height: 22px;
+}
+
+.server-explorer-viewlet .explorer-item .monaco-inputbox.idle {
+	border: 1px solid rgba(128, 128, 128, 0.5);
+}
+
+.server-explorer-viewlet .explorer-item .monaco-inputbox > .wrapper > .input {
+	padding: 1px 2px;
+}
+
+.monaco-workbench.linux .server-explorer-viewlet .explorer-item .monaco-inputbox > .wrapper > .input,
+.monaco-workbench.mac .server-explorer-viewlet .explorer-item .monaco-inputbox > .wrapper > .input {
+	padding: 0;
+	height: 20px;
+}
+
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .editor-group {
+	font-size: 12px;
+	font-weight: bold;
+	text-transform: none;
+	cursor: default;
+}
+.server-explorer-viewlet .explorer-servers .monaco-tree .monaco-tree-row .server-group {
+	font-size: 13px;
+	font-weight: bold;
+	text-transform: none;
+	cursor: default;
+}
+
+/* Bold font style does not go well with CJK fonts */
+.server-explorer-viewlet:lang(zh-Hans) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
+.server-explorer-viewlet:lang(zh-Hant) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
+.server-explorer-viewlet:lang(ja) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
+.server-explorer-viewlet:lang(ko) .explorer-servers .monaco-tree .monaco-tree-row .editor-group,
+.server-explorer-viewlet:lang(zh-Hans) .explorer-servers .monaco-tree .monaco-tree-row .server-group,
+.server-explorer-viewlet:lang(zh-Hant) .explorer-servers .monaco-tree .monaco-tree-row .server-group,
+.server-explorer-viewlet:lang(ja) .explorer-servers .monaco-tree .monaco-tree-row .server-group,
+.server-explorer-viewlet:lang(ko) .explorer-servers .monaco-tree .monaco-tree-row .server-group { font-weight: normal; }
+
+/* High Contrast Theming */
+.hc-black .monaco-workbench .server-explorer-viewlet .explorer-item,
+.hc-black .monaco-workbench .server-explorer-viewlet .open-editor,
+.hc-black .monaco-workbench .server-explorer-viewlet .editor-group,
+.hc-black .monaco-workbench .server-explorer-viewlet .server-group {
+	line-height: 20px;
+}
+
+.hc-black .monaco-workbench .server-explorer-viewlet .explorer-item .monaco-inputbox > .wrapper > .input:focus {
+	outline-offset: -2px !important;
+	outline: 1px solid #f38518 !important;
+	padding-left: 2px; /* push text by the width of the outline offset to prevent overlaying */
+}
+
+.hc-black .monaco-workbench .server-explorer-viewlet .explorer-item .monaco-inputbox.synthetic-focus {
+	outline: none !important;
+	border: none;
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .editor-group:before {
+	content: ' ';
+	position: absolute;
+	display: block;
+	background: url('databaseEngine.svg') 50% 50% no-repeat;
+	width: 36px;
+	height: 60%;
+	top: 0;
+	left: -30px;
+}
+
+/*.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .server-group > .name:before {
+	content: ' ';
+	position: absolute;
+	display: block;
+	background: url('databaseEngine.svg') 50% 50% no-repeat;
+	width: 36px;
+	height: 100%;
+	top: 0;
+	left: 30px;
+}
+*/
+
+.server-explorer-viewlet .monaco-tree-row.expanded .server-group::before {
+    content: ' ';
+    background-image: url(folder-outline.svg);
+	flex-shrink: 0;
+    background-size: 16px;
+    background-position: left center;
+    background-repeat: no-repeat;
+    padding-right: 6px;
+    width: 16px;
+    height: 22px;
+    display: inline-block;
+    -webkit-font-smoothing: antialiased;
+    vertical-align: middle;
+}
+
+.server-explorer-viewlet .monaco-tree-row .server-group::before {
+    content: ' ';
+    background-image: url(folder.svg);
+	flex-shrink: 0;
+    background-size: 16px;
+    background-position: left center;
+    background-repeat: no-repeat;
+    padding-right: 6px;
+    width: 16px;
+    height: 22px;
+    display: inline-block;
+    -webkit-font-smoothing: antialiased;
+    vertical-align: middle;
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row.expanded > .content:before {
+	background-image: url('expanded.svg');
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row.has-children.loading > .content:before {
+	background-image: url('loading.svg');
+}
+
+
+.monaco-workbench > .activitybar .monaco-action-bar .action-label.serverTree {
+	background: url('icon.png') center center no-repeat;
+}
+
+/* Global action */
+
+.monaco-workbench > .activitybar .monaco-action-bar .action-label.serverTree {
+	background-size: 22px;
+	background-repeat: no-repeat;
+	background-position: 50% !important;
+}
+
+.server-explorer-viewlet .editor-group .description,
+.server-explorer-viewlet .server-group .description {
+	font-size: 11px;
+	font-style: italic;
+}
+.server-explorer-viewlet .footer > .author {
+	opacity: 0.5;
+	font-size: 11px
+}
+
+.server-explorer-viewlet .ellipsis {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* Add space beneath the button */
+
+.new-connection .monaco-text-button {
+margin-bottom: 2px;
+}

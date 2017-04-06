@@ -1,0 +1,41 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.monaco-workbench .add-server-action {
+	background-image: url('new.svg');
+}
+
+.vs-dark .monaco-workbench .add-server-action,
+.hc-black .monaco-workbench .add-server-action {
+	background-image: url('new-inverse.svg');
+}
+
+
+/* Temporarily uses same icon for recent and active connections */
+.monaco-workbench .active-connections-action,
+.vs-dark .monaco-workbench .active-connections-action,
+.hc-black .monaco-workbench .active-connections-action{
+	background-image: url('status-added.svg');
+}
+.monaco-workbench .recent-connections-action,
+.vs-dark .monaco-workbench .recent-connections-action,
+.hc-black .monaco-workbench .recent-connections-action {
+	background-image: url('status-renamed.svg');
+}
+
+/* toggle icon */
+.monaco-workbench .active-connections-action-set,
+.vs-dark .monaco-workbench .active-connections-action-set,
+.hc-black .monaco-workbench .recent-connections-action {
+	background-image: url('status-added.svg');
+	opacity: 0.5;
+}
+
+.monaco-workbench .recent-connections-action-set,
+.vs-dark .monaco-workbench .recent-connections-action-set,
+.hc-black .monaco-workbench .recent-connections-action-set {
+	background-image: url('status-renamed.svg');
+	opacity: 0.5;
+}

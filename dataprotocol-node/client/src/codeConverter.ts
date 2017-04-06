@@ -5,6 +5,7 @@
 'use strict';
 
 import * as code from 'vscode';
+import * as data from 'data';
 import * as ls from 'dataprotocol-languageserver-types';
 import * as proto from './protocol';
 import * as is from './utils/is';
@@ -61,7 +62,17 @@ export interface Converter {
 
 	asDocumentLinkParams(textDocument: code.TextDocument): proto.DocumentLinkParams;
 
-	asConnectionParams(connectionUri: string, connectionInfo: code.ConnectionInfo) : proto.ConnectParams;
+	asConnectionParams(connectionUri: string, connectionInfo: data.ConnectionInfo) : proto.ConnectParams;
+
+	asCapabilitiesParams(client: data.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams;
+
+	asMetadataQueryParams(connectionUri: string) : ls.MetadataQueryParams;
+
+	asListDatabasesParams(connectionUri: string) : proto.ListDatabasesParams;
+
+	asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata) : proto.TableMetadataParams;
+
+	asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata) : ls.ScriptingScriptAsParams;
 }
 
 export interface URIConverter {
@@ -304,37 +315,48 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
-	function asConnectionParams(connUri: string, connInfo: code.ConnectionInfo) : proto.ConnectParams {
+	function asCapabilitiesParams(client: data.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams {
+		let params:  proto.CapabiltiesDiscoveryParams = {
+			hostName: client.hostName,
+			hostVersion: client.hostVersion
+		};
+		return params;
+	}
+
+	function asConnectionParams(connUri: string, connInfo: data.ConnectionInfo) : proto.ConnectParams {
 		return {
 			ownerUri: connUri,
 			connection: {
-					serverName: connInfo.serverName,
-					databaseName: connInfo.databaseName,
-					userName: connInfo.userName,
-					password: connInfo.password,
-					authenticationType: 'SqlLogin',
-					encrypt: false,
-					trustServerCertificate: true,
-					persistSecurityInfo: true,
-					connectTimeout: 30,
-					connectRetryCount: 1,
-					connectRetryInterval: 10,
-					applicationName: 'carbon',
-					workstationId: undefined,
-					applicationIntent: undefined,
-					currentLanguage: undefined,
-					pooling: undefined,
-					maxPoolSize: undefined,
-					minPoolSize: undefined,
-					loadBalanceTimeout: undefined,
-					replication: undefined,
-					attachDbFilename: undefined,
-					failoverPartner: undefined,
-					multiSubnetFailover: false,
-					multipleActiveResultSets: false,
-					packetSize: undefined,
-					typeSystemVersion: undefined
+				options: connInfo.options
 			}
+		};
+	}
+
+	function asMetadataQueryParams(connectionUri: string): ls.MetadataQueryParams {
+		return <ls.MetadataQueryParams> {
+			ownerUri: connectionUri
+		};
+	}
+
+	function asListDatabasesParams(connectionUri: string) : proto.ListDatabasesParams {
+		return <proto.ListDatabasesParams> {
+			ownerUri: connectionUri
+		};
+	}
+
+	function asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata) : proto.TableMetadataParams {
+		return <proto.TableMetadataParams> {
+			ownerUri: connectionUri,
+			schema: metadata.schema,
+			objectName: metadata.name
+		};
+	}
+
+	function asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata) : ls.ScriptingScriptAsParams {
+		return <ls.ScriptingScriptAsParams> {
+			ownerUri: connectionUri,
+			operation: operation,
+			metadata: metadata
 		};
 	}
 
@@ -363,7 +385,12 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asCodeLensParams,
 		asDocumentLink,
 		asDocumentLinkParams,
-		asConnectionParams
+		asCapabilitiesParams,
+		asConnectionParams,
+		asMetadataQueryParams,
+		asTableMetadataParams,
+		asListDatabasesParams,
+		asScriptingScriptAsParams
 	};
 }
 
