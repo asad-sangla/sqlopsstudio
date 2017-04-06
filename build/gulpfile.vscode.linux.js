@@ -184,7 +184,7 @@ function getFlatpakArch(arch) {
 }
 
 function prepareFlatpak(arch) {
-	const binaryDir = '../VSCode-linux-' + arch;
+	const binaryDir = '../carbon-linux-' + arch;
 	const flatpakArch = getFlatpakArch(arch);
 	const destination = '.build/linux/flatpak/' + flatpakArch;
 
