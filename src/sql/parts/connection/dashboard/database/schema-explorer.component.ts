@@ -80,10 +80,31 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 		this.objectMetadata = [];
 	}
 
+	// custom sort : Table > View > Stored Procedures
+	private schemaSort(metadataWrapper1, metadataWrapper2): number {
+		var metadata1 = metadataWrapper1.metadata;
+		var metadata2 = metadataWrapper2.metadata;
+		if (metadata1.metadataType === MetadataType.Table) {
+			return -1;
+		}
+		else if (metadata1.metadataType === MetadataType.SProc) {
+			return 1;
+		}
+		else if (metadata1.metadataType === MetadataType.View) {
+			if (metadata2.metadataType === MetadataType.Table) {
+				return 1;
+			} else if (metadata2.metadataType === MetadataType.SProc) {
+				return -1;
+			}
+		}
+		return -1;
+	}
+
 	public stateInitialized(): void {
 		const self = this;
 		this.metadataService.getMetadata('1', this.ownerUri).then(result => {
 			self.objectMetadata = ObjectMetadataWrapper.createFromObjectMetadata(result.objectMetadata);
+			self.objectMetadata.sort(this.schemaSort);
 			self.changeDetectorRef.detectChanges();
 		});
 	}
