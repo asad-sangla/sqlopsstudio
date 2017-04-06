@@ -14,6 +14,7 @@ import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 import data = require('data');
 
@@ -58,7 +59,7 @@ export class ObjectMetadataWrapper {
 export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 
 	@AngularCore.Input() public loading: boolean;
-	@AngularCore.Input() public connection: IConnectionProfile;
+	@AngularCore.Input() public connection: ConnectionManagementInfo;
 	@AngularCore.Input() public metadataService: IMetadataService;
 	@AngularCore.Input() public scriptingService: IScriptingService;
 	@AngularCore.Input() public queryEditorService: IQueryEditorService;
@@ -154,7 +155,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 							showDashboard: false,
 							showConnectionDialogOnError: true
 						};
-						this.connectionService.connect(this.connection, owner.uri, options);
+						this.connectionService.connect(this.connection.connectionProfile, owner.uri, options);
 					});
 				}
 			});
@@ -175,7 +176,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 					showConnectionDialogOnError: true
 				};
 
-				this.connectionService.connect(this.connection, owner.uri, options);
+				this.connectionService.connect(this.connection.connectionProfile, owner.uri, options);
 			});
 		}
 	}

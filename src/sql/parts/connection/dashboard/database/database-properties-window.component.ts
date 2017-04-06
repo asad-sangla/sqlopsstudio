@@ -5,7 +5,7 @@
 
 import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
 import { OnInit } from '@angular/core';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { DatabaseProperties } from 'sql/parts/connection/dashboard/database/database-properties';
 
 declare let AngularCore;
@@ -19,7 +19,7 @@ declare let AngularCore;
 
 export class DatabasePropertiesWindowComponent implements OnInit {
 
-  @AngularCore.Input() public connection: IConnectionProfile;
+  @AngularCore.Input() public connection: ConnectionManagementInfo;
 
   properties: DatabaseProperties[];
 

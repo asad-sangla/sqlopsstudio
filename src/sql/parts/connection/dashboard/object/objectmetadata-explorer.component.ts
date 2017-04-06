@@ -6,7 +6,7 @@
 import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
 import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
@@ -25,7 +25,7 @@ declare let AngularCore;
 })
 export class ObjectMetadataExplorerComponent implements OnInit, IDashboardComponent {
 
-	@AngularCore.Input() public connection: IConnectionProfile;
+	@AngularCore.Input() public connection: ConnectionManagementInfo;
 	@AngularCore.Input() public metadataService: IMetadataService;
 	@AngularCore.Input() public scriptingService: IScriptingService;
 	@AngularCore.Input() public queryEditorService: IQueryEditorService;
