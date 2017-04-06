@@ -6,7 +6,6 @@
 import { ModuleWithProviders} from '@angular/core';
 import { Routes } from '@angular/router';
 import { AppComponent } from './dashboard.component';
-import { ConnectionProfileComponent } from './database/connection-profile.component';
 import { SchemaExplorerComponent } from './database/schema-explorer.component';
 import { DatabaseExplorerComponent } from './server/database-explorer.component';
 import { ObjectMetadataExplorerComponent } from './object/objectmetadata-explorer.component';
@@ -15,10 +14,7 @@ import { ServerDashboardComponent } from './server/server-dashboard.component';
 import { ObjectDashboardComponent } from './object/object-dashboard.component';
 import { ServerCommandWindowComponent } from './server/server-command-window.component';
 import { ServerPropertiesWindowComponent } from './server/server-properties-window.component';
-import { DatabaseCommandWindowComponent } from './database/database-command-window.component';
 import { DatabasePropertiesWindowComponent } from './database/database-properties-window.component';
-
-
 
 declare let AngularPlatformBrowser;
 declare let AngularCommon;
@@ -42,13 +38,11 @@ const appRoutes: Routes = [
 @AngularCore.NgModule({
   declarations: [
     AppComponent,
-    ConnectionProfileComponent,
     SchemaExplorerComponent,
     ServerDashboardComponent,
     ServerCommandWindowComponent,
     ServerPropertiesWindowComponent,
     DatabaseDashboardComponent,
-    DatabaseCommandWindowComponent,
     DatabasePropertiesWindowComponent,
     DatabaseExplorerComponent,
     ObjectMetadataExplorerComponent,
@@ -59,7 +53,6 @@ const appRoutes: Routes = [
     PrimeNg.ButtonModule,
     PrimeNg.DataTableModule,
     PrimeNg.SharedModule,
-    PrimeNg.ButtonModule,
     PrimeNg.DropdownModule,
     PrimeNg.MessagesModule,
     PrimeNg.DataListModule,

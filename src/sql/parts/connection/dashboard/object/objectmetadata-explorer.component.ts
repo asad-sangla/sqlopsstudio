@@ -25,7 +25,7 @@ declare let AngularCore;
 })
 export class ObjectMetadataExplorerComponent implements OnInit, IDashboardComponent {
 
-	@AngularCore.Input() public connection: ConnectionManagementInfo;
+	@AngularCore.Input() public connection: ConnectionManagementInfo;;
 	@AngularCore.Input() public metadataService: IMetadataService;
 	@AngularCore.Input() public scriptingService: IScriptingService;
 	@AngularCore.Input() public queryEditorService: IQueryEditorService;

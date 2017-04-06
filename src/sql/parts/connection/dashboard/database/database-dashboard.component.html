@@ -11,14 +11,24 @@
 	</div>
 
 	<div style="order: 2; margin: 5px">
-		<database-properties-window></database-properties-window>
+		<database-properties-window [connection]='connection'></database-properties-window>
 	</div>
 
 	<div id="database-command-window" style="order: 3; margin: 5px; flex: 1;">
-		<database-command-window></database-command-window>
+		<div id="command-window">
+			<div id="command-header">
+			Tasks
+			</div>
+			<div id="command-tasks">
+				<a href="#" (click)="newQuery()" class = "task-button">New Query</a><br />
+				<!-- use different style since these are mock links -->
+				<a class = "task-button" style="font-style: italic">Backup</a><br />
+				<a class = "task-button" style="font-style: italic">Restore</a><br />
+				<a class = "task-button" style="font-style: italic">Edit Properties</a><br />
+			</div>
+		</div>
 	</div>
 </div>
-
 
 <schema-explorer #schemaExplorer
 	[loading]="loading"

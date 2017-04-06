@@ -8,7 +8,6 @@ import 'vs/css!sql/media/primeng';
 
 import { ChangeDetectorRef } from '@angular/core';
 import { IDashboardPage } from 'sql/parts/connection/dashboard/common/dashboard';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';

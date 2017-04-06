@@ -121,13 +121,11 @@ export class AppComponent {
 				this.currentObjectMetadata = component.schemaExplorer.selectedObject.metadata;
 			}
 		}
-
 	}
 
 	public onActivateServerPage(component: ServerDashboardComponent) {
 		this.breadCrumbItems = [];
 		this.breadCrumbItems.push({ label: component.connection.connectionProfile.serverName, routerLink: ['/server-dashboard'] });
-		this.breadCrumbItems.push({ label: component.connection.connectionProfile.databaseName, routerLink: ['/database-dashboard'] });
 	}
 
 	public onActivateDatabasePage(component: DatabaseDashboardComponent) {
