@@ -46,7 +46,7 @@ function getDebPackageArch(arch) {
 }
 
 function prepareDebPackage(arch) {
-	const binaryDir = '../VSCode-linux-' + arch;
+	const binaryDir = '../carbon-linux-' + arch;
 	const debArch = getDebPackageArch(arch);
 	const destination = '.build/linux/deb/' + debArch + '/' + product.applicationName + '-' + debArch;
 
