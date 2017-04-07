@@ -42,6 +42,7 @@
 	padding: 4px;
 	border: 1px solid transparent;
 	-webkit-appearance: textfield;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "HelveticaNeue-Light", "Ubuntu", "Droid Sans", sans-serif, "FontAwesome" !important;
 }
 
 .dashboard-button {
