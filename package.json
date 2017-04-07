@@ -6,7 +6,7 @@
   "author": {
     "name": "Microsoft Corporation"
   },
-  "main": "./out/main",
+  "main": "./out/main.js",
   "private": true,
   "scripts": {
     "test": "mocha",
