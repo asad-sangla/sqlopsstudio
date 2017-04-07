@@ -196,13 +196,20 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
 		isChangeConnectionAction: boolean,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
-		let enabledClass: string = ConnectDatabaseAction.EnabledDefaultClass;
+		let label: string;
+		let enabledClass: string;
+
 		if (isChangeConnectionAction) {
 			enabledClass = ConnectDatabaseAction.EnabledChangeClass;
+			label = nls.localize('changeConnectionDatabaseLabel', 'Change Connection');
+		} else {
+			enabledClass = ConnectDatabaseAction.EnabledDefaultClass;
+			label = nls.localize('connectDatabaseLabel', 'Connect');
 		}
 
 		super(connectionManagementService, editor, ConnectDatabaseAction.ID, enabledClass);
-		this.label = nls.localize('connectDatabaseLabel', 'Connect');
+
+		this.label = label;
 	}
 
 	public run(): TPromise<void> {
