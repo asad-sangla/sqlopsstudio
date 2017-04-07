@@ -5,7 +5,7 @@
 
 'use strict';
 
-import 'vs/css!./media/extensionsViewlet';
+import 'vs/css!./media/connectionViewlet';
 import { localize } from 'vs/nls';
 import { ThrottledDelayer } from 'vs/base/common/async';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -83,7 +83,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	public create(parent: Builder): TPromise<void> {
 		super.create(parent);
-		parent.addClass('extensions-viewlet');
 		this.root = parent.getHTMLElement();
 		this.viewletContainer = parent.div().addClass('server-explorer-viewlet');
 		if (!this.hasRegisteredServers()) {
@@ -124,7 +123,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	layout({ height, width }: Dimension): void {
 		this.splitView.layout(height);
-		toggleClass(this.root, 'narrow', width <= 300);
+		toggleClass(this.root, 'narrow', width <= 350);
 	}
 
 	getOptimalWidth(): number {

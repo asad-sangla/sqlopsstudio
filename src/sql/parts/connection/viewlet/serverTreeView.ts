@@ -72,7 +72,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		this.messages.hide();
 
 		this.treeContainer = super.renderViewTree(container);
-		dom.addClass(this.treeContainer, 'explorer-servers');
+		dom.addClass(this.treeContainer, 'servers-view');
 
 		this.tree = TreeCreationUtils.createRegisteredServersTree(this.treeContainer, this.instantiationService);
 		this.toDispose.push(this.tree.addListener2('selection', (event) => this.onSelected(event)));

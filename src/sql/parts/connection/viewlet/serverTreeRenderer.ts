@@ -19,7 +19,7 @@ import { ChangeConnectionAction, NewQueryAction } from 'sql/parts/connection/vie
  */
 export class ServerTreeRenderer implements IRenderer {
 
-	public static CONNECTION_HEIGHT = 62;
+	public static CONNECTION_HEIGHT = 38;
 	public static CONNECTION_GROUP_HEIGHT = 32;
 	private static CONNECTION_TEMPLATE_ID = 'connectionProfile';
 	private static CONNECTION_GROUP_TEMPLATE_ID = 'connectionProfileGroup';
@@ -60,9 +60,9 @@ export class ServerTreeRenderer implements IRenderer {
 	public renderTemplate(tree: ITree, templateId: string, container: HTMLElement): any {
 
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
-			const root = append(container, $('.editor-group'));
-			const serverName = append(root, $('span.name'));
-			const databaseName = append(root, $('div.author.ellipsis'));
+			const root = append(container, $('.connection-tile'));
+			const serverName = append(root, $('div.name'));
+			const databaseName = append(root, $('div.info'));
 			if (!this._isCompact) {
 				const actionOptions = { icon: true, label: true };
 				const actionbar = new ActionBar(root, {

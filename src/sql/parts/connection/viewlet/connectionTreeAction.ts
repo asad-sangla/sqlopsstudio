@@ -95,13 +95,12 @@ export class ChangeConnectionAction extends Action {
 			let originalBackground: string;
 			this.enabled = false;
 			if (this.parentContainer) {
-				originalBackground = this.parentContainer.style.background;
-				this.parentContainer.style.background = '#afafaf';
+				this.parentContainer.classList.add('connecting');
 			}
 
 			this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
 				if (this.parentContainer) {
-					this.parentContainer.style.background = originalBackground;
+					this.parentContainer.classList.remove('connecting');
 				}
 
 				if (connectionResult && connectionResult.connected) {
