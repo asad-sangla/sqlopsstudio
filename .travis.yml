@@ -40,7 +40,6 @@ install:
   - ./scripts/npm.sh install
 
 script:
-  - gulp hygiene --silent
   - gulp electron --silent
   - gulp compile --silent
   - gulp optimize-vscode --silent
