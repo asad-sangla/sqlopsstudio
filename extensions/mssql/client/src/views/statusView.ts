@@ -1,7 +1,4 @@
 import vscode = require('vscode');
-import Constants = require('../models/constants');
-import * as ConnectionContracts from '../models/contracts/connection';
-import Interfaces = require('../models/interfaces');
 import * as Utils from '../models/utils';
 
 // Status bar element for each file in the editor
@@ -85,39 +82,6 @@ export default class StatusView implements vscode.Disposable {
         return bar;
     }
 
-    public show(fileUri: string): void {
-    }
-
-    public notConnected(fileUri: string): void {
-    }
-
-    public connecting(fileUri: string, connCreds: Interfaces.IConnectionCredentials): void {
-    }
-
-    public connectSuccess(fileUri: string, connCreds: Interfaces.IConnectionCredentials, serverInfo: ConnectionContracts.ServerInfo): void {
-    }
-
-    public connectError(fileUri: string, credentials: Interfaces.IConnectionCredentials, error: ConnectionContracts.ConnectionCompleteParams): void {
-    }
-
-    public executingQuery(fileUri: string): void {
-    }
-
-    public executedQuery(fileUri: string): void {
-        let bar = this.getStatusBar(fileUri);
-        bar.statusQuery.hide();
-    }
-
-    public cancelingQuery(fileUri: string): void {
-        let bar = this.getStatusBar(fileUri);
-        bar.statusQuery.hide();
-
-        bar.statusQuery.command = undefined;
-        bar.statusQuery.tooltip = Constants.cancelingQueryLabel;
-        this.showStatusBarItem(fileUri, bar.statusQuery);
-        this.showProgress(fileUri, Constants.cancelingQueryLabel, bar.statusQuery);
-    }
-
     public languageServiceStatusChanged(fileUri: string, status: string): void {
         let bar = this.getStatusBar(fileUri);
         bar.currentLanguageServiceStatus = status;
@@ -132,25 +96,6 @@ export default class StatusView implements vscode.Disposable {
         newStatus: string,
         getCurrentStatus: () => string,
         updateMessage:  (message: string) => void): void {
-    }
-
-    /**
-     * Associate a new uri with an existing Uri's status bar
-     *
-     * @param existingUri The already existing URI's status bar you want to associated
-     * @param newUri The new URI you want to associate with the existing status bar
-     * @return True or False whether the association was able to be made. False indicated the exitingUri specified
-     * did not exist
-     */
-
-    public associateWithExisting(existingUri: string, newUri: string): boolean {
-        let bar = this.getStatusBar(existingUri);
-        if (bar) {
-            this._statusBars[newUri] = bar;
-            return true;
-        } else {
-            return false;
-        }
     }
 
     private hideLastShownStatusBar(): void {
@@ -193,8 +138,5 @@ export default class StatusView implements vscode.Disposable {
         } else {
             statusBarItem.hide();
         }
-    }
-
-    private showProgress(fileUri: string, statusText: string, statusBarItem: vscode.StatusBarItem): void {
     }
 }

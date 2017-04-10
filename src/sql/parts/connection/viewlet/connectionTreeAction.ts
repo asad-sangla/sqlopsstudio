@@ -15,8 +15,6 @@ import { ServerTreeView } from 'sql/parts/connection/viewlet/serverTreeView';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
-import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
-import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 
 export class ChangeConnectionAction extends Action {
@@ -90,9 +88,6 @@ export class ChangeConnectionAction extends Action {
 				showConnectionDialogOnError: true
 			};
 
-			// change the tile background color while connection in progress
-			// we'll need to improve this UX later, but this is better than no visibile busy indicator
-			let originalBackground: string;
 			this.enabled = false;
 			if (this.parentContainer) {
 				this.parentContainer.classList.add('connecting');
