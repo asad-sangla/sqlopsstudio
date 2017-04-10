@@ -3,12 +3,11 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
+import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
 
 import { ChangeDetectorRef, OnInit } from '@angular/core';
-import { IDashboardComponent } from 'sql/parts/connection/dashboard/common/dashboard';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { IDashboardComponent } from 'sql/parts/dashboard/common/dashboard';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
@@ -21,8 +20,8 @@ declare let AngularCore;
  */
 @AngularCore.Component({
 	selector: 'database-explorer',
-	templateUrl: require.toUrl('sql/parts/connection/dashboard/server/database-explorer.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
+	templateUrl: require.toUrl('sql/parts/dashboard/server/database-explorer.component.html'),
+	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 
@@ -36,7 +35,7 @@ export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 
 	public selectedObject: string;
 
-	public databaseIcon: string = require.toUrl('sql/parts/connection/dashboard/media/database.svg');
+	public databaseIcon: string = require.toUrl('sql/parts/dashboard/media/database.svg');
 
 	constructor(
 		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef

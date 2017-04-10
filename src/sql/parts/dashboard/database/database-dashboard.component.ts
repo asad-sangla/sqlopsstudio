@@ -3,11 +3,11 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/connection/dashboard/media/dashboard';
+import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
 
 import { ChangeDetectorRef } from '@angular/core';
-import { IDashboardPage } from 'sql/parts/connection/dashboard/common/dashboard';
+import { IDashboardPage } from 'sql/parts/dashboard/common/dashboard';
 import { IConnectionManagementService, IConnectionCompletionOptions, IConnectableInput, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
@@ -20,8 +20,8 @@ declare let AngularCore;
 
 @AngularCore.Component({
 	selector: 'app-database-dashboard',
-	templateUrl: require.toUrl('sql/parts/connection/dashboard/database/database-dashboard.component.html'),
-	styleUrls: [require.toUrl('sql/parts/connection/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
+	templateUrl: require.toUrl('sql/parts/dashboard/database/database-dashboard.component.html'),
+	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class DatabaseDashboardComponent implements IDashboardPage {
 
@@ -32,7 +32,7 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 	public scriptingService: IScriptingService;
 	public queryEditorService: IQueryEditorService;
 	public loading: boolean = false;
-    public serverPageImage: string = require.toUrl('sql/parts/connection/dashboard/media/server-page.svg');
+    public serverPageImage: string = require.toUrl('sql/parts/dashboard/media/server-page.svg');
 
 	@AngularCore.ViewChild('schemaExplorer') schemaExplorer: SchemaExplorerComponent;
 

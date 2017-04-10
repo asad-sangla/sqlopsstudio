@@ -25,8 +25,8 @@ import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { Registry } from 'vs/platform/platform';
 
 import { VIEWLET_ID } from 'sql/parts/connection/common/connectionManagement';
-import { DashboardEditor } from 'sql/parts/connection/dashboard/dashboardEditor';
-import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
+import { DashboardEditor } from 'sql/parts/dashboard/dashboardEditor';
+import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
 
 // Singletons
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService);
@@ -98,7 +98,7 @@ configurationRegistry.registerConfiguration({
 const dashboardEditorDescriptor = new EditorDescriptor(
 	DashboardEditor.ID,
 	'Dashboard',
-	'sql/parts/connection/dashboard/dashboardEditor',
+	'sql/parts/dashboard/dashboardEditor',
 	'DashboardEditor'
 );
 

@@ -37,11 +37,9 @@ import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory
 import Event, { Emitter } from 'vs/base/common/event';
 import { ISplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
-import { DashboardInput } from 'sql/parts/connection/dashboard/dashboardInput';
+import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
 import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
-import { DashboardEditor } from 'sql/parts/connection/dashboard/dashboardEditor';
-import URI from 'vs/base/common/uri';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
