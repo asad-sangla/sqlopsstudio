@@ -7,7 +7,7 @@
 import * as Constants from './constants';
 import * as Utils from './utils';
 import { IConnectionProfile, IConnectionProfileStore } from './interfaces';
-import { IConnectionConfig } from './iconnectionconfig';
+import { IConnectionConfig } from './iconnectionConfig';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService, ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService, IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';

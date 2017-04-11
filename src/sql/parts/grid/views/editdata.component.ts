@@ -10,9 +10,9 @@ import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
 import { ElementRef, QueryList, ChangeDetectorRef, OnInit } from '@angular/core';
-import { IGridDataRow, ISlickRange, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
+import { IGridDataRow, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
 import * as Constants from 'sql/parts/connection/common/constants';
-import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/common/interfaces';
+import { IMessage, IRange, IGridDataSet  } from 'sql/parts/grid/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import * as Services from 'sql/parts/grid/services/sharedServices';
@@ -20,10 +20,9 @@ import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
 import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 
-
 declare let AngularCore;
 declare let rangy;
-declare let jQuery
+declare let jQuery;
 
 AngularCore.enableProdMode();
 

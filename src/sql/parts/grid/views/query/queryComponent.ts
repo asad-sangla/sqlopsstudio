@@ -10,13 +10,13 @@ import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
 import * as Utils from 'sql/parts/connection/common/utils';
-import * as Constants from 'sql/parts/connection/common/constants';
+import * as Constants from 'sql/parts/query/common/constants';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 
 import { ElementRef, QueryList, ChangeDetectorRef, OnInit } from '@angular/core';
 import { IGridDataRow, ISlickRange, SlickGrid, VirtualizedCollection, FieldType } from 'angular2-slickgrid';
-import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/connection/common/interfaces';
+import { IGridIcon, IMessage, IRange, IGridDataSet  } from 'sql/parts/grid/common/interfaces';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/parts/bootstrap/bootstrapParams';

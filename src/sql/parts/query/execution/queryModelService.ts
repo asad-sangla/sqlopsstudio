@@ -7,7 +7,7 @@
 
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import nls = require('vs/nls');
-import Constants = require('sql/parts/connection/common/constants');
+import Constants = require('sql/parts/query/common/constants');
 import Utils = require('sql/parts/connection/common/utils');
 
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
@@ -16,7 +16,6 @@ import { ISlickRange } from 'angular2-slickgrid';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
-import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ISelectionData, ResultSetSubset, EditSubsetResult,
 		EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult } from 'data';

@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import Constants = require('sql/parts/connection/common/constants');
+import ConnectionConstants = require('sql/parts/connection/common/constants');
+import Constants = require('sql/parts/query/common/constants');
 import * as Utils from 'sql/parts/connection/common/utils';
 import Prompt from 'sql/parts/common/prompts/adapter';
 import { QuestionTypes, IQuestion, IPrompter } from 'sql/parts/common/prompts/question';
@@ -71,12 +72,12 @@ export class ResultSerializer {
 
 	private ensureOutputChannelExists(): void {
 		Registry.as<IOutputChannelRegistry>(OutputExtensions.OutputChannels)
-			.registerChannel(Constants.outputChannelName, Constants.outputChannelName);
+			.registerChannel(ConnectionConstants.outputChannelName, ConnectionConstants.outputChannelName);
 	}
 
 	private get outputChannel(): IOutputChannel {
 		this.ensureOutputChannelExists();
-		return this._outputService.getChannel(Constants.outputChannelName);
+		return this._outputService.getChannel(ConnectionConstants.outputChannelName);
 	}
 
 	private get rootPath(): string {
@@ -146,7 +147,7 @@ export class ResultSerializer {
 
     private getConfigForCsv(): SaveResultsRequestParams {
         // get save results config from vscode config
-		let config = this._workspaceConfigurationService.getConfiguration(Constants.extensionConfigSectionName);
+		let config = this._workspaceConfigurationService.getConfiguration(ConnectionConstants.extensionConfigSectionName);
         let saveConfig = config[Constants.configSaveAsCsv];
         let saveResultsParams = <SaveResultsRequestParams> { resultFormat: 'csv' };
 
@@ -206,7 +207,7 @@ export class ResultSerializer {
 
     private validateFilePath(property: string, value: string): string {
         if (Utils.isEmpty(value.trim())) {
-            return property + Constants.msgIsRequired;
+            return property + ConnectionConstants.msgIsRequired;
         }
         return undefined;
     }
