@@ -59,7 +59,7 @@ const viewletDescriptor = new ViewletDescriptor(
 	VIEWLET_ID,
 	'Servers',
 	'extensions',
-	0
+	-100
 );
 
 Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).registerViewlet(viewletDescriptor);
