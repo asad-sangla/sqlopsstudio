@@ -7,6 +7,7 @@
 
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { NodeType } from 'sql/parts/objectExplorer/common/nodeType';
+import data = require('data');
 
 export class TreeNode {
 
@@ -48,6 +49,8 @@ export class TreeNode {
 
 
     public connection: ConnectionProfile;
+
+    public metadata: data.ObjectMetadata;
 
     public getConnectionProfile(): ConnectionProfile {
         var currentNode:TreeNode = this;

@@ -433,6 +433,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return undefined;
 	}
 
+	public getConnectionId(connectionProfile: ConnectionProfile): string {
+		return this._connectionFactory.getConnectionManagementId(connectionProfile);
+	}
+
 	// Request Senders
 	// TODO: Request Handlers Mapping to prevent sending request to all providers
 	private sendConnectRequest(connection: data.ConnectionInfo, uri: string): Thenable<boolean> {

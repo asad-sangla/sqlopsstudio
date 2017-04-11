@@ -21,16 +21,31 @@ export class ObjectExplorerService {
 		var viewFolder = new TreeNode(NodeType.Folder, 'Views', false, database1.nodePath + '\\Views', database1);
 		database1.children = [tableFolder, viewFolder];
 
-		tableFolder.children = [
-			new TreeNode(NodeType.Table, 'Table1', true, tableFolder.nodePath + '\\Table1', tableFolder),
-			new TreeNode(NodeType.Table, 'Table2', true, tableFolder.nodePath + '\\Table2', tableFolder)
-		];
+		var table1 = new TreeNode(NodeType.Table, 'dbo.CaseInsensitive', true, tableFolder.nodePath + '\\dbo.CaseInsensitive', tableFolder);
+		table1.metadata = {
+			metadataType: 0,
+			metadataTypeName: 'Table',
+			name: 'CaseInsensitive',
+			schema: 'dbo'
+		};
+		var table2 = new TreeNode(NodeType.Table, 'dbo.Shippers2', true, tableFolder.nodePath + '\\dbo.Shippers2', tableFolder);
+		table2.metadata = {
+			metadataType: 0,
+			metadataTypeName: 'Table',
+			name: 'Shippers2',
+			schema: 'dbo'
+		};
 
-		viewFolder.children = [
-			new TreeNode(NodeType.View, 'View1', true, viewFolder.nodePath + '\\View1', viewFolder),
-			new TreeNode(NodeType.View, 'View2', true, viewFolder.nodePath + '\\View2', viewFolder)
-		];
+		tableFolder.children = [table1, table2];
 
+		var view1 = new TreeNode(NodeType.View, 'dbo.Shippers_View', true, viewFolder.nodePath + '\\dbo.Shippers_View', viewFolder);
+		view1.metadata = {
+			metadataType: 1,
+			metadataTypeName: 'View',
+			name: 'Shippers_View',
+			schema: 'dbo'
+		};
+		viewFolder.children = [view1, new TreeNode(NodeType.View, 'View2', true, viewFolder.nodePath + '\\View2', viewFolder)];
 	}
 
 	public static getRootTreeNode(connections: ConnectionProfile[]): TreeNode {

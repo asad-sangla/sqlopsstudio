@@ -3,6 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+@keyframes move-background {
+	to { background-position: 8px 0; }
+}
+
+.monaco-workbench > .activitybar .monaco-action-bar .action-label.objectExplorer {
+	background: url('icon.png') center center no-repeat;
+}
+
+/* Global action */
+
+.monaco-workbench > .activitybar .monaco-action-bar .action-label.objectExplorer {
+	background-size: 22px;
+	background-repeat: no-repeat;
+	background-position: 50% !important;
+}
+
 .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .object-element-group {
 	padding: 5px;
 }

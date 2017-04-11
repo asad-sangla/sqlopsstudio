@@ -8,12 +8,13 @@ import 'vs/css!sql/media/primeng';
 
 import { ChangeDetectorRef } from '@angular/core';
 import { IDashboardPage } from 'sql/parts/dashboard/common/dashboard';
-import { IConnectionManagementService, IConnectionCompletionOptions, IConnectableInput, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { SchemaExplorerComponent } from './schema-explorer.component';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { TaskUtilities } from 'sql/parts/common/taskUtilities';
 import data = require('data');
 
 declare let AngularCore;
@@ -63,16 +64,7 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 	}
 
 	public newQuery(): void {
-		this.queryEditorService.newSqlEditor('').then((owner: IConnectableInput) => {
-			// Connect our editor to the input connection
-			let options: IConnectionCompletionOptions = {
-				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
-				saveToSettings: false,
-				showDashboard: false,
-				showConnectionDialogOnError: true
-			};
-			this.connectionService.connect(this.connection.connectionProfile, owner.uri, options);
-		});
+		TaskUtilities.newQuery(this.connection.connectionProfile, this.connectionService, this.queryEditorService);
 	}
 
 	public onConnectionChanged(): void {

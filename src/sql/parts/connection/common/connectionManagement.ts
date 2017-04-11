@@ -94,6 +94,8 @@ export interface IConnectionManagementService {
 
 	getAdvancedProperties(): data.ConnectionOption[];
 
+	getConnectionId(connectionProfile: ConnectionProfile): string;
+
 	isConnected(fileUri: string): boolean;
 
 	/**

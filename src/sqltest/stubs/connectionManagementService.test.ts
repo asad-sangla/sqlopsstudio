@@ -69,6 +69,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
+	getConnectionId(connectionProfile: ConnectionProfile): string {
+		return undefined;
+	}
+
 	isConnected(fileUri: string, connectionProfile?: ConnectionProfile): boolean {
 		return false;
 	}
