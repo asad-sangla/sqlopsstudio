@@ -7,7 +7,7 @@
 
 
 import * as TypeMoq from 'typemoq';
-import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/common/connectionconfig';
+import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/common/connectionConfig';
 import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';

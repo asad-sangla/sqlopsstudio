@@ -5,7 +5,7 @@
 'use strict';
 
 import * as TypeMoq from 'typemoq';
-import { ConnectionConfig } from 'sql/parts/connection/common/connectionconfig';
+import { ConnectionConfig } from 'sql/parts/connection/common/connectionConfig';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import * as Constants from 'sql/parts/connection/common/constants';
