@@ -18,6 +18,7 @@ import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { ObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { AddServerAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
+import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
 import Severity from 'vs/base/common/severity';
 const $ = builder.$;
 
@@ -89,12 +90,37 @@ export class ObjectExplorerView extends CollapsibleViewletView {
 	 * Set input for the tree.
 	 */
 	private structuralTreeUpdate(): void {
+		let selectedElement: TreeNode;
+		let targetsToExpand: TreeNode[];
+		if (this.tree) {
+			let selection = this.tree.getSelection();
+			if (selection && selection.length === 1) {
+				selectedElement = <TreeNode>selection[0];
+			}
+			targetsToExpand = this.tree.getExpandedElements();
+		}
+
 		let groups;
 		groups = this._connectionManagementService.getActiveConnections();
 		var treeInput = ObjectExplorerService.getRootTreeNode(ObjectExplorerUtils.convertToConnectionProfile(groups));
-		(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
-			this.tree.getFocus();
-		}, errors.onUnexpectedError);
+
+		if (treeInput !== this.tree.getInput()) {
+			this.tree.setInput(treeInput).done(() => {
+				// Make sure to expand all folders that where expanded in the previous session
+				if (targetsToExpand) {
+					this.tree.expandAll(targetsToExpand);
+				}
+				if (selectedElement) {
+					this.tree.select(selectedElement);
+				}
+				this.tree.getFocus();
+			}, errors.onUnexpectedError);
+		} else {
+			this.tree.refresh().done(() => {
+				this.tree.getFocus();
+			}, errors.onUnexpectedError);
+		}
+
 	}
 
 	private onError(err: any): void {
