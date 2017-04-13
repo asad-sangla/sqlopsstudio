@@ -7,10 +7,10 @@ import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
 import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
-import WinJS = require('vs/base/common/winjs.base');
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
 import * as Constants from 'sql/parts/connection/common/constants';
 import * as Utils from 'sql/parts/connection/common/utils';
 
@@ -57,7 +57,16 @@ export class TreeUpdateUtils {
 	/**
 	 * Set input for the tree.
 	 */
-	public static structuralTreeUpdate(tree: ITree, viewKey: string, connectionManagementService: IConnectionManagementService): WinJS.Promise {
+	public static structuralTreeUpdate(tree: ITree, viewKey: string, connectionManagementService: IConnectionManagementService): void {
+		let selectedElement: TreeNode;
+		let targetsToExpand: TreeNode[];
+		if (tree) {
+			let selection = tree.getSelection();
+			if (selection && selection.length === 1) {
+				selectedElement = <TreeNode>selection[0];
+			}
+			targetsToExpand = tree.getExpandedElements();
+		}
 		let groups;
 		if (viewKey === 'recent') {
 			groups = connectionManagementService.getRecentConnections();
@@ -66,19 +75,44 @@ export class TreeUpdateUtils {
 		}
 		const treeInput = new ConnectionProfileGroup('root', null, undefined);
 		treeInput.addConnections(TreeUpdateUtils.convertToConnectionProfile(groups));
-		return tree.setInput(treeInput);
+		tree.setInput(treeInput).done(() => {
+				// Make sure to expand all folders that where expanded in the previous session
+ 				if (targetsToExpand) {
+ 					tree.expandAll(targetsToExpand);
+ 				}
+ 				if (selectedElement) {
+ 					tree.select(selectedElement);
+ 				}
+ 				tree.getFocus();
+		});
 	}
 
 	/**
 	 * Set input for the registered servers tree.
 	 */
 	public static registeredServerUpdate(tree: ITree, connectionManagementService: IConnectionManagementService): void {
+		let selectedElement: TreeNode;
+		let targetsToExpand: TreeNode[];
+		if (tree) {
+			let selection = tree.getSelection();
+			if (selection && selection.length === 1) {
+				selectedElement = <TreeNode>selection[0];
+			}
+			targetsToExpand = tree.getExpandedElements();
+		}
 		let groups = connectionManagementService.getConnectionGroups();
 		if (groups && groups.length > 0) {
 			let treeInput = TreeUpdateUtils.addUnsaved(groups[0], connectionManagementService);
 			treeInput.name = 'root';
 			(treeInput !== tree.getInput() ?
 				tree.setInput(treeInput) : tree.refresh()).done(() => {
+				// Make sure to expand all folders that where expanded in the previous session
+ 				if (targetsToExpand) {
+ 					tree.expandAll(targetsToExpand);
+ 				}
+ 				if (selectedElement) {
+ 					tree.select(selectedElement);
+ 				}
 					tree.getFocus();
 				});
 		}

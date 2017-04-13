@@ -149,11 +149,16 @@ export class ServerTreeView extends CollapsibleViewletView {
 		let filteredResults = this.filterConnections(root, view);
 		if (!filteredResults || !filteredResults[0]) {
 			this.messages.show();
+			this.messages.domFocus();
 		}
 		let treeInput = filteredResults[0];
 		this.tree.setInput(treeInput).done(() => {
-			self.tree.getFocus();
-			self.tree.expandAll();
+			if (this.messages.isHidden()) {
+				self.tree.getFocus();
+				self.tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
+			} else {
+				self.tree.clearFocus();
+			}
 		}, errors.onUnexpectedError);
 	}
 

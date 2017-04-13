@@ -144,4 +144,15 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 
 		return sameGroupName;
 	}
+
+	public static getSubgroups(group: ConnectionProfileGroup): ConnectionProfileGroup[] {
+		let subgroups = [];
+		if (group && group.children) {
+			group.children.forEach((grp) => subgroups.push(grp));
+			group.children.forEach((subgroup) => {
+				subgroups = subgroups.concat(this.getSubgroups(subgroup));
+			});
+		}
+		return subgroups;
+	}
 }

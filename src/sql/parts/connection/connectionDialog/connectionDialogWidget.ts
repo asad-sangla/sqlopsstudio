@@ -146,11 +146,10 @@ export class ConnectionDialogWidget {
 						(event: any) => {
 							this.onRecentConnectionDoubleClick(event, recentConnectionTree);
 						});
-					TreeUpdateUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService).then(() => {
-						// call layout with view height
-						recentConnectionTree.layout(300);
-						divContainer.append(recentConnectionTree.getHTMLElement());
-					});
+					TreeUpdateUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService);
+					// call layout with view height
+					recentConnectionTree.layout(300);
+					divContainer.append(recentConnectionTree.getHTMLElement());
 				});
 			});
 		});
