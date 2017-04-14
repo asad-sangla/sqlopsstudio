@@ -213,6 +213,56 @@ export class ConnectionConfig implements IConnectionConfig {
 		return connectionProfiles;
 	}
 
+	/**
+	 * Delete a connection profile from settings.
+	 */
+	public deleteConnection(profile: ConnectionProfile): Promise<void> {
+		// Get all connections in the settings
+		let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
+		// Remove the profile from the connections
+		profiles = profiles.filter(value => {
+			let providerCapabilities = this.getCapabilities(value.providerName);
+			let providerConnectionProfile = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
+			return providerConnectionProfile.getUniqueId() !== profile.getUniqueId();
+		});
+
+		// Write connections back to settings
+		return this.writeUserConfiguration(Constants.connectionsArrayName, profiles);
+	}
+
+	/**
+	 *  Delete a group and all its child connections and groups from settings.
+	 * 	Fails if writing to settings fails.
+	 */
+	public deleteGroup(group: ConnectionProfileGroup): Promise<void> {
+		let connections = ConnectionProfileGroup.getConnectionsInGroup(group);
+		let subgroups = ConnectionProfileGroup.getSubgroups(group);
+		// Add selected group to subgroups list
+		subgroups.push(group);
+		// Get all connections in the settings
+		let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
+		// Remove the profiles from the connections
+		profiles = profiles.filter(value => {
+			let providerCapabilities = this.getCapabilities(value.providerName);
+			let providerConnectionProfile = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
+			return !connections.some((val) => val.getUniqueId() === providerConnectionProfile.getUniqueId());
+		});
+
+		// Get all groups in the settings
+		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+		// Remove subgroups in the settings
+		groups = groups.filter((grp) => {
+			return !subgroups.some((item) => item.id === grp.id);
+		});
+		return new Promise<void>((resolve,reject) => {
+			this.writeUserConfiguration(Constants.connectionsArrayName, profiles).then(() => {
+				this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
+					resolve();
+				}).catch(() => reject());
+			}).catch(() => reject());
+		});
+	}
+
 	public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
 		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
 		groups = groups.map(g => {

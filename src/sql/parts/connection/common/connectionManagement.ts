@@ -92,6 +92,10 @@ export interface IConnectionManagementService {
 
 	changeGroupIdForConnection(source: ConnectionProfile, targetGroupName: string): Promise<void>;
 
+	deleteConnection(connection: ConnectionProfile): Promise<boolean>;
+
+	deleteConnectionGroup(group: ConnectionProfileGroup): Promise<boolean>;
+
 	getAdvancedProperties(): data.ConnectionOption[];
 
 	getConnectionId(connectionProfile: ConnectionProfile): string;

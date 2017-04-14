@@ -12,7 +12,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
 import { ConnectionProfile } from '../common/connectionProfile';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
-import { AddServerAction, NewQueryAction} from 'sql/parts/connection/viewlet/connectionTreeAction';
+import { AddServerAction, NewQueryAction, DeleteConnectionAction} from 'sql/parts/connection/viewlet/connectionTreeAction';
 
 /**
  *  Provides actions for the server tree elements
@@ -58,7 +58,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		return [
 			instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
-			instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL)
+			instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL),
+			instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL)
 		];
 	}
 
@@ -67,7 +68,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	 */
 	public  getConnectionProfileGroupActions(instantiationService: IInstantiationService): IAction[] {
 		return [
-			instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL)
+			instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
+			instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_GROUP_LABEL)
 		];
 	}
 }

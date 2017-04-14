@@ -266,3 +266,32 @@ export class NewQueryAction extends Action {
 		return TPromise.as(true);
 	}
 }
+
+/**
+ * Actions to delete a server/group
+ */
+export class DeleteConnectionAction extends Action {
+	public static ID = 'registeredServers.deleteConnection';
+	public static DELETE_CONNECTION_LABEL = localize('deleteConnection', "Delete Connection");
+	public static DELETE_CONNECTION_GROUP_LABEL = localize('deleteConnectionGroup', "Delete Group");
+
+	constructor(
+		id: string,
+		label: string,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = 'delete-connection-action';
+	}
+
+	public run(element: any): TPromise<boolean> {
+		// TODO: disable other actions
+		if (element instanceof ConnectionProfile) {
+			this._connectionManagementService.deleteConnection(element);
+		} else if (element instanceof ConnectionProfileGroup) {
+			this._connectionManagementService.deleteConnectionGroup(element);
+		}
+
+		return TPromise.as(true);
+	}
+}

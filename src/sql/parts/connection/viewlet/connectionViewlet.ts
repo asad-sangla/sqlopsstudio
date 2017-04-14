@@ -69,6 +69,10 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		for (let i = 0; root.length; ++i) {
 			let item = root[i];
 
+			if (!item) {
+				return false;
+			}
+
 			if (item.connections && item.connections.length > 0) {
 				return true;
 			}

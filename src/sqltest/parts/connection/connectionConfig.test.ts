@@ -21,6 +21,7 @@ import * as assert from 'assert';
 import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import data = require('data');
 import { Emitter } from 'vs/base/common/event';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 
 suite('SQL ConnectionConfig tests', () => {
 	let capabilitiesService: TypeMoq.Mock<CapabilitiesService>;
@@ -145,7 +146,7 @@ suite('SQL ConnectionConfig tests', () => {
 				authenticationType: ''
 			},
 			providerName: 'MSSQL',
-			groupId: 'test',
+			groupId: 'g3',
 			savePassword: true
 		}
 		],
@@ -551,5 +552,120 @@ suite('SQL ConnectionConfig tests', () => {
 		let newGroup = result.groups.find(g => g.name === 'g2-1');
 		assert.equal(result.newGroupId, newGroup.id, 'The groups id is invalid');
 	});
+
+	test('deleteConnection should remove the connection from config', done => {
+		let getWorkspaceConnections: boolean = false;
+		let newProfile: IConnectionProfile = {
+			serverName: 'server3',
+			databaseName: 'database',
+			userName: 'user',
+			password: 'password',
+			authenticationType: '',
+			savePassword: true,
+			groupFullName: 'g3',
+			groupId: 'g3',
+			getUniqueId: undefined,
+			providerName: 'MSSQL',
+			options: {},
+			saveProfile: true
+		};
+
+		let expectedNumberOfConnections = connections.user.length - 1;
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connections);
+
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.deleteConnection(connectionProfile).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			done();
+		}).catch(error => {
+			assert.fail();
+			done();
+		});
+	});
+
+	test('deleteConnectionGroup should remove the children connections and subgroups from config', done => {
+		let getWorkspaceConnections: boolean = false;
+		let newProfile: IConnectionProfile = {
+			serverName: 'server3',
+			databaseName: 'database',
+			userName: 'user',
+			password: 'password',
+			authenticationType: '',
+			savePassword: true,
+			groupFullName: 'g3',
+			groupId: 'g3',
+			getUniqueId: undefined,
+			providerName: 'MSSQL',
+			options: {},
+			saveProfile: true
+		};
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let connectionProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3');
+		let childGroup = new ConnectionProfileGroup('g3-1', connectionProfileGroup, 'g3-1');
+		connectionProfileGroup.addGroups([childGroup]);
+		connectionProfileGroup.addConnections([connectionProfile]);
+
+		let expectedNumberOfConnections = connections.user.length - 1;
+		let expectedNumberOfGroups = configValueToConcat.user.length - 2;
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connections);
+
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
+			.returns(() => configValueToConcat);
+
+
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.deleteGroup(connectionProfileGroup).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileGroup[]).length === expectedNumberOfGroups)), TypeMoq.Times.once());
+			done();
+		}).catch(error => {
+			assert.fail();
+			done();
+		});
+	});
+
+	test('deleteConnection should not throw error for connection not in config', done => {
+		let getWorkspaceConnections: boolean = false;
+		let newProfile: IConnectionProfile = {
+			serverName: 'server3',
+			databaseName: 'database',
+			userName: 'user',
+			password: 'password',
+			authenticationType: '',
+			savePassword: true,
+			groupFullName: 'g3',
+			groupId: 'newid',
+			getUniqueId: undefined,
+			providerName: 'MSSQL',
+			options: {},
+			saveProfile: true
+		};
+
+		let expectedNumberOfConnections = connections.user.length;
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connections);
+
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.deleteConnection(connectionProfile).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			done();
+		}).catch(error => {
+			assert.fail();
+			done();
+		});
+	});
+
 });
 

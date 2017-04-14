@@ -74,7 +74,7 @@ export class TreeUpdateUtils {
 			groups = connectionManagementService.getActiveConnections();
 		}
 		const treeInput = new ConnectionProfileGroup('root', null, undefined);
-		treeInput.addConnections(TreeUpdateUtils.convertToConnectionProfile(groups));
+		treeInput.addConnections(groups);
 		tree.setInput(treeInput).done(() => {
 				// Make sure to expand all folders that where expanded in the previous session
  				if (targetsToExpand) {
@@ -127,15 +127,4 @@ export class TreeUpdateUtils {
 		return root;
 	}
 
-	/**
-	 * Convert interface to match connection management API
-	 */
-	public static convertToConnectionProfile(conns: ConnectionProfile[]): ConnectionProfile[] {
-		let connections = [];
-
-		conns.forEach((conn) => {
-			connections.push(conn);
-		});
-		return connections;
-	}
 }

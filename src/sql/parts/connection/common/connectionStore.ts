@@ -541,6 +541,14 @@ export class ConnectionStore {
 		return maxConnections;
 	}
 
+	public deleteConnectionFromConfiguration(connection: ConnectionProfile): Promise<void> {
+		return this._connectionConfig.deleteConnection(connection);
+	}
+
+	public deleteGroupFromConfiguration(group: ConnectionProfileGroup): Promise<void> {
+		return this._connectionConfig.deleteGroup(group);
+	}
+
 	public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
 		return this._connectionConfig.changeGroupIdForConnectionGroup(source, target);
 	}

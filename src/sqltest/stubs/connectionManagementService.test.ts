@@ -65,6 +65,14 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return Promise.resolve();
 	}
 
+	deleteConnection(connection: ConnectionProfile): Promise<boolean> {
+		return new Promise(() => true);
+	}
+
+	deleteConnectionGroup(group: ConnectionProfileGroup): Promise<boolean> {
+		return new Promise(() => true);
+	}
+
 	getAdvancedProperties(): data.ConnectionOption[] {
 		return [];
 	}

@@ -115,6 +115,9 @@ export class ServerTreeRenderer implements IRenderer {
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
 		templateData.serverName.textContent = connection.serverName;
 		templateData.databaseName.textContent = connection.databaseName;
+		if (!templateData.databaseName.textContent) {
+			templateData.databaseName.textContent = '<default>';
+		}
 		templateData.connectionProfile = connection;
 	}
 

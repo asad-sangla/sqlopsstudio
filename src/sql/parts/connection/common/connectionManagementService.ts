@@ -371,9 +371,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 								this._editorGroupService.activateGroup(model.groupAt(position));
 								this._editorService.openEditor(editor, options, position)
 									.done(() => {
-									this._editorGroupService.activateGroup(model.groupAt(position));
-									found = true;
-								}, errors.onUnexpectedError);
+										this._editorGroupService.activateGroup(model.groupAt(position));
+										found = true;
+									}, errors.onUnexpectedError);
 							}
 						}
 					});
@@ -564,7 +564,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 	public isRecent(connectionProfile: ConnectionProfile): boolean {
 		let recentConnections = this._connectionStore.getRecentlyUsedConnections();
 		recentConnections = recentConnections.filter(con => { return connectionProfile.id === con.getUniqueId(); });
-		// TODO: modify condition after recent connections fix
 		return (recentConnections.length >= 1);
 	}
 	// Disconnect a URI from its current connection
@@ -762,6 +761,77 @@ export class ConnectionManagementService implements IConnectionManagementService
 				return false;
 			});
 		}
+		return Promise.resolve(undefined);
+	}
+
+	/**
+	 * Deletes a connection from registered servers.
+	 * Disconnects a connection before removng from settings.
+	 */
+	public deleteConnection(connection: ConnectionProfile): Promise<boolean> {
+		// Disconnect if connected
+		let uri = this._connectionFactory.getConnectionManagementId(connection);
+		if (this.isConnected(uri)) {
+			this.doDisconnect(uri).then((result) => {
+				if (result) {
+					// Remove profile from configuration
+					this._connectionStore.deleteConnectionFromConfiguration(connection).then(() => {
+						this._onDeleteConnectionProfile.fire();
+						Promise.resolve(true);
+					}).catch(err => {
+						// Reject promise if error occured writing to settings
+						Promise.reject(err);
+					});
+
+				} else {
+					// If connection fails to disconnect, resolve promise with false
+					Promise.resolve(false);
+				}
+			});
+		} else {
+			// Remove disconnected profile from settings
+			this._connectionStore.deleteConnectionFromConfiguration(connection).then(() => {
+				this._onDeleteConnectionProfile.fire();
+				Promise.resolve(true);
+			}).catch(err => {
+				// Reject promise if error occured writing to settings
+				Promise.reject(err);
+			});
+		}
+		return Promise.resolve(undefined);
+	}
+
+	/**
+	 * Deletes a group with all its children groups and connections from registered servers.
+	 * Disconnects a connection before removing from config. If disconnect fails, settings is not modified.
+	 */
+	public deleteConnectionGroup(group: ConnectionProfileGroup): Promise<boolean> {
+		// Get all connections for this group
+		let connections = ConnectionProfileGroup.getConnectionsInGroup(group);
+
+		// Disconnect all these connections
+		let disconnected = [];
+		connections.forEach((con) => {
+			let uri = this._connectionFactory.getConnectionManagementId(con);
+			if (this.isConnected(uri)) {
+				disconnected.push(this.doDisconnect(uri));
+			}
+		});
+
+		// When all the disconnect promises resolve, remove profiles from config
+		Promise.all(disconnected).then(() => {
+			// Remove profiles and groups from config
+			this._connectionStore.deleteGroupFromConfiguration(group).then(() => {
+					this._onDeleteConnectionProfile.fire();
+					Promise.resolve(true);
+			}).catch(err => {
+				// If saving to config fails, reject promise with false
+				return Promise.reject(false);
+			});
+		}).catch(err => {
+			// If disconnecting all connected profiles fails, resolve promise with false
+			return Promise.resolve(false);
+		});
 		return Promise.resolve(undefined);
 	}
 
