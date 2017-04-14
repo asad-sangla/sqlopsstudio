@@ -16,8 +16,9 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { ObjectExplorerUtils } from 'sql/parts/objectExplorer/viewlet/objectExplorerUtils';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
-import { ObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
+import { ObjectExplorerService, IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { AddServerAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
 import Severity from 'vs/base/common/severity';
 const $ = builder.$;
@@ -32,9 +33,11 @@ export class ObjectExplorerView extends CollapsibleViewletView {
 	constructor(actionRunner: IActionRunner, settings: any,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IMessageService messageService: IMessageService
+		@IMessageService messageService: IMessageService,
+
 	) {
 		super(actionRunner, false, nls.localize({ key: 'objectExplorerSection', comment: ['Object Explorer Tree'] }, "Object Explorer Section"), messageService, keybindingService, contextMenuService);
 		this.addServerAction = this._instantiationService.createInstance(AddServerAction,
@@ -102,7 +105,23 @@ export class ObjectExplorerView extends CollapsibleViewletView {
 
 		let groups;
 		groups = this._connectionManagementService.getActiveConnections();
-		var treeInput = ObjectExplorerService.getRootTreeNode(ObjectExplorerUtils.convertToConnectionProfile(groups));
+
+		let connections = ObjectExplorerUtils.convertToConnectionProfile(groups);
+		var treeInput = this._objectExplorerService.createTreeRoot();
+
+		let promises = connections.map(connection => {
+			return this._connectionManagementService.addSavedPassword(connection).then(withPassword => {
+				let connectionProfile = ConnectionProfile.convertToConnectionProfile(connection.ServerCapabilities, withPassword);
+				return this._objectExplorerService.getRootTreeNode(treeInput, connectionProfile);
+			});
+
+		});
+		Promise.all(promises).then(() => {
+			(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
+				this.tree.getFocus();
+			}, errors.onUnexpectedError);
+		});
+		//var treeInput = ObjectExplorerService.getRootTreeNode(ObjectExplorerUtils.convertToConnectionProfile(groups));
 
 		if (treeInput !== this.tree.getInput()) {
 			this.tree.setInput(treeInput).done(() => {

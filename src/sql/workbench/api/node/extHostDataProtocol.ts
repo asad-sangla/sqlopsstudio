@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 import * as data from 'data';
 import { Disposable } from 'vs/workbench/api/node/extHostTypes';
 
-export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
+export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 
 	private _proxy: MainThreadDataProtocolShape;
 
@@ -44,48 +44,48 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 
 	$registerProvider(provider: data.DataProtocolProvider): vscode.Disposable {
 		provider.handle = this._nextHandle();
-		this._adapter.set(provider.handle,provider);
+		this._adapter.set(provider.handle, provider);
 
 		this._proxy.$registerProvider(provider.handle);
 		return this._createDisposable(provider.handle);
 	}
 
 	// Capabilities Discovery handlers
-	$getServerCapabilities(handle:number, client: data.DataProtocolClientCapabilities): Thenable<data.DataProtocolServerCapabilities> {
+	$getServerCapabilities(handle: number, client: data.DataProtocolClientCapabilities): Thenable<data.DataProtocolServerCapabilities> {
 		return this._runWithProvider(handle, provider => {
 			return provider.capabilitiesProvider ? provider.capabilitiesProvider.getServerCapabilities(client)
-												 : undefined;
+				: undefined;
 		});
 	}
 
 	// Connection Management handlers
-	$connect(handle:number, connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> {
+	$connect(handle: number, connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> {
 		return this._runWithProvider(handle, provider => {
 			return provider.connectionProvider ? provider.connectionProvider.connect(connectionUri, connection)
-											   : undefined;
+				: undefined;
 		});
 	}
 
-	$disconnect(handle:number, connectionUri: string): Thenable<boolean> {
+	$disconnect(handle: number, connectionUri: string): Thenable<boolean> {
 		return this._runWithProvider(handle, provider => {
 			return provider.connectionProvider ? provider.connectionProvider.disconnect(connectionUri)
-											   : undefined;
+				: undefined;
 		});
 	}
 
-	$cancelConnect(handle:number, connectionUri: string): Thenable<boolean> {
+	$cancelConnect(handle: number, connectionUri: string): Thenable<boolean> {
 		return this._runWithProvider(handle, provider => {
 			return provider.connectionProvider ? provider.connectionProvider.cancelConnect(connectionUri)
-											   : undefined;
+				: undefined;
 		});
 	}
 
 	$listDatabases(handle: number, connectionUri: string): Thenable<data.ListDatabasesResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.connectionProvider ? provider.connectionProvider.listDatabases(connectionUri)
-											   : undefined;
+				: undefined;
 		});
-	 }
+	}
 
 	$onConnectComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
 		this._proxy.$onConnectionComplete(handle, connectionInfoSummary);
@@ -145,7 +145,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 		return this._runWithProvider(handle, (provider) => {
 			return provider.queryProvider.saveResults(requestParams);
 		});
-	 }
+	}
 
 	// Edit Data handlers
 	$commitEdit(handle: number, ownerUri: string): Thenable<void> {
@@ -210,28 +210,43 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 	public $getMetadata(handle: number, connectionUri: string): Thenable<data.ProviderMetadata> {
 		return this._runWithProvider(handle, provider => {
 			return provider.metadataProvider ? provider.metadataProvider.getMetadata(connectionUri)
-											 : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
+		});
+	}
+
+	// Object Explorer Service
+	public $createObjectExplorerSession(handle: number, connInfo: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {
+		return this._runWithProvider(handle, provider => {
+			return provider.objectExplorerProvider ? provider.objectExplorerProvider.createNewSession(connInfo)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	public $expandObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+		return this._runWithProvider(handle, provider => {
+			return provider.objectExplorerProvider ? provider.objectExplorerProvider.expandNode(nodeInfo)
+				: Promise.resolve(undefined);
 		});
 	}
 
 	public $getDatabases(handle: number, connectionUri: string): Thenable<string[]> {
 		return this._runWithProvider(handle, provider => {
 			return provider.metadataProvider ? provider.metadataProvider.getDatabases(connectionUri)
-											 : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
 		});
 	}
 
 	public $getTableInfo(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
 		return this._runWithProvider(handle, provider => {
 			return provider.metadataProvider ? provider.metadataProvider.getTableInfo(connectionUri, metadata)
-											 : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
 		});
 	}
 
 	public $getViewInfo(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
 		return this._runWithProvider(handle, provider => {
 			return provider.metadataProvider ? provider.metadataProvider.getViewInfo(connectionUri, metadata)
-											 : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
 		});
 	}
 
@@ -239,35 +254,35 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape  {
 	public $scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsSelect(connectionUri, metadata)
-											  : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
 		});
 	}
 
 	public $scriptAsCreate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsCreate(connectionUri, metadata)
-											  : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
 		});
 	}
 
 	public $scriptAsUpdate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsUpdate(connectionUri, metadata)
-											  : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
 		});
 	}
 
 	public $scriptAsInsert(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsInsert(connectionUri, metadata)
-											  : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
 		});
 	}
 
 	public $scriptAsDelete(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsDelete(connectionUri, metadata)
-											  : Promise.resolve(undefined);
+				: Promise.resolve(undefined);
 		});
 	}
 }

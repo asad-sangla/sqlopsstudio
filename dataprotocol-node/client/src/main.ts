@@ -8,100 +8,103 @@ import * as cp from 'child_process';
 import ChildProcess = cp.ChildProcess;
 
 import {
-		workspace as Workspace, window as Window, languages as Languages, extensions as Extensions, TextDocumentChangeEvent, TextDocument, Disposable, OutputChannel,
-		FileSystemWatcher, Uri, DiagnosticCollection, DocumentSelector,
-		CancellationToken, Hover as VHover, Position as VPosition, Location as VLocation, Range as VRange,
-		CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
-		SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
-		FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
-		DocumentLink as VDocumentLink
+	workspace as Workspace, window as Window, languages as Languages, extensions as Extensions, TextDocumentChangeEvent, TextDocument, Disposable, OutputChannel,
+	FileSystemWatcher, Uri, DiagnosticCollection, DocumentSelector,
+	CancellationToken, Hover as VHover, Position as VPosition, Location as VLocation, Range as VRange,
+	CompletionItem as VCompletionItem, CompletionList as VCompletionList, SignatureHelp as VSignatureHelp, Definition as VDefinition, DocumentHighlight as VDocumentHighlight,
+	SymbolInformation as VSymbolInformation, CodeActionContext as VCodeActionContext, Command as VCommand, CodeLens as VCodeLens,
+	FormattingOptions as VFormattingOptions, TextEdit as VTextEdit, WorkspaceEdit as VWorkspaceEdit, MessageItem,
+	DocumentLink as VDocumentLink
 } from 'vscode';
 
 import {
-		ConnectionInfo, ConnectionInfoSummary, dataprotocol, DataProtocolProvider, ConnectionProvider,
-		DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
-		DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider,
-		ScriptingProvider, ProviderMetadata, ScriptingResult,
-		QueryProvider, QueryCancelResult as VQueryCancelResult, ObjectMetadata,
-		ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo,
-		SaveResultRequestResult as VSaveResultRequestResult,
-		SaveResultsRequestParams as VSaveResultsRequestParams
+	ConnectionInfo, ConnectionInfoSummary, dataprotocol, DataProtocolProvider, ConnectionProvider,
+	DataProtocolServerCapabilities as VDataProtocolServerCapabilities,
+	DataProtocolClientCapabilities, CapabilitiesProvider, MetadataProvider,
+	ScriptingProvider, ProviderMetadata, ScriptingResult,
+	QueryProvider, QueryCancelResult as VQueryCancelResult, ObjectMetadata,
+	ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo,
+	SaveResultRequestResult as VSaveResultRequestResult,
+	SaveResultsRequestParams as VSaveResultsRequestParams, ObjectExplorerProvider,
+	ExpandNodeInfo
 } from 'data';
 
 import {
-		Message,
-		RequestHandler, NotificationHandler, MessageConnection, ClientMessageConnection, Logger, createClientMessageConnection,
-		ErrorCodes, ResponseError, RequestType, NotificationType,
-		MessageReader, IPCMessageReader, MessageWriter, IPCMessageWriter, Trace, Tracer, Event, Emitter
+	Message,
+	RequestHandler, NotificationHandler, MessageConnection, ClientMessageConnection, Logger, createClientMessageConnection,
+	ErrorCodes, ResponseError, RequestType, NotificationType,
+	MessageReader, IPCMessageReader, MessageWriter, IPCMessageWriter, Trace, Tracer, Event, Emitter
 } from 'dataprotocol-jsonrpc';
 
 import {
-		Range, Position, Location, Diagnostic, DiagnosticSeverity, Command,
-		TextEdit, WorkspaceEdit, WorkspaceChange, TextEditChange,
-		TextDocumentIdentifier, CompletionItemKind, CompletionItem, CompletionList,
-		Hover, MarkedString,
-		SignatureHelp, SignatureInformation, ParameterInformation,
-		Definition, CodeActionContext,
-		DocumentHighlight, DocumentHighlightKind,
-		SymbolInformation, SymbolKind,
-		CodeLens,
-		FormattingOptions, DocumentLink,
-		ConnectionCompleteParams, IntelliSenseReadyParams,
-		ConnectionProviderOptions, DataProtocolServerCapabilities,
-		ISelectionData, QueryExecuteBatchNotificationParams,
-		MetadataQueryParams, MetadataQueryResult,
-		ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation
+	Range, Position, Location, Diagnostic, DiagnosticSeverity, Command,
+	TextEdit, WorkspaceEdit, WorkspaceChange, TextEditChange,
+	TextDocumentIdentifier, CompletionItemKind, CompletionItem, CompletionList,
+	Hover, MarkedString,
+	SignatureHelp, SignatureInformation, ParameterInformation,
+	Definition, CodeActionContext,
+	DocumentHighlight, DocumentHighlightKind,
+	SymbolInformation, SymbolKind,
+	CodeLens,
+	FormattingOptions, DocumentLink,
+	ConnectionCompleteParams, IntelliSenseReadyParams,
+	ConnectionProviderOptions, DataProtocolServerCapabilities,
+	ISelectionData, QueryExecuteBatchNotificationParams,
+	MetadataQueryParams, MetadataQueryResult,
+	ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation
 } from 'dataprotocol-languageserver-types';
 
 
 import {
-		InitializeRequest, InitializeParams, InitializeResult, InitializeError, ClientCapabilities, ServerCapabilities, TextDocumentSyncKind,
-		ShutdownRequest,
-		ExitNotification,
-		LogMessageNotification, LogMessageParams, MessageType,
-		ShowMessageNotification, ShowMessageParams, ShowMessageRequest, ShowMessageRequestParams,
-		TelemetryEventNotification,
-		DidChangeConfigurationNotification, DidChangeConfigurationParams,
-		TextDocumentPositionParams,
-		DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams,
-		DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidSaveTextDocumentNotification, DidSaveTextDocumentParams,
-		DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, FileEvent, FileChangeType,
-		PublishDiagnosticsNotification, PublishDiagnosticsParams,
-		CompletionRequest, CompletionResolveRequest,
-		HoverRequest,
-		SignatureHelpRequest, DefinitionRequest, ReferencesRequest, DocumentHighlightRequest,
-		DocumentSymbolRequest, WorkspaceSymbolRequest, WorkspaceSymbolParams,
-		CodeActionRequest, CodeActionParams,
-		CodeLensRequest, CodeLensResolveRequest,
-		DocumentFormattingRequest, DocumentFormattingParams, DocumentRangeFormattingRequest, DocumentRangeFormattingParams,
-		DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
-		RenameRequest, RenameParams,
-		DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
-		CapabiltiesDiscoveryRequest,
-		ConnectionRequest, ConnectParams,
-		DisconnectRequest, DisconnectParams,
-		CancelConnectRequest, CancelConnectParams,
-		ListDatabasesRequest, ListDatabasesParams, ListDatabasesResult,
-		ConnectionChangedNotification, ConnectionChangedParams,
-		ConnectionCompleteNotification, IntelliSenseReadyNotification,
-		TableMetadataRequest, ViewMetadataRequest, MetadataQueryRequest, ScriptingScriptAsRequest,
-		QueryCancelRequest, QueryCancelResult, QueryCancelParams,
-		QueryExecuteRequest, QueryExecuteSubsetResult, QueryExecuteSubsetParams,
-		QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
-		QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
-		QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
-		QueryExecuteSubsetRequest, SaveResultRequestResult, SaveResultsRequestParams, SaveResultsAsCsvRequest, SaveResultsAsJsonRequest, SaveResultsAsExcelRequest,
+	InitializeRequest, InitializeParams, InitializeResult, InitializeError, ClientCapabilities, ServerCapabilities, TextDocumentSyncKind,
+	ShutdownRequest,
+	ExitNotification,
+	LogMessageNotification, LogMessageParams, MessageType,
+	ShowMessageNotification, ShowMessageParams, ShowMessageRequest, ShowMessageRequestParams,
+	TelemetryEventNotification,
+	DidChangeConfigurationNotification, DidChangeConfigurationParams,
+	TextDocumentPositionParams,
+	DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams,
+	DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidSaveTextDocumentNotification, DidSaveTextDocumentParams,
+	DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, FileEvent, FileChangeType,
+	PublishDiagnosticsNotification, PublishDiagnosticsParams,
+	CompletionRequest, CompletionResolveRequest,
+	HoverRequest,
+	SignatureHelpRequest, DefinitionRequest, ReferencesRequest, DocumentHighlightRequest,
+	DocumentSymbolRequest, WorkspaceSymbolRequest, WorkspaceSymbolParams,
+	CodeActionRequest, CodeActionParams,
+	CodeLensRequest, CodeLensResolveRequest,
+	DocumentFormattingRequest, DocumentFormattingParams, DocumentRangeFormattingRequest, DocumentRangeFormattingParams,
+	DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
+	RenameRequest, RenameParams,
+	DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
+	CapabiltiesDiscoveryRequest,
+	ConnectionRequest, ConnectParams,
+	DisconnectRequest, DisconnectParams,
+	CancelConnectRequest, CancelConnectParams,
+	ListDatabasesRequest, ListDatabasesParams, ListDatabasesResult,
+	ConnectionChangedNotification, ConnectionChangedParams,
+	ConnectionCompleteNotification, IntelliSenseReadyNotification,
+	TableMetadataRequest, ViewMetadataRequest, MetadataQueryRequest, ScriptingScriptAsRequest,
+	QueryCancelRequest, QueryCancelResult, QueryCancelParams,
+	QueryExecuteRequest, QueryExecuteSubsetResult, QueryExecuteSubsetParams,
+	QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
+	QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
+	QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
+	QueryExecuteSubsetRequest, SaveResultRequestResult, SaveResultsRequestParams, SaveResultsAsCsvRequest, SaveResultsAsJsonRequest, SaveResultsAsExcelRequest,
 
-		EditCommitRequest, EditCommitParams,
-		EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
-		EditDeleteRowRequest, EditDeleteRowParams,
-		EditDisposeRequest, EditDisposeParams,
-		EditInitializeRequest, EditInitializeParams, EditInitializeFiltering,
-		EditRevertCellRequest, EditRevertCellParams, EditRevertCellResult,
-		EditRevertRowRequest, EditRevertRowParams,
-		EditSessionReadyNotification, EditSessionReadyParams,
-		EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult,
-		EditSubsetRequest, EditSubsetParams, EditSubsetResult
+	EditCommitRequest, EditCommitParams,
+	EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
+	EditDeleteRowRequest, EditDeleteRowParams,
+	EditDisposeRequest, EditDisposeParams,
+	EditInitializeRequest, EditInitializeParams, EditInitializeFiltering,
+	EditRevertCellRequest, EditRevertCellParams, EditRevertCellResult,
+	EditRevertRowRequest, EditRevertRowParams,
+	EditSessionReadyNotification, EditSessionReadyParams,
+	EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult,
+	EditSubsetRequest, EditSubsetParams, EditSubsetResult,
+
+	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -180,7 +183,7 @@ function createConnection(reader: MessageReader, writer: MessageWriter, errorHan
 function createConnection(input: any, output: any, errorHandler: ConnectionErrorHandler, closeHandler: ConnectionCloseHandler): IConnection {
 	let logger = new ConsoleLogger();
 	let connection = createClientMessageConnection(input, output, logger);
-	connection.onError((data) => { errorHandler(data[0], data[1], data[2])});
+	connection.onError((data) => { errorHandler(data[0], data[1], data[2]) });
 	connection.onClose(closeHandler);
 	let result: IConnection = {
 
@@ -205,7 +208,7 @@ function createConnection(input: any, output: any, errorHandler: ConnectionError
 		didChangeWatchedFiles: (params: DidChangeWatchedFilesParams) => connection.sendNotification(DidChangeWatchedFilesNotification.type, params),
 
 		didOpenTextDocument: (params: DidOpenTextDocumentParams) => connection.sendNotification(DidOpenTextDocumentNotification.type, params),
-		didChangeTextDocument: (params: DidChangeTextDocumentParams  | DidChangeTextDocumentParams[]) => connection.sendNotification(DidChangeTextDocumentNotification.type, params),
+		didChangeTextDocument: (params: DidChangeTextDocumentParams | DidChangeTextDocumentParams[]) => connection.sendNotification(DidChangeTextDocumentNotification.type, params),
 		didCloseTextDocument: (params: DidCloseTextDocumentParams) => connection.sendNotification(DidCloseTextDocumentNotification.type, params),
 		didSaveTextDocument: (params: DidSaveTextDocumentParams) => connection.sendNotification(DidSaveTextDocumentNotification.type, params),
 		onDiagnostics: (handler: NotificationHandler<PublishDiagnosticsParams>) => connection.onNotification(PublishDiagnosticsNotification.type, handler),
@@ -254,7 +257,7 @@ export interface NodeModule {
 	options?: ForkOptions;
 }
 
-export type ServerOptions = Executable | { run: Executable; debug: Executable; } |  { run: NodeModule; debug: NodeModule } | NodeModule | (() => Thenable<ChildProcess | StreamInfo>);
+export type ServerOptions = Executable | { run: Executable; debug: Executable; } | { run: NodeModule; debug: NodeModule } | NodeModule | (() => Thenable<ChildProcess | StreamInfo>);
 
 /**
  * An action to be performed when the connection is producing errors.
@@ -745,7 +748,7 @@ export class LanguageClient {
 		this.state = ClientState.Starting;
 		this.resolveConnection().then((connection) => {
 			connection.onLogMessage((message) => {
-				switch(message.type) {
+				switch (message.type) {
 					case MessageType.Error:
 						this.error(message.message);
 						break;
@@ -760,7 +763,7 @@ export class LanguageClient {
 				}
 			});
 			connection.onShowMessage((message) => {
-				switch(message.type) {
+				switch (message.type) {
 					case MessageType.Error:
 						Window.showErrorMessage(message.message);
 						break;
@@ -776,7 +779,7 @@ export class LanguageClient {
 			});
 			connection.onRequest(ShowMessageRequest.type, (params) => {
 				let messageFunc: <T extends MessageItem>(message: string, ...items: T[]) => Thenable<T> = null;
-				switch(params.type) {
+				switch (params.type) {
 					case MessageType.Error:
 						messageFunc = Window.showErrorMessage;
 						break;
@@ -796,7 +799,7 @@ export class LanguageClient {
 			});
 			connection.listen();
 			// Error is handled in the intialize call.
-			this.initialize(connection).then(null, (error) => {});
+			this.initialize(connection).then(null, (error) => { });
 		}, (error) => {
 			this.state = ClientState.StartFailed;
 			this._onReadyCallbacks.reject(error);
@@ -823,7 +826,7 @@ export class LanguageClient {
 		let initParams: InitializeParams = {
 			processId: process.pid,
 			rootPath: Workspace.rootPath,
-			capabilities: { },
+			capabilities: {},
 			initializationOptions: is.func(initOption) ? initOption() : initOption,
 			trace: Trace.toString(this._trace)
 		};
@@ -855,7 +858,7 @@ export class LanguageClient {
 					this._onReadyCallbacks.reject(error);
 				}
 			} else if (error instanceof ResponseError && error.data && error.data.retry) {
-				Window.showErrorMessage(error.message, { title: 'Retry', id: "retry"}).then(item => {
+				Window.showErrorMessage(error.message, { title: 'Retry', id: "retry" }).then(item => {
 					if (is.defined(item) && item.id === 'retry') {
 						this.initialize(connection);
 					} else {
@@ -1030,7 +1033,7 @@ export class LanguageClient {
 			});
 		}
 		let json: { command?: string; module?: string } = null;
-		let runDebug= <{ run: any; debug: any;}>server;
+		let runDebug = <{ run: any; debug: any; }>server;
 		if (is.defined(runDebug.run) || is.defined(runDebug.debug)) {
 			// We are under debugging. So use debug as well.
 			if (typeof v8debug === 'object' || this._forceDebug || startedInDebugMode()) {
@@ -1419,7 +1422,7 @@ export class LanguageClient {
 			},
 
 			runQuery(ownerUri: string, selection: ISelectionData): Thenable<void> {
-				let params: QueryExecuteParams = {ownerUri: ownerUri, querySelection: selection };
+				let params: QueryExecuteParams = { ownerUri: ownerUri, querySelection: selection };
 				return self.doSendRequest(connection, QueryExecuteRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;
@@ -1443,7 +1446,7 @@ export class LanguageClient {
 				);
 			},
 
-			disposeQuery(ownerUri: string): Thenable<void>{
+			disposeQuery(ownerUri: string): Thenable<void> {
 				let params: QueryDisposeParams = { ownerUri: ownerUri };
 				return self.doSendRequest(connection, QueryDisposeRequest.type, params, undefined).then(
 					(result) => {
@@ -1460,7 +1463,8 @@ export class LanguageClient {
 				connection.onNotification(QueryExecuteCompleteNotification.type, (params: QueryExecuteCompleteNotificationResult) => {
 					handler({
 						ownerUri: params.ownerUri,
-						batchSummaries: params.batchSummaries});
+						batchSummaries: params.batchSummaries					
+});
 				});
 			},
 
@@ -1498,7 +1502,7 @@ export class LanguageClient {
 				});
 			},
 			saveResults(requestParams: VSaveResultsRequestParams): Thenable<VSaveResultRequestResult> {
-				switch(requestParams.resultFormat) {
+				switch (requestParams.resultFormat) {
 					case 'csv':
 						return self.doSendRequest(connection, SaveResultsAsCsvRequest.type, requestParams, undefined).then(
 							(result) => {
@@ -1562,7 +1566,7 @@ export class LanguageClient {
 			},
 
 			deleteRow(ownerUri: string, rowId: number): Thenable<void> {
-				let params: EditDeleteRowParams = {ownerUri: ownerUri, rowId: rowId};
+				let params: EditDeleteRowParams = { ownerUri: ownerUri, rowId: rowId };
 				return self.doSendRequest(connection, EditDeleteRowRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;
@@ -1575,7 +1579,7 @@ export class LanguageClient {
 			},
 
 			disposeEdit(ownerUri: string): Thenable<void> {
-				let params: EditDisposeParams = {ownerUri: ownerUri};
+				let params: EditDisposeParams = { ownerUri: ownerUri };
 				return self.doSendRequest(connection, EditDisposeRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;
@@ -1588,8 +1592,8 @@ export class LanguageClient {
 			},
 
 			initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
-				let filters: EditInitializeFiltering = {LimitResults: rowLimit};
-				let params: EditInitializeParams = {ownerUri: ownerUri, objectName: objectName, objectType: objectType, filters: filters};
+				let filters: EditInitializeFiltering = { LimitResults: rowLimit };
+				let params: EditInitializeParams = { ownerUri: ownerUri, objectName: objectName, objectType: objectType, filters: filters };
 				return self.doSendRequest(connection, EditInitializeRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;
@@ -1602,7 +1606,7 @@ export class LanguageClient {
 			},
 
 			revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult> {
-				let params: EditRevertCellParams = {ownerUri: ownerUri, rowId: rowId, columnId: columnId};
+				let params: EditRevertCellParams = { ownerUri: ownerUri, rowId: rowId, columnId: columnId };
 				return self.doSendRequest(connection, EditRevertCellRequest.type, params, undefined).then(
 					(result) => {
 						return result;
@@ -1615,7 +1619,7 @@ export class LanguageClient {
 			},
 
 			revertRow(ownerUri: string, rowId: number): Thenable<void> {
-				let params: EditRevertRowParams = {ownerUri: ownerUri, rowId: rowId};
+				let params: EditRevertRowParams = { ownerUri: ownerUri, rowId: rowId };
 				return self.doSendRequest(connection, EditRevertRowRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;
@@ -1628,7 +1632,7 @@ export class LanguageClient {
 			},
 
 			updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult> {
-				let params: EditUpdateCellParams = {ownerUri: ownerUri, rowId: rowId, columnId: columnId, newValue: newValue};
+				let params: EditUpdateCellParams = { ownerUri: ownerUri, rowId: rowId, columnId: columnId, newValue: newValue };
 				return self.doSendRequest(connection, EditUpdateCellRequest.type, params, undefined).then(
 					(result) => {
 						return result;
@@ -1663,17 +1667,17 @@ export class LanguageClient {
 		let metadataProvider: MetadataProvider = {
 			getMetadata(connectionUri: string): Thenable<ProviderMetadata> {
 				return self.doSendRequest(connection, MetadataQueryRequest.type,
-						self._c2p.asMetadataQueryParams(connectionUri), undefined).then(
+					self._c2p.asMetadataQueryParams(connectionUri), undefined).then(
 					self._p2c.asProviderMetadata,
 					(error) => {
 						self.logFailedRequest(MetadataQueryRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			},
 			getDatabases(connectionUri: string): Thenable<string[]> {
 				return self.doSendRequest(connection, ListDatabasesRequest.type,
-						self._c2p.asListDatabasesParams(connectionUri), undefined).then(
+					self._c2p.asListDatabasesParams(connectionUri), undefined).then(
 					(result) => {
 						return result.databaseNames;
 					},
@@ -1681,11 +1685,11 @@ export class LanguageClient {
 						self.logFailedRequest(ListDatabasesRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			},
 			getTableInfo(connectionUri: string, metadata: ObjectMetadata) {
 				return self.doSendRequest(connection, TableMetadataRequest.type,
-						self._c2p.asTableMetadataParams(connectionUri, metadata), undefined).then(
+					self._c2p.asTableMetadataParams(connectionUri, metadata), undefined).then(
 					(result) => {
 						return result.columns;
 					},
@@ -1693,11 +1697,11 @@ export class LanguageClient {
 						self.logFailedRequest(TableMetadataRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			},
 			getViewInfo(connectionUri: string, metadata: ObjectMetadata) {
 				return self.doSendRequest(connection, ViewMetadataRequest.type,
-						self._c2p.asTableMetadataParams(connectionUri, metadata), undefined).then(
+					self._c2p.asTableMetadataParams(connectionUri, metadata), undefined).then(
 					(result) => {
 						return result.columns;
 					},
@@ -1705,64 +1709,88 @@ export class LanguageClient {
 						self.logFailedRequest(ViewMetadataRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
+			}
+		};
+
+		let objectExplorer: ObjectExplorerProvider = {
+			createNewSession(connInfo: ConnectionInfo) {
+				return self.doSendRequest(connection, ObjectExplorerCreateSessionRequest.type,
+					self._c2p.asConnectionDetail(connInfo), undefined).then(
+					self._p2c.asObjectExplorerSession,
+					(error) => {
+						self.logFailedRequest(ObjectExplorerCreateSessionRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+					);
+			},
+
+			expandNode(nodeInfo: ExpandNodeInfo) {
+				return self.doSendRequest(connection, ObjectExplorerExpandRequest.type,
+					self._c2p.asExpandInfo(nodeInfo), undefined).then(
+					self._p2c.asObjectExplorerNodeInfo,
+					(error) => {
+						self.logFailedRequest(ObjectExplorerExpandRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+					);
 			}
 		};
 
 		let scriptingProvider: ScriptingProvider = {
 			scriptAsSelect(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
 				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
-						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Select, metadata), undefined).then(
+					self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Select, metadata), undefined).then(
 					self._p2c.asScriptingResult,
 					(error) => {
 						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			},
 
 			scriptAsCreate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
 				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
-						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Create, metadata), undefined).then(
+					self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Create, metadata), undefined).then(
 					self._p2c.asScriptingResult,
 					(error) => {
 						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			},
 
 			scriptAsInsert(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
 				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
-						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Insert, metadata), undefined).then(
+					self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Insert, metadata), undefined).then(
 					self._p2c.asScriptingResult,
 					(error) => {
 						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			},
 
 			scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
 				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
-						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Update, metadata), undefined).then(
+					self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Update, metadata), undefined).then(
 					self._p2c.asScriptingResult,
 					(error) => {
 						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			},
 
 			scriptAsDelete(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {
 				return self.doSendRequest(connection, ScriptingScriptAsRequest.type,
-						self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Delete, metadata), undefined).then(
+					self._c2p.asScriptingScriptAsParams(connectionUri, ScriptOperation.Delete, metadata), undefined).then(
 					self._p2c.asScriptingResult,
 					(error) => {
 						self.logFailedRequest(ScriptingScriptAsRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			}
 		};
 
@@ -1777,7 +1805,9 @@ export class LanguageClient {
 
 			metadataProvider: metadataProvider,
 
-			scriptingProvider: scriptingProvider
+			scriptingProvider: scriptingProvider,
+
+			objectExplorerProvider: objectExplorer
 		}));
 	}
 
@@ -1788,7 +1818,7 @@ export class LanguageClient {
 
 		this._providers.push(Languages.registerCompletionItemProvider(documentSelector, {
 			provideCompletionItems: (document: TextDocument, position: VPosition, token: CancellationToken): Thenable<VCompletionList | VCompletionItem[]> => {
-				return this.doSendRequest(connection, CompletionRequest.type, this._c2p.asTextDocumentPositionParams(document, position), token). then(
+				return this.doSendRequest(connection, CompletionRequest.type, this._c2p.asTextDocumentPositionParams(document, position), token).then(
 					this._p2c.asCompletionResult,
 					(error) => {
 						this.logFailedRequest(CompletionRequest.type, error);
@@ -1834,7 +1864,7 @@ export class LanguageClient {
 		}
 		this._providers.push(Languages.registerSignatureHelpProvider(documentSelector, {
 			provideSignatureHelp: (document: TextDocument, position: VPosition, token: CancellationToken): Thenable<VSignatureHelp> => {
-				return this.doSendRequest(connection, SignatureHelpRequest.type, this._c2p.asTextDocumentPositionParams(document, position), token). then(
+				return this.doSendRequest(connection, SignatureHelpRequest.type, this._c2p.asTextDocumentPositionParams(document, position), token).then(
 					this._p2c.asSignatureHelp,
 					(error) => {
 						this.logFailedRequest(SignatureHelpRequest.type, error);
@@ -1851,7 +1881,7 @@ export class LanguageClient {
 		}
 		this._providers.push(Languages.registerDefinitionProvider(documentSelector, {
 			provideDefinition: (document: TextDocument, position: VPosition, token: CancellationToken): Thenable<VDefinition> => {
-				return this.doSendRequest(connection, DefinitionRequest.type, this._c2p.asTextDocumentPositionParams(document, position), token). then(
+				return this.doSendRequest(connection, DefinitionRequest.type, this._c2p.asTextDocumentPositionParams(document, position), token).then(
 					this._p2c.asDefinitionResult,
 					(error) => {
 						this.logFailedRequest(DefinitionRequest.type, error);

@@ -46,6 +46,10 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		return instance;
 	}
 
+	public get ServerCapabilities(): data.DataProtocolServerCapabilities {
+		return this._serverCapabilities;
+	}
+
 	public setServerCapabilities(value: data.DataProtocolServerCapabilities) {
 		this._serverCapabilities = value;
 	}
@@ -145,7 +149,7 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		}
 
 		return 'providerName' + ProviderConnectionInfo.nameValueSeparator +
-		this.providerName + ProviderConnectionInfo.idSeparator + idValues.join(ProviderConnectionInfo.idSeparator);
+			this.providerName + ProviderConnectionInfo.idSeparator + idValues.join(ProviderConnectionInfo.idSeparator);
 	}
 
 	public getSpecialTypeOptionName(type: number): string {
@@ -200,10 +204,10 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 
 		this._serverCapabilities.connectionProvider.options.forEach(element => {
 			if (element.specialValueType !== ConnectionOptionSpecialType.serverName &&
-			element.specialValueType !== ConnectionOptionSpecialType.databaseName &&
-			element.specialValueType !== ConnectionOptionSpecialType.authType &&
-			element.specialValueType !== ConnectionOptionSpecialType.password &&
-			element.isIdentity && element.valueType === ConnectionOptionType.string) {
+				element.specialValueType !== ConnectionOptionSpecialType.databaseName &&
+				element.specialValueType !== ConnectionOptionSpecialType.authType &&
+				element.specialValueType !== ConnectionOptionSpecialType.password &&
+				element.isIdentity && element.valueType === ConnectionOptionType.string) {
 				let value = this.getOptionValue(element.name);
 				if (value) {
 					parts.push(value);

@@ -62,17 +62,21 @@ export interface Converter {
 
 	asDocumentLinkParams(textDocument: code.TextDocument): proto.DocumentLinkParams;
 
-	asConnectionParams(connectionUri: string, connectionInfo: data.ConnectionInfo) : proto.ConnectParams;
+	asConnectionParams(connectionUri: string, connectionInfo: data.ConnectionInfo): proto.ConnectParams;
 
 	asCapabilitiesParams(client: data.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams;
 
-	asMetadataQueryParams(connectionUri: string) : ls.MetadataQueryParams;
+	asMetadataQueryParams(connectionUri: string): ls.MetadataQueryParams;
 
-	asListDatabasesParams(connectionUri: string) : proto.ListDatabasesParams;
+	asListDatabasesParams(connectionUri: string): proto.ListDatabasesParams;
 
-	asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata) : proto.TableMetadataParams;
+	asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata): proto.TableMetadataParams;
 
-	asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata) : ls.ScriptingScriptAsParams;
+	asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata): ls.ScriptingScriptAsParams;
+
+	asConnectionDetail(connInfo: data.ConnectionInfo): ls.ConnectionDetails;
+
+	asExpandInfo(nodeInfo: data.ExpandNodeInfo): ls.ExpandParams;
 }
 
 export interface URIConverter {
@@ -125,7 +129,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 					uri: _uriConverter(arg.uri),
 					version: arg.version
 				},
-				contentChanges: [ { text: arg.getText() } ]
+				contentChanges: [{ text: arg.getText() }]
 			}
 			return result;
 		} else if (isTextDocumentChangeEvent(arg)) {
@@ -149,7 +153,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 			}
 			return result;
 		} else {
-			throw Error ('Unsupported text document change parameter');
+			throw Error('Unsupported text document change parameter');
 		}
 	}
 
@@ -316,14 +320,14 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	}
 
 	function asCapabilitiesParams(client: data.DataProtocolClientCapabilities): proto.CapabiltiesDiscoveryParams {
-		let params:  proto.CapabiltiesDiscoveryParams = {
+		let params: proto.CapabiltiesDiscoveryParams = {
 			hostName: client.hostName,
 			hostVersion: client.hostVersion
 		};
 		return params;
 	}
 
-	function asConnectionParams(connUri: string, connInfo: data.ConnectionInfo) : proto.ConnectParams {
+	function asConnectionParams(connUri: string, connInfo: data.ConnectionInfo): proto.ConnectParams {
 		return {
 			ownerUri: connUri,
 			connection: {
@@ -333,32 +337,46 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	}
 
 	function asMetadataQueryParams(connectionUri: string): ls.MetadataQueryParams {
-		return <ls.MetadataQueryParams> {
+		return <ls.MetadataQueryParams>{
 			ownerUri: connectionUri
 		};
 	}
 
-	function asListDatabasesParams(connectionUri: string) : proto.ListDatabasesParams {
-		return <proto.ListDatabasesParams> {
+	function asListDatabasesParams(connectionUri: string): proto.ListDatabasesParams {
+		return <proto.ListDatabasesParams>{
 			ownerUri: connectionUri
 		};
 	}
 
-	function asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata) : proto.TableMetadataParams {
-		return <proto.TableMetadataParams> {
+	function asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata): proto.TableMetadataParams {
+		return <proto.TableMetadataParams>{
 			ownerUri: connectionUri,
 			schema: metadata.schema,
 			objectName: metadata.name
 		};
 	}
 
-	function asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata) : ls.ScriptingScriptAsParams {
-		return <ls.ScriptingScriptAsParams> {
+	function asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata): ls.ScriptingScriptAsParams {
+		return <ls.ScriptingScriptAsParams>{
 			ownerUri: connectionUri,
 			operation: operation,
 			metadata: metadata
 		};
 	}
+
+	function asConnectionDetail(connInfo: data.ConnectionInfo): ls.ConnectionDetails {
+		return <ls.ConnectionDetails>{
+			options: connInfo.options
+		};
+	}
+
+	function asExpandInfo(nodeInfo: data.ExpandNodeInfo): ls.ExpandParams {
+		return <ls.ExpandParams>{
+			sessionId: nodeInfo.sessionId,
+			nodePath: nodeInfo.nodePath
+		};
+	}
+
 
 	return {
 		asUri,
@@ -390,7 +408,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asMetadataQueryParams,
 		asTableMetadataParams,
 		asListDatabasesParams,
-		asScriptingScriptAsParams
+		asScriptingScriptAsParams,
+		asConnectionDetail,
+		asExpandInfo
 	};
 }
 

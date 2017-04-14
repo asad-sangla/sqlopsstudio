@@ -9,6 +9,7 @@ import { append, $ } from 'vs/base/browser/dom';
 import { BootstrapParams } from 'sql/parts/bootstrap/bootstrapParams';
 import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
+import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
@@ -28,6 +29,7 @@ export interface IBootstrapService {
 
 	connectionManagementService: IConnectionManagementService;
 	metadataService: IMetadataService;
+	objectExplorerService: IObjectExplorerService;
 	scriptingService: IScriptingService;
 	queryEditorService: IQueryEditorService;
 	connectionDialogService: IConnectionDialogService;
@@ -61,6 +63,7 @@ export class BootstrapService implements IBootstrapService {
 	constructor(
 		@IConnectionManagementService public connectionManagementService: IConnectionManagementService,
 		@IMetadataService public metadataService: IMetadataService,
+		@IObjectExplorerService public objectExplorerService: IObjectExplorerService,
 		@IScriptingService public scriptingService: IScriptingService,
 		@IQueryEditorService public queryEditorService: IQueryEditorService,
 		@IConnectionDialogService public connectionDialogService: IConnectionDialogService,

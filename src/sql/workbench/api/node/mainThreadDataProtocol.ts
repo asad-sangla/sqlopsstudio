@@ -13,6 +13,7 @@ import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import * as data from 'data';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
+import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 
 /**
@@ -32,6 +33,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IQueryManagementService private _queryManagementService: IQueryManagementService,
 		@IMetadataService private _metadataService: IMetadataService,
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
 		@IScriptingService private _scriptingService: IScriptingService
 	) {
 		super();
@@ -48,7 +50,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		let providerId: string = handle.toString();
 
 		// register connection management provider
-		this._connectionManagementService.registerProvider(providerId, <data.ConnectionProvider> {
+		this._connectionManagementService.registerProvider(providerId, <data.ConnectionProvider>{
 			connect(connectionUri: string, connectionInfo: data.ConnectionInfo): Thenable<boolean> {
 				return self._proxy.$connect(handle, connectionUri, connectionInfo);
 			},
@@ -116,7 +118,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			}
 		});
 
-		this._metadataService.registerProvider(providerId, <data.MetadataProvider> {
+		this._metadataService.registerProvider(providerId, <data.MetadataProvider>{
 			getMetadata(connectionUri: string): Thenable<data.ProviderMetadata> {
 				return self._proxy.$getMetadata(handle, connectionUri);
 			},
@@ -131,7 +133,16 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			}
 		});
 
-		this._scriptingService.registerProvider(providerId, <data.ScriptingProvider> {
+		this._objectExplorerService.registerProvider(providerId, <data.ObjectExplorerProvider>{
+			createNewSession(connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {
+				return self._proxy.$createObjectExplorerSession(handle, connection);
+			},
+			expandNode(nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+				return self._proxy.$expandObjectExplorerNode(handle, nodeInfo);
+			}
+		});
+
+		this._scriptingService.registerProvider(providerId, <data.ScriptingProvider>{
 			scriptAsSelect(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 				return self._proxy.$scriptAsSelect(handle, connectionUri, metadata);
 			},

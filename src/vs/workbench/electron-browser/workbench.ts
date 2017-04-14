@@ -103,6 +103,7 @@ import { IBootstrapService, BootstrapService } from 'sql/parts/bootstrap/bootstr
 import { ICapabilitiesService, CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
 import { IMetadataService, MetadataService } from 'sql/parts/metadata/metadataService';
+import { IObjectExplorerService, ObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
@@ -576,6 +577,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));
 		serviceCollection.set(IEditorDescriptorService, this.instantiationService.createInstance(EditorDescriptorService));
 		serviceCollection.set(IMetadataService, this.instantiationService.createInstance(MetadataService));
+		serviceCollection.set(IObjectExplorerService, this.instantiationService.createInstance(ObjectExplorerService));
 		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 

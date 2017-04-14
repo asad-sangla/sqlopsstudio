@@ -7,27 +7,27 @@
 import { RequestType, NotificationType, ResponseError } from 'dataprotocol-jsonrpc';
 
 import {
-		TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent,
-		Range, Position, Location, Diagnostic, DiagnosticSeverity, Command,
-		TextEdit, WorkspaceEdit, WorkspaceChange, TextEditChange,
-		TextDocumentIdentifier, VersionedTextDocumentIdentifier, TextDocumentItem,
-		CompletionItemKind, CompletionItem, CompletionList,
-		Hover, MarkedString,
-		SignatureHelp, SignatureInformation, ParameterInformation,
-		Definition, ReferenceContext,
-		DocumentHighlight, DocumentHighlightKind,
-		SymbolInformation, SymbolKind,
-		CodeLens, CodeActionContext,
-		FormattingOptions, DocumentLink,
-		ConnectionDetails, ServerInfo,
-		ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams,
-		ColumnMetadata,
-		ConnectionProviderOptions, DataProtocolServerCapabilities,
-		CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
-		ScriptingScriptAsParams, ScriptingScriptAsResult,
-		BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
-		DbCellValue, EditCell, EditRow
-	} from 'dataprotocol-languageserver-types';
+	TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent,
+	Range, Position, Location, Diagnostic, DiagnosticSeverity, Command,
+	TextEdit, WorkspaceEdit, WorkspaceChange, TextEditChange,
+	TextDocumentIdentifier, VersionedTextDocumentIdentifier, TextDocumentItem,
+	CompletionItemKind, CompletionItem, CompletionList,
+	Hover, MarkedString,
+	SignatureHelp, SignatureInformation, ParameterInformation,
+	Definition, ReferenceContext,
+	DocumentHighlight, DocumentHighlightKind,
+	SymbolInformation, SymbolKind,
+	CodeLens, CodeActionContext,
+	FormattingOptions, DocumentLink,
+	ConnectionDetails, ServerInfo,
+	ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams,
+	ColumnMetadata,
+	ConnectionProviderOptions, DataProtocolServerCapabilities,
+	CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
+	ScriptingScriptAsParams, ScriptingScriptAsResult,
+	BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
+	DbCellValue, EditCell, EditRow, CreateSessionResponse, ExpandParams, ExpandResponse
+} from 'dataprotocol-languageserver-types';
 
 
 /**
@@ -741,7 +741,7 @@ export interface WorkspaceSymbolParams {
  * of type [SymbolInformation[]](#SymbolInformation) or a Thenable that
  * resolves to such.
  */
-export namespace  WorkspaceSymbolRequest {
+export namespace WorkspaceSymbolRequest {
 	export const type: RequestType<WorkspaceSymbolParams, SymbolInformation[], void> = { get method() { return 'workspace/symbol'; } };
 }
 
@@ -1008,7 +1008,7 @@ export class CancelConnectParams {
     /**
      * URI identifying the owner of the connection
      */
-    public ownerUri: string;
+	public ownerUri: string;
 }
 
 // Cancel connect response format.
@@ -1016,7 +1016,7 @@ export type CancelConnectResult = boolean;
 
 // Cancel connect request message callback declaration
 export namespace CancelConnectRequest {
-    export const type: RequestType<CancelConnectParams, CancelConnectResult, void> = { get method(): string { return 'connection/cancelconnect'; } };
+	export const type: RequestType<CancelConnectParams, CancelConnectResult, void> = { get method(): string { return 'connection/cancelconnect'; } };
 }
 
 // ------------------------------- < List Databases Request > ---------------------------------------
@@ -1046,7 +1046,7 @@ export class TableMetadataParams {
 
 	public schema: string;
 
-	public  objectName: string;
+	public objectName: string;
 }
 
 // Table metadata response format
@@ -1143,7 +1143,7 @@ export namespace QueryExecuteBatchCompleteNotification {
 
 // ------------------------------- < Query ResultSet Complete Notification > ------------------------------------
 export namespace QueryExecuteResultSetCompleteNotification {
-	export const type: NotificationType<QueryExecuteResultSetCompleteNotificationParams> = {  get method(): string { return 'query/resultSetComplete'; } };
+	export const type: NotificationType<QueryExecuteResultSetCompleteNotificationParams> = { get method(): string { return 'query/resultSetComplete'; } };
 }
 
 export interface QueryExecuteResultSetCompleteNotificationParams {
@@ -1171,7 +1171,7 @@ export interface QueryExecuteParams {
 	querySelection: ISelectionData;
 }
 
-export interface QueryExecuteResult {}
+export interface QueryExecuteResult { }
 
 // ------------------------------- < Query Results Request > ------------------------------------
 export namespace QueryExecuteSubsetRequest {
@@ -1215,21 +1215,21 @@ export class SaveResultRequestResult {
 }
 // save results in csv format
 export namespace SaveResultsAsCsvRequest {
-    export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveCsv'; } };
+	export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveCsv'; } };
 }
 // --------------------------------- </ Save Results as CSV Request > ------------------------------------------
 
 // --------------------------------- < Save Results as JSON Request > ------------------------------------------
 // save results in json format
 export namespace SaveResultsAsJsonRequest {
-    export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveJson'; } };
+	export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveJson'; } };
 }
 // --------------------------------- </ Save Results as JSON Request > ------------------------------------------
 
 // --------------------------------- < Save Results as Excel Request > ------------------------------------------
 // save results in Excel format
 export namespace SaveResultsAsExcelRequest {
-    export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveExcel'; } };
+	export const type: RequestType<SaveResultsRequestParams, SaveResultRequestResult, void> = { get method(): string { return 'query/saveExcel'; } };
 }
 // --------------------------------- </ Save Results as Excel Request > ------------------------------------------
 
@@ -1237,13 +1237,13 @@ export namespace SaveResultsAsExcelRequest {
 // ------------------------------- < Metadata Events > ------------------------------------
 
 export namespace MetadataQueryRequest {
-    export const type: RequestType<MetadataQueryParams, MetadataQueryResult, void> = { get method(): string { return 'metadata/list'; } };
+	export const type: RequestType<MetadataQueryParams, MetadataQueryResult, void> = { get method(): string { return 'metadata/list'; } };
 }
 
 // ------------------------------- < Scripting Events > ------------------------------------
 
 export namespace ScriptingScriptAsRequest {
-    export const type: RequestType<ScriptingScriptAsParams, ScriptingScriptAsResult, void> = { get method(): string { return 'scripting/scriptas'; } };
+	export const type: RequestType<ScriptingScriptAsParams, ScriptingScriptAsResult, void> = { get method(): string { return 'scripting/scriptas'; } };
 }
 
 // Edit Data ======================================================================================
@@ -1263,16 +1263,16 @@ export interface EditCellResult {
 
 // edit/commit --------------------------------------------------------------------------------
 export namespace EditCommitRequest {
-	export const type: RequestType<EditCommitParams, EditCommitResult, void> = {get method(): string {return 'edit/commit';}};
+	export const type: RequestType<EditCommitParams, EditCommitResult, void> = { get method(): string { return 'edit/commit'; } };
 }
-export interface EditCommitParams extends EditSessionOperationParams {}
-export interface EditCommitResult {}
+export interface EditCommitParams extends EditSessionOperationParams { }
+export interface EditCommitResult { }
 
 // edit/createRow -----------------------------------------------------------------------------
 export namespace EditCreateRowRequest {
-	export const type: RequestType<EditCreateRowParams, EditCreateRowResult, void> = {get method(): string {return 'edit/createRow';}};
+	export const type: RequestType<EditCreateRowParams, EditCreateRowResult, void> = { get method(): string { return 'edit/createRow'; } };
 }
-export interface EditCreateRowParams extends EditSessionOperationParams {}
+export interface EditCreateRowParams extends EditSessionOperationParams { }
 export interface EditCreateRowResult {
 	defaultValues: string[];
 	newRowId: number;
@@ -1280,35 +1280,35 @@ export interface EditCreateRowResult {
 
 // edit/deleteRow -----------------------------------------------------------------------------
 export namespace EditDeleteRowRequest {
-	export const type: RequestType<EditDeleteRowParams, EditDeleteRowResult, void> = {get method(): string {return 'edit/deleteRow';}};
+	export const type: RequestType<EditDeleteRowParams, EditDeleteRowResult, void> = { get method(): string { return 'edit/deleteRow'; } };
 }
-export interface EditDeleteRowParams extends EditRowOperationParams {}
-export interface EditDeleteRowResult {}
+export interface EditDeleteRowParams extends EditRowOperationParams { }
+export interface EditDeleteRowResult { }
 
 // edit/dispose -------------------------------------------------------------------------------
 export namespace EditDisposeRequest {
-	export const type: RequestType<EditDisposeParams, EditDisposeResult, void> = {get method(): string {return 'edit/dispose';}};
+	export const type: RequestType<EditDisposeParams, EditDisposeResult, void> = { get method(): string { return 'edit/dispose'; } };
 }
-export interface EditDisposeParams extends EditSessionOperationParams {}
-export interface EditDisposeResult {}
+export interface EditDisposeParams extends EditSessionOperationParams { }
+export interface EditDisposeResult { }
 
 // edit/initialize ----------------------------------------------------------------------------
 export namespace EditInitializeRequest {
-	export const type: RequestType<EditInitializeParams, EditInitializeResult, void> = {get method(): string {return 'edit/initialize';}};
+	export const type: RequestType<EditInitializeParams, EditInitializeResult, void> = { get method(): string { return 'edit/initialize'; } };
 }
 export interface EditInitializeFiltering {
-    LimitResults?: number;
+	LimitResults?: number;
 }
 export interface EditInitializeParams extends EditSessionOperationParams {
-    filters: EditInitializeFiltering;
-    objectName: string;
-    objectType: string;
+	filters: EditInitializeFiltering;
+	objectName: string;
+	objectType: string;
 }
-export interface EditInitializeResult {}
+export interface EditInitializeResult { }
 
 // edit/revertCell --------------------------------------------------------------------------------
 export namespace EditRevertCellRequest {
-	export const type: RequestType<EditRevertCellParams, EditRevertCellResult, void> = {get method(): string {return 'edit/revertCell';}};
+	export const type: RequestType<EditRevertCellParams, EditRevertCellResult, void> = { get method(): string { return 'edit/revertCell'; } };
 }
 export interface EditRevertCellParams extends EditRowOperationParams {
 	columnId: number;
@@ -1318,14 +1318,14 @@ export interface EditRevertCellResult extends EditCellResult {
 
 // edit/revertRow -----------------------------------------------------------------------------
 export namespace EditRevertRowRequest {
-	export const type: RequestType<EditRevertRowParams, EditRevertRowResult, void> = {get method(): string {return 'edit/revertRow';}};
+	export const type: RequestType<EditRevertRowParams, EditRevertRowResult, void> = { get method(): string { return 'edit/revertRow'; } };
 }
-export interface EditRevertRowParams extends EditRowOperationParams {}
-export interface EditRevertRowResult {}
+export interface EditRevertRowParams extends EditRowOperationParams { }
+export interface EditRevertRowResult { }
 
 // edit/sessionReady Event --------------------------------------------------------------------
 export namespace EditSessionReadyNotification {
-    export const type: NotificationType<EditSessionReadyParams> = { get method(): string { return 'edit/sessionReady'; } };
+	export const type: NotificationType<EditSessionReadyParams> = { get method(): string { return 'edit/sessionReady'; } };
 }
 export interface EditSessionReadyParams {
 	ownerUri: string;
@@ -1335,17 +1335,17 @@ export interface EditSessionReadyParams {
 
 // edit/updateCell ----------------------------------------------------------------------------
 export namespace EditUpdateCellRequest {
-	export const type: RequestType<EditUpdateCellParams, EditUpdateCellResult, void> = {get method(): string {return 'edit/updateCell';}};
+	export const type: RequestType<EditUpdateCellParams, EditUpdateCellResult, void> = { get method(): string { return 'edit/updateCell'; } };
 }
 export interface EditUpdateCellParams extends EditRowOperationParams {
 	columnId: number;
 	newValue: string;
 }
-export interface EditUpdateCellResult extends EditCellResult {}
+export interface EditUpdateCellResult extends EditCellResult { }
 
 // edit/subset ------------------------------------------------------------------------------------
 export namespace EditSubsetRequest {
-	export const type: RequestType<EditSubsetParams, EditSubsetResult, void> = {get method(): string {return 'edit/subset';}};
+	export const type: RequestType<EditSubsetParams, EditSubsetResult, void> = { get method(): string { return 'edit/subset'; } };
 }
 export interface EditSubsetParams extends EditSessionOperationParams {
 	rowStartIndex: number;
@@ -1354,4 +1354,14 @@ export interface EditSubsetParams extends EditSessionOperationParams {
 export interface EditSubsetResult {
 	rowCount: number;
 	subset: EditRow[];
+}
+
+// ------------------------------- < Object Explorer Events > ------------------------------------
+
+export namespace ObjectExplorerCreateSessionRequest {
+	export const type: RequestType<ConnectionDetails, CreateSessionResponse, void> = { get method(): string { return 'objectexplorer/createsession'; } };
+}
+
+export namespace ObjectExplorerExpandRequest {
+	export const type: RequestType<ExpandParams, ExpandResponse, void> = { get method(): string { return 'objectexplorer/expand'; } };
 }

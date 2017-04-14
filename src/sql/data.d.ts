@@ -172,7 +172,7 @@ declare module 'data' {
 		isRequired: boolean;
 	}
 
-	export interface ConnectionProviderOptions  {
+	export interface ConnectionProviderOptions {
 		options: ConnectionOption[];
 	}
 
@@ -216,8 +216,7 @@ declare module 'data' {
 		getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<DataProtocolServerCapabilities>
 	}
 
-	export enum MetadataType
-	{
+	export enum MetadataType {
 		Table = 0,
 		View = 1,
 		SProc = 2,
@@ -238,7 +237,7 @@ declare module 'data' {
 
 		hasExtendedProperties: boolean;
 
- 		defaultValue: string;
+		defaultValue: string;
 
 		/// <summary>
 		/// Escaped identifier for the name of the column
@@ -302,6 +301,13 @@ declare module 'data' {
 		getViewInfo(connectionUri: string, metadata: ObjectMetadata): Thenable<ColumnMetadata[]>;
 	}
 
+	export interface ObjectExplorerProvider {
+		createNewSession(connInfo: ConnectionInfo): Thenable<ObjectExplorerSession>;
+
+		expandNode(nodeInfo: ExpandNodeInfo): Thenable<ObjectExplorerExpandInfo>;
+
+	}
+
 	export interface ScriptingResult {
 		objectName: string;
 
@@ -337,6 +343,8 @@ declare module 'data' {
 		metadataProvider: MetadataProvider;
 
 		scriptingProvider: ScriptingProvider;
+
+		objectExplorerProvider: ObjectExplorerProvider;
 	}
 
 	/**
@@ -589,8 +597,8 @@ declare module 'data' {
 	}
 
 	// edit/commit --------------------------------------------------------------------------------
-	export interface EditCommitParams extends IEditSessionOperationParams {	}
-	export interface EditCommitResult {}
+	export interface EditCommitParams extends IEditSessionOperationParams { }
+	export interface EditCommitResult { }
 
 	// edit/createRow -----------------------------------------------------------------------------
 	export interface EditCreateRowParams extends IEditSessionOperationParams { }
@@ -643,7 +651,7 @@ declare module 'data' {
 		newValue: string;
 	}
 
-	export interface EditUpdateCellResult extends EditCellResult{
+	export interface EditUpdateCellResult extends EditCellResult {
 	}
 
 	// edit/subset --------------------------------------------------------------------------------
@@ -654,5 +662,28 @@ declare module 'data' {
 	export interface EditSubsetResult {
 		rowCount: number;
 		subset: EditRow[];
+	}
+
+	export interface NodeInfo {
+		nodePath: string;
+		nodeType: string;
+		label: string;
+		isLeaf: boolean;
+	}
+
+	export interface ObjectExplorerSession {
+		success: boolean;
+		sessionId: string;
+		rootNode: NodeInfo;
+	}
+
+	export interface ObjectExplorerExpandInfo {
+		sessionId: string;
+		nodes: NodeInfo[];
+	}
+
+	export interface ExpandNodeInfo {
+		sessionId: string,
+		nodePath: string
 	}
 }

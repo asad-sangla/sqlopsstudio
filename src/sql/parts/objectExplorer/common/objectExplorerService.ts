@@ -7,60 +7,148 @@
 import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
 import { NodeType } from 'sql/parts/objectExplorer/common/nodeType';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import data = require('data');
 
-export class ObjectExplorerService {
-	public static getDatabasesTreeNode(parentTree: TreeNode): void {
-		// TreeNode constructor(id: string, label: string, isAlwaysLeaf:boolean, nodePath: string, parent: TreeNode)
-		var databasesTree = new TreeNode(NodeType.Folder, 'Databases', false, parentTree.nodePath + '\\Databases', parentTree);
-		parentTree.children = [databasesTree];
+export const SERVICE_ID = 'ObjectExplorerService';
 
-		var database1 = new TreeNode(NodeType.Database, 'keep_appetcht_dataCompare', false, databasesTree.nodePath + '\\keep_appetcht_dataCompare', databasesTree);
-		databasesTree.children = [database1];
+export const IObjectExplorerService = createDecorator<IObjectExplorerService>(SERVICE_ID);
 
-		var tableFolder = new TreeNode(NodeType.Folder, 'Tables', false, database1.nodePath + '\\Tables', database1);
-		var viewFolder = new TreeNode(NodeType.Folder, 'Views', false, database1.nodePath + '\\Views', database1);
-		database1.children = [tableFolder, viewFolder];
+export interface IObjectExplorerService {
+	_serviceBrand: any;
 
-		var table1 = new TreeNode(NodeType.Table, 'dbo.CaseInsensitive', true, tableFolder.nodePath + '\\dbo.CaseInsensitive', tableFolder);
-		table1.metadata = {
-			metadataType: 0,
-			metadataTypeName: 'Table',
-			name: 'CaseInsensitive',
-			schema: 'dbo'
-		};
-		var table2 = new TreeNode(NodeType.Table, 'dbo.Shippers2', true, tableFolder.nodePath + '\\dbo.Shippers2', tableFolder);
-		table2.metadata = {
-			metadataType: 0,
-			metadataTypeName: 'Table',
-			name: 'Shippers2',
-			schema: 'dbo'
-		};
+	createNewSession(providerId: string, connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession>;
 
-		tableFolder.children = [table1, table2];
+	expandNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo>;
 
-		var view1 = new TreeNode(NodeType.View, 'dbo.Shippers_View', true, viewFolder.nodePath + '\\dbo.Shippers_View', viewFolder);
-		view1.metadata = {
-			metadataType: 1,
-			metadataTypeName: 'View',
-			name: 'Shippers_View',
-			schema: 'dbo'
-		};
-		viewFolder.children = [view1, new TreeNode(NodeType.View, 'View2', true, viewFolder.nodePath + '\\View2', viewFolder)];
+	/**
+	 * Register a ObjectExplorer provider
+	 */
+	registerProvider(providerId: string, provider: data.ObjectExplorerProvider): void;
+
+	getRootTreeNode(root: TreeNode, connections: ConnectionProfile): Promise<TreeNode>;
+
+	createTreeRoot(): TreeNode;
+}
+
+export class ObjectExplorerService implements IObjectExplorerService {
+
+	public _serviceBrand: any;
+
+	private _disposables: IDisposable[] = [];
+
+	private _providers: { [handle: string]: data.ObjectExplorerProvider; } = Object.create(null);
+
+	private _sessions: { [sessionId: string] : TreeNode } = {};
+
+	constructor() {
 	}
 
-	public static getRootTreeNode(connections: ConnectionProfile[]): TreeNode {
-		var children = [];
-		var root = new TreeNode(NodeType.Root, 'root', false, 'root', null);
-		root.children = children;
+	public createNewSession(providerId: string, connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.createNewSession(connection).then(result => {
+				return result;
+			}, error => {
+				return undefined
+			});
+		}
 
-		connections.forEach((conn) => {
-			let label = conn.serverName + ', ' +  conn.databaseName + ', ' + conn.providerName;
-			let nodePath = conn.providerName + '\\' + conn.serverName + '\\' + conn.databaseName;
-			let server = new TreeNode(NodeType.Server, label, false, nodePath, root);
-			server.connection = conn;
-			this.getDatabasesTreeNode(server);
-			children.push(server);
+		return Promise.resolve(undefined);
+	}
+
+	public expandNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.expandNode({
+				sessionId: session.sessionId,
+				nodePath: nodePath
+			});
+		}
+
+		return Promise.resolve(undefined);
+	}
+
+	/**
+	 * Register a ObjectExplorer provider
+	 */
+	public registerProvider(providerId: string, provider: data.ObjectExplorerProvider): void {
+		this._providers[providerId] = provider;
+	}
+
+	public dispose(): void {
+		this._disposables = dispose(this._disposables);
+	}
+
+	private expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode, databaseName: string): Thenable<TreeNode[]> {
+		return this.expandNode('1', session, parentTree.nodePath).then(expandResult => {
+			let children = expandResult.nodes.map(node => {
+				/*
+				if(node.nodeType === NodeType.Database) {
+					if (node.label.toUpperCase() === databaseName.toUpperCase()) {
+						return this.toTreeNode(node, parentTree);
+					} else {
+						return undefined;
+					}
+				} else {
+					return this.toTreeNode(node, parentTree);
+				}
+				*/
+				return this.toTreeNode(node, parentTree);
+			});
+			parentTree.children = children.filter(c => c !== undefined);
+			return children;
+		}, error => {
+
 		});
-		return root;
+	}
+
+	private getDatabasesTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode, databaseName: string): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			this.expandTreeNode(session, parentTree, databaseName).then(children => {
+				children.forEach(child => {
+					if (!child.isAlwaysLeaf) {
+						this.getDatabasesTreeNode(session, child, databaseName);
+					}
+				});
+				resolve();
+			});
+		});
+	}
+
+	private toTreeNode(nodeInfo: data.NodeInfo, parent: TreeNode): TreeNode {
+		return new TreeNode(nodeInfo.nodeType
+			, nodeInfo.label,
+			nodeInfo.isLeaf, nodeInfo.nodePath, parent);
+	}
+
+	public createTreeRoot(): TreeNode {
+		return new TreeNode(NodeType.Root, 'root', false, 'root', null);
+	}
+
+	public getRootTreeNode(root: TreeNode, connection: ConnectionProfile): Promise<TreeNode> {
+		return new Promise<TreeNode>((resolve, reject) => {
+			let sessions: data.ObjectExplorerSession[];
+
+			var children = [];
+			root.children = children;
+
+			this.createNewSession('1', connection).then(session => {
+				if (session.rootNode.label in this._sessions) {
+					resolve(root);
+				} else {
+					let server = this.toTreeNode(session.rootNode, root);
+					server.connection = connection;
+					this.getDatabasesTreeNode(session, server, connection.databaseName).then(() => {
+						children.push(server);
+						this._sessions[session.rootNode.label] = server;
+						resolve(root);
+					}, error => {
+						reject(error);
+					});
+				}
+			});
+		});
 	}
 }

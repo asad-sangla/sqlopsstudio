@@ -5,10 +5,10 @@
 'use strict';
 
 export class NodeType {
-	public static Table = 'table';
-	public static View = 'view';
-	public static Folder = 'folder';
+	public static Table = 'TableInstance';
+	public static View = 'ViewInstance';
+	public static Folder = 'Folder';
 	public static Root = 'root';
-	public static Server = 'server';
-	public static Database = 'database';
+	public static Server = 'ServerInstance';
+	public static Database = 'DatabaseInstance';
 }

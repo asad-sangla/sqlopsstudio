@@ -5,10 +5,33 @@
 
 'use strict';
 
-export interface CategoryValue {
-    displayName: string;
+export interface CreateSessionResponse {
+	success: boolean;
+	sessionId: string;
+	rootNode: NodeInfo;
+}
 
-    name: string;
+export interface ExpandResponse {
+	sessionId: string;
+	nodes: NodeInfo[];
+}
+
+export interface NodeInfo {
+	nodePath: string;
+	nodeType: string;
+	label: string;
+	isLeaf: boolean;
+}
+
+export interface ExpandParams {
+	sessionId: string;
+	nodePath: string;
+}
+
+export interface CategoryValue {
+	displayName: string;
+
+	name: string;
 }
 
 export interface ConnectionOption {
@@ -33,12 +56,12 @@ export interface ConnectionOption {
 	isRequired: boolean;
 }
 
-export interface ConnectionProviderOptions  {
+export interface ConnectionProviderOptions {
 	options: ConnectionOption[];
 }
 
 
-export interface DataProtocolServerCapabilities  {
+export interface DataProtocolServerCapabilities {
 	protocolVersion: string;
 
 	providerName: string;
@@ -296,16 +319,14 @@ export class MetadataQueryParams {
 	public ownerUri: string;
 }
 
-export enum MetadataType
-{
+export enum MetadataType {
 	Table = 0,
 	View = 1,
 	SProc = 2,
 	Function = 3
 }
 
-export class ObjectMetadata
-{
+export class ObjectMetadata {
 	metadataType: MetadataType;
 
 	metadataTypeName: string;
@@ -319,8 +340,7 @@ export class MetadataQueryResult {
 	public metadata: ObjectMetadata[];
 }
 
-export enum ScriptOperation
-{
+export enum ScriptOperation {
 	Select = 0,
 	Create = 1,
 	Insert = 2,
@@ -498,7 +518,7 @@ export namespace Range {
 	 * Checks whether the given literal conforms to the [Range](#Range) interface.
 	 */
 	export function is(value: any): value is Range {
-		let candidate  = value as Range;
+		let candidate = value as Range;
 		return Is.defined(candidate) && Position.is(candidate.start) && Position.is(candidate.end);
 	}
 }
@@ -656,7 +676,7 @@ export namespace Command {
 	/**
 	 * Creates a new Command literal.
 	 */
-	export function create(title: string, command: string, ...args:any[]): Command {
+	export function create(title: string, command: string, ...args: any[]): Command {
 		let result: Command = { title, command };
 		if (Is.defined(args) && args.length > 0) {
 			result.arguments = args;
@@ -1094,7 +1114,7 @@ export namespace CompletionList {
 	 * @param isIncomplete The list is not complete.
 	 */
 	export function create(items?: CompletionItem[], isIncomplete?: boolean): CompletionList {
-		return { items: items ? items : [], isIncomplete: !!isIncomplete};
+		return { items: items ? items : [], isIncomplete: !!isIncomplete };
 	}
 }
 
@@ -1705,7 +1725,7 @@ class FullTextDocument implements TextDocument {
 		this._lineOffsets = null;
 	}
 
-	private getLineOffsets() : number[] {
+	private getLineOffsets(): number[] {
 		if (this._lineOffsets === null) {
 			let lineOffsets: number[] = [];
 			let text = this._content;
@@ -1717,7 +1737,7 @@ class FullTextDocument implements TextDocument {
 				}
 				let ch = text.charAt(i);
 				isLineStart = (ch === '\r' || ch === '\n');
-				if (ch === '\r' && i + 1 < text.length && text.charAt(i+1) === '\n') {
+				if (ch === '\r' && i + 1 < text.length && text.charAt(i + 1) === '\n') {
 					i++;
 				}
 			}
@@ -1729,7 +1749,7 @@ class FullTextDocument implements TextDocument {
 		return this._lineOffsets;
 	}
 
-	public positionAt(offset:number) {
+	public positionAt(offset: number) {
 		offset = Math.max(Math.min(offset, this._content.length), 0);
 
 		let lineOffsets = this.getLineOffsets();

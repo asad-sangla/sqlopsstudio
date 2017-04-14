@@ -82,6 +82,10 @@ export interface Converter {
 	asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata;
 
 	asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult;
+
+	asObjectExplorerSession(params: ls.CreateSessionResponse): data.ObjectExplorerSession;
+
+	asObjectExplorerNodeInfo(params: ls.ExpandResponse): data.ObjectExplorerExpandInfo;
 }
 
 export interface URIConverter {
@@ -165,10 +169,10 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 			return null;
 		}
 		if (Array.isArray(result)) {
-			let items = <ls.CompletionItem[]> result;
+			let items = <ls.CompletionItem[]>result;
 			return items.map(asCompletionItem);
 		}
-		let list = <ls.CompletionList> result;
+		let list = <ls.CompletionList>result;
 		return new code.CompletionList(list.items.map(asCompletionItem), list.isIncomplete);
 	}
 
@@ -291,7 +295,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	}
 
 	function asDocumentHighlightKind(item: ls.DocumentHighlightKind): code.DocumentHighlightKind {
-		switch(item) {
+		switch (item) {
 			case ls.DocumentHighlightKind.Text:
 				return code.DocumentHighlightKind.Text;
 			case ls.DocumentHighlightKind.Read:
@@ -406,8 +410,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 
 		if (!!result.capabilities.connectionProvider
-				&& !!result.capabilities.connectionProvider.options
-				&& result.capabilities.connectionProvider.options.length > 0) {
+			&& !!result.capabilities.connectionProvider.options
+			&& result.capabilities.connectionProvider.options.length > 0) {
 			capabilities.connectionProvider = <data.ConnectionProviderOptions>{
 				options: new Array<data.ConnectionOption>()
 			};
@@ -463,7 +467,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		let objectMetadata: data.ObjectMetadata[] = [];
 
 		for (let i = 0; i < params.metadata.length; ++i) {
-			let metadata:ls.ObjectMetadata = params.metadata[i];
+			let metadata: ls.ObjectMetadata = params.metadata[i];
 
 			// the display string should come from the provider
 			// this is temporary mapping (3/13 karlb)
@@ -486,13 +490,28 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 			});
 		}
 
-		return <data.ProviderMetadata> {
+		return <data.ProviderMetadata>{
 			objectMetadata: objectMetadata
 		};
 	}
 
+	function asObjectExplorerSession(params: ls.CreateSessionResponse): data.ObjectExplorerSession {
+		return <data.ObjectExplorerSession>{
+			success: params.success,
+			sessionId: params.sessionId,
+			rootNode: params.rootNode
+		};
+	}
+
+	function asObjectExplorerNodeInfo(params: ls.ExpandResponse): data.ObjectExplorerExpandInfo {
+		return <data.ObjectExplorerExpandInfo>{
+			sessionId: params.sessionId,
+			nodes: params.nodes
+		};
+	}
+
 	function asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult {
-		return <data.ScriptingResult> {
+		return <data.ScriptingResult>{
 			script: params.script
 		};
 	}
@@ -532,7 +551,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asConnectionSummary,
 		asServerCapabilities,
 		asProviderMetadata,
-		asScriptingResult
+		asScriptingResult,
+		asObjectExplorerSession,
+		asObjectExplorerNodeInfo
 	};
 }
 

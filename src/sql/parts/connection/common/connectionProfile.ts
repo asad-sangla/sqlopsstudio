@@ -121,6 +121,12 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		return result;
 	}
 
+	public toConnectionInfo(): data.ConnectionInfo {
+		return {
+			options: this.options
+		};
+	}
+
 	public static createFromStoredProfile(profile: interfaces.IConnectionProfileStore, serverCapabilities: data.DataProtocolServerCapabilities): ConnectionProfile {
 		let connectionInfo = new ConnectionProfile(serverCapabilities, undefined);
 		connectionInfo.options = profile.options;
