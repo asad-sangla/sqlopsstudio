@@ -14,6 +14,8 @@ import { IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 import { ObjectExplorerActionProvider } from 'sql/parts/objectExplorer/viewlet/objectExplorerActionProvider';
+import { ObjectExplorerActionsContext } from 'sql/parts/objectExplorer/viewlet/objectExplorerActions';
+import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
 
 /**
  * Extends the tree controller to handle clicks on the tree elements
@@ -66,6 +68,9 @@ export class ObjectExplorerController extends treedefaults.DefaultController {
 		event.stopPropagation();
 
 		tree.setFocus(element);
+		var actionContext = new ObjectExplorerActionsContext();
+		actionContext.container = event.target;
+		actionContext.treeNode = <TreeNode>element;
 
 		let anchor = { x: event.posx + 1, y: event.posy };
 		this.contextMenuService.showContextMenu({
@@ -77,7 +82,7 @@ export class ObjectExplorerController extends treedefaults.DefaultController {
 					tree.DOMFocus();
 				}
 			},
-			getActionsContext: () => (element)
+			getActionsContext: () => (actionContext)
 		});
 
 		return true;

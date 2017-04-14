@@ -29,3 +29,14 @@
 	width: 16px;
 	padding-right: 10px;
 }
+
+.object-explorer-viewlet .monaco-tree .monaco-tree-rows > .monaco-tree-row > .loading .object-element-group:before {
+	content: ' ';
+	position: absolute;
+	display: block;
+	background: url('loading-hc.svg') 50% 50% no-repeat;
+	width: 36px;
+	height: 100%;
+	top: 0;
+	left: -35px;
+}

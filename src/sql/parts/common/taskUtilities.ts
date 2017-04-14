@@ -18,8 +18,8 @@ export class TaskUtilities {
 	/**
 	 * Select the top rows from an object
 	 */
-	public static scriptSelect(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): void {
-		scriptingService.scriptAsSelect('1', ownerUri, metadata).then(result => {
+	public static scriptSelect(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Thenable<void> {
+		return scriptingService.scriptAsSelect('1', ownerUri, metadata).then(result => {
 			if (result && result.script) {
 				queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
 					// Connect our editor to the input connection
@@ -38,8 +38,8 @@ export class TaskUtilities {
 	/**
 	 * Opens a new Edit Data session
 	 */
-	public static editData(connectionProfile: IConnectionProfile, tableName: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): void {
-		queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
+	public static editData(connectionProfile: IConnectionProfile, tableName: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): Promise<void> {
+		return queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
 			// Connect our editor
 			let options: IConnectionCompletionOptions = {
 				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
@@ -48,27 +48,27 @@ export class TaskUtilities {
 				showConnectionDialogOnError: true
 			};
 			connectionService.connect(connectionProfile, owner.uri, options);
-			});
+		});
 	}
 
 	/**
 	 * Script the object as a CREATE statement
 	 */
-	public static scriptCreate(metadata: data.ObjectMetadata, ownerUri: string, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): void {
-		scriptingService.scriptAsCreate('1', ownerUri, metadata).then(result => {
+	public static scriptCreate(metadata: data.ObjectMetadata, ownerUri: string, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Thenable<void> {
+		return scriptingService.scriptAsCreate('1', ownerUri, metadata).then(result => {
 			if (result && result.script) {
-				 let script = result.script;
-				 var startPos: number = script.indexOf('CREATE');
-				 if (startPos > 0) {
+				let script = result.script;
+				var startPos: number = script.indexOf('CREATE');
+				if (startPos > 0) {
 					script = script.substring(startPos);
-				 }
+				}
 				queryEditorService.newSqlEditor(script);
 			}
 		});
 	}
 
-	public static newQuery(connectionProfile: IConnectionProfile, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): void {
-		queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
+	public static newQuery(connectionProfile: IConnectionProfile, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): Promise<void> {
+		return queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
 			// Connect our editor to the input connection
 			let options: IConnectionCompletionOptions = {
 				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
