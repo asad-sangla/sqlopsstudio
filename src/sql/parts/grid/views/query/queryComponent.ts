@@ -317,7 +317,7 @@ export class QueryComponent implements OnInit {
         }
 
         let minHeight: string = maxHeight;
-        if (resultSet.rowCount > self._defaultNumShowingRows) {
+        if (resultSet.rowCount >= self._defaultNumShowingRows) {
             let minHeightNumber: number = (self._defaultNumShowingRows + 1) * self._rowHeight + 10;
             minHeight = minHeightNumber.toString() + 'px';
         }
