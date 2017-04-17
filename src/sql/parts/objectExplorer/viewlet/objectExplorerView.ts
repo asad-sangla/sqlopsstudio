@@ -16,7 +16,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { ObjectExplorerUtils } from 'sql/parts/objectExplorer/viewlet/objectExplorerUtils';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
-import { ObjectExplorerService, IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
+import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { AddServerAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
@@ -28,7 +28,8 @@ const $ = builder.$;
  */
 export class ObjectExplorerView extends CollapsibleViewletView {
 
-	private addServerAction: AddServerAction;
+	private _addServerAction: AddServerAction;
+	private _rootNode: TreeNode;
 
 	constructor(actionRunner: IActionRunner, settings: any,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
@@ -40,9 +41,10 @@ export class ObjectExplorerView extends CollapsibleViewletView {
 
 	) {
 		super(actionRunner, false, nls.localize({ key: 'objectExplorerSection', comment: ['Object Explorer Tree'] }, "Object Explorer Section"), messageService, keybindingService, contextMenuService);
-		this.addServerAction = this._instantiationService.createInstance(AddServerAction,
+		this._addServerAction = this._instantiationService.createInstance(AddServerAction,
 			AddServerAction.ID,
 			AddServerAction.LABEL);
+		this._rootNode = this._objectExplorerService.createTreeRoot();
 	}
 
 	/**
@@ -86,7 +88,7 @@ export class ObjectExplorerView extends CollapsibleViewletView {
 	 * Return actions for the view
 	 */
 	public getActions(): IAction[] {
-		return [this.addServerAction];
+		return [this._addServerAction];
 	}
 
 	/**
@@ -107,7 +109,7 @@ export class ObjectExplorerView extends CollapsibleViewletView {
 		groups = this._connectionManagementService.getActiveConnections();
 
 		let connections = ObjectExplorerUtils.convertToConnectionProfile(groups);
-		var treeInput = this._objectExplorerService.createTreeRoot();
+		var treeInput = this._rootNode;
 
 		let promises = connections.map(connection => {
 			return this._connectionManagementService.addSavedPassword(connection).then(withPassword => {
@@ -117,29 +119,23 @@ export class ObjectExplorerView extends CollapsibleViewletView {
 
 		});
 		Promise.all(promises).then(() => {
-			(treeInput !== this.tree.getInput() ? this.tree.setInput(treeInput) : this.tree.refresh()).done(() => {
-				this.tree.getFocus();
-			}, errors.onUnexpectedError);
+			if (treeInput !== this.tree.getInput()) {
+				this.tree.setInput(treeInput).done(() => {
+					// Make sure to expand all folders that where expanded in the previous session
+					if (targetsToExpand) {
+						this.tree.expandAll(targetsToExpand);
+					}
+					if (selectedElement) {
+						this.tree.select(selectedElement);
+					}
+					this.tree.getFocus();
+				}, errors.onUnexpectedError);
+			} else {
+				this.tree.refresh().done(() => {
+					this.tree.getFocus();
+				}, errors.onUnexpectedError);
+			}
 		});
-		//var treeInput = ObjectExplorerService.getRootTreeNode(ObjectExplorerUtils.convertToConnectionProfile(groups));
-
-		if (treeInput !== this.tree.getInput()) {
-			this.tree.setInput(treeInput).done(() => {
-				// Make sure to expand all folders that where expanded in the previous session
-				if (targetsToExpand) {
-					this.tree.expandAll(targetsToExpand);
-				}
-				if (selectedElement) {
-					this.tree.select(selectedElement);
-				}
-				this.tree.getFocus();
-			}, errors.onUnexpectedError);
-		} else {
-			this.tree.refresh().done(() => {
-				this.tree.getFocus();
-			}, errors.onUnexpectedError);
-		}
-
 	}
 
 	private onError(err: any): void {

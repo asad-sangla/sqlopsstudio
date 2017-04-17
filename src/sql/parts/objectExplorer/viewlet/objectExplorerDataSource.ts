@@ -6,11 +6,17 @@
 import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
 import { ITree, IDataSource} from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
+import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 
 /**
  * Implements the DataSource(that returns a parent/children of an element) for the server tree
  */
 export class ObjectExplorerDataSource implements IDataSource {
+
+	constructor(
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+	) {
+	}
 
 	/**
 	 * Returns the unique identifier of the given element.
@@ -39,7 +45,16 @@ export class ObjectExplorerDataSource implements IDataSource {
 	 */
 	public getChildren(tree: ITree, element: any): TPromise<any> {
 		if (element instanceof TreeNode) {
-			return TPromise.as((<TreeNode>element).children);
+			var node = <TreeNode>element;
+			if (node.children){
+				return TPromise.as(node.children);
+			} else {
+				return new TPromise<TreeNode[]>((resolve) => {
+					this._objectExplorerService.expandTreeNode(node.getSession(), node).then(() => {
+						resolve(node.children);
+					});
+				});
+			}
 		} else {
 			return TPromise.as(null);
 		}

@@ -10,7 +10,6 @@ import { NodeType } from 'sql/parts/objectExplorer/common/nodeType';
 import data = require('data');
 
 export class TreeNode {
-
     /**
      * string defining the type of the node - for example Server, Database, Folder, Table
      */
@@ -42,13 +41,15 @@ export class TreeNode {
      */
     public nodePath: string;
 
-    /**
+       /**
      * Children of this node
      */
     public children: TreeNode[];
 
 
     public connection: ConnectionProfile;
+
+    public session: data.ObjectExplorerSession;
 
     public metadata: data.ObjectMetadata;
 
@@ -65,14 +66,22 @@ export class TreeNode {
             return undefined;
         }
         var currentNode:TreeNode = this;
-        while (currentNode.nodeTypeId !== NodeType.Database && currentNode.nodeTypeId !== NodeType.Server) {
+        while (currentNode.nodeTypeId !== NodeType.DatabaseInstance && currentNode.nodeTypeId !== NodeType.ServerInstance) {
             currentNode = currentNode.parent;
         }
 
-        if (currentNode.nodeTypeId === NodeType.Database) {
+        if (currentNode.nodeTypeId === NodeType.DatabaseInstance) {
             return currentNode.label;
         }
         return undefined;
+    }
+
+    public getSession(): data.ObjectExplorerSession {
+        var currentNode:TreeNode = this;
+        while (!currentNode.session && currentNode.parent) {
+            currentNode = currentNode.parent;
+        }
+        return currentNode.session;
     }
 
     public isTopLevel(): boolean {

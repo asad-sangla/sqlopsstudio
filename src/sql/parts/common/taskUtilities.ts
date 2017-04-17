@@ -18,20 +18,24 @@ export class TaskUtilities {
 	/**
 	 * Select the top rows from an object
 	 */
-	public static scriptSelect(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Thenable<void> {
-		return scriptingService.scriptAsSelect('1', ownerUri, metadata).then(result => {
-			if (result && result.script) {
-				queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
-					// Connect our editor to the input connection
-					let options: IConnectionCompletionOptions = {
-						params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
-						saveToSettings: false,
-						showDashboard: false,
-						showConnectionDialogOnError: true
-					};
-					connectionService.connect(connectionProfile, owner.uri, options);
-				});
-			}
+	public static scriptSelect(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
+		return new Promise<void>((resolve) => {
+			scriptingService.scriptAsSelect('1', ownerUri, metadata).then(result => {
+				if (result && result.script) {
+					queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
+						// Connect our editor to the input connection
+						let options: IConnectionCompletionOptions = {
+							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
+							saveToSettings: false,
+							showDashboard: false,
+							showConnectionDialogOnError: true
+						};
+						connectionService.connect(connectionProfile, owner.uri, options).then(() => {
+							resolve();
+						});
+					});
+				}
+			});
 		});
 	}
 
@@ -39,44 +43,56 @@ export class TaskUtilities {
 	 * Opens a new Edit Data session
 	 */
 	public static editData(connectionProfile: IConnectionProfile, tableName: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): Promise<void> {
-		return queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
-			// Connect our editor
-			let options: IConnectionCompletionOptions = {
-				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
-				saveToSettings: false,
-				showDashboard: false,
-				showConnectionDialogOnError: true
-			};
-			connectionService.connect(connectionProfile, owner.uri, options);
+		return new Promise<void>((resolve) => {
+			queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
+				// Connect our editor
+				let options: IConnectionCompletionOptions = {
+					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
+					saveToSettings: false,
+					showDashboard: false,
+					showConnectionDialogOnError: true
+				};
+				connectionService.connect(connectionProfile, owner.uri, options).then(() => {
+					resolve();
+				});
+			});
 		});
 	}
 
 	/**
 	 * Script the object as a CREATE statement
 	 */
-	public static scriptCreate(metadata: data.ObjectMetadata, ownerUri: string, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Thenable<void> {
-		return scriptingService.scriptAsCreate('1', ownerUri, metadata).then(result => {
-			if (result && result.script) {
-				let script = result.script;
-				var startPos: number = script.indexOf('CREATE');
-				if (startPos > 0) {
-					script = script.substring(startPos);
+	public static scriptCreate(metadata: data.ObjectMetadata, ownerUri: string, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
+		return new Promise<void>((resolve) => {
+			scriptingService.scriptAsCreate('1', ownerUri, metadata).then(result => {
+				if (result && result.script) {
+					let script = result.script;
+					var startPos: number = script.indexOf('CREATE');
+					if (startPos > 0) {
+						script = script.substring(startPos);
+					}
+					queryEditorService.newSqlEditor(script).then(() => {
+						resolve();
+					});
 				}
-				queryEditorService.newSqlEditor(script);
-			}
+			});
 		});
 	}
 
 	public static newQuery(connectionProfile: IConnectionProfile, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): Promise<void> {
-		return queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
-			// Connect our editor to the input connection
-			let options: IConnectionCompletionOptions = {
-				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
-				saveToSettings: false,
-				showDashboard: false,
-				showConnectionDialogOnError: true
-			};
-			connectionService.connect(connectionProfile, owner.uri, options);
+		return new Promise<void>((resolve) => {
+			queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
+				// Connect our editor to the input connection
+				let options: IConnectionCompletionOptions = {
+					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
+					saveToSettings: false,
+					showDashboard: false,
+					showConnectionDialogOnError: true
+				};
+				connectionService.connect(connectionProfile, owner.uri, options).then(() => {
+					resolve();
+				});
+			});
 		});
 	}
 }

@@ -22,6 +22,8 @@ export interface IObjectExplorerService {
 
 	expandNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo>;
 
+	expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]>;
+
 	/**
 	 * Register a ObjectExplorer provider
 	 */
@@ -51,7 +53,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 			return provider.createNewSession(connection).then(result => {
 				return result;
 			}, error => {
-				return undefined
+				return undefined;
 			});
 		}
 
@@ -81,39 +83,15 @@ export class ObjectExplorerService implements IObjectExplorerService {
 		this._disposables = dispose(this._disposables);
 	}
 
-	private expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode, databaseName: string): Thenable<TreeNode[]> {
+	public expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]> {
 		return this.expandNode('1', session, parentTree.nodePath).then(expandResult => {
 			let children = expandResult.nodes.map(node => {
-				/*
-				if(node.nodeType === NodeType.Database) {
-					if (node.label.toUpperCase() === databaseName.toUpperCase()) {
-						return this.toTreeNode(node, parentTree);
-					} else {
-						return undefined;
-					}
-				} else {
-					return this.toTreeNode(node, parentTree);
-				}
-				*/
 				return this.toTreeNode(node, parentTree);
 			});
 			parentTree.children = children.filter(c => c !== undefined);
 			return children;
 		}, error => {
 
-		});
-	}
-
-	private getDatabasesTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode, databaseName: string): Promise<void> {
-		return new Promise<void>((resolve, reject) => {
-			this.expandTreeNode(session, parentTree, databaseName).then(children => {
-				children.forEach(child => {
-					if (!child.isAlwaysLeaf) {
-						this.getDatabasesTreeNode(session, child, databaseName);
-					}
-				});
-				resolve();
-			});
 		});
 	}
 
@@ -124,29 +102,24 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public createTreeRoot(): TreeNode {
-		return new TreeNode(NodeType.Root, 'root', false, 'root', null);
+		let root = new TreeNode(NodeType.Root, 'root', false, 'root', null);
+ 		root.children = [];
+ 		return root;
 	}
 
 	public getRootTreeNode(root: TreeNode, connection: ConnectionProfile): Promise<TreeNode> {
 		return new Promise<TreeNode>((resolve, reject) => {
-			let sessions: data.ObjectExplorerSession[];
-
-			var children = [];
-			root.children = children;
+			var children = root.children;
 
 			this.createNewSession('1', connection).then(session => {
-				if (session.rootNode.label in this._sessions) {
+				if (session.sessionId in this._sessions) {
 					resolve(root);
 				} else {
 					let server = this.toTreeNode(session.rootNode, root);
 					server.connection = connection;
-					this.getDatabasesTreeNode(session, server, connection.databaseName).then(() => {
-						children.push(server);
-						this._sessions[session.rootNode.label] = server;
-						resolve(root);
-					}, error => {
-						reject(error);
-					});
+					server.session = session;
+					children.push(server);
+					resolve(root);
 				}
 			});
 		});
