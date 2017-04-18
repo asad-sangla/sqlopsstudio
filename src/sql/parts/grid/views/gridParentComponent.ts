@@ -24,7 +24,7 @@ import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
 
 import { IAction } from 'vs/base/common/actions';
-import { Keybinding } from 'vs/base/common/keyCodes';
+import { ResolvedKeybinding } from 'vs/base/common/keyCodes';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
@@ -205,7 +205,7 @@ export abstract class GridParentComponent {
 			this.dataService.sendSaveRequest({ batchIndex: batchId, resultSetNumber: resultId, format: format, selection: selection});
 	}
 
-	protected _keybindingFor(action: IAction): Keybinding {
+	protected _keybindingFor(action: IAction): ResolvedKeybinding {
 		var [kb] = this.keybindingService.lookupKeybindings(action.id);
 		return kb;
 	}
