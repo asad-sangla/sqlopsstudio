@@ -156,7 +156,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 	 */
 	public scriptSelect(): void {
 		if (this.selectedObject) {
-			this.scriptingService.scriptAsSelect('1', this.ownerUri, this.selectedObject.metadata).then(result => {
+			this.scriptingService.scriptAsSelect(this.ownerUri, this.selectedObject.metadata).then(result => {
 				if (result && result.script) {
 					this.queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
 						// Connect our editor to the input connection
@@ -197,7 +197,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 	 */
 	public scriptCreate(): void {
 		if (this.selectedObject) {
-			this.scriptingService.scriptAsCreate('1', this.ownerUri, this.selectedObject.metadata).then(result => {
+			this.scriptingService.scriptAsCreate(this.ownerUri, this.selectedObject.metadata).then(result => {
 				if (result && result.script) {
 
 					 let script = result.script;
