@@ -14,14 +14,14 @@ export class DashboardInput extends EditorInput {
 	public static ID: string = 'workbench.editorinputs.connectiondashboardinputs';
 	public static SCHEMA: string = 'sqldashboard';
 
-	private _hasInitialized: boolean = false;
+	private _uniqueSelector: string;
 
 	constructor(private _uri: string, private _connection: ConnectionManagementInfo) {
 		super();
 	}
 
-	public setHasInitialized(): void {
-		this._hasInitialized = true;
+	public setUniqueSelector(uniqueSelector: string): void {
+		this._uniqueSelector = uniqueSelector;
 	}
 
 	public getTypeId(): string {
@@ -49,8 +49,12 @@ export class DashboardInput extends EditorInput {
 	}
 
 	public get hasInitialized(): boolean {
-		return this._hasInitialized;
+		return !!this._uniqueSelector;
     }
+
+	public get uniqueSelector(): string {
+		return this._uniqueSelector;
+	}
 
 	public getConnectionInfo(): ConnectionManagementInfo {
 		return this._connection;

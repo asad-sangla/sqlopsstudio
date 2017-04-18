@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DataService } from 'sql/parts/grid/services/dataService';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 

@@ -12,15 +12,14 @@ import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
+import { DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 import { DbListComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
-import { DbListModule, GetUniqueDbListUri, DBListAngularSelectorString } from 'sql/parts/common/dblist/dblist.module';
+import { DbListModule } from 'sql/parts/common/dblist/dblist.module';
 import { ISelectionData } from 'data';
 import nls = require('vs/nls');
-import * as dom from 'vs/base/browser/dom';
-const $ = dom.$;
 
 declare let AngularPlatformBrowserDynamic;
 
@@ -279,8 +278,7 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this._bootstrapService.bootstrap(
 			DbListModule,
 			container,
-			DBListAngularSelectorString,
-			GetUniqueDbListUri(),
+			DBLIST_SELECTOR,
 			params);
 	}
 

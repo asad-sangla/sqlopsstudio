@@ -3,35 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+
 import { ApplicationRef, ComponentFactoryResolver } from '@angular/core';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
 
-import { DbListComponent, DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
+import { EditDataComponent, EDITDATA_SELECTOR } from 'sql/parts/grid/views/editData/editData.component';
+import { SlickGrid } from 'angular2-slickgrid';
 
 declare let AngularPlatformBrowser;
 declare let AngularCore;
 declare let AngularCommon;
-declare let AngularForms;
-declare let PrimeNg;
 
 @AngularCore.NgModule({
 
 	imports: [
 		AngularCommon.CommonModule,
-		AngularPlatformBrowser.BrowserModule,
-		AngularForms.FormsModule,
-		PrimeNg.DropdownModule
+		AngularPlatformBrowser.BrowserModule
 	],
 
 	declarations: [
-		DbListComponent
+		EditDataComponent,
+		SlickGrid
 	],
 
 	entryComponents: [
-		DbListComponent
+		EditDataComponent
 	]
 })
-export class DbListModule {
+export class EditDataModule {
 
 	constructor(
 		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
@@ -40,8 +39,8 @@ export class DbListModule {
 	}
 
 	ngDoBootstrap(appRef: ApplicationRef) {
-		const factory = this._resolver.resolveComponentFactory(DbListComponent);
-		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(DBLIST_SELECTOR);
+		const factory = this._resolver.resolveComponentFactory(EditDataComponent);
+		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(EDITDATA_SELECTOR);
 		factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}

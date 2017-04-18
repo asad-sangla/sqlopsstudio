@@ -24,49 +24,12 @@ declare let AngularCore;
 declare let rangy;
 declare let jQuery;
 
-AngularCore.enableProdMode();
-
-const template = `
-<div class="fullsize vertBox">
-    <div id="results" *ngIf="renderedDataSets.length > 0" class="results vertBox scrollable"
-         (onScroll)="onScroll($event)" [class.hidden]="!resultActive">
-        <div class="boxRow content horzBox slickgrid editable" *ngFor="let dataSet of renderedDataSets; let i = index"
-            [style.max-height]="dataSet.maxHeight" [style.min-height]="dataSet.minHeight">
-            <slick-grid #slickgrid id="slickgrid_{{i}}" [columnDefinitions]="dataSet.columnDefinitions"
-                        [ngClass]="i === activeGrid ? 'active' : ''"
-                        [dataRows]="dataSet.dataRows"
-                        enableAsyncPostRender="true"
-                        showDataTypeIcon="false"
-                        showHeader="true"
-                        [resized]="dataSet.resized"
-                        [plugins]="slickgridPlugins"
-                        (cellEditBegin)="onCellEditBegin($event)"
-                        (cellEditExit)="onCellEditEnd($event)"
-                        (rowEditBegin)="onRowEditBegin($event)"
-                        (rowEditExit)="onRowEditEnd($event)"
-                        [isColumnEditable]="onIsColumnEditable"
-                        [isCellEditValid]="onIsCellEditValid"
-                        [overrideCellFn]="overrideCellFn"
-                        enableEditing="true"
-                        class="boxCol content vertBox slickgrid">
-            </slick-grid>
-        </div>
-    </div>
-</div>
-`;
+export const EDITDATA_SELECTOR: string = 'editdata-component';
 
 @AngularCore.Component({
-    selector: 'slickgrid-container',
+    selector: EDITDATA_SELECTOR,
     host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
-    template: template,
-    styles: [`
-    .errorMessage {
-        color: var(--color-error);
-    }
-    .batchMessage {
-        padding-left: 20px;
-    }
-    `]
+	templateUrl: require.toUrl('sql/parts/grid/views/editData/editData.component.html')
 })
 
 export class EditDataComponent implements OnInit {
@@ -134,9 +97,8 @@ export class EditDataComponent implements OnInit {
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private cd: ChangeDetectorRef,
         @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
     ) {
-        let uri: string = this._el.nativeElement.id;
-		this._el.nativeElement.removeAttribute('id');
-        let editDataParameters: EditDataComponentParams = this._bootstrapService.getBootstrapParams(uri);
+        this._el.nativeElement.className = 'slickgridContainer';
+        let editDataParameters: EditDataComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
         this.dataService = editDataParameters.dataService;
     }
 

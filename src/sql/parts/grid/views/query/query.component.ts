@@ -24,19 +24,11 @@ import { QueryComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 declare let AngularCore;
 declare let rangy;
 
-AngularCore.enableProdMode();
+export const QUERY_SELECTOR: string = 'query-component';
 
 @AngularCore.Component({
-    selector: 'slickgrid-container',
-	templateUrl: require.toUrl('sql/parts/grid/views/query/queryTemplate.html'),
-    styles: [`
-    .errorMessage {
-        color: var(--color-error);
-    }
-    .batchMessage {
-        padding-left: 20px;
-    }
-    `]
+    selector: QUERY_SELECTOR,
+	templateUrl: require.toUrl('sql/parts/grid/views/query/query.template.html')
 })
 
 export class QueryComponent implements OnInit {
@@ -219,9 +211,8 @@ export class QueryComponent implements OnInit {
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private _cd: ChangeDetectorRef,
         @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
     ) {
-        let uri: string = this._el.nativeElement.id;
-		this._el.nativeElement.removeAttribute('id');
-        let queryParameters: QueryComponentParams = this._bootstrapService.getBootstrapParams(uri);
+        this._el.nativeElement.className = 'slickgridContainer';
+        let queryParameters: QueryComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
         this.dataService = queryParameters.dataService;
     }
 

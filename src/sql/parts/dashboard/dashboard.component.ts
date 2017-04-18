@@ -25,12 +25,14 @@ import { ConnectionManagementInfo } from 'sql/parts/connection/common/connection
 
 declare let AngularCore;
 
+export const DASHBOARD_SELECTOR: string = 'dashboard-component';
+
 @AngularCore.Component({
-	selector: 'connection-dashboard',
+	selector: DASHBOARD_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/dashboard/dashboard.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
-export class AppComponent {
+export class DashboardComponent {
 
 	public ownerUri: string;
 
@@ -58,8 +60,7 @@ export class AppComponent {
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
         @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
-        this.ownerUri = this._el.nativeElement.parentElement.getAttribute('bootstrap-id');
-        let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this.ownerUri);
+        let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 
 		this.connectionService = this._bootstrapService.connectionManagementService;
 		this.metadataService = this._bootstrapService.metadataService;
@@ -70,19 +71,6 @@ export class AppComponent {
 		this.currentDatabaseName = this.connection.connectionProfile.databaseName;
 		this.ownerUri = dashboardParameters.ownerUri;
 		this.breadCrumbItems = [];
-	}
-
-	public static AngularSelectorString: string = 'connection-dashboard';
-
-	private static nextSelectorId: number = 0;
-
-	public static getNextAngularSelectorString(): string {
-		++this.nextSelectorId;
-		return this.getCurrentAngularSelectorString();
-	}
-
-	public static getCurrentAngularSelectorString(): string {
-		return AppComponent.AngularSelectorString + this.nextSelectorId;
 	}
 
 	public onActivate(component: any) {

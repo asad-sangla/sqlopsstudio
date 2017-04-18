@@ -3,6 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+.errorMessage {
+    color: var(--color-error);
+}
+
+.batchMessage {
+    padding-left: 20px;
+}
+
 /*
  * vs theme
  *

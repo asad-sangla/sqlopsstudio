@@ -17,8 +17,10 @@ import { SelectItem } from 'primeng/primeng';
 
 declare let AngularCore;
 
+export const DBLIST_SELECTOR: string = 'dblist-component';
+
 @AngularCore.Component({
-	selector: 'database-list',
+	selector: DBLIST_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/common/dblist/dblist.component.html'),
 	styleUrls: [require.toUrl('sql/parts/common/dblist/dblist.component.css'), require.toUrl('sql/media/primeng.css')]
 })
@@ -40,9 +42,7 @@ export class DbListComponent implements OnInit, OnDestroy {
 	}
 
 	public ngOnInit(): void {
-
-        this.id = this._el.nativeElement.parentElement.getAttribute('bootstrap-id');
-        let bootstrapParams = <DbListComponentParams> this._bootstrapService.getBootstrapParams(this.id);
+        let bootstrapParams = <DbListComponentParams> this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 		this.dbListInterop = bootstrapParams.dbListInterop;
 
 		this.connectionService = this._bootstrapService.connectionManagementService;

@@ -41,6 +41,8 @@ const AngularRouter = require('@angular/router');
 const Rx = require('rxjs/Rx');
 const Figures = require('figures');
 
+AngularCore.enableProdMode();
+
 process.lazyEnv = new Promise(function (resolve) {
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
 		assign(process.env, shellEnv);

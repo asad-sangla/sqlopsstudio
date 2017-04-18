@@ -30,8 +30,9 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import {
 	RefreshTableAction, StopRefreshTableAction,
 	ChangeMaxRowsAction, ChangeMaxRowsActionItem} from 'sql/parts/editData/execution/editDataActions';
-import { AppModule } from 'sql/parts/grid/views/editdata.module';
+import { EditDataModule } from 'sql/parts/grid/views/editData/editData.module';
 import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
+import { EDITDATA_SELECTOR } from 'sql/parts/grid/views/editData/editData.component';
 import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 
 /**
@@ -40,7 +41,6 @@ import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 export class EditDataEditor extends BaseEditor {
 
 	public static ID: string = 'workbench.editor.editDataEditor';
-	public static AngularSelectorString: string = 'slickgrid-container.slickgridContainer';
 
 	private _dimension: Dimension;
 	private _resultsEditorContainer: HTMLElement;
@@ -300,10 +300,9 @@ export class EditDataEditor extends BaseEditor {
 				dataService: dataService
 			};
 			this._bootstrapService.bootstrap(
-				AppModule,
+				EditDataModule,
 				parent,
-				EditDataEditor.AngularSelectorString,
-				uri,
+				EDITDATA_SELECTOR,
 				params);
 		}
 		return TPromise.as<void>(null);

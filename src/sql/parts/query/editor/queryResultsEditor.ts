@@ -12,10 +12,11 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import { QueryModule } from 'sql/parts/grid/views/query/queryModule';
+import { QueryModule } from 'sql/parts/grid/views/query/query.module';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { QUERY_SELECTOR } from 'sql/parts/grid/views/query/query.component';
 
 export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareEditorVisible', false);
 
@@ -66,14 +67,11 @@ export class QueryResultsEditor extends BaseEditor {
 		input.setBootstrappedTrue();
 
 		// Get the bootstrap params and perform the bootstrap
-		let params: QueryComponentParams = {
-			dataService: dataService
-		};
+		let params: QueryComponentParams = { dataService: dataService };
 		this._bootstrapService.bootstrap(
 			QueryModule,
 			this.getContainer().getHTMLElement(),
-			QueryResultsEditor.AngularSelectorString,
-			uri,
+			QUERY_SELECTOR,
 			params);
 	}
 

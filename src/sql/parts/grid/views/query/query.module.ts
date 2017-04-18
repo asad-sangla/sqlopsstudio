@@ -6,32 +6,34 @@
 import { ApplicationRef, ComponentFactoryResolver } from '@angular/core';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
 
-import { DbListComponent, DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
+import { QueryComponent, QUERY_SELECTOR } from 'sql/parts/grid/views/query/query.component';
+import { SlickGrid } from 'angular2-slickgrid';
+import { MouseDownDirective } from 'sql/parts/grid/directives/mousedown.directive';
+import { ScrollDirective } from 'sql/parts/grid/directives/scroll.directive';
 
 declare let AngularPlatformBrowser;
 declare let AngularCore;
 declare let AngularCommon;
-declare let AngularForms;
-declare let PrimeNg;
 
 @AngularCore.NgModule({
 
 	imports: [
 		AngularCommon.CommonModule,
-		AngularPlatformBrowser.BrowserModule,
-		AngularForms.FormsModule,
-		PrimeNg.DropdownModule
+		AngularPlatformBrowser.BrowserModule
 	],
 
 	declarations: [
-		DbListComponent
+		QueryComponent,
+		SlickGrid,
+		ScrollDirective,
+		MouseDownDirective
 	],
 
 	entryComponents: [
-		DbListComponent
+		QueryComponent
 	]
 })
-export class DbListModule {
+export class QueryModule {
 
 	constructor(
 		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
@@ -40,8 +42,8 @@ export class DbListModule {
 	}
 
 	ngDoBootstrap(appRef: ApplicationRef) {
-		const factory = this._resolver.resolveComponentFactory(DbListComponent);
-		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(DBLIST_SELECTOR);
+		const factory = this._resolver.resolveComponentFactory(QueryComponent);
+		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(QUERY_SELECTOR);
 		factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}
