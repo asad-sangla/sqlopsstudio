@@ -46,6 +46,15 @@ export class ObjectMetadataExplorerComponent implements OnInit, IDashboardCompon
 		this.columns = [];
 	}
 
+	public clearLoadingWheel(): void {
+		setTimeout(function(){
+			$(".ui-datatable-emptymessage").css('content', 'none');
+			$(".ui-datatable-emptymessage").css('color', 'inherit');
+			$(".ui-datatable-emptymessage").css('height', 'inherit');
+			$(".ui-datatable-emptymessage").css('border', 'inherit');
+		}, 5000);
+	}
+
 	public stateInitialized(): void {
 		const self = this;
 
@@ -59,6 +68,9 @@ export class ObjectMetadataExplorerComponent implements OnInit, IDashboardCompon
 				self.columns = result;
 				self.changeDetectorRef.detectChanges();
 			});
+		}
+		if (self.columns.length === 0) {
+			this.clearLoadingWheel();
 		}
 	}
 }

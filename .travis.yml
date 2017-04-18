@@ -44,3 +44,4 @@ script:
   - gulp compile --silent
   - gulp optimize-vscode --max_old_space_size=8192 --silent
   - ./scripts/test.sh --reporter dot
+

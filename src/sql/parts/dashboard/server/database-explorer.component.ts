@@ -45,11 +45,23 @@ export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 		this.databaseNames = [];
 	}
 
+	public clearLoadingWheel(): void {
+		setTimeout(function(){
+			$(".ui-datatable-emptymessage").css('content', 'none');
+			$(".ui-datatable-emptymessage").css('color', 'inherit');
+			$(".ui-datatable-emptymessage").css('height', 'inherit');
+			$(".ui-datatable-emptymessage").css('border', 'inherit');
+		}, 5000);
+	}
+
 	public stateInitialized(): void {
 		const self = this;
 		this.metadataService.getDatabaseNames('1', this.ownerUri).then(result => {
 			self.databaseNames = result;
 			self.changeDetectorRef.detectChanges();
 		});
+		if (self.databaseNames.length === 0) {
+			this.clearLoadingWheel();
+		}
 	}
 }

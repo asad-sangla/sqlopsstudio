@@ -12,7 +12,7 @@
 <div style="display: flex; flex-flow: row wrap; height: calc(100% - 210px); overflow: auto">
 <div style="order: 1; width: calc(100% - 138px); overflow: auto" >
     <p-dataTable [value]="objectMetadata" [globalFilter]="gb" #dt selectionMode="single"
-                 [(selection)]="selectedObject" [tableStyle]="{'overflow': 'auto'}">
+                 [(selection)]="selectedObject" [tableStyle]="{'overflow': 'auto'}" emptyMessage="No records found">
         <p-column header="Type" field="metadata.metadataTypeName" hidden="true"></p-column>
         <p-column header="Schema" field="metadata.schema" hidden="true"></p-column>
         <p-column header="" field="metadata.name">

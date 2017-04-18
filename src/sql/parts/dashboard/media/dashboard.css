@@ -67,3 +67,12 @@
   vertical-align: middle;
   padding: 5px 0px 5px 0px;
 }
+
+.ui-datatable-emptymessage {
+    color: transparent;
+    content: url('progress_36x_animation.gif');
+    height: 100%;
+    align-content: center;
+    border: none !important;
+    margin: auto;
+}
