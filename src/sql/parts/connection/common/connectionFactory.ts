@@ -76,6 +76,7 @@ export class ConnectionFactory {
 		let connectionProfile = new ConnectionProfile(this.getCapabilities(connection.providerName), connection);
 		const self = this;
 		let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
+		connectionInfo.providerId = connection.providerName;
 		connectionInfo.extensionTimer = new Utils.Timer();
 		connectionInfo.intelliSenseTimer = new Utils.Timer();
 		connectionInfo.connectionProfile = connectionProfile;

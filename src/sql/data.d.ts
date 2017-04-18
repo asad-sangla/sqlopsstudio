@@ -12,6 +12,7 @@ declare module 'data' {
 	}
 
 	export interface ConnectionInfoSummary {
+
 		/**
 		 * URI identifying the owner of the connection
 		 */
@@ -333,6 +334,8 @@ declare module 'data' {
 	 */
 	export interface DataProtocolProvider {
 		handle: number;
+
+		providerId: string;
 
 		capabilitiesProvider: CapabilitiesProvider;
 

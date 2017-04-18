@@ -148,6 +148,8 @@ export interface IConnectionManagementService {
 	showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean>;
 
 	closeDashboard(uri: string): void;
+
+	getProviderIdFromUri(ownerUri: string): string;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

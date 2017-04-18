@@ -183,7 +183,7 @@ export abstract class ExtHostCredentialManagementShape {
 }
 
 export abstract class MainThreadDataProtocolShape {
-	$registerProvider(handle: number): TPromise<any> { throw ni(); }
+	$registerProvider(providerId: string, handle: number): TPromise<any> { throw ni(); }
 	$unregisterProvider(handle: number): TPromise<any> { throw ni(); }
 	$onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void { throw ni(); }
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }

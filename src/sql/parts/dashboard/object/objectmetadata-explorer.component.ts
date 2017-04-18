@@ -59,12 +59,12 @@ export class ObjectMetadataExplorerComponent implements OnInit, IDashboardCompon
 		const self = this;
 
 		if (this.objectMetadata.metadataType === MetadataType.Table) {
-			this.metadataService.getTableInfo('1', this.ownerUri, this.objectMetadata).then(result => {
+			this.metadataService.getTableInfo(this.ownerUri, this.objectMetadata).then(result => {
 				self.columns = result;
 				self.changeDetectorRef.detectChanges();
 			});
 		} else if (this.objectMetadata.metadataType === MetadataType.View) {
-			this.metadataService.getViewInfo('1', this.ownerUri, this.objectMetadata).then(result => {
+			this.metadataService.getViewInfo(this.ownerUri, this.objectMetadata).then(result => {
 				self.columns = result;
 				self.changeDetectorRef.detectChanges();
 			});

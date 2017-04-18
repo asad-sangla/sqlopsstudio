@@ -22,7 +22,6 @@ import HttpClient from './httpClient';
 import ExtConfig from  '../configurations/extConfig';
 import {PlatformInformation} from '../models/platform';
 import {ServerInitializationResult, ServerStatusView} from './serverStatus';
-import StatusView from '../views/statusView';
 import * as LanguageServiceContracts from '../models/contracts/languageService';
 
 let opener = require('opener');
@@ -105,9 +104,9 @@ class LanguageClientErrorHandler {
 }
 
 // The Service Client class handles communication with the VS Code LanguageClient
-export default class SqlToolsServiceClient {
+export default class CredentialsServiceClient {
     // singleton instance
-    private static _instance: SqlToolsServiceClient = undefined;
+    private static _instance: CredentialsServiceClient = undefined;
 
     // VS Code Language Client
     private _client: LanguageClient = undefined;
@@ -123,12 +122,11 @@ export default class SqlToolsServiceClient {
 
     constructor(
         private _server: ServerProvider,
-        private _logger: Logger,
-        private _statusView: StatusView) {
+        private _logger: Logger) {
     }
 
     // gets or creates the singleton SQL Tools service client instance
-    public static get instance(): SqlToolsServiceClient {
+    public static get instance(): CredentialsServiceClient {
         if (this._instance === undefined) {
             let config = new ExtConfig();
             _channel = window.createOutputChannel(Constants.serviceInitializingOutputChannelName);
@@ -139,8 +137,7 @@ export default class SqlToolsServiceClient {
             let downloadProvider = new ServiceDownloadProvider(config, logger, serverStatusView, httpClient,
             decompressProvider);
             let serviceProvider = new ServerProvider(downloadProvider, config, serverStatusView);
-            let statusView = new StatusView();
-            this._instance = new SqlToolsServiceClient(serviceProvider, logger, statusView);
+            this._instance = new CredentialsServiceClient(serviceProvider, logger);
         }
         return this._instance;
     }
@@ -197,43 +194,13 @@ export default class SqlToolsServiceClient {
         });
     }
 
-    /**
-     * Initializes the SQL language configuration
-     *
-     * @memberOf SqlToolsServiceClient
-     */
-    private initializeLanguageConfiguration(): void {
-        languages.setLanguageConfiguration('sql', {
-            comments: {
-                lineComment: '--',
-                blockComment: ['/*', '*/']
-            },
-
-            brackets: [
-                ['{', '}'],
-                ['[', ']'],
-                ['(', ')']
-            ],
-
-            __characterPairSupport: {
-                autoClosingPairs: [
-                    { open: '{', close: '}' },
-                    { open: '[', close: ']' },
-                    { open: '(', close: ')' },
-                    { open: '"', close: '"', notIn: ['string'] },
-                    { open: '\'', close: '\'', notIn: ['string', 'comment'] }
-                ]
-            }
-        });
-    }
-
     private initializeLanguageClient(serverPath: string, context: ExtensionContext): void {
          if (serverPath === undefined) {
                 Utils.logDebug(Constants.invalidServiceFilePath);
                 throw new Error(Constants.invalidServiceFilePath);
          } else {
-            let self = this;
-            self.initializeLanguageConfiguration();
+            // let self = this;
+            // self.initializeLanguageConfiguration();
             let serverOptions: ServerOptions = this.createServerOptions(serverPath);
             this.client = this.createLanguageClient(serverOptions);
 
@@ -252,9 +219,10 @@ export default class SqlToolsServiceClient {
     private createLanguageClient(serverOptions: ServerOptions): LanguageClient {
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
-            documentSelector: ['sql'],
+            documentSelector: ['credentialsstore'],
+            providerId: 'credentials',
             synchronize: {
-                configurationSection: 'mssql'
+                configurationSection: 'credentials'
             },
             errorHandler: new LanguageClientErrorHandler()
         };
@@ -282,7 +250,9 @@ export default class SqlToolsServiceClient {
      */
     public handleLanguageServiceStatusNotification(): NotificationHandler<LanguageServiceContracts.StatusChangeParams> {
         return (event: LanguageServiceContracts.StatusChangeParams): void => {
-            this._statusView.languageServiceStatusChanged(event.ownerUri, event.status);
+
+
+
         };
     }
 

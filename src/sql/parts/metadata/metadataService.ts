@@ -7,6 +7,7 @@
 
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
 
 export const SERVICE_ID = 'metadataService';
@@ -16,13 +17,13 @@ export const IMetadataService = createDecorator<IMetadataService>(SERVICE_ID);
 export interface IMetadataService {
 	_serviceBrand: any;
 
-	getMetadata(providerId: string, connectionUri: string): Thenable<data.ProviderMetadata>;
+	getMetadata(connectionUri: string): Thenable<data.ProviderMetadata>;
 
-	getDatabaseNames(providerId: string, connectionUri: string): Thenable<string[]>;
+	getDatabaseNames(connectionUri: string): Thenable<string[]>;
 
-	getTableInfo(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]>;
+	getTableInfo(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]>;
 
-	getViewInfo(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]>;
+	getViewInfo(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]>;
 
 	/**
 	 * Register a metadata provider
@@ -38,40 +39,52 @@ export class MetadataService implements IMetadataService {
 
 	private _providers: { [handle: string]: data.MetadataProvider; } = Object.create(null);
 
-	constructor() {
+	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) {
 	}
 
-	public getMetadata(providerId: string, connectionUri: string): Thenable<data.ProviderMetadata> {
-		let provider = this._providers[providerId];
-		if (provider) {
-			return provider.getMetadata(connectionUri);
+	public getMetadata(connectionUri: string): Thenable<data.ProviderMetadata> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.getMetadata(connectionUri);
+			}
 		}
 
 		return Promise.resolve(undefined);
 	}
 
-	public getDatabaseNames(providerId: string, connectionUri: string): Thenable<string[]> {
-		let provider = this._providers[providerId];
-		if (provider) {
-			return provider.getDatabases(connectionUri);
+	public getDatabaseNames(connectionUri: string): Thenable<string[]> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.getDatabases(connectionUri);
+			}
 		}
 
 		return Promise.resolve(undefined);
 	}
 
-	public getTableInfo(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
-		let provider = this._providers[providerId];
-		if (provider) {
-			return provider.getTableInfo(connectionUri, metadata);
+	public getTableInfo(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.getTableInfo(connectionUri, metadata);
+			}
 		}
 
 		return Promise.resolve(undefined);
 	}
 
-	public getViewInfo(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
-		let provider = this._providers[providerId];
-		if (provider) {
-			return provider.getViewInfo(connectionUri, metadata);
+	public getViewInfo(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.getViewInfo(connectionUri, metadata);
+			}
 		}
 
 		return Promise.resolve(undefined);

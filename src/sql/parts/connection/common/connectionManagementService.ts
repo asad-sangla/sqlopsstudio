@@ -49,6 +49,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _providers: { [handle: string]: data.ConnectionProvider; } = Object.create(null);
 
+	private _uriToProvider: { [uri: string]: string; } = Object.create(null);
+
 	private _connectionFactory: ConnectionFactory;
 
 	private _onAddConnectionProfile: Emitter<void>;
@@ -166,6 +168,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 */
 	public addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile> {
 		return this._connectionStore.addSavedPassword(connectionProfile);
+	}
+
+	/**
+	 * Get the connections provider ID from an connection URI
+	 */
+	public getProviderIdFromUri(ownerUri: string): string {
+		return this._uriToProvider[ownerUri];
 	}
 
 	/**
@@ -337,6 +346,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
+
+
 	public showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
@@ -438,45 +449,53 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	// Request Senders
-	// TODO: Request Handlers Mapping to prevent sending request to all providers
-	private sendConnectRequest(connection: data.ConnectionInfo, uri: string): Thenable<boolean> {
-		//TODO: create the model to send for connecting
+	private sendConnectRequest(connection: IConnectionProfile, uri: string): Thenable<boolean> {
 		let connectionInfo = Object.assign({}, {
 			options: connection.options
 		});
+
+		// setup URI to provider ID map for connection
+		this._uriToProvider[uri] = connection.providerName;
+
 		return new Promise((resolve, reject) => {
-			for (var key in this._providers) {
-				this._providers[key].connect(uri, connectionInfo);
-			}
+			this._providers[connection.providerName].connect(uri, connectionInfo);
 			this._onConnectRequestSent.fire();
 			resolve(true);
 		});
 	}
 
 	private sendDisconnectRequest(uri: string): Thenable<boolean> {
+		let providerId: string = this.getProviderIdFromUri(uri);
+		if (!providerId) {
+			return Promise.resolve(false);
+		}
+
 		return new Promise((resolve, reject) => {
-			for (var key in this._providers) {
-				this._providers[key].disconnect(uri);
-			}
+			this._providers[providerId].disconnect(uri);
 			resolve(true);
 		});
 	}
 
 	private sendCancelRequest(uri: string): Thenable<boolean> {
+		let providerId: string = this.getProviderIdFromUri(uri);
+		if (!providerId) {
+			return Promise.resolve(false);
+		}
+
 		return new Promise((resolve, reject) => {
-			for (var key in this._providers) {
-				this._providers[key].cancelConnect(uri);
-			}
+			this._providers[providerId].cancelConnect(uri);
 			resolve(true);
 		});
 	}
 
 	private sendListDatabasesRequest(uri: string): Thenable<data.ListDatabasesResult> {
-		// TODO: support URI -> Provider lookup. Currently this isn't supported in the API so
-		// hard-coding the provider number
-		let providerKey = '1';
+		let providerId: string = this.getProviderIdFromUri(uri);
+		if (!providerId) {
+			return Promise.resolve(undefined);
+		}
+
 		return new Promise((resolve, reject) => {
-			let provider = this._providers[providerKey];
+			let provider = this._providers[providerId];
 			provider.listDatabases(uri).then(result => {
 				resolve(result);
 			}, error => {

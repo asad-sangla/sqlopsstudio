@@ -56,7 +56,7 @@ export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 
 	public stateInitialized(): void {
 		const self = this;
-		this.metadataService.getDatabaseNames('1', this.ownerUri).then(result => {
+		this.metadataService.getDatabaseNames(this.ownerUri).then(result => {
 			self.databaseNames = result;
 			self.changeDetectorRef.detectChanges();
 		});

@@ -44,10 +44,8 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		this._toDispose = dispose(this._toDispose);
 	}
 
-	public $registerProvider(handle: number): TPromise<any> {
+	public $registerProvider(providerId: string, handle: number): TPromise<any> {
 		let self = this;
-
-		let providerId: string = handle.toString();
 
 		// register connection management provider
 		this._connectionManagementService.registerProvider(providerId, <data.ConnectionProvider>{
@@ -72,8 +70,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		});
 
 		// register query provider
-		// TODO replace hard-coded queryType with plumbthrough
-		this._queryManagementService.addQueryRequestHandler('MSSQL', {
+		this._queryManagementService.addQueryRequestHandler(providerId, {
 			cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult> {
 				return self._proxy.$cancelQuery(handle, ownerUri);
 			},

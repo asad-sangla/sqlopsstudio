@@ -359,6 +359,7 @@ export enum RevealOutputChannelOn {
 
 export interface LanguageClientOptions {
 	documentSelector?: string | string[];
+	providerId: string;
 	synchronize?: SynchronizeOptions;
 	diagnosticCollectionName?: string;
 	outputChannelName?: string;
@@ -490,7 +491,7 @@ export class LanguageClient {
 			forceDebug = arg4 as boolean;
 		}
 		if (forceDebug === void 0) { forceDebug = false; }
-		this._clientOptions = clientOptions || {};
+		this._clientOptions = clientOptions || { providerId: '' };
 		this._clientOptions.synchronize = this._clientOptions.synchronize || {};
 		this._clientOptions.errorHandler = this._clientOptions.errorHandler || new DefaultErrorHandler(this._name);
 		this._clientOptions.revealOutputChannelOn == this._clientOptions.revealOutputChannelOn || RevealOutputChannelOn.Error;
@@ -1290,14 +1291,14 @@ export class LanguageClient {
 		this.hookDocumentLinkProvider(documentSelector, connection);
 
 		// hook-up SQL data protocol provider
-		this.hookDataProtocolProvider(connection);
+		this.hookDataProtocolProvider(this._clientOptions.providerId, connection);
 	}
 
 	private logFailedRequest(type: RequestType<any, any, any>, error: any): void {
 		this.error(`Request ${type.method} failed.`, error);
 	}
 
-	private hookDataProtocolProvider(connection: IConnection): void {
+	private hookDataProtocolProvider(providerId: string, connection: IConnection): void {
 		let self = this;
 
 		let capabilitiesProvider: CapabilitiesProvider = {
@@ -1796,6 +1797,8 @@ export class LanguageClient {
 
 		this._providers.push(dataprotocol.registerProvider({
 			handle: -1,
+
+			providerId: providerId,
 
 			capabilitiesProvider: capabilitiesProvider,
 

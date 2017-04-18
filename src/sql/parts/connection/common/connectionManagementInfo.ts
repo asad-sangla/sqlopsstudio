@@ -18,6 +18,9 @@ export class ConnectionManagementInfo {
      */
 	public connectionId: string;
 
+
+    public providerId: string;
+
     /**
      * Credentials used to connect
      */

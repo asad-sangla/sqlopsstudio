@@ -20,7 +20,7 @@ export class TaskUtilities {
 	 */
 	public static scriptSelect(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
 		return new Promise<void>((resolve) => {
-			scriptingService.scriptAsSelect('1', ownerUri, metadata).then(result => {
+			scriptingService.scriptAsSelect(ownerUri, metadata).then(result => {
 				if (result && result.script) {
 					queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
 						// Connect our editor to the input connection
@@ -64,10 +64,10 @@ export class TaskUtilities {
 	 */
 	public static scriptCreate(metadata: data.ObjectMetadata, ownerUri: string, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
 		return new Promise<void>((resolve) => {
-			scriptingService.scriptAsCreate('1', ownerUri, metadata).then(result => {
+			scriptingService.scriptAsCreate(ownerUri, metadata).then(result => {
 				if (result && result.script) {
 					let script = result.script;
-					var startPos: number = script.indexOf('CREATE');
+					var startPos: number = script.toLowerCase().indexOf('create');
 					if (startPos > 0) {
 						script = script.substring(startPos);
 					}

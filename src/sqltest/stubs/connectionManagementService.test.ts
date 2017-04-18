@@ -150,5 +150,9 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	renameGroup(group: ConnectionProfileGroup): Promise<void> {
 		return Promise.resolve();
+	}	
+
+	getProviderIdFromUri(ownerUri: string): string {
+		return undefined;
 	}
 }

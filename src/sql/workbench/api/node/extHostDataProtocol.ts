@@ -46,7 +46,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		provider.handle = this._nextHandle();
 		this._adapter.set(provider.handle, provider);
 
-		this._proxy.$registerProvider(provider.handle);
+		this._proxy.$registerProvider(provider.providerId, provider.handle);
 		return this._createDisposable(provider.handle);
 	}
 

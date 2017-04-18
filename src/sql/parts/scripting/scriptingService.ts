@@ -7,6 +7,7 @@
 
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
 
 export const SERVICE_ID = 'scriptingService';
@@ -16,9 +17,9 @@ export const IScriptingService = createDecorator<IScriptingService>(SERVICE_ID);
 export interface IScriptingService {
 	_serviceBrand: any;
 
-	scriptAsCreate(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult>;
+	scriptAsCreate(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult>;
 
-	scriptAsSelect(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult>;
+	scriptAsSelect(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult>;
 
 	/**
 	 * Register a scripting provider
@@ -34,22 +35,28 @@ export class ScriptingService implements IScriptingService {
 
 	private _providers: { [handle: string]: data.ScriptingProvider; } = Object.create(null);
 
-	constructor() {
+	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) {
 	}
 
-	public scriptAsCreate(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
-		let provider = this._providers[providerId];
-		if (provider) {
-			return provider.scriptAsCreate(connectionUri, metadata);
+	public scriptAsCreate(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.scriptAsCreate(connectionUri, metadata);
+			}
 		}
 
 		return Promise.resolve(undefined);
 	}
 
-	public scriptAsSelect(providerId: string, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
-		let provider = this._providers[providerId];
-		if (provider) {
-			return provider.scriptAsSelect(connectionUri, metadata);
+	public scriptAsSelect(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.scriptAsSelect(connectionUri, metadata);
+			}
 		}
 
 		return Promise.resolve(undefined);

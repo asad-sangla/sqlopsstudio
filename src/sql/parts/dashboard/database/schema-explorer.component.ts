@@ -111,7 +111,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 
 	public stateInitialized(): void {
 		const self = this;
-		this.metadataService.getMetadata('1', this.ownerUri).then(result => {
+		this.metadataService.getMetadata(this.ownerUri).then(result => {
 			self.objectMetadata = ObjectMetadataWrapper.createFromObjectMetadata(result.objectMetadata);
 			self.objectMetadata.sort(this.schemaSort);
 			self.changeDetectorRef.detectChanges();
@@ -134,7 +134,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 
 	public executeProcedure(): void {
 		if (this.selectedObject) {
-			let executeString = "EXEC " + this.selectedObject.metadata.name;
+			let executeString = 'EXEC ' + this.selectedObject.metadata.name;
 			this.queryEditorService.newSqlEditor(executeString);
 		}
 	}
