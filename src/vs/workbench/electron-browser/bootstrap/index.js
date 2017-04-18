@@ -29,6 +29,9 @@ require('slickgrid/slick.editors');
 // Set other globals
 const _ = require('underscore')._;
 const rangy = require('rangy');
+const rangyCore = require('rangy/lib/rangy-core');
+const rangyTextRange = require('rangy/lib/rangy-textrange');
+const prettyData = require('pretty-data');
 require('reflect-metadata');
 require('zone.js');
 require('bootstrap');

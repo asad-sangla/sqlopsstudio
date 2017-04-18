@@ -40,7 +40,6 @@ export interface IQueryModelService {
 	resizeResultsets(uri: string): void;
 	onAngularLoaded(uri: string): void;
 
-	openLink(uri: string, content: string, columnName: string, linkType: string): void;
 	copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void;
 	setEditorSelection(uri: string, selection: ISelectionData): void;
 	showWarning(uri: string, message: string): void;

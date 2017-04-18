@@ -6,10 +6,12 @@
 import ConnectionConstants = require('sql/parts/connection/common/constants');
 import Constants = require('sql/parts/query/common/constants');
 import * as Utils from 'sql/parts/connection/common/utils';
+import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
 import Prompt from 'sql/parts/common/prompts/adapter';
 import { QuestionTypes, IQuestion, IPrompter } from 'sql/parts/common/prompts/question';
 import { SaveResultsRequestParams } from 'data';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
+import { ISaveRequest } from 'sql/parts/grid/common/interfaces';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
@@ -20,73 +22,132 @@ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 import { IWindowsService } from 'vs/platform/windows/common/windows';
 import { Registry } from 'vs/platform/platform';
 import URI from 'vs/base/common/uri';
+import { ITextModelResolverService, ITextModelContentProvider } from 'vs/editor/common/services/resolverService';
 
 import { ISlickRange } from 'angular2-slickgrid';
 import path = require('path');
 import os = require('os');
 import fs = require('fs');
+declare let prettyData;
 
 /**
  *  Handles save results request from the context menu of slickGrid
  */
 export class ResultSerializer {
+    public static tempFileCount: number = 1;
+
     private _prompter: IPrompter;
     private _uri: string;
     private _filePath: string;
     private _isTempFile: boolean;
+    private pd: any;
 
     constructor(
-		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IMessageService private _messageService: IMessageService,
-		@IOutputService private _outputService: IOutputService,
-		@IQueryManagementService private _queryManagementService: IQueryManagementService,
-		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
-		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
-		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
-		@IWindowsService private _windowsService: IWindowsService
-	) { }
+        @IInstantiationService private _instantiationService: IInstantiationService,
+        @IMessageService private _messageService: IMessageService,
+        @IOutputService private _outputService: IOutputService,
+        @IQueryManagementService private _queryManagementService: IQueryManagementService,
+        @IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
+        @IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
+        @IWorkspaceContextService private _contextService: IWorkspaceContextService,
+        @IWindowsService private _windowsService: IWindowsService,
+		@ITextModelResolverService private textModelResolverService: ITextModelResolverService,
+    ) {
+        if (prettyData) {
+            this.pd = prettyData.pd;
+        }
+    }
 
-	private get prompter(): IPrompter {
+    private get prompter(): IPrompter {
         if (!this._prompter) {
-			this.ensureOutputChannelExists();
+            this.ensureOutputChannelExists();
             this._prompter = this._instantiationService.createInstance(Prompt);
         }
-		return this._prompter;
-	}
+        return this._prompter;
+    }
 
     /**
      * Handle save request by getting filename from user and sending request to service
      */
-    public saveResults(uri: string, batchIndex: number, resultSetNo: number, format: string, selection: ISlickRange[] ): Thenable<void> {
+    public saveResults(uri: string, saveRequest: ISaveRequest): Thenable<void> {
         const self = this;
         this._uri = uri;
 
         // prompt for filepath
-        return self.promptForFilepath().then(function(filePath): void {
+        return self.promptForFilepath().then(function (filePath): void {
             if (!Utils.isEmpty(filePath)) {
-                self.sendRequestToService(filePath, batchIndex, resultSetNo, format, selection ? selection[0] : undefined);
+                self.sendRequestToService(filePath, saveRequest.batchIndex, saveRequest.resultSetNumber, saveRequest.format, saveRequest.selection ? saveRequest.selection[0] : undefined);
             }
         });
     }
 
 
-	private ensureOutputChannelExists(): void {
-		Registry.as<IOutputChannelRegistry>(OutputExtensions.OutputChannels)
-			.registerChannel(ConnectionConstants.outputChannelName, ConnectionConstants.outputChannelName);
-	}
+    /**
+     * Open a xml/json link - Opens the content in a new editor pane
+     */
+    public openLink(content: string, columnName: string, linkType: string): void {
+        const self = this;
+        let tempFileName = self.getXmlTempFileName(columnName, linkType);
+        if (linkType === 'xml' && this.pd) {
+            try {
+                content = this.pd.xml(content);
+            } catch (e) {
+                // If Xml fails to parse, fall back on original Xml content
+            }
+        } else if (linkType === 'json') {
+            let jsonContent: string = undefined;
+            try {
+                jsonContent = JSON.parse(content);
+            } catch (e) {
+                // If Json fails to parse, fall back on original Json content
+            }
+            if (jsonContent) {
+                // If Json content was valid and parsed, pretty print content to a string
+                content = JSON.stringify(jsonContent, undefined, 4);
+            }
+        }
 
-	private get outputChannel(): IOutputChannel {
-		this.ensureOutputChannelExists();
-		return this._outputService.getChannel(ConnectionConstants.outputChannelName);
-	}
+        this.openUntitledFile(tempFileName, content);
+    }
 
-	private get rootPath(): string {
-		return this._contextService.hasWorkspace() ? this._contextService.getWorkspace().resource.fsPath : undefined;
-	}
+    /**
+     * Return temp file name for opening a link
+     */
+    private getXmlTempFileName(columnName: string, linkType: string): string {
+        if (columnName === 'XML Showplan') {
+            columnName = 'Showplan';
+        }
+        let baseFileName = columnName + '-';
+        let retryCount: number = 200;
+        for (let i = 0; i < retryCount; i++) {
+            let tempFileName = path.join(os.tmpdir(), baseFileName + ResultSerializer.tempFileCount + '.' + linkType);
+            ResultSerializer.tempFileCount++;
+            if (!this.fileExists(tempFileName)) {
+                return tempFileName;
+            }
+        }
+        return path.join(os.tmpdir(), columnName + '_' + String(Math.floor(Date.now() / 1000)) + String(process.pid) + '.' + linkType);
+    }
 
-	private logToOutputChannel(message: string): void {
-		this.outputChannel.append(message);
-	}
+
+
+    private ensureOutputChannelExists(): void {
+        Registry.as<IOutputChannelRegistry>(OutputExtensions.OutputChannels)
+            .registerChannel(ConnectionConstants.outputChannelName, ConnectionConstants.outputChannelName);
+    }
+
+    private get outputChannel(): IOutputChannel {
+        this.ensureOutputChannelExists();
+        return this._outputService.getChannel(ConnectionConstants.outputChannelName);
+    }
+
+    private get rootPath(): string {
+        return this._contextService.hasWorkspace() ? this._contextService.getWorkspace().resource.fsPath : undefined;
+    }
+
+    private logToOutputChannel(message: string): void {
+        this.outputChannel.append(message);
+    }
 
     private promptForFilepath(): Promise<string> {
         const self = this;
@@ -112,17 +173,17 @@ export class ResultSerializer {
             }
         ];
         return this.prompter.prompt(questions).then(answers => {
-            if (answers && answers[Constants.filepathPrompt] ) {
+            if (answers && answers[Constants.filepathPrompt]) {
                 // return filename if file does not exist or if user opted to overwrite file
                 if (!prompted || (prompted && answers[Constants.overwritePrompt])) {
-                     return answers[Constants.filepathPrompt];
+                    return answers[Constants.filepathPrompt];
                 }
                 // call prompt again if user did not opt to overwrite
                 if (prompted && !answers[Constants.overwritePrompt]) {
                     return self.promptForFilepath();
                 }
             }
-			return undefined;
+            return undefined;
         });
     }
 
@@ -146,11 +207,10 @@ export class ResultSerializer {
     }
 
     private getConfigForCsv(): SaveResultsRequestParams {
-        // get save results config from vscode config
-		let config = this._workspaceConfigurationService.getConfiguration(ConnectionConstants.extensionConfigSectionName);
-        let saveConfig = config[Constants.configSaveAsCsv];
-        let saveResultsParams = <SaveResultsRequestParams> { resultFormat: 'csv' };
+        let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: 'csv' };
 
+        // get save results config from vscode config
+        let saveConfig = WorkbenchUtils.getSqlConfigSection(this._workspaceConfigurationService, Constants.configSaveAsCsv);
         // if user entered config, set options
         if (saveConfig) {
             if (saveConfig.includeHeaders !== undefined) {
@@ -162,8 +222,8 @@ export class ResultSerializer {
 
     private getConfigForJson(): SaveResultsRequestParams {
         // JSON does not currently have special conditions
-        let saveResultsParams = <SaveResultsRequestParams> { resultFormat: 'json' };
-		return saveResultsParams;
+        let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: 'json' };
+        return saveResultsParams;
     }
 
     private getConfigForExcel(): SaveResultsRequestParams {
@@ -186,7 +246,7 @@ export class ResultSerializer {
             currentDirectory = path.dirname(sqlUri.fsPath);
         } else if (sqlUri.scheme === 'untitled') {
             // if sql file is unsaved/untitled but a workspace is open use workspace root
-			let root = this.rootPath;
+            let root = this.rootPath;
             if (root) {
                 currentDirectory = root;
             } else {
@@ -221,11 +281,11 @@ export class ResultSerializer {
         }
 
         if (format === 'csv') {
-            saveResultsParams =  this.getConfigForCsv();
+            saveResultsParams = this.getConfigForCsv();
         } else if (format === 'json') {
-            saveResultsParams =  this.getConfigForJson();
+            saveResultsParams = this.getConfigForJson();
         } else if (format === 'excel') {
-            saveResultsParams =  this.getConfigForExcel();
+            saveResultsParams = this.getConfigForExcel();
         }
 
         saveResultsParams.filePath = this._filePath;
@@ -234,7 +294,7 @@ export class ResultSerializer {
         saveResultsParams.batchIndex = batchIndex;
         if (this.isSelected(selection)) {
             saveResultsParams.rowStartIndex = selection.fromRow;
-            saveResultsParams.rowEndIndex =  selection.toRow;
+            saveResultsParams.rowEndIndex = selection.toRow;
             saveResultsParams.columnStartIndex = selection.fromCell;
             saveResultsParams.columnEndIndex = selection.toCell;
         }
@@ -252,7 +312,7 @@ export class ResultSerializer {
      * Send request to sql tools service to save a result set
      */
     private sendRequestToService(filePath: string, batchIndex: number, resultSetNo: number, format: string, selection: ISlickRange): Thenable<void> {
-        let saveResultsParams =  this.getParameters( filePath, batchIndex, resultSetNo, format, selection);
+        let saveResultsParams = this.getParameters(filePath, batchIndex, resultSetNo, format, selection);
 
         this.logToOutputChannel(Constants.msgSaveStarted + this._filePath);
 
@@ -282,16 +342,37 @@ export class ResultSerializer {
         if (format === 'excel') {
             // This will not open in VSCode as it's treated as binary. Use the native file opener instead
             // Note: must use filePath here, URI does not open correctly
-			// TODO see if there is an alternative opener that includes error handling
+            // TODO see if there is an alternative opener that includes error handling
             let fileUri = URI.from({ scheme: 'file', path: filePath });
             this._windowsService.openExternal(fileUri.toString());
         } else {
             let uri = URI.file(filePath);
-            this._editorService.openEditor({ resource: uri }).then((result ) => {
+            this._editorService.openEditor({ resource: uri }).then((result) => {
 
             }, (error: any) => {
                 this._messageService.show(Severity.Error, error);
             });
         }
+    }
+
+    /**
+     * Open the saved file in a new vscode editor pane
+     */
+    private openUntitledFile(filePath: string, contents: string): void {
+        let self = this;
+        let untitledUri = URI.from({ scheme: 'untitled', path: filePath });
+        this._editorService.openEditor({ resource: untitledUri }).then((editor) => {
+                return self.setFileContents(untitledUri, contents);
+            }).then((success) => {},
+            (error: any) => {
+                this._messageService.show(Severity.Error, error);
+            });
+    }
+
+    private setFileContents(resourceUri: URI, contents ): Thenable<void> {
+        return this.textModelResolverService.createModelReference(resourceUri).then(ref => {
+            const model = ref.object.textEditorModel;
+            model.setValue(contents);
+        });
     }
 }

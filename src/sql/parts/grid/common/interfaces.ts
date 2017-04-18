@@ -162,3 +162,23 @@ export interface IResultMessage {
 	time: string;
 	message: string;
 }
+
+export const CsvFormat   = 'csv';
+export const JsonFormat  = 'json';
+export const ExcelFormat = 'excel';
+
+export type SaveFormat = 'csv' | 'json' | 'excel';
+
+export interface IGridInfo {
+	batchIndex: number;
+	resultSetNumber: number;
+	selection: ISlickRange[];
+	gridIndex: number;
+}
+export interface ISaveRequest
+{
+	format: SaveFormat;
+	batchIndex: number;
+	resultSetNumber: number;
+	selection: ISlickRange[];
+}

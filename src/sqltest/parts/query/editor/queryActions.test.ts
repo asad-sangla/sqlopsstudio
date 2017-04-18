@@ -16,9 +16,12 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { TPromise } from 'vs/base/common/winjs.base';
 import { ISelectionData } from 'data';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
+
+let none: void;
 
 suite('SQL QueryAction Tests', () => {
 
@@ -91,7 +94,8 @@ suite('SQL QueryAction Tests', () => {
 			.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
 				connectionParams = params;
 				countCalledShowDialog++;
-			});
+			})
+			.returns(() => TPromise.as(none));
 
 		// ... Mock "isConnected" in ConnectionManagementService
 		let connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {}, {}, connectionDialogService.object);
@@ -193,7 +197,8 @@ suite('SQL QueryAction Tests', () => {
 			.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
 				showDialogConnectionParams = params;
 				countCalledShowDialog++;
-			});
+			})
+			.returns(() => TPromise.as(none));
 
 		// ... Mock "getSelection" in QueryEditor
 		let queryInput = TypeMoq.Mock.ofType(QueryInput, TypeMoq.MockBehavior.Loose);
@@ -349,7 +354,8 @@ suite('SQL QueryAction Tests', () => {
 			.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
 				connectionParams = params;
 				countCalledShowDialog++;
-			});
+			})
+			.returns(() => TPromise.as(none));
 
 		// ... Mock "isConnected" in ConnectionManagementService
 		let connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {}, {}, connectionDialogService.object);
@@ -394,7 +400,8 @@ suite('SQL QueryAction Tests', () => {
 			.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
 				calledShowDialog++;
 				connectionParams = params;
-			});
+			})
+			.returns(() => TPromise.as(none));
 
 		// ... Mock "isConnected" in ConnectionManagementService
 		let connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {}, {}, connectionDialogService.object);

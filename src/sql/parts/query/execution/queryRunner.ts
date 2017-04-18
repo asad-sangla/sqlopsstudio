@@ -13,16 +13,22 @@ import {
 	QueryExecuteResultSetCompleteNotificationParams,
 	QueryExecuteMessageParams,
 	QueryExecuteSubsetParams, QueryExecuteSubsetResult,
-	EditSubsetParams, EditSubsetResult,
-    ISelectionData
+	EditSubsetParams, EditSubsetResult, EditUpdateCellResult, EditCreateRowResult,
+    EditRevertCellResult, ISelectionData
 } from 'data';
 
 import { EventEmitter } from 'events';
+import Constants = require('sql/parts/query/common/constants');
+import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
+import { ISlickRange } from 'angular2-slickgrid';
+import * as Utils from 'sql/parts/connection/common/utils';
+
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
-import * as Utils from 'sql/parts/connection/common/utils';
-import data = require('data');
+import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
+
+import os = require('os');
 
 /*
 * Query Runner class which handles running a query, reports the results to the content manager,
@@ -44,7 +50,9 @@ export default class QueryRunner {
 	constructor (private _ownerUri: string,
 			private _editorTitle: string,
 			@IQueryManagementService private _queryManagementService: IQueryManagementService,
-			@IMessageService private _messageService: IMessageService) {
+			@IMessageService private _messageService: IMessageService,
+			@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService
+	) {
 
 		// Store the state
 		this._uri = _ownerUri;
@@ -280,7 +288,7 @@ export default class QueryRunner {
 		this.eventEmitter.emit('editSessionReady', ownerUri, success, message);
 	}
 
-	public updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult> {
+	public updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult> {
 		return this._queryManagementService.updateCell(ownerUri, rowId, columnId, newValue);
 	}
 
@@ -288,7 +296,7 @@ export default class QueryRunner {
 		return this._queryManagementService.commitEdit(ownerUri);
 	}
 
-	public createRow(ownerUri: string): Thenable<data.EditCreateRowResult> {
+	public createRow(ownerUri: string): Thenable<EditCreateRowResult> {
 		return this._queryManagementService.createRow(ownerUri).then(result => {
 			return result;
 		});
@@ -298,7 +306,7 @@ export default class QueryRunner {
 		return this._queryManagementService.deleteRow(ownerUri, rowId);
 	}
 
-	public revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult> {
+	public revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult> {
 		return this._queryManagementService.revertCell(ownerUri, rowId, columnId).then(result => {
 			return result;
 		});
@@ -331,4 +339,93 @@ export default class QueryRunner {
 	get totalElapsedMilliseconds(): number {
 		return this._totalElapsedMilliseconds;
 	}
+
+	/**
+	 * Sends a copy request
+	 * @param selection The selection range to copy
+	 * @param batchId The batch id of the result to copy from
+	 * @param resultId The result id of the result to copy from
+	 * @param includeHeaders [Optional]: Should column headers be included in the copy selection
+	 */
+	copyResults(selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void {
+		const self = this;
+		let copyString = '';
+
+		// create a mapping of the ranges to get promises
+		let tasks = selection.map((range, i) => {
+			return () => {
+				return self.getQueryRows(range.fromRow, range.toRow - range.fromRow + 1, batchId, resultId).then((result) => {
+					if (self.shouldIncludeHeaders(includeHeaders)) {
+						let columnHeaders = self.getColumnHeaders(batchId, resultId, range);
+						if (columnHeaders !== undefined) {
+							copyString += columnHeaders.join('\t') + os.EOL;
+						}
+					}
+
+					// Iterate over the rows to paste into the copy string
+					for (let rowIndex: number = 0; rowIndex < result.resultSubset.rows.length; rowIndex++) {
+						let row = result.resultSubset.rows[rowIndex];
+						let cellObjects = row.slice(range.fromCell, (range.toCell + 1));
+						// Remove newlines if requested
+						let cells = self.shouldRemoveNewLines()
+							? cellObjects.map(x => self.removeNewLines(x.displayValue))
+							: cellObjects.map(x => x.displayValue);
+						copyString += cells.join('\t');
+						if (rowIndex < result.resultSubset.rows.length - 1) {
+							copyString += os.EOL;
+						}
+					}
+				});
+			};
+		});
+
+		let p = tasks[0]();
+		for (let i = 1; i < tasks.length; i++) {
+			p = p.then(tasks[i]);
+		}
+		p.then(() => {
+			WorkbenchUtils.executeCopy(copyString);
+		});
+	}
+
+    private shouldIncludeHeaders(includeHeaders: boolean): boolean {
+        if (includeHeaders !== undefined) {
+            // Respect the value explicity passed into the method
+            return includeHeaders;
+        }
+        // else get config option from vscode config
+        includeHeaders = WorkbenchUtils.getSqlConfigValue<boolean>(this._workspaceConfigurationService, Constants.copyIncludeHeaders);
+        return !!includeHeaders;
+    }
+
+    private shouldRemoveNewLines(): boolean {
+        // get config copyRemoveNewLine option from vscode config
+        let removeNewLines: boolean = WorkbenchUtils.getSqlConfigValue<boolean>(this._workspaceConfigurationService, Constants.configCopyRemoveNewLine);
+        return !!removeNewLines;
+    }
+
+    private getColumnHeaders(batchId: number, resultId: number, range: ISlickRange): string[] {
+        let headers: string[] = undefined;
+        let batchSummary: BatchSummary = this.batchSets[batchId];
+        if (batchSummary !== undefined) {
+            let resultSetSummary = batchSummary.resultSetSummaries[resultId];
+            headers = resultSetSummary.columnInfo.slice(range.fromCell, range.toCell + 1).map((info, i) => {
+                return info.columnName;
+            });
+        }
+        return headers;
+    }
+
+    private removeNewLines(inputString: string): string {
+        // This regex removes all newlines in all OS types
+        // Windows(CRLF): \r\n
+        // Linux(LF)/Modern MacOS: \n
+        // Old MacOs: \r
+        if (!inputString) {
+            return 'null';
+        }
+
+        let outputString: string = inputString.replace(/(\r\n|\n|\r)/gm, '');
+        return outputString;
+    }
 }

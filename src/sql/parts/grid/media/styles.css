@@ -35,6 +35,8 @@
   table-layout: fixed;
   border-collapse: collapse;
   width: 100%;
+	user-select: initial;
+	-webkit-user-select: initial;
 }
 
 .wideResultsMessage {

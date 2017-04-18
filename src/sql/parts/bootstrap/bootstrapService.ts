@@ -13,6 +13,9 @@ import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectEx
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 
 declare let AngularPlatformBrowserDynamic;
 
@@ -33,6 +36,9 @@ export interface IBootstrapService {
 	queryEditorService: IQueryEditorService;
 	connectionDialogService: IConnectionDialogService;
 	queryModelService: IQueryModelService;
+	keybindingService: IKeybindingService;
+	contextKeyService: IContextKeyService;
+	contextMenuService: IContextMenuService;
 
 	/*
 	* Bootstraps the Angular module described. Components that need singleton services should inject the
@@ -81,7 +87,10 @@ export class BootstrapService implements IBootstrapService {
 		@IScriptingService public scriptingService: IScriptingService,
 		@IQueryEditorService public queryEditorService: IQueryEditorService,
 		@IConnectionDialogService public connectionDialogService: IConnectionDialogService,
-		@IQueryModelService public queryModelService: IQueryModelService
+		@IQueryModelService public queryModelService: IQueryModelService,
+		@IKeybindingService public keybindingService: IKeybindingService,
+		@IContextKeyService public contextKeyService: IContextKeyService,
+		@IContextMenuService public contextMenuService: IContextMenuService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();

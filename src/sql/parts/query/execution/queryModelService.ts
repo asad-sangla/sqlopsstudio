@@ -6,19 +6,20 @@
 'use strict';
 
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
-import nls = require('vs/nls');
 import Constants = require('sql/parts/query/common/constants');
 import Utils = require('sql/parts/connection/common/utils');
-
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
+import { ISelectionData, ResultSetSubset, EditSubsetResult,
+		EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult } from 'data';
+
 import { ISlickRange } from 'angular2-slickgrid';
+import nls = require('vs/nls');
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import Event, { Emitter } from 'vs/base/common/event';
-import { ISelectionData, ResultSetSubset, EditSubsetResult,
-		EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult } from 'data';
+import URI from 'vs/base/common/uri';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 interface QueryEvent {
@@ -132,10 +133,8 @@ export class QueryModelService implements IQueryModelService {
 		return undefined;
 	}
 
-	public openLink(uri: string, content: string, columnName: string, linkType: string): void {
-	}
-
 	public copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void {
+		this._queryInfoMap.get(uri).queryRunner.copyResults(selection, batchId, resultId, includeHeaders);
 	}
 
 	public setEditorSelection(uri: string, selection: ISelectionData): void {
