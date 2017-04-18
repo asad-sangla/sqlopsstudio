@@ -299,6 +299,18 @@ export class ConnectionConfig implements IConnectionConfig {
 		return result;
 	}
 
+	public renameGroup(source: ConnectionProfileGroup): Promise<void> {
+		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+		groups = groups.map(g => {
+			if (g.id === source.id) {
+				g.name = source.name;
+				source.isRenamed = false;
+			}
+			return g;
+		});
+		return this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups);
+	}
+
 	private isSameGroupName(group1: IConnectionProfileGroup, group2: IConnectionProfileGroup): boolean {
 		let sameGroupName: boolean = false;
 		if (group1 && group2) {

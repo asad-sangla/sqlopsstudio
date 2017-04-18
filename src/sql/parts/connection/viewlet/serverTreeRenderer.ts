@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { append, $ } from 'vs/base/browser/dom';
+import { append, $, addDisposableListener, addStandardDisposableListener } from 'vs/base/browser/dom';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -12,6 +12,15 @@ import { ITree, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { IConnectionProfileGroupTemplateData, IConnectionTemplateData } from 'sql/parts/connection/viewlet/templateData';
 import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
 import { ChangeConnectionAction, NewQueryAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
+import * as lifecycle from 'vs/base/common/lifecycle';
+import { once } from 'vs/base/common/functional';
+import { KeyCode } from 'vs/base/common/keyCodes';
+import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { TreeUpdateUtils } from 'sql/parts/connection/viewlet/treeUpdateUtils';
+import types = require('vs/base/common/types');
 
 /**
  * Renders the tree items.
@@ -23,10 +32,17 @@ export class ServerTreeRenderer implements IRenderer {
 	public static CONNECTION_GROUP_HEIGHT = 32;
 	private static CONNECTION_TEMPLATE_ID = 'connectionProfile';
 	private static CONNECTION_GROUP_TEMPLATE_ID = 'connectionProfileGroup';
+	/**
+	 * _isCompact is used to render connections tiles with and without the action buttons.
+	 * When set to true, like in the connection dialog recent connections tree, the connection
+	 * tile is rendered without the action buttons( such as connect, new query).
+	 */
 	private _isCompact: boolean = false;
 
 	constructor(isCompact: boolean,
-		@IInstantiationService private _instantiationService: IInstantiationService
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IContextViewService private _contextViewService: IContextViewService,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 	) {
 		// isCompact defaults to false unless explicitly set by instantiation call.
 		if (isCompact) {
@@ -68,6 +84,7 @@ export class ServerTreeRenderer implements IRenderer {
 				const actionbar = new ActionBar(root, {
 					animated: false
 				});
+				/* Add action bar for connection tile actions */
 				const connectAction = this._instantiationService.createInstance(ChangeConnectionAction);
 				connectAction.parentContainer = container;
 
@@ -94,6 +111,7 @@ export class ServerTreeRenderer implements IRenderer {
 		}
 		else {
 			const groupTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
+
 			groupTemplate.root = append(container, $('.server-group'));
 			groupTemplate.name = append(groupTemplate.root, $('span.name'));
 			return groupTemplate;
@@ -122,11 +140,71 @@ export class ServerTreeRenderer implements IRenderer {
 	}
 
 	private renderConnectionProfileGroup(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
-		templateData.name.textContent = connectionProfileGroup.name;
+		if (connectionProfileGroup.isRenamed) {
+			this.renderRenameBox(tree, connectionProfileGroup, templateData);
+		} else {
+			templateData.name.hidden = false;
+			templateData.name.textContent = connectionProfileGroup.name;
+		}
 	}
 
+	private renderRenameBox(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
+		let inputBoxContainer = append(templateData.root, $('.inputBoxContainer'));
+			let inputBox = new InputBox(inputBoxContainer, this._contextViewService, {
+				validationOptions: {
+					validation: (value: string) => {
+						if (value && value.length > 0 && types.isString(value)) {
+							return null;
+						}
+						return { type: MessageType.ERROR, content: 'Invalid input. String value expected.' };
+					},
+					showMessage: true
+				}
+			});
+
+			inputBox.value = connectionProfileGroup.name;
+			inputBox.focus();
+			inputBox.select();
+
+			let disposed = false;
+			const toDispose: [lifecycle.IDisposable] = [inputBox];
+
+			const wrapUp = once((renamed: boolean) => {
+				if (!disposed) {
+					disposed = true;
+					if (renamed && inputBox.value && connectionProfileGroup.name !== inputBox.value) {
+						connectionProfileGroup.name = inputBox.value;
+						this._connectionManagementService.renameGroup(connectionProfileGroup).then(() => {
+							TreeUpdateUtils.registeredServerUpdate(tree, this._connectionManagementService);
+						});
+					}
+					tree.clearHighlight();
+					tree.DOMFocus();
+					tree.setFocus(connectionProfileGroup);
+
+					// need to remove the input box since this template will be reused.
+					templateData.root.removeChild(inputBoxContainer);
+					lifecycle.dispose(toDispose);
+				}
+			});
+
+			toDispose.push(addStandardDisposableListener(inputBox.inputElement, 'keydown', (e: IKeyboardEvent) => {
+				const isEscape = e.equals(KeyCode.Escape);
+				const isEnter = e.equals(KeyCode.Enter);
+				if (isEscape || isEnter) {
+					e.preventDefault();
+					e.stopPropagation();
+					wrapUp(isEnter);
+				}
+			}));
+			toDispose.push(addDisposableListener(inputBox.inputElement, 'blur', () => {
+				wrapUp(true);
+			}));
+	}
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {
-		//TODO
+		// no op
+		// InputBox disposed in wrapUp
+
 	}
 }
 

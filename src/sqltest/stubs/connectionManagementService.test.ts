@@ -147,4 +147,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	changeDatabase(connectionUri: string, databaseName: string): Thenable<boolean> {
 		return new Promise(() => true);
 	}
+
+	renameGroup(group: ConnectionProfileGroup): Promise<void> {
+		return Promise.resolve();
+	}
 }

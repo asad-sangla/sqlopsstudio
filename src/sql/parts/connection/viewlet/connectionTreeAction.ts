@@ -17,6 +17,8 @@ import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionPr
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import { TaskUtilities } from 'sql/parts/common/taskUtilities';
+import { ITree } from 'vs/base/parts/tree/browser/tree';
+import * as Constants from 'sql/parts/connection/common/constants';
 
 export class ChangeConnectionAction extends Action {
 
@@ -278,10 +280,22 @@ export class DeleteConnectionAction extends Action {
 	constructor(
 		id: string,
 		label: string,
+		element: ConnectionProfile | ConnectionProfileGroup,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
 		this.class = 'delete-connection-action';
+		if (element instanceof ConnectionProfileGroup && element.id === Constants.unsavedGroupId) {
+			this.enabled = false;
+		}
+
+		if (element instanceof ConnectionProfile) {
+			element = <ConnectionProfile>element;
+			let parent: ConnectionProfileGroup = element.parent;
+			if (parent.id === Constants.unsavedGroupId) {
+				this.enabled = false;
+			}
+		}
 	}
 
 	public run(element: any): TPromise<boolean> {
@@ -292,6 +306,39 @@ export class DeleteConnectionAction extends Action {
 			this._connectionManagementService.deleteConnectionGroup(element);
 		}
 
+		return TPromise.as(true);
+	}
+}
+
+export class RenameGroupAction extends Action {
+	public static ID = 'registeredServers.renameGroup';
+	public static LABEL = localize('renameGroup', 'Rename Group');
+	private _connectionProfile: ConnectionProfile;
+	get connectionProfile(): ConnectionProfile {
+		return this._connectionProfile;
+	}
+	set connectionProfile(profile: ConnectionProfile) {
+		this._connectionProfile = profile;
+	}
+
+	constructor(
+		id: string,
+		label: string,
+		private _tree: ITree,
+		element: ConnectionProfileGroup,
+		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = 'rename';
+		this.label = 'Rename Group';
+		if (element.id === Constants.unsavedGroupId) {
+			this.enabled = false;
+		}
+	}
+
+	public run(group: ConnectionProfileGroup): TPromise<boolean> {
+		group.isRenamed = true;
+		this._tree.refresh(group, false);
 		return TPromise.as(true);
 	}
 }

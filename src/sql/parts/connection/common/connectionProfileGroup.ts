@@ -19,6 +19,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	public children: ConnectionProfileGroup[];
 	public connections: ConnectionProfile[];
 	public parentId: string;
+	private _isRenamed: boolean;
 	public constructor(
 		public name: string,
 		private _parent: ConnectionProfileGroup,
@@ -58,6 +59,14 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 			}
 		}
 		return fullName;
+	}
+
+	public get isRenamed(): boolean {
+		return this._isRenamed;
+	}
+
+	public set isRenamed(val: boolean) {
+		this._isRenamed = val;
 	}
 
 	public hasChildren(): boolean {

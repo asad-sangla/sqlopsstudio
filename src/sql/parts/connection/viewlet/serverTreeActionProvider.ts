@@ -12,7 +12,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
 import { ConnectionProfile } from '../common/connectionProfile';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
-import { AddServerAction, NewQueryAction, DeleteConnectionAction} from 'sql/parts/connection/viewlet/connectionTreeAction';
+import { AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
 
 /**
  *  Provides actions for the server tree elements
@@ -20,7 +20,7 @@ import { AddServerAction, NewQueryAction, DeleteConnectionAction} from 'sql/part
 export class ServerTreeActionProvider extends ContributableActionProvider {
 
 	constructor(
-		@IInstantiationService private instantiationService: IInstantiationService
+		@IInstantiationService private _instantiationService: IInstantiationService
 	) {
 		super();
 	}
@@ -34,10 +34,10 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	 */
 	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
 		if (element instanceof ConnectionProfile) {
-			return TPromise.as(this.getConnectionActions(this.instantiationService));
+			return TPromise.as(this.getConnectionActions(tree, element));
 		}
 		if (element instanceof ConnectionProfileGroup) {
-			return TPromise.as(this.getConnectionProfileGroupActions(this.instantiationService));
+			return TPromise.as(this.getConnectionProfileGroupActions(tree, element));
 		}
 
 		return TPromise.as([]);
@@ -54,22 +54,23 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		/**
 	 * Return actions for connection elements
 	 */
-	public  getConnectionActions(instantiationService: IInstantiationService): IAction[] {
+	public  getConnectionActions(tree: ITree, element: ConnectionProfile): IAction[] {
 		return [
-			instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
-			instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
-			instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL),
-			instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL)
+			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
+			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
+			this._instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL),
+			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL, element)
 		];
 	}
 
 	/**
 	 * Return actions for connection group elements
 	 */
-	public  getConnectionProfileGroupActions(instantiationService: IInstantiationService): IAction[] {
+	public  getConnectionProfileGroupActions(tree: ITree, element: ConnectionProfileGroup): IAction[] {
 		return [
-			instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
-			instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_GROUP_LABEL)
+			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
+			this._instantiationService.createInstance(RenameGroupAction, RenameGroupAction.ID, RenameGroupAction.LABEL, tree, element),
+			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_GROUP_LABEL, element)
 		];
 	}
 }

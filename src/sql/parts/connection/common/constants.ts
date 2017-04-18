@@ -45,6 +45,7 @@ export const contentProviderMinFile = 'dist/js/app.min.js';
 
 /**Unsaved connections Id */
 export const unsavedGroupId = 'unsaved';
+export const unsavedGroupLabel = 'Unsaved Connections';
 
 /* Memento constants */
 export const activeConnections = 'ACTIVE_CONNECTIONS';

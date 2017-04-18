@@ -119,7 +119,7 @@ export class TreeUpdateUtils {
 	}
 
 	private static addUnsaved(root: ConnectionProfileGroup, connectionManagementService: IConnectionManagementService): ConnectionProfileGroup {
-		let unsaved = new ConnectionProfileGroup('Unsaved Connections', root, Constants.unsavedGroupId);
+		let unsaved = new ConnectionProfileGroup(Constants.unsavedGroupLabel, root, Constants.unsavedGroupId);
 		unsaved.addConnections(connectionManagementService.getUnsavedConnections());
 		if (unsaved.connections.length >= 1) {
 			root.addGroups([unsaved]);

@@ -764,6 +764,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return Promise.resolve(undefined);
 	}
 
+	public renameGroup(group: ConnectionProfileGroup): Promise<void> {
+		return this._connectionStore.renameGroup(group);
+	}
+
 	/**
 	 * Deletes a connection from registered servers.
 	 * Disconnects a connection before removng from settings.

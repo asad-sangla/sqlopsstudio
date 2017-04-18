@@ -124,6 +124,8 @@ export interface IConnectionManagementService {
 	 */
 	registerProvider(providerId: string, provider: data.ConnectionProvider): void;
 
+	renameGroup(group: ConnectionProfileGroup): Promise<void>;
+
 	getConnectionProfile(fileUri: string): IConnectionProfile;
 
 	getConnectionInfo(fileUri: string): ConnectionManagementInfo;
