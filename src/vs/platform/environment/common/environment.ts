@@ -22,6 +22,7 @@ export interface ParsedArgs {
 	locale?: string;
 	'user-data-dir'?: string;
 	performance?: boolean;
+	'prof-startup'?: string;
 	verbose?: boolean;
 	logExtensionHostCommunication?: boolean;
 	'disable-extensions'?: boolean;
@@ -49,7 +50,6 @@ export interface IEnvironmentService {
 	appRoot: string;
 
 	userHome: string;
-	userProductHome: string;
 	userDataPath: string;
 
 	appNameLong: string;
@@ -75,6 +75,7 @@ export interface IEnvironmentService {
 	verbose: boolean;
 	wait: boolean;
 	performance: boolean;
+	profileStartup: { prefix: string, dir: string } | undefined;
 
 	mainIPCHandle: string;
 	sharedIPCHandle: string;

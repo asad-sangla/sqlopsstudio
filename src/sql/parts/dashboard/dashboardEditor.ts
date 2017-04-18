@@ -9,6 +9,7 @@ import { Dimension, Builder } from 'vs/base/browser/builder';
 import { EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { DashboardInput } from './dashboardInput';
 import { DashboardModule } from './dashboard.module';
@@ -26,6 +27,7 @@ export class DashboardEditor extends BaseEditor {
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
+		@IThemeService themeService: IThemeService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IConnectionManagementService private _connectionService: IConnectionManagementService,
 		@IMetadataService private _metadataService: IMetadataService,
@@ -33,7 +35,7 @@ export class DashboardEditor extends BaseEditor {
 		@IQueryEditorService private _queryEditorService: IQueryEditorService,
 		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
-		super(DashboardEditor.ID, telemetryService);
+		super(DashboardEditor.ID, telemetryService, themeService);
 	}
 
 	/**

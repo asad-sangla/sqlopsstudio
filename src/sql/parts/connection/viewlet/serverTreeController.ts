@@ -14,7 +14,6 @@ import { IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
 import { ConnectionProfile } from '../common/connectionProfile';
-import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 import { ServerTreeActionProvider } from 'sql/parts/connection/viewlet/serverTreeActionProvider';
 
 /**
@@ -80,7 +79,7 @@ export class ServerTreeController extends treedefaults.DefaultController {
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => anchor,
 			getActions: () => this.actionProvider.getActions(tree, element),
-			getKeyBinding: (action) => keybindingForAction(action.id, this.keybindingService),
+			getKeyBinding: (action) => this.keybindingService.lookupKeybinding(action.id),
 			onHide: (wasCancelled?: boolean) => {
 				if (wasCancelled) {
 					tree.DOMFocus();

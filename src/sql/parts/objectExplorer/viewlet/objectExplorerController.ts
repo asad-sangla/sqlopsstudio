@@ -12,7 +12,6 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { keybindingForAction } from 'vs/workbench/parts/files/browser/fileActions';
 import { ObjectExplorerActionProvider } from 'sql/parts/objectExplorer/viewlet/objectExplorerActionProvider';
 import { ObjectExplorerActionsContext } from 'sql/parts/objectExplorer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
@@ -76,7 +75,7 @@ export class ObjectExplorerController extends treedefaults.DefaultController {
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => anchor,
 			getActions: () => this.actionProvider.getActions(tree, element),
-			getKeyBinding: (action) => keybindingForAction(action.id, this.keybindingService),
+			getKeyBinding: (action) => this.keybindingService.lookupKeybinding(action.id),
 			onHide: (wasCancelled?: boolean) => {
 				if (wasCancelled) {
 					tree.DOMFocus();

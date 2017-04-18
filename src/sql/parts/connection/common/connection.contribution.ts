@@ -9,7 +9,6 @@ import { localize } from 'vs/nls';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { IExtensionGalleryService, IExtensionTipsService } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { ExtensionGalleryService } from 'vs/platform/extensionManagement/node/extensionGalleryService';
-import { IKeybindings } from 'vs/platform/keybinding/common/keybinding';
 import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { ViewletRegistry, Extensions as ViewletExtensions, ViewletDescriptor, ToggleViewletAction } from 'vs/workbench/browser/viewlet';
 import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/workbench/common/actionRegistry';
@@ -48,10 +47,6 @@ export class OpenConnectionsViewletAction extends ToggleViewletAction {
 	}
 }
 
-const openViewletKb: IKeybindings = {
-	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_C
-};
-
 // Viewlet
 const viewletDescriptor = new ViewletDescriptor(
 	'sql/parts/connection/viewlet/connectionViewlet',
@@ -72,7 +67,7 @@ registry.registerWorkbenchAction(
 		OpenConnectionsViewletAction,
 		OpenConnectionsViewletAction.ID,
 		OpenConnectionsViewletAction.LABEL,
-		openViewletKb),
+		{ primary: KeyMod.CtrlCmd | KeyCode.Shift | KeyCode.KEY_C }),
 	'View: Show Servers',
 	localize('view', "View")
 );

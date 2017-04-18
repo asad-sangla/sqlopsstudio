@@ -16,6 +16,7 @@ import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from 'sql
 import { Orientation } from 'vs/base/browser/ui/sash/sash';
 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
@@ -80,6 +81,7 @@ export class QueryEditor extends BaseEditor {
 
 	constructor(
 		@ITelemetryService _telemetryService: ITelemetryService,
+		@IThemeService themeService: IThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
@@ -88,7 +90,7 @@ export class QueryEditor extends BaseEditor {
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
 		editorOrientation?: Orientation
 	) {
-		super(QueryEditor.ID, _telemetryService);
+		super(QueryEditor.ID, _telemetryService, themeService);
 
 		if (editorOrientation) {
 			this._orientation = editorOrientation;

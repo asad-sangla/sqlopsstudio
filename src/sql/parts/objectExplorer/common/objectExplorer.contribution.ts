@@ -7,7 +7,6 @@ import 'vs/css!sql/parts/objectExplorer/viewlet/media/objectExplorerViewlet';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
-import { IKeybindings } from 'vs/platform/keybinding/common/keybinding';
 import { ViewletRegistry, Extensions as ViewletExtensions, ViewletDescriptor, ToggleViewletAction } from 'vs/workbench/browser/viewlet';
 import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/workbench/common/actionRegistry';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
@@ -31,10 +30,6 @@ export class ObjectExplorerViewletAction extends ToggleViewletAction {
 	}
 }
 
-const openViewletKb: IKeybindings = {
-	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_X
-};
-
 // Viewlet
 const viewletDescriptor = new ViewletDescriptor(
 	'sql/parts/objectExplorer/viewlet/objectExplorerViewlet',
@@ -53,7 +48,7 @@ registry.registerWorkbenchAction(
 		ObjectExplorerViewletAction,
 		ObjectExplorerViewletAction.ID,
 		ObjectExplorerViewletAction.LABEL,
-		openViewletKb),
+		{ primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_X }),
 	'View: Show Object Explorer',
 	localize('view', "View")
 );

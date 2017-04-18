@@ -15,6 +15,7 @@ import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { Position } from 'vs/platform/editor/common/editor';
 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
@@ -53,6 +54,7 @@ export class EditDataEditor extends BaseEditor {
 
 	constructor(
 		@ITelemetryService _telemetryService: ITelemetryService,
+		@IThemeService themeService: IThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
@@ -61,7 +63,7 @@ export class EditDataEditor extends BaseEditor {
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
-		super(EditDataEditor.ID, _telemetryService);
+		super(EditDataEditor.ID, _telemetryService, themeService);
 	}
 
 	// PUBLIC METHODS ////////////////////////////////////////////////////////////

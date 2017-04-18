@@ -7,6 +7,11 @@
 
 'use strict';
 
+if (window.location.search.indexOf('prof-startup') >= 0) {
+	var profiler = require('v8-profiler');
+	profiler.startProfiling('renderer', true);
+}
+
 /*global window,document,define*/
 
 const path = require('path');
@@ -81,10 +86,7 @@ function parseURLQueryArgs() {
 function createScript(src, onload) {
 	const script = document.createElement('script');
 	script.src = src;
-
-	if (onload) {
-		script.addEventListener('load', onload);
-	}
+	script.addEventListener('load', onload);
 
 	const head = document.getElementsByTagName('head')[0];
 	head.insertBefore(script, head.lastChild);
@@ -165,7 +167,7 @@ function main() {
 
 	window.document.documentElement.setAttribute('lang', locale);
 
-	const enableDeveloperTools = process.env['VSCODE_DEV'] || !!configuration.extensionDevelopmentPath;
+	const enableDeveloperTools = (process.env['VSCODE_DEV'] || !!configuration.extensionDevelopmentPath) && !configuration.extensionTestsPath;
 	const unbind = registerListeners(enableDeveloperTools);
 
 	// disable pinch zoom & apply zoom level early to avoid glitches
@@ -210,10 +212,10 @@ function main() {
 		const timers = window.MonacoEnvironment.timers = {
 			isInitialStartup: !!configuration.isInitialStartup,
 			hasAccessibilitySupport: !!configuration.accessibilitySupport,
-			start: new Date(configuration.perfStartTime),
-			appReady: new Date(configuration.perfAppReady),
-			windowLoad: new Date(configuration.perfWindowLoadTime),
-			beforeLoadWorkbenchMain: new Date()
+			start: configuration.perfStartTime,
+			appReady: configuration.perfAppReady,
+			windowLoad: configuration.perfWindowLoadTime,
+			beforeLoadWorkbenchMain: Date.now()
 		};
 
 		require([
@@ -221,10 +223,9 @@ function main() {
 			'vs/nls!vs/workbench/electron-browser/workbench.main',
 			'vs/css!vs/workbench/electron-browser/workbench.main'
 		], function () {
-			timers.afterLoadWorkbenchMain = new Date();
+			timers.afterLoadWorkbenchMain = Date.now();
 
 			process.lazyEnv.then(function () {
-
 				require('vs/workbench/electron-browser/main')
 					.startup(configuration)
 					.done(function () {
@@ -233,7 +234,6 @@ function main() {
 						onError(error, enableDeveloperTools);
 					});
 			});
-
 		});
 	});
 }

@@ -17,6 +17,7 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 import { QUERY_SELECTOR } from 'sql/parts/grid/views/query/query.component';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 
 export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareEditorVisible', false);
 
@@ -30,10 +31,11 @@ export class QueryResultsEditor extends BaseEditor {
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
+		@IThemeService themeService: IThemeService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
-		super(QueryResultsEditor.ID, telemetryService);
+		super(QueryResultsEditor.ID, telemetryService, themeService);
 	}
 
 	createEditor(parent: Builder): void {

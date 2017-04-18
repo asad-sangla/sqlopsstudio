@@ -14,6 +14,7 @@ import { Builder, Dimension } from 'vs/base/browser/builder';
 import { Viewlet, IViewletView } from 'vs/workbench/browser/viewlet';
 import { append, $, addStandardDisposableListener, EventType, addClass, removeClass, toggleClass } from 'vs/base/browser/dom';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { isPromiseCanceledError } from 'vs/base/common/errors';
@@ -37,10 +38,11 @@ export class ObjectExplorerViewlet extends Viewlet {
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
+		@IThemeService themeService: IThemeService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IMessageService private messageService: IMessageService
 	) {
-		super(OBJECTEXPLORER_VIEWLET_ID, telemetryService);
+		super(OBJECTEXPLORER_VIEWLET_ID, telemetryService, themeService);
 		this.searchDelayer = new ThrottledDelayer(500);
 		this.views = [];
 	}

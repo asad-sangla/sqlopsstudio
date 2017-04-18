@@ -123,4 +123,12 @@ export class EditorGroupTestService implements IEditorGroupService {
 	public unpinEditor(arg1: any, input: EditorInput): void {
 
 	}
+
+	/**
+	 * Resize visible editor groups
+	 */
+	public resizeGroup(position: Position, groupSizeChange: number): void {
+
+	}
+
 }

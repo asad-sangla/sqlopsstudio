@@ -21,13 +21,13 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { IThemeService } from 'vs/workbench/services/themes/common/themeService';
+import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { Scope } from 'vs/workbench/common/memento';
 import { getCodeEditor } from 'vs/editor/common/services/codeEditorService';
 import { IModeService } from 'vs/editor/common/services/modeService';
 import { ITextFileService, SaveReason, AutoSaveMode } from 'vs/workbench/services/textfile/common/textfiles';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
-import { IEditorGroupService } from "vs/workbench/services/group/common/groupService";
+import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 
 const TEXT_EDITOR_VIEW_STATE_PREFERENCE_KEY = 'textEditorViewState';
 
@@ -50,7 +50,7 @@ export abstract class BaseTextEditor extends BaseEditor {
 	private editorControl: IEditor;
 	private _editorContainer: Builder;
 	private hasPendingConfigurationChange: boolean;
-	private pendingAutoSaveAll: TPromise<void>;
+	private lastAppliedEditorOptions: IEditorOptions;
 
 	constructor(
 		id: string,
@@ -58,15 +58,15 @@ export abstract class BaseTextEditor extends BaseEditor {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IStorageService private storageService: IStorageService,
 		@IConfigurationService private _configurationService: IConfigurationService,
-		@IThemeService private themeService: IThemeService,
+		@IWorkbenchThemeService protected themeService: IWorkbenchThemeService,
 		@IModeService private modeService: IModeService,
 		@ITextFileService private textFileService: ITextFileService,
 		@IEditorGroupService private editorGroupService: IEditorGroupService
 	) {
-		super(id, telemetryService);
+		super(id, telemetryService, themeService);
 
 		this.toUnbind.push(this.configurationService.onDidUpdateConfiguration(e => this.handleConfigurationChangeEvent(e.config)));
-		this.toUnbind.push(themeService.onDidColorThemeChange(e => this.handleConfigurationChangeEvent(this.configurationService.getConfiguration<IEditorConfiguration>())));
+		this.toUnbind.push(themeService.onDidColorThemeChange(e => this.handleConfigurationChangeEvent())); // TODO@theme this should be done from the editor itself and not from the outside
 	}
 
 	protected get instantiationService(): IInstantiationService {
@@ -77,9 +77,9 @@ export abstract class BaseTextEditor extends BaseEditor {
 		return this._configurationService;
 	}
 
-	private handleConfigurationChangeEvent(configuration: IEditorConfiguration): void {
+	private handleConfigurationChangeEvent(configuration?: IEditorConfiguration): void {
 		if (this.isVisible()) {
-			this.applyConfiguration(configuration);
+			this.updateEditorConfiguration(configuration);
 		} else {
 			this.hasPendingConfigurationChange = true;
 		}
@@ -87,20 +87,9 @@ export abstract class BaseTextEditor extends BaseEditor {
 
 	private consumePendingConfigurationChangeEvent(): void {
 		if (this.hasPendingConfigurationChange) {
-			this.applyConfiguration(this.configurationService.getConfiguration<IEditorConfiguration>());
+			this.updateEditorConfiguration();
 			this.hasPendingConfigurationChange = false;
 		}
-	}
-
-	private applyConfiguration(configuration: IEditorConfiguration): void {
-		if (!this.editorControl) {
-			return;
-		}
-
-		const editorConfiguration = this.computeConfiguration(configuration);
-
-		// Apply to control
-		this.editorControl.updateOptions(editorConfiguration);
 	}
 
 	protected computeConfiguration(configuration: IEditorConfiguration): IEditorOptions {
@@ -165,36 +154,26 @@ export abstract class BaseTextEditor extends BaseEditor {
 	}
 
 	private onEditorFocusLost(): void {
-		if (this.pendingAutoSaveAll) {
-			return; // save is already triggered
-		}
-
-		if (this.textFileService.getAutoSaveMode() === AutoSaveMode.ON_FOCUS_CHANGE && this.textFileService.isDirty()) {
-			this.saveAll(SaveReason.FOCUS_CHANGE);
-		}
+		this.maybeTriggerSaveAll(SaveReason.FOCUS_CHANGE);
 	}
 
 	private onWindowFocusLost(): void {
-		if (this.pendingAutoSaveAll) {
-			return; // save is already triggered
-		}
-
-		if (this.textFileService.getAutoSaveMode() === AutoSaveMode.ON_WINDOW_CHANGE && this.textFileService.isDirty()) {
-			this.saveAll(SaveReason.WINDOW_CHANGE);
-		}
+		this.maybeTriggerSaveAll(SaveReason.WINDOW_CHANGE);
 	}
 
-	private saveAll(reason: SaveReason): void {
-		this.pendingAutoSaveAll = this.textFileService.saveAll(void 0, reason).then(() => {
-			this.pendingAutoSaveAll = void 0;
+	private maybeTriggerSaveAll(reason: SaveReason): void {
+		const mode = this.textFileService.getAutoSaveMode();
 
-			return void 0;
-		}, error => {
-			this.pendingAutoSaveAll = void 0;
-			errors.onUnexpectedError(error);
-
-			return void 0;
-		});
+		// Determine if we need to save all. In case of a window focus change we also save if auto save mode
+		// is configured to be ON_FOCUS_CHANGE (editor focus change)
+		if (
+			(reason === SaveReason.WINDOW_CHANGE && (mode === AutoSaveMode.ON_FOCUS_CHANGE || mode === AutoSaveMode.ON_WINDOW_CHANGE)) ||
+			(reason === SaveReason.FOCUS_CHANGE && mode === AutoSaveMode.ON_FOCUS_CHANGE)
+		) {
+			if (this.textFileService.isDirty()) {
+				this.textFileService.saveAll(void 0, reason).done(null, errors.onUnexpectedError);
+			}
+		}
 	}
 
 	/**
@@ -305,8 +284,25 @@ export abstract class BaseTextEditor extends BaseEditor {
 		return null;
 	}
 
-	private updateEditorConfiguration(): void {
-		this.editorControl.updateOptions(this.computeConfiguration(this.configurationService.getConfiguration<IEditorConfiguration>()));
+	private updateEditorConfiguration(configuration = this.configurationService.getConfiguration<IEditorConfiguration>()): void {
+		if (!this.editorControl) {
+			return;
+		}
+
+		const editorConfiguration = this.computeConfiguration(configuration);
+
+		// Try to figure out the actual editor options that changed from the last time we updated the editor.
+		// We do this so that we are not overwriting some dynamic editor settings (e.g. word wrap) that might
+		// have been applied to the editor directly.
+		let editorSettingsToApply = editorConfiguration;
+		if (this.lastAppliedEditorOptions) {
+			editorSettingsToApply = objects.distinct(this.lastAppliedEditorOptions, editorSettingsToApply);
+		}
+
+		if (Object.keys(editorSettingsToApply).length > 0) {
+			this.lastAppliedEditorOptions = editorConfiguration;
+			this.editorControl.updateOptions(editorSettingsToApply);
+		}
 	}
 
 	protected getLanguage(): string {
@@ -331,8 +327,7 @@ export abstract class BaseTextEditor extends BaseEditor {
 	protected abstract getAriaLabel(): string;
 
 	public dispose(): void {
-
-		// Destroy Editor Control
+		this.lastAppliedEditorOptions = void 0;
 		this.editorControl.destroy();
 
 		super.dispose();

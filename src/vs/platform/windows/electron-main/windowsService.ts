@@ -20,6 +20,11 @@ import { ITelemetryData } from 'vs/platform/telemetry/common/telemetry';
 import { OpenContext } from 'vs/code/common/windows';
 import { IWindowsMainService } from 'vs/code/electron-main/windows';
 
+export interface ISharedProcess {
+	whenReady(): TPromise<void>;
+	toggle(): void;
+}
+
 export class WindowsService implements IWindowsService, IDisposable {
 
 	_serviceBrand: any;
@@ -30,6 +35,7 @@ export class WindowsService implements IWindowsService, IDisposable {
 	onWindowFocus: Event<number> = fromEventEmitter(app, 'browser-window-focus', (_, w: Electron.BrowserWindow) => w.id);
 
 	constructor(
+		private sharedProcess: ISharedProcess,
 		@IWindowsMainService private windowsMainService: IWindowsMainService,
 		@IEnvironmentService private environmentService: IEnvironmentService,
 		@IURLService urlService: IURLService
@@ -131,6 +137,11 @@ export class WindowsService implements IWindowsService, IDisposable {
 	removeFromRecentlyOpen(paths: string[]): TPromise<void> {
 		this.windowsMainService.removeFromRecentPathsList(paths);
 
+		return TPromise.as(null);
+	}
+
+	clearRecentPathsList(): TPromise<void> {
+		this.windowsMainService.clearRecentPathsList();
 		return TPromise.as(null);
 	}
 
@@ -249,9 +260,8 @@ export class WindowsService implements IWindowsService, IDisposable {
 		return TPromise.as(null);
 	}
 
-	openExternal(url: string): TPromise<void> {
-		shell.openExternal(url);
-		return TPromise.as(null);
+	openExternal(url: string): TPromise<boolean> {
+		return TPromise.as(shell.openExternal(url));
 	}
 
 	startCrashReporter(config: Electron.CrashReporterStartOptions): TPromise<void> {
@@ -261,6 +271,33 @@ export class WindowsService implements IWindowsService, IDisposable {
 
 	quit(): TPromise<void> {
 		this.windowsMainService.quit();
+		return TPromise.as(null);
+	}
+
+	relaunch(options: { addArgs?: string[], removeArgs?: string[] }): TPromise<void> {
+		const args = process.argv.slice(1);
+		if (options.addArgs) {
+			args.push(...options.addArgs);
+		}
+		if (options.removeArgs) {
+			for (const a of options.removeArgs) {
+				const idx = args.indexOf(a);
+				if (idx >= 0) {
+					args.splice(idx, 1);
+				}
+			}
+		}
+		app.quit();
+		app.once('quit', () => app.relaunch({ args }));
+		return TPromise.as(null);
+	}
+
+	whenSharedProcessReady(): TPromise<void> {
+		return this.sharedProcess.whenReady();
+	}
+
+	toggleSharedProcess(): TPromise<void> {
+		this.sharedProcess.toggle();
 		return TPromise.as(null);
 	}
 

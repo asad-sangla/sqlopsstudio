@@ -60,7 +60,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		var defaultStyles = document.getElementById('_defaultStyles');
 		defaultStyles.innerHTML = initData.styles;
 
-		var body = getTarget().contentDocument.getElementsByTagName('body');
+		var target = getTarget()
+		if (!target) {
+			return;
+		}
+		var body = target.contentDocument.getElementsByTagName('body');
 		styleBody(body[0]);
 
 		// iframe
@@ -122,11 +126,16 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		const newFrame = document.createElement('iframe');
 		newFrame.setAttribute('id', '_target');
 		newFrame.setAttribute('frameborder', '0');
+		newFrame.setAttribute('sandbox', 'allow-scripts allow-forms allow-same-origin');
 		newFrame.style.cssText = "margin: 0; overflow: hidden; position: absolute; width: 100%; height: 100%; display: none";
 		document.body.appendChild(newFrame);
 
 		// write new content onto iframe
 		newFrame.contentDocument.open('text/html', 'replace');
+		newFrame.contentWindow.onbeforeunload = function (e) {
+			console.log('prevented webview navigation');
+			return false;
+		};
 
 		// workaround for https://github.com/Microsoft/vscode/issues/12865
 		// check new scrollTop and reset if neccessary
@@ -143,7 +152,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
 			if (frame) {
 				document.body.removeChild(frame);
 			}
-
 			newFrame.style.display = 'block';
 		});
 
@@ -153,7 +161,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		newFrame.contentDocument.write(newDocument.documentElement.innerHTML);
 		newFrame.contentDocument.close();
 
-
 		ipcRenderer.sendToHost('did-set-content', stats);
 	});
 
@@ -161,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	ipcRenderer.on('message', function (event, data) {
 		const target = getTarget();
 		if (target) {
-			target.contentWindow.postMessage(data, 'file://');
+			target.contentWindow.postMessage(data, document.location.origin);
 		}
 	});
 

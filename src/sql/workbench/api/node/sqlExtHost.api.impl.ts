@@ -14,6 +14,7 @@ import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 import { realpath } from 'fs';
 import * as extHostTypes from 'vs/workbench/api/node/extHostTypes';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 
 import * as data from 'data';
 import * as vscode from 'vscode';
@@ -30,8 +31,10 @@ export interface ISqlExtensionApiFactory {
 /**
  * This method instantiates and returns the extension API surface. This overrides the default ApiFactory by extending it to add Carbon-related functions
  */
-export function createApiFactory(initData: IInitData, threadService: IThreadService, extensionService: ExtHostExtensionService, contextService: IWorkspaceContextService): ISqlExtensionApiFactory {
-	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService, contextService);
+export function createApiFactory(
+		initData: IInitData, threadService: IThreadService, extensionService: ExtHostExtensionService,
+		contextService: IWorkspaceContextService, telemetryService: ITelemetryService): ISqlExtensionApiFactory {
+	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService, contextService, telemetryService);
 
 	// Addressable instances
 	const col = new SqlInstanceCollection();

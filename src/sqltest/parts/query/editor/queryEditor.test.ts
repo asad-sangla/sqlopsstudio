@@ -42,6 +42,7 @@ suite('SQL QueryEditor Tests', () => {
 	let getQueryEditor = function(): QueryEditor {
 		return new QueryEditor(
 			undefined,
+			undefined,
 			instantiationService.object,
 			undefined,
 			undefined,
@@ -100,14 +101,14 @@ suite('SQL QueryEditor Tests', () => {
 		// Create a QueryInput
 		let filePath = 'someFile.sql';
 		let uri: URI = URI.parse(filePath);
-		let fileInput = new UntitledEditorInput(uri, false, '', instantiationService.object, undefined, undefined);
+		let fileInput = new UntitledEditorInput(uri, false, '', '', instantiationService.object, undefined, undefined);
 		let queryResultsInput: QueryResultsInput = new QueryResultsInput(uri.fsPath);
 		queryInput = new QueryInput('first', 'first', fileInput, queryResultsInput, undefined, undefined, undefined);
 
 		// Create a QueryInput to compare to the previous one
 		let filePath2 = 'someFile2.sql';
 		let uri2: URI = URI.parse(filePath2);
-		let fileInput2 = new UntitledEditorInput(uri2, false, '', instantiationService.object, undefined, undefined);
+		let fileInput2 = new UntitledEditorInput(uri2, false, '', '', instantiationService.object, undefined, undefined);
 		let queryResultsInput2: QueryResultsInput = new QueryResultsInput(uri2.fsPath);
 		queryInput2 = new QueryInput('second', 'second', fileInput2, queryResultsInput2, undefined, undefined, undefined);
 
@@ -195,6 +196,7 @@ suite('SQL QueryEditor Tests', () => {
 
 		// If I create a QueryEditor
 		let editor: QueryEditor = new QueryEditor(
+			undefined,
 			undefined,
 			instantiationService.object,
 			undefined,
@@ -327,7 +329,7 @@ suite('SQL QueryEditor Tests', () => {
 				return new RunQueryAction(undefined, undefined, undefined);
 			});
 
-			let fileInput = new UntitledEditorInput(URI.parse('testUri'), false, '', instantiationService.object, undefined, undefined);
+			let fileInput = new UntitledEditorInput(URI.parse('testUri'), false, '', '', instantiationService.object, undefined, undefined);
 			queryModelService = TypeMoq.Mock.ofType(QueryModelService, TypeMoq.MockBehavior.Loose, undefined, undefined);
 			queryModelService.callBase = true;
 			queryInput = new QueryInput(
