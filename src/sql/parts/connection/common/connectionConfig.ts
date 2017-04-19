@@ -387,7 +387,9 @@ export class ConnectionConfig implements IConnectionConfig {
 				value: profiles
 			};
 			this._configurationEditService.writeConfiguration(ConfigurationTarget.USER, configValue).then(result => {
-				resolve();
+				this._workspaceConfigurationService.reloadConfiguration().then(() => {
+					resolve();
+				});
 			}, (error => {
 				reject(error);
 			}));
