@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/connection/viewlet/media/extensions';
+import 'vs/css!sql/parts/connection/viewlet/media/connectionViewlet';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
@@ -53,7 +53,7 @@ const viewletDescriptor = new ViewletDescriptor(
 	'ConnectionViewlet',
 	VIEWLET_ID,
 	'Servers',
-	'extensions',
+	'connectionViewlet',
 	-100
 );
 

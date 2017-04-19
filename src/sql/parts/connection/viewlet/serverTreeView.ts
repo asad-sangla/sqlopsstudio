@@ -13,6 +13,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { CollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from '../common/connectionProfileGroup';
+import { ConnectionProfile } from '../common/connectionProfile';
 import { AddServerAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
@@ -20,6 +21,7 @@ import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import { TreeCreationUtils } from 'sql/parts/connection/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/connection/viewlet/treeUpdateUtils';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 const $ = builder.$;
 
 /**
@@ -31,6 +33,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	private addServerAction: IAction;
 	private recentConnectionsFilterAction: RecentConnectionsFilterAction;
 	private activeConnectionsFilterAction: ActiveConnectionsFilterAction;
+	private _searchStr: string;
 
 	constructor(actionRunner: IActionRunner, settings: any,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
@@ -86,7 +89,6 @@ export class ServerTreeView extends CollapsibleViewletView {
 			self.refreshTree();
 			})
 		);
-
 		self.refreshTree();
 	}
 
@@ -99,6 +101,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 
 	public refreshTree(): void {
 		this.messages.hide();
+		this.clearOtherActions();
 		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
 	}
 
@@ -107,7 +110,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 */
 	private filterConnections(treeInput: ConnectionProfileGroup[], view: string): ConnectionProfileGroup[] {
 		if (!treeInput || treeInput.length === 0) {
-			return treeInput;
+			return undefined;
 		}
 		let result = treeInput.map(group => {
 			// Keep active/recent connections and remove the rest
@@ -122,11 +125,13 @@ export class ServerTreeView extends CollapsibleViewletView {
 				});
 			}
 			group.children = this.filterConnections(group.children, view);
-			// remove subgroups that are undefined
-			group.children = group.children.filter(group => {
-				return (group) ? true : false;
-			});
-			// return a group only if it has a filtered result or subgroup.
+			// Remove subgroups that are undefined
+			if (group.children) {
+				group.children = group.children.filter(group => {
+					return (group) ? true : false;
+				});
+			}
+			// Return a group only if it has a filtered result or subgroup.
 			if ((group.connections && group.connections.length > 0) || (group.children && group.children.length > 0)) {
 				return group;
 			}
@@ -139,19 +144,53 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 * Set tree elements based on the view (recent/active)
 	 */
 	public showFilteredTree(view: string): void {
+
 		const self = this;
 		this.messages.hide();
-		// clear other action views if user switched between two views
+		// Clear other action views if user switched between two views
 		this.clearOtherActions(view);
-		let root = this._connectionManagementService.getConnectionGroups();
+		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
+		if (root) {
+			// Filter results based on view
+			let filteredResults = this.filterConnections([root], view);
+			if (!filteredResults || !filteredResults[0]) {
+				this.messages.show();
+				this.messages.domFocus();
+			}
+			let treeInput = filteredResults[0];
+			this.tree.setInput(treeInput).done(() => {
+				if (this.messages.isHidden()) {
+					self.tree.getFocus();
+					self.tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
+				} else {
+					self.tree.clearFocus();
+				}
+			}, errors.onUnexpectedError);
+		} else {
+       //no op
+		}
+	}
 
-		//filter results based on view
-		let filteredResults = this.filterConnections(root, view);
-		if (!filteredResults || !filteredResults[0]) {
+	/**
+	* Searches and sets the tree input to the results
+	*/
+	public searchTree(searchString: string): void {
+		if (!searchString) {
+			return;
+		}
+		const self = this;
+		this.messages.hide();
+		// Clear other actions if user searched during other views
+		this.clearOtherActions();
+		// Filter connections based on search
+		let filteredResults = this.searchConnections(searchString);
+		if (!filteredResults || filteredResults.length === 0) {
 			this.messages.show();
 			this.messages.domFocus();
 		}
-		let treeInput = filteredResults[0];
+		// Add all connections to tree root and set tree input
+		let treeInput = new ConnectionProfileGroup('searchroot', undefined, 'searchroot');
+		treeInput.addConnections(filteredResults);
 		this.tree.setInput(treeInput).done(() => {
 			if (this.messages.isHidden()) {
 				self.tree.getFocus();
@@ -162,7 +201,44 @@ export class ServerTreeView extends CollapsibleViewletView {
 		}, errors.onUnexpectedError);
 	}
 
-	private clearOtherActions(view: string) {
+	/**
+	 * Searches through all the connections and returns a list of matching connections
+	 */
+	private searchConnections(searchString : string): ConnectionProfile[] {
+
+		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
+		let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
+		let results = connections.filter(con => {
+			if (searchString && (searchString.length > 0)) {
+				return this.isMatch(con, searchString);
+			} else {
+				return false;
+			}
+		});
+		return results;
+	}
+
+	/**
+	 * Returns true if the connection matches the search string.
+	 * For now, the search criteria is true if the
+	 * server name or database name contains the search string (ignores case).
+	 */
+	private isMatch(connection: ConnectionProfile, searchString: string): boolean {
+		searchString = searchString.trim().toLocaleUpperCase();
+		if ((connection.databaseName.toLocaleUpperCase()).includes(searchString) || (connection.serverName.toLocaleUpperCase()).includes(searchString)) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Clears the toggle icons for active and recent
+	 */
+	private clearOtherActions(view?: string) {
+		if (!view) {
+			this.activeConnectionsFilterAction.isSet = false;
+			this.recentConnectionsFilterAction.isSet = false;
+		}
 		if (view === 'recent') {
 			this.activeConnectionsFilterAction.isSet = false;
 		} else if (view === 'active') {
@@ -179,5 +255,9 @@ export class ServerTreeView extends CollapsibleViewletView {
 			return;
 		}
 		this.messageService.show(Severity.Error, err);
+	}
+
+	public dispose(): void {
+		super.dispose();
 	}
 }

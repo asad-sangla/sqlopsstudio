@@ -12,11 +12,13 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
 import { ServerTreeView } from 'sql/parts/connection/viewlet/serverTreeView';
+import { ConnectionViewlet } from 'sql/parts/connection/viewlet/connectionViewlet';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import { TaskUtilities } from 'sql/parts/common/taskUtilities';
+import { TreeUpdateUtils } from 'sql/parts/connection/viewlet/treeUpdateUtils';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import * as Constants from 'sql/parts/connection/common/constants';
 
@@ -121,7 +123,7 @@ export class ChangeConnectionAction extends Action {
  */
 export class AddServerAction extends Action {
 	public static ID = 'registeredServers.addConnection';
-	public static LABEL = localize('addConnection', "Add Connection");
+	public static LABEL = localize('addConnection', 'Add Connection');
 
 	constructor(
 		id: string,
@@ -157,7 +159,7 @@ export class AddServerAction extends Action {
  */
 export class ActiveConnectionsFilterAction extends Action {
 	public static ID = 'registeredServers.recentConnections';
-	public static LABEL = localize('activeConnections', "Active Connections");
+	public static LABEL = localize('activeConnections', 'Active Connections');
 	private static enabledClass = 'active-connections-action';
 	private static disabledClass = 'active-connections-action-set';
 	private _isSet: boolean;
@@ -199,7 +201,7 @@ export class ActiveConnectionsFilterAction extends Action {
  */
 export class RecentConnectionsFilterAction extends Action {
 	public static ID = 'registeredServers.recentConnections';
-	public static LABEL = localize('recentConnections', "Recent Connections");
+	public static LABEL = localize('recentConnections', 'Recent Connections');
 	private static enabledClass = 'recent-connections-action';
 	private static disabledClass = 'recent-connections-action-set';
 	private _isSet: boolean;
@@ -274,8 +276,8 @@ export class NewQueryAction extends Action {
  */
 export class DeleteConnectionAction extends Action {
 	public static ID = 'registeredServers.deleteConnection';
-	public static DELETE_CONNECTION_LABEL = localize('deleteConnection', "Delete Connection");
-	public static DELETE_CONNECTION_GROUP_LABEL = localize('deleteConnectionGroup', "Delete Group");
+	public static DELETE_CONNECTION_LABEL = localize('deleteConnection', 'Delete Connection');
+	public static DELETE_CONNECTION_GROUP_LABEL = localize('deleteConnectionGroup', 'Delete Group');
 
 	constructor(
 		id: string,
@@ -310,6 +312,9 @@ export class DeleteConnectionAction extends Action {
 	}
 }
 
+/**
+ * Action to rename a server group
+ */
 export class RenameGroupAction extends Action {
 	public static ID = 'registeredServers.renameGroup';
 	public static LABEL = localize('renameGroup', 'Rename Group');
@@ -339,6 +344,30 @@ export class RenameGroupAction extends Action {
 	public run(group: ConnectionProfileGroup): TPromise<boolean> {
 		group.isRenamed = true;
 		this._tree.refresh(group, false);
+		return TPromise.as(true);
+	}
+}
+
+/**
+ * Action to clear search results
+ */
+export class ClearSearchAction extends Action {
+	public static ID = 'registeredServers.clearSearch';
+	public static LABEL = localize('clearSearch', 'Clear Search');
+
+	constructor(
+		id: string,
+		label: string,
+		private _viewlet: ConnectionViewlet,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = 'clear-search';
+		this.enabled = false;
+	}
+
+	public run(): TPromise<boolean> {
+		this._viewlet.clearSearch();
 		return TPromise.as(true);
 	}
 }

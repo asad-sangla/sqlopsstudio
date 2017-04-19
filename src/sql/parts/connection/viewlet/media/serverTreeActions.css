@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/* Icons for various registered servers actions */
+
 .monaco-workbench .add-server-action {
 	background-image: url('new.svg');
 }
@@ -12,8 +14,6 @@
 	background-image: url('new-inverse.svg');
 }
 
-
-/* Temporarily uses same icon for recent and active connections */
 .monaco-workbench .active-connections-action,
 .vs-dark .monaco-workbench .active-connections-action,
 .hc-black .monaco-workbench .active-connections-action{
@@ -38,4 +38,14 @@
 .hc-black .monaco-workbench .recent-connections-action-set {
 	background-image: url('status-renamed.svg');
 	opacity: 0.5;
+}
+/* ------ */
+
+.monaco-workbench .clear-search {
+	background-image: url('close.svg');
+}
+
+.vs-dark .monaco-workbench .clear-search,
+.hc-black .monaco-workbench .clear-search {
+	background-image: url('close-dark.svg');
 }

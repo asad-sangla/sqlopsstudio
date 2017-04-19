@@ -100,22 +100,34 @@ export class TreeUpdateUtils {
 			}
 			targetsToExpand = tree.getExpandedElements();
 		}
+
+			let treeInput =  TreeUpdateUtils.getTreeInput(connectionManagementService);
+			if (treeInput) {
+				if (treeInput !== tree.getInput()) {
+					tree.setInput(treeInput).done(() => {
+					// Make sure to expand all folders that where expanded in the previous session
+ 					if (targetsToExpand) {
+ 						tree.expandAll(targetsToExpand);
+ 					}
+ 					if (selectedElement) {
+ 						tree.select(selectedElement);
+ 					}
+						tree.getFocus();
+					});
+				}
+			}
+	}
+
+	public static getTreeInput(connectionManagementService: IConnectionManagementService): ConnectionProfileGroup {
+
 		let groups = connectionManagementService.getConnectionGroups();
 		if (groups && groups.length > 0) {
 			let treeInput = TreeUpdateUtils.addUnsaved(groups[0], connectionManagementService);
 			treeInput.name = 'root';
-			(treeInput !== tree.getInput() ?
-				tree.setInput(treeInput) : tree.refresh()).done(() => {
-				// Make sure to expand all folders that where expanded in the previous session
- 				if (targetsToExpand) {
- 					tree.expandAll(targetsToExpand);
- 				}
- 				if (selectedElement) {
- 					tree.select(selectedElement);
- 				}
-					tree.getFocus();
-				});
+			return treeInput;
 		}
+		// Should never get to this case.
+		return undefined;
 	}
 
 	private static addUnsaved(root: ConnectionProfileGroup, connectionManagementService: IConnectionManagementService): ConnectionProfileGroup {

@@ -76,10 +76,6 @@
 	line-height: 32px;
 }
 
-.server-explorer-viewlet .monaco-action-bar > .actions-container {
-	flex-wrap: wrap-reverse;
-}
-
 .server-explorer-viewlet  .monaco-action-bar .action-label {
 	margin-right: 0;
 	margin-left: 0.3em;
@@ -173,4 +169,25 @@ margin-bottom: 2px;
 .explorer-servers {
 	height: 100%;
 	overflow: scroll;
+}
+
+/* viewlet icon*/
+
+.monaco-workbench > .activitybar .monaco-action-bar .action-label.connectionViewlet {
+	background: url('icon.png') center center no-repeat;
+}
+
+/* Global action */
+
+.monaco-workbench > .activitybar .monaco-action-bar .action-label.connectionViewlet {
+	background-size: 22px;
+	background-repeat: no-repeat;
+	background-position: 50% !important;
+}
+
+/* search box */
+.server-explorer-viewlet .search-box {
+	padding-bottom: 4px;
+	margin: auto;
+	width: 95%;
 }
