@@ -89,7 +89,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private handleOnCancel(params: INewConnectionParams): void {
 		if (params && params.input && params.connectionType === ConnectionType.editor) {
 			this._connectionManagementService.cancelEditorConnection(params.input);
-			params.input.onConnectReject(nls.localize('connectionCancelled', 'Connection Cancelled'));
+			params.input.onConnectReject();
 		} else {
 			this._connectionManagementService.cancelConnection(this._model);
 		}
