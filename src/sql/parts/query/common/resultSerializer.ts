@@ -22,7 +22,8 @@ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 import { IWindowsService } from 'vs/platform/windows/common/windows';
 import { Registry } from 'vs/platform/platform';
 import URI from 'vs/base/common/uri';
-import { ITextModelResolverService, ITextModelContentProvider } from 'vs/editor/common/services/resolverService';
+import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
+import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 
 import { ISlickRange } from 'angular2-slickgrid';
 import path = require('path');
@@ -35,6 +36,12 @@ declare let prettyData;
  */
 export class ResultSerializer {
     public static tempFileCount: number = 1;
+
+    private static JSON_TYPE: string = 'json';
+    private static CSV_TYPE: string = 'csv';
+    private static XML_TYPE: string = 'xml';
+    private static EXCEL_TYPE: string = 'excel';
+    private static FILE_SCHEMA: string = 'file';
 
     private _prompter: IPrompter;
     private _uri: string;
@@ -51,7 +58,7 @@ export class ResultSerializer {
         @IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
         @IWorkspaceContextService private _contextService: IWorkspaceContextService,
         @IWindowsService private _windowsService: IWindowsService,
-		@ITextModelResolverService private textModelResolverService: ITextModelResolverService,
+		@IUntitledEditorService private _untitledEditorService: IUntitledEditorService
     ) {
         if (prettyData) {
             this.pd = prettyData.pd;
@@ -86,18 +93,20 @@ export class ResultSerializer {
      * Open a xml/json link - Opens the content in a new editor pane
      */
     public openLink(content: string, columnName: string, linkType: string): void {
-        const self = this;
-        let tempFileName = self.getXmlTempFileName(columnName, linkType);
-        if (linkType === 'xml' && this.pd) {
+        let fileMode: string = undefined;
+
+        if (linkType === ResultSerializer.XML_TYPE && this.pd) {
             try {
                 content = this.pd.xml(content);
+                fileMode = ResultSerializer.XML_TYPE;
             } catch (e) {
                 // If Xml fails to parse, fall back on original Xml content
             }
-        } else if (linkType === 'json') {
+        } else if (linkType === ResultSerializer.JSON_TYPE) {
             let jsonContent: string = undefined;
             try {
                 jsonContent = JSON.parse(content);
+                fileMode = ResultSerializer.JSON_TYPE;
             } catch (e) {
                 // If Json fails to parse, fall back on original Json content
             }
@@ -107,29 +116,8 @@ export class ResultSerializer {
             }
         }
 
-        this.openUntitledFile(tempFileName, content);
+        this.openUntitledFile(fileMode, content);
     }
-
-    /**
-     * Return temp file name for opening a link
-     */
-    private getXmlTempFileName(columnName: string, linkType: string): string {
-        if (columnName === 'XML Showplan') {
-            columnName = 'Showplan';
-        }
-        let baseFileName = columnName + '-';
-        let retryCount: number = 200;
-        for (let i = 0; i < retryCount; i++) {
-            let tempFileName = path.join(os.tmpdir(), baseFileName + ResultSerializer.tempFileCount + '.' + linkType);
-            ResultSerializer.tempFileCount++;
-            if (!this.fileExists(tempFileName)) {
-                return tempFileName;
-            }
-        }
-        return path.join(os.tmpdir(), columnName + '_' + String(Math.floor(Date.now() / 1000)) + String(process.pid) + '.' + linkType);
-    }
-
-
 
     private ensureOutputChannelExists(): void {
         Registry.as<IOutputChannelRegistry>(OutputExtensions.OutputChannels)
@@ -207,7 +195,7 @@ export class ResultSerializer {
     }
 
     private getConfigForCsv(): SaveResultsRequestParams {
-        let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: 'csv' };
+        let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: ResultSerializer.CSV_TYPE };
 
         // get save results config from vscode config
         let saveConfig = WorkbenchUtils.getSqlConfigSection(this._workspaceConfigurationService, Constants.configSaveAsCsv);
@@ -222,7 +210,7 @@ export class ResultSerializer {
 
     private getConfigForJson(): SaveResultsRequestParams {
         // JSON does not currently have special conditions
-        let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: 'json' };
+        let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: ResultSerializer.JSON_TYPE };
         return saveResultsParams;
     }
 
@@ -231,7 +219,7 @@ export class ResultSerializer {
         // Note: we are currently using the configSaveAsCsv setting since it has the option mssql.saveAsCsv.includeHeaders
         // and we want to have just 1 setting that lists this.
         let config = this.getConfigForCsv();
-        config.resultFormat = 'excel';
+        config.resultFormat = ResultSerializer.EXCEL_TYPE;
         return config;
     }
 
@@ -242,9 +230,9 @@ export class ResultSerializer {
         let currentDirectory: string;
 
         // use current directory of the sql file if sql file is saved
-        if (sqlUri.scheme === 'file') {
+        if (sqlUri.scheme === ResultSerializer.FILE_SCHEMA) {
             currentDirectory = path.dirname(sqlUri.fsPath);
-        } else if (sqlUri.scheme === 'untitled') {
+        } else if (sqlUri.scheme === UntitledEditorInput.SCHEMA) {
             // if sql file is unsaved/untitled but a workspace is open use workspace root
             let root = this.rootPath;
             if (root) {
@@ -280,11 +268,11 @@ export class ResultSerializer {
             this._filePath = filePath;
         }
 
-        if (format === 'csv') {
+        if (format === ResultSerializer.CSV_TYPE) {
             saveResultsParams = this.getConfigForCsv();
-        } else if (format === 'json') {
+        } else if (format === ResultSerializer.JSON_TYPE) {
             saveResultsParams = this.getConfigForJson();
-        } else if (format === 'excel') {
+        } else if (format === ResultSerializer.EXCEL_TYPE) {
             saveResultsParams = this.getConfigForExcel();
         }
 
@@ -339,11 +327,11 @@ export class ResultSerializer {
      * Open the saved file in a new vscode editor pane
      */
     private openSavedFile(filePath: string, format: string): void {
-        if (format === 'excel') {
+        if (format === ResultSerializer.EXCEL_TYPE) {
             // This will not open in VSCode as it's treated as binary. Use the native file opener instead
             // Note: must use filePath here, URI does not open correctly
             // TODO see if there is an alternative opener that includes error handling
-            let fileUri = URI.from({ scheme: 'file', path: filePath });
+            let fileUri = URI.from({ scheme: ResultSerializer.FILE_SCHEMA, path: filePath });
             this._windowsService.openExternal(fileUri.toString());
         } else {
             let uri = URI.file(filePath);
@@ -358,21 +346,16 @@ export class ResultSerializer {
     /**
      * Open the saved file in a new vscode editor pane
      */
-    private openUntitledFile(filePath: string, contents: string): void {
-        let self = this;
-        let untitledUri = URI.from({ scheme: 'untitled', path: filePath });
-        this._editorService.openEditor({ resource: untitledUri }).then((editor) => {
-                return self.setFileContents(untitledUri, contents);
-            }).then((success) => {},
-            (error: any) => {
-                this._messageService.show(Severity.Error, error);
-            });
-    }
+    private openUntitledFile(fileMode: string, contents: string): void {
+		const input = this._untitledEditorService.createOrGet(undefined, fileMode, contents);
 
-    private setFileContents(resourceUri: URI, contents ): Thenable<void> {
-        return this.textModelResolverService.createModelReference(resourceUri).then(ref => {
-            const model = ref.object.textEditorModel;
-            model.setValue(contents);
-        });
+		this._editorService.openEditor(input, { pinned: true })
+            .then(
+                (success) => {
+                },
+                (error: any) => {
+                    this._messageService.show(Severity.Error, error);
+                }
+            );
     }
 }

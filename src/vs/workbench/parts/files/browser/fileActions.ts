@@ -524,7 +524,7 @@ export class GlobalNewUntitledFileAction extends Action {
 	}
 
 	public run(): TPromise<any> {
-		const input = this.untitledEditorService.createOrGet();
+		const input = this.untitledEditorService.createOrGet(undefined, 'sql');
 
 		return this.editorService.openEditor(input, { pinned: true }); // untitled are always pinned
 	}

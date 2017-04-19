@@ -15,7 +15,6 @@ import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import URI from 'vs/base/common/uri';
 import { IConnectableInput } from 'sql/parts/connection/common/connectionManagement';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
-import { IEditorInput } from 'vs/platform/editor/common/editor';
 
 const fs = require('fs');
 
@@ -194,13 +193,9 @@ export class QueryEditorService implements IQueryEditorService {
 			let uri: URI = this.getInputResource(input);
 			if (uri) {
 				let isValidUri: boolean = !!uri && !!uri.toString;
-				let isUntitled: boolean = this.isUntitledFile(uri);
-				let isValidInput = this.isQueryEditorFile(input) || isUntitled;
+				let isValidInput = this.hasSqlFileExtension(input) || this.hasSqlFileMode(input);
 
 				if (isValidUri && isValidInput) {
-					if (isUntitled) {
-						this.setModeToSql(input);
-					}
 					return uri.toString();
 				}
 			}
@@ -218,7 +213,7 @@ export class QueryEditorService implements IQueryEditorService {
 		}
 
 		if (input instanceof FileEditorInput) {
-			let fileCast: FileEditorInput  = <FileEditorInput > input;
+			let fileCast: FileEditorInput  = <FileEditorInput> input;
 			if (fileCast) {
 				return fileCast.getResource();
 			}
@@ -227,21 +222,18 @@ export class QueryEditorService implements IQueryEditorService {
 		return undefined;
 	}
 
-	private static isUntitledFile(uri: URI): boolean {
-		if (uri) {
-			return uri.scheme === UntitledEditorInput.SCHEMA;
+	private static hasSqlFileMode(input: EditorInput): boolean {
+		if (input instanceof UntitledEditorInput) {
+			let untitledCast: UntitledEditorInput = <UntitledEditorInput> input;
+			if (untitledCast) {
+				return untitledCast.getModeId() === this.sqlModeId;
+			}
 		}
+
 		return false;
 	}
 
-	private static setModeToSql(input: IEditorInput): void {
-		if (input && input instanceof UntitledEditorInput) {
-			let inputCast: any = <any>input;
-			inputCast.modeId = this.sqlModeId;
-		}
-	}
-
-	private static isQueryEditorFile(input: EditorInput): boolean {
+	private static hasSqlFileExtension(input: EditorInput): boolean {
 		// Check the extension type
 		let lastPeriodIndex = input.getName().lastIndexOf('.');
 		if (lastPeriodIndex > -1) {
