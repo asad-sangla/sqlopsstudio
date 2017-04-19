@@ -21,6 +21,8 @@ import { KeyCode } from 'vs/base/common/keyCodes';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { TreeUpdateUtils } from 'sql/parts/connection/viewlet/treeUpdateUtils';
 import types = require('vs/base/common/types');
+import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 
 /**
  * Renders the tree items.
@@ -43,6 +45,7 @@ export class ServerTreeRenderer implements IRenderer {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextViewService private _contextViewService: IContextViewService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IThemeService private _themeService: IThemeService
 	) {
 		// isCompact defaults to false unless explicitly set by instantiation call.
 		if (isCompact) {
@@ -161,13 +164,13 @@ export class ServerTreeRenderer implements IRenderer {
 					showMessage: true
 				}
 			});
-
+			const styler = attachInputBoxStyler(inputBox, this._themeService);
 			inputBox.value = connectionProfileGroup.name;
 			inputBox.focus();
 			inputBox.select();
 
 			let disposed = false;
-			const toDispose: [lifecycle.IDisposable] = [inputBox];
+			const toDispose: [lifecycle.IDisposable] = [inputBox, styler];
 
 			const wrapUp = once((renamed: boolean) => {
 				if (!disposed) {
