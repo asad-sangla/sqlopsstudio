@@ -55,7 +55,7 @@
                 <template ngFor let-message [ngForOf]="messages">
                     <tr class='messageRow'>
                         <td><span *ngIf="!Utils.isNumber(message.batchId)">[{{message.time}}]</span></td>
-                        <td class="resultsMessageValue" [class.errorMessage]="message.isError" [class.batchMessage]="Utils.isNumber(message.batchId)">{{message.message}} <a class="queryLink" *ngIf="message.link" href="#">{{message.link.text}}</a>
+                        <td class="resultsMessageValue" [class.errorMessage]="message.isError" [class.batchMessage]="Utils.isNumber(message.batchId)">{{message.message}} <a class="queryLink" *ngIf="message.link" href="#" (click)="onSelectionLinkClicked()">{{message.link.text}}</a>
                         </td>
                     </tr>
                 </template>

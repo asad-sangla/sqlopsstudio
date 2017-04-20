@@ -377,6 +377,10 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 		}, self.scrollTimeOutTime);
 	}
 
+	onSelectionLinkClicked(): void {
+		this.dataService.setEditorSelection();
+	}
+
 	/**
 	 * Sets up the resize for the messages/results panes bar
 	 */

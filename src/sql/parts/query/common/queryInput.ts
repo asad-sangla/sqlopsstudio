@@ -20,20 +20,29 @@ import { ISelectionData } from 'data';
  * and a UntitledEditorInput for the SQL File Editor.
  */
 export class QueryInput extends EditorInput implements IEncodingSupport, IConnectableInput {
+
 	public static ID: string = 'workbench.editorinputs.queryInput';
 	public static SCHEMA: string = 'sql';
+
 	private _runQueryEnabled: boolean;
 	private _cancelQueryEnabled: boolean;
 	private _connectEnabled: boolean;
 	private _disconnectEnabled: boolean;
 	private _changeConnectionEnabled: boolean;
 	private _listDatabasesConnected: boolean;
+	private _setup: boolean;
+
 	private _updateTaskbar: Emitter<void>;
 	private _showQueryResultsEditor: Emitter<void>;
-	private _setup: boolean;
+	private _updateSelection: Emitter<ISelectionData>;
+
 	private _toDispose: IDisposable[];
 
-	constructor(private name: string, private description: string, private _sql: UntitledEditorInput, private _results: QueryResultsInput,
+	constructor(
+		private _name: string,
+		private _description: string,
+		private _sql: UntitledEditorInput,
+		private _results: QueryResultsInput,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IMessageService private _messageService: IMessageService
@@ -43,6 +52,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._setup = false;
 		this._updateTaskbar = new Emitter<void>();
 		this._showQueryResultsEditor = new Emitter<void>();
+		this._updateSelection = new Emitter<ISelectionData>();
 		this._toDispose = [];
 		// re-emit sql editor events through this editor if it exists
 		if (this._sql) {
@@ -85,8 +95,9 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public get uri(): string { return this.getResource().toString(); }
 	public get sql(): UntitledEditorInput { return this._sql; }
 	public get results(): QueryResultsInput { return this._results; }
-	public get updateTaskbar(): Event<void> { return this._updateTaskbar.event; }
+	public get updateTaskbarEvent(): Event<void> { return this._updateTaskbar.event; }
 	public get showQueryResultsEditorEvent(): Event<void> { return this._showQueryResultsEditor.event; }
+	public get updateSelectionEvent(): Event<ISelectionData> { return this._updateSelection.event; }
 	public get runQueryEnabled(): boolean{ return this._runQueryEnabled; }
 	public get cancelQueryEnabled(): boolean{ return this._cancelQueryEnabled; }
 	public get connectEnabled(): boolean{ return this._connectEnabled; }
@@ -97,8 +108,9 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public setupComplete(): void { this._setup = true; }
 	public getQueryResultsInputResource(): string { return this._results.uri; }
 	public showQueryResultsEditor(): void { this._showQueryResultsEditor.fire(); }
+	public updateSelection(selection: ISelectionData): void { this._updateSelection.fire(selection); }
 	public getTypeId(): string { return UntitledEditorInput.ID; }
-	public getDescription(): string { return this.description; }
+	public getDescription(): string { return this._description; }
 	public supportsSplitEditor(): boolean { return false; }
 
 	public matches(otherInput: any): boolean {
@@ -128,7 +140,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 
 	// State update funtions
 	public runQuery(selection: ISelectionData): void {
-		this._queryModelService.runQuery(this.uri, selection, this.uri);
+		this._queryModelService.runQuery(this.uri, selection, this.uri, this);
 		this.showQueryResultsEditor();
 	}
 

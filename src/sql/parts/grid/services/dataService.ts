@@ -8,7 +8,7 @@
 import { Observable, Subject, Observer } from 'rxjs/Rx';
 declare let Rx;
 
-import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSubsetResult, EditCreateRowResult } from 'data';
+import { ResultSetSubset, EditUpdateCellResult, EditSubsetResult, EditCreateRowResult } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { ResultSerializer } from 'sql/parts/query/common/resultSerializer';
 import { ISaveRequest } from 'sql/parts/grid/common/interfaces';
@@ -21,9 +21,11 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
  * query running and grid interaction communication for a single URI.
  */
 export class DataService {
+
 	public queryEventObserver: Subject<any>;
 	public gridContentObserver: Subject<any>;
 	private editQueue: Promise<any>;
+
 	constructor(
 		private _uri: string,
 		@IInstantiationService private _instantiationService: IInstantiationService,
@@ -184,10 +186,10 @@ export class DataService {
 	}
 
 	/**
-	 * Sends a request to set the selection in the VScode window
-	 * @param selection The selection range in the VSCode window
+	 * Sends a request to set the selection in the QueryEditor.
 	 */
-	set editorSelection(selection: ISelectionData) {
+	setEditorSelection() {
+		this._queryModel.setEditorSelection(this._uri);
 	}
 
 	showWarning(message: string): void {

@@ -39,6 +39,7 @@ import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescripto
 import { ISelectionData } from 'data';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { CodeEditor } from 'vs/editor/browser/codeEditor';
+import { IRange } from 'vs/editor/common/editorCommon';
 
 /**
  * Editor that hosts 2 sub-editors: A TextResourceEditor for SQL file editing, and a QueryResultsEditor
@@ -119,8 +120,9 @@ export class QueryEditor extends BaseEditor {
 	public setInput(newInput: QueryInput, options?: EditorOptions): TPromise<void> {
 		const oldInput = <QueryInput>this.input;
 		if (!newInput.setup) {
-			this._register(newInput.updateTaskbar(() => this._updateTaskbar()));
+			this._register(newInput.updateTaskbarEvent(() => this._updateTaskbar()));
 			this._register(newInput.showQueryResultsEditorEvent(() => this._showQueryResultsEditor()));
+			this._register(newInput.updateSelectionEvent((selection) => this._setSelection(selection)));
 			newInput.setupComplete();
 		}
 		return super.setInput(newInput, options)
@@ -684,6 +686,19 @@ export class QueryEditor extends BaseEditor {
 		} else {
 			this.listDatabasesActionItem.onDisconnect();
 		}
+	}
+
+	/**
+	 * Sets the text selection for the SQL editor based on the given ISelectionData.
+	 */
+	private _setSelection(selection: ISelectionData): void {
+		let rangeConversion: IRange = {
+				startLineNumber: selection.startLine + 1,
+				startColumn: selection.startColumn + 1,
+				endLineNumber: selection.endLine + 1,
+				endColumn: selection.endColumn + 1
+			};
+		this._sqlEditor.getControl().setSelection(rangeConversion);
 	}
 
 	// TESTING PROPERTIES ////////////////////////////////////////////////////////////
