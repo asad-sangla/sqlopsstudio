@@ -84,7 +84,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]> {
-		return this.expandNode('1', session, parentTree.nodePath).then(expandResult => {
+		return this.expandNode(parentTree.getConnectionProfile().providerName, session, parentTree.nodePath).then(expandResult => {
 			let children = expandResult.nodes.map(node => {
 				return this.toTreeNode(node, parentTree);
 			});
@@ -111,7 +111,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 		return new Promise<TreeNode>((resolve, reject) => {
 			var children = root.children;
 
-			this.createNewSession('1', connection).then(session => {
+			this.createNewSession(connection.providerName, connection).then(session => {
 				if (session.sessionId in this._sessions) {
 					resolve(root);
 				} else {
