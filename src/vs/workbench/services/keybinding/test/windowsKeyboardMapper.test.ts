@@ -3,15 +3,15 @@
 //  *  Licensed under the MIT License. See License.txt in the project root for license information.
 //  *--------------------------------------------------------------------------------------------*/
 
-// 'use strict';
+'use strict';
 
-// import { OperatingSystem } from 'vs/base/common/platform';
-// import { TPromise } from 'vs/base/common/winjs.base';
-// import { WindowsKeyboardMapper, IWindowsKeyboardMapping } from 'vs/workbench/services/keybinding/common/windowsKeyboardMapper';
-// import { createKeybinding, KeyMod, KeyCode, KeyChord, SimpleKeybinding } from 'vs/base/common/keyCodes';
-// import { IResolvedKeybinding, assertResolveKeybinding, readRawMapping, assertMapping, simpleHTMLLabel, chordHTMLLabel, assertResolveKeyboardEvent, assertResolveUserBinding } from 'vs/workbench/services/keybinding/test/keyboardMapperTestUtils';
-// import { IHTMLContentElement } from 'vs/base/common/htmlContent';
-// import { ScanCodeBinding, ScanCode } from 'vs/workbench/services/keybinding/common/scanCode';
+import { OperatingSystem } from 'vs/base/common/platform';
+import { TPromise } from 'vs/base/common/winjs.base';
+import { WindowsKeyboardMapper, IWindowsKeyboardMapping } from 'vs/workbench/services/keybinding/common/windowsKeyboardMapper';
+import { createKeybinding, KeyMod, KeyCode, KeyChord, SimpleKeybinding } from 'vs/base/common/keyCodes';
+import { IResolvedKeybinding, assertResolveKeybinding, readRawMapping, assertMapping, simpleHTMLLabel, chordHTMLLabel, assertResolveKeyboardEvent, assertResolveUserBinding } from 'vs/workbench/services/keybinding/test/keyboardMapperTestUtils';
+import { IHTMLContentElement } from 'vs/base/common/htmlContent';
+import { ScanCodeBinding, ScanCode } from 'vs/workbench/services/keybinding/common/scanCode';
 
 // const WRITE_FILE_IF_DIFFERENT = false;
 
@@ -33,7 +33,7 @@
 // 	return chordHTMLLabel(firstPart, chordPart, OperatingSystem.Windows);
 // }
 
-// suite('keyboardMapper - WINDOWS de_ch', () => {
+suite('keyboardMapper - WINDOWS de_ch', () => {
 
 // 	let mapper: WindowsKeyboardMapper;
 
@@ -508,9 +508,9 @@
 // 			}
 // 		);
 // 	});
-// });
+});
 
-// suite('misc', () => {
+suite('misc', () => {
 // 	test('issue #23513: Toggle Sidebar Visibility and Go to Line display same key mapping in Arabic keyboard', () => {
 // 		const mapper = new WindowsKeyboardMapper({
 // 			'KeyB': {
@@ -548,4 +548,4 @@
 // 			}]
 // 		);
 // 	});
-// });
+});

@@ -3,18 +3,18 @@
 //  *  Licensed under the MIT License. See License.txt in the project root for license information.
 //  *--------------------------------------------------------------------------------------------*/
 
-// 'use strict';
+'use strict';
 
-// import * as assert from 'assert';
-// import { KeyMod, KeyCode, createKeybinding, SimpleKeybinding, KeyChord } from 'vs/base/common/keyCodes';
-// import { MacLinuxKeyboardMapper, IMacLinuxKeyboardMapping } from 'vs/workbench/services/keybinding/common/macLinuxKeyboardMapper';
-// import { OperatingSystem } from 'vs/base/common/platform';
-// import { UserSettingsLabelProvider } from 'vs/platform/keybinding/common/keybindingLabels';
-// import { USLayoutResolvedKeybinding } from 'vs/platform/keybinding/common/usLayoutResolvedKeybinding';
-// import { ScanCodeUtils, ScanCodeBinding, ScanCode } from 'vs/workbench/services/keybinding/common/scanCode';
-// import { IHTMLContentElement } from 'vs/base/common/htmlContent';
-// import { TPromise } from 'vs/base/common/winjs.base';
-// import { readRawMapping, assertMapping, IResolvedKeybinding, assertResolveKeybinding, simpleHTMLLabel, chordHTMLLabel, assertResolveKeyboardEvent, assertResolveUserBinding } from 'vs/workbench/services/keybinding/test/keyboardMapperTestUtils';
+import * as assert from 'assert';
+import { KeyMod, KeyCode, createKeybinding, SimpleKeybinding, KeyChord } from 'vs/base/common/keyCodes';
+import { MacLinuxKeyboardMapper, IMacLinuxKeyboardMapping } from 'vs/workbench/services/keybinding/common/macLinuxKeyboardMapper';
+import { OperatingSystem } from 'vs/base/common/platform';
+import { UserSettingsLabelProvider } from 'vs/platform/keybinding/common/keybindingLabels';
+import { USLayoutResolvedKeybinding } from 'vs/platform/keybinding/common/usLayoutResolvedKeybinding';
+import { ScanCodeUtils, ScanCodeBinding, ScanCode } from 'vs/workbench/services/keybinding/common/scanCode';
+import { IHTMLContentElement } from 'vs/base/common/htmlContent';
+import { TPromise } from 'vs/base/common/winjs.base';
+import { readRawMapping, assertMapping, IResolvedKeybinding, assertResolveKeybinding, simpleHTMLLabel, chordHTMLLabel, assertResolveKeyboardEvent, assertResolveUserBinding } from 'vs/workbench/services/keybinding/test/keyboardMapperTestUtils';
 
 // const WRITE_FILE_IF_DIFFERENT = false;
 
@@ -24,7 +24,7 @@
 // 	});
 // }
 
-// suite('keyboardMapper - MAC de_ch', () => {
+suite('keyboardMapper - MAC de_ch', () => {
 
 // 	let mapper: MacLinuxKeyboardMapper;
 
@@ -1727,7 +1727,7 @@
 // 			}]
 // 		);
 // 	});
-// });
+});
 
 // function _assertKeybindingTranslation(mapper: MacLinuxKeyboardMapper, OS: OperatingSystem, kb: number, _expected: string | string[]): void {
 // 	let expected: string[];
