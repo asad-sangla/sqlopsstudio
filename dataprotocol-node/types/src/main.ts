@@ -21,6 +21,7 @@ export interface NodeInfo {
 	nodeType: string;
 	label: string;
 	isLeaf: boolean;
+	metadata: ObjectMetadata;
 }
 
 export interface ExpandParams {

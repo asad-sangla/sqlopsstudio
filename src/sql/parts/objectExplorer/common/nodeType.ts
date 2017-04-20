@@ -7,17 +7,17 @@
 export class NodeType {
 	public static Folder = 'Folder';
 	public static Root = 'root';
-	public static DatabaseInstance = 'DatabaseInstance';
-	public static ServerInstance = 'ServerInstance';
-	public static ScalarValuedFunctionInstance = 'ScalarValuedFunctionInstance';
-	public static TableValuedFunctionInstance = 'TableValuedFunctionInstance';
-	public static AggregateFunctionInstance = 'AggregateFunctionInstance';
-	public static FileGroupInstance = 'FileGroupInstance';
-	public static StoredProcedureInstance = 'StoredProcedureInstance';
-	public static UserDefinedTableTypeInstance = 'UserDefinedTableTypeInstance';
-	public static ViewInstance = 'ViewInstance';
-	public static TableInstance = 'TableInstance';
-	public static HistoryTableInstance = 'HistoryTableInstance';
-	public static ExternalResourceInstance = 'ExternalResourceInstance';
-	public static ExternalTableInstance = 'ExternalTableInstance';
+	public static DatabaseInstance = 'Database';
+	public static ServerInstance = 'Server';
+	public static ScalarValuedFunctionInstance = 'ScalarValuedFunction';
+	public static TableValuedFunctionInstance = 'TableValuedFunction';
+	public static AggregateFunctionInstance = 'AggregateFunction';
+	public static FileGroupInstance = 'FileGroup';
+	public static StoredProcedureInstance = 'StoredProcedure';
+	public static UserDefinedTableTypeInstance = 'UserDefinedTableType';
+	public static ViewInstance = 'View';
+	public static TableInstance = 'Table';
+	public static HistoryTableInstance = 'HistoryTable';
+	public static ExternalResourceInstance = 'ExternalResource';
+	public static ExternalTableInstance = 'ExternalTable';
 }

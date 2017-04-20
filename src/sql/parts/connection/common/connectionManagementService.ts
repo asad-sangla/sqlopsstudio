@@ -136,7 +136,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// temporarily close splash screen when a connection provider has been registered
 		// @todo remove this code once a proper initialization event is available (karlb 4/1/2017)
 		++this._providerCount;
-		if (this._providerCount === 1) {
+		if (this._providerCount === 1 && this._splashScreen != undefined) {
 			this._splashScreen.hideSplashScreen();
 		}
 	}
@@ -845,8 +845,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		Promise.all(disconnected).then(() => {
 			// Remove profiles and groups from config
 			this._connectionStore.deleteGroupFromConfiguration(group).then(() => {
-					this._onDeleteConnectionProfile.fire();
-					Promise.resolve(true);
+				this._onDeleteConnectionProfile.fire();
+				Promise.resolve(true);
 			}).catch(err => {
 				// If saving to config fails, reject promise with false
 				return Promise.reject(false);

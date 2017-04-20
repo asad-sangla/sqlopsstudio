@@ -672,6 +672,7 @@ declare module 'data' {
 		nodeType: string;
 		label: string;
 		isLeaf: boolean;
+		metadata: ObjectMetadata;
 	}
 
 	export interface ObjectExplorerSession {
