@@ -142,13 +142,9 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._updateTaskbar.fire();
 	}
 
-	public onConnectReject(error?: string): void {
-		if (error) {
-			this._messageService.show(Severity.Error, error);
-		}
+	public onConnectReject(): void {
 		this.onDisconnect();
 		this._updateTaskbar.fire();
-		this._messageService.show(Severity.Error, error);
 	}
 
 	public onConnectSuccess(params?: INewConnectionParams): void {
