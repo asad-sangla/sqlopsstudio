@@ -15,8 +15,7 @@ import {
 	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionChangedParams,
 	IConnectionParams, IConnectionResult
 } from 'sql/parts/connection/common/connectionManagement';
-import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
-import { Position } from 'vs/platform/editor/common/editor';
+import platform = require('vs/platform/platform');
 import { Memento } from 'vs/workbench/common/memento';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
@@ -40,6 +39,10 @@ import { IEditorGroupService } from 'vs/workbench/services/group/common/groupSer
 import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
 import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
+import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
+import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
+import { ConnectionGlobalStatus } from 'sql/parts/connection/common/connectionGlobalStatus';
+import { ConnectionStatusbarItem } from  'sql/parts/connection/common/connectionStatus';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -55,11 +58,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _onAddConnectionProfile: Emitter<void>;
 	private _onDeleteConnectionProfile: Emitter<void>;
-	private _onConnect: Emitter<void>;
+	private _onConnect: Emitter<IConnectionParams>;
 	private _onDisconnect: Emitter<IConnectionParams>;
 	private _onConnectRequestSent: Emitter<void>;
 	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
 	private _connectionInfo: ConnectionManagementInfo;
+
+	private _connectionGlobalStatus : ConnectionGlobalStatus;
 
 	constructor(
 		private _connectionMemento: Memento,
@@ -76,7 +81,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@ICredentialsService private _credentialsService: ICredentialsService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IQuickOpenService private _quickOpenService: IQuickOpenService,
-		@IEditorGroupService private _editorGroupService: IEditorGroupService
+		@IEditorGroupService private _editorGroupService: IEditorGroupService,
+		@IStatusbarService private _statusBarService: IStatusbarService
 	) {
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
 		if (!this._connectionMemento) {
@@ -88,15 +94,23 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 
 		this._connectionFactory = new ConnectionFactory(this._capabilitiesService);
+		this._connectionGlobalStatus = new ConnectionGlobalStatus(this._statusBarService);
 
 		// Setting up our event emitters
 		this._onAddConnectionProfile = new Emitter<void>();
 		this._onDeleteConnectionProfile = new Emitter<void>();
-		this._onConnect = new Emitter<void>();
+		this._onConnect = new Emitter<IConnectionParams>();
 		this._onDisconnect = new Emitter<IConnectionParams>();
 		this._onConnectionChanged = new Emitter<IConnectionChangedParams>();
 		this._onConnectRequestSent = new Emitter<void>();
 		this._connectionInfo = new ConnectionManagementInfo();
+
+		// Register Statusbar item
+		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
+			ConnectionStatusbarItem,
+			statusbar.StatusbarAlignment.RIGHT,
+			100 /* High Priority */
+		));
 
 		this.disposables.push(this._onAddConnectionProfile);
 		this.disposables.push(this._onDeleteConnectionProfile);
@@ -111,7 +125,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._onDeleteConnectionProfile.event;
 	}
 
-	public get onConnect(): Event<void> {
+	public get onConnect(): Event<IConnectionParams> {
 		return this._onConnect.event;
 	}
 
@@ -263,7 +277,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 		if (uri !== input.uri) {
 			//TODO: this should never happen. If the input is already passed, it should have the uri
-			Utils.logDebug(`the given uri is different that the input uri. ${uri}|${input.uri}`)
+			Utils.logDebug(`the given uri is different that the input uri. ${uri}|${input.uri}`);
 		}
 		return this.tryConnect(connection, input, options);
 	}
@@ -330,7 +344,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 					if (options.showDashboard) {
 						this.showDashboard(uri, this._connectionInfo);
 					}
-					this._onConnect.fire();
+					this._onConnect.fire(<IConnectionParams>{
+						connectionUri: uri,
+						connectionProfile: connection
+					});
 				} else {
 					if (callbacks.onConnectReject) {
 						callbacks.onConnectReject('Connection Not Accepted');
@@ -547,6 +564,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 			connection.connectHandler(false, info.messages);
 		}
 		this._connectionInfo = connection;
+
+		if (this._connectionFactory.isDefaultTypeUri(info.ownerUri)){
+			this._connectionGlobalStatus.setStatusToConnected(info.connectionSummary);
+		}
 	}
 
 	public onConnectionChangedNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
@@ -678,8 +699,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (result) {
 					this._connectionFactory.deleteConnection(fileUri);
 					this._notifyDisconnected(fileUri);
-					// TODO: show diconnection in status statusview
-					// self.statusView.notConnected(fileUri);
+
+					if (this._connectionFactory.isDefaultTypeUri(fileUri)) {
+						this._connectionGlobalStatus.setStatusToDisconnected(fileUri);
+					}
 
 					// TODO: send telemetry events
 					// Telemetry.sendTelemetryEvent('DatabaseDisconnected');

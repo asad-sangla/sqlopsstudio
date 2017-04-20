@@ -43,6 +43,9 @@ export const outputServiceLocalhost = 'http://localhost:';
 export const msgContentProviderSqlOutputHtml = 'dist/html/sqlOutput.ejs';
 export const contentProviderMinFile = 'dist/js/app.min.js';
 
+export const onDidConnectMessage = 'Connected to';
+export const onDidDisconnectMessage = 'Disconnected';
+
 /**Unsaved connections Id */
 export const unsavedGroupId = 'unsaved';
 export const unsavedGroupLabel = 'Unsaved Connections';

@@ -38,6 +38,8 @@ export const msgSaveStarted = 'Started saving results to ';
 export const msgSaveFailed = 'Failed to save results. ';
 export const msgSaveSucceeded = 'Successfully saved results to ';
 
+export const msgStatusRunQueryInProgress = 'Executing query...';
+
 // /** Results Pane Labels */
 export const maximizeLabel = 'Maximize';
 export const restoreLabel = 'Restore';

@@ -52,7 +52,7 @@ export interface IConnectionManagementService {
 	// Event Emitters
 	onAddConnectionProfile: Event<void>;
 	onDeleteConnectionProfile: Event<void>;
-	onConnect: Event<void>;
+	onConnect: Event<IConnectionParams>;
 	onDisconnect: Event<IConnectionParams>;
 	onConnectionChanged: Event<IConnectionChangedParams>;
 
@@ -209,6 +209,7 @@ export enum MetadataType {
 }
 export interface IConnectionParams {
 	connectionUri: string;
+	connectionProfile: IConnectionProfile;
 }
 
 export interface IConnectionChangedParams extends IConnectionParams {

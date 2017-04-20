@@ -41,6 +41,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	}
 
+	getCurrentConnectionSummary(): data.ConnectionSummary {
+		return undefined;
+	}
+
 	getConnectionGroups(): ConnectionProfileGroup[] {
 		return [];
 	}

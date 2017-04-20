@@ -92,9 +92,11 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined,
 			undefined,
 			capabilitiesService,
-			undefined,
-			editorGroupService.object);
-		connectionManagementService.registerProvider('MSSQL', connectionProvider.object);
+			undefined, 
+			editorGroupService.object,
+			undefined);
+
+    connectionManagementService.registerProvider('MSSQL', connectionProvider.object);
 	});
 
 	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string): void {

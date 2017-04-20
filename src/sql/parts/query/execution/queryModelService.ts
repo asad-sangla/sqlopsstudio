@@ -22,6 +22,10 @@ import Event, { Emitter } from 'vs/base/common/event';
 import URI from 'vs/base/common/uri';
 import { TPromise } from 'vs/base/common/winjs.base';
 
+import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
+import platform = require('vs/platform/platform');
+import { QueryStatusbarItem } from  'sql/parts/query/execution/queryStatus';
+
 interface QueryEvent {
 	type: string;
 	data: any;
@@ -71,6 +75,14 @@ export class QueryModelService implements IQueryModelService {
 		this._onRunQueryStart = new Emitter<string>();
 		this._onRunQueryComplete = new Emitter<string>();
 		this._onEditSessionReady = new Emitter<EditSessionReadyParams>();
+
+		// Register Statusbar item
+		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
+			QueryStatusbarItem,
+			statusbar.StatusbarAlignment.RIGHT,
+			100 /* High Priority */
+		));
+
 	}
 
 	// IQUERYMODEL /////////////////////////////////////////////////////////
