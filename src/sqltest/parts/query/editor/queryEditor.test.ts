@@ -22,6 +22,7 @@ import { ConnectionManagementService } from 'sql/parts/connection/common/connect
 import { Memento } from 'vs/workbench/common/memento';
 import { Builder } from 'vs/base/browser/builder';
 import { RunQueryAction, ListDatabasesActionItem } from 'sql/parts/query/execution/queryActions';
+import { TestThemeService } from 'sqltest/stubs/themeTestService';
 import * as DOM from 'vs/base/browser/dom';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
@@ -29,6 +30,7 @@ import * as assert from 'assert';
 suite('SQL QueryEditor Tests', () => {
 	let queryModelService: QueryModelService;
 	let instantiationService: TypeMoq.Mock<InstantiationService>;
+	let themeService: TestThemeService = new TestThemeService();
 	let messageService: TypeMoq.Mock<IMessageService>;
 	let editorDescriptorService: TypeMoq.Mock<EditorDescriptorService>;
 	let connectionManagementService: TypeMoq.Mock<ConnectionManagementService>;
@@ -42,7 +44,7 @@ suite('SQL QueryEditor Tests', () => {
 	let getQueryEditor = function(): QueryEditor {
 		return new QueryEditor(
 			undefined,
-			undefined,
+			themeService,
 			instantiationService.object,
 			undefined,
 			undefined,
@@ -197,7 +199,7 @@ suite('SQL QueryEditor Tests', () => {
 		// If I create a QueryEditor
 		let editor: QueryEditor = new QueryEditor(
 			undefined,
-			undefined,
+			themeService,
 			instantiationService.object,
 			undefined,
 			undefined,

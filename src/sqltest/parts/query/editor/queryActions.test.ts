@@ -18,6 +18,7 @@ import { ConnectionManagementService } from 'sql/parts/connection/common/connect
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { ISelectionData } from 'data';
+import { TestThemeService } from 'sqltest/stubs/themeTestService';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 
@@ -37,7 +38,7 @@ suite('SQL QueryAction Tests', () => {
 		testQueryInput.setup(x => x.runQuery(undefined)).callback(() => { calledRunQueryOnInput = true; });
 
 		// Setup a reusable mock QueryEditor
-		editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict);
+		editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict, undefined, new TestThemeService());
 		editor.setup(x => x.currentQueryInput).returns(() => testQueryInput.object);
 		editor.setup(x => x.getSelection()).returns(() => undefined);
 		editor.setup(x => x.isSelectionEmpty()).returns(() => false);
