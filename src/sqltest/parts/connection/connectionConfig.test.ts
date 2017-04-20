@@ -234,9 +234,12 @@ suite('SQL ConnectionConfig tests', () => {
 		capabilitiesService.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);
 
 		workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
+		workspaceConfigurationServiceMock.setup(x => x.reloadConfiguration())
+			.returns(() => TPromise.as<{}>({}));
+
 		configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
 		let nothing: void;
-		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));;
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));
 	});
 
 	function groupsAreEqual(groups1: IConnectionProfileGroup[], groups2: IConnectionProfileGroup[]): Boolean {
