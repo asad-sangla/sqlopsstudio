@@ -63,7 +63,7 @@ suite('SQL QueryAction Tests', () => {
 		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAnyString())).returns(() => isConnectedReturnValue);
 
 		// ... Create an editor
-		let editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Loose);
+		let editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Loose, undefined, new TestThemeService());
 		editor.setup(x => x.currentQueryInput).returns(() => testQueryInput.object);
 
 		// If I create a QueryTaskbarAction and I pass a non-connected editor to _getConnectedQueryEditorUri
@@ -149,7 +149,7 @@ suite('SQL QueryAction Tests', () => {
 		queryInput.setup(x => x.runQuery(undefined)).callback(() => {
 			countCalledRunQuery++;
 		});
-		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict);
+		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict, undefined, new TestThemeService());
 		queryEditor.setup(x => x.currentQueryInput).returns(() => queryInput.object);
 		queryEditor.setup(x => x.getSelection()).returns(() => undefined);
 		queryEditor.setup(x => x.isSelectionEmpty()).returns(() => isSelectionEmpty);
@@ -214,7 +214,7 @@ suite('SQL QueryAction Tests', () => {
 		});
 
 		// ... Mock "getSelection" in QueryEditor
-		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Loose);
+		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Loose, undefined, new TestThemeService());
 		queryEditor.setup(x => x.currentQueryInput).returns(() => queryInput.object);
 		queryEditor.setup(x => x.getSelection()).returns(() => {
 			return selectionToReturnInGetSelection;
