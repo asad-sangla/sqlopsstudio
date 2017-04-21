@@ -39,10 +39,11 @@ suite('SQL Connection Tree Action tests', () => {
 			password: 'test',
 			userName: 'testUsername',
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: 'testId'
 		});
 		changeConnectionAction.connectionProfile = connection;
 		changeConnectionAction.run().then((value) => {
@@ -69,10 +70,11 @@ suite('SQL Connection Tree Action tests', () => {
 			password: 'test',
 			userName: 'testUsername',
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: 'testId'
 		});
 		changeConnectionAction.connectionProfile = connection;
 		changeConnectionAction.run().then((value) => {
@@ -181,10 +183,11 @@ suite('SQL Connection Tree Action tests', () => {
 			password: 'test',
 			userName: 'testUsername',
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: 'testId'
 		});
 		let connectionAction: DeleteConnectionAction = new DeleteConnectionAction(DeleteConnectionAction.ID,
 			DeleteConnectionAction.DELETE_CONNECTION_LABEL,
@@ -228,10 +231,11 @@ suite('SQL Connection Tree Action tests', () => {
 			password: 'test',
 			userName: 'testUsername',
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: 'testId'
 		});
 		connection.parent = new ConnectionProfileGroup(Constants.unsavedGroupLabel, undefined, Constants.unsavedGroupId);
 		let connectionAction: DeleteConnectionAction = new DeleteConnectionAction(DeleteConnectionAction.ID,

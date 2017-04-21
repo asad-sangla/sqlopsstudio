@@ -746,10 +746,11 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: 'g3',
 			groupId: 'g3',
-			getUniqueId:() => { return 'connectionId'; },
+			getOptionsKey:() => { return 'connectionId'; },
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: 'test'
 		};
 
 		let expectedNumberOfConnections = connections.user.length;
