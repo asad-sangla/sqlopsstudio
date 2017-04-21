@@ -172,7 +172,6 @@ export class ConnectionStore {
 
 				savedProfile = this.getProfileWithoutPassword(profile);
 			}
-
 			self.saveProfileToConfig(savedProfile)
 				.then(savedConnectionProfile => {
 					profile.groupId = savedConnectionProfile.groupId;
@@ -452,7 +451,7 @@ export class ConnectionStore {
 		// Get all profiles
 		let configValues: ConnectionProfile[] = this.getUnSavedConnections();
 		// Remove the connection from the list if it already exists
-		configValues = configValues.filter(value => value.getUniqueId() !== id);
+		configValues = configValues.filter(value => value.getOptionsKey() !== id);
 		let newList = configValues.map(c => {
 			let connectionProfile = c.toIConnectionProfile();
 			return connectionProfile;
@@ -558,7 +557,7 @@ export class ConnectionStore {
 	}
 
 	public changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void> {
-		let oldId = source.getUniqueId();
+		let oldId = source.getOptionsKey();
 		let oldParentId = source.parent.id;
 		return new Promise<void>((resolve, reject) => {
 			this._connectionConfig.changeGroupIdForConnection(source, targetGroupId).then(() => {

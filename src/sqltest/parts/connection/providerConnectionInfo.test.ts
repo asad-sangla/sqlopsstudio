@@ -23,10 +23,11 @@ suite('SQL ProviderConnectionInfo tests', () => {
 		savePassword: true,
 		groupFullName: 'g2/g2-2',
 		groupId: undefined,
-		getUniqueId: undefined,
+		getOptionsKey: undefined,
 		providerName: 'MSSQL',
 		options: undefined,
-		saveProfile: true
+		saveProfile: true,
+		id: undefined
 	};
 
 	setup(() => {
@@ -194,18 +195,18 @@ suite('SQL ProviderConnectionInfo tests', () => {
 		assert.equal(conn.options['encrypt'], 'test value');
 	});
 
-	test('getUniqueId should create a valid unique id', () => {
+	test('getOptionsKey should create a valid unique id', () => {
 		let conn = new ProviderConnectionInfo(msSQLCapabilities, connectionProfile);
 		let expectedId = 'providerName:MSSQL|authenticationType:|databaseName:database|serverName:new server|userName:user';
-		let id = conn.getUniqueId();
+		let id = conn.getOptionsKey();
 		assert.equal(id, expectedId);
 	});
 
-	test('getUniqueId should create different id for different server names', () => {
+	test('getOptionsKey should create different id for different server names', () => {
 		let conn = new ProviderConnectionInfo(msSQLCapabilities, connectionProfile);
 		let conn2 = new ProviderConnectionInfo(msSQLCapabilities, Object.assign({}, connectionProfile, { serverName: connectionProfile.serverName + '1' }));
 
-		assert.notEqual(conn.getUniqueId(), conn2.getUniqueId());
+		assert.notEqual(conn.getOptionsKey(), conn2.getOptionsKey());
 	});
 
 	test('titleParts should return server, database and auth type as first items', () => {

@@ -35,10 +35,11 @@ suite('SQL Actions Tests', () => {
 			password: 'test',
 			userName: 'testUsername',
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		});
 		connection.id = 'testID';
 		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');

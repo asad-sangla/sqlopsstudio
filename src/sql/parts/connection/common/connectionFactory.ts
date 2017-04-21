@@ -136,7 +136,7 @@ export class ConnectionFactory {
 
 	public getConnectionManagementId(connection: IConnectionProfile): string {
 
-		let id = connection.getUniqueId();
+		let id = connection.getOptionsKey();
 		let uri = 'connection://' + (id ? id : connection.serverName + ':' + connection.databaseName);
 
 		return uri;

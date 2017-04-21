@@ -121,7 +121,12 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		return undefined;
 	}
 
-	public getUniqueId(): string {
+	/**
+	 * Returns a key derived the connections options (providerName, authenticationType, serverName, databaseName, userName, groupid)
+	 * This key uniquely identifies a connection in a group
+	 * Example: "providerName:MSSQL|authenticationType:|databaseName:database|serverName:server3|userName:user|group:testid"
+	 */
+	public getOptionsKey(): string {
 		let idNames = [];
 		if (this._serverCapabilities) {
 			idNames = this._serverCapabilities.connectionProvider.options.map(o => {

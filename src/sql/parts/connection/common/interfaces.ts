@@ -23,9 +23,10 @@ export interface IConnectionProfile extends data.ConnectionInfo {
 	savePassword: boolean;
 	groupFullName: string;
 	groupId: string;
-	getUniqueId(): string;
+	getOptionsKey(): string;
 	providerName: string;
 	saveProfile: boolean;
+	id: string;
 };
 
 export interface IConnectionProfileStore {
@@ -33,6 +34,7 @@ export interface IConnectionProfileStore {
 	groupId: string;
 	providerName: string;
 	savePassword: boolean;
+	id: string;
 };
 
 export enum CredentialsQuickPickItemType {

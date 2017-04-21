@@ -97,7 +97,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 		if (!(other instanceof ConnectionProfileGroup)) {
 			return false;
 		}
-		return other.name === this.name;
+		return other.id === this.id;
 	}
 
 	public addConnections(connections: ConnectionProfile[]): void {

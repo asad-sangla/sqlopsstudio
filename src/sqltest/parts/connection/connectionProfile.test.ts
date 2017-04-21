@@ -23,10 +23,11 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		savePassword: true,
 		groupFullName: 'g2/g2-2',
 		groupId: 'group id',
-		getUniqueId: undefined,
+		getOptionsKey: undefined,
 		providerName: 'MSSQL',
 		options: {},
-		saveProfile: true
+		saveProfile: true,
+		id: undefined
 	};
 
 	setup(() => {
@@ -138,10 +139,10 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		assert.equal(conn.savePassword, connectionProfile.savePassword);
 	});
 
-	test('getUniqueId should create a valid unique id', () => {
+	test('getOptionsKey should create a valid unique id', () => {
 		let conn = new ConnectionProfile(msSQLCapabilities, connectionProfile);
 		let expectedId = 'providerName:MSSQL|authenticationType:|databaseName:database|serverName:new server|userName:user|group:group id';
-		let id = conn.getUniqueId();
+		let id = conn.getOptionsKey();
 		assert.equal(id, expectedId);
 	});
 
@@ -155,6 +156,6 @@ suite('SQL ConnectionProfileInfo tests', () => {
 	test('unique id should not include password', () => {
 		let conn = new ConnectionProfile(msSQLCapabilities, connectionProfile);
 		let withoutPassword = conn.withoutPassword();
-		assert.equal(withoutPassword.getUniqueId(), conn.getUniqueId());
+		assert.equal(withoutPassword.getOptionsKey(), conn.getOptionsKey());
 	});
 });

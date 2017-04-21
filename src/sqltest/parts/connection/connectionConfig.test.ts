@@ -121,7 +121,8 @@ suite('SQL ConnectionConfig tests', () => {
 			},
 			providerName: 'MSSQL',
 			groupId: 'test',
-			savePassword: true
+			savePassword: true,
+			id: undefined
 		}
 
 
@@ -136,7 +137,8 @@ suite('SQL ConnectionConfig tests', () => {
 			},
 			providerName: 'MSSQL',
 			groupId: 'test',
-			savePassword: true
+			savePassword: true,
+			id: undefined
 		}, {
 			options: {
 				serverName: 'server3',
@@ -147,7 +149,8 @@ suite('SQL ConnectionConfig tests', () => {
 			},
 			providerName: 'MSSQL',
 			groupId: 'g3',
-			savePassword: true
+			savePassword: true,
+			id: undefined
 		}
 		],
 		value: [
@@ -335,10 +338,11 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: undefined,
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
@@ -373,10 +377,11 @@ suite('SQL ConnectionConfig tests', () => {
 			groupId: profileFromConfig.groupId,
 			savePassword: true,
 			groupFullName: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 
 		let expectedNumberOfConnections = connections.user.length;
@@ -410,10 +415,11 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: 'g2/g2-2',
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
@@ -507,13 +513,13 @@ suite('SQL ConnectionConfig tests', () => {
 		let allConnections = config.getConnections(false);
 		allConnections.forEach(element => {
 			assert.notEqual(element.serverName, undefined);
-			assert.notEqual(element.getUniqueId().indexOf('oldOptionValue|'), -1);
+			assert.notEqual(element.getOptionsKey().indexOf('oldOptionValue|'), -1);
 		});
 
 		onProviderRegistered.fire(msSQLCapabilities);
 		allConnections.forEach(element => {
 			assert.notEqual(element.serverName, undefined);
-			assert.equal(element.getUniqueId().indexOf('oldOptionValue|'), -1);
+			assert.equal(element.getOptionsKey().indexOf('oldOptionValue|'), -1);
 		});
 	});
 
@@ -566,10 +572,11 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: 'g3',
 			groupId: 'g3',
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 
 		let expectedNumberOfConnections = connections.user.length - 1;
@@ -599,10 +606,11 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: 'g3',
 			groupId: 'g3',
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
 		let connectionProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3');
@@ -644,10 +652,11 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: 'g3',
 			groupId: 'newid',
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 
 		let expectedNumberOfConnections = connections.user.length;

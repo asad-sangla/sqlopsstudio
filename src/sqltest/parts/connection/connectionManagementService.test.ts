@@ -42,10 +42,11 @@ suite('SQL ConnectionManagementService tests', () => {
 		savePassword: true,
 		groupFullName: 'g2/g2-2',
 		groupId: 'group id',
-		getUniqueId: () => { return 'connectionId'; },
+		getOptionsKey: () => { return 'connectionId'; },
 		providerName: 'MSSQL',
 		options: {},
-		saveProfile: true
+		saveProfile: true,
+		id: undefined
 	};
 	let connectionProfileWithoutPassword: IConnectionProfile =
 		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
@@ -136,7 +137,7 @@ suite('SQL ConnectionManagementService tests', () => {
 	function connect(uri: string, options?: IConnectionCompletionOptions, fromDialog?: boolean, connection?: IConnectionProfile, error?: string): Promise<IConnectionResult> {
 		let connectionToUse = connection ? connection : connectionProfile;
 		return new Promise<IConnectionResult>((resolve, reject) => {
-			let id = connectionToUse.getUniqueId();
+			let id = connectionToUse.getOptionsKey();
 			let defaultUri = 'connection://' + (id ? id : connection.serverName + ':' + connection.databaseName);
 			connectionManagementService.onConnectionRequestSent(() => {
 				let info: data.ConnectionInfoSummary = {

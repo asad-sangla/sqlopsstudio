@@ -65,7 +65,7 @@ export class ObjectExplorerUtils {
 					connectionManagementService.connect(connectionProfile, undefined, options);
 				}
 				else {
-					let uri = ConnectionFactory.DefaultUriPrefix + connectionProfile.getUniqueId();
+					let uri = ConnectionFactory.DefaultUriPrefix + connectionProfile.getOptionsKey();
 					var connectionInfo = new ConnectionManagementInfo();
 					connectionInfo.extensionTimer = new Utils.Timer();
 					connectionInfo.intelliSenseTimer = new Utils.Timer();

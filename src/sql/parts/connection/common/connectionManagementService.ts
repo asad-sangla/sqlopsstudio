@@ -322,7 +322,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				showConnectionDialogOnError: false
 			};
 		}
-
+		connection.id = Utils.generateGuid();
 		return new Promise<IConnectionResult>((resolve, reject) => {
 			if (callbacks.onConnectStart) {
 				callbacks.onConnectStart();
@@ -603,7 +603,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public isRecent(connectionProfile: ConnectionProfile): boolean {
 		let recentConnections = this._connectionStore.getRecentlyUsedConnections();
-		recentConnections = recentConnections.filter(con => { return connectionProfile.id === con.getUniqueId(); });
+		recentConnections = recentConnections.filter(con => {
+			return connectionProfile.id === con.id;
+		});
 		return (recentConnections.length >= 1);
 	}
 	// Disconnect a URI from its current connection

@@ -24,10 +24,11 @@ let connectionProfile: IConnectionProfile = {
 	savePassword: true,
 	groupFullName: 'g2/g2-2',
 	groupId: 'group id',
-	getUniqueId: () => 'connection1',
+	getOptionsKey: () => 'connection1',
 	providerName: 'MSSQL',
 	options: {},
-	saveProfile: true
+	saveProfile: true,
+	id: undefined
 };
 let editorConnectionProfile: IConnectionProfile = {
 	serverName: 'new server',
@@ -38,10 +39,11 @@ let editorConnectionProfile: IConnectionProfile = {
 	savePassword: true,
 	groupFullName: 'g2/g2-2',
 	groupId: 'group id',
-	getUniqueId: () => 'connection2',
+	getOptionsKey: () => 'connection2',
 	providerName: 'MSSQL',
 	options: {},
-	saveProfile: true
+	saveProfile: true,
+	id: undefined
 };
 
 let connection1Id: string;
@@ -138,7 +140,7 @@ suite('SQL ConnectionFactory tests', () => {
 	test('updateConnection should update the connection info', () => {
 		let expected = connectionProfile.groupId + '1';
 
-		let updatedConnection = Object.assign({}, connectionProfile, { groupId: expected, getUniqueId: () => connectionProfile.getUniqueId() + expected });
+		let updatedConnection = Object.assign({}, connectionProfile, { groupId: expected, getOptionsKey: () => connectionProfile.getOptionsKey() + expected });
 		connections.updateGroupId(updatedConnection, connection1Id);
 
 		let newId = connections.getConnectionManagementId(updatedConnection);

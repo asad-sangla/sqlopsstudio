@@ -127,7 +127,7 @@ export class ConnectionConfig implements IConnectionConfig {
 					profiles = profiles.filter(value => {
 						let providerCapabilities = this.getCapabilities(value.providerName);
 						let providerConnectionProfile = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-						return providerConnectionProfile.getUniqueId() !== connectionProfile.getUniqueId();
+						return providerConnectionProfile.getOptionsKey() !== connectionProfile.getOptionsKey();
 					});
 					profiles.push(newProfile);
 
@@ -223,7 +223,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		profiles = profiles.filter(value => {
 			let providerCapabilities = this.getCapabilities(value.providerName);
 			let providerConnectionProfile = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-			return providerConnectionProfile.getUniqueId() !== profile.getUniqueId();
+			return providerConnectionProfile.getOptionsKey() !== profile.getOptionsKey();
 		});
 
 		// Write connections back to settings
@@ -245,7 +245,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		profiles = profiles.filter(value => {
 			let providerCapabilities = this.getCapabilities(value.providerName);
 			let providerConnectionProfile = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-			return !connections.some((val) => val.getUniqueId() === providerConnectionProfile.getUniqueId());
+			return !connections.some((val) => val.getOptionsKey() === providerConnectionProfile.getOptionsKey());
 		});
 
 		// Get all groups in the settings
@@ -290,7 +290,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		} else {
 			profiles.forEach((value) => {
 				let configProf = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-				if (configProf.getUniqueId() === profile.getUniqueId()) {
+				if (configProf.getOptionsKey() === profile.getOptionsKey()) {
 					value.groupId = newGroupID;
 				}
 			});
