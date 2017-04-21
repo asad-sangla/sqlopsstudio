@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionManagementService, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionResult }
+import { IConnectionManagementService, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionResult, INewConnectionParams }
 	from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import data = require('data');
+import Event, { Emitter } from 'vs/base/common/event';
 
 // Test stubs for commonly used objects
 
@@ -17,15 +18,23 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	_serviceBrand: any;
 	onAddConnectionProfile = undefined;
 	onDeleteConnectionProfile = undefined;
-	onConnect = undefined;
 	onConnectionChanged = undefined;
-	onDisconnect = undefined;
+
+	public get onConnect(): Event<any> {
+		let conEvent = new Emitter<any>();
+		return conEvent.event;
+	}
+
+	public get onDisconnect(): Event<any> {
+		let conEvent = new Emitter<any>();
+		return conEvent.event;
+	}
 
 	registerProvider(providerId: string, provider: data.ConnectionProvider): void {
 
 	}
 
-	showConnectionDialog(): Promise<void> {
+	showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, error?: string): Promise<void> {
 		return undefined;
 	}
 
@@ -70,11 +79,15 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 
 	deleteConnection(connection: ConnectionProfile): Promise<boolean> {
-		return new Promise(() => true);
+		return new Promise<boolean>((resolve, reject) => {
+			 resolve(true);
+		});
 	}
 
 	deleteConnectionGroup(group: ConnectionProfileGroup): Promise<boolean> {
-		return new Promise(() => true);
+		return new Promise<boolean>((resolve, reject) => {
+			 resolve(true);
+		});
 	}
 
 	getAdvancedProperties(): data.ConnectionOption[] {
@@ -98,7 +111,9 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 
 	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
-		return new Promise(() => true);
+		return new Promise<IConnectionResult>((resolve, reject) => {
+			 resolve({ connected: true, error : undefined});
+		 });
 	}
 
 	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
@@ -110,7 +125,9 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 
 	disconnectProfile(connection: ConnectionProfile): Promise<boolean> {
-		return new Promise<boolean>(() => true);
+		return new Promise<boolean>((resolve, reject) => {
+			 resolve(true);
+		});
 	}
 
 	getCapabilities(): data.DataProtocolServerCapabilities[] {
@@ -154,7 +171,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	renameGroup(group: ConnectionProfileGroup): Promise<void> {
 		return Promise.resolve();
-	}	
+	}
 
 	getProviderIdFromUri(ownerUri: string): string {
 		return undefined;

@@ -41,20 +41,18 @@ export class ChangeConnectionAction extends Action {
 	}
 
 	constructor(
-		@IInstantiationService private _instanstiationService: IInstantiationService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IEditorGroupService private _editorGroupService: EditorPart,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super('registeredConnections.connect', ChangeConnectionAction.Label, ChangeConnectionAction.DisabledClass, false);
 		const self = this;
 		this._disposables.push(this._connectionManagementService.onConnect(() => {
-				self.onConnect();
-			})
+			self.onConnect();
+		})
 		);
 		this._disposables.push(this._connectionManagementService.onDisconnect((disconnectParams) => {
-				self.setLabel();
-				self._connectionManagementService.closeDashboard(disconnectParams.connectionUri);
-			})
+			self.setLabel();
+			self._connectionManagementService.closeDashboard(disconnectParams.connectionUri);
+		})
 		);
 	}
 
@@ -67,8 +65,6 @@ export class ChangeConnectionAction extends Action {
 	private onConnect(): void {
 		this.setLabel();
 	}
-
-
 
 	private setLabel(): void {
 		if (!this._connectionProfile) {
@@ -83,8 +79,9 @@ export class ChangeConnectionAction extends Action {
 			return TPromise.as(true);
 		}
 		if (this._connectionManagementService.isProfileConnected(this._connectionProfile)) {
-			this._connectionManagementService.disconnectProfile(this._connectionProfile);
-			return TPromise.as(true);
+			return new TPromise<boolean>((resolve, reject) => {
+				this._connectionManagementService.disconnectProfile(this._connectionProfile).then((value) => resolve(true));
+			});
 		} else {
 			let options: IConnectionCompletionOptions = {
 				params: undefined,
@@ -98,16 +95,18 @@ export class ChangeConnectionAction extends Action {
 				this.parentContainer.classList.add('connecting');
 			}
 
-			this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
-				if (this.parentContainer) {
-					this.parentContainer.classList.remove('connecting');
-				}
+			return new TPromise<boolean>((resolve, reject) => {
+				this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
+					if (this.parentContainer) {
+						this.parentContainer.classList.remove('connecting');
+					}
 
-				if (connectionResult && connectionResult.connected) {
-					this.update();
-				}
+					if (connectionResult && connectionResult.connected) {
+						this.update();
+					}
+					resolve(true);
+				});
 			});
-			return TPromise.as(true);
 		}
 
 	}
@@ -182,7 +181,11 @@ export class ActiveConnectionsFilterAction extends Action {
 		this.class = ActiveConnectionsFilterAction.enabledClass;
 	}
 
-	public run(element: ConnectionProfileGroup): TPromise<boolean> {
+	public run(): TPromise<boolean> {
+		if (!this.view) {
+			// return without doing anything
+			return TPromise.as(true);
+		}
 		if (this.class === ActiveConnectionsFilterAction.enabledClass) {
 			// show active connections in the tree
 			this.view.showFilteredTree('active');
@@ -220,11 +223,15 @@ export class RecentConnectionsFilterAction extends Action {
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
-		this.class = 'recent-connections-action';
+		this.class = RecentConnectionsFilterAction.enabledClass;
 		this._isSet = false;
 	}
 
-	public run(element: ConnectionProfileGroup): TPromise<boolean> {
+	public run(): TPromise<boolean> {
+		if (!this.view) {
+			// return without doing anything
+			return TPromise.as(true);
+		}
 		if (this.class === RecentConnectionsFilterAction.enabledClass) {
 			// show recent connections in the tree
 			this.view.showFilteredTree('recent');
@@ -282,7 +289,7 @@ export class DeleteConnectionAction extends Action {
 	constructor(
 		id: string,
 		label: string,
-		element: ConnectionProfile | ConnectionProfileGroup,
+		private element: ConnectionProfile | ConnectionProfileGroup,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
@@ -294,20 +301,18 @@ export class DeleteConnectionAction extends Action {
 		if (element instanceof ConnectionProfile) {
 			element = <ConnectionProfile>element;
 			let parent: ConnectionProfileGroup = element.parent;
-			if (parent.id === Constants.unsavedGroupId) {
+			if (parent && parent.id === Constants.unsavedGroupId) {
 				this.enabled = false;
 			}
 		}
 	}
 
-	public run(element: any): TPromise<boolean> {
-		// TODO: disable other actions
-		if (element instanceof ConnectionProfile) {
-			this._connectionManagementService.deleteConnection(element);
-		} else if (element instanceof ConnectionProfileGroup) {
-			this._connectionManagementService.deleteConnectionGroup(element);
+	public run(): TPromise<boolean> {
+		if (this.element instanceof ConnectionProfile) {
+			this._connectionManagementService.deleteConnection(this.element);
+		} else if (this.element instanceof ConnectionProfileGroup) {
+			this._connectionManagementService.deleteConnectionGroup(this.element);
 		}
-
 		return TPromise.as(true);
 	}
 }
@@ -330,20 +335,20 @@ export class RenameGroupAction extends Action {
 		id: string,
 		label: string,
 		private _tree: ITree,
-		element: ConnectionProfileGroup,
+		private _element: ConnectionProfileGroup,
 		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
 		this.class = 'rename';
 		this.label = 'Rename Group';
-		if (element.id === Constants.unsavedGroupId) {
+		if (this._element.id === Constants.unsavedGroupId) {
 			this.enabled = false;
 		}
 	}
 
-	public run(group: ConnectionProfileGroup): TPromise<boolean> {
-		group.isRenamed = true;
-		this._tree.refresh(group, false);
+	public run(): TPromise<boolean> {
+		this._element.isRenamed = true;
+		this._tree.refresh(this._element, false);
 		return TPromise.as(true);
 	}
 }

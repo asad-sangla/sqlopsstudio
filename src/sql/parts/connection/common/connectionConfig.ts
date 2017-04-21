@@ -263,6 +263,9 @@ export class ConnectionConfig implements IConnectionConfig {
 		});
 	}
 
+	/**
+	 * Moves the source group under the target group.
+	 */
 	public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
 		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
 		groups = groups.map(g => {
@@ -274,11 +277,14 @@ export class ConnectionConfig implements IConnectionConfig {
 		return this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups);
 	}
 
+	/**
+	 * Moves the connection under the target group with the new ID.
+	 */
 	public changeGroupIdForConnection(profile: ConnectionProfile, newGroupID: string): Promise<void> {
 
 		let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
 		let providerCapabilities = this.getCapabilities(profile.providerName);
-		if (profile.parent.id === Constants.unsavedGroupId) {
+		if (profile.parent && profile.parent.id === Constants.unsavedGroupId) {
 			profile.groupId = newGroupID;
 			profiles.push(ConnectionProfile.convertToProfileStore(providerCapabilities, profile));
 		} else {
