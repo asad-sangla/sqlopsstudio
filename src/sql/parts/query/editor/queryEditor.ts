@@ -39,6 +39,7 @@ import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescripto
 import { ISelectionData } from 'data';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { CodeEditor } from 'vs/editor/browser/codeEditor';
+import { IDisposable } from 'vs/base/common/lifecycle';
 import { IRange } from 'vs/editor/common/editorCommon';
 
 /**
@@ -119,12 +120,18 @@ export class QueryEditor extends BaseEditor {
 	 */
 	public setInput(newInput: QueryInput, options?: EditorOptions): TPromise<void> {
 		const oldInput = <QueryInput>this.input;
-		if (!newInput.setup) {
-			this._register(newInput.updateTaskbarEvent(() => this._updateTaskbar()));
-			this._register(newInput.showQueryResultsEditorEvent(() => this._showQueryResultsEditor()));
-			this._register(newInput.updateSelectionEvent((selection) => this._setSelection(selection)));
-			newInput.setupComplete();
+
+		if (newInput.matches(oldInput)) {
+			return TPromise.as(undefined);
 		}
+
+		// Make sure all event callbacks will be sent to this QueryEditor in the case that this QueryInput was moved from
+		// another QueryEditor
+		let taskbarCallback: IDisposable = newInput.updateTaskbarEvent(() => this._updateTaskbar());
+		let showResultsCallback: IDisposable = newInput.showQueryResultsEditorEvent(() => this._showQueryResultsEditor());
+		let selectionCallback: IDisposable = newInput.updateSelectionEvent((selection) => this._setSelection(selection));
+		newInput.setEventCallbacks([taskbarCallback, showResultsCallback, selectionCallback]);
+
 		return super.setInput(newInput, options)
 			.then(() => this._updateInput(oldInput, newInput, options));
 	}
@@ -236,7 +243,7 @@ export class QueryEditor extends BaseEditor {
 		this._editorGroupService.pinEditor(this.position, this.input);
 
 		let input = <QueryInput>this.input;
-		this._createSash(this.getContainer().getHTMLElement());
+		this._createSash();
 		this._createResultsEditorContainer();
 
 		this._createEditor(<QueryResultsInput>input.results, this._resultsEditorContainer)
@@ -367,35 +374,22 @@ export class QueryEditor extends BaseEditor {
 	}
 
 	/**
-	 * Handles setting input for this editor. If this new input does not match the old input (e.g. a new file
-	 * has been opened with the same editor, or we are opening the editor for the first time).
+	 * Handles setting input for this editor.
 	 */
 	private _updateInput(oldInput: QueryInput, newInput: QueryInput, options?: EditorOptions): TPromise<void> {
-		let returnValue: TPromise<void>;
 
-		if (!newInput.matches(oldInput)) {
-			if (oldInput) {
-				this._disposeEditors();
+		if (oldInput) {
+			this._disposeEditors();
+		}
+
+		this._createSqlEditorContainer();
+		if (this._isResultsEditorVisible()) {
+			this._createResultsEditorContainer();
+
+			let uri: string = newInput.getQueryResultsInputResource();
+			if (uri) {
+				this._queryModelService.refreshResultsets(uri);
 			}
-
-			this._createSqlEditorContainer();
-			if (this._isResultsEditorVisible()) {
-				this._createResultsEditorContainer();
-
-				let uri: string = newInput.getQueryResultsInputResource();
-				if (uri) {
-					this._queryModelService.refreshResultsets(uri);
-				}
-			}
-
-			returnValue = this._setNewInput(newInput, options);
-		} else {
-			this._sqlEditor.setInput(newInput.sql, options);
-
-			if (this._isResultsEditorVisible()) {
-				this._resultsEditor.setInput(newInput.results, options);
-			}
-			returnValue = TPromise.as(null);
 		}
 
 		if (this._sash) {
@@ -407,7 +401,7 @@ export class QueryEditor extends BaseEditor {
 		}
 
 		this._updateTaskbar();
-		return returnValue;
+		return this._setNewInput(newInput, options);
 	}
 
 	/**
@@ -507,6 +501,8 @@ export class QueryEditor extends BaseEditor {
 	 * appends it.
 	 */
 	private _createResultsEditorContainer() {
+		this._createSash();
+
 		const parentElement = this.getContainer().getHTMLElement();
 		let input = <QueryInput>this.input;
 
@@ -528,16 +524,20 @@ export class QueryEditor extends BaseEditor {
 	/**
 	 * Creates the sash with the requested orientation and registers sash callbacks
 	 */
-	private _createSash(parentElement: HTMLElement): void {
-		if (this._orientation === Orientation.HORIZONTAL) {
-			this._sash = this._register(new HorizontalFlexibleSash(parentElement, this._minEditorSize));
-		} else {
-			this._sash = this._register(new VerticalFlexibleSash(parentElement, this._minEditorSize));
-			this._sash.setEdge(this._taskbarHeight + this._tabHeight);
-		}
-		this._setSashDimension();
+	private _createSash(): void {
+		if (!this._sash) {
+			let parentElement: HTMLElement	= this.getContainer().getHTMLElement();
 
-		this._register(this._sash.onPositionChange(position => this._doLayout()));
+			if (this._orientation === Orientation.HORIZONTAL) {
+				this._sash = this._register(new HorizontalFlexibleSash(parentElement, this._minEditorSize));
+			} else {
+				this._sash = this._register(new VerticalFlexibleSash(parentElement, this._minEditorSize));
+				this._sash.setEdge(this._taskbarHeight + this._tabHeight);
+			}
+			this._setSashDimension();
+
+			this._register(this._sash.onPositionChange(position => this._doLayout()));
+		}
 	}
 
 	private _setSashDimension(): void {
@@ -638,14 +638,20 @@ export class QueryEditor extends BaseEditor {
 			this._resultsEditor.dispose();
 			this._resultsEditor = null;
 		}
+
+		let thisEditorParent: HTMLElement = this.getContainer().getHTMLElement();
+
 		if (this._sqlEditorContainer) {
-			if (this._sqlEditorContainer.parentElement) {
+			let sqlEditorParent: HTMLElement = this._sqlEditorContainer.parentElement;
+			if (sqlEditorParent && sqlEditorParent === thisEditorParent) {
 				this._sqlEditorContainer.parentElement.removeChild(this._sqlEditorContainer);
 			}
 			this._sqlEditorContainer = null;
 		}
+
 		if (this._resultsEditorContainer) {
-			if (this._resultsEditorContainer.parentElement) {
+			let resultsEditorParent: HTMLElement = this._resultsEditorContainer.parentElement;
+			if (resultsEditorParent && resultsEditorParent === thisEditorParent) {
 				this._resultsEditorContainer.parentElement.removeChild(this._resultsEditorContainer);
 			}
 			this._resultsEditorContainer = null;
@@ -676,15 +682,18 @@ export class QueryEditor extends BaseEditor {
 	 */
 	private _updateTaskbar(): void {
 		let queryInput: QueryInput = <QueryInput>this.input;
-		this._cancelQueryAction.enabled = queryInput.cancelQueryEnabled;
-		this._changeConnectionAction.enabled = queryInput.changeConnectionEnabled;
-		this._connectDatabaseAction.enabled = queryInput.connectEnabled;
-		this._disconnectDatabaseAction.enabled = queryInput.disconnectEnabled;
-		this._runQueryAction.enabled = queryInput.runQueryEnabled;
-		if (queryInput.listDatabasesConnected) {
-			this.listDatabasesActionItem.onConnected();
-		} else {
-			this.listDatabasesActionItem.onDisconnect();
+
+		if (queryInput) {
+			this._cancelQueryAction.enabled = queryInput.cancelQueryEnabled;
+			this._changeConnectionAction.enabled = queryInput.changeConnectionEnabled;
+			this._connectDatabaseAction.enabled = queryInput.connectEnabled;
+			this._disconnectDatabaseAction.enabled = queryInput.disconnectEnabled;
+			this._runQueryAction.enabled = queryInput.runQueryEnabled;
+			if (queryInput.listDatabasesConnected) {
+				this.listDatabasesActionItem.onConnected();
+			} else {
+				this.listDatabasesActionItem.onDisconnect();
+			}
 		}
 	}
 

@@ -10,7 +10,7 @@ import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorIn
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
 import URI from 'vs/base/common/uri';
 import { ISelectionData } from 'data';
@@ -19,7 +19,7 @@ import { ISelectionData } from 'data';
  * Input for the QueryEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
  * and a UntitledEditorInput for the SQL File Editor.
  */
-export class QueryInput extends EditorInput implements IEncodingSupport, IConnectableInput {
+export class QueryInput extends EditorInput implements IEncodingSupport, IConnectableInput, IDisposable {
 
 	public static ID: string = 'workbench.editorinputs.queryInput';
 	public static SCHEMA: string = 'sql';
@@ -30,13 +30,13 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	private _disconnectEnabled: boolean;
 	private _changeConnectionEnabled: boolean;
 	private _listDatabasesConnected: boolean;
-	private _setup: boolean;
 
 	private _updateTaskbar: Emitter<void>;
 	private _showQueryResultsEditor: Emitter<void>;
 	private _updateSelection: Emitter<ISelectionData>;
 
 	private _toDispose: IDisposable[];
+	private _currentEventCallbacks: IDisposable[];
 
 	constructor(
 		private _name: string,
@@ -49,11 +49,11 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	) {
 		super();
 		let self = this;
-		this._setup = false;
 		this._updateTaskbar = new Emitter<void>();
 		this._showQueryResultsEditor = new Emitter<void>();
 		this._updateSelection = new Emitter<ISelectionData>();
 		this._toDispose = [];
+		this._currentEventCallbacks = [];
 		// re-emit sql editor events through this editor if it exists
 		if (this._sql) {
 			this._toDispose.push( this._sql.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
@@ -104,8 +104,6 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public get disconnectEnabled(): boolean{ return this._disconnectEnabled; }
 	public get changeConnectionEnabled(): boolean{ return this._changeConnectionEnabled; }
 	public get listDatabasesConnected(): boolean{ return this._listDatabasesConnected; }
-	public get setup(): boolean { return this._setup; }
-	public setupComplete(): void { this._setup = true; }
 	public getQueryResultsInputResource(): string { return this._results.uri; }
 	public showQueryResultsEditor(): void { this._showQueryResultsEditor.fire(); }
 	public updateSelection(selection: ISelectionData): void { this._updateSelection.fire(selection); }
@@ -200,6 +198,8 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public dispose(): void {
 		this._sql.dispose();
 		this._results.dispose();
+		this._toDispose = dispose(this._toDispose);
+		this._currentEventCallbacks = dispose(this._currentEventCallbacks);
 		super.dispose();
 	}
 
@@ -208,5 +208,17 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._sql.close();
 		this._results.close();
 		super.close();
+	}
+
+	/**
+	 * Unsubscribe all events in _currentEventCallbacks and set the new callbacks
+	 * to be unsubscribed the next time this method is called.
+	 *
+	 * This method is used to ensure that all callbacks point to the current QueryEditor
+	 * in the case that this QueryInput is moved between different QueryEditors.
+	 */
+	public setEventCallbacks(callbacks: IDisposable[]): void {
+		this._currentEventCallbacks = dispose(this._currentEventCallbacks);
+		this._currentEventCallbacks = callbacks;
 	}
 }
