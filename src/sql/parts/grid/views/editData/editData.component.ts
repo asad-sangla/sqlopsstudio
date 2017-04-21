@@ -13,11 +13,12 @@ import 'vs/css!sql/parts/grid/media/slickGrid';
 
 import { ElementRef, ChangeDetectorRef, OnInit } from '@angular/core';
 import { IGridDataRow, VirtualizedCollection } from 'angular2-slickgrid';
-import { IMessage, IGridDataSet  } from 'sql/parts/grid/common/interfaces';
+import { IMessage, IGridDataSet, IGridInfo } from 'sql/parts/grid/common/interfaces';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
 import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
+import { EditDataGridActionProvider } from 'sql/parts/grid/views/editData/editDataGridActions';
 
 declare let AngularCore;
 declare let rangy;
@@ -81,6 +82,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit {
 		this._el.nativeElement.className = 'slickgridContainer';
 		let editDataParameters: EditDataComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 		this.dataService = editDataParameters.dataService;
+		this.actionProvider = new EditDataGridActionProvider(this.dataService, this.onGridSelectAll(), this.onDeleteRow(), this.onRevertRow());
 	}
 
 	/**
@@ -240,6 +242,28 @@ export class EditDataComponent extends GridParentComponent implements OnInit {
 					let lastRow = gridData[gridData.length-1];
 					gridData.push({values: lastRow.values.map(cell => {return {displayValue: 'NULL', isNull: false};}), row: lastRow.row+1});
 					resolve(gridData);
+				});
+			});
+		};
+	}
+
+	onDeleteRow(): (index: number) => void {
+		const self = this;
+		return (index: number): void => {
+			self.dataService.deleteRow(index).then(() => {
+				self.dataService.commitEdit().then(() => {
+					self.removeRow(index, 0);
+				});
+			});
+		}
+	}
+
+	onRevertRow(): (index: number) => void {
+		const self = this;
+		return (index: number): void => {
+			self.dataService.revertRow(index).then(() => {
+				self.dataService.commitEdit().then(() => {
+					self.refreshResultsets();
 				});
 			});
 		};
@@ -427,7 +451,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit {
 		}, this.scrollTimeOutTime);
 	}
 
-	// Adds a row from the end of slickgrid (just for rendering purposes)
+	// removes a row from the end of slickgrid (just for rendering purposes)
 	// Then sets the focused call afterwards
 	private removeRow(row: number, column: number): void {
 		// Removing the new row

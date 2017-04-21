@@ -174,6 +174,7 @@ export interface IGridInfo {
 	resultSetNumber: number;
 	selection: ISlickRange[];
 	gridIndex: number;
+	rowIndex?: number;
 }
 export interface ISaveRequest
 {

@@ -94,7 +94,6 @@ export abstract class GridParentComponent {
 		protected _cd: ChangeDetectorRef,
 		protected _bootstrapService: IBootstrapService
 	) {
-		this.actionProvider = new GridActionProvider();
 	}
 
 	protected baseInit(): void {
@@ -210,19 +209,25 @@ export abstract class GridParentComponent {
 		return kb;
 	}
 
-	openContextMenu(event: {x: number, y: number}, batchId, resultId, index): void {
+	openContextMenu(event, batchId, resultId, index): void {
 		let selection = this.slickgrids.toArray()[index].getSelectedRanges();
+
+		let slick: any = this.slickgrids.toArray()[0];
+		let grid = slick._grid;
+		let rowIndex = grid.getCellFromEvent(event).row;
+
 		let actionContext: IGridInfo = {
 			batchIndex: batchId,
 			resultSetNumber: resultId,
 			selection: selection,
-			gridIndex: index
+			gridIndex: index,
+			rowIndex: rowIndex
 		};
 
-		let anchor = { x: event.x + 1, y: event.y };
+		let anchor = { x: event.pageX + 1, y: event.pageY };
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => anchor,
-			getActions: () => this.actionProvider.getGridActions(this.dataService, this.onGridSelectAll()),
+			getActions: () => this.actionProvider.getGridActions(),
 			getKeyBinding: (action) => this._keybindingFor(action),
 			onHide: (wasCancelled?: boolean) => {
 			},

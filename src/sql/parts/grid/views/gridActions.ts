@@ -15,20 +15,20 @@ import { IAction, Action } from 'vs/base/common/actions';
 
 export class GridActionProvider {
 
-	constructor() {
+	constructor(protected _dataService: DataService, protected _selectAllCallback: (index: number) => void) {
 
 	}
 	/**
 	 * Return actions given a click on a grid
 	 */
-	public getGridActions(dataService: DataService, selectAllCallback: (index: number) => void): TPromise<IAction[]> {
+	public getGridActions(): TPromise<IAction[]> {
 		let actions: IAction[] = [];
-		actions.push(new SaveResultAction(SaveResultAction.SAVECSV_ID, SaveResultAction.SAVECSV_LABEL, CsvFormat, dataService));
-		actions.push(new SaveResultAction(SaveResultAction.SAVEJSON_ID, SaveResultAction.SAVEJSON_LABEL, JsonFormat, dataService));
-		actions.push(new SaveResultAction(SaveResultAction.SAVEEXCEL_ID, SaveResultAction.SAVEEXCEL_LABEL, ExcelFormat, dataService));
-		actions.push(new SelectAllGridAction(SelectAllGridAction.ID, SelectAllGridAction.LABEL, selectAllCallback));
-		actions.push(new CopyResultAction(CopyResultAction.COPY_ID, CopyResultAction.COPY_LABEL, false, dataService));
-		actions.push(new CopyResultAction(CopyResultAction.COPYWITHHEADERS_ID, CopyResultAction.COPYWITHHEADERS_LABEL, true, dataService));
+		actions.push(new SaveResultAction(SaveResultAction.SAVECSV_ID, SaveResultAction.SAVECSV_LABEL, CsvFormat, this._dataService));
+		actions.push(new SaveResultAction(SaveResultAction.SAVEJSON_ID, SaveResultAction.SAVEJSON_LABEL, JsonFormat, this._dataService));
+		actions.push(new SaveResultAction(SaveResultAction.SAVEEXCEL_ID, SaveResultAction.SAVEEXCEL_LABEL, ExcelFormat, this._dataService));
+		actions.push(new SelectAllGridAction(SelectAllGridAction.ID, SelectAllGridAction.LABEL, this._selectAllCallback));
+		actions.push(new CopyResultAction(CopyResultAction.COPY_ID, CopyResultAction.COPY_LABEL, false, this._dataService));
+		actions.push(new CopyResultAction(CopyResultAction.COPYWITHHEADERS_ID, CopyResultAction.COPYWITHHEADERS_LABEL, true, this._dataService));
 
 		return TPromise.as(actions);
 	}
@@ -149,4 +149,3 @@ export class CopyMessagesAction extends Action {
 		return TPromise.as(true);
 	}
 }
-

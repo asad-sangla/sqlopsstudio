@@ -425,7 +425,7 @@
       "version": "^2.2.1",
       "from": "jquery.event.drag@>=2.2.1",
       "resolved": "https://registry.npmjs.org/jquery.event.drag/-/jquery.event.drag-2.2.2.tgz"
-    },    
+    },
     "jschardet": {
       "version": "1.4.2",
       "from": "jschardet@>=1.4.2 <2.0.0",

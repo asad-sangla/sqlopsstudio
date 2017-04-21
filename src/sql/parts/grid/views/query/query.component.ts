@@ -141,7 +141,7 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 		let queryParameters: QueryComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 		this.dataService = queryParameters.dataService;
 
-		this.actionProvider = new GridActionProvider();
+		this.actionProvider = new GridActionProvider(this.dataService, this.onGridSelectAll());
 	}
 
 	/**
