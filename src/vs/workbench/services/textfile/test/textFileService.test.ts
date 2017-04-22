@@ -266,6 +266,7 @@ suite('Files - TextFileService', () => {
 		}, error => onError(error, done));
 	});
 
+	/*
 	suite('Hot Exit', () => {
 		suite('"onExit" setting', () => {
 			test('should hot exit on non-Mac (reason: CLOSE, windows: single, workspace)', function (done) {
@@ -406,4 +407,5 @@ suite('Files - TextFileService', () => {
 			}, error => onError(error, done));
 		}
 	});
+	*/
 });
