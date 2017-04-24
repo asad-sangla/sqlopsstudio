@@ -14,7 +14,7 @@ import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory
 import { IDashboardPage } from 'sql/parts/dashboard/common/dashboard';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
-import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { DatabaseDashboardComponent } from './database/database-dashboard.component';
 import { ServerDashboardComponent } from './server/server-dashboard.component';
 import { ObjectDashboardComponent } from './object/object-dashboard.component';

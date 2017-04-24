@@ -105,7 +105,8 @@ import { IMetadataService, MetadataService } from 'sql/parts/metadata/metadataSe
 import { IObjectExplorerService, ObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
-import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
+import { QueryEditorService } from 'sql/parts/query/services/queryEditorService';
 import { IQueryManagementService, QueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IEditorDescriptorService, EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { IScriptingService, ScriptingService } from 'sql/parts/scripting/scriptingService';

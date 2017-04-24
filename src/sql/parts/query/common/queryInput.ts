@@ -8,12 +8,12 @@ import { EditorInput,  EditorModel, ConfirmResult, EncodingMode, IEncodingSuppor
 import { IConnectionManagementService, IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
 import URI from 'vs/base/common/uri';
 import { ISelectionData } from 'data';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 
 /**
  * Input for the QueryEditor. This input is simply a wrapper around a QueryResultsInput for the QueryResultsEditor
@@ -45,13 +45,14 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		private _results: QueryResultsInput,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
-		@IMessageService private _messageService: IMessageService
+		@IQueryEditorService private _queryEditorService: IQueryEditorService
 	) {
 		super();
 		let self = this;
 		this._updateTaskbar = new Emitter<void>();
 		this._showQueryResultsEditor = new Emitter<void>();
 		this._updateSelection = new Emitter<ISelectionData>();
+
 		this._toDispose = [];
 		this._currentEventCallbacks = [];
 		// re-emit sql editor events through this editor if it exists
@@ -204,7 +205,9 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	}
 
 	public close(): void {
+		this._queryEditorService.onQueryInputClosed(this.uri);
 		this._connectionManagementService.disconnectEditor(this, true);
+
 		this._sql.close();
 		this._results.close();
 		super.close();

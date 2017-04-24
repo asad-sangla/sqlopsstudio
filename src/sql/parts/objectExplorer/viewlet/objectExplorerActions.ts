@@ -8,7 +8,7 @@ import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
 import { TaskUtilities } from 'sql/parts/common/taskUtilities';

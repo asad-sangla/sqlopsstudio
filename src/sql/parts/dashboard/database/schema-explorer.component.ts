@@ -9,7 +9,7 @@ import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/dashboard/common/dashboard';
 import { MetadataType, IConnectableInput, IConnectionManagementService,
 		IConnectionCompletionOptions, ConnectionType  } from 'sql/parts/connection/common/connectionManagement';
-import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';

@@ -46,6 +46,7 @@ import { IExtensionGalleryService } from 'vs/platform/extensionManagement/common
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
 import { getCodeEditor as getEditorWidget } from 'vs/editor/common/services/codeEditorService';
 import { IPreferencesService } from 'vs/workbench/parts/preferences/common/preferences';
+import { QueryEditorService } from 'sql/parts/query/services/queryEditorService';
 
 function getCodeEditor(editorWidget: IEditor): ICommonCodeEditor {
 	if (editorWidget) {
@@ -864,7 +865,14 @@ export class ChangeModeAction extends Action {
 
 				// Change mode
 				models.forEach(textModel => {
-					this.modelService.setMode(textModel, mode);
+					let self = this;
+					mode.then((modeValue) => {
+						QueryEditorService.sqlLanguageModeCheck(textModel, modeValue, activeEditor).then((newTextModel) => {
+							if (newTextModel) {
+								self.modelService.setMode(newTextModel, modeValue);
+							}
+						});
+					});
 				});
 			}
 		});

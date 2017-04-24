@@ -42,7 +42,7 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { editorBackground } from 'vs/platform/theme/common/colorRegistry';
 import { EDITOR_GROUP_BACKGROUND } from 'vs/workbench/common/theme';
 
-import { QueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { QueryEditorService } from 'sql/parts/query/services/queryEditorService';
 
 class ProgressMonitor {
 
@@ -297,7 +297,7 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 		}
 
 		// SQL file check
-		input = QueryEditorService.queryEditorCheck(input, this.instantiationService);
+		input = QueryEditorService.queryEditorCheck(input, options);
 
 		// We need an editor descriptor for the input
 		const descriptor = Registry.as<IEditorRegistry>(EditorExtensions.Editors).getEditor(input);
