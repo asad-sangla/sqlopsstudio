@@ -3,6 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/*
+ * Theme agnostic
+ *
+ */
+
 .errorMessage {
     color: var(--color-error);
 }
@@ -10,6 +15,25 @@
 .batchMessage {
     padding-left: 20px;
 }
+
+.slick-cell a, a:link {
+  color: var(--color-grid-link);
+  text-decoration: underline;
+}
+
+.slick-cell a:hover {
+  color: var(--color-grid-link-hover);
+}
+
+.resultsMessageValue a, a:link {
+  color: var(--color-grid-link);
+  text-decoration: underline;
+}
+
+.resultsMessageValue a:hover {
+  color: var(--color-grid-link-hover);
+}
+
 
 /*
  * vs theme
@@ -22,20 +46,13 @@
   --color-error: #E81123;
   --color-success: #7CD300;
   --color-bg-header: hsla(0,0%,50%,.2);
-  --color-bg-content-light: #ffffff;
+  --color-resize-handle: grey;
   --color-bg-content-header: #F5F5F5; /* used for color of grid headers */
   --color-cell-border-active: grey;
   --color-cell-bg-grid-selected: rgb(173, 214, 255);
+  --color-grid-link: #0078D7;
+  --color-grid-link-hover: #0b93ff;
 }
-
-.vs .queryLink {
-  color: #0078D7;
-}
-
-.vs .queryLink:hover {
-  color: #0b93ff;
-}
-
 /* grid styling */
 
 .vs slick-grid.active .grid .slick-cell.active {
@@ -140,18 +157,12 @@
   --color-error: #E81123;
   --color-success: #7CD300;
   --color-bg-header: hsla(0,0%,50%,.2); /* used for pane toolbars */
-  --color-bg-content-light: #4d4d4d;
+  --color-resize-handle: #4d4d4d;
   --color-bg-content-header: #333334; /* used for color of grid headers */
   --color-cell-border-active: white;
   --color-cell-bg-grid-selected: rgb(38, 79, 120);
-}
-
-.vs-dark .queryLink {
-  color: #FF6000;
-}
-
-.vs-dark .queryLink:hover {
-  color: #ff8033;
+  --color-grid-link: #FF6000;
+  --color-grid-link-hover: #ff8033;
 }
 
 /* grid styling */
@@ -259,18 +270,12 @@
   --color-error: #E81123;
   --color-success: #7CD300;
   --color-bg-header: hsla(0,0%,50%,.2); /* used for pane toolbars */
-  --color-bg-content-light: #4d4d4d;
+  --color-resize-handle: #4d4d4d;
   --color-bg-content-header: #333334; /* used for color of grid headers */
   --color-cell-border-active: orange;
   --color-cell-bg-grid-selected: rgb(38, 79, 120);
-}
-
-.hc-black .queryLink {
-  color: #FF6000;
-}
-
-.hc-black .queryLink:hover {
-  color: #ff8033;
+  --color-grid-link: #FF6000;
+  --color-grid-link-hover: #ff8033;
 }
 
 /* grid styling */
