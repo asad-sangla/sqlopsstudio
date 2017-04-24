@@ -100,6 +100,7 @@
 			"linux": {
 				"runtimeExecutable": "${workspaceRoot}/scripts/sql.sh"
 			},
+			"urlFilter": "*index.html*",
 			"sourceMaps": true
 		},
 		{
