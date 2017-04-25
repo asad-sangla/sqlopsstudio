@@ -34,6 +34,21 @@
   color: var(--color-grid-link-hover);
 }
 
+.grid .slick-cell.dirtyCell {
+  color: var(--color-grid-dirty-text);
+  background-color: var(--color-grid-dirty-background);
+}
+
+.grid .slick-cell.dirtyRowHeader {
+  background-color: var(--color-grid-dirty-background);
+}
+
+
+.slick-cell.dirtyRowHeader > .row-number {
+  color: var(--color-grid-dirty-text);
+  font-weight: 500;
+}
+
 
 /*
  * vs theme
@@ -52,6 +67,8 @@
   --color-cell-bg-grid-selected: rgb(173, 214, 255);
   --color-grid-link: #0078D7;
   --color-grid-link-hover: #0b93ff;
+  --color-grid-dirty-background: #CCC;
+  --color-grid-dirty-text: #101010;
 }
 /* grid styling */
 
@@ -145,6 +162,9 @@
   background: transparent;
 }
 
+.vs .monaco-workbench input {
+  color: var(--color-content);
+}
 
 /*
  * vs-dark theme
@@ -163,6 +183,8 @@
   --color-cell-bg-grid-selected: rgb(38, 79, 120);
   --color-grid-link: #FF6000;
   --color-grid-link-hover: #ff8033;
+  --color-grid-dirty-background: #4d4d4d;
+  --color-grid-dirty-text: #E5E5E5;
 }
 
 /* grid styling */
@@ -258,6 +280,10 @@
   background: transparent;
 }
 
+.vs-dark .monaco-workbench input {
+  color: var(--color-content);
+  background-color: #3C3C3C;
+}
 
 /*
  * hc-black theme
@@ -276,6 +302,8 @@
   --color-cell-bg-grid-selected: rgb(38, 79, 120);
   --color-grid-link: #FF6000;
   --color-grid-link-hover: #ff8033;
+  --color-grid-dirty-background: #FFF;
+  --color-grid-dirty-text: #000;
 }
 
 /* grid styling */
@@ -372,3 +400,7 @@
   background: transparent;
 }
 
+.hc-black .monaco-workbench input {
+  color: #000;
+  background-color: #FFF;
+}
