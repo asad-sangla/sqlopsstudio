@@ -42,7 +42,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	private _providers: { [handle: string]: data.ObjectExplorerProvider; } = Object.create(null);
 
-	private _sessions: { [sessionId: string] : TreeNode } = {};
+	private _sessions: { [sessionId: string]: TreeNode } = {};
 
 	constructor() {
 	}
@@ -98,13 +98,13 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	private toTreeNode(nodeInfo: data.NodeInfo, parent: TreeNode): TreeNode {
 		return new TreeNode(nodeInfo.nodeType
 			, nodeInfo.label,
-			nodeInfo.isLeaf, nodeInfo.nodePath, parent);
+			nodeInfo.isLeaf, nodeInfo.nodePath, parent, nodeInfo.metadata);
 	}
 
 	public createTreeRoot(): TreeNode {
-		let root = new TreeNode(NodeType.Root, 'root', false, 'root', null);
- 		root.children = [];
- 		return root;
+		let root = new TreeNode(NodeType.Root, 'root', false, 'root', null, null);
+		root.children = [];
+		return root;
 	}
 
 	public getRootTreeNode(root: TreeNode, connection: ConnectionProfile): Promise<TreeNode> {

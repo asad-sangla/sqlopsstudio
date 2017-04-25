@@ -38,7 +38,7 @@ export class ObjectExplorerActionProvider extends ContributableActionProvider {
 			if (treeNode.isTopLevel()) {
 				actions.push(this.instantiationService.createInstance(DisconnectAction, DisconnectAction.ID, DisconnectAction.LABEL));
 			}
-			if (treeNode.nodeTypeId === NodeType.ViewInstance || treeNode.nodeTypeId === NodeType.TableInstance) {
+			if (treeNode.nodeTypeId === NodeType.View || treeNode.nodeTypeId === NodeType.Table) {
 				actions.push(this.instantiationService.createInstance(ScriptSelectAction, ScriptSelectAction.ID, ScriptSelectAction.LABEL));
 				actions.push(this.instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL));
 				actions.push(this.instantiationService.createInstance(ScriptCreateAction, ScriptCreateAction.ID, ScriptCreateAction.LABEL));
