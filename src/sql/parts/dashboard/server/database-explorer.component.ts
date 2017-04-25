@@ -64,4 +64,8 @@ export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 			this.clearLoadingWheel();
 		}
 	}
+
+	public browseDatabases(): void {
+		$('#browse-button').click();
+	}
 }

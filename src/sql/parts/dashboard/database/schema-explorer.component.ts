@@ -151,6 +151,10 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 		return metadataType === MetadataType.View;
 	}
 
+	public browseObjects() : void {
+		$('#browse-button').click();
+	}
+
 	/**
 	 * Select the top rows from an object
 	 */
