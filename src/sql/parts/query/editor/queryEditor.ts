@@ -19,28 +19,31 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
-import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
 
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
-import {
-	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
-	DisconnectDatabaseAction, ConnectDatabaseAction
-} from 'sql/parts/query/execution/queryActions';
+import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import { Action } from 'vs/base/common/actions';
-import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { ISelectionData } from 'data';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { CodeEditor } from 'vs/editor/browser/codeEditor';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IRange } from 'vs/editor/common/editorCommon';
+
+import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
+import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
+import * as queryContext from 'sql/parts/query/common/queryContext';
+import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
+import {
+	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
+	DisconnectDatabaseAction, ConnectDatabaseAction
+} from 'sql/parts/query/execution/queryActions';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 
 /**
  * Editor that hosts 2 sub-editors: A TextResourceEditor for SQL file editing, and a QueryResultsEditor
@@ -74,6 +77,9 @@ export class QueryEditor extends BaseEditor {
 	private _taskbarContainer: HTMLElement;
 	private _listDatabasesActionItem: ListDatabasesActionItem;
 
+
+	private queryEditorVisible: IContextKey<boolean>;
+
 	private _runQueryAction: RunQueryAction;
 	private _cancelQueryAction: CancelQueryAction;
 	private _connectDatabaseAction: ConnectDatabaseAction;
@@ -90,6 +96,7 @@ export class QueryEditor extends BaseEditor {
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IEditorDescriptorService private _editorDescriptorService: IEditorDescriptorService,
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
+		@IContextKeyService contextKeyService: IContextKeyService,
 		editorOrientation?: Orientation
 	) {
 		super(QueryEditor.ID, _telemetryService, themeService);
@@ -98,6 +105,10 @@ export class QueryEditor extends BaseEditor {
 			this._orientation = editorOrientation;
 		} else {
 			this._orientation = Orientation.HORIZONTAL;
+		}
+
+		if (contextKeyService) {
+			this.queryEditorVisible = queryContext.QueryEditorVisibleContext.bindTo(contextKeyService);
 		}
 	}
 
@@ -147,7 +158,31 @@ export class QueryEditor extends BaseEditor {
 			this._sqlEditor.setVisible(visible, position);
 		}
 		super.setEditorVisible(visible, position);
+
+		// Note: must update after calling super.setEditorVisible so that the accurate count is handled
+		this.updateQueryEditorVisible(visible);
 	}
+
+
+	private updateQueryEditorVisible(currentEditorIsVisible: boolean): void {
+		if (this.queryEditorVisible) {
+			let visible = currentEditorIsVisible;
+			if (!currentEditorIsVisible) {
+				// Current editor is closing but still tracked as visible. Check if any other editor is visible
+				const candidates = [...this._editorService.getVisibleEditors()].filter(e => {
+					if (e && e.getId) {
+						return e.getId() === QueryEditor.ID;
+					}
+					return false;
+				});
+				// Note: require 2 or more candidates since current is closing but still
+				// counted as visible
+				visible = candidates.length > 1;
+			}
+			this.queryEditorVisible.set(visible);
+		}
+	}
+
 
 	/**
 	 * Changes the position of the editor.

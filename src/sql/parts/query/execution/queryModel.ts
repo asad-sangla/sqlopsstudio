@@ -38,6 +38,7 @@ export interface IQueryModelService {
 
 	getDataService(uri: string): DataService;
 	refreshResultsets(uri: string): void;
+	sendGridContentEvent(uri: string, eventName: string): void;
 	resizeResultsets(uri: string): void;
 	onAngularLoaded(uri: string): void;
 

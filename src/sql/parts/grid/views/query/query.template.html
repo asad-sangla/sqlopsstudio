@@ -11,7 +11,8 @@
         <span class="queryResultsShortCut"> {{resultShortcut}} </span>
     </div>
     <div id="results" *ngIf="renderedDataSets.length > 0" class="results vertBox scrollable"
-         (onScroll)="onScroll($event)" [scrollEnabled]="scrollEnabled" [class.hidden]="!resultActive">
+         (onScroll)="onScroll($event)" [scrollEnabled]="scrollEnabled" [class.hidden]="!resultActive"
+         (focusin)="onGridFocus()" (focusout)="onGridFocusout()">
         <div class="boxRow content horzBox slickgrid" *ngFor="let dataSet of renderedDataSets; let i = index"
             [style.max-height]="dataSet.maxHeight" [style.min-height]="dataSet.minHeight">
             <slick-grid #slickgrid id="slickgrid_{{i}}" [columnDefinitions]="dataSet.columnDefinitions"
@@ -45,7 +46,8 @@
         <span class="queryResultsShortCut"> {{messageShortcut}} </span>
     </div>
     <div id="messages" class="scrollable messages" [class.hidden]="!messageActive && dataSets.length !== 0"
-        (contextmenu)="openMessagesContextMenu($event)">
+        (contextmenu)="openMessagesContextMenu($event)" (focusin)="onMessagesFocus()" (focusout)="onMessagesFocusout()"
+        tabindex=0>
         <div class="messagesTopSpacing"></div>
         <table id="messageTable" class="resultsMessageTable">
             <colgroup>

@@ -111,6 +111,10 @@ export class QueryModelService implements IQueryModelService {
 		this._fireGridContentEvent(uri, GridContentEvents.ResizeContents);
 	}
 
+	public sendGridContentEvent(uri: string, eventName: string): void {
+		this._fireGridContentEvent(uri, eventName);
+	}
+
 	/**
 	 * To be called by an angular component's DataService when the component has finished loading.
 	 * Sends all previously enqueued query events to the DataService and signals to stop enqueuing

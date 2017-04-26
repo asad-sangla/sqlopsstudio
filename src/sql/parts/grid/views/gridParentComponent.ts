@@ -17,17 +17,19 @@ import * as Constants from 'sql/parts/query/common/constants';
 import { IGridInfo, IRange, IGridDataSet, SaveFormat, JsonFormat, ExcelFormat, CsvFormat  } from 'sql/parts/grid/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
-import { GridActionProvider } from 'sql/parts/grid/views/gridActions';
+import * as actions from 'sql/parts/grid/views/gridActions';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
+import { ResultsVisibleContext, ResultsGridFocussedContext, ResultsMessagesFocussedContext } from 'sql/parts/query/common/queryContext';
 import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
 
 import { IAction } from 'vs/base/common/actions';
 import { ResolvedKeybinding } from 'vs/base/common/keyCodes';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 
 declare let AngularCore;
 declare let rangy;
@@ -53,9 +55,17 @@ export abstract class GridParentComponent {
 	// Service for interaction with the IQueryModel
 	protected dataService: DataService;
 	protected keybindingService: IKeybindingService;
-	protected contextKeyService: IContextKeyService;
+	protected scopedContextKeyService: IContextKeyService;
 	protected contextMenuService: IContextMenuService;
-	protected actionProvider: GridActionProvider;
+	protected actionProvider: actions.GridActionProvider;
+
+	private toDispose: IDisposable[];
+
+
+	// Context keys to set when keybindings are available
+	private resultsVisibleContextKey: IContextKey<boolean>;
+	private gridFocussedContextKey: IContextKey<boolean>;
+	private messagesFocussedContextKey: IContextKey<boolean>;
 
 	// All datasets
 	// Place holder data sets to buffer between data sets and rendered data sets
@@ -94,6 +104,7 @@ export abstract class GridParentComponent {
 		protected _cd: ChangeDetectorRef,
 		protected _bootstrapService: IBootstrapService
 	) {
+		this.toDispose = [];
 	}
 
 	protected baseInit(): void {
@@ -108,6 +119,36 @@ export abstract class GridParentComponent {
 				case GridContentEvents.ResizeContents:
 					self.resizeGrids();
 					break;
+				case GridContentEvents.CopySelection:
+					self.copySelection();
+					break;
+				case GridContentEvents.CopyWithHeaders:
+					self.copyWithHeaders();
+					break;
+				case GridContentEvents.CopyMessagesSelection:
+					self.copyMessagesSelection();
+					break;
+				case GridContentEvents.ToggleResultPane:
+					self.toggleResultPane();
+					break;
+				case GridContentEvents.ToggleMessagePane:
+					self.toggleMessagePane();
+					break;
+				case GridContentEvents.SelectAll:
+					self.onSelectAllForActiveGrid();
+					break;
+				case GridContentEvents.SelectAllMessages:
+					self.selectAllMessages();
+					break;
+				case GridContentEvents.SaveAsCsv:
+					self.sendSaveRequest(CsvFormat);
+					break;
+				case GridContentEvents.SaveAsJSON:
+					self.sendSaveRequest(JsonFormat);
+					break;
+				case GridContentEvents.SaveAsExcel:
+					self.sendSaveRequest(ExcelFormat);
+					break;
 				default:
 					console.error('Unexpected grid content event type "' + type + '" sent');
 					break;
@@ -116,47 +157,109 @@ export abstract class GridParentComponent {
 
 		this.contextMenuService = this._bootstrapService.contextMenuService;
 		this.keybindingService = this._bootstrapService.keybindingService;
-		this.keybindingService.lookupKeybindings("query.copy");
-		if (this._bootstrapService.contextKeyService) {
-			this.contextKeyService = this._bootstrapService.contextKeyService.createScoped(this._el.nativeElement);
+
+		this.bindKeys(this._bootstrapService.contextKeyService);
+	}
+
+	private bindKeys(contextKeyService: IContextKeyService): void {
+		if (contextKeyService) {
+			let gridContextKeyService = this._bootstrapService.contextKeyService.createScoped(this._el.nativeElement);
+			this.toDispose.push(gridContextKeyService);
+			this.resultsVisibleContextKey = ResultsVisibleContext.bindTo(gridContextKeyService);
+			this.resultsVisibleContextKey.set(true);
+
+			this.gridFocussedContextKey = ResultsGridFocussedContext.bindTo(gridContextKeyService);
+			this.messagesFocussedContextKey = ResultsMessagesFocussedContext.bindTo(gridContextKeyService);
 		}
+	}
+
+	protected baseDestroy(): void {
+		this.toDispose = dispose(this.toDispose);
+	}
+
+	private toggleResultPane(): void {
+		this.resultActive = !this.resultActive;
+	}
+
+	private toggleMessagePane(): void {
+		this.messageActive = !this.messageActive;
+	}
+
+	protected onGridFocus() {
+		this.gridFocussedContextKey.set(true);
+	}
+
+	protected onGridFocusout() {
+		this.gridFocussedContextKey.set(false);
+	}
+
+	protected onMessagesFocus() {
+		this.messagesFocussedContextKey.set(true);
+	}
+
+	protected onMessagesFocusout() {
+		this.messagesFocussedContextKey.set(false);
+	}
+
+	private copySelection(): void {
+		let messageText = this.getMessageText();
+		if (messageText.length > 0) {
+			WorkbenchUtils.executeCopy(messageText);
+		} else {
+			let activeGrid = this.activeGrid;
+			let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
+			this.dataService.copyResults(selection, this.renderedDataSets[activeGrid].batchId, this.renderedDataSets[activeGrid].resultId);
+		}
+	}
+
+	private copyWithHeaders(): void {
+		let activeGrid = this.activeGrid;
+		let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
+		this.dataService.copyResults(selection, this.renderedDataSets[activeGrid].batchId,
+			this.renderedDataSets[activeGrid].resultId, true);
+	}
+
+	private copyMessagesSelection(): void {
+		let messageText = this.getMessageText();
+		if (messageText.length === 0) {
+			// Since we know we're specifically copying messages, do a select all if nothing is selected
+			this.selectAllMessages();
+			messageText = this.getMessageText();
+		}
+		if (messageText.length > 0) {
+			WorkbenchUtils.executeCopy(messageText);
+		}
+	}
+
+	private getMessageText(): string {
+		let range: IRange = this.getSelectedRangeUnderMessages();
+		return range ? range.text() : '';
 	}
 
 	private initShortcutsBase(): void {
 		let shortcuts = {
-			'event.toggleResultPane': () => {
-				this.resultActive = !this.resultActive;
+			'ToggleResultPane': () => {
+				this.toggleResultPane();
 			},
-			'event.toggleMessagePane': () => {
-				this.messageActive = !this.messageActive;
+			'ToggleMessagePane': () => {
+				this.toggleMessagePane();
 			},
-			'event.copySelection': () => {
-				let range: IRange = this.getSelectedRangeUnderMessages();
-				let messageText = range ? range.text() : '';
-				if (messageText.length > 0) {
-					WorkbenchUtils.executeCopy(messageText);
-				} else {
-					let activeGrid = this.activeGrid;
-					let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
-					this.dataService.copyResults(selection, this.renderedDataSets[activeGrid].batchId, this.renderedDataSets[activeGrid].resultId);
-				}
+			'CopySelection': () => {
+				this.copySelection();
 			},
-			'event.copyWithHeaders': () => {
-				let activeGrid = this.activeGrid;
-				let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
-				this.dataService.copyResults(selection, this.renderedDataSets[activeGrid].batchId,
-					this.renderedDataSets[activeGrid].resultId, true);
+			'CopyWithHeaders': () => {
+				this.copyWithHeaders();
 			},
-			'event.selectAll': () => {
-				this.slickgrids.toArray()[this.activeGrid].selection = true;
+			'SelectAll': () => {
+				this.onSelectAllForActiveGrid();
 			},
-			'event.saveAsCSV': () => {
+			'SaveAsCSV': () => {
 				this.sendSaveRequest(CsvFormat);
 			},
-			'event.saveAsJSON': () => {
+			'SaveAsJSON': () => {
 				this.sendSaveRequest(JsonFormat);
 			},
-			'event.saveAsExcel': () => {
+			'SaveAsExcel': () => {
 				this.sendSaveRequest(ExcelFormat);
 			}
 		};
@@ -183,7 +286,7 @@ export abstract class GridParentComponent {
 				break;
 			case 'selectall':
 				this.activeGrid = event.index;
-				this.shortcutfunc['event.selectAll']();
+				this.onSelectAllForActiveGrid();
 				break;
 			case 'copySelection':
 				this.dataService.copyResults(event.selection, event.batchId, event.resultId);
@@ -251,6 +354,12 @@ export abstract class GridParentComponent {
 		};
 	}
 
+	private onSelectAllForActiveGrid(): void {
+		if (this.activeGrid >= 0 && this.slickgrids.length > this.activeGrid) {
+			this.slickgrids.toArray()[this.activeGrid].selection = true;
+		}
+	}
+
 	/**
 	 * Used to convert the string to a enum compatible with SlickGrid
 	 */
@@ -289,6 +398,12 @@ export abstract class GridParentComponent {
 
 	abstract onScroll(scrollTop): void;
 
+	protected getResultsElement(): any {
+		return this._el.nativeElement.querySelector('#results');
+	}
+	protected getMessagesElement(): any {
+		return this._el.nativeElement.querySelector('#messages');
+	}
 	/**
 	 * Force angular to re-render the results grids. Calling this upon unhide (upon focus) fixes UI
 	 * glitches that occur when a QueryRestulsEditor is hidden then unhidden while it is running a query.
@@ -303,7 +418,7 @@ export abstract class GridParentComponent {
 
 	getSelectedRangeUnderMessages(): IRange {
 		let selectedRange: IRange = undefined;
-		let msgEl = this._el.nativeElement.querySelector('#messages');
+		let msgEl = this.getMessagesElement();
 		if (msgEl) {
 			selectedRange = this.getSelectedRangeWithin(msgEl);
 		}
@@ -380,12 +495,15 @@ export abstract class GridParentComponent {
 		}
 	}
 
-	keyEvent(e): void {
-		if (!this.tryHandleKeyEvent(e)) {
-
+	keyEvent(e: KeyboardEvent): void {
+		let self = this;
+		let handled = self.tryHandleKeyEvent(e);
+		if (handled) {
+			e.preventDefault();
+			e.stopPropagation();
 		}
+		// Else assume that keybinding service handles routing this to a command
 	}
-
 
 	/**
 	 * Called by keyEvent method to give child classes a chance to

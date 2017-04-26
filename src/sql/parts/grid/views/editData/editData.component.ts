@@ -11,9 +11,9 @@ import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import { ElementRef, ChangeDetectorRef, OnInit } from '@angular/core';
+import { ElementRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { IGridDataRow, VirtualizedCollection } from 'angular2-slickgrid';
-import { IMessage, IGridDataSet, IGridInfo } from 'sql/parts/grid/common/interfaces';
+import { IMessage, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
 import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
@@ -32,7 +32,7 @@ export const EDITDATA_SELECTOR: string = 'editdata-component';
 	templateUrl: require.toUrl('sql/parts/grid/views/editData/editData.component.html')
 })
 
-export class EditDataComponent extends GridParentComponent implements OnInit {
+export class EditDataComponent extends GridParentComponent implements OnInit, OnDestroy {
 	// CONSTANTS
 	// tslint:disable:no-unused-variable
 	private scrollTimeOutTime = 200;
@@ -61,17 +61,6 @@ export class EditDataComponent extends GridParentComponent implements OnInit {
 	public onIsColumnEditable: (column: number) => boolean;
 	public overrideCellFn: (rowNumber, columnId, value?, data?) => string;
 	public loadDataFunction: (offset: number, count: number) => Promise<IGridDataRow[]>;
-
-	set messageActive(input: boolean) {
-		this._messageActive = input;
-		if (this.resultActive) {
-			this.resizeGrids();
-		}
-	}
-
-	get messageActive(): boolean {
-		return this._messageActive;
-	}
 
 	constructor(
 		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) el: ElementRef,
@@ -123,6 +112,10 @@ export class EditDataComponent extends GridParentComponent implements OnInit {
 		// TODO add any Edit Data-specific shortcuts here
 	}
 
+	public ngOnDestroy(): void {
+		this.baseDestroy();
+	}
+
 	handleStart(self: EditDataComponent, event: any): void {
 		self.messages = [];
 		self.dataSet = undefined;
@@ -151,8 +144,6 @@ export class EditDataComponent extends GridParentComponent implements OnInit {
 						this.setGridClean();
 						this.refreshResultsets();
 					} else {
-						let slick: any = self.slickgrids.toArray()[0];
-						let grid = slick._grid;
 						self.setCellDirtyState(event.row, event.column+1, true);
 						self.setRowDirtyState(event.row, true);
 					}
@@ -255,7 +246,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit {
 					self.removeRow(index, 0);
 				});
 			});
-		}
+		};
 	}
 
 	onRevertRow(): (index: number) => void {

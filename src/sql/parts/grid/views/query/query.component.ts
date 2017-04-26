@@ -14,7 +14,7 @@ import 'vs/css!sql/parts/grid/media/slickGrid';
 import * as Constants from 'sql/parts/query/common/constants';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 
-import { ElementRef, QueryList, ChangeDetectorRef, OnInit } from '@angular/core';
+import { ElementRef, QueryList, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { IGridDataRow, SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
 import { IGridIcon, IMessage, IRange, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
@@ -30,10 +30,11 @@ export const QUERY_SELECTOR: string = 'query-component';
 
 @AngularCore.Component({
 	selector: QUERY_SELECTOR,
+	host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
 	templateUrl: require.toUrl('sql/parts/grid/views/query/query.template.html')
 })
 
-export class QueryComponent extends GridParentComponent implements OnInit {
+export class QueryComponent extends GridParentComponent implements OnInit, OnDestroy {
 	// CONSTANTS
 	// tslint:disable-next-line:no-unused-variable
 	private scrollTimeOutTime = 200;
@@ -120,17 +121,6 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 
 	@AngularCore.ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
 
-	set messageActive(input: boolean) {
-		this._messageActive = input;
-		if (this.resultActive) {
-			this.resizeGrids();
-		}
-	}
-
-	get messageActive(): boolean {
-		return this._messageActive;
-	}
-
 	constructor(
 		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) el: ElementRef,
 		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) cd: ChangeDetectorRef,
@@ -174,6 +164,10 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 		});
 
 		this.dataService.onAngularLoaded();
+	}
+
+	public ngOnDestroy(): void {
+		this.baseDestroy();
 	}
 
 	protected initShortcuts(shortcuts: {[name: string]: Function}): void {
@@ -281,18 +275,6 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 	}
 
 	/**
-	 * Force angular to re-render the results grids. Calling this upon unhide (upon focus) fixes UI
-	 * glitches that occur when a QueryRestulsEditor is hidden then unhidden while it is running a query.
-	 */
-	refreshResultsets(): void {
-		let tempRenderedDataSets = this.renderedDataSets;
-		this.renderedDataSets = [];
-		this._cd.detectChanges();
-		this.renderedDataSets = tempRenderedDataSets;
-		this._cd.detectChanges();
-	}
-
-	/**
 	 * Perform copy and do other actions for context menu on the messages component
 	 */
 	handleMessagesContextClick(event: {type: string, selectedRange: IRange}): void {
@@ -343,7 +325,7 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 				}
 			} else {
 				let gridHeight = self._el.nativeElement.getElementsByTagName('slick-grid')[0].offsetHeight;
-				let tabHeight = self._el.nativeElement.querySelector('#results').offsetHeight;
+				let tabHeight = self.getResultsElement().offsetHeight;
 				let numOfVisibleGrids = Math.ceil((tabHeight / gridHeight)
 					+ ((scrollTop % gridHeight) / gridHeight));
 				let min = Math.floor(scrollTop / gridHeight);
@@ -389,7 +371,7 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 
 		let resizeHandleElement: HTMLElement = self._el.nativeElement.querySelector('#messageResizeHandle');
 		let $resizeHandle = $(resizeHandleElement);
-		let $messages = $(self._el.nativeElement.querySelector('#messages'));
+		let $messages = $(self.getMessagesElement());
 
 		$resizeHandle.bind('dragstart', (e) => {
 			self.resizing = true;
@@ -470,7 +452,7 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 	 * Ensures the messages tab is scrolled to the bottom
 	 */
 	scrollMessages(): void {
-		let messagesDiv = this._el.nativeElement.querySelector('#messages');
+		let messagesDiv = this.getMessagesElement();
 		messagesDiv.scrollTop = messagesDiv.scrollHeight;
 	}
 
@@ -478,22 +460,7 @@ export class QueryComponent extends GridParentComponent implements OnInit {
 	 *
 	 */
 	protected tryHandleKeyEvent(e): boolean {
-		if (e.detail) {
-			e.which = e.detail.which;
-			e.ctrlKey = e.detail.ctrlKey;
-			e.metaKey = e.detail.metaKey;
-			e.altKey = e.detail.altKey;
-			e.shiftKey = e.detail.shiftKey;
-		}
 		return false;
-		// let eString = this.shortcuts.buildEventString(e);
-		// this.shortcuts.getEvent(eString).then((result) => {
-		//     if (result) {
-		//         let eventName = <string> result;
-		//         self.shortcutfunc[eventName]();
-		//         e.stopImmediatePropagation();
-		//     }
-		// });
 	}
 
 	/**

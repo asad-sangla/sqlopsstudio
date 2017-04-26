@@ -50,6 +50,7 @@ suite('SQL QueryEditor Tests', () => {
 			undefined,
 			undefined,
 			editorDescriptorService.object,
+			undefined,
 			undefined);
 	};
 
@@ -205,7 +206,8 @@ suite('SQL QueryEditor Tests', () => {
 			undefined,
 			undefined,
 			editorDescriptorService.object,
-			editorGroupService.object);
+			editorGroupService.object,
+			undefined);
 		editor.create(parentBuilder);
 
 		return editor.setInput(queryInput) // Then I set the input
