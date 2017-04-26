@@ -26,7 +26,11 @@ import {
 	CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
 	ScriptingScriptAsParams, ScriptingScriptAsResult,
 	BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
-	DbCellValue, EditCell, EditRow, CreateSessionResponse, ExpandParams, ExpandResponse
+	DbCellValue, EditCell, EditRow, CreateSessionResponse, ExpandParams, ExpandResponse,
+	BackupInfo, BackupParams, BackupResponse,
+	LoginInfo, CreateLoginParams, CreateLoginResponse,
+	DatabaseInfo, CreateDatabaseParams, CreateDatabaseResponse,
+	TaskInfo, ListTasksParams, ListTasksResponse
 } from 'dataprotocol-languageserver-types';
 
 
@@ -1364,4 +1368,26 @@ export namespace ObjectExplorerCreateSessionRequest {
 
 export namespace ObjectExplorerExpandRequest {
 	export const type: RequestType<ExpandParams, ExpandResponse, void> = { get method(): string { return 'objectexplorer/expand'; } };
+}
+
+// ------------------------------- < Task Service Events > ------------------------------------
+
+export namespace ListTasksRequest {
+	export const type: RequestType<ListTasksParams, ListTasksResponse, void> = { get method(): string { return 'tasks/listtasks'; } };
+}
+
+// ------------------------------- < Admin Service Events > ------------------------------------
+
+export namespace CreateDatabaseRequest {
+	export const type: RequestType<CreateDatabaseParams, CreateDatabaseResponse, void> = { get method(): string { return 'admin/createdatabase'; } };
+}
+
+export namespace CreateLoginRequest {
+	export const type: RequestType<CreateLoginParams, CreateLoginResponse, void> = { get method(): string { return 'admin/createlogin'; } };
+}
+
+// ------------------------------- < Disaster Recovery Events > ------------------------------------
+
+export namespace BackupRequest {
+	export const type: RequestType<BackupParams, BackupResponse, void> = { get method(): string { return 'disasterrecovery/backup'; } };
 }

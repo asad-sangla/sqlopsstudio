@@ -285,4 +285,24 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 				: Promise.resolve(undefined);
 		});
 	}
+
+	/**
+	 * Create a new database on the provided connection
+	 */
+	public $createDatabase(handle: number, connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.adminServicesProvider ? provider.adminServicesProvider.createDatabase(connectionUri, database)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
+	 * Backup a database
+	 */
+	public $backup(handle: number, connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.backup(connectionUri, backupInfo)
+				: Promise.resolve(undefined);
+		});
+	 }
 }

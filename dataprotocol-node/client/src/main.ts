@@ -26,7 +26,7 @@ import {
 	ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo,
 	SaveResultRequestResult as VSaveResultRequestResult,
 	SaveResultsRequestParams as VSaveResultsRequestParams, ObjectExplorerProvider,
-	ExpandNodeInfo
+	ExpandNodeInfo, AdminServicesProvider, DisasterRecoveryProvider
 } from 'data';
 
 import {
@@ -51,7 +51,10 @@ import {
 	ConnectionProviderOptions, DataProtocolServerCapabilities,
 	ISelectionData, QueryExecuteBatchNotificationParams,
 	MetadataQueryParams, MetadataQueryResult,
-	ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation
+	ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation,
+	DatabaseInfo, CreateDatabaseResponse, CreateDatabaseParams,
+	LoginInfo, CreateLoginResponse, CreateLoginParams,
+	BackupInfo, BackupResponse, BackupParams
 } from 'dataprotocol-languageserver-types';
 
 
@@ -92,7 +95,6 @@ import {
 	QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
 	QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
 	QueryExecuteSubsetRequest, SaveResultRequestResult, SaveResultsRequestParams, SaveResultsAsCsvRequest, SaveResultsAsJsonRequest, SaveResultsAsExcelRequest,
-
 	EditCommitRequest, EditCommitParams,
 	EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
 	EditDeleteRowRequest, EditDeleteRowParams,
@@ -103,8 +105,8 @@ import {
 	EditSessionReadyNotification, EditSessionReadyParams,
 	EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult,
 	EditSubsetRequest, EditSubsetParams, EditSubsetResult,
-
-	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest
+	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest,
+	CreateDatabaseRequest, CreateLoginRequest, BackupRequest
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -1464,8 +1466,8 @@ export class LanguageClient {
 				connection.onNotification(QueryExecuteCompleteNotification.type, (params: QueryExecuteCompleteNotificationResult) => {
 					handler({
 						ownerUri: params.ownerUri,
-						batchSummaries: params.batchSummaries					
-});
+						batchSummaries: params.batchSummaries
+					});
 				});
 			},
 
@@ -1714,6 +1716,49 @@ export class LanguageClient {
 			}
 		};
 
+		let adminServicesProvider: AdminServicesProvider = {
+			createDatabase(connectionUri: string, database: DatabaseInfo): Thenable<CreateDatabaseResponse> {
+
+				let params: CreateDatabaseParams = { ownerUri: connectionUri, databaseInfo: database };
+				return self.doSendRequest(connection, CreateDatabaseRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(CreateDatabaseRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			},
+			createLogin(connectionUri: string, login: LoginInfo): Thenable<CreateLoginResponse> {
+				let params: CreateLoginParams = { ownerUri: connectionUri, loginInfo: login };
+				return self.doSendRequest(connection, CreateLoginRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(CreateLoginRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			}
+		};
+
+		let disasterRecoveryProvider: DisasterRecoveryProvider = {
+			backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse>{
+				let params: BackupParams = { ownerUri: connectionUri, backupInfo: backupInfo };
+				return self.doSendRequest(connection, BackupRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(BackupRequest.type, error);
+						return Promise.resolve([]);
+					}
+				);
+			}
+		};
+
 		let objectExplorer: ObjectExplorerProvider = {
 			createNewSession(connInfo: ConnectionInfo) {
 				return self.doSendRequest(connection, ObjectExplorerCreateSessionRequest.type,
@@ -1810,7 +1855,11 @@ export class LanguageClient {
 
 			scriptingProvider: scriptingProvider,
 
-			objectExplorerProvider: objectExplorer
+			objectExplorerProvider: objectExplorer,
+
+			adminServicesProvider: adminServicesProvider,
+
+			disasterRecoveryProvider: disasterRecoveryProvider
 		}));
 	}
 

@@ -82,10 +82,10 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 
 	public clearLoadingWheel(): void {
 		setTimeout(function(){
-			$(".ui-datatable-emptymessage").css('content', 'none');
-			$(".ui-datatable-emptymessage").css('color', 'inherit');
-			$(".ui-datatable-emptymessage").css('height', 'inherit');
-			$(".ui-datatable-emptymessage").css('border', 'inherit');
+			$('.ui-datatable-emptymessage').css('content', 'none');
+			$('.ui-datatable-emptymessage').css('color', 'inherit');
+			$('.ui-datatable-emptymessage').css('height', 'inherit');
+			$('.ui-datatable-emptymessage').css('border', 'inherit');
 		}, 5000);
 	}
 

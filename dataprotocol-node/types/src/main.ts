@@ -212,6 +212,80 @@ export class CapabiltiesDiscoveryResult {
 	public capabilities: DataProtocolServerCapabilities;
 }
 
+// Task Services types
+
+export enum TaskState {
+	notStarted = 0,
+	running = 1,
+	complete = 2
+}
+
+export interface TaskInfo {
+	taskId: number;
+    state: TaskState;
+}
+
+export interface ListTasksParams {
+	ownerUri: string;
+
+	listActiveTasksOnly: boolean;
+}
+
+export interface ListTasksResponse {
+	tasks: TaskInfo[];
+}
+
+// Admin Services types
+
+export interface DatabaseInfo {
+	name: string;
+}
+
+export interface LoginInfo {
+	name: string;
+}
+
+export interface CreateDatabaseParams {
+	ownerUri: string;
+
+	databaseInfo: DatabaseInfo;
+}
+
+export interface CreateDatabaseResponse {
+	result: boolean;
+	taskId: number;
+}
+
+export interface CreateLoginParams {
+	ownerUri: string;
+
+	loginInfo: DatabaseInfo;
+}
+
+export interface CreateLoginResponse {
+	result: boolean;
+	taskId: number;
+}
+
+// Disaster Recovery types
+
+export interface BackupInfo {
+	backupType: string;
+}
+
+export interface BackupParams {
+	ownerUri: string;
+
+	backupInfo: BackupInfo;
+}
+
+export interface BackupResponse {
+	result: boolean;
+	taskId: number;
+}
+
+
+// Query Execution types
 export interface ResultSetSummary {
 	id: number;
 	batchId: number;

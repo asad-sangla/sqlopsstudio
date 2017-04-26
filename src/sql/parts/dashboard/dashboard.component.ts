@@ -5,6 +5,8 @@
 
 import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
+import 'vs/css!sql/parts/dashboard/media/font-awesome-4.7.0/css/font-awesome';
+
 
 import { MenuItem } from 'primeng/primeng';
 import data = require('data');
@@ -15,6 +17,8 @@ import { IDashboardPage } from 'sql/parts/dashboard/common/dashboard';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { DatabaseDashboardComponent } from './database/database-dashboard.component';
 import { ServerDashboardComponent } from './server/server-dashboard.component';
 import { ObjectDashboardComponent } from './object/object-dashboard.component';
@@ -56,6 +60,10 @@ export class DashboardComponent {
 
 	private queryEditorService: IQueryEditorService;
 
+	private adminService: IAdminService;
+
+	private disasterRecoveryService: IDisasterRecoveryService;
+
 	constructor(
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
         @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
@@ -66,6 +74,8 @@ export class DashboardComponent {
 		this.metadataService = this._bootstrapService.metadataService;
 		this.scriptingService = this._bootstrapService.scriptingService;
 		this.queryEditorService = this._bootstrapService.queryEditorService;
+		this.adminService = this._bootstrapService.adminService;
+		this.disasterRecoveryService = this._bootstrapService.disasterRecoveryService;
 
 		this.connection = dashboardParameters.connection;
 		this.currentDatabaseName = this.connection.connectionProfile.databaseName;
@@ -80,8 +90,8 @@ export class DashboardComponent {
 		let page = component as IDashboardPage;
 		if (page) {
 			page.injectState(this.ownerUri, this.currentObjectMetadata, this.connection, this.connectionService,
-				this.metadataService, this.scriptingService, this.queryEditorService,
-				this.loading);
+				this.metadataService, this.scriptingService, this.queryEditorService, this.adminService,
+				this.disasterRecoveryService, this.loading);
 		}
 
 		if (component instanceof DatabaseDashboardComponent) {

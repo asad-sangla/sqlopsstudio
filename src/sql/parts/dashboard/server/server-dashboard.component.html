@@ -14,8 +14,18 @@
 		<server-properties-window [connection]='connection'></server-properties-window>
 	</div>
 
-	<div id="database-command-window" style="order: 3; margin: 5px; flex: 1;">
-		<server-command-window></server-command-window>
+	<div id="server-command-window" style="order: 3; margin: 5px; flex: 1;">
+			<div id="command-window">
+
+				<div id="command-header">
+					Tasks
+				</div>
+				<div id="command-tasks">
+					<a href="#" (click)="newQuery()" class = "task-button">New Query</a><br />
+					<a href="#" (click)=" createDatabase()" class = "task-button">Create Database</a><br />
+				</div>
+
+			</div>
 	</div>
 </div>
 

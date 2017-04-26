@@ -348,6 +348,10 @@ declare module 'data' {
 		scriptingProvider: ScriptingProvider;
 
 		objectExplorerProvider: ObjectExplorerProvider;
+
+		adminServicesProvider: AdminServicesProvider;
+
+		disasterRecoveryProvider: DisasterRecoveryProvider;
 	}
 
 	/**
@@ -675,6 +679,7 @@ declare module 'data' {
 		metadata: ObjectMetadata;
 	}
 
+	// Object Explorer interfaces  -----------------------------------------------------------------------
 	export interface ObjectExplorerSession {
 		success: boolean;
 		sessionId: string;
@@ -690,4 +695,49 @@ declare module 'data' {
 		sessionId: string,
 		nodePath: string
 	}
+
+	// Admin Services interfaces  -----------------------------------------------------------------------
+	export interface DatabaseInfo {
+		name: string;
+	}
+
+	export interface LoginInfo {
+		name: string;
+	}
+
+	export interface CreateDatabaseResponse {
+		result: boolean;
+		taskId: number;
+	}
+
+	export interface CreateLoginResponse {
+		result: boolean;
+		taskId: number;
+	}
+
+	export interface AdminServicesProvider {
+		createDatabase(connectionUri: string, database: DatabaseInfo): Thenable<CreateDatabaseResponse>;
+
+		createLogin(connectionUri: string, login: LoginInfo): Thenable<CreateLoginResponse>;
+	}
+
+
+	// Disaster Recovery interfaces  -----------------------------------------------------------------------
+
+	export interface BackupInfo {
+		ownerUri: string;
+
+		backupType: string;
+	}
+
+	export interface BackupResponse {
+		result: boolean;
+		taskId: number;
+	}
+
+	export interface DisasterRecoveryProvider {
+		backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse>;
+	}
+
+
 }

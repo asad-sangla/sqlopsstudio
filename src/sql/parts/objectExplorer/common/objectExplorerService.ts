@@ -64,7 +64,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 		let provider = this._providers[providerId];
 		if (provider) {
 			return provider.expandNode({
-				sessionId: session.sessionId,
+				sessionId: session ? session.sessionId : undefined,
 				nodePath: nodePath
 			});
 		}

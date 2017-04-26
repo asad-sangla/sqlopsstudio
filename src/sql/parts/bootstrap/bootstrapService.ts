@@ -13,6 +13,8 @@ import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectEx
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
@@ -36,6 +38,8 @@ export interface IBootstrapService {
 	queryEditorService: IQueryEditorService;
 	connectionDialogService: IConnectionDialogService;
 	queryModelService: IQueryModelService;
+	adminService: IAdminService;
+	disasterRecoveryService: IDisasterRecoveryService;
 	keybindingService: IKeybindingService;
 	contextKeyService: IContextKeyService;
 	contextMenuService: IContextMenuService;
@@ -86,6 +90,8 @@ export class BootstrapService implements IBootstrapService {
 		@IObjectExplorerService public objectExplorerService: IObjectExplorerService,
 		@IScriptingService public scriptingService: IScriptingService,
 		@IQueryEditorService public queryEditorService: IQueryEditorService,
+		@IAdminService public adminService: IAdminService,
+		@IDisasterRecoveryService public disasterRecoveryService: IDisasterRecoveryService,
 		@IConnectionDialogService public connectionDialogService: IConnectionDialogService,
 		@IQueryModelService public queryModelService: IQueryModelService,
 		@IKeybindingService public keybindingService: IKeybindingService,

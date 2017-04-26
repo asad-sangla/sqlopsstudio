@@ -11,14 +11,11 @@
 <div style="display: flex; flex-flow: row; height:120px; overflow: auto">
     <div style="order: 1; margin: 5px">
     <span style="font-weight: bold">Server Name</span> <span style="font-style: italic">{{connection?.connectionProfile.serverName}}</span> <br />
-    <span style="font-weight: bold">Server Version</span> <span style="font-style: italic">{{connection?.connecting}}</span> <br />
-    <span style="font-weight: bold">Is Cloud</span> <span style="font-style: italic">{{connection?.serverInfo.isCloud}}</span> <br />
-    <span style="font-weight: bold">Azure Version</span> <span style="font-style: italic">{{connection?.serverInfo.azureVersion}}</span> <br />
     <span style="font-weight: bold">Operating System</span> <span style="font-style: italic">{{connection?.serverInfo.osVersion}}</span> <br />
     </div>
     <div style="order: 2; margin: 5px">
-    <span style="font-weight: bold">Number of Users</span>  <span style="font-style: italic">10</span> <br />
-    <span style="font-weight: bold">Compatibility level</span>  <span style="font-style: italic">SQL Server 2016 (130)</span> <br />
-    <span style="font-weight: bold">Last Database Backup</span>  <span style="font-style: italic">8/12/2016 4:41:58 PM</span> <br />
+        <span style="font-weight: bold">Server Version</span> <span style="font-style: italic">{{connection?.serverInfo.serverVersion}}</span> <br />
+        <span style="font-weight: bold">Server Edition</span> <span style="font-style: italic">{{connection?.serverInfo.serverEdition}} {{connection?.serverInfo.serverLevel}}</span> <br />
+        <span style="font-weight: bold">Is Cloud</span> <span style="font-style: italic">{{connection?.serverInfo.isCloud}}</span> <br />
     </div>
 </div>

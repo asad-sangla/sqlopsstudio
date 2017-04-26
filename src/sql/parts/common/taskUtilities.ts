@@ -10,6 +10,8 @@ import { IConnectableInput, IConnectionManagementService,
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 import data = require('data');
 
@@ -93,6 +95,12 @@ export class TaskUtilities {
 					resolve();
 				});
 			});
+		});
+	}
+
+	public static showCreateDatabase(uri: string, connection: ConnectionManagementInfo, adminService: IAdminService): Promise<void> {
+		return new Promise<void>((resolve) => {
+			adminService.showCreateDatabaseWizard(uri, connection);
 		});
 	}
 }

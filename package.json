@@ -1,6 +1,6 @@
 {
   "name": "mssql-admin-dev",
-  "version": "1.10.2",
+  "version": "1.11.2",
   "electronVersion": "1.4.6",
   "distro": "8c3e97e3425cc9814496472ab73e076de2ba99ee",
   "author": {

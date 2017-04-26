@@ -11,23 +11,31 @@ import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { DashboardInput } from './dashboardInput';
-import { DashboardModule } from './dashboard.module';
+import { CreateDatabaseInput } from './createDatabaseInput';
+import { CreateDatabaseModule } from './createDatabase.module';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IMetadataService } from 'sql/parts/metadata/metadataService';
+import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
 import { DashboardComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
-import { DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dashboard.component';
+import { CREATEDATABASE_SELECTOR } from 'sql/parts/admin/database/create/createDatabase.component';
 
-export class DashboardEditor extends BaseEditor {
+export class CreateDatabaseEditor extends BaseEditor {
 
-	public static ID: string = 'workbench.editor.connectiondashboard';
+	public static ID: string = 'workbench.editor.createdatabase';
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IInstantiationService private instantiationService: IInstantiationService,
+		@IConnectionManagementService private _connectionService: IConnectionManagementService,
+		@IMetadataService private _metadataService: IMetadataService,
+		@IScriptingService private _scriptingService: IScriptingService,
+		@IQueryEditorService private _queryEditorService: IQueryEditorService,
 		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
-		super(DashboardEditor.ID, telemetryService, themeService);
+		super(CreateDatabaseEditor.ID, telemetryService, themeService);
 	}
 
 	/**
@@ -49,8 +57,8 @@ export class DashboardEditor extends BaseEditor {
 	public layout(dimension: Dimension): void {
 	}
 
-	public setInput(input: DashboardInput, options: EditorOptions): TPromise<void> {
-		if (this.input instanceof DashboardInput && this.input.matches(input)) {
+	public setInput(input: CreateDatabaseInput, options: EditorOptions): TPromise<void> {
+		if (this.input instanceof CreateDatabaseInput && this.input.matches(input)) {
 			return TPromise.as(undefined);
 		}
 
@@ -85,7 +93,7 @@ export class DashboardEditor extends BaseEditor {
 	/**
 	 * Load the angular components and record for this input that we have done so
 	 */
-	private bootstrapAngular(input: DashboardInput): void {
+	private bootstrapAngular(input: CreateDatabaseInput): void {
 
 		// Get the bootstrap params and perform the bootstrap
 		let params: DashboardComponentParams = {
@@ -93,9 +101,9 @@ export class DashboardEditor extends BaseEditor {
 			ownerUri: input.getUri()
 		};
 		let uniqueSelector = this._bootstrapService.bootstrap(
-			DashboardModule,
+			CreateDatabaseModule,
 			this.getContainer().getHTMLElement(),
-			DASHBOARD_SELECTOR,
+			CREATEDATABASE_SELECTOR,
 			params);
 		input.setUniqueSelector(uniqueSelector);
 	}

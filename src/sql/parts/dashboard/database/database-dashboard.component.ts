@@ -12,8 +12,10 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { SchemaExplorerComponent } from './schema-explorer.component';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { TaskUtilities } from 'sql/parts/common/taskUtilities';
 import data = require('data');
 
@@ -32,6 +34,8 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 	public metadataService: IMetadataService;
 	public scriptingService: IScriptingService;
 	public queryEditorService: IQueryEditorService;
+	public adminService: IAdminService;
+	public disasterRecoveryService: IDisasterRecoveryService;
 	public loading: boolean = false;
     public serverPageImage: string = require.toUrl('sql/parts/dashboard/media/server-page.svg');
 
@@ -48,6 +52,8 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 			metadataService: IMetadataService,
 			scriptingService: IScriptingService,
 			queryEditorService: IQueryEditorService,
+			adminService: IAdminService,
+			disasterRecoveryService: IDisasterRecoveryService,
 			loading: boolean): void {
 		this.ownerUri = ownerUri;
 		this.connection = connectionInfo;
@@ -55,6 +61,8 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 		this.metadataService = metadataService;
 		this.scriptingService = scriptingService;
 		this.queryEditorService = queryEditorService;
+		this.adminService = adminService;
+		this.disasterRecoveryService = disasterRecoveryService;
 		this.loading = loading;
 		this.changeDetectorRef.detectChanges();
 
@@ -65,6 +73,17 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 
 	public newQuery(): void {
 		TaskUtilities.newQuery(this.connection.connectionProfile, this.connectionService, this.queryEditorService);
+	}
+
+	public createDatabase(): void {
+		TaskUtilities.showCreateDatabase(this.ownerUri, this.connection, this.adminService);
+	}
+
+	public backup(): void {
+		this.disasterRecoveryService.backup(this.ownerUri,
+		<data.BackupInfo>{
+			backupType: 'full'
+		});
 	}
 
 	public onConnectionChanged(): void {

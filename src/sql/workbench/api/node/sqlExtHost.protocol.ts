@@ -169,6 +169,16 @@ export abstract class ExtHostDataProtocolShape {
 	 * Diposes an initialized edit session and cleans up pending edits
 	 */
 	$disposeEdit(handle: number, ownerUri: string): Thenable<void> { throw ni(); }
+
+	/**
+	 * Create a new database on the provided connection
+	 */
+	$createDatabase(handle: number, connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse> { throw ni(); }
+
+	/**
+	 * Backup a database
+	 */
+	$backup(handle: number, connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> { throw ni(); }
 }
 
 /**

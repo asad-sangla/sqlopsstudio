@@ -15,6 +15,8 @@ import * as data from 'data';
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 
 /**
  * Main thread class for handling data protocol management registration.
@@ -34,7 +36,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		@IQueryManagementService private _queryManagementService: IQueryManagementService,
 		@IMetadataService private _metadataService: IMetadataService,
 		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
-		@IScriptingService private _scriptingService: IScriptingService
+		@IScriptingService private _scriptingService: IScriptingService,
+		@IAdminService private _adminService: IAdminService,
+		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService
 	) {
 		super();
 		this._proxy = threadService.get(SqlExtHostContext.ExtHostDataProtocol);
@@ -154,6 +158,18 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			},
 			scriptAsDelete(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 				return self._proxy.$scriptAsDelete(handle, connectionUri, metadata);
+			}
+		});
+
+		this._adminService.registerProvider(providerId, <data.AdminServicesProvider>{
+			createDatabase(connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse> {
+				return self._proxy.$createDatabase(handle, connectionUri, database);
+			}
+		});
+
+		this._disasterRecoveryService.registerProvider(providerId,  <data.DisasterRecoveryProvider>{
+			backup(connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> {
+				return self._proxy.$backup(handle, connectionUri, backupInfo);
 			}
 		});
 

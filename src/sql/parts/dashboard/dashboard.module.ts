@@ -14,7 +14,6 @@ import { ObjectMetadataExplorerComponent } from 'sql/parts/dashboard/object/obje
 import { DatabaseDashboardComponent } from 'sql/parts/dashboard/database/database-dashboard.component';
 import { ServerDashboardComponent } from 'sql/parts/dashboard/server/server-dashboard.component';
 import { ObjectDashboardComponent } from 'sql/parts/dashboard/object/object-dashboard.component';
-import { ServerCommandWindowComponent } from 'sql/parts/dashboard/server/server-command-window.component';
 import { ServerPropertiesWindowComponent } from 'sql/parts/dashboard/server/server-properties-window.component';
 import { DatabasePropertiesWindowComponent } from 'sql/parts/dashboard/database/database-properties-window.component';
 
@@ -43,7 +42,6 @@ const appRoutes: Routes = [
 		DashboardComponent,
 		SchemaExplorerComponent,
 		ServerDashboardComponent,
-		ServerCommandWindowComponent,
 		ServerPropertiesWindowComponent,
 		DatabaseDashboardComponent,
 		DatabasePropertiesWindowComponent,

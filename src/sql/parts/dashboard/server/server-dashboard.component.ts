@@ -12,8 +12,11 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { DatabaseExplorerComponent } from './database-explorer.component';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { TaskUtilities } from 'sql/parts/common/taskUtilities';
 import data = require('data');
 
 declare let AngularCore;
@@ -33,6 +36,7 @@ export class ServerDashboardComponent implements IDashboardPage {
 	public metadataService: IMetadataService;
 	public scriptingService: IScriptingService;
 	public queryEditorService: IQueryEditorService;
+	public adminService: IAdminService;
 	public serverPageImage: string = require.toUrl('sql/parts/dashboard/media/server-page.svg');
 
 	constructor(@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef) {
@@ -46,6 +50,8 @@ export class ServerDashboardComponent implements IDashboardPage {
 		metadataService: IMetadataService,
 		scriptingService: IScriptingService,
 		queryEditorService: IQueryEditorService,
+		adminService: IAdminService,
+		disasterRecoveryService: IDisasterRecoveryService,
 		loading: boolean): void {
 			this.ownerUri = ownerUri;
 			this.connection = connectionInfo;
@@ -53,8 +59,17 @@ export class ServerDashboardComponent implements IDashboardPage {
 			this.metadataService = metadataService;
 			this.scriptingService = scriptingService;
 			this.queryEditorService = queryEditorService;
+			this.adminService = adminService;
 			this.changeDetectorRef.detectChanges();
 			this.databaseExplorer.stateInitialized();
+	}
+
+	public newQuery(): void {
+		TaskUtilities.newQuery(this.connection.connectionProfile, this.connectionService, this.queryEditorService);
+	}
+
+	public createDatabase(): void {
+		TaskUtilities.showCreateDatabase(this.ownerUri , this.connection, this.adminService);
 	}
 
 }

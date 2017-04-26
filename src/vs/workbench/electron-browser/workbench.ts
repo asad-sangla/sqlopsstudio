@@ -111,7 +111,8 @@ import { IQueryManagementService, QueryManagementService } from 'sql/parts/query
 import { IEditorDescriptorService, EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { IScriptingService, ScriptingService } from 'sql/parts/scripting/scriptingService';
 import { ISplashScreenService, SplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
-
+import { IAdminService, AdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService, DisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -575,6 +576,8 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IMetadataService, this.instantiationService.createInstance(MetadataService));
 		serviceCollection.set(IObjectExplorerService, this.instantiationService.createInstance(ObjectExplorerService));
 		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));
+		serviceCollection.set(IAdminService, this.instantiationService.createInstance(AdminService));
+		serviceCollection.set(IDisasterRecoveryService, this.instantiationService.createInstance(DisasterRecoveryService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 
 		this.toDispose.push(connectionManagementService);

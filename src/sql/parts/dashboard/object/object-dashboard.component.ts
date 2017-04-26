@@ -12,6 +12,8 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { IMetadataService } from 'sql/parts/metadata/metadataService';
 import { IScriptingService } from 'sql/parts/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { ObjectMetadataExplorerComponent } from './objectmetadata-explorer.component';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import data = require('data');
@@ -47,6 +49,8 @@ export class ObjectDashboardComponent implements IDashboardPage {
 		metadataService: IMetadataService,
 		scriptingService: IScriptingService,
 		queryEditorService: IQueryEditorService,
+		adminService: IAdminService,
+		disasterRecoveryService: IDisasterRecoveryService,
 		loading: boolean): void {
 			this.ownerUri = ownerUri;
 			this.objectMetadata = objectMetadata;
