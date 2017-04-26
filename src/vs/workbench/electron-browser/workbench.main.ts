@@ -124,8 +124,9 @@ import 'vs/workbench/parts/watermark/electron-browser/watermark';
 
 import 'sql/parts/objectExplorer/common/objectExplorer.contribution';
 import 'sql/parts/objectExplorer/viewlet/objectExplorerViewlet';
+import 'sql/parts/registeredServer/common/registeredServer.contribution';
+import 'sql/parts/registeredServer/viewlet/connectionViewlet';
 import 'sql/workbench/api/node/sqlExtHost.contribution';
 import 'sql/parts/connection/common/connection.contribution';
-import 'sql/parts/connection/viewlet/connectionViewlet';
 import 'sql/parts/query/common/query.contribution';
 import 'sql/workbench/electron-browser/main.contribution';

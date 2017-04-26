@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 'use strict';
-import 'vs/css!sql/parts/connection/viewlet/media/serverTreeActions';
+import 'vs/css!sql/parts/registeredServer/viewlet/media/serverTreeActions';
 import errors = require('vs/base/common/errors');
 import nls = require('vs/nls');
 import { IActionRunner, IAction } from 'vs/base/common/actions';
@@ -17,7 +17,7 @@ import { ObjectExplorerUtils } from 'sql/parts/objectExplorer/viewlet/objectExpl
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
-import { AddServerAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
+import { AddServerAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
 import Severity from 'vs/base/common/severity';

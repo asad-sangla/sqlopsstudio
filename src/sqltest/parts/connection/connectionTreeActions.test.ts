@@ -12,10 +12,10 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
-import { AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction, ChangeConnectionAction, ActiveConnectionsFilterAction, RecentConnectionsFilterAction } from 'sql/parts/connection/viewlet/connectionTreeAction';
+import { AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction, ChangeConnectionAction, ActiveConnectionsFilterAction, RecentConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { TestConnectionManagementService } from 'sqltest/stubs/connectionManagementService.test';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
-import { ServerTreeView } from 'sql/parts/connection/viewlet/serverTreeView';
+import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeView';
 import * as Constants from 'sql/parts/connection/common/constants';
 
 suite('SQL Connection Tree Action tests', () => {
