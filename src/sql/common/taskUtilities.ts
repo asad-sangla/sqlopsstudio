@@ -103,4 +103,10 @@ export class TaskUtilities {
 			adminService.showCreateDatabaseWizard(uri, connection);
 		});
 	}
+
+	public static showCreateLogin(uri: string, connection: ConnectionManagementInfo, adminService: IAdminService): Promise<void> {
+		return new Promise<void>((resolve) => {
+			adminService.showCreateLoginWizard(uri, connection);
+		});
+	}
 }

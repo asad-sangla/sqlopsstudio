@@ -79,6 +79,10 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 		TaskUtilities.showCreateDatabase(this.ownerUri, this.connection, this.adminService);
 	}
 
+	public createLogin(): void {
+		TaskUtilities.showCreateLogin(this.ownerUri, this.connection, this.adminService);
+	}
+
 	public backup(): void {
 		this.disasterRecoveryService.backup(this.ownerUri,
 		<data.BackupInfo>{

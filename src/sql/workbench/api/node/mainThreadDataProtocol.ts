@@ -164,6 +164,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		this._adminService.registerProvider(providerId, <data.AdminServicesProvider>{
 			createDatabase(connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse> {
 				return self._proxy.$createDatabase(handle, connectionUri, database);
+			},
+			createLogin(connectionUri: string, login: data.LoginInfo): Thenable<data.CreateLoginResponse> {
+				return self._proxy.$createLogin(handle, connectionUri, login);
 			}
 		});
 

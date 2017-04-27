@@ -8,6 +8,10 @@ export const SERVICE_ID = 'adminService';
 
 import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+
+import { CreateDatabaseInput } from 'sql/parts/admin/database/create/createDatabaseInput';
+import { CreateLoginInput } from 'sql/parts/admin/security/createLoginInput';
+
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TaskDialogInput } from 'sql/parts/tasks/dialog/taskDialogInput';
@@ -20,6 +24,8 @@ export interface IAdminService {
 	_serviceBrand: any;
 
 	showCreateDatabaseWizard(uri: string, connection: ConnectionManagementInfo): Promise<any>;
+
+	showCreateLoginWizard(uri: string, connection: ConnectionManagementInfo): Promise<any>;
 
 	registerProvider(providerId: string, provider: data.AdminServicesProvider): void;
 }
@@ -54,6 +60,29 @@ export class AdminService implements IAdminService {
 			}
 		}
 
+		return Promise.resolve(undefined);
+	}
+
+	public showCreateLoginWizard(uri: string, connection: ConnectionManagementInfo): Promise<any> {
+		const self = this;
+
+		self.createLogin(uri, { name: 'TEST: login name'});
+
+		return new Promise<boolean>((resolve, reject) => {
+			let loginInput: CreateLoginInput = self._instantiationService ? self._instantiationService.createInstance(CreateLoginInput, uri, connection) : undefined;
+			self._editorService.openEditor(loginInput, { pinned: true }, false);
+			resolve(true);
+		});
+	}
+
+	public createLogin(connectionUri: string, login: data.LoginInfo): Thenable<data.CreateLoginResponse> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.createLogin(connectionUri, login);
+			}
+		}
 		return Promise.resolve(undefined);
 	}
 

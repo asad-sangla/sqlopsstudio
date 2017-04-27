@@ -72,4 +72,8 @@ export class ServerDashboardComponent implements IDashboardPage {
 		TaskUtilities.showCreateDatabase(this.ownerUri , this.connection, this.adminService);
 	}
 
+	public createLogin(): void {
+		TaskUtilities.showCreateLogin(this.ownerUri, this.connection, this.adminService);
+	}
+
 }
