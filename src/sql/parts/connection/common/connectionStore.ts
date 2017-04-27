@@ -10,7 +10,7 @@ import ConnInfo = require('./connectionInfo');
 import Utils = require('./utils');
 import { ConnectionProfile } from '../common/connectionProfile';
 import { IConnectionProfile, CredentialsQuickPickItemType } from 'sql/parts/connection/common/interfaces';
-import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
+import { ICredentialsService } from 'sql/services/credentials/credentialsService';
 import { IConnectionConfig } from './iconnectionConfig';
 import { ConnectionConfig } from './connectionConfig';
 import { Memento, Scope as MementoScope } from 'vs/workbench/common/memento';
@@ -18,7 +18,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import data = require('data');
 
 /**

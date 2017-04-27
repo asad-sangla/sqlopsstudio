@@ -5,7 +5,7 @@
 'use strict';
 
 import { ConnectionManagementInfo } from './connectionManagementInfo';
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IConnectionProfile } from './interfaces';
 import Utils = require('./utils');

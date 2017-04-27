@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import 'vs/css!./media/bootstrap';
-import 'vs/css!./media/bootstrap-theme';
+import 'vs/css!sql/media/bootstrap';
+import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/connectionDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';

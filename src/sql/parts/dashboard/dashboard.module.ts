@@ -5,7 +5,7 @@
 
 import { ApplicationRef, ComponentFactoryResolver, ModuleWithProviders } from '@angular/core';
 import { Routes } from '@angular/router';
-import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 
 import { DashboardComponent, DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dashboard.component';
 import { SchemaExplorerComponent } from 'sql/parts/dashboard/database/schema-explorer.component';

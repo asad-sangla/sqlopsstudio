@@ -6,12 +6,12 @@
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { $ } from 'vs/base/browser/dom';
 
-import { BootstrapParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { BootstrapParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
-import { IMetadataService } from 'sql/parts/metadata/metadataService';
+import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
-import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';

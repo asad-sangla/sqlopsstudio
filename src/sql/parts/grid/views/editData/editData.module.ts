@@ -5,7 +5,7 @@
 
 
 import { ApplicationRef, ComponentFactoryResolver } from '@angular/core';
-import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 
 import { EditDataComponent, EDITDATA_SELECTOR } from 'sql/parts/grid/views/editData/editData.component';
 import { SlickGrid } from 'angular2-slickgrid';

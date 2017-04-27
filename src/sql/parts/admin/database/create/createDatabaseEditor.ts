@@ -14,11 +14,11 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { CreateDatabaseInput } from './createDatabaseInput';
 import { CreateDatabaseModule } from './createDatabase.module';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { IMetadataService } from 'sql/parts/metadata/metadataService';
-import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IMetadataService } from 'sql/services/metadata/metadataService';
+import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
-import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
-import { DashboardComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { CREATEDATABASE_SELECTOR } from 'sql/parts/admin/database/create/createDatabase.component';
 
 export class CreateDatabaseEditor extends BaseEditor {

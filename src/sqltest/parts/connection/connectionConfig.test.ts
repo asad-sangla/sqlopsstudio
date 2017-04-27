@@ -15,13 +15,12 @@ import { IWorkspaceConfigurationValue } from 'vs/workbench/services/configuratio
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import * as Constants from 'sql/parts/connection/common/constants';
-import { IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as assert from 'assert';
-import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import data = require('data');
 import { Emitter } from 'vs/base/common/event';
-import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 
 suite('SQL ConnectionConfig tests', () => {
 	let capabilitiesService: TypeMoq.Mock<CapabilitiesService>;

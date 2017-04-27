@@ -54,7 +54,7 @@
 }
 
 .error-dialog .copyButtonIcon {
-	content: url('ScriptToClipboard.svg');
+	content: url('scriptToClipboard.svg');
 	width: 20px;
 	float: left;
 	cursor: pointer;

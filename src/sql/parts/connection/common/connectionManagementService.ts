@@ -27,8 +27,8 @@ import { IConfigurationEditingService } from 'vs/workbench/services/configuratio
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionManagementInfo } from './connectionManagementInfo';
 import Utils = require('./utils');
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
-import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
+import { ICredentialsService } from 'sql/services/credentials/credentialsService';
 import * as data from 'data';
 import * as ConnectionContracts from 'sql/parts/connection/common/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';

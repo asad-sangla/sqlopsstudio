@@ -12,7 +12,7 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { IConnectionManagementService, IConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 

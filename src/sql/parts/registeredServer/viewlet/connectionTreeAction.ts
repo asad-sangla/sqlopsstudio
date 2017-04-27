@@ -8,17 +8,13 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeView';
 import { ConnectionViewlet } from 'sql/parts/registeredServer/viewlet/connectionViewlet';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
-import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
-import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
-import { TaskUtilities } from 'sql/parts/common/taskUtilities';
-import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import * as Constants from 'sql/parts/connection/common/constants';
 

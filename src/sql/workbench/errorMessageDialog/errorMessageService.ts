@@ -6,7 +6,7 @@
 'use strict';
 
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
-import { ErrorMessageDialog } from 'sql/parts/common/errorMessageDialog';
+import { ErrorMessageDialog } from 'sql/workbench/errorMessageDialog/errorMessageDialog';
 import Severity from 'vs/base/common/severity';
 
 export class ErrorMessageService implements IErrorMessageService {

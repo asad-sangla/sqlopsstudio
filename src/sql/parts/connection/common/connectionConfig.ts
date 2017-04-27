@@ -12,7 +12,7 @@ import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionPro
 import { IConfigurationEditingService, ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService, IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionProfile } from './connectionProfile';
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as data from 'data';
 
 export interface ISaveGroupResult {

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { IMetadataService } from 'sql/parts/metadata/metadataService';
-import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IMetadataService } from 'sql/services/metadata/metadataService';
+import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';

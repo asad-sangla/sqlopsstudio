@@ -13,8 +13,8 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { DashboardInput } from './dashboardInput';
 import { DashboardModule } from './dashboard.module';
-import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
-import { DashboardComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dashboard.component';
 
 export class DashboardEditor extends BaseEditor {

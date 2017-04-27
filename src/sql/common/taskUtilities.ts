@@ -8,7 +8,7 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectableInput, IConnectionManagementService,
 		IConnectionCompletionOptions, ConnectionType  } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
-import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';

@@ -14,8 +14,8 @@ import data = require('data');
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import { IDashboardPage } from 'sql/parts/dashboard/common/dashboard';
-import { IMetadataService } from 'sql/parts/metadata/metadataService';
-import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IMetadataService } from 'sql/services/metadata/metadataService';
+import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
@@ -23,8 +23,8 @@ import { DatabaseDashboardComponent } from './database/database-dashboard.compon
 import { ServerDashboardComponent } from './server/server-dashboard.component';
 import { ObjectDashboardComponent } from './object/object-dashboard.component';
 import { ElementRef } from '@angular/core';
-import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
-import { DashboardComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 declare let AngularCore;

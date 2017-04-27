@@ -5,7 +5,7 @@
 
 'use strict';
 import data = require('data');
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import Event from 'vs/base/common/event';
 
 

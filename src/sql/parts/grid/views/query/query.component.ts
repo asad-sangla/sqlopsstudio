@@ -19,9 +19,9 @@ import { IGridDataRow, SlickGrid, VirtualizedCollection } from 'angular2-slickgr
 import { IGridIcon, IMessage, IRange, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
 import { GridActionProvider } from 'sql/parts/grid/views/gridActions';
-import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
-import { QueryComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
-import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 declare let AngularCore;
 declare let rangy;

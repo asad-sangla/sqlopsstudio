@@ -11,8 +11,8 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 import { IConnectionManagementService, } from 'sql/parts/connection/common/connectionManagement';
-import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
-import { DbListComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { SelectItem } from 'primeng/primeng';
 
 declare let AngularCore;

@@ -9,8 +9,8 @@ import { IDashboardComponent } from 'sql/parts/dashboard/common/dashboard';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
-import { IMetadataService } from 'sql/parts/metadata/metadataService';
-import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IMetadataService } from 'sql/services/metadata/metadataService';
+import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import data = require('data');
 
 declare let AngularCore;

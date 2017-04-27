@@ -6,7 +6,7 @@
 import ConnectionConstants = require('sql/parts/connection/common/constants');
 import Constants = require('sql/parts/query/common/constants');
 import * as Utils from 'sql/parts/connection/common/utils';
-import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import Prompt from 'sql/parts/common/prompts/adapter';
 import { QuestionTypes, IQuestion, IPrompter } from 'sql/parts/common/prompts/question';
 import { SaveResultsRequestParams } from 'data';

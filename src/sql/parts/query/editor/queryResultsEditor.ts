@@ -14,8 +14,8 @@ import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryModule } from 'sql/parts/grid/views/query/query.module';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
-import { QueryComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { QUERY_SELECTOR } from 'sql/parts/grid/views/query/query.component';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 

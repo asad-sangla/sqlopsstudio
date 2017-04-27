@@ -21,8 +21,8 @@ import * as actions from 'sql/parts/grid/views/gridActions';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import { ResultsVisibleContext, ResultsGridFocussedContext, ResultsMessagesFocussedContext } from 'sql/parts/query/common/queryContext';
-import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
-import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 import { IAction } from 'vs/base/common/actions';
 import { ResolvedKeybinding } from 'vs/base/common/keyCodes';

@@ -32,9 +32,9 @@ import {
 	RefreshTableAction, StopRefreshTableAction,
 	ChangeMaxRowsAction, ChangeMaxRowsActionItem} from 'sql/parts/editData/execution/editDataActions';
 import { EditDataModule } from 'sql/parts/grid/views/editData/editData.module';
-import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { EDITDATA_SELECTOR } from 'sql/parts/grid/views/editData/editData.component';
-import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { EditDataComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 
 /**
  * Editor that hosts an action bar and a resultSetInput for an edit data session

@@ -15,8 +15,8 @@ import { ElementRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core'
 import { IGridDataRow, VirtualizedCollection } from 'angular2-slickgrid';
 import { IMessage, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import * as Services from 'sql/parts/grid/services/sharedServices';
-import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
-import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { EditDataComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
 import { EditDataGridActionProvider } from 'sql/parts/grid/views/editData/editDataGridActions';
 

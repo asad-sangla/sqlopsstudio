@@ -19,7 +19,7 @@ import {
 
 import { EventEmitter } from 'events';
 import Constants = require('sql/parts/query/common/constants');
-import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { ISlickRange } from 'angular2-slickgrid';
 import * as Utils from 'sql/parts/connection/common/utils';

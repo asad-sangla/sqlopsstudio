@@ -7,7 +7,7 @@
 
 import { IGridInfo, IRange, SaveFormat, CsvFormat, JsonFormat, ExcelFormat } from 'sql/parts/grid/common/interfaces';
 import { DataService } from 'sql/parts/grid/services/dataService';
-import * as WorkbenchUtils from 'sql/parts/common/sqlWorkbenchUtils';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
