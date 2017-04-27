@@ -150,7 +150,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// temporarily close splash screen when a connection provider has been registered
 		// @todo remove this code once a proper initialization event is available (karlb 4/1/2017)
 		++this._providerCount;
-		if (this._providerCount === 1 && this._splashScreen != undefined) {
+		if (this._providerCount === 1 && this._splashScreen !== undefined) {
 			this._splashScreen.hideSplashScreen();
 		}
 	}
@@ -474,7 +474,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// setup URI to provider ID map for connection
 		this._uriToProvider[uri] = connection.providerName;
 
-		return new Promise((resolve, reject) => {
+		return new Promise<boolean>((resolve, reject) => {
 			this._providers[connection.providerName].connect(uri, connectionInfo);
 			this._onConnectRequestSent.fire();
 			resolve(true);
@@ -487,7 +487,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			return Promise.resolve(false);
 		}
 
-		return new Promise((resolve, reject) => {
+		return new Promise<boolean>((resolve, reject) => {
 			this._providers[providerId].disconnect(uri);
 			resolve(true);
 		});
@@ -499,7 +499,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			return Promise.resolve(false);
 		}
 
-		return new Promise((resolve, reject) => {
+		return new Promise<boolean>((resolve, reject) => {
 			this._providers[providerId].cancelConnect(uri);
 			resolve(true);
 		});
@@ -511,7 +511,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			return Promise.resolve(undefined);
 		}
 
-		return new Promise((resolve, reject) => {
+		return new Promise<data.ListDatabasesResult>((resolve, reject) => {
 			let provider = this._providers[providerId];
 			provider.listDatabases(uri).then(result => {
 				resolve(result);

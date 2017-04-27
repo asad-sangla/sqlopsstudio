@@ -33,7 +33,7 @@ const appRoutes: Routes = [
 		redirectTo: '/database-dashboard',
 		pathMatch: 'full'
 	},
-	{ path: '**', component: DatabaseDashboardComponent },
+	{ path: '**', component: DatabaseDashboardComponent }
 ];
 
 // Connection Dashboard main angular module

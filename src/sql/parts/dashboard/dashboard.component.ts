@@ -5,7 +5,7 @@
 
 import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
-import 'vs/css!sql/parts/dashboard/media/font-awesome-4.7.0/css/font-awesome';
+import 'vs/css!sql/media/font-awesome-4.7.0/css/font-awesome';
 
 
 import { MenuItem } from 'primeng/primeng';

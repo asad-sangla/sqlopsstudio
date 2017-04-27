@@ -8,9 +8,10 @@ export const SERVICE_ID = 'adminService';
 
 import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { CreateDatabaseInput } from 'sql/parts/admin/database/create/createDatabaseInput';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { TaskDialogInput } from 'sql/parts/tasks/dialog/taskDialogInput';
+
 import data = require('data');
 
 export const IAdminService = createDecorator<IAdminService>(SERVICE_ID);
@@ -37,12 +38,9 @@ export class AdminService implements IAdminService {
 
 	public showCreateDatabaseWizard(uri: string, connection: ConnectionManagementInfo): Promise<any> {
 		const self = this;
-
-		self.createDatabase(uri, { name: 'TEST: database name' });
-
 		return new Promise<boolean>((resolve, reject) => {
-			let databaseInput: CreateDatabaseInput = self._instantiationService ? self._instantiationService.createInstance(CreateDatabaseInput, uri, connection) : undefined;
-			self._editorService.openEditor(databaseInput, { pinned: true }, false);
+			let input: TaskDialogInput = self._instantiationService ? self._instantiationService.createInstance(TaskDialogInput, uri, connection) : undefined;
+			self._editorService.openEditor(input, { pinned: true }, false);
 			resolve(true);
 		});
 	}
