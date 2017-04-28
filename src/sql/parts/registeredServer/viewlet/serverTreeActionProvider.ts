@@ -13,6 +13,9 @@ import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionPr
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 import { AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import { NewQueryAction as OENewQueryAction, DisconnectAction, ScriptSelectAction, EditDataAction as OEEditDataAction, ScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
+import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 
 /**
  *  Provides actions for the server tree elements
@@ -39,6 +42,10 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		if (element instanceof ConnectionProfileGroup) {
 			return TPromise.as(this.getConnectionProfileGroupActions(tree, element));
 		}
+		if (element instanceof TreeNode) {
+			var treeNode = <TreeNode>element;
+			return TPromise.as(this.getOENodeActions(treeNode));
+		}
 
 		return TPromise.as([]);
 	}
@@ -51,10 +58,10 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		return super.getSecondaryActions(tree, element);
 	}
 
-		/**
+	/**
 	 * Return actions for connection elements
 	 */
-	public  getConnectionActions(tree: ITree, element: ConnectionProfile): IAction[] {
+	public getConnectionActions(tree: ITree, element: ConnectionProfile): IAction[] {
 		return [
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
@@ -66,11 +73,29 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	/**
 	 * Return actions for connection group elements
 	 */
-	public  getConnectionProfileGroupActions(tree: ITree, element: ConnectionProfileGroup): IAction[] {
+	public getConnectionProfileGroupActions(tree: ITree, element: ConnectionProfileGroup): IAction[] {
 		return [
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			this._instantiationService.createInstance(RenameGroupAction, RenameGroupAction.ID, RenameGroupAction.LABEL, tree, element),
 			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_GROUP_LABEL, element)
 		];
+	}
+
+	/**
+	 * Return actions for OE elements
+	 */
+	public getOENodeActions(treeNode: TreeNode): IAction[] {
+		var actions: IAction[] = [];
+
+		if (treeNode.isTopLevel()) {
+			actions.push(this._instantiationService.createInstance(DisconnectAction, DisconnectAction.ID, DisconnectAction.LABEL));
+		}
+		if (treeNode.nodeTypeId === NodeType.View || treeNode.nodeTypeId === NodeType.Table) {
+			actions.push(this._instantiationService.createInstance(ScriptSelectAction, ScriptSelectAction.ID, ScriptSelectAction.LABEL));
+			actions.push(this._instantiationService.createInstance(OEEditDataAction, OEEditDataAction.ID, OEEditDataAction.LABEL));
+			actions.push(this._instantiationService.createInstance(ScriptCreateAction, ScriptCreateAction.ID, ScriptCreateAction.LABEL));
+		}
+		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL));
+		return actions;
 	}
 }

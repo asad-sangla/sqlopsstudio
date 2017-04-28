@@ -21,6 +21,8 @@ import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 const $ = builder.$;
 
@@ -40,7 +42,8 @@ export class ServerTreeView extends CollapsibleViewletView {
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IMessageService messageService: IMessageService
+		@IMessageService messageService: IMessageService,
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
 	) {
 		super(actionRunner, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), messageService, keybindingService, contextMenuService);
 		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
@@ -55,7 +58,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 			RecentConnectionsFilterAction.ID,
 			RecentConnectionsFilterAction.LABEL,
 			this);
-}
+	}
 	/**
 	 * Render header of the view
 	 */
@@ -83,11 +86,19 @@ export class ServerTreeView extends CollapsibleViewletView {
 		// Refresh Tree when these events are emitted
 		this.toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {
 			self.refreshTree();
-			})
+		})
 		);
 		this.toDispose.push(this._connectionManagementService.onDeleteConnectionProfile(() => {
 			self.refreshTree();
-			})
+		})
+		);
+		this.toDispose.push(this._connectionManagementService.onConnect((connectionParams) => {
+			self.addObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
+		})
+		);
+		this.toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
+			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
+		})
 		);
 		self.refreshTree();
 	}
@@ -97,6 +108,19 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 */
 	public getActions(): IAction[] {
 		return [this.addServerAction, this.activeConnectionsFilterAction, this.recentConnectionsFilterAction];
+	}
+
+	public addObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
+		this.messages.hide();
+		this.clearOtherActions();
+		Promise.all(this._objectExplorerService.updateObjectExplorerNodes()).then(() => {
+			TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
+		});
+	}
+
+	public deleteObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
+		this._objectExplorerService.deleteObjectExplorerNode(connection);
+		this.tree.refresh();
 	}
 
 	public refreshTree(): void {
@@ -167,7 +191,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 				}
 			}, errors.onUnexpectedError);
 		} else {
-       //no op
+			//no op
 		}
 	}
 
@@ -204,7 +228,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	/**
 	 * Searches through all the connections and returns a list of matching connections
 	 */
-	private searchConnections(searchString : string): ConnectionProfile[] {
+	private searchConnections(searchString: string): ConnectionProfile[] {
 
 		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
 		let connections = ConnectionProfileGroup.getConnectionsInGroup(root);

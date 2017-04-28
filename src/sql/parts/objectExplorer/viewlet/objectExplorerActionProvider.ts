@@ -9,9 +9,9 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegistry';
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
-import { NodeType } from 'sql/parts/objectExplorer/common/nodeType';
-import { NewQueryAction, DisconnectAction, ScriptSelectAction, EditDataAction, ScriptCreateAction } from 'sql/parts/objectExplorer/viewlet/objectExplorerActions';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
+import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
+import { NewQueryAction, DisconnectAction, ScriptSelectAction, EditDataAction, ScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 
 /**
  *  Provides actions for the object explorer tree elements

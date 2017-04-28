@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 import dom = require('vs/base/browser/dom');
-import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { ITree, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { IObjectExplorerTemplateData } from 'sql/parts/objectExplorer/viewlet/templateData';
 const $ = dom.$;

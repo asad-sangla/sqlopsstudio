@@ -102,7 +102,7 @@ import { IBootstrapService, BootstrapService } from 'sql/services/bootstrap/boot
 import { ICapabilitiesService, CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/services/credentials/credentialsService';
 import { IMetadataService, MetadataService } from 'sql/services/metadata/metadataService';
-import { IObjectExplorerService, ObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
+import { IObjectExplorerService, ObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';

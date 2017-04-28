@@ -10,7 +10,7 @@ import { Action } from 'vs/base/common/actions';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
-import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
@@ -111,7 +111,7 @@ export class EditDataAction extends Action {
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
-		TaskUtilities.editData(connectionProfile,metadata.name, this.connectionManagementService, this.queryEditorService).then(() => {
+		TaskUtilities.editData(connectionProfile, metadata.name, this.connectionManagementService, this.queryEditorService).then(() => {
 			ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
 		});
 		return TPromise.as(true);

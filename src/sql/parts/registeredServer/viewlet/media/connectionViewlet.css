@@ -191,3 +191,28 @@ margin-bottom: 2px;
 	margin: auto;
 	width: 95%;
 }
+
+/* OE element group */
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .object-element-group {
+	padding: 5px;
+}
+
+/* OE icon */
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .object-element-group > .object-icon {
+	float: left;
+	height: 16px;
+	width: 16px;
+	padding-right: 10px;
+}
+
+/* loading for OE node */
+.server-explorer-viewlet .monaco-tree .monaco-tree-rows > .monaco-tree-row > .loading .object-element-group:before {
+	content: ' ';
+	position: absolute;
+	display: block;
+	background: url('loading-hc.svg') 50% 50% no-repeat;
+	width: 36px;
+	height: 100%;
+	top: 0;
+	left: -35px;
+}

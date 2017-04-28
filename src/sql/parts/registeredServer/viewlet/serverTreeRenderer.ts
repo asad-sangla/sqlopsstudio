@@ -9,7 +9,7 @@ import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionPr
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ITree, IRenderer } from 'vs/base/parts/tree/browser/tree';
-import { IConnectionProfileGroupTemplateData, IConnectionTemplateData } from 'sql/parts/registeredServer/viewlet/templateData';
+import { IConnectionProfileGroupTemplateData, IConnectionTemplateData, IObjectExplorerTemplateData } from 'sql/parts/registeredServer/viewlet/templateData';
 import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
 import { ChangeConnectionAction, NewQueryAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
@@ -23,6 +23,8 @@ import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUt
 import types = require('vs/base/common/types');
 import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
+import dom = require('vs/base/browser/dom');
 
 /**
  * Renders the tree items.
@@ -34,6 +36,8 @@ export class ServerTreeRenderer implements IRenderer {
 	public static CONNECTION_GROUP_HEIGHT = 32;
 	private static CONNECTION_TEMPLATE_ID = 'connectionProfile';
 	private static CONNECTION_GROUP_TEMPLATE_ID = 'connectionProfileGroup';
+	public static OBJECTEXPLORER_HEIGHT = 28;
+	private static OBJECTEXPLORER_TEMPLATE_ID = 'objectExplorer';
 	/**
 	 * _isCompact is used to render connections tiles with and without the action buttons.
 	 * When set to true, like in the connection dialog recent connections tree, the connection
@@ -59,8 +63,10 @@ export class ServerTreeRenderer implements IRenderer {
 	public getHeight(tree: ITree, element: any): number {
 		if (element instanceof ConnectionProfileGroup) {
 			return ServerTreeRenderer.CONNECTION_GROUP_HEIGHT;
+		} else if (element instanceof ConnectionProfile) {
+			return ServerTreeRenderer.CONNECTION_HEIGHT;
 		}
-		return ServerTreeRenderer.CONNECTION_HEIGHT;
+		return ServerTreeRenderer.OBJECTEXPLORER_HEIGHT;
 	}
 
 	/**
@@ -69,8 +75,10 @@ export class ServerTreeRenderer implements IRenderer {
 	public getTemplateId(tree: ITree, element: any): string {
 		if (element instanceof ConnectionProfileGroup) {
 			return ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID;
+		} else if (element instanceof ConnectionProfile) {
+			return ServerTreeRenderer.CONNECTION_TEMPLATE_ID;
 		}
-		return ServerTreeRenderer.CONNECTION_TEMPLATE_ID;
+		return ServerTreeRenderer.OBJECTEXPLORER_TEMPLATE_ID;
 	}
 
 	/**
@@ -111,13 +119,19 @@ export class ServerTreeRenderer implements IRenderer {
 					//no op
 				}
 			};
-		}
-		else {
+		} else if (templateId === ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID) {
 			const groupTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
 
 			groupTemplate.root = append(container, $('.server-group'));
 			groupTemplate.name = append(groupTemplate.root, $('span.name'));
 			return groupTemplate;
+		} else {
+			const objectExplorerTemplate: IObjectExplorerTemplateData = Object.create(null);
+			objectExplorerTemplate.root = dom.append(container, $('.object-element-group'));
+			objectExplorerTemplate.icon = dom.append(objectExplorerTemplate.root, $('img.object-icon'));
+			objectExplorerTemplate.label = dom.append(objectExplorerTemplate.root, $('div.label'));
+
+			return objectExplorerTemplate;
 		}
 	}
 
@@ -127,11 +141,19 @@ export class ServerTreeRenderer implements IRenderer {
 	public renderElement(tree: ITree, element: any, templateId: string, templateData: any): void {
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
 			this.renderConnection(tree, element, templateData);
-		}
-		else {
+		} else if (templateId === ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID) {
 			this.renderConnectionProfileGroup(tree, element, templateData);
+		} else {
+			this.renderObjectExplorer(tree, element, templateData);
 		}
 	}
+
+	private renderObjectExplorer(tree: ITree, treeNode: TreeNode, templateData: IObjectExplorerTemplateData): void {
+		var iconFilePath = require.toUrl('sql/media/objectTypes/' + treeNode.nodeTypeId + '.svg');
+		templateData.icon.style.content = 'url(' + iconFilePath + ')';
+		templateData.label.textContent = treeNode.label;
+	}
+
 
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
 		templateData.serverName.textContent = connection.serverName;
@@ -153,56 +175,56 @@ export class ServerTreeRenderer implements IRenderer {
 
 	private renderRenameBox(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
 		let inputBoxContainer = append(templateData.root, $('.inputBoxContainer'));
-			let inputBox = new InputBox(inputBoxContainer, this._contextViewService, {
-				validationOptions: {
-					validation: (value: string) => {
-						if (value && value.length > 0 && types.isString(value)) {
-							return null;
-						}
-						return { type: MessageType.ERROR, content: 'Invalid input. String value expected.' };
-					},
-					showMessage: true
-				}
-			});
-			const styler = attachInputBoxStyler(inputBox, this._themeService);
-			inputBox.value = connectionProfileGroup.name;
-			inputBox.focus();
-			inputBox.select();
-
-			let disposed = false;
-			const toDispose: [lifecycle.IDisposable] = [inputBox, styler];
-
-			const wrapUp = once((renamed: boolean) => {
-				if (!disposed) {
-					disposed = true;
-					if (renamed && inputBox.value && connectionProfileGroup.name !== inputBox.value) {
-						connectionProfileGroup.name = inputBox.value;
-						this._connectionManagementService.renameGroup(connectionProfileGroup).then(() => {
-							TreeUpdateUtils.registeredServerUpdate(tree, this._connectionManagementService);
-						});
+		let inputBox = new InputBox(inputBoxContainer, this._contextViewService, {
+			validationOptions: {
+				validation: (value: string) => {
+					if (value && value.length > 0 && types.isString(value)) {
+						return null;
 					}
-					tree.clearHighlight();
-					tree.DOMFocus();
-					tree.setFocus(connectionProfileGroup);
+					return { type: MessageType.ERROR, content: 'Invalid input. String value expected.' };
+				},
+				showMessage: true
+			}
+		});
+		const styler = attachInputBoxStyler(inputBox, this._themeService);
+		inputBox.value = connectionProfileGroup.name;
+		inputBox.focus();
+		inputBox.select();
 
-					// need to remove the input box since this template will be reused.
-					templateData.root.removeChild(inputBoxContainer);
-					lifecycle.dispose(toDispose);
-				}
-			});
+		let disposed = false;
+		const toDispose: [lifecycle.IDisposable] = [inputBox, styler];
 
-			toDispose.push(addStandardDisposableListener(inputBox.inputElement, 'keydown', (e: IKeyboardEvent) => {
-				const isEscape = e.equals(KeyCode.Escape);
-				const isEnter = e.equals(KeyCode.Enter);
-				if (isEscape || isEnter) {
-					e.preventDefault();
-					e.stopPropagation();
-					wrapUp(isEnter);
+		const wrapUp = once((renamed: boolean) => {
+			if (!disposed) {
+				disposed = true;
+				if (renamed && inputBox.value && connectionProfileGroup.name !== inputBox.value) {
+					connectionProfileGroup.name = inputBox.value;
+					this._connectionManagementService.renameGroup(connectionProfileGroup).then(() => {
+						TreeUpdateUtils.registeredServerUpdate(tree, this._connectionManagementService);
+					});
 				}
-			}));
-			toDispose.push(addDisposableListener(inputBox.inputElement, 'blur', () => {
-				wrapUp(true);
-			}));
+				tree.clearHighlight();
+				tree.DOMFocus();
+				tree.setFocus(connectionProfileGroup);
+
+				// need to remove the input box since this template will be reused.
+				templateData.root.removeChild(inputBoxContainer);
+				lifecycle.dispose(toDispose);
+			}
+		});
+
+		toDispose.push(addStandardDisposableListener(inputBox.inputElement, 'keydown', (e: IKeyboardEvent) => {
+			const isEscape = e.equals(KeyCode.Escape);
+			const isEnter = e.equals(KeyCode.Enter);
+			if (isEscape || isEnter) {
+				e.preventDefault();
+				e.stopPropagation();
+				wrapUp(isEnter);
+			}
+		}));
+		toDispose.push(addDisposableListener(inputBox.inputElement, 'blur', () => {
+			wrapUp(true);
+		}));
 	}
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {
 		// no op

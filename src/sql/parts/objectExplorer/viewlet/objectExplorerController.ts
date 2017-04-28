@@ -13,8 +13,8 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { ObjectExplorerActionProvider } from 'sql/parts/objectExplorer/viewlet/objectExplorerActionProvider';
-import { ObjectExplorerActionsContext } from 'sql/parts/objectExplorer/viewlet/objectExplorerActions';
-import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
+import { ObjectExplorerActionsContext } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 
 /**
  * Extends the tree controller to handle clicks on the tree elements

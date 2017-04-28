@@ -58,7 +58,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
-	getActiveConnections(): data.ConnectionInfo[] {
+	getActiveConnections(): ConnectionProfile[] {
 		return [];
 	}
 
@@ -176,7 +176,6 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	getProviderIdFromUri(ownerUri: string): string {
 		return undefined;
 	}
-
 	hasRegisteredServers(): boolean {
 		return true;
 	}

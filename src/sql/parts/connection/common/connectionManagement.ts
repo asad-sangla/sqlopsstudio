@@ -86,7 +86,7 @@ export interface IConnectionManagementService {
 
 	getUnsavedConnections(): ConnectionProfile[];
 
-	getActiveConnections(): data.ConnectionInfo[];
+	getActiveConnections(): ConnectionProfile[];
 
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
 

@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 'use strict';
-import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { ITree, IDataSource} from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 
 /**
  * Implements the DataSource(that returns a parent/children of an element) for the server tree

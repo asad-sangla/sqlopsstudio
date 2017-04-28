@@ -4,11 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
-import { NodeType } from 'sql/parts/objectExplorer/common/nodeType';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
+import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import data = require('data');
 
 export const SERVICE_ID = 'ObjectExplorerService';
@@ -29,9 +31,16 @@ export interface IObjectExplorerService {
 	 */
 	registerProvider(providerId: string, provider: data.ObjectExplorerProvider): void;
 
+	/* To do: remove this function once remove OE viewlet */
 	getRootTreeNode(root: TreeNode, connections: ConnectionProfile): Promise<TreeNode>;
 
 	createTreeRoot(): TreeNode;
+
+	getTopLevelNode(connection: ConnectionProfile): TreeNode;
+
+	updateObjectExplorerNodes(): Promise<void>[];
+
+	deleteObjectExplorerNode(connection: IConnectionProfile): void;
 }
 
 export class ObjectExplorerService implements IObjectExplorerService {
@@ -44,7 +53,51 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	private _sessions: { [sessionId: string]: TreeNode } = {};
 
-	constructor() {
+	private _activeOENode: { [id: string]: TreeNode };
+
+	constructor(
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		this._activeOENode = {};
+	}
+
+	public updateObjectExplorerNodes(): Promise<void>[] {
+		let connections = this._connectionManagementService.getActiveConnections();
+		let promises = connections.map(connection => {
+			return this._connectionManagementService.addSavedPassword(connection).then(withPassword => {
+				let connectionProfile = ConnectionProfile.convertToConnectionProfile(connection.ServerCapabilities, withPassword);
+				return this.updateNewObjectExplorerNode(connectionProfile);
+			});
+		});
+		return promises;
+	}
+
+	public deleteObjectExplorerNode(connection: IConnectionProfile): void {
+		delete this._activeOENode[connection.getOptionsKey()];
+	}
+
+	private updateNewObjectExplorerNode(connection: ConnectionProfile): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			if (this._activeOENode[connection.getOptionsKey()]) {
+				resolve();
+			} else {
+				this.createNewSession(connection.providerName, connection).then(session => {
+					if (session.sessionId in this._sessions) {
+						resolve();
+					} else {
+						let server = this.toTreeNode(session.rootNode, null);
+						server.connection = connection;
+						server.session = session;
+						this._activeOENode[connection.getOptionsKey()] = server;
+						resolve();
+					}
+				});
+			}
+		});
+	}
+
+	public getTopLevelNode(connection: ConnectionProfile): TreeNode {
+		return this._activeOENode[connection.getOptionsKey()];
 	}
 
 	public createNewSession(providerId: string, connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {

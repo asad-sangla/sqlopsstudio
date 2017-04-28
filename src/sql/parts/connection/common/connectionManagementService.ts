@@ -65,7 +65,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
 	private _connectionInfo: ConnectionManagementInfo;
 
-	private _connectionGlobalStatus : ConnectionGlobalStatus;
+	private _connectionGlobalStatus: ConnectionGlobalStatus;
 
 	constructor(
 		private _connectionMemento: Memento,
@@ -455,7 +455,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.getRecentlyUsedConnections();
 	}
 
-	public getActiveConnections(): data.ConnectionInfo[] {
+	public getActiveConnections(): ConnectionProfile[] {
 		return this._connectionStore.getActiveConnections();
 	}
 
@@ -611,7 +611,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 		this._connectionInfo = connection;
 
-		if (this._connectionFactory.isDefaultTypeUri(info.ownerUri)){
+		if (this._connectionFactory.isDefaultTypeUri(info.ownerUri)) {
 			this._connectionGlobalStatus.setStatusToConnected(info.connectionSummary);
 		}
 	}

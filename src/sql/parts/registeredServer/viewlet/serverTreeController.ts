@@ -15,6 +15,8 @@ import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ServerTreeActionProvider } from 'sql/parts/registeredServer/viewlet/serverTreeActionProvider';
+import { ObjectExplorerActionsContext } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 
 /**
  * Extends the tree controller to handle clicks on the tree elements
@@ -75,6 +77,15 @@ export class ServerTreeController extends treedefaults.DefaultController {
 			parent = (<ConnectionProfile>element).parent;
 		}
 
+		var actionContext: any;
+		if (element instanceof TreeNode) {
+			actionContext = new ObjectExplorerActionsContext();
+			actionContext.container = event.target;
+			actionContext.treeNode = <TreeNode>element;
+		} else {
+			actionContext = element;
+		}
+
 		let anchor = { x: event.posx + 1, y: event.posy };
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => anchor,
@@ -85,7 +96,7 @@ export class ServerTreeController extends treedefaults.DefaultController {
 					tree.DOMFocus();
 				}
 			},
-			getActionsContext: () => (element)
+			getActionsContext: () => (actionContext)
 		});
 
 		return true;

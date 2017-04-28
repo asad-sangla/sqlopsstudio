@@ -10,7 +10,7 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import * as Constants from 'sql/parts/connection/common/constants';
 import * as Utils from 'sql/parts/connection/common/utils';
 

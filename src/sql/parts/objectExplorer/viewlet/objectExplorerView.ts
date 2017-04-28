@@ -16,10 +16,10 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { ObjectExplorerUtils } from 'sql/parts/objectExplorer/viewlet/objectExplorerUtils';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
-import { IObjectExplorerService } from 'sql/parts/objectExplorer/common/objectExplorerService';
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { AddServerAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { TreeNode } from 'sql/parts/objectExplorer/common/treeNode';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import Severity from 'vs/base/common/severity';
 const $ = builder.$;
 
