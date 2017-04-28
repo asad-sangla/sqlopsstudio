@@ -176,4 +176,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	getProviderIdFromUri(ownerUri: string): string {
 		return undefined;
 	}
+
+	hasRegisteredServers(): boolean {
+		return true;
+	}
 }

@@ -43,6 +43,7 @@ import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ConnectionGlobalStatus } from 'sql/parts/connection/common/connectionGlobalStatus';
 import { ConnectionStatusbarItem } from  'sql/parts/connection/common/connectionStatus';
+import { CommandsRegistry, ICommandService, ICommandHandler } from 'vs/platform/commands/common/commands';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -71,6 +72,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		private _connectionStore: ConnectionStore,
 		@ISplashScreenService private _splashScreen: ISplashScreenService,
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
+		@ICommandService private _commandService: ICommandService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
 		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
@@ -112,6 +114,17 @@ export class ConnectionManagementService implements IConnectionManagementService
 			100 /* High Priority */
 		));
 
+		if (_capabilitiesService && _capabilitiesService.onProviderRegisteredEvent) {
+			_capabilitiesService.onProviderRegisteredEvent((capabilities => {
+				if (capabilities.providerName === 'MSSQL') {
+				if (!this.hasRegisteredServers()) {
+						// prompt the user for a new connection on startup if no profiles are registered
+						this.showConnectionDialog();
+					}
+				}
+			}));
+		}
+
 		this.disposables.push(this._onAddConnectionProfile);
 		this.disposables.push(this._onDeleteConnectionProfile);
 	}
@@ -152,6 +165,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		++this._providerCount;
 		if (this._providerCount === 1 && this._splashScreen !== undefined) {
 			this._splashScreen.hideSplashScreen();
+
+			// show the Registered Server viewlet
+			this._commandService.executeCommand('workbench.view.connections', { });
 		}
 	}
 
@@ -161,6 +177,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * @param model the existing connection profile to create a new one from
 	 */
 	public showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, error?: string): Promise<void> {
+		let self = this;
 		return new Promise<void>((resolve, reject) => {
 			if (!params) {
 				params = { connectionType: ConnectionType.default };
@@ -168,7 +185,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			if (!model && params.input && params.input.uri) {
 				model = this._connectionFactory.getConnectionProfile(params.input.uri);
 			}
-			this._connectionDialogService.showDialog(this, params, model, error).then(() => {
+			self._connectionDialogService.showDialog(self, params, model, error).then(() => {
 				resolve();
 			}, error => {
 				reject();
@@ -459,6 +476,35 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 
 		return undefined;
+	}
+
+	public hasRegisteredServers(): boolean {
+		return this.doHasRegisteredServers(this.getConnectionGroups());
+	}
+
+	private doHasRegisteredServers(root: ConnectionProfileGroup[]): boolean {
+
+		if (!root || root.length === 0) {
+			return false;
+		}
+
+		for (let i = 0; root.length; ++i) {
+			let item = root[i];
+
+			if (!item) {
+				return false;
+			}
+
+			if (item.connections && item.connections.length > 0) {
+				return true;
+			}
+
+			if (this.doHasRegisteredServers(item.children)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public getConnectionId(connectionProfile: ConnectionProfile): string {

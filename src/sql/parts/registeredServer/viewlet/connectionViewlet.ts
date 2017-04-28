@@ -65,34 +65,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.clearSearchAction = this._instantiationService.createInstance(ClearSearchAction, ClearSearchAction.ID, ClearSearchAction.LABEL, this);
 	}
 
-	private hasRegisteredServers(): boolean {
-		return this.doHasRegisteredServers(this.connectionManagementService.getConnectionGroups());
-	}
-
-	private doHasRegisteredServers(root: ConnectionProfileGroup[]): boolean {
-
-		if (!root || root.length === 0) {
-			return false;
-		}
-
-		for (let i = 0; root.length; ++i) {
-			let item = root[i];
-
-			if (!item) {
-				return false;
-			}
-
-			if (item.connections && item.connections.length > 0) {
-				return true;
-			}
-
-			if (this.doHasRegisteredServers(item.children)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
 
 	private newConnection(): void {
 		this.connectionManagementService.showConnectionDialog();
@@ -111,7 +83,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.serverTreeView = this._instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
 		parent.div({ class: 'server-explorer-viewlet' }, (viewletContainer) => {
 			this.viewletContainer = viewletContainer;
-			if (!this.hasRegisteredServers()) {
+			if (!this.connectionManagementService.hasRegisteredServers()) {
 				this.connectionButton = new Button(this.viewletContainer);
 				this.connectionButton.label = 'Add Server';
 				this.connectionButton.addListener2('click', () => {

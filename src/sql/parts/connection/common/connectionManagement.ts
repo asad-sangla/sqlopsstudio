@@ -150,6 +150,8 @@ export interface IConnectionManagementService {
 	closeDashboard(uri: string): void;
 
 	getProviderIdFromUri(ownerUri: string): string;
+
+	hasRegisteredServers(): boolean;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
