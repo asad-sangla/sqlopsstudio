@@ -5,8 +5,12 @@
 
 'use strict';
 
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { BackupInput } from 'sql/parts/disasterRecovery/backup/backupInput';
 import data = require('data');
 
 export const SERVICE_ID = 'disasterRecoveryService';
@@ -21,6 +25,10 @@ export interface IDisasterRecoveryService {
 	 */
 	backup(connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse>;
 
+	/**
+	 * Show backup wizard
+	 */
+	showBackupWizard(uri: string, connection: ConnectionManagementInfo): Promise<any>;
 
 	/**
 	 * Register a disaster recovery provider
@@ -34,7 +42,18 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 
 	private _providers: { [handle: string]: data.DisasterRecoveryProvider; } = Object.create(null);
 
-	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) {
+	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService,
+				@IInstantiationService private _instantiationService: IInstantiationService,
+				@IWorkbenchEditorService private _editorService: IWorkbenchEditorService) {
+	}
+
+	public showBackupWizard(uri: string, connection: ConnectionManagementInfo): Promise<any> {
+		const self = this;
+		return new Promise<boolean>((resolve, reject) => {
+			let input: BackupInput = self._instantiationService ? self._instantiationService.createInstance(BackupInput, uri, connection) : undefined;
+			self._editorService.openEditor(input, { pinned: true }, false);
+			resolve(true);
+		});
 	}
 
 	/**

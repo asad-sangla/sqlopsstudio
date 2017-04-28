@@ -84,10 +84,7 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 	}
 
 	public backup(): void {
-		this.disasterRecoveryService.backup(this.ownerUri,
-		<data.BackupInfo>{
-			backupType: 'full'
-		});
+		TaskUtilities.showBackup(this.ownerUri, this.connection, this.disasterRecoveryService);
 	}
 
 	public onConnectionChanged(): void {

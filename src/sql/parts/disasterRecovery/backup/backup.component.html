@@ -1,0 +1,106 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+
+<div id="backup" style="display: flex; flex-flow: row; overflow: auto; ">
+	<div style="order: 1; margin: 5px; min-width: 125px">
+		<div class="backup-title" style="font-size: 15px; float: left;">Backup Database - <span style="font-style: italic">{{connection?.connectionProfile?.serverName}}/{{connection?.connectionProfile?.databaseName}}</span></div> <br />
+
+		<div class = "backup-type" style="border-top:1px solid #e5e5e5; padding-right: 15px; padding-left: 15px; padding-top:15px; overflow-y:hidden">
+			<table class="backup-type-content" style="width: 30%; table-layout: fixed">
+				<tr>
+					<td class="backup-type-label" style="width: 80px; padding-bottom: 5px;">
+						<div style="display:block">Backup type</div>
+					</td>
+					<td class="backup-type select-type" style="padding-right: 8px; width:100px; padding-bottom: 5px;">
+						<select class="select-box" title="Full" style="background: #3C3C3C; color: #BBB">
+							<option value="Full">Full</option>
+							<option value="Differential">Differential</option>
+							<option value="TransactionLog">Transaction Log</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class = "backup-component" style="padding-right: 15px; padding-left: 15px; padding-top:15px; overflow-y:hidden">
+			<table class="backup-component-content" style="width: 30%; table-layout: fixed">
+				<tr>
+					<td class="backup-component-label" style="width: 80px; padding-bottom: 5px;">
+						<div style="display:block">Backup component</div>
+					</td>
+					<td class="backup-component select-type" style="padding-right: 8px; width:100px; padding-bottom: 5px;">
+						<select class="select-box" title="Database" style="background: #3C3C3C; color: #BBB">
+							<option value="Database">Database</option>
+							<option value="Files and Filegroups">Files and Filegroups</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+	</div>
+</div>
+
+
+<div id="backup-destination" style="display: flex; flex-flow: row; overflow: auto; width: 100%">
+	<div style="order: 1; margin: 5px; min-width: 125px">
+
+		<div class = "backup-device" style="padding-right: 15px; padding-left: 15px; overflow-y:hidden">
+			<table class="backup-device-content" style="width: 30%; table-layout: fixed">
+				<tr>
+					<td class="backup-device-label" style="width: 80px; padding-bottom: 5px;">
+						<div style="display:block">Backup device</div>
+					</td>
+					<td class="backup-device select-type" style="padding-right: 8px; width:100px; padding-bottom: 5px;">
+						<select class="select-box" title="Disk" style="background: #3C3C3C; color: #BBB">
+							<option value="Disk">Disk</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class = "backup-path" style="padding-right: 15px; padding-left: 15px; overflow-y:hidden">
+			<table class="backup-path-content" style="width: 30%; table-layout: fixed">
+				<tr>
+					<td class="backup-path-label" style="width: 80px; padding-bottom: 5px;">
+						<div style="display:block">Backup path</div>
+					</td>
+					<td class="backup-path input" style="padding-right: 8px; width:100px; padding-bottom: 5px;">
+						<input type="file" name="backupfile" />
+					</td>
+				</tr>
+			</table>
+		</div>
+
+
+	</div>
+</div>
+
+<div id="backup-buttons" style="display: flex; flex-flow: row; height:150px; overflow: auto; width: 100%; text-align: right;">
+	<div style="order: 3; margin: 5px; min-width: 125px">
+		<table class="footer-buttons" align="right">
+			<tr>
+				<td>
+					<div class="footer-button">
+						<a class="monaco-button monaco-text-button" role="button" aria-disabled="false" tabindex="0">Script</a>
+					</div>
+				</td>
+				<td>
+					<div class="footer-button">
+						<a class="monaco-button monaco-text-button" role="button" aria-disabled="false" tabindex="0">Execute</a>
+					</div>
+				</td>
+				<td>
+					<div class="footer-button">
+						<a class="monaco-button monaco-text-button" role="button" aria-disabled="false" tabindex="0">Cancel</a>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>

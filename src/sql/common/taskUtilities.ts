@@ -11,6 +11,7 @@ import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 import data = require('data');
@@ -107,6 +108,12 @@ export class TaskUtilities {
 	public static showCreateLogin(uri: string, connection: ConnectionManagementInfo, adminService: IAdminService): Promise<void> {
 		return new Promise<void>((resolve) => {
 			adminService.showCreateLoginWizard(uri, connection);
+		});
+	}
+
+	public static showBackup(uri: string, connection: ConnectionManagementInfo, disasterRecoveryService: IDisasterRecoveryService): Promise<void> {
+		return new Promise<void>((resolve) => {
+			disasterRecoveryService.showBackupWizard(uri, connection);
 		});
 	}
 }

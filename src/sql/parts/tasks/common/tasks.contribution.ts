@@ -15,7 +15,8 @@ import { CreateDatabaseEditor } from 'sql/parts/admin/database/create/createData
 import { CreateDatabaseInput } from 'sql/parts/admin/database/create/createDatabaseInput';
 import { CreateLoginEditor } from 'sql/parts/admin/security/createLoginEditor';
 import { CreateLoginInput } from 'sql/parts/admin/security/createLoginInput';
-
+import { BackupInput } from 'sql/parts/disasterRecovery/backup/backupInput';
+import { BackupEditor } from 'sql/parts/disasterRecovery/backup/backupEditor';
 
 // Create Database registration
 const createDatabaseEditorDescriptor = new EditorDescriptor(
@@ -41,6 +42,14 @@ const createLoginEditorDescriptor = new EditorDescriptor(
 	'CreateLoginEditor'
 );
 
+// Backup registration
+const backupEditorDescriptor = new EditorDescriptor(
+	BackupEditor.ID,
+ 	'Backup',
+ 	'sql/parts/disasterRecovery/backup/backupEditor',
+ 	'BackupEditor'
+ );
+
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 	.registerEditor(createDatabaseEditorDescriptor, [new SyncDescriptor(CreateDatabaseInput)]);
 
@@ -50,3 +59,5 @@ Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 	.registerEditor(taskDialogEditorDescriptor, [new SyncDescriptor(TaskDialogInput)]);
 
+Registry.as<IEditorRegistry>(EditorExtensions.Editors)
+	.registerEditor(backupEditorDescriptor, [new SyncDescriptor(BackupInput)]);
