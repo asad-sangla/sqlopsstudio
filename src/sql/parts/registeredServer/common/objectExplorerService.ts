@@ -22,7 +22,11 @@ export interface IObjectExplorerService {
 
 	createNewSession(providerId: string, connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession>;
 
+	closeSession(providerId: string, session: data.ObjectExplorerSession): Thenable<data.ObjectExplorerCloseSessionResponse>;
+
 	expandNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo>;
+
+	refreshNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo>;
 
 	expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]>;
 
@@ -119,6 +123,29 @@ export class ObjectExplorerService implements IObjectExplorerService {
 			return provider.expandNode({
 				sessionId: session ? session.sessionId : undefined,
 				nodePath: nodePath
+			});
+		}
+
+		return Promise.resolve(undefined);
+	}
+
+	public refreshNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.refreshNode({
+				sessionId: session ? session.sessionId : undefined,
+				nodePath: nodePath
+			});
+		}
+
+		return Promise.resolve(undefined);
+	}
+
+	public closeSession(providerId: string, session: data.ObjectExplorerSession): Thenable<data.ObjectExplorerCloseSessionResponse> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.closeSession({
+				sessionId: session ? session.sessionId : undefined
 			});
 		}
 

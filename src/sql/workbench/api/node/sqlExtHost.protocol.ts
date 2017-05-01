@@ -70,6 +70,10 @@ export abstract class ExtHostDataProtocolShape {
 
 	$expandObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> { throw ni(); }
 
+	$refreshObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> { throw ni(); }
+
+	$closeObjectExplorerSession(handle: number, closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> { throw ni(); }
+
 	/**
 	 * Scripting methods
 	 */

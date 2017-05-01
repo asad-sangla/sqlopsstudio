@@ -86,6 +86,8 @@ export interface Converter {
 	asObjectExplorerSession(params: ls.CreateSessionResponse): data.ObjectExplorerSession;
 
 	asObjectExplorerNodeInfo(params: ls.ExpandResponse): data.ObjectExplorerExpandInfo;
+
+	asObjectExplorerCloseSessionResponse(params: ls.CloseSessionResponse): data.ObjectExplorerCloseSessionResponse;
 }
 
 export interface URIConverter {
@@ -510,6 +512,13 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asObjectExplorerCloseSessionResponse(params: ls.CloseSessionResponse): data.ObjectExplorerCloseSessionResponse {
+		return <data.ObjectExplorerCloseSessionResponse>{
+			sessionId: params.sessionId,
+			success: params.success
+		};
+	}
+
 	function asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult {
 		return <data.ScriptingResult>{
 			script: params.script
@@ -553,7 +562,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asProviderMetadata,
 		asScriptingResult,
 		asObjectExplorerSession,
-		asObjectExplorerNodeInfo
+		asObjectExplorerNodeInfo,
+		asObjectExplorerCloseSessionResponse
 	};
 }
 

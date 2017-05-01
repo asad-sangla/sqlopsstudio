@@ -140,6 +140,12 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			},
 			expandNode(nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
 				return self._proxy.$expandObjectExplorerNode(handle, nodeInfo);
+			},
+			refreshNode(nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+				return self._proxy.$refreshObjectExplorerNode(handle, nodeInfo);
+			},
+			closeSession(closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> {
+				return self._proxy.$closeObjectExplorerSession(handle, closeSessionInfo);
 			}
 		});
 

@@ -307,6 +307,10 @@ declare module 'data' {
 
 		expandNode(nodeInfo: ExpandNodeInfo): Thenable<ObjectExplorerExpandInfo>;
 
+		refreshNode(nodeInfo: ExpandNodeInfo): Thenable<ObjectExplorerExpandInfo>;
+
+		closeSession(closeSessionInfo: ObjectExplorerCloseSessionInfo): Thenable<ObjectExplorerCloseSessionResponse>;
+
 	}
 
 	export interface ScriptingResult {
@@ -694,6 +698,15 @@ declare module 'data' {
 	export interface ExpandNodeInfo {
 		sessionId: string,
 		nodePath: string
+	}
+
+	export interface ObjectExplorerCloseSessionInfo {
+		sessionId: string
+	}
+
+	export interface ObjectExplorerCloseSessionResponse {
+		sessionId: string;
+		success: boolean;
 	}
 
 	// Admin Services interfaces  -----------------------------------------------------------------------

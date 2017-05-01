@@ -77,6 +77,8 @@ export interface Converter {
 	asConnectionDetail(connInfo: data.ConnectionInfo): ls.ConnectionDetails;
 
 	asExpandInfo(nodeInfo: data.ExpandNodeInfo): ls.ExpandParams;
+
+	asCloseSessionInfo(nodeInfo: data.ObjectExplorerCloseSessionInfo): ls.CloseSessionParams;
 }
 
 export interface URIConverter {
@@ -377,6 +379,12 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asCloseSessionInfo(nodeInfo: data.ObjectExplorerCloseSessionInfo): ls.CloseSessionParams {
+		return <ls.CloseSessionParams>{
+			sessionId: nodeInfo.sessionId
+		};
+	}
+
 
 	return {
 		asUri,
@@ -410,7 +418,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asListDatabasesParams,
 		asScriptingScriptAsParams,
 		asConnectionDetail,
-		asExpandInfo
+		asExpandInfo,
+		asCloseSessionInfo
 	};
 }
 

@@ -229,6 +229,20 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		});
 	}
 
+	public $refreshObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+		return this._runWithProvider(handle, provider => {
+			return provider.objectExplorerProvider ? provider.objectExplorerProvider.refreshNode(nodeInfo)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	public $closeObjectExplorerSession(handle: number, closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.objectExplorerProvider ? provider.objectExplorerProvider.closeSession(closeSessionInfo)
+				: Promise.resolve(undefined);
+		});
+	}
+
 	public $getDatabases(handle: number, connectionUri: string): Thenable<string[]> {
 		return this._runWithProvider(handle, provider => {
 			return provider.metadataProvider ? provider.metadataProvider.getDatabases(connectionUri)

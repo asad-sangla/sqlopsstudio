@@ -26,7 +26,7 @@ import {
 	CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
 	ScriptingScriptAsParams, ScriptingScriptAsResult,
 	BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
-	DbCellValue, EditCell, EditRow, CreateSessionResponse, ExpandParams, ExpandResponse,
+	DbCellValue, EditCell, EditRow, CreateSessionResponse, ExpandParams, ExpandResponse, CloseSessionParams, CloseSessionResponse,
 	BackupInfo, BackupParams, BackupResponse,
 	LoginInfo, CreateLoginParams, CreateLoginResponse,
 	DatabaseInfo, CreateDatabaseParams, CreateDatabaseResponse,
@@ -1368,6 +1368,14 @@ export namespace ObjectExplorerCreateSessionRequest {
 
 export namespace ObjectExplorerExpandRequest {
 	export const type: RequestType<ExpandParams, ExpandResponse, void> = { get method(): string { return 'objectexplorer/expand'; } };
+}
+
+export namespace ObjectExplorerRefreshRequest {
+	export const type: RequestType<ExpandParams, ExpandResponse, void> = { get method(): string { return 'objectexplorer/refresh'; } };
+}
+
+export namespace ObjectExplorerCloseSessionRequest {
+	export const type: RequestType<CloseSessionParams, CloseSessionResponse, void> = { get method(): string { return 'objectexplorer/closesession'; } };
 }
 
 // ------------------------------- < Task Service Events > ------------------------------------

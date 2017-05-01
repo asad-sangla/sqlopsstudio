@@ -26,7 +26,7 @@ import {
 	ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo,
 	SaveResultRequestResult as VSaveResultRequestResult,
 	SaveResultsRequestParams as VSaveResultsRequestParams, ObjectExplorerProvider,
-	ExpandNodeInfo, AdminServicesProvider, DisasterRecoveryProvider
+	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, AdminServicesProvider, DisasterRecoveryProvider
 } from 'data';
 
 import {
@@ -105,7 +105,7 @@ import {
 	EditSessionReadyNotification, EditSessionReadyParams,
 	EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult,
 	EditSubsetRequest, EditSubsetParams, EditSubsetResult,
-	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest,
+	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
 	CreateDatabaseRequest, CreateLoginRequest, BackupRequest
 } from './protocol';
 
@@ -1777,6 +1777,28 @@ export class LanguageClient {
 					self._p2c.asObjectExplorerNodeInfo,
 					(error) => {
 						self.logFailedRequest(ObjectExplorerExpandRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+					);
+			},
+
+			refreshNode(nodeInfo: ExpandNodeInfo) {
+				return self.doSendRequest(connection, ObjectExplorerRefreshRequest.type,
+					self._c2p.asExpandInfo(nodeInfo), undefined).then(
+					self._p2c.asObjectExplorerNodeInfo,
+					(error) => {
+						self.logFailedRequest(ObjectExplorerRefreshRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+					);
+			},
+
+			closeSession(closeSessionInfo: ObjectExplorerCloseSessionInfo) {
+				return self.doSendRequest(connection, ObjectExplorerCloseSessionRequest.type,
+					self._c2p.asCloseSessionInfo(closeSessionInfo), undefined).then(
+					self._p2c.asObjectExplorerCloseSessionResponse,
+					(error) => {
+						self.logFailedRequest(ObjectExplorerCloseSessionRequest.type, error);
 						return Promise.resolve(undefined);
 					}
 					);

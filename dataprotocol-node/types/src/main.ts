@@ -29,6 +29,15 @@ export interface ExpandParams {
 	nodePath: string;
 }
 
+export interface CloseSessionParams {
+	sessionId: string;
+}
+
+export interface CloseSessionResponse {
+	success: boolean;
+	sessionId: string;
+}
+
 export interface CategoryValue {
 	displayName: string;
 
