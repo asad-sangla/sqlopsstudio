@@ -9,13 +9,13 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegistry';
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
-import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 import { AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { NewQueryAction as OENewQueryAction, DisconnectAction, ScriptSelectAction, EditDataAction as OEEditDataAction, ScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
+import { ConnectionProfileGroupWrapper } from 'sql/parts/registeredServer/common/connectionProfileGroupWrapper';
+import { ConnectionProfileWrapper } from 'sql/parts/registeredServer/common/connectionProfileWrapper';
 
 /**
  *  Provides actions for the server tree elements
@@ -29,17 +29,17 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	}
 
 	public hasActions(tree: ITree, element: any): boolean {
-		return element instanceof ConnectionProfileGroup || (element instanceof ConnectionProfile);
+		return element instanceof ConnectionProfileGroupWrapper || (element instanceof ConnectionProfileWrapper) || (element instanceof TreeNode);
 	}
 
 	/**
 	 * Return actions given an element in the tree
 	 */
 	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
-		if (element instanceof ConnectionProfile) {
+		if (element instanceof ConnectionProfileWrapper) {
 			return TPromise.as(this.getConnectionActions(tree, element));
 		}
-		if (element instanceof ConnectionProfileGroup) {
+		if (element instanceof ConnectionProfileGroupWrapper) {
 			return TPromise.as(this.getConnectionProfileGroupActions(tree, element));
 		}
 		if (element instanceof TreeNode) {
@@ -61,7 +61,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	/**
 	 * Return actions for connection elements
 	 */
-	public getConnectionActions(tree: ITree, element: ConnectionProfile): IAction[] {
+	public getConnectionActions(tree: ITree, element: ConnectionProfileWrapper): IAction[] {
 		return [
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
@@ -73,7 +73,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	/**
 	 * Return actions for connection group elements
 	 */
-	public getConnectionProfileGroupActions(tree: ITree, element: ConnectionProfileGroup): IAction[] {
+	public getConnectionProfileGroupActions(tree: ITree, element: ConnectionProfileGroupWrapper): IAction[] {
 		return [
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			this._instantiationService.createInstance(RenameGroupAction, RenameGroupAction.ID, RenameGroupAction.LABEL, tree, element),

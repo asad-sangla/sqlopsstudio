@@ -10,11 +10,11 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import * as Constants from 'sql/parts/connection/common/constants';
 import * as Utils from 'sql/parts/connection/common/utils';
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
+import { ConnectionProfileGroupWrapper } from 'sql/parts/registeredServer/common/connectionProfileGroupWrapper';
 
-const $ = builder.$;
 export class TreeUpdateUtils {
 
 	/**
@@ -58,12 +58,12 @@ export class TreeUpdateUtils {
 	 * Set input for the tree.
 	 */
 	public static structuralTreeUpdate(tree: ITree, viewKey: string, connectionManagementService: IConnectionManagementService): void {
-		let selectedElement: TreeNode;
-		let targetsToExpand: TreeNode[];
+		let selectedElement: any;
+		let targetsToExpand: any[];
 		if (tree) {
 			let selection = tree.getSelection();
 			if (selection && selection.length === 1) {
-				selectedElement = <TreeNode>selection[0];
+				selectedElement = <any>selection[0];
 			}
 			targetsToExpand = tree.getExpandedElements();
 		}
@@ -76,55 +76,55 @@ export class TreeUpdateUtils {
 		const treeInput = new ConnectionProfileGroup('root', null, undefined);
 		treeInput.addConnections(groups);
 		tree.setInput(treeInput).done(() => {
-				// Make sure to expand all folders that where expanded in the previous session
- 				if (targetsToExpand) {
- 					tree.expandAll(targetsToExpand);
- 				}
- 				if (selectedElement) {
- 					tree.select(selectedElement);
- 				}
- 				tree.getFocus();
+			// Make sure to expand all folders that where expanded in the previous session
+			if (targetsToExpand) {
+				tree.expandAll(targetsToExpand);
+			}
+			if (selectedElement) {
+				tree.select(selectedElement);
+			}
+			tree.getFocus();
 		});
 	}
 
 	/**
 	 * Set input for the registered servers tree.
 	 */
-	public static registeredServerUpdate(tree: ITree, connectionManagementService: IConnectionManagementService): void {
-		let selectedElement: TreeNode;
-		let targetsToExpand: TreeNode[];
+	public static registeredServerUpdate(tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): void {
+		let selectedElement: any;
+		let targetsToExpand: any[];
 		if (tree) {
 			let selection = tree.getSelection();
 			if (selection && selection.length === 1) {
-				selectedElement = <TreeNode>selection[0];
+				selectedElement = <any>selection[0];
 			}
 			targetsToExpand = tree.getExpandedElements();
 		}
 
-			let treeInput =  TreeUpdateUtils.getTreeInput(connectionManagementService);
-			if (treeInput) {
-				if (treeInput !== tree.getInput()) {
-					tree.setInput(treeInput).done(() => {
+		let treeInput = TreeUpdateUtils.getTreeInput(connectionManagementService, objectExplorerService);
+		if (treeInput) {
+			if (treeInput !== tree.getInput()) {
+				tree.setInput(treeInput).done(() => {
 					// Make sure to expand all folders that where expanded in the previous session
- 					if (targetsToExpand) {
- 						tree.expandAll(targetsToExpand);
- 					}
- 					if (selectedElement) {
- 						tree.select(selectedElement);
- 					}
-						tree.getFocus();
-					});
-				}
+					if (targetsToExpand) {
+						tree.expandAll(targetsToExpand);
+					}
+					if (selectedElement) {
+						tree.select(selectedElement);
+					}
+					tree.getFocus();
+				});
 			}
+		}
 	}
 
-	public static getTreeInput(connectionManagementService: IConnectionManagementService): ConnectionProfileGroup {
+	public static getTreeInput(connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): ConnectionProfileGroup {
 
 		let groups = connectionManagementService.getConnectionGroups();
 		if (groups && groups.length > 0) {
 			let treeInput = TreeUpdateUtils.addUnsaved(groups[0], connectionManagementService);
 			treeInput.name = 'root';
-			return treeInput;
+			return new ConnectionProfileGroupWrapper(treeInput.name, treeInput.parent, treeInput.id, treeInput.children, treeInput.connections, objectExplorerService, connectionManagementService);
 		}
 		// Should never get to this case.
 		return undefined;

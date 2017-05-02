@@ -97,7 +97,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		})
 		);
 		this.toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
-			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
+			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionUri);
 		})
 		);
 		self.refreshTree();
@@ -112,21 +112,36 @@ export class ServerTreeView extends CollapsibleViewletView {
 
 	public addObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
 		this.messages.hide();
-		this.clearOtherActions();
-		Promise.all(this._objectExplorerService.updateObjectExplorerNodes()).then(() => {
-			TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
-		});
+		var objectexplorerNode = this._objectExplorerService.getActiveObjectExplorerNodes();
+		if (!objectexplorerNode[connection.getOptionsKey()]) {
+			Promise.all(this._objectExplorerService.updateObjectExplorerNodes()).then(() => {
+				TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService, this._objectExplorerService);
+			});
+		}
 	}
 
-	public deleteObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
-		this._objectExplorerService.deleteObjectExplorerNode(connection);
-		this.tree.refresh();
+	public deleteObjectExplorerNodeAndRefreshTree(connectionUri: string): void {
+		if (connectionUri) {
+			let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService, this._objectExplorerService);
+			let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
+			let results = connections.filter(con => {
+				if (connectionUri.includes(con.getOptionsKey())) {
+					return true;
+				} else {
+					return false;
+				}
+			});
+			if (results && results.length > 0) {
+				this._objectExplorerService.deleteObjectExplorerNode(results[0]);
+			}
+		}
+		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService, this._objectExplorerService);
 	}
 
 	public refreshTree(): void {
 		this.messages.hide();
 		this.clearOtherActions();
-		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
+		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService, this._objectExplorerService);
 	}
 
 	/**
@@ -173,7 +188,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		this.messages.hide();
 		// Clear other action views if user switched between two views
 		this.clearOtherActions(view);
-		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
+		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService, this._objectExplorerService);
 		if (root) {
 			// Filter results based on view
 			let filteredResults = this.filterConnections([root], view);
@@ -230,7 +245,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 */
 	private searchConnections(searchString: string): ConnectionProfile[] {
 
-		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
+		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService, this._objectExplorerService);
 		let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
 		let results = connections.filter(con => {
 			if (searchString && (searchString.length > 0)) {

@@ -12,6 +12,7 @@ import { ITree, IDragAndDrop, IDragAndDropData, IDragOverReaction, DRAG_OVER_ACC
 import * as Constants from 'sql/parts/connection/common/constants';
 import { DragMouseEvent } from 'vs/base/browser/mouseEvent';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 
 /**
  * Implements drag and drop for the server tree
@@ -19,7 +20,8 @@ import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUt
 export class ServerTreeDragAndDrop implements IDragAndDrop {
 
 	constructor( @IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IInstantiationService private instantiationService: IInstantiationService
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+		@IInstantiationService private _instantiationService: IInstantiationService
 	) {
 	}
 
@@ -88,12 +90,12 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 			if (source instanceof ConnectionProfile) {
 				// Change group id of profile
 				this._connectionManagementService.changeGroupIdForConnection(source, targetConnectionProfileGroup.id).then(() => {
-					TreeUpdateUtils.registeredServerUpdate(tree, self._connectionManagementService);
+					TreeUpdateUtils.registeredServerUpdate(tree, self._connectionManagementService, self._objectExplorerService);
 				});
 			} else if (source instanceof ConnectionProfileGroup) {
 				// Change parent id of group
 				this._connectionManagementService.changeGroupIdForConnectionGroup(source, targetConnectionProfileGroup).then(() => {
-					TreeUpdateUtils.registeredServerUpdate(tree, self._connectionManagementService);
+					TreeUpdateUtils.registeredServerUpdate(tree, self._connectionManagementService, self._objectExplorerService);
 				});
 			}
 		}

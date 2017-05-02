@@ -6,10 +6,11 @@
 'use strict';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { ConnectionProfileGroupWrapper } from 'sql/parts/registeredServer/common/connectionProfileGroupWrapper';
+import { ConnectionProfileWrapper } from 'sql/parts/registeredServer/common/connectionProfileWrapper';
 import { ITree, IDataSource } from 'vs/base/parts/tree/browser/tree';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 /**
@@ -17,10 +18,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
  */
 export class ServerTreeDataSource implements IDataSource {
 
-	constructor(
-		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
-	) {
+	constructor( @IObjectExplorerService private _objectExplorerService: IObjectExplorerService) {
 	}
 
 	/**
@@ -43,11 +41,14 @@ export class ServerTreeDataSource implements IDataSource {
 	 * Returns a boolean value indicating whether the element has children.
 	 */
 	public hasChildren(tree: ITree, element: any): boolean {
-		if (element instanceof ConnectionProfile) {
-			let con = <ConnectionProfile>element;
-			return this._connectionManagementService.isConnected(undefined, con);
+		if (element instanceof ConnectionProfileWrapper) {
+			return (<ConnectionProfileWrapper>element).hasChildren();
+		} else if (element instanceof ConnectionProfile) {
+			return false;
+		} else if (element instanceof ConnectionProfileGroupWrapper) {
+			return (<ConnectionProfileGroupWrapper>element).hasChildren();
 		} else if (element instanceof ConnectionProfileGroup) {
-			return element.hasChildren();
+			return (<ConnectionProfileGroup>element).hasChildren();
 		} else if (element instanceof TreeNode) {
 			return !(<TreeNode>element).isAlwaysLeaf;
 		}
@@ -58,19 +59,12 @@ export class ServerTreeDataSource implements IDataSource {
 	 * Returns the element's children as an array in a promise.
 	 */
 	public getChildren(tree: ITree, element: any): TPromise<any> {
-		if (element instanceof ConnectionProfile) {
-			let con = <ConnectionProfile>element;
-			let isConnected = this._connectionManagementService.isConnected(undefined, con);
-			if (isConnected) {
-				var rootNode = this._objectExplorerService.getTopLevelNode(con);
-				return new TPromise<TreeNode[]>((resolve) => {
-					this._objectExplorerService.expandTreeNode(rootNode.getSession(), rootNode).then(() => {
-						resolve(rootNode.children);
-					});
-				});
-			} else {
-				return TPromise.as(null);
-			}
+		if (element instanceof ConnectionProfileWrapper) {
+			return (<ConnectionProfileWrapper>element).getChildren();
+		} else if (element instanceof ConnectionProfile) {
+			return TPromise.as(null);
+		} else if (element instanceof ConnectionProfileGroupWrapper) {
+			return TPromise.as((<ConnectionProfileGroupWrapper>element).getChildren());
 		} else if (element instanceof ConnectionProfileGroup) {
 			return TPromise.as((<ConnectionProfileGroup>element).getChildren());
 		} else if (element instanceof TreeNode) {

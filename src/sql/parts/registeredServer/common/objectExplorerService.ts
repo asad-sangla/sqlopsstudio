@@ -45,6 +45,8 @@ export interface IObjectExplorerService {
 	updateObjectExplorerNodes(): Promise<void>[];
 
 	deleteObjectExplorerNode(connection: IConnectionProfile): void;
+
+	getActiveObjectExplorerNodes(): { [id: string]: TreeNode };
 }
 
 export class ObjectExplorerService implements IObjectExplorerService {
@@ -57,12 +59,16 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	private _sessions: { [sessionId: string]: TreeNode } = {};
 
-	private _activeOENode: { [id: string]: TreeNode };
+	private _activeObjectExplorerNodes: { [id: string]: TreeNode };
 
 	constructor(
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
-		this._activeOENode = {};
+		this._activeObjectExplorerNodes = {};
+	}
+
+	public getActiveObjectExplorerNodes(): { [id: string]: TreeNode } {
+		return this._activeObjectExplorerNodes;
 	}
 
 	public updateObjectExplorerNodes(): Promise<void>[] {
@@ -77,12 +83,12 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public deleteObjectExplorerNode(connection: IConnectionProfile): void {
-		delete this._activeOENode[connection.getOptionsKey()];
+		delete this._activeObjectExplorerNodes[connection.getOptionsKey()];
 	}
 
 	private updateNewObjectExplorerNode(connection: ConnectionProfile): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			if (this._activeOENode[connection.getOptionsKey()]) {
+			if (this._activeObjectExplorerNodes[connection.getOptionsKey()]) {
 				resolve();
 			} else {
 				this.createNewSession(connection.providerName, connection).then(session => {
@@ -92,7 +98,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 						let server = this.toTreeNode(session.rootNode, null);
 						server.connection = connection;
 						server.session = session;
-						this._activeOENode[connection.getOptionsKey()] = server;
+						this._activeObjectExplorerNodes[connection.getOptionsKey()] = server;
 						resolve();
 					}
 				});
@@ -101,7 +107,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public getTopLevelNode(connection: ConnectionProfile): TreeNode {
-		return this._activeOENode[connection.getOptionsKey()];
+		return this._activeObjectExplorerNodes[connection.getOptionsKey()];
 	}
 
 	public createNewSession(providerId: string, connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {

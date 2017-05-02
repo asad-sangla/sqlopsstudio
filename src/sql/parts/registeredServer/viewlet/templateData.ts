@@ -8,14 +8,11 @@ import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 
 export interface IConnectionTemplateData {
 	root: HTMLElement;
-	serverName: HTMLSpanElement;
-	type: HTMLElement;
-	footer: HTMLElement;
-	databaseName: HTMLElement;
+	iconGroup: HTMLElement;
 	icon: HTMLElement;
-	details: HTMLElement;
-	header: HTMLElement;
-	headerContainer: HTMLElement;
+	labelGroup: HTMLElement;
+	serverName: HTMLSpanElement;
+	databaseName: HTMLElement;
 	connectionProfile: ConnectionProfile;
 }
 

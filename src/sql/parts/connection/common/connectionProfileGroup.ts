@@ -22,10 +22,10 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	private _isRenamed: boolean;
 	public constructor(
 		public name: string,
-		private _parent: ConnectionProfileGroup,
+		public parent: ConnectionProfileGroup,
 		public id: string
 	) {
-		this.parentId = _parent ? _parent.id : undefined;
+		this.parentId = parent ? parent.id : undefined;
 		if (this.name === ConnectionProfileGroup.RootGroupName) {
 			this.name = '';
 		}
@@ -52,8 +52,8 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 
 	public get fullName(): string {
 		let fullName: string = (this.id === 'root') ? undefined : this.name;
-		if (this._parent) {
-			let parentFullName = this._parent.fullName;
+		if (this.parent) {
+			let parentFullName = this.parent.fullName;
 			if (parentFullName) {
 				fullName = parentFullName + ConnectionProfileGroup.GroupNameSeparator + this.name;
 			}
@@ -105,7 +105,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 			this.connections = [];
 		}
 		connections.forEach((conn) => {
-			this.connections = this.connections.filter((curConn) => { return curConn.id !== conn.id;});
+			this.connections = this.connections.filter((curConn) => { return curConn.id !== conn.id; });
 			conn.parent = this;
 			this.connections.push(conn);
 		});
@@ -118,13 +118,13 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 		}
 		groups.forEach((group) => {
 			this.children = this.children.filter((grp) => { return group.id !== grp.id; });
-			group._parent = this;
+			group.parent = this;
 			this.children.push(group);
 		});
 	}
 
 	public getParent(): ConnectionProfileGroup {
-		return this._parent;
+		return this.parent;
 	}
 
 	public static getGroupFullNameParts(groupFullName: string): string[] {

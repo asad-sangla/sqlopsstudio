@@ -25,6 +25,7 @@ import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import dom = require('vs/base/browser/dom');
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 
 /**
  * Renders the tree items.
@@ -49,6 +50,7 @@ export class ServerTreeRenderer implements IRenderer {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextViewService private _contextViewService: IContextViewService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
 		@IThemeService private _themeService: IThemeService
 	) {
 		// isCompact defaults to false unless explicitly set by instantiation call.
@@ -88,8 +90,11 @@ export class ServerTreeRenderer implements IRenderer {
 
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
 			const root = append(container, $('.connection-tile'));
-			const serverName = append(root, $('div.name'));
-			const databaseName = append(root, $('div.info'));
+			const iconGroup = append(root, $('.group-icon'));
+			const icon = dom.append(iconGroup, $('img.object-icon'));
+			const labelGroup = dom.append(root, $('div.label'));
+			const serverName = append(labelGroup, $('div.name'));
+			const databaseName = append(labelGroup, $('div.info'));
 			if (!this._isCompact) {
 				const actionOptions = { icon: true, label: true };
 				const actionbar = new ActionBar(root, {
@@ -103,6 +108,9 @@ export class ServerTreeRenderer implements IRenderer {
 				actionbar.push([connectAction, newQueryAction], actionOptions);
 				return {
 					root,
+					iconGroup,
+					icon,
+					labelGroup,
 					serverName,
 					databaseName,
 					set connectionProfile(profile: ConnectionProfile) {
@@ -113,6 +121,9 @@ export class ServerTreeRenderer implements IRenderer {
 			}
 			return {
 				root,
+				iconGroup,
+				icon,
+				labelGroup,
 				serverName,
 				databaseName,
 				set connectionProfile(profile: ConnectionProfile) {
@@ -121,7 +132,6 @@ export class ServerTreeRenderer implements IRenderer {
 			};
 		} else if (templateId === ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID) {
 			const groupTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
-
 			groupTemplate.root = append(container, $('.server-group'));
 			groupTemplate.name = append(groupTemplate.root, $('span.name'));
 			return groupTemplate;
@@ -156,6 +166,8 @@ export class ServerTreeRenderer implements IRenderer {
 
 
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
+		var iconFilePath = require.toUrl('sql/media/objectTypes/Database.svg');
+		templateData.icon.style.content = 'url(' + iconFilePath + ')';
 		templateData.serverName.textContent = connection.serverName;
 		templateData.databaseName.textContent = connection.databaseName;
 		if (!templateData.databaseName.textContent) {
@@ -200,7 +212,7 @@ export class ServerTreeRenderer implements IRenderer {
 				if (renamed && inputBox.value && connectionProfileGroup.name !== inputBox.value) {
 					connectionProfileGroup.name = inputBox.value;
 					this._connectionManagementService.renameGroup(connectionProfileGroup).then(() => {
-						TreeUpdateUtils.registeredServerUpdate(tree, this._connectionManagementService);
+						TreeUpdateUtils.registeredServerUpdate(tree, this._connectionManagementService, this._objectExplorerService);
 					});
 				}
 				tree.clearHighlight();
