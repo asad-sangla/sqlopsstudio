@@ -18,14 +18,12 @@ export class NodeType {
 	public static View = 'View';
 	public static Table = 'Table';
 	public static HistoryTable = 'HistoryTable';
-	public static SystemDatabase = 'SystemDatabase';
 	public static ServerLevelLinkedServerLogin = 'ServerLevelLinkedServerLogin';
 	public static ServerLevelServerAudit = 'ServerLevelServerAudit';
 	public static ServerLevelCryptographicProvider = 'ServerLevelCryptographicProvider';
 	public static ServerLevelCredential = 'ServerLevelCredential';
 	public static ServerLevelServerRole = 'ServerLevelServerRole';
 	public static ServerLevelLogin = 'ServerLevelLogin';
-	public static ServerLevelEventSession = 'ServerLevelEventSession';
 	public static ServerLevelServerAuditSpecification = 'ServerLevelServerAuditSpecification';
 	public static ServerLevelEventNotification = 'ServerLevelEventNotification';
 	public static ServerLevelErrorMessage = 'ServerLevelErrorMessage';
@@ -33,13 +31,6 @@ export class NodeType {
 	public static ServerLevelLinkedServer = 'ServerLevelLinkedServer';
 	public static ServerLevelEndpoint = 'ServerLevelEndpoint';
 	public static Synonym = 'Synonym';
-	public static ServiceBroker = 'ServiceBroker';
-	public static Storage = 'Storage';
-	public static Security = 'Security';
-	public static SystemTable = 'SystemTable';
-	public static FileTable = 'FileTable';
-	public static SystemView = 'SystemView';
-	public static ExtendedStoredProcedure = 'ExtendedStoredProcedure';
 	public static DatabaseTrigger = 'DatabaseTrigger';
 	public static Assembly = 'Assembly';
 	public static MessageType = 'MessageType';
@@ -57,14 +48,12 @@ export class NodeType {
 	public static PartitionScheme = 'PartitionScheme';
 	public static SearchPropertyList = 'SearchPropertyList';
 	public static User = 'User';
-	public static Role = 'Role';
 	public static Schema = 'Schema';
 	public static AsymmetricKey = 'AsymmetricKey';
 	public static Certificate = 'Certificate';
 	public static SymmetricKey = 'SymmetricKey';
 	public static DatabaseEncryptionKey = 'DatabaseEncryptionKey';
 	public static MasterKey = 'MasterKey';
-	public static Signature = 'Signature';
 	public static DatabaseAuditSpecification = 'DatabaseAuditSpecification';
 	public static Column = 'Column';
 	public static Key = 'Key';
@@ -72,7 +61,6 @@ export class NodeType {
 	public static Trigger = 'Trigger';
 	public static Index = 'Index';
 	public static Statistic = 'Statistic';
-	public static SystemDataType = 'SystemDataType';
 	public static UserDefinedDataType = 'UserDefinedDataType';
 	public static UserDefinedType = 'UserDefinedType';
 	public static XmlSchemaCollection = 'XmlSchemaCollection';
@@ -88,7 +76,6 @@ export class NodeType {
 	public static UserDefinedTableTypeColumn = 'UserDefinedTableTypeColumn';
 	public static UserDefinedTableTypeKey = 'UserDefinedTableTypeKey';
 	public static UserDefinedTableTypeConstraint = 'UserDefinedTableTypeConstraint';
-	public static SystemStoredProcedure = 'SystemStoredProcedure';
 	public static StoredProcedureParameter = 'StoredProcedureParameter';
 	public static TableValuedFunctionParameter = 'TableValuedFunctionParameter';
 	public static ScalarValuedFunctionParameter = 'ScalarValuedFunctionParameter';
@@ -107,7 +94,6 @@ export class NodeType {
 	public static ExternalDataSource = 'ExternalDataSource';
 	public static ExternalFileFormat = 'ExternalFileFormat';
 	public static ExternalTable = 'ExternalTable';
-	public static AlwaysEncryptedKey = 'AlwaysEncryptedKey';
 	public static ColumnMasterKey = 'ColumnMasterKey';
 	public static ColumnEncryptionKey = 'ColumnEncryptionKey';
 }

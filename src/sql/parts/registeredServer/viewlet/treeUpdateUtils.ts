@@ -159,7 +159,7 @@ export class TreeUpdateUtils {
 
 	public static getObjectExplorerParent(objectExplorerNode: TreeNode, connectionManagementService: IConnectionManagementService): any {
 		if (objectExplorerNode && objectExplorerNode.parent) {
-			// if oject explorer node's parent is root, return connection profile
+			// if object explorer node's parent is root, return connection profile
 			if (!objectExplorerNode.parent.parent) {
 				var connectionUri = objectExplorerNode.getConnectionProfile().getOptionsKey();
 
