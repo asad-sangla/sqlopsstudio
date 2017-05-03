@@ -9,7 +9,7 @@
 	"win32DirName": "carbon",
 	"win32NameVersion": "carbon",
 	"win32RegValueName": "carbon",
-	"win32AppId": "{E34003BB-9E10-4501-8C11-1234AA83F23F}",
+	"win32AppId": "{{E34003BB-9E10-4501-8C11-1234AA83F23F}",
 	"win32AppUserModelId": "Microsoft.carbon",
 	"win32ShellNameShort": "C&arbon - OSS",
 	"darwinBundleIdentifier": "com.carbon.oss",
