@@ -123,8 +123,6 @@ import 'vs/workbench/parts/watermark/electron-browser/watermark';
 // SQL
 
 import 'sql/parts/tasks/common/tasks.contribution';
-import 'sql/parts/objectExplorer/common/objectExplorer.contribution';
-import 'sql/parts/objectExplorer/viewlet/objectExplorerViewlet';
 import 'sql/parts/registeredServer/common/registeredServer.contribution';
 import 'sql/parts/registeredServer/viewlet/connectionViewlet';
 import 'sql/workbench/api/node/sqlExtHost.contribution';

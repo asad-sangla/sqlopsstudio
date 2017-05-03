@@ -9,20 +9,20 @@ import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ServerTreeRenderer } from 'sql/parts/registeredServer/viewlet/serverTreeRenderer';
 import { ServerTreeDataSource } from 'sql/parts/registeredServer/viewlet/serverTreeDataSource';
-import { ServerTreeController  } from 'sql/parts/registeredServer/viewlet/serverTreeController';
+import { ServerTreeController } from 'sql/parts/registeredServer/viewlet/serverTreeController';
 import { ServerTreeActionProvider } from 'sql/parts/registeredServer/viewlet/serverTreeActionProvider';
-import { DefaultFilter, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
-import { ServerTreeDragAndDrop, RecentConnectionsDragAndDrop} from 'sql/parts/registeredServer/viewlet/dragAndDropController';
+import { DefaultFilter, DefaultAccessibilityProvider, DefaultController } from 'vs/base/parts/tree/browser/treeDefaults';
+import { ServerTreeDragAndDrop, RecentConnectionsDragAndDrop } from 'sql/parts/registeredServer/viewlet/dragAndDropController';
+import { RecentConnectionDataSource } from 'sql/parts/registeredServer/viewlet/recentConnectionDataSource';
 
 export class TreeCreationUtils {
 	/**
- 	* Create a recent connections tree
- 	*/
+	 * Create a recent connections tree
+	 */
 	public static createConnectionTree(treeContainer: HTMLElement, instantiationService: IInstantiationService, isCompact: boolean): Tree {
-		const dataSource = instantiationService.createInstance(ServerTreeDataSource);
-		const actionProvider = instantiationService.createInstance(ServerTreeActionProvider);
+		const dataSource = instantiationService.createInstance(RecentConnectionDataSource);
 		const renderer = instantiationService.createInstance(ServerTreeRenderer, isCompact);
-		const controller = instantiationService.createInstance(ServerTreeController, actionProvider);
+		const controller = new DefaultController();
 		const dnd = instantiationService.createInstance(RecentConnectionsDragAndDrop);
 		const filter = new DefaultFilter();
 		const sorter = null;
@@ -35,12 +35,11 @@ export class TreeCreationUtils {
 				twistiePixels: 20,
 				ariaLabel: nls.localize({ key: 'treeAriaLabel', comment: ['Recent Connections'] }, 'Recent Connections')
 			});
-
 	}
 
 	/**
- 	* Create a registered servers tree
- 	*/
+	 * Create a recent connections tree
+	 */
 	public static createRegisteredServersTree(treeContainer: HTMLElement, instantiationService: IInstantiationService): Tree {
 
 		const dataSource = instantiationService.createInstance(ServerTreeDataSource);

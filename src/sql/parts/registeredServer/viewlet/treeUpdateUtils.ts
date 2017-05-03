@@ -5,7 +5,6 @@
 
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
-import * as builder from 'vs/base/browser/builder';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
@@ -13,7 +12,9 @@ import { ConnectionManagementInfo } from 'sql/parts/connection/common/connection
 import * as Constants from 'sql/parts/connection/common/constants';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
-import { ConnectionProfileGroupWrapper } from 'sql/parts/registeredServer/common/connectionProfileGroupWrapper';
+import { TPromise } from 'vs/base/common/winjs.base';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
+import errors = require('vs/base/common/errors');
 
 export class TreeUpdateUtils {
 
@@ -90,7 +91,7 @@ export class TreeUpdateUtils {
 	/**
 	 * Set input for the registered servers tree.
 	 */
-	public static registeredServerUpdate(tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): void {
+	public static registeredServerUpdate(tree: ITree, connectionManagementService: IConnectionManagementService): void {
 		let selectedElement: any;
 		let targetsToExpand: any[];
 		if (tree) {
@@ -101,10 +102,10 @@ export class TreeUpdateUtils {
 			targetsToExpand = tree.getExpandedElements();
 		}
 
-		let treeInput = TreeUpdateUtils.getTreeInput(connectionManagementService, objectExplorerService);
+		let treeInput = TreeUpdateUtils.getTreeInput(connectionManagementService);
 		if (treeInput) {
 			if (treeInput !== tree.getInput()) {
-				tree.setInput(treeInput).done(() => {
+				tree.setInput(treeInput).then(() => {
 					// Make sure to expand all folders that where expanded in the previous session
 					if (targetsToExpand) {
 						tree.expandAll(targetsToExpand);
@@ -113,18 +114,18 @@ export class TreeUpdateUtils {
 						tree.select(selectedElement);
 					}
 					tree.getFocus();
-				});
+				}, errors.onUnexpectedError);
 			}
 		}
 	}
 
-	public static getTreeInput(connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): ConnectionProfileGroup {
+	public static getTreeInput(connectionManagementService: IConnectionManagementService): ConnectionProfileGroup {
 
 		let groups = connectionManagementService.getConnectionGroups();
 		if (groups && groups.length > 0) {
 			let treeInput = TreeUpdateUtils.addUnsaved(groups[0], connectionManagementService);
 			treeInput.name = 'root';
-			return new ConnectionProfileGroupWrapper(treeInput.name, treeInput.parent, treeInput.id, treeInput.children, treeInput.connections, objectExplorerService, connectionManagementService);
+			return treeInput;
 		}
 		// Should never get to this case.
 		return undefined;
@@ -139,4 +140,46 @@ export class TreeUpdateUtils {
 		return root;
 	}
 
+	public static hasObjectExplorerNode(connection: ConnectionProfile, connectionManagementService: IConnectionManagementService): boolean {
+		return connectionManagementService.isConnected(undefined, connection);
+	}
+
+	public static getObjectExplorerNode(connection: ConnectionProfile, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<TreeNode[]> {
+		if (connectionManagementService.isConnected(undefined, connection)) {
+			var rootNode = objectExplorerService.getObjectExplorerNode(connection);
+			return new TPromise<TreeNode[]>((resolve) => {
+				objectExplorerService.expandTreeNode(rootNode.getSession(), rootNode).then(() => {
+					resolve(rootNode.children);
+				});
+			});
+		} else {
+			return TPromise.as(null);
+		}
+	}
+
+	public static getObjectExplorerParent(objectExplorerNode: TreeNode, connectionManagementService: IConnectionManagementService): any {
+		if (objectExplorerNode && objectExplorerNode.parent) {
+			// if oject explorer node's parent is root, return connection profile
+			if (!objectExplorerNode.parent.parent) {
+				var connectionUri = objectExplorerNode.getConnectionProfile().getOptionsKey();
+
+				// get connection profile from connection profile groups
+				let root = TreeUpdateUtils.getTreeInput(connectionManagementService);
+				let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
+				let results = connections.filter(con => {
+					if (connectionUri.includes(con.getOptionsKey())) {
+						return true;
+					} else {
+						return false;
+					}
+				});
+				if (results && results.length > 0) {
+					return results[0];
+				}
+			} else {
+				return objectExplorerNode.parent;
+			}
+		}
+		return null;
+	}
 }

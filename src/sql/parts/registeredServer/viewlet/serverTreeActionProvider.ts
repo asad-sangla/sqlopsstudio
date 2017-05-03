@@ -14,8 +14,8 @@ import { AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAct
 import { NewQueryAction as OENewQueryAction, DisconnectAction, ScriptSelectAction, EditDataAction as OEEditDataAction, ScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
-import { ConnectionProfileGroupWrapper } from 'sql/parts/registeredServer/common/connectionProfileGroupWrapper';
-import { ConnectionProfileWrapper } from 'sql/parts/registeredServer/common/connectionProfileWrapper';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
 /**
  *  Provides actions for the server tree elements
@@ -29,22 +29,22 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	}
 
 	public hasActions(tree: ITree, element: any): boolean {
-		return element instanceof ConnectionProfileGroupWrapper || (element instanceof ConnectionProfileWrapper) || (element instanceof TreeNode);
+		return element instanceof ConnectionProfileGroup || (element instanceof ConnectionProfile) || (element instanceof TreeNode);
 	}
 
 	/**
 	 * Return actions given an element in the tree
 	 */
 	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
-		if (element instanceof ConnectionProfileWrapper) {
+		if (element instanceof ConnectionProfile) {
 			return TPromise.as(this.getConnectionActions(tree, element));
 		}
-		if (element instanceof ConnectionProfileGroupWrapper) {
+		if (element instanceof ConnectionProfileGroup) {
 			return TPromise.as(this.getConnectionProfileGroupActions(tree, element));
 		}
 		if (element instanceof TreeNode) {
 			var treeNode = <TreeNode>element;
-			return TPromise.as(this.getOENodeActions(treeNode));
+			return TPromise.as(this.getObjectExplorerNodeActions(treeNode));
 		}
 
 		return TPromise.as([]);
@@ -61,7 +61,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	/**
 	 * Return actions for connection elements
 	 */
-	public getConnectionActions(tree: ITree, element: ConnectionProfileWrapper): IAction[] {
+	public getConnectionActions(tree: ITree, element: ConnectionProfile): IAction[] {
 		return [
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
@@ -73,7 +73,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	/**
 	 * Return actions for connection group elements
 	 */
-	public getConnectionProfileGroupActions(tree: ITree, element: ConnectionProfileGroupWrapper): IAction[] {
+	public getConnectionProfileGroupActions(tree: ITree, element: ConnectionProfileGroup): IAction[] {
 		return [
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			this._instantiationService.createInstance(RenameGroupAction, RenameGroupAction.ID, RenameGroupAction.LABEL, tree, element),
@@ -84,7 +84,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	/**
 	 * Return actions for OE elements
 	 */
-	public getOENodeActions(treeNode: TreeNode): IAction[] {
+	public getObjectExplorerNodeActions(treeNode: TreeNode): IAction[] {
 		var actions: IAction[] = [];
 
 		if (treeNode.isTopLevel()) {

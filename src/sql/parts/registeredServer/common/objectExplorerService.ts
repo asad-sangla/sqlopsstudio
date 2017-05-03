@@ -5,7 +5,6 @@
 'use strict';
 
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
-import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
@@ -35,18 +34,11 @@ export interface IObjectExplorerService {
 	 */
 	registerProvider(providerId: string, provider: data.ObjectExplorerProvider): void;
 
-	/* To do: remove this function once remove OE viewlet */
-	getRootTreeNode(root: TreeNode, connections: ConnectionProfile): Promise<TreeNode>;
-
-	createTreeRoot(): TreeNode;
-
-	getTopLevelNode(connection: ConnectionProfile): TreeNode;
+	getObjectExplorerNode(connection: IConnectionProfile): TreeNode;
 
 	updateObjectExplorerNodes(): Promise<void>[];
 
 	deleteObjectExplorerNode(connection: IConnectionProfile): void;
-
-	getActiveObjectExplorerNodes(): { [id: string]: TreeNode };
 }
 
 export class ObjectExplorerService implements IObjectExplorerService {
@@ -57,18 +49,12 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	private _providers: { [handle: string]: data.ObjectExplorerProvider; } = Object.create(null);
 
-	private _sessions: { [sessionId: string]: TreeNode } = {};
-
 	private _activeObjectExplorerNodes: { [id: string]: TreeNode };
 
 	constructor(
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		this._activeObjectExplorerNodes = {};
-	}
-
-	public getActiveObjectExplorerNodes(): { [id: string]: TreeNode } {
-		return this._activeObjectExplorerNodes;
 	}
 
 	public updateObjectExplorerNodes(): Promise<void>[] {
@@ -83,7 +69,11 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public deleteObjectExplorerNode(connection: IConnectionProfile): void {
-		delete this._activeObjectExplorerNodes[connection.getOptionsKey()];
+		var connectionUri = connection.getOptionsKey();
+		var nodeTree = this._activeObjectExplorerNodes[connectionUri];
+		this.closeSession(connection.providerName, nodeTree.getSession()).then(() => {
+			delete this._activeObjectExplorerNodes[connectionUri];
+		});
 	}
 
 	private updateNewObjectExplorerNode(connection: ConnectionProfile): Promise<void> {
@@ -92,21 +82,17 @@ export class ObjectExplorerService implements IObjectExplorerService {
 				resolve();
 			} else {
 				this.createNewSession(connection.providerName, connection).then(session => {
-					if (session.sessionId in this._sessions) {
-						resolve();
-					} else {
-						let server = this.toTreeNode(session.rootNode, null);
-						server.connection = connection;
-						server.session = session;
-						this._activeObjectExplorerNodes[connection.getOptionsKey()] = server;
-						resolve();
-					}
+					let server = this.toTreeNode(session.rootNode, null);
+					server.connection = connection;
+					server.session = session;
+					this._activeObjectExplorerNodes[connection.getOptionsKey()] = server;
+					resolve();
 				});
 			}
 		});
 	}
 
-	public getTopLevelNode(connection: ConnectionProfile): TreeNode {
+	public getObjectExplorerNode(connection: IConnectionProfile): TreeNode {
 		return this._activeObjectExplorerNodes[connection.getOptionsKey()];
 	}
 
@@ -182,32 +168,6 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	private toTreeNode(nodeInfo: data.NodeInfo, parent: TreeNode): TreeNode {
-		return new TreeNode(nodeInfo.nodeType
-			, nodeInfo.label,
-			nodeInfo.isLeaf, nodeInfo.nodePath, parent, nodeInfo.metadata);
-	}
-
-	public createTreeRoot(): TreeNode {
-		let root = new TreeNode(NodeType.Root, 'root', false, 'root', null, null);
-		root.children = [];
-		return root;
-	}
-
-	public getRootTreeNode(root: TreeNode, connection: ConnectionProfile): Promise<TreeNode> {
-		return new Promise<TreeNode>((resolve, reject) => {
-			var children = root.children;
-
-			this.createNewSession(connection.providerName, connection).then(session => {
-				if (session.sessionId in this._sessions) {
-					resolve(root);
-				} else {
-					let server = this.toTreeNode(session.rootNode, root);
-					server.connection = connection;
-					server.session = session;
-					children.push(server);
-					resolve(root);
-				}
-			});
-		});
+		return new TreeNode(nodeInfo.nodeType, nodeInfo.label, nodeInfo.isLeaf, nodeInfo.nodePath, parent, nodeInfo.metadata);
 	}
 }

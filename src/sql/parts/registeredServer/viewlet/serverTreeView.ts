@@ -112,17 +112,16 @@ export class ServerTreeView extends CollapsibleViewletView {
 
 	public addObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
 		this.messages.hide();
-		var objectexplorerNode = this._objectExplorerService.getActiveObjectExplorerNodes();
-		if (!objectexplorerNode[connection.getOptionsKey()]) {
+		if (!this._objectExplorerService.getObjectExplorerNode(connection)) {
 			Promise.all(this._objectExplorerService.updateObjectExplorerNodes()).then(() => {
-				TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService, this._objectExplorerService);
+				TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
 			});
 		}
 	}
 
 	public deleteObjectExplorerNodeAndRefreshTree(connectionUri: string): void {
 		if (connectionUri) {
-			let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService, this._objectExplorerService);
+			let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
 			let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
 			let results = connections.filter(con => {
 				if (connectionUri.includes(con.getOptionsKey())) {
@@ -135,13 +134,13 @@ export class ServerTreeView extends CollapsibleViewletView {
 				this._objectExplorerService.deleteObjectExplorerNode(results[0]);
 			}
 		}
-		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService, this._objectExplorerService);
+		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
 	}
 
 	public refreshTree(): void {
 		this.messages.hide();
 		this.clearOtherActions();
-		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService, this._objectExplorerService);
+		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
 	}
 
 	/**
@@ -188,7 +187,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		this.messages.hide();
 		// Clear other action views if user switched between two views
 		this.clearOtherActions(view);
-		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService, this._objectExplorerService);
+		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
 		if (root) {
 			// Filter results based on view
 			let filteredResults = this.filterConnections([root], view);
@@ -245,7 +244,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 */
 	private searchConnections(searchString: string): ConnectionProfile[] {
 
-		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService, this._objectExplorerService);
+		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
 		let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
 		let results = connections.filter(con => {
 			if (searchString && (searchString.length > 0)) {
