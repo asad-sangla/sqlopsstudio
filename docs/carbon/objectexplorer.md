@@ -36,6 +36,13 @@ I CAN easily distinguish the server profile by viewing the following information
 
 - Remove **FileTables** and **External Tables** folders and merge it with **Tables**. Indicate different tables types with table icon.
 
+Consider adding following structures:
+
+- Server Objects
+	- Backup Devices
+
+- Replication (post preview)
+
 
 ### OE Node properties
 
