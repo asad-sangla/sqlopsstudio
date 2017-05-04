@@ -5,9 +5,11 @@ This document lists a function feature sceanrio based on 5/3 carbon implementati
 ## OE Functional GAP analysis (5/3)
 
 I CAN add a new group to OE.
-
 * On OE, start **add new group** action.
 * Using add group dialog, configure the group settings.
+	- Group Name
+	- Group Color
+	- Group Description
 * Click Add button to add a new group on OE.
 
 I CAN add a new server profile under an existing group.
@@ -31,6 +33,50 @@ I CAN easily distinguish the server profile by viewing the following information
 * Server name
 * Database name
 * User name
+
+### Context Menu
+
+* On Group
+	* Add new server
+	* Rename
+	* Remove
+
+* On Server
+	* Connect / Disconnect
+	* New query
+	* New database
+	* Restore database
+	* Manage
+	* Rename
+		* Changes the profile name
+	* Remove
+	* Refresh
+
+* On Database
+	* New query
+	* Backup database
+	* Restore database
+	* Script
+	* Manage
+	* Delete database
+		* (todo) design drop database dialog
+
+	* Refresh
+
+* On Table
+	* New query
+	* Select top 1000 rows
+	* Edit data
+	* Script
+	* Manage
+	* Rename
+	* Delete table
+		* (todo) design drop ```object``` dialog
+	* Refresh
+
+* On Folder for each object type
+	* New ```Object Type``` 
+		> Open editor with new ```object type``` snippet
 
 ### OE Folder structure suggestions
 
@@ -68,3 +114,8 @@ Suggestion: remove following object folder types from OE.
 - Programmability::Rules - deprecated and removed.
 - Programmability:: Defaults - deprecated and removed.
 
+## Permission handling - LPU scenarios
+
+I CAN get an explicit and easy to understand error messages:
+- User does not have a permission to CONNECT database
+- User does not have a permission to View Definition of database
