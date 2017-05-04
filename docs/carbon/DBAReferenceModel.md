@@ -1,4 +1,4 @@
-# Carbon Getting Started - Focus on DBA
+# Carbon DBA Reference Model
 
 (Intial draft)
 
