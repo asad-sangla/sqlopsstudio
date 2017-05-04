@@ -42,7 +42,7 @@ import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ConnectionGlobalStatus } from 'sql/parts/connection/common/connectionGlobalStatus';
-import { ConnectionStatusbarItem } from  'sql/parts/connection/common/connectionStatus';
+import { ConnectionStatusbarItem } from 'sql/parts/connection/common/connectionStatus';
 import { CommandsRegistry, ICommandService, ICommandHandler } from 'vs/platform/commands/common/commands';
 
 export class ConnectionManagementService implements IConnectionManagementService {
@@ -117,7 +117,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		if (_capabilitiesService && _capabilitiesService.onProviderRegisteredEvent) {
 			_capabilitiesService.onProviderRegisteredEvent((capabilities => {
 				if (capabilities.providerName === 'MSSQL') {
-				if (!this.hasRegisteredServers()) {
+					if (!this.hasRegisteredServers()) {
 						// prompt the user for a new connection on startup if no profiles are registered
 						this.showConnectionDialog();
 					}
@@ -167,7 +167,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			this._splashScreen.hideSplashScreen();
 
 			// show the Registered Server viewlet
-			this._commandService.executeCommand('workbench.view.connections', { });
+			this._commandService.executeCommand('workbench.view.connections', {});
 		}
 	}
 
@@ -339,7 +339,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 				showConnectionDialogOnError: false
 			};
 		}
-		connection.id = Utils.generateGuid();
 		return new Promise<IConnectionResult>((resolve, reject) => {
 			if (callbacks.onConnectStart) {
 				callbacks.onConnectStart();

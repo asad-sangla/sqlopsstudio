@@ -49,7 +49,10 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	}
 
 	public get id(): string {
-		return this._id ? this._id : this.getOptionsKey();
+		if (Utils.isEmpty(this._id)) {
+			this._id = Utils.generateGuid();
+		}
+		return this._id;
 	}
 
 	public set id(value: string) {
@@ -138,6 +141,9 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		connectionInfo.saveProfile = true;
 		connectionInfo.savePassword = profile.savePassword;
 		connectionInfo.id = profile.id;
+		if (Utils.isEmpty(profile.id)) {
+			connectionInfo.id = Utils.generateGuid();
+		}
 		return connectionInfo;
 	}
 

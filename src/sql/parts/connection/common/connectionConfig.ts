@@ -131,7 +131,7 @@ export class ConnectionConfig implements IConnectionConfig {
 					});
 					profiles.push(newProfile);
 
-					this.writeUserConfiguration(Constants.connectionsArrayName, profiles).then(() => {
+					this.writeConfiguration(Constants.connectionsArrayName, profiles).then(() => {
 						resolve(connectionProfile);
 					}).catch(err => {
 						reject(err);
@@ -164,7 +164,7 @@ export class ConnectionConfig implements IConnectionConfig {
 				let result = this.saveGroup(groups, profile.groupFullName);
 				groups = result.groups;
 
-				this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
+				this.writeConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
 					resolve(result.newGroupId);
 				}).catch(err => {
 					reject(err);
@@ -187,6 +187,12 @@ export class ConnectionConfig implements IConnectionConfig {
 
 		if (userProfiles !== undefined) {
 			profiles = profiles.concat(userProfiles);
+			profiles.forEach(profile => {
+				if (Utils.isEmpty(profile.id)) {
+					profile.id = Utils.generateGuid();
+				}
+			});
+			this.writeConfiguration(Constants.connectionsArrayName, profiles, ConfigurationTarget.USER);
 		}
 
 		if (getWorkspaceConnections) {
@@ -196,6 +202,12 @@ export class ConnectionConfig implements IConnectionConfig {
 
 			if (workspaceProfiles !== undefined) {
 				profiles = profiles.concat(workspaceProfiles);
+				workspaceProfiles.forEach(profile => {
+					if (Utils.isEmpty(profile.id)) {
+						profile.id = Utils.generateGuid();
+					}
+				});
+				this.writeConfiguration(Constants.connectionsArrayName, workspaceProfiles, ConfigurationTarget.WORKSPACE);
 			}
 		}
 
@@ -207,6 +219,7 @@ export class ConnectionConfig implements IConnectionConfig {
 			this._capabilitiesService.onProviderRegisteredEvent((serverCapabilities) => {
 				providerConnectionProfile.onProviderRegistered(serverCapabilities);
 			});
+
 			return providerConnectionProfile;
 		});
 
@@ -227,7 +240,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		});
 
 		// Write connections back to settings
-		return this.writeUserConfiguration(Constants.connectionsArrayName, profiles);
+		return this.writeConfiguration(Constants.connectionsArrayName, profiles);
 	}
 
 	/**
@@ -254,9 +267,9 @@ export class ConnectionConfig implements IConnectionConfig {
 		groups = groups.filter((grp) => {
 			return !subgroups.some((item) => item.id === grp.id);
 		});
-		return new Promise<void>((resolve,reject) => {
-			this.writeUserConfiguration(Constants.connectionsArrayName, profiles).then(() => {
-				this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
+		return new Promise<void>((resolve, reject) => {
+			this.writeConfiguration(Constants.connectionsArrayName, profiles).then(() => {
+				this.writeConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
 					resolve();
 				}).catch(() => reject());
 			}).catch(() => reject());
@@ -274,7 +287,7 @@ export class ConnectionConfig implements IConnectionConfig {
 			}
 			return g;
 		});
-		return this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups);
+		return this.writeConfiguration(Constants.connectionGroupsArrayName, groups);
 	}
 
 	/**
@@ -295,7 +308,7 @@ export class ConnectionConfig implements IConnectionConfig {
 				}
 			});
 		}
-		return this.writeUserConfiguration(Constants.connectionsArrayName, profiles);
+		return this.writeConfiguration(Constants.connectionsArrayName, profiles);
 	}
 
 	public saveGroup(groups: IConnectionProfileGroup[], groupFullName: string): ISaveGroupResult {
@@ -314,7 +327,7 @@ export class ConnectionConfig implements IConnectionConfig {
 			}
 			return g;
 		});
-		return this.writeUserConfiguration(Constants.connectionGroupsArrayName, groups);
+		return this.writeConfiguration(Constants.connectionGroupsArrayName, groups);
 	}
 
 	private isSameGroupName(group1: IConnectionProfileGroup, group2: IConnectionProfileGroup): boolean {
@@ -386,13 +399,16 @@ export class ConnectionConfig implements IConnectionConfig {
 	 * @param parsedSettingsFile an object representing the parsed contents of the settings file.
 	 * @param profiles the set of profiles to insert into the settings file.
 	 */
-	private writeUserConfiguration(key: string, profiles: IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]): Promise<void> {
+	private writeConfiguration(
+		key: string,
+		profiles: IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[],
+		target: ConfigurationTarget = ConfigurationTarget.USER): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			let configValue: IConfigurationValue = {
 				key: key,
 				value: profiles
 			};
-			this._configurationEditService.writeConfiguration(ConfigurationTarget.USER, configValue).then(result => {
+			this._configurationEditService.writeConfiguration(target, configValue).then(result => {
 				this._workspaceConfigurationService.reloadConfiguration().then(() => {
 					resolve();
 				});

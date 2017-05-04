@@ -242,6 +242,7 @@ suite('SQL ConnectionConfig tests', () => {
 		configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
 		let nothing: void;
 		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.WORKSPACE, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));
 	});
 
 	function groupsAreEqual(groups1: IConnectionProfileGroup[], groups2: IConnectionProfileGroup[]): Boolean {
@@ -470,6 +471,40 @@ suite('SQL ConnectionConfig tests', () => {
 		assert.equal(allConnections.length, connections.user.length);
 	});
 
+	test('getConnections should return connections with a valid id', () => {
+		let getWorkspaceConnections: boolean = false;
+		let connectionsWithNoId: IWorkspaceConfigurationValue<IConnectionProfileStore[]> = {
+			user: connections.user.map(c => {
+				c.id = undefined;
+				return c;
+			}),
+			default: connections.default,
+			workspace: connections.workspace.map(c => {
+				c.id = c.options['serverName'];
+				return c;
+			}),
+			value: connections.value
+		};
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connectionsWithNoId);
+
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		let allConnections = config.getConnections(getWorkspaceConnections);
+		assert.equal(allConnections.length, connections.user.length);
+		allConnections.forEach(connection => {
+			let userConnection = connectionsWithNoId.user.find(u => u.options['serverName'] === connection.serverName);
+			if (userConnection !== undefined) {
+				assert.notEqual(connection.id, connection.getOptionsKey());
+				assert.notEqual(connection.id, undefined);
+			} else {
+				let workspaceConnection = connectionsWithNoId.workspace.find(u => u.options['serverName'] === connection.serverName);
+				assert.notEqual(connection.id, connection.getOptionsKey());
+				assert.equal(workspaceConnection.id, connection.id);
+			}
+		});
+	});
+
 	test('getConnections update the capabilities in each profile when the provider capabilities is registered', () => {
 		let oldOptionName: string = 'oldOptionName';
 		let optionsMetadataFromConfig = capabilities[0].connectionProvider.options.concat({
@@ -682,7 +717,7 @@ suite('SQL ConnectionConfig tests', () => {
 		let called: boolean = false;
 		let nothing: void;
 		let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService> = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any,val: any) => {
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
 			calledValue = val.value as IConnectionProfileStore[];
 		}).returns(() => TPromise.as<void>(nothing));
 		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
@@ -694,13 +729,13 @@ suite('SQL ConnectionConfig tests', () => {
 		config.renameGroup(connectionProfileGroup).then(() => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
-				calledValue.forEach(con => {
-					if (con.id === 'g2') {
-						assert.equal(con.name, 'g-renamed', 'Group was not renamed');
-						called = true;
-					}
-				});
-				assert.equal(called, true, 'group was not renamed');
+			calledValue.forEach(con => {
+				if (con.id === 'g2') {
+					assert.equal(con.name, 'g-renamed', 'Group was not renamed');
+					called = true;
+				}
+			});
+			assert.equal(called, true, 'group was not renamed');
 		}).then(() => done(), (err) => done(err));
 	});
 
@@ -711,7 +746,7 @@ suite('SQL ConnectionConfig tests', () => {
 		let called: boolean = false;
 		let nothing: void;
 		let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService> = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any,val: any) => {
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
 			calledValue = val.value as IConnectionProfileStore[];
 		}).returns(() => TPromise.as<void>(nothing));
 		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
@@ -724,13 +759,13 @@ suite('SQL ConnectionConfig tests', () => {
 		config.changeGroupIdForConnectionGroup(sourceProfileGroup, targetProfileGroup).then(() => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
-				calledValue.forEach(con => {
-					if (con.id === 'g2') {
-						assert.equal(con.parentId, 'g3', 'Group parent was not changed');
-						called = true;
-					}
-				});
-				assert.equal(called, true, 'Group parent was not changed');
+			calledValue.forEach(con => {
+				if (con.id === 'g2') {
+					assert.equal(con.parentId, 'g3', 'Group parent was not changed');
+					called = true;
+				}
+			});
+			assert.equal(called, true, 'Group parent was not changed');
 		}).then(() => done(), (err) => done(err));
 	});
 
@@ -745,7 +780,7 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: 'g3',
 			groupId: 'g3',
-			getOptionsKey:() => { return 'connectionId'; },
+			getOptionsKey: () => { return 'connectionId'; },
 			providerName: 'MSSQL',
 			options: {},
 			saveProfile: true,
@@ -763,7 +798,7 @@ suite('SQL ConnectionConfig tests', () => {
 		let called: boolean = false;
 		let nothing: void;
 		let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService> = TypeMoq.Mock.ofType(ConfigurationEditingService);
-		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any,val: any) => {
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
 			calledValue = val.value as IConnectionProfileStore[];
 		}).returns(() => TPromise.as<void>(nothing));
 
@@ -771,13 +806,13 @@ suite('SQL ConnectionConfig tests', () => {
 		config.changeGroupIdForConnection(connectionProfile, newId).then(() => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
-				calledValue.forEach(con => {
-					if (con.options.serverName === 'server3') {
-						assert.equal(con.groupId, newId, 'Group parent was not changed');
-						called = true;
-					}
-				});
-				assert.equal(called, true, 'Group parent was not changed');
+			calledValue.forEach(con => {
+				if (con.options.serverName === 'server3') {
+					assert.equal(con.groupId, newId, 'Group parent was not changed');
+					called = true;
+				}
+			});
+			assert.equal(called, true, 'Group parent was not changed');
 		}).then(() => done(), (err) => done(err));
 	});
 

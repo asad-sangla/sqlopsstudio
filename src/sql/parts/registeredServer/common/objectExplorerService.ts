@@ -69,7 +69,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public deleteObjectExplorerNode(connection: IConnectionProfile): void {
-		var connectionUri = connection.getOptionsKey();
+		var connectionUri = connection.id;
 		var nodeTree = this._activeObjectExplorerNodes[connectionUri];
 		this.closeSession(connection.providerName, nodeTree.getSession()).then(() => {
 			delete this._activeObjectExplorerNodes[connectionUri];
@@ -78,14 +78,14 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	private updateNewObjectExplorerNode(connection: ConnectionProfile): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			if (this._activeObjectExplorerNodes[connection.getOptionsKey()]) {
+			if (this._activeObjectExplorerNodes[connection.id]) {
 				resolve();
 			} else {
 				this.createNewSession(connection.providerName, connection).then(session => {
 					let server = this.toTreeNode(session.rootNode, null);
 					server.connection = connection;
 					server.session = session;
-					this._activeObjectExplorerNodes[connection.getOptionsKey()] = server;
+					this._activeObjectExplorerNodes[connection.id] = server;
 					resolve();
 				});
 			}
@@ -93,7 +93,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public getObjectExplorerNode(connection: IConnectionProfile): TreeNode {
-		return this._activeObjectExplorerNodes[connection.getOptionsKey()];
+		return this._activeObjectExplorerNodes[connection.id];
 	}
 
 	public createNewSession(providerId: string, connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {
