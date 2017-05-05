@@ -118,4 +118,5 @@ Suggestion: remove following object folder types from OE.
 
 I CAN get an explicit and easy to understand error messages:
 - User does not have a permission to CONNECT database
-- User does not have a permission to View Definition of database
+- User does not have a permission to View Definition of database /schema / indivisual object
+
