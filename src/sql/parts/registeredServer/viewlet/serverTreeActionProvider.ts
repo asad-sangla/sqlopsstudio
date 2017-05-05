@@ -10,7 +10,7 @@ import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegis
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
-import { AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import { AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction, RefreshAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { NewQueryAction as OENewQueryAction, DisconnectAction, ScriptSelectAction, EditDataAction as OEEditDataAction, ScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
@@ -44,7 +44,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		}
 		if (element instanceof TreeNode) {
 			var treeNode = <TreeNode>element;
-			return TPromise.as(this.getObjectExplorerNodeActions(treeNode));
+			return TPromise.as(this.getObjectExplorerNodeActions(tree, treeNode));
 		}
 
 		return TPromise.as([]);
@@ -66,7 +66,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
 			this._instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL),
-			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL, element)
+			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL, element),
+			this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, element)
 		];
 	}
 
@@ -84,7 +85,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	/**
 	 * Return actions for OE elements
 	 */
-	public getObjectExplorerNodeActions(treeNode: TreeNode): IAction[] {
+	public getObjectExplorerNodeActions(tree: ITree, treeNode: TreeNode): IAction[] {
 		var actions: IAction[] = [];
 
 		if (treeNode.isTopLevel()) {
@@ -96,6 +97,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 			actions.push(this._instantiationService.createInstance(ScriptCreateAction, ScriptCreateAction.ID, ScriptCreateAction.LABEL));
 		}
 		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL));
+		actions.push(this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, treeNode));
 		return actions;
 	}
 }

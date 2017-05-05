@@ -110,31 +110,47 @@ export class ServerTreeView extends CollapsibleViewletView {
 		return [this.addServerAction, this.activeConnectionsFilterAction, this.recentConnectionsFilterAction];
 	}
 
+	private getConnectionInTreeInput(connectionUri: string): ConnectionProfile {
+		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
+		let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
+		let results = connections.filter(con => {
+			if (connectionUri.includes(con.getOptionsKey())) {
+				return true;
+			} else {
+				return false;
+			}
+		});
+		if (results && results.length > 0) {
+			return results[0];
+		}
+		return null;
+	}
+
 	public addObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
 		this.messages.hide();
 		if (!this._objectExplorerService.getObjectExplorerNode(connection)) {
 			Promise.all(this._objectExplorerService.updateObjectExplorerNodes()).then(() => {
-				TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
+				var conn = this.getConnectionInTreeInput(connection.getOptionsKey());
+				if (conn) {
+					this.tree.refresh(conn).then(() => {
+						return this.tree.expand(conn).then(() => {
+							return this.tree.reveal(conn, 0.5).then(() => {
+							});
+						});
+					}).done(null, errors.onUnexpectedError);
+				}
 			});
 		}
 	}
 
 	public deleteObjectExplorerNodeAndRefreshTree(connectionUri: string): void {
 		if (connectionUri) {
-			let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
-			let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
-			let results = connections.filter(con => {
-				if (connectionUri.includes(con.getOptionsKey())) {
-					return true;
-				} else {
-					return false;
-				}
-			});
-			if (results && results.length > 0) {
-				this._objectExplorerService.deleteObjectExplorerNode(results[0]);
+			var conn = this.getConnectionInTreeInput(connectionUri);
+			if (conn) {
+				this._objectExplorerService.deleteObjectExplorerNode(conn);
+				this.tree.refresh(conn);
 			}
 		}
-		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
 	}
 
 	public refreshTree(): void {

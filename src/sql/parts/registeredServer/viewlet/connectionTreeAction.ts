@@ -17,6 +17,46 @@ import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionPr
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import * as Constants from 'sql/parts/connection/common/constants';
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
+import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
+
+export class RefreshAction extends Action {
+
+	public static ID = 'objectExplorer.refresh';
+	public static LABEL = localize('refresh', 'Refresh');
+	private _tree: ITree;
+
+	constructor(
+		id: string,
+		label: string,
+		tree: ITree,
+		private element: ConnectionProfile | TreeNode,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
+	) {
+		super(id, label);
+		this._tree = tree;
+	}
+	public run(): TPromise<boolean> {
+		var treeNode: TreeNode;
+		if (this.element instanceof ConnectionProfile) {
+			if (this._connectionManagementService.isConnected(undefined, this.element)) {
+				treeNode = this._objectExplorerService.getObjectExplorerNode(this.element);
+			}
+		} else if (this.element instanceof TreeNode) {
+			treeNode = this.element;
+		}
+
+		if (treeNode) {
+			this._objectExplorerService.refreshTreeNode(treeNode.getSession(), treeNode).then(() => {
+				this._tree.refresh(this.element).then(() => {
+					this._tree.expand(this.element);
+				});
+			});
+		}
+		return TPromise.as(true);
+	}
+}
 
 export class ChangeConnectionAction extends Action {
 

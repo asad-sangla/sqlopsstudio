@@ -94,6 +94,10 @@ export class TreeUpdateUtils {
 	public static registeredServerUpdate(tree: ITree, connectionManagementService: IConnectionManagementService): void {
 		let selectedElement: any;
 		let targetsToExpand: any[];
+
+		// Focus
+		tree.DOMFocus();
+
 		if (tree) {
 			let selection = tree.getSelection();
 			if (selection && selection.length === 1) {

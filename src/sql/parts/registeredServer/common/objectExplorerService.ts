@@ -29,6 +29,8 @@ export interface IObjectExplorerService {
 
 	expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]>;
 
+	refreshTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]>;
+
 	/**
 	 * Register a ObjectExplorer provider
 	 */
@@ -157,6 +159,18 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	public expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]> {
 		return this.expandNode(parentTree.getConnectionProfile().providerName, session, parentTree.nodePath).then(expandResult => {
+			let children = expandResult.nodes.map(node => {
+				return this.toTreeNode(node, parentTree);
+			});
+			parentTree.children = children.filter(c => c !== undefined);
+			return children;
+		}, error => {
+
+		});
+	}
+
+	public refreshTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]> {
+		return this.refreshNode(parentTree.getConnectionProfile().providerName, session, parentTree.nodePath).then(expandResult => {
 			let children = expandResult.nodes.map(node => {
 				return this.toTreeNode(node, parentTree);
 			});
