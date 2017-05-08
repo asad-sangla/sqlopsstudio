@@ -662,8 +662,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise<boolean>((resolve, reject) => {
 			// If the URI is connected, disconnect it and the editor
 			if (self.isConnected(owner.uri)) {
+				var connection = self.getConnectionProfile(owner.uri);
 				owner.onDisconnect();
-				resolve(self.doDisconnect(owner.uri));
+				resolve(self.doDisconnect(connection, owner.uri));
 
 				// If the URI is connecting, prompt the user to cancel connecting
 			} else if (self.isConnecting(owner.uri)) {
@@ -733,7 +734,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private doDisconnect(fileUri: string): Promise<boolean> {
+	private doDisconnect(connection: IConnectionProfile, fileUri: string): Promise<boolean> {
 		const self = this;
 
 		return new Promise<boolean>((resolve, reject) => {
@@ -745,7 +746,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				// If the request was sent
 				if (result) {
 					this._connectionFactory.deleteConnection(fileUri);
-					this._notifyDisconnected(fileUri);
+					this._notifyDisconnected(connection, fileUri);
 
 					if (this._connectionFactory.isDefaultTypeUri(fileUri)) {
 						this._connectionGlobalStatus.setStatusToDisconnected(fileUri);
@@ -762,7 +763,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public disconnectProfile(connection: ConnectionProfile): Promise<boolean> {
 		let uri = this._connectionFactory.getConnectionManagementId(connection);
-		return this.doDisconnect(uri);
+		return this.doDisconnect(connection, uri);
 		// close all dashboards
 	}
 
@@ -841,12 +842,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (!result || !result.connected) {
 					// Note: Ideally this wouldn't disconnect on failure, but that's a separate issue that should
 					// be addressed in the future
-					self._notifyDisconnected(connectionUri);
+					self._notifyDisconnected(profile, connectionUri);
 					return false;
 				}
 				return true;
 			}, err => {
-				self._notifyDisconnected(connectionUri);
+				self._notifyDisconnected(profile, connectionUri);
 				return false;
 			});
 		}
@@ -865,7 +866,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// Disconnect if connected
 		let uri = this._connectionFactory.getConnectionManagementId(connection);
 		if (this.isConnected(uri)) {
-			this.doDisconnect(uri).then((result) => {
+			this.doDisconnect(connection, uri).then((result) => {
 				if (result) {
 					// Remove profile from configuration
 					this._connectionStore.deleteConnectionFromConfiguration(connection).then(() => {
@@ -907,7 +908,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		connections.forEach((con) => {
 			let uri = this._connectionFactory.getConnectionManagementId(con);
 			if (this.isConnected(uri)) {
-				disconnected.push(this.doDisconnect(uri));
+				disconnected.push(this.doDisconnect(con, uri));
 			}
 		});
 
@@ -928,9 +929,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return Promise.resolve(undefined);
 	}
 
-	private _notifyDisconnected(connectionUri: string): void {
+	private _notifyDisconnected(connectionProfile: IConnectionProfile, connectionUri: string): void {
 		this._onDisconnect.fire(<IConnectionParams>{
-			connectionUri: connectionUri
+			connectionUri: connectionUri,
+			connectionProfile: connectionProfile
 		});
 	}
 }

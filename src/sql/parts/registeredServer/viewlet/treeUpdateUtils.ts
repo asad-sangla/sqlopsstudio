@@ -165,13 +165,13 @@ export class TreeUpdateUtils {
 		if (objectExplorerNode && objectExplorerNode.parent) {
 			// if object explorer node's parent is root, return connection profile
 			if (!objectExplorerNode.parent.parent) {
-				var connectionUri = objectExplorerNode.getConnectionProfile().getOptionsKey();
+				var connectionId = objectExplorerNode.getConnectionProfile().id;
 
 				// get connection profile from connection profile groups
 				let root = TreeUpdateUtils.getTreeInput(connectionManagementService);
 				let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
 				let results = connections.filter(con => {
-					if (connectionUri.includes(con.getOptionsKey())) {
+					if (connectionId === con.id) {
 						return true;
 					} else {
 						return false;

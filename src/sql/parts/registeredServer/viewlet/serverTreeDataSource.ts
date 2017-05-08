@@ -34,7 +34,7 @@ export class ServerTreeDataSource implements IDataSource {
 		} else if (element instanceof ConnectionProfileGroup) {
 			return (<ConnectionProfileGroup>element).id;
 		} else if (element instanceof TreeNode) {
-			return (<TreeNode>element).nodePath;
+			return (<TreeNode>element).id;
 		} else {
 			return undefined;
 		}

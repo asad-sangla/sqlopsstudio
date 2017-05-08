@@ -25,6 +25,8 @@ import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import dom = require('vs/base/browser/dom');
+import * as fs from 'fs';
+import uri from 'vs/base/common/uri';
 
 /**
  * Renders the tree items.
@@ -158,6 +160,9 @@ export class ServerTreeRenderer implements IRenderer {
 
 	private renderObjectExplorer(tree: ITree, treeNode: TreeNode, templateData: IObjectExplorerTemplateData): void {
 		var iconFilePath = require.toUrl('sql/media/objectTypes/' + treeNode.nodeTypeId + '.svg');
+		if (!fs.existsSync(uri.parse(iconFilePath).fsPath)) {
+			iconFilePath = require.toUrl('sql/media/objectTypes/DefaultIcon.svg');
+		}
 		templateData.icon.style.content = 'url(' + iconFilePath + ')';
 		templateData.label.textContent = treeNode.label;
 	}

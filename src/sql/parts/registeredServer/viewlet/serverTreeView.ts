@@ -97,7 +97,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		})
 		);
 		this.toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
-			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionUri);
+			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
 		})
 		);
 		self.refreshTree();
@@ -110,11 +110,11 @@ export class ServerTreeView extends CollapsibleViewletView {
 		return [this.addServerAction, this.activeConnectionsFilterAction, this.recentConnectionsFilterAction];
 	}
 
-	private getConnectionInTreeInput(connectionUri: string): ConnectionProfile {
+	private getConnectionInTreeInput(connectionId: string): ConnectionProfile {
 		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
 		let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
 		let results = connections.filter(con => {
-			if (connectionUri.includes(con.getOptionsKey())) {
+			if (connectionId === con.id) {
 				return true;
 			} else {
 				return false;
@@ -130,7 +130,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		this.messages.hide();
 		if (!this._objectExplorerService.getObjectExplorerNode(connection)) {
 			Promise.all(this._objectExplorerService.updateObjectExplorerNodes()).then(() => {
-				var conn = this.getConnectionInTreeInput(connection.getOptionsKey());
+				var conn = this.getConnectionInTreeInput(connection.id);
 				if (conn) {
 					this.tree.refresh(conn).then(() => {
 						return this.tree.expand(conn).then(() => {
@@ -143,9 +143,9 @@ export class ServerTreeView extends CollapsibleViewletView {
 		}
 	}
 
-	public deleteObjectExplorerNodeAndRefreshTree(connectionUri: string): void {
-		if (connectionUri) {
-			var conn = this.getConnectionInTreeInput(connectionUri);
+	public deleteObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
+		if (connection) {
+			var conn = this.getConnectionInTreeInput(connection.id);
 			if (conn) {
 				this._objectExplorerService.deleteObjectExplorerNode(conn);
 				this.tree.refresh(conn);

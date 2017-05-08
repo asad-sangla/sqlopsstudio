@@ -8,8 +8,14 @@
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import data = require('data');
+import Utils = require('sql/parts/connection/common/utils');
 
 export class TreeNode {
+	/**
+     * string defining the type of the node - for example Server, Database, Folder, Table
+     */
+	public id: string;
+
     /**
      * string defining the type of the node - for example Server, Database, Folder, Table
      */
@@ -91,12 +97,13 @@ export class TreeNode {
 		return false;
 	}
 
-	constructor(id: string, label: string, isAlwaysLeaf: boolean, nodePath: string, parent: TreeNode, metadata: data.ObjectMetadata) {
-		this.nodeTypeId = id;
+	constructor(nodeTypeId: string, label: string, isAlwaysLeaf: boolean, nodePath: string, parent: TreeNode, metadata: data.ObjectMetadata) {
+		this.nodeTypeId = nodeTypeId;
 		this.label = label;
 		this.isAlwaysLeaf = isAlwaysLeaf;
 		this.nodePath = nodePath;
 		this.parent = parent;
 		this.metadata = metadata;
+		this.id = Utils.generateGuid();
 	}
 }
