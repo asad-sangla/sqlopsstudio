@@ -75,7 +75,7 @@ I CAN easily distinguish the server profile by viewing the following information
 	* Refresh
 
 * On Folder for each object type
-	* New ```Object Type``` 
+	* New ```Object Type```
 		> Open editor with new ```object type``` snippet
 
 ### OE Folder structure suggestions
@@ -118,5 +118,5 @@ Suggestion: remove following object folder types from OE.
 
 I CAN get an explicit and easy to understand error messages:
 - User does not have a permission to CONNECT database
-- User does not have a permission to View Definition of database /schema / indivisual object
+- User does not have a permission to View Definition of database /schema / individual object
 
