@@ -12,7 +12,7 @@ import Utils = require('sql/parts/connection/common/utils');
 
 export class TreeNode {
 	/**
-     * string defining the type of the node - for example Server, Database, Folder, Table
+     * id for TreeNode
      */
 	public id: string;
 
