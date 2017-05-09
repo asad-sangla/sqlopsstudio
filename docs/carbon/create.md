@@ -32,32 +32,35 @@ Carbon provides the nearly 1-1 mapping with T-SQL syntax so that user can script
 
 |Category|Property name|Interaction type|Default value|Default State|Priority|
 |:---|:---|:---|:---|:---|:---:|
-|Generic|collation|dropdown|<default>||0|
-||compatibility level|dropdown|compat enum||0|
-||containment type|dropdown|**none**/partial||1|
-|Recovery|Recovery model|dropdown|**full** / simple / bulk-logged||0|
-||Page Verify|dropdown|CHECKSUM|||
-||Target Recovery Time(Seconds)|inputbox|60|||
+|General|Collation|dropdown|<default>||0|
+||Compatibility Level|dropdown|compat enum||0|
+|Recovery|Recovery Model|dropdown|**full** / simple / bulk-logged||0|
 |Filegroups|Rows/Filestream/Memory Optimized Data|||||
 |Files|Database files|table with add/remove action||||
-|DB Scoped Configuration|Legacy cardinality Estimation|On/Off|Off|||
-||Legacy cardinality estimation for secondary|dropdown|Primary|||
-||Max DOP|inputbox|0|||
-||Max DOP for Secondary|inputbox||||
-||Parameter sniffing|on/off|On|||
-||Parameter sniffing for secondary|dropdown|Primary|||
-||Query Optimizer Fixes|on/off|off|||
-||Query Optimizer Fixes for Secondary|dropdown|Primary|||
-|FTS|Use full-text indexing|checkbox|true|disabled if fulltext is not enabled on the server||
-|FILESTREAM|FILESTREAM Directory Name|Filebrowser||||
-||FILESTREAM Non-Transacted Access|on/off|Off|||
+
+### Filtered-out
+|Category|Property name|Interaction type|Default value|Default State|Priority|
+|:---|:---|:---|:---|:---|:---:|
+|Automatic|Auto Close||false|||
+||Auto Create Incremental Statistics||false|||
+||Auto Create Statistics||true|||
+||Auto Shrink||false|||
+||Auto Update Statistics||true|||
+||Auto Update Statistics Asynchronously||false|||
+|Containment|Containment Type|dropdown|**none**/partial||1|
+||Default Fulltext Language LCID||1033|Enabled only when DB Containment type is set to partial||
+||Default Language||English|||
+||Nested Triggers Enabled||true|||
+||Transform Noise Words||false|||
+||Two Digit Year Cutoff||2049|||
+|Cursor|Close Cursor on Commit Enabled||false|||
+||Default Cursor||GLOBAL|||
+|Recovery|Page Verify|dropdown|CHECKSUM|||
+||Target Recovery Time(Seconds)|inputbox|60|||
+|FTS|Use full-text indexing|checkbox|true|disabled||
 |Service Broker|Broker Enabled|true/false|false|||
 ||Honor Broker Priority|true/false|false|disabled|4|
 ||Service Brokcer Identifier|label|guidvalue|disabled|4|
-|State|Database Read-Only|true/false|false|||
-||Database State|label|Normal|disabled|4|
-||Encryption Enabled|true/false|false|||
-||Restrict Access|dropdown|MULTI_USER|||
 |Miscellaneous|Allow Snapshot Isolation||false|||
 ||ANSI NULL Default||false|||
 ||ANSI NULLS Enabled||false|||
@@ -75,20 +78,20 @@ Carbon provides the nearly 1-1 mapping with T-SQL syntax so that user can script
 ||Recursive Triggers Enabled||false|||
 ||Trustworthy||false|disabled|4|
 ||VarDecimal Storage Format Enabled||true|disabled|4|
-|Automatic|Auto Close||false|||
-||Auto Create Incremental Statistics||false|||
-||Auto Create Statistics||true|||
-||Auto Shrink||false|||
-||Auto Update Statistics||true|||
-||Auto Update Statistics Asynchronously||false|||
-|Containment|Default Fulltext Language LCID||1033|Enabled only when DB Containment type is set to partial||
-||Default Language||English|||
-||Nested Triggers Enabled||true|||
-||Transform Noise Words||false|||
-||Two Digit Year Cutoff||2049|||
-|Cursor|Close Cursor on Commit Enabled||false|||
-||Default Cursor||GLOBAL|||
-
+|State|Database Read-Only|true/false|false|||
+||Database State|label|Normal|disabled|4|
+||Encryption Enabled|true/false|false|||
+||Restrict Access|dropdown|MULTI_USER|||
+|FILESTREAM|FILESTREAM Directory Name|Filebrowser||||
+||FILESTREAM Non-Transacted Access|on/off|Off|||
+|DB Scoped Configuration|Legacy cardinality Estimation|On/Off|Off|||
+||Legacy cardinality estimation for secondary|dropdown|Primary|||
+||Max DOP|inputbox|0|||
+||Max DOP for Secondary|inputbox||||
+||Parameter sniffing|on/off|On|||
+||Parameter sniffing for secondary|dropdown|Primary|||
+||Query Optimizer Fixes|on/off|off|||
+||Query Optimizer Fixes for Secondary|dropdown|Primary|||
 
 
 ## CREATE Login
