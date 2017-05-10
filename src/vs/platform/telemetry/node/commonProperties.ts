@@ -7,6 +7,7 @@ import * as Platform from 'vs/base/common/platform';
 import * as os from 'os';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as uuid from 'vs/base/common/uuid';
+import product from 'vs/platform/node/product';
 
 export const machineIdStorageKey = 'telemetry.machineId';
 export const machineIdIpcChannel = 'vscode:machineId';
@@ -19,6 +20,7 @@ export function resolveCommonProperties(commit: string, version: string): TPromi
 	result['version'] = version;
 	result['common.osVersion'] = os.release();
 	result['common.platform'] = Platform.Platform[Platform.platform];
+	result['common.application.name'] = product.nameLong;
 
 	// dynamic properties which value differs on each call
 	let seq = 0;

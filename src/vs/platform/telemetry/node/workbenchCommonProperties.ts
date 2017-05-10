@@ -11,6 +11,7 @@ import * as uuid from 'vs/base/common/uuid';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { getMachineId, virtualMachineHint } from 'vs/base/node/id';
 import { resolveCommonProperties, machineIdStorageKey } from '../node/commonProperties';
+import product from 'vs/platform/node/product';
 
 const SQM_KEY: string = '\\Software\\Microsoft\\SQMClient';
 
@@ -20,7 +21,7 @@ export function resolveWorkbenchCommonProperties(storageService: IStorageService
 		result['common.version.renderer'] = process.versions && (<any>process).versions['chrome'];
 		result['common.osVersion'] = os.release();
 		result['common.virtualMachineHint'] = virtualMachineHint.value().toString();
-
+		result['common.application.name'] = product.nameLong;
 		const lastSessionDate = storageService.get('telemetry.lastSessionDate');
 		const firstSessionDate = storageService.get('telemetry.firstSessionDate') || new Date().toUTCString();
 		storageService.store('telemetry.firstSessionDate', firstSessionDate);

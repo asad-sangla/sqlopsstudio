@@ -40,7 +40,7 @@ suite('Telemetry - common properties', function () {
 			// assert.ok('common.version.renderer' in first.data);
 			assert.ok('common.osVersion' in props, 'osVersion');
 			assert.ok('version' in props);
-
+			assert.ok('common.application.name');
 			assert.ok('common.firstSessionDate' in props, 'firstSessionDate');
 			assert.ok('common.lastSessionDate' in props, 'lastSessionDate'); // conditional, see below, 'lastSessionDate'ow
 			assert.ok('common.isNewSession' in props, 'isNewSession');
@@ -53,7 +53,7 @@ suite('Telemetry - common properties', function () {
 				assert.ok('common.sqm.machineid' in props, 'machineid');
 			}
 
-			assert.equal(Object.keys(props).length, process.platform === 'win32' ? 18 : 16);
+			assert.equal(Object.keys(props).length, process.platform === 'win32' ? 19 : 17);
 		});
 	});
 
