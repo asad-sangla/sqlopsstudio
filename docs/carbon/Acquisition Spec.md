@@ -87,6 +87,7 @@ Or on older versions using yum:
     $ sudo yum install carbon
 
 > openSUSE and SLE based distributions
+
 The yum repository above also works for openSUSE and SLE based systems, the following script will install the key and repository:
 
     $ sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
