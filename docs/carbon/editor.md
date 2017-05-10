@@ -5,7 +5,7 @@ This speclet describes the developer functional requirements for 5/30 and 6/30 p
 
 > updated on 5/9
 
-#### T-SQL Editor, Exeuction & Result
+#### T-SQL Editor, Execution & Result
 
 
 * I CAN open folder without restarting Carbon.
@@ -29,7 +29,7 @@ Reliablity
 
 #### Connection Dialog
 
-* I CAN browse the resistered connections in Connection dialog.
+* I CAN browse the registered connections in Connection dialog.
     * Flat list of registered connections.
 
 * I CAN distinguish recent connections with Server, Database and User Name.
@@ -38,7 +38,7 @@ Reliablity
 
 Defects
 
-* Recent history does not reliably shows the connection history when repeating connct, disconnect, change connection using editor command bar.
+* Recent history does not reliably show the connection history when repeating connect, disconnect, change connection using editor command bar.
 
 ### Shortcuts 
 
