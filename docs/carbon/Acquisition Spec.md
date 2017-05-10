@@ -52,6 +52,7 @@ Carbon ships monthly releases and supports auto-update when a new release is ava
 #### Linux
 ##### Installation
 > Debian and Ubuntu based distributions
+
 The easiest way to install for Debian/Ubuntu based distributions is to download and install the .deb package (64-bit) either through the graphical software center if it's available or through the command line with:
 
     $ sudo dpkg -i <file>.deb
@@ -71,6 +72,7 @@ Then update the package cache and install the package using:
     $ sudo apt-get install code # or code-insiders
 
 > RHEL, Fedora and CentOS based distributions
+
 We currently ship the stable 64-bit Carbon in a yum repository, the following script will install the key and repository:
 
     $sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
@@ -99,9 +101,11 @@ Then update the package cache and install the package using:
     $ sudo zypper install carbon
 
 > AUR package for Arch Linux
+
 There is a community maintained Arch User Repository (AUR) package for [Carbon](https://www.github.com/Microsoft/carbon).
 
 > Installing .rpm package manually
+
 The [.rpm package (64-bit)](https://www.github.com/Microsoft/carbon) can also be manually downloaded and installed, however auto-updating won't work unless the repository above is installed. Once downloaded it can be installed using your package manager, for example with dnf:
 
     $ sudo dnf install <file>.rpm
