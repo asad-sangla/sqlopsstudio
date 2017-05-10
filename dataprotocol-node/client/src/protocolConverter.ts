@@ -403,16 +403,106 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return connSummary;
 	}
 
+	function asServiceOptionType(val: string): data.ServiceOptionType {
+		if (val === 'string') {
+			return data.ServiceOptionType.string;
+		} else if (val === 'multistring') {
+			return data.ServiceOptionType.multistring;
+		} else if (val === 'password') {
+			return data.ServiceOptionType.password;
+		} else if (val === 'number') {
+			return data.ServiceOptionType.number;
+		} else if (val === 'boolean') {
+			return data.ServiceOptionType.boolean;
+		} else if (val === 'category') {
+			return data.ServiceOptionType.category;
+		} else if (val === 'object') {
+			return data.ServiceOptionType.object;
+		}
+
+		// assume string for unknown value types
+		return data.ServiceOptionType.string;
+	}
+
 	function asServerCapabilities(result: ls.CapabiltiesDiscoveryResult): data.DataProtocolServerCapabilities {
 		let capabilities: data.DataProtocolServerCapabilities = {
 			protocolVersion: result.capabilities.protocolVersion,
 			providerName: result.capabilities.providerName,
 			providerDisplayName: result.capabilities.providerDisplayName,
-			connectionProvider: undefined
+			connectionProvider: undefined,
+			adminServicesProvider: undefined
 		};
 
-		if (!!result.capabilities.connectionProvider
-			&& !!result.capabilities.connectionProvider.options
+		if (result.capabilities.adminServicesProvider) {
+			capabilities.adminServicesProvider = <data.AdminServicesOptions>{
+				databaseInfoOptions: new Array<data.ServiceOption>(),
+				databaseFileInfoOptions: new Array<data.ServiceOption>(),
+				fileGroupInfoOptions: new Array<data.ServiceOption>()
+			};
+
+			if (result.capabilities.adminServicesProvider.databaseInfoOptions
+				&& result.capabilities.adminServicesProvider.databaseInfoOptions.length > 0) {
+				for (let i = 0; i < result.capabilities.adminServicesProvider.databaseInfoOptions.length; ++i) {
+					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.databaseInfoOptions[i];
+					let descOption: data.ServiceOption = {
+						name: srcOption.name,
+						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
+						description: srcOption.description,
+						groupName: srcOption.groupName,
+						defaultValue: srcOption.defaultValue,
+						categoryValues: srcOption.categoryValues,
+						isRequired: srcOption.isRequired,
+						isArray: srcOption.isArray,
+						objectType: srcOption.objectType,
+						valueType: asServiceOptionType(srcOption.valueType)
+					};
+					capabilities.adminServicesProvider.databaseInfoOptions.push(descOption);
+				}
+			}
+
+			if (result.capabilities.adminServicesProvider.databaseFileInfoOptions
+				&& result.capabilities.adminServicesProvider.databaseFileInfoOptions.length > 0) {
+				for (let i = 0; i < result.capabilities.adminServicesProvider.databaseFileInfoOptions.length; ++i) {
+					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.databaseFileInfoOptions[i];
+					let descOption: data.ServiceOption = {
+						name: srcOption.name,
+						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
+						description: srcOption.description,
+						groupName: srcOption.groupName,
+						defaultValue: srcOption.defaultValue,
+						categoryValues: srcOption.categoryValues,
+						isRequired: srcOption.isRequired,
+						isArray: srcOption.isArray,
+						objectType: srcOption.objectType,
+						valueType: asServiceOptionType(srcOption.valueType),
+					};
+					capabilities.adminServicesProvider.databaseFileInfoOptions.push(descOption);
+				}
+			}
+
+			if (result.capabilities.adminServicesProvider.fileGroupInfoOptions
+				&& result.capabilities.adminServicesProvider.fileGroupInfoOptions.length > 0) {
+				for (let i = 0; i < result.capabilities.adminServicesProvider.fileGroupInfoOptions.length; ++i) {
+					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.fileGroupInfoOptions[i];
+					let descOption: data.ServiceOption = {
+						name: srcOption.name,
+						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
+						description: srcOption.description,
+						groupName: srcOption.groupName,
+						defaultValue: srcOption.defaultValue,
+						categoryValues: srcOption.categoryValues,
+						isRequired: srcOption.isRequired,
+						isArray: srcOption.isArray,
+						objectType: srcOption.objectType,
+						valueType: asServiceOptionType(srcOption.valueType),
+					};
+					capabilities.adminServicesProvider.fileGroupInfoOptions.push(descOption);
+				}
+			}
+		}
+
+		if (result.capabilities.connectionProvider
+			&& result.capabilities.connectionProvider.options
 			&& result.capabilities.connectionProvider.options.length > 0) {
 			capabilities.connectionProvider = <data.ConnectionProviderOptions>{
 				options: new Array<data.ConnectionOption>()
@@ -421,30 +511,16 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 				let srcOption: ls.ConnectionOption = result.capabilities.connectionProvider.options[i];
 				let descOption: data.ConnectionOption = {
 					name: srcOption.name,
-					displayName: !!srcOption.displayName ? srcOption.displayName : srcOption.name,
+					displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
 					description: srcOption.description,
 					groupName: srcOption.groupName,
 					defaultValue: srcOption.defaultValue,
 					categoryValues: srcOption.categoryValues,
 					isIdentity: srcOption.isIdentity,
 					isRequired: srcOption.isRequired,
-					valueType: undefined,
+					valueType: asServiceOptionType(srcOption.valueType),
 					specialValueType: undefined
 				};
-
-				if (srcOption.valueType === 'string') {
-					descOption.valueType = data.ConnectionOptionType.string;
-				} else if (srcOption.valueType === 'multistring') {
-					descOption.valueType = data.ConnectionOptionType.multistring;
-				} else if (srcOption.valueType === 'password') {
-					descOption.valueType = data.ConnectionOptionType.password;
-				} else if (srcOption.valueType === 'number') {
-					descOption.valueType = data.ConnectionOptionType.number;
-				} else if (srcOption.valueType === 'boolean') {
-					descOption.valueType = data.ConnectionOptionType.boolean;
-				} else if (srcOption.valueType === 'category') {
-					descOption.valueType = data.ConnectionOptionType.category;
-				}
 
 				if (srcOption.specialValueType === 'serverName') {
 					descOption.specialValueType = data.ConnectionOptionSpecialType.serverName;

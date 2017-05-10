@@ -158,7 +158,8 @@ suite('SQL ConnectionStore tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		capabilities.push(msSQLCapabilities);
 		capabilitiesService.setup(x => x.getCapabilities()).returns(() => capabilities);
@@ -369,7 +370,8 @@ suite('SQL ConnectionStore tests', () => {
 			protocolVersion: '1',
 			providerName: providerName,
 			providerDisplayName: providerName,
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		connectionConfig.setup(x => x.getCapabilities(providerName)).returns(() => providerCapabilities);
 

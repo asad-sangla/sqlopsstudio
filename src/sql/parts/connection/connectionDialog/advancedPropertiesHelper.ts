@@ -7,7 +7,7 @@
 
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
 import { Builder } from 'vs/base/browser/builder';
-import { ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
+import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import data = require('data');
@@ -25,7 +25,7 @@ export class AdvancedPropertiesHelper {
 		var propertyWidget: any;
 		var inputElement: HTMLElement;
 		switch (property.valueType) {
-			case ConnectionOptionType.number:
+			case ServiceOptionType.number:
 				propertyWidget = ConnectionDialogHelper.appendInputBox(rowContainer, {
 					validationOptions: {
 						validation: (value: string) => !ConnectionDialogHelper.isNumeric(value) ? ({ type: MessageType.ERROR, content: 'Invalid input.  Numeric value expected.' }) : null
@@ -34,17 +34,17 @@ export class AdvancedPropertiesHelper {
 				propertyWidget.value = optionValue;
 				inputElement = this.findElement(rowContainer, 'input');
 				break;
-			case ConnectionOptionType.category:
-			case ConnectionOptionType.boolean:
+			case ServiceOptionType.category:
+			case ServiceOptionType.boolean:
 				propertyWidget = new ConnectionDialogSelectBox(possibleInputs, optionValue.toString());
 				ConnectionDialogHelper.appendInputSelectBox(rowContainer, propertyWidget);
 				inputElement = this.findElement(rowContainer, 'select-box');
 				break;
-			case ConnectionOptionType.string:
-			case ConnectionOptionType.password:
+			case ServiceOptionType.string:
+			case ServiceOptionType.password:
 				propertyWidget = ConnectionDialogHelper.appendInputBox(rowContainer);
 				propertyWidget.value = optionValue;
-				if (property.valueType === ConnectionOptionType.password) {
+				if (property.valueType === ServiceOptionType.password) {
 					propertyWidget.inputElement.type = 'password';
 				}
 				inputElement = this.findElement(rowContainer, 'input');
@@ -57,7 +57,7 @@ export class AdvancedPropertiesHelper {
 		var optionValue = property.defaultValue;
 		if (options[property.name]) {
 			// if the value type is boolean, the option value can be either boolean or string
-			if (property.valueType === ConnectionOptionType.boolean) {
+			if (property.valueType === ServiceOptionType.boolean) {
 				if (options[property.name] === true || options[property.name] === this.trueInputValue) {
 					optionValue = this.trueInputValue;
 				} else {
@@ -68,13 +68,13 @@ export class AdvancedPropertiesHelper {
 			}
 		}
 
-		if (property.valueType === ConnectionOptionType.boolean || property.valueType === ConnectionOptionType.category) {
+		if (property.valueType === ServiceOptionType.boolean || property.valueType === ServiceOptionType.category) {
 			// If the property is not required, the empty string should be add at the top of possible options
 			if (!property.isRequired) {
 				possibleInputs.push('');
 			}
 
-			if (property.valueType === ConnectionOptionType.boolean) {
+			if (property.valueType === ServiceOptionType.boolean) {
 				possibleInputs.push(this.trueInputValue, this.falseInputValue);
 			} else {
 				property.categoryValues.map(c => possibleInputs.push(c.name));
@@ -95,11 +95,11 @@ export class AdvancedPropertiesHelper {
 		for (var key in advancedPropertiesMap) {
 			var propertyElement: IAdvancedPropertyElement = advancedPropertiesMap[key];
 			var widget = propertyElement.advancedPropertyWidget;
-			var isInputBox = (propertyElement.advancedProperty.valueType === ConnectionOptionType.string ||
-				propertyElement.advancedProperty.valueType === ConnectionOptionType.password ||
-				propertyElement.advancedProperty.valueType === ConnectionOptionType.number );
+			var isInputBox = (propertyElement.advancedProperty.valueType === ServiceOptionType.string ||
+				propertyElement.advancedProperty.valueType === ServiceOptionType.password ||
+				propertyElement.advancedProperty.valueType === ServiceOptionType.number );
 
-			if (propertyElement.advancedProperty.valueType === ConnectionOptionType.number) {
+			if (propertyElement.advancedProperty.valueType === ServiceOptionType.number) {
 				if (!widget.isInputValid()) {
 					errorMsg += propertyElement.advancedProperty.displayName + requiredNumberInput;
 				}
@@ -120,7 +120,7 @@ export class AdvancedPropertiesHelper {
 					delete options[key];
 				}
 				if (!ConnectionDialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value)) {
-					if (propertyElement.advancedProperty.valueType === ConnectionOptionType.boolean) {
+					if (propertyElement.advancedProperty.valueType === ServiceOptionType.boolean) {
 						options[key] = (propertyElement.advancedPropertyWidget.value === this.trueInputValue) ? true : false;
 					} else {
 						options[key] = propertyElement.advancedPropertyWidget.value;

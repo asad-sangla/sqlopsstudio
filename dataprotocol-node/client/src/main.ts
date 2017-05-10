@@ -54,7 +54,8 @@ import {
 	ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation,
 	DatabaseInfo, CreateDatabaseResponse, CreateDatabaseParams,
 	LoginInfo, CreateLoginResponse, CreateLoginParams,
-	BackupInfo, BackupResponse, BackupParams
+	BackupInfo, BackupResponse, BackupParams,
+	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams
 } from 'dataprotocol-languageserver-types';
 
 
@@ -106,7 +107,7 @@ import {
 	EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult,
 	EditSubsetRequest, EditSubsetParams, EditSubsetResult,
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
-	CreateDatabaseRequest, CreateLoginRequest, BackupRequest
+	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -1718,7 +1719,6 @@ export class LanguageClient {
 
 		let adminServicesProvider: AdminServicesProvider = {
 			createDatabase(connectionUri: string, database: DatabaseInfo): Thenable<CreateDatabaseResponse> {
-
 				let params: CreateDatabaseParams = { ownerUri: connectionUri, databaseInfo: database };
 				return self.doSendRequest(connection, CreateDatabaseRequest.type, params, undefined).then(
 					(result) => {
@@ -1726,7 +1726,19 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(CreateDatabaseRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getDefaultDatabaseInfo(connectionUri: string): Thenable<DatabaseInfo> {
+				let params: DefaultDatabaseInfoParams = { ownerUri: connectionUri };
+				return self.doSendRequest(connection, DefaultDatabaseInfoRequest.type, params, undefined).then(
+					(result) => {
+						return result.defaultDatabaseInfo;
+					},
+					(error) => {
+						self.logFailedRequest(DefaultDatabaseInfoRequest.type, error);
+						return Promise.resolve(undefined);
 					}
 				);
 			},
@@ -1738,7 +1750,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(CreateLoginRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.resolve(undefined);
 					}
 				);
 			}

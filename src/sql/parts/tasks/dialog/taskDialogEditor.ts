@@ -13,7 +13,7 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { TaskDialogInput } from './taskDialogInput';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
-import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
+import { TaskDialogComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { TaskDialogModule } from 'sql/parts/tasks/dialog/taskDialog.module';
 import { TASKDIALOG_SELECTOR } from 'sql/parts/tasks/dialog/taskDialog.component';
 
@@ -88,8 +88,7 @@ export class TaskDialogEditor extends BaseEditor {
 	private bootstrapAngular(input: TaskDialogInput): void {
 
 		// Get the bootstrap params and perform the bootstrap
-		let params: DashboardComponentParams = {
-			connection: input.getConnectionInfo(),
+		let params: TaskDialogComponentParams = {
 			ownerUri: input.getUri()
 		};
 		let uniqueSelector = this._bootstrapService.bootstrap(

@@ -311,6 +311,16 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	}
 
 	/**
+	 * Create a new database on the provided connection
+	 */
+	public $getDefaultDatabaseInfo(handle: number, connectionUri: string): Thenable<data.DatabaseInfo> {
+		return this._runWithProvider(handle, provider => {
+			return provider.adminServicesProvider ? provider.adminServicesProvider.getDefaultDatabaseInfo(connectionUri)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
 	 * Create a new login on the provided connection
 	 */
 	public $createLogin(handle: number, connectionUri: string, login: data.LoginInfo): Thenable<data.CreateLoginResponse> {

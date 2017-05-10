@@ -37,6 +37,7 @@ const appRoutes: Routes = [
 	imports: [
 		AngularCommon.CommonModule,
 		AngularPlatformBrowser.BrowserModule,
+		PrimeNg.DataTableModule,
 		<ModuleWithProviders>AngularRouter.RouterModule.forRoot(appRoutes)
 	],
 	providers: [{ provide: AngularCommon.APP_BASE_HREF, useValue: '/' }]

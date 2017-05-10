@@ -30,7 +30,8 @@ import {
 	BackupInfo, BackupParams, BackupResponse,
 	LoginInfo, CreateLoginParams, CreateLoginResponse,
 	DatabaseInfo, CreateDatabaseParams, CreateDatabaseResponse,
-	TaskInfo, ListTasksParams, ListTasksResponse
+	TaskInfo, ListTasksParams, ListTasksResponse,
+	DefaultDatabaseInfoParams, DefaultDatabaseInfoResponse
 } from 'dataprotocol-languageserver-types';
 
 
@@ -1388,6 +1389,10 @@ export namespace ListTasksRequest {
 
 export namespace CreateDatabaseRequest {
 	export const type: RequestType<CreateDatabaseParams, CreateDatabaseResponse, void> = { get method(): string { return 'admin/createdatabase'; } };
+}
+
+export namespace DefaultDatabaseInfoRequest {
+	export const type: RequestType<DefaultDatabaseInfoParams, DefaultDatabaseInfoResponse, void> = { get method(): string { return 'admin/defaultdatabaseinfo'; } };
 }
 
 export namespace CreateLoginRequest {

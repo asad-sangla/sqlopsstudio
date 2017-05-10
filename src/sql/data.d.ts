@@ -129,13 +129,14 @@ declare module 'data' {
 		registerOnConnectionChanged(handler: (changedConnInfo: ChangedConnectionInfo) => any);
 	}
 
-	export enum ConnectionOptionType {
+	export enum ServiceOptionType {
 		string = 0,
 		multistring = 1,
 		password = 2,
 		number = 3,
 		category = 4,
-		boolean = 5
+		boolean = 5,
+		object = 6
 	}
 
 	export enum ConnectionOptionSpecialType {
@@ -160,7 +161,7 @@ declare module 'data' {
 
 		groupName: string;
 
-		valueType: ConnectionOptionType;
+		valueType: ServiceOptionType;
 
 		specialValueType: ConnectionOptionSpecialType;
 
@@ -176,6 +177,37 @@ declare module 'data' {
 	export interface ConnectionProviderOptions {
 		options: ConnectionOption[];
 	}
+
+	export interface ServiceOption {
+		name: string;
+
+		displayName: string;
+
+		description: string;
+
+		groupName: string;
+
+		valueType: ServiceOptionType;
+
+		defaultValue: string;
+
+		objectType: string;
+
+		categoryValues: CategoryValue[];
+
+		isRequired: boolean;
+
+		isArray: boolean;
+	}
+
+	export interface AdminServicesOptions {
+		databaseInfoOptions: ServiceOption[];
+
+		databaseFileInfoOptions: ServiceOption[];
+
+		fileGroupInfoOptions: ServiceOption[];
+	}
+
 
 	// List Databases Request ----------------------------------------------------------------------
 	export interface ListDatabasesResult {
@@ -205,6 +237,8 @@ declare module 'data' {
 		providerDisplayName: string;
 
 		connectionProvider: ConnectionProviderOptions;
+
+		adminServicesProvider: AdminServicesOptions;
 	}
 
 	export interface DataProtocolClientCapabilities {
@@ -710,8 +744,17 @@ declare module 'data' {
 	}
 
 	// Admin Services interfaces  -----------------------------------------------------------------------
+	export interface DatabaseFile {
+		logicalName: string;
+		fileType: string;
+		filegroup: string;
+		initialSize: string;
+		maxSize: string;
+		path: string;
+	}
+
 	export interface DatabaseInfo {
-		name: string;
+		options: {};
 	}
 
 	export interface LoginInfo {
@@ -732,6 +775,8 @@ declare module 'data' {
 		createDatabase(connectionUri: string, database: DatabaseInfo): Thenable<CreateDatabaseResponse>;
 
 		createLogin(connectionUri: string, login: LoginInfo): Thenable<CreateLoginResponse>;
+
+		getDefaultDatabaseInfo(connectionUri: string): Thenable<DatabaseInfo>;
 	}
 
 

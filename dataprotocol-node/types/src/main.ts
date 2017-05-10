@@ -44,6 +44,28 @@ export interface CategoryValue {
 	name: string;
 }
 
+export interface ServiceOption {
+	name: string;
+
+	displayName: string;
+
+	description: string;
+
+	groupName: string;
+
+	valueType: string;
+
+	defaultValue: string;
+
+	objectType: string;
+
+	categoryValues: CategoryValue[];
+
+	isRequired: boolean;
+
+	isArray: boolean;
+}
+
 export interface ConnectionOption {
 	name: string;
 
@@ -57,6 +79,8 @@ export interface ConnectionOption {
 
 	defaultValue: string;
 
+	objectType: string;
+
 	categoryValues: CategoryValue[];
 
 	specialValueType: string;
@@ -64,12 +88,21 @@ export interface ConnectionOption {
 	isIdentity: boolean;
 
 	isRequired: boolean;
+
+	isArray: boolean;
 }
 
 export interface ConnectionProviderOptions {
 	options: ConnectionOption[];
 }
 
+export interface AdminServicesProviderOptions {
+	databaseInfoOptions: ServiceOption[];
+
+	databaseFileInfoOptions: ServiceOption[];
+
+	fileGroupInfoOptions: ServiceOption[];
+}
 
 export interface DataProtocolServerCapabilities {
 	protocolVersion: string;
@@ -79,6 +112,8 @@ export interface DataProtocolServerCapabilities {
 	providerDisplayName: string;
 
 	connectionProvider: ConnectionProviderOptions;
+
+	adminServicesProvider: AdminServicesProviderOptions;
 }
 
 /**
@@ -247,7 +282,10 @@ export interface ListTasksResponse {
 // Admin Services types
 
 export interface DatabaseInfo {
-	name: string;
+	/**
+	 * database options
+	 */
+	options: {};
 }
 
 export interface LoginInfo {
@@ -265,10 +303,18 @@ export interface CreateDatabaseResponse {
 	taskId: number;
 }
 
+export interface DefaultDatabaseInfoParams {
+	ownerUri: string;
+}
+
+export interface DefaultDatabaseInfoResponse {
+	defaultDatabaseInfo: DatabaseInfo;
+}
+
 export interface CreateLoginParams {
 	ownerUri: string;
 
-	loginInfo: DatabaseInfo;
+	loginInfo: LoginInfo;
 }
 
 export interface CreateLoginResponse {

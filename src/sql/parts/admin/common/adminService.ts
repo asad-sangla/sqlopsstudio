@@ -8,12 +8,10 @@ export const SERVICE_ID = 'adminService';
 
 import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-
-import { CreateDatabaseInput } from 'sql/parts/admin/database/create/createDatabaseInput';
-import { CreateLoginInput } from 'sql/parts/admin/security/createLoginInput';
-
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { CreateLoginInput } from 'sql/parts/admin/security/createLoginInput';
 import { TaskDialogInput } from 'sql/parts/tasks/dialog/taskDialogInput';
 
 import data = require('data');
@@ -23,11 +21,15 @@ export const IAdminService = createDecorator<IAdminService>(SERVICE_ID);
 export interface IAdminService {
 	_serviceBrand: any;
 
+	registerProvider(providerId: string, provider: data.AdminServicesProvider): void;
+
 	showCreateDatabaseWizard(uri: string, connection: ConnectionManagementInfo): Promise<any>;
 
 	showCreateLoginWizard(uri: string, connection: ConnectionManagementInfo): Promise<any>;
 
-	registerProvider(providerId: string, provider: data.AdminServicesProvider): void;
+	createDatabase(connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse>;
+
+	getDefaultDatabaseInfo(connectionUri: string): Thenable<data.DatabaseInfo>;
 }
 
 export class AdminService implements IAdminService {
@@ -35,11 +37,19 @@ export class AdminService implements IAdminService {
 
 	private _providers: { [handle: string]: data.AdminServicesProvider; } = Object.create(null);
 
+	private _providerOptions: { [handle: string]: data.AdminServicesOptions; } = Object.create(null);
+
 	constructor(
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
-		@IConnectionManagementService private _connectionService: IConnectionManagementService
+		@IConnectionManagementService private _connectionService: IConnectionManagementService,
+		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService
 	) {
+		if (_capabilitiesService && _capabilitiesService.onProviderRegisteredEvent) {
+			_capabilitiesService.onProviderRegisteredEvent((capabilities => {
+				this._providerOptions[capabilities.providerName] = capabilities.adminServicesProvider;
+			}));
+		}
 	}
 
 	public showCreateDatabaseWizard(uri: string, connection: ConnectionManagementInfo): Promise<any> {
@@ -81,6 +91,17 @@ export class AdminService implements IAdminService {
 			let provider = this._providers[providerId];
 			if (provider) {
 				return provider.createLogin(connectionUri, login);
+			}
+		}
+		return Promise.resolve(undefined);
+	}
+
+	public getDefaultDatabaseInfo(connectionUri: string): Thenable<data.DatabaseInfo> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.getDefaultDatabaseInfo(connectionUri);
 			}
 		}
 		return Promise.resolve(undefined);

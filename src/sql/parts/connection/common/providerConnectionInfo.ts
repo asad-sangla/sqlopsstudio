@@ -7,7 +7,7 @@
 
 import data = require('data');
 import * as interfaces from 'sql/parts/connection/common/interfaces';
-import { ConnectionOptionSpecialType, ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionOptionSpecialType, ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 
 export class ProviderConnectionInfo implements data.ConnectionInfo {
 
@@ -212,7 +212,7 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 				element.specialValueType !== ConnectionOptionSpecialType.databaseName &&
 				element.specialValueType !== ConnectionOptionSpecialType.authType &&
 				element.specialValueType !== ConnectionOptionSpecialType.password &&
-				element.isIdentity && element.valueType === ConnectionOptionType.string) {
+				element.isIdentity && element.valueType === ServiceOptionType.string) {
 				let value = this.getOptionValue(element.name);
 				if (value) {
 					parts.push(value);

@@ -258,7 +258,8 @@ suite('SQL Connection Tree Action tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: { options: [] }
+			connectionProvider: { options: [] },
+			adminServicesProvider: { databaseInfoOptions:[], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
 		};
 
 		var connection = new ConnectionProfile(sqlProvider, {
@@ -338,7 +339,8 @@ suite('SQL Connection Tree Action tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: { options: [] }
+			connectionProvider: { options: [] },
+			adminServicesProvider: { databaseInfoOptions:[], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
 		};
 
 		var connection = new ConnectionProfile(sqlProvider, {

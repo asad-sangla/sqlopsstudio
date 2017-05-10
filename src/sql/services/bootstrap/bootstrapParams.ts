@@ -26,3 +26,7 @@ export interface DashboardComponentParams extends BootstrapParams {
 	connection: ConnectionManagementInfo;
 	ownerUri: string;
 }
+
+export interface TaskDialogComponentParams extends BootstrapParams {
+	ownerUri: string;
+}

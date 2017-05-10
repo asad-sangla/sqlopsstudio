@@ -88,7 +88,8 @@ export class CapabilitiesTestService implements ICapabilitiesService {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		this._capabilities.push(msSQLCapabilities);
 

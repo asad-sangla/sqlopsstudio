@@ -166,7 +166,7 @@ export interface IErrorMessageService {
 	showDialog(container: HTMLElement, severity: Severity, headerTitle: string, message: string): void;
 }
 
-export enum ConnectionOptionType {
+export enum ServiceOptionType {
 	string = 0,
 	multistring = 1,
 	password = 2,

@@ -5,108 +5,121 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<h1>New Database</h1>
+<div class="task-content">
+<span>General</span>
 
-<h2>General</h2>
-<table>
-	<tr>
-		<td>
-			Database name:
-		</td>
-		<td>
-			<input type="textbox" />
-		</td>
-	</tr>
+<table class="task-input-table">
+    <tr>
+        <td class="task-input-table-label-column">
+        Database name:
+        </td>
+        <td class="task-input-table-content-column">
+            <input class="task-text-input" type="text" />
+        </td>
+    </tr>
 
-	<tr>
-		<td>
-			Owner:
-		</td>
-		<td>
-			<input type="textbox" />
-		</td>
-	</tr>
+    <tr>
+        <td class="task-input-table-label-column">
+        Owner:
+        </td>
+        <td class="task-input-table-content-column">
+
+            <table style="width:100%">
+                <tr>
+                <td style="width:100%">
+                    <input class="task-text-input" type="text" />
+                </td>
+                <td style="width:auto; padding-left: 5px;">
+                    <button>...</button>
+                </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <label><input id="full-text-index" type="checkbox" /><span>Use full-text indexing</span></label>
+        </td>
+    </tr>
+
+</table>
+
+<span>Database files:</span>
+<table class="task-input-table">
+    <tr>
+        <td>
+            <p-dataTable [value]="databaseFiles" [tableStyle]="{'overflow': 'auto'}" emptyMessage="No records found">
+                <p-column header="Logical Name" field="logicalName" ></p-column>
+                <p-column header="File Type" field="fileType"></p-column>
+                <p-column header="File Group" field="filegroup"></p-column>
+                <p-column header="Initial Size" field="initialSize"></p-column>
+                <p-column header="Grow By\Max Size" field="maxSize"></p-column>
+                <p-column header="Path" field="path"></p-column>
+            </p-dataTable>
+        </td>
+    </tr>
+    <tr>
+        <td class="task-button-bar" style="padding-top: 5px">
+            <button>Add</button>
+            <button>Remove</button>
+        </td>
+    </tr>
 </table>
 
 
-Database Files:
 
-<table>
-	<thead>
-		<th>Logical Name</th>
-		<th>File Type</th>
-		<th>Filegroup</th>
-		<th>Initial Size (MB)</th>
-		<th>Autogrowth / Maxsize</th>
-		<th>Path</th>
-		<th>File Name</th>
-	</thead>
-
-	<tr>
-		<td></td>
-		<td>ROWS Data</td>
-		<td>PRIMARY</td>
-		<td>8</td>
-		<td>By 64 MB. Unlimited</td>
-		<td>/var/opt/mssql/data</td>
-		<td></td>
-	</tr>
-
-	<tr>
-		<td>_log</td>
-		<td>LOG</td>
-		<td>Not Applicable</td>
-		<td>8</td>
-		<td>By 64 MB. Unlimited</td>
-		<td>/var/opt/mssql/data</td>
-		<td></td>
-	</tr>
+<span>Options</span>
+<table class="task-input-table">
+    <tr>
+        <td class="task-input-table-label-column">
+            Collation:
+        </td>
+        <td class="task-input-table-content-column">
+            <select>
+                <option>default</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="task-input-table-label-column">
+            Recovery model:
+        </td>
+        <td class="task-input-table-content-column">
+            <select>
+                <option>Full</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="task-input-table-label-column">
+            Compatability level:
+        </td>
+        <td class="task-input-table-content-column">
+            <select>
+                <option>SQL Server vNext (140)</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td class="task-input-table-label-column">
+            Containment type:
+        </td>
+        <td class="task-input-table-content-column">
+            <select>
+                <option>None</option>
+            </select>
+        </td>
+    </tr>
 </table>
 
 
-<h2>Options</h2>
-<table>
-	<tr>
-		<td>
-			Collation:
-		</td>
-		<td>
-			<select>
-				<option>default</option>
-			</select>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			Recovery model:
-		</td>
-		<td>
-			<select>
-				<option>Full</option>
-			</select>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			Compatability level:
-		</td>
-		<td>
-			<select>
-				<option>SQL Server vNext (140)</option>
-			</select>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			Containment type:
-		</td>
-		<td>
-			<select>
-				<option>None</option>
-			</select>
-		</td>
-	</tr>
-</table>
+<div class="task-button-bar">
+    <button (click)='onOk'>OK</button>
+    <button>Generate Script</button>
+    <button>Cancel</button>
+</div>
 
-<button type="button">Create</button>
-<button type="button">Generate Script</button>
+
+</div>
+

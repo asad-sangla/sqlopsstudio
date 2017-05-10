@@ -102,7 +102,7 @@ export function createApiFactory(
 			return {
 				credentials,
 				dataprotocol,
-				ConnectionOptionType: sqlExtHostTypes.ConnectionOptionType,
+				ServiceOptionType: sqlExtHostTypes.ServiceOptionType,
 				ConnectionOptionSpecialType: sqlExtHostTypes.ConnectionOptionSpecialType,
 				EditRowState: sqlExtHostTypes.EditRowState,
 				MetadataType: sqlExtHostTypes.MetadataType

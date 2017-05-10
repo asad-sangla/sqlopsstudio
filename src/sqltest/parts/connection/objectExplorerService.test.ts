@@ -90,7 +90,8 @@ suite('Object Explorer Service tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: { options: [] }
+			connectionProvider: { options: [] },
+			adminServicesProvider: { databaseInfoOptions:[], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
 		};
 
 		connection = new ConnectionProfile(sqlProvider, {
