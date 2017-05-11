@@ -6,6 +6,10 @@
 -->
 
 <div class="task-content">
+
+<form #f="ngForm"
+      (ngSubmit)="onSubmit(f)">
+
 <span>General</span>
 
 <table class="task-input-table">
@@ -14,7 +18,8 @@
         Database name:
         </td>
         <td class="task-input-table-content-column">
-            <input class="task-text-input" type="text" />
+            <input name="databaseName" type="text" id="databaseNameInput" class="task-text-input"
+                   ngModel required #databaseName="ngModel" />
         </td>
     </tr>
 
@@ -27,10 +32,11 @@
             <table style="width:100%">
                 <tr>
                 <td style="width:100%">
-                    <input class="task-text-input" type="text" />
+                    <input name="databaseOwner" type="text" id="databaseOwnerInput" class="task-text-input"
+                           ngModel required #databaseOwner="ngModel"  />
                 </td>
                 <td style="width:auto; padding-left: 5px;">
-                    <button>...</button>
+                    <button (click)="onSelectOwner()">...</button>
                 </td>
                 </tr>
             </table>
@@ -54,7 +60,7 @@
                 <p-column header="File Type" field="fileType"></p-column>
                 <p-column header="File Group" field="filegroup"></p-column>
                 <p-column header="Initial Size" field="initialSize"></p-column>
-                <p-column header="Grow By\Max Size" field="maxSize"></p-column>
+                <p-column header="Autogrow" field="autogrow"></p-column>
                 <p-column header="Path" field="path"></p-column>
             </p-dataTable>
         </td>
@@ -120,6 +126,7 @@
     <button>Cancel</button>
 </div>
 
+</form>
 
 </div>
 

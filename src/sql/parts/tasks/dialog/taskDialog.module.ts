@@ -13,6 +13,7 @@ import { CreateDatabaseComponent } from 'sql/parts/admin/database/create/createD
 declare let AngularPlatformBrowser;
 declare let AngularCommon;
 declare let AngularCore;
+declare let AngularForms;
 declare let AngularRouter;
 declare let PrimeNg;
 
@@ -35,6 +36,7 @@ const appRoutes: Routes = [
 	],
 	entryComponents: [TaskDialogComponent],
 	imports: [
+		AngularForms.FormsModule,
 		AngularCommon.CommonModule,
 		AngularPlatformBrowser.BrowserModule,
 		PrimeNg.DataTableModule,

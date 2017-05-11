@@ -744,15 +744,6 @@ declare module 'data' {
 	}
 
 	// Admin Services interfaces  -----------------------------------------------------------------------
-	export interface DatabaseFile {
-		logicalName: string;
-		fileType: string;
-		filegroup: string;
-		initialSize: string;
-		maxSize: string;
-		path: string;
-	}
-
 	export interface DatabaseInfo {
 		options: {};
 	}

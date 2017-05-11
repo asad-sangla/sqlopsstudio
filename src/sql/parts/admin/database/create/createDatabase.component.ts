@@ -5,6 +5,7 @@
 
 import 'vs/css!sql/media/primeng';
 import { ChangeDetectorRef, ElementRef } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { TaskDialogComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
@@ -14,8 +15,18 @@ import { ITaskDialogComponent } from 'sql/parts/tasks/common/tasks';
 import data = require('data');
 
 declare let AngularCore;
+declare let AngularForms;
 
 export const CREATEDATABASE_SELECTOR: string = 'createdatabase-component';
+
+export interface DatabaseFile {
+    logicalName: string;
+    fileType: string;
+    filegroup: string;
+    initialSize: string;
+    autogrow: string;
+    path: string;
+}
 
 @AngularCore.Component({
 	selector: CREATEDATABASE_SELECTOR,
@@ -30,7 +41,7 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
 
 	public connection: ConnectionManagementInfo;
 
-    public databaseFiles: data.DatabaseFile[] = [];
+    public databaseFiles: DatabaseFile[] = [];
 
 	constructor(
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
@@ -43,37 +54,40 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
 	ngOnInit() {
     }
 
-    public getDatabaseInfo(): data.DatabaseInfo {
-        return undefined;
+    private getDatabaseInfo(form: NgForm): data.DatabaseInfo {
+        return <data.DatabaseInfo>{
+            options: {
+                name: form.value.databaseName,
+                owner: form.value.databaseOwner
+            }
+        };
     }
 
-	public onOk(): void {
-
-       this._adminService.createDatabase(this.ownerUri, this.getDatabaseInfo());
-
+    public onSubmit(form: NgForm): void {
+        this._adminService.createDatabase(this.ownerUri, this.getDatabaseInfo(form));
     }
 
-	public onGenerateScript(): void {
-    }
+	public onOk(): void { }
 
-	public onCancel(): void {
-    }
+	public onGenerateScript(): void { }
+
+	public onCancel(): void { }
+
+    public onSelectOwner(): void { }
 
     public injectBootstapper(parameters: TaskDialogComponentParams ): void {
         let self = this;
-        this._adminService.getDefaultDatabaseInfo(parameters.ownerUri).then(dbInfo => {
+        this.ownerUri = parameters.ownerUri;
+        this._adminService.getDefaultDatabaseInfo(this.ownerUri).then(dbInfo => {
            let databaseFilesCount = dbInfo.options['databaseFilesCount'];
            for (let i = 0; i < databaseFilesCount; ++i) {
-                let filename = dbInfo.options['databaseFiles.' + i + '.name'];
-                let physicalFilename = dbInfo.options['databaseFiles.' + i + '.physicalName'];
-
                 self.databaseFiles[i] = {
-                    logicalName: filename,
-                    fileType: 'Rows data',
-                    filegroup: 'PRIMARY',
-                    initialSize: '8',
-                    maxSize: '64MB',
-                    path: physicalFilename
+                    logicalName: dbInfo.options['databaseFiles.' + i + '.name'],
+                    fileType:  dbInfo.options['databaseFiles.' + i + '.databaseFileType'],
+                    filegroup:  dbInfo.options['databaseFiles.' + i + '.fileGroup'],
+                    initialSize: dbInfo.options['databaseFiles.' + i + '.initialSize'],
+                    autogrow: dbInfo.options['databaseFiles.' + i + '.autogrowth'],
+                    path: dbInfo.options['databaseFiles.' + i + '.folder']
                 };
            }
            self.changeDetectorRef.detectChanges();
