@@ -12,7 +12,7 @@ Carbon's CREATE page helps user to provide the minimum required properties to su
 
 All other properties are initially hidden in 'Advanced' expandable section and the section is collapsed by default. To configure more, user can simply expand 'Advanced' section and change values.
 
-Carbon provides the nearly 1-1 mapping with T-SQL syntax so that user can script a complete T-SQL CREATE statement using Carbon's CREATE page.
+Carbon provides nearly 1-1 mapping with T-SQL syntax so that user can script a complete T-SQL CREATE statement using Carbon's CREATE page.
 
 > Obsolete / legacy properties will be filtered out from the first release of Carbon. Those porperties will be added based on customer's feedback.
 
@@ -29,6 +29,8 @@ Carbon provides the nearly 1-1 mapping with T-SQL syntax so that user can script
 > (todo) Further clean-up unncessary properties during 'CREATE'.
 
 > (ux design) Layout of filegroup / file list and file browser interface.
+
+> (todo) Azure SQLDB experience
 
 |Category|Property name|Interaction type|Default value|Default State|Priority|
 |:---|:---|:---|:---|:---|:---:|
