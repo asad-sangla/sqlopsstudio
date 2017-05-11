@@ -104,6 +104,7 @@ BACKUP page provides the following configuration options under **Advanced** sect
             > add **new backup media set** dialog experience. It may require its own dialog. New backup media set dialog contains - Name, Description and Warning information that existing backups in the media set will be erased (FORMAT).
         * Check media set: On / **Off**
             * check the existence of media set
+			> add user scenarios when to turn on check media set option
  
     * Description
     * Backup media type
