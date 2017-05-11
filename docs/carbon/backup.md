@@ -99,10 +99,10 @@ BACKUP page provides the following configuration options under **Advanced** sect
 * Backup media
     * Backup media set name
         * Default value: existing media set name, read-only
-        * Initial value: for the first backup for database, provide smart default in the following format database-backupset e.g. ```WorldWideImporers-backupset```
+        * Initial value: for the first backup for database, provide smart default in the following format database-backupset e.g. ```WorldWideImporers-MediaSet```
             * User can override the value.
             > add **new backup media set** dialog experience. It may require its own dialog. New backup media set dialog contains - Name, Description and Warning information that existing backups in the media set will be erased (FORMAT).
-        * Chekc media set: On / **Off**
+        * Check media set: On / **Off**
             * check the existence of media set
  
     * Description
