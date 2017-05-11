@@ -171,6 +171,5 @@ I CAN scenarios
 
 [PITR (Point in Time Restore)](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/restore-a-sql-server-database-to-a-point-in-time-full-recovery-model)
 
-
-
+[Tailog backup] (http://www.sqlskills.com/BLOGS/PAUL/post/Disaster-recovery-101-backing-up-the-tail-of-the-log.aspx)
 
