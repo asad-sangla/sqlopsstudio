@@ -9,7 +9,7 @@ This document describes functional scenarios and details of database backup in C
 
 ## Functional Pattern
 
-Carbon's BACKUP page helps user to provide minimum required configuration properties to successfully backup database. The rest of configuration options are pre-set with smart defaults.
+Carbon's BACKUP page helps user to successfully backup database with minimum configurations with just a few clicks. The rest of configuration options are pre-set with smart defaults.
 
 All other properties are initially hidden in 'Advanced' expandable section and the section is collapsed by default. To configure more, user can simply expand 'Advanced' section and change values.
 
