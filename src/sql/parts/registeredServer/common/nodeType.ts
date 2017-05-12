@@ -25,8 +25,6 @@ export class NodeType {
 	public static ServerLevelServerRole = 'ServerLevelServerRole';
 	public static ServerLevelLogin = 'ServerLevelLogin';
 	public static ServerLevelServerAuditSpecification = 'ServerLevelServerAuditSpecification';
-	public static ServerLevelEventNotification = 'ServerLevelEventNotification';
-	public static ServerLevelErrorMessage = 'ServerLevelErrorMessage';
 	public static ServerLevelServerTrigger = 'ServerLevelServerTrigger';
 	public static ServerLevelLinkedServer = 'ServerLevelLinkedServer';
 	public static ServerLevelEndpoint = 'ServerLevelEndpoint';
