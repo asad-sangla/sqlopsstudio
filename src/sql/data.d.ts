@@ -712,6 +712,8 @@ declare module 'data' {
 	export interface NodeInfo {
 		nodePath: string;
 		nodeType: string;
+		nodeSubType: string;
+		nodeStatus: string;
 		label: string;
 		isLeaf: boolean;
 		metadata: ObjectMetadata;

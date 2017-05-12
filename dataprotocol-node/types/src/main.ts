@@ -19,6 +19,8 @@ export interface ExpandResponse {
 export interface NodeInfo {
 	nodePath: string;
 	nodeType: string;
+	nodeSubType: string;
+	nodeStatus: string;
 	label: string;
 	isLeaf: boolean;
 	metadata: ObjectMetadata;
@@ -266,7 +268,7 @@ export enum TaskState {
 
 export interface TaskInfo {
 	taskId: number;
-    state: TaskState;
+	state: TaskState;
 }
 
 export interface ListTasksParams {

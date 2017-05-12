@@ -48,6 +48,16 @@ export class TreeNode {
 	public nodePath: string;
 
 	/**
+	 * Node sub type
+	 */
+	public nodeSubType: string;
+
+	/**
+	 * Node Status
+	 */
+   	public nodeStatus: string;
+
+	/**
   * Children of this node
   */
 	public children: TreeNode[];
@@ -97,7 +107,8 @@ export class TreeNode {
 		return false;
 	}
 
-	constructor(nodeTypeId: string, label: string, isAlwaysLeaf: boolean, nodePath: string, parent: TreeNode, metadata: data.ObjectMetadata) {
+	constructor(nodeTypeId: string, label: string, isAlwaysLeaf: boolean, nodePath: string,
+	nodeSubType: string, nodeStatus: string, parent: TreeNode, metadata: data.ObjectMetadata) {
 		this.nodeTypeId = nodeTypeId;
 		this.label = label;
 		this.isAlwaysLeaf = isAlwaysLeaf;
@@ -105,5 +116,7 @@ export class TreeNode {
 		this.parent = parent;
 		this.metadata = metadata;
 		this.id = Utils.generateGuid();
+		this.nodeSubType = nodeSubType;
+		this.nodeStatus = nodeStatus;
 	}
 }

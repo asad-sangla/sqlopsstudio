@@ -34,14 +34,18 @@ suite('Object Explorer Service tests', () => {
 			nodeType: NodeType.Table,
 			label: 'dbo.Table1',
 			isLeaf: false,
-			metadata: null
+			metadata: null,
+			nodeSubType: '',
+			nodeStatus: ''
 		};
 		let NodeInfoTable2 = {
 			nodePath: 'testServerName\tables\dbo.Table2',
 			nodeType: NodeType.Table,
 			label: 'dbo.Table2',
 			isLeaf: false,
-			metadata: null
+			metadata: null,
+			nodeSubType: '',
+			nodeStatus: ''
 		};
 
 		let NodeInfoTable3 = {
@@ -49,7 +53,9 @@ suite('Object Explorer Service tests', () => {
 			nodeType: NodeType.Table,
 			label: 'dbo.Table3',
 			isLeaf: false,
-			metadata: null
+			metadata: null,
+			nodeSubType: '',
+			nodeStatus: ''
 		};
 
 		objectExplorerSession = {
@@ -60,7 +66,9 @@ suite('Object Explorer Service tests', () => {
 				nodeType: NodeType.Folder,
 				label: 'Tables',
 				isLeaf: false,
-				metadata: null
+				metadata: null,
+				nodeSubType: '',
+				nodeStatus: ''
 			}
 		};
 
@@ -161,7 +169,7 @@ suite('Object Explorer Service tests', () => {
 	});
 
 	test('expand tree node should children correctly', () => {
-		var tablesNode = new TreeNode(NodeType.Folder, 'Tables', false, 'testServerName\tables', null, null);
+		var tablesNode = new TreeNode(NodeType.Folder, 'Tables', false, 'testServerName\tables', '', '', null, null);
 		tablesNode.connection = connection;
 		objectExplorerService.expandTreeNode(objectExplorerSession, tablesNode).then(children => {
 			assert.equal(children !== null || children !== undefined, true);
@@ -175,7 +183,7 @@ suite('Object Explorer Service tests', () => {
 	});
 
 	test('refresh tree node should children correctly', () => {
-		var tablesNode = new TreeNode(NodeType.Folder, 'Tables', false, 'testServerName\tables', null, null);
+		var tablesNode = new TreeNode(NodeType.Folder, 'Tables', false, 'testServerName\tables', '', '', null, null);
 		tablesNode.connection = connection;
 		objectExplorerService.refreshTreeNode(objectExplorerSession, tablesNode).then(children => {
 			assert.equal(children !== null || children !== undefined, true);
@@ -216,13 +224,13 @@ suite('Object Explorer Service tests', () => {
 			name: 'Db1',
 			schema: null
 		};
-		var databaseNode = new TreeNode(NodeType.Database, 'Db1', false, 'testServerName\Db1', null, databaseMetaData);
+		var databaseNode = new TreeNode(NodeType.Database, 'Db1', false, 'testServerName\Db1', '', '', null, databaseMetaData);
 		databaseNode.connection = connection;
 		databaseNode.session = objectExplorerSession;
-		var tablesNode = new TreeNode(NodeType.Folder, 'Tables', false, 'testServerName\Db1\tables', databaseNode, null);
+		var tablesNode = new TreeNode(NodeType.Folder, 'Tables', false, 'testServerName\Db1\tables', '', '', databaseNode, null);
 		databaseNode.children = [tablesNode];
-		var table1Node = new TreeNode(NodeType.Table, 'dbo.Table1', false, 'testServerName\Db1\tables\dbo.Table1', tablesNode, null);
-		var table2Node = new TreeNode(NodeType.Table, 'dbo.Table2', false, 'testServerName\Db1\tables\dbo.Table2', tablesNode, null);
+		var table1Node = new TreeNode(NodeType.Table, 'dbo.Table1', false, 'testServerName\Db1\tables\dbo.Table1', '', '', tablesNode, null);
+		var table2Node = new TreeNode(NodeType.Table, 'dbo.Table2', false, 'testServerName\Db1\tables\dbo.Table2', '', '', tablesNode, null);
 		tablesNode.children = [table1Node, table2Node];
 		assert.equal(table1Node.getSession(), objectExplorerSession);
 		assert.equal(table1Node.getConnectionProfile(), connection);

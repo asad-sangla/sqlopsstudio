@@ -84,11 +84,17 @@ export class ObjectExplorerService implements IObjectExplorerService {
 				resolve();
 			} else {
 				this.createNewSession(connection.providerName, connection).then(session => {
-					let server = this.toTreeNode(session.rootNode, null);
-					server.connection = connection;
-					server.session = session;
-					this._activeObjectExplorerNodes[connection.id] = server;
+					if (session.success && session.rootNode) {
+						let server = this.toTreeNode(session.rootNode, null);
+						server.connection = connection;
+						server.session = session;
+						this._activeObjectExplorerNodes[connection.id] = server;
+					} else {
+						// TODO: show the error
+					}
+
 					resolve();
+
 				});
 			}
 		});
@@ -159,11 +165,15 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	public expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]> {
 		return this.expandNode(parentTree.getConnectionProfile().providerName, session, parentTree.nodePath).then(expandResult => {
-			let children = expandResult.nodes.map(node => {
-				return this.toTreeNode(node, parentTree);
-			});
-			parentTree.children = children.filter(c => c !== undefined);
+			let children: TreeNode[] = [];
+			if (expandResult.nodes) {
+				children = expandResult.nodes.map(node => {
+					return this.toTreeNode(node, parentTree);
+				});
+				parentTree.children = children.filter(c => c !== undefined);
+			}
 			return children;
+
 		}, error => {
 
 		});
@@ -182,6 +192,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	private toTreeNode(nodeInfo: data.NodeInfo, parent: TreeNode): TreeNode {
-		return new TreeNode(nodeInfo.nodeType, nodeInfo.label, nodeInfo.isLeaf, nodeInfo.nodePath, parent, nodeInfo.metadata);
+		return new TreeNode(nodeInfo.nodeType, nodeInfo.label, nodeInfo.isLeaf, nodeInfo.nodePath,
+		nodeInfo.nodeSubType, nodeInfo.nodeStatus, parent, nodeInfo.metadata);
 	}
 }
