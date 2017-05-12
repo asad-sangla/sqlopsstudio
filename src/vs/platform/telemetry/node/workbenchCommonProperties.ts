@@ -21,7 +21,10 @@ export function resolveWorkbenchCommonProperties(storageService: IStorageService
 		result['common.version.renderer'] = process.versions && (<any>process).versions['chrome'];
 		result['common.osVersion'] = os.release();
 		result['common.virtualMachineHint'] = virtualMachineHint.value().toString();
+		// carbon-edit-start
 		result['common.application.name'] = product.nameLong;
+		// carbon-edit-end
+
 		const lastSessionDate = storageService.get('telemetry.lastSessionDate');
 		const firstSessionDate = storageService.get('telemetry.firstSessionDate') || new Date().toUTCString();
 		storageService.store('telemetry.firstSessionDate', firstSessionDate);

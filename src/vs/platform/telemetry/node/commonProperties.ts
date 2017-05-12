@@ -20,7 +20,9 @@ export function resolveCommonProperties(commit: string, version: string): TPromi
 	result['version'] = version;
 	result['common.osVersion'] = os.release();
 	result['common.platform'] = Platform.Platform[Platform.platform];
+	// carbon-edit-start
 	result['common.application.name'] = product.nameLong;
+	// carbon-edit-end
 
 	// dynamic properties which value differs on each call
 	let seq = 0;
