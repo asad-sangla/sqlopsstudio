@@ -52,7 +52,7 @@ export default class ServiceDownloadProvider {
     */
     public getInstallDirectory(platform: Runtime): string {
 
-        let basePath = this.getInstallDirectoryRoot();
+        let basePath = this.getInstallDirectoryRoot(platform);
         let versionFromConfig = this._config.getSqlToolsPackageVersion();
         basePath = basePath.replace('{#version#}', versionFromConfig);
         basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
@@ -62,11 +62,29 @@ export default class ServiceDownloadProvider {
         return basePath;
     }
 
+    private getLocalUserFolderPath(platform: Runtime): string {
+        if (platform){
+            switch(platform) {
+                case Runtime.Windows_7_64:
+                case Runtime.Windows_7_86:
+                    return process.env.APPDATA;
+                case Runtime.OSX_10_11_64:
+                    return process.env.HOME + '/Library/Preferences';
+                default:
+                  return '/var/local';
+            }
+        }
+    }
+
    /**
     * Returns SQL tools service installed folder root.
     */
-    public getInstallDirectoryRoot(): string {
+    public getInstallDirectoryRoot(platform: Runtime): string {
+
         let installDirFromConfig = this._config.getSqlToolsInstallDirectory();
+        if(!installDirFromConfig || installDirFromConfig === '') {
+            installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), '/carbon/sqltoolsservice/{#platform#}/{#version#}');
+        }
         let basePath: string;
         if (path.isAbsolute(installDirFromConfig)) {
             basePath = installDirFromConfig;

@@ -97,14 +97,4 @@ export function getServiceInstallDirectory(runtime: Runtime): Promise<string> {
 
 }
 
-/*
-* Returns the path to the root folder of service install location.
-*/
-export function getServiceInstallDirectoryRoot(): string {
-    let directoryPath: string = downloadProvider.getInstallDirectoryRoot();
-    directoryPath = directoryPath.replace('\\{#version#}\\{#platform#}', '');
-    directoryPath = directoryPath.replace('/{#version#}/{#platform#}', '');
-    return directoryPath;
-}
-
 
