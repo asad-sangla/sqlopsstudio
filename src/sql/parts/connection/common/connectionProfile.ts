@@ -43,6 +43,9 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		}
 	}
 
+	public generateNewId() {
+		this._id = Utils.generateGuid();
+	}
 
 	public getParent(): ConnectionProfileGroup {
 		return this.parent;
@@ -73,6 +76,18 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 
 	public clone(): ConnectionProfile {
 		let instance = new ConnectionProfile(this._serverCapabilities, this);
+		return instance;
+	}
+
+	public cloneWithNewId(): ConnectionProfile {
+		let instance = this.clone();
+		instance.generateNewId();
+		return instance;
+	}
+
+	public cloneWithDatabase(databaseName: string): ConnectionProfile {
+		let instance = this.cloneWithNewId();
+		instance.databaseName = databaseName;
 		return instance;
 	}
 

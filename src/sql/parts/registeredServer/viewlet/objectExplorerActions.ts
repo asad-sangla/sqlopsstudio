@@ -194,8 +194,7 @@ export class ObjectExplorerActionUtilities {
 		var connectionProfile = treeNode.getConnectionProfile();
 		var databaseName = treeNode.getDatabaseName();
 		if (databaseName !== undefined && connectionProfile.databaseName !== databaseName) {
-			connectionProfile = connectionProfile.clone();
-			connectionProfile.databaseName = databaseName;
+			connectionProfile = connectionProfile.cloneWithDatabase(databaseName);
 		}
 		return connectionProfile;
 	}

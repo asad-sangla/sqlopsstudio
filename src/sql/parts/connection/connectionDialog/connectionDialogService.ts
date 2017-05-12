@@ -141,7 +141,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private handleFillInConnectionInputs(connectionInfo: IConnectionProfile): void {
 		this._connectionManagementService.addSavedPassword(connectionInfo).then(connectionWithPassword => {
-			this.sqlUiController.fillInConnectionInputs(connectionWithPassword);
+			var model = this.createModel(connectionWithPassword);
+			this.sqlUiController.fillInConnectionInputs(model);
 		});
 	}
 
@@ -154,13 +155,16 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private UpdateModelServerCapabilities(model: IConnectionProfile) {
+		this._model = this.createModel(model);
+	}
+
+	private createModel(model: IConnectionProfile): ConnectionProfile {
 		let providerName = model ? model.providerName : this._defaultProviderName;
 		providerName = providerName ? providerName : this._defaultProviderName;
-		if (model && !model.providerName) {
-			model.providerName = providerName;
-		}
 		let serverCapabilities = this._capabilitiesMaps[providerName];
-		this._model = new ConnectionProfile(serverCapabilities, model);
+		let newProfile = new ConnectionProfile(serverCapabilities, model);
+		newProfile.generateNewId();
+		return newProfile;
 	}
 
 	private cacheCapabilities(capabilities: data.DataProtocolServerCapabilities) {

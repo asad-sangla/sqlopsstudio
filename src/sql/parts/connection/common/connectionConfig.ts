@@ -124,11 +124,16 @@ export class ConnectionConfig implements IConnectionConfig {
 					let newProfile = ConnectionProfile.convertToProfileStore(providerCapabilities, connectionProfile);
 
 					// Remove the profile if already set
-					profiles = profiles.filter(value => {
+					var sameProfileInList = profiles.find(value => {
 						let providerCapabilities = this.getCapabilities(value.providerName);
 						let providerConnectionProfile = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-						return providerConnectionProfile.getOptionsKey() !== connectionProfile.getOptionsKey();
+						return providerConnectionProfile.getOptionsKey() === connectionProfile.getOptionsKey();
 					});
+					if (sameProfileInList) {
+						profiles = profiles.filter(value => value !== sameProfileInList);
+						newProfile.id = sameProfileInList.id;
+					}
+
 					profiles.push(newProfile);
 
 					this.writeConfiguration(Constants.connectionsArrayName, profiles).then(() => {

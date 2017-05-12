@@ -65,10 +65,10 @@ export class DashboardComponent {
 	private disasterRecoveryService: IDisasterRecoveryService;
 
 	constructor(
-        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
-        @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
+		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
-        let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
+		let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 
 		this.connectionService = this._bootstrapService.connectionManagementService;
 		this.metadataService = this._bootstrapService.metadataService;
@@ -142,9 +142,9 @@ export class DashboardComponent {
 		this.loading = true;
 		this.ownerUri = ConnectionFactory.DashboardUriPrefix + 'browseconn:' + this.connection.connectionProfile.serverName + ';' + this.currentDatabaseName;
 
-		this.connection.connectionProfile.databaseName = this.currentDatabaseName;
+		var newProfile = this.connection.connectionProfile.cloneWithDatabase(this.currentDatabaseName);
 
-		this.connectionService.connect(this.connection.connectionProfile, this.ownerUri).then(connectionResult => {
+		this.connectionService.connect(newProfile, this.ownerUri).then(connectionResult => {
 			if (connectionResult && connectionResult.connected) {
 				this.loading = false;
 				this.databasePage.onConnectionChanged();

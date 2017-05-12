@@ -378,10 +378,10 @@ export class ConnectionStore {
 		list.unshift(savedProfile);
 
 		let newList = list.map(c => {
-			let connectionProfile = c.toIConnectionProfile();
+			let connectionProfile = c ? c.toIConnectionProfile() : undefined;;
 			return connectionProfile;
 		});
-		return newList;
+		return newList.filter(n => n !== undefined);
 	}
 
 	/**
