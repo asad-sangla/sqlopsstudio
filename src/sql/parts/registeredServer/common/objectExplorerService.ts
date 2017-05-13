@@ -10,6 +10,7 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import Event, { Emitter } from 'vs/base/common/event';
 import data = require('data');
 
 export const SERVICE_ID = 'ObjectExplorerService';
@@ -41,6 +42,8 @@ export interface IObjectExplorerService {
 	updateObjectExplorerNodes(): Promise<void>[];
 
 	deleteObjectExplorerNode(connection: IConnectionProfile): void;
+
+	onUpdateObjectExplorerNodes: Event<IConnectionProfile>;
 }
 
 export class ObjectExplorerService implements IObjectExplorerService {
@@ -53,11 +56,19 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	private _activeObjectExplorerNodes: { [id: string]: TreeNode };
 
+	private _onUpdateObjectExplorerNodes: Emitter<IConnectionProfile>;
+
 	constructor(
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
+		this._onUpdateObjectExplorerNodes = new Emitter<IConnectionProfile>();
 		this._activeObjectExplorerNodes = {};
 	}
+
+	public get onUpdateObjectExplorerNodes(): Event<IConnectionProfile> {
+		return this._onUpdateObjectExplorerNodes.event;
+	}
+
 
 	public updateObjectExplorerNodes(): Promise<void>[] {
 		let connections = this._connectionManagementService.getActiveConnections();
@@ -81,6 +92,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	private updateNewObjectExplorerNode(connection: ConnectionProfile): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			if (this._activeObjectExplorerNodes[connection.id]) {
+				this._onUpdateObjectExplorerNodes.fire(<IConnectionProfile>connection);
 				resolve();
 			} else {
 				this.createNewSession(connection.providerName, connection).then(session => {
@@ -92,7 +104,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 					} else {
 						// TODO: show the error
 					}
-
+					this._onUpdateObjectExplorerNodes.fire(<IConnectionProfile>connection);
 					resolve();
 
 				});
@@ -193,6 +205,6 @@ export class ObjectExplorerService implements IObjectExplorerService {
 
 	private toTreeNode(nodeInfo: data.NodeInfo, parent: TreeNode): TreeNode {
 		return new TreeNode(nodeInfo.nodeType, nodeInfo.label, nodeInfo.isLeaf, nodeInfo.nodePath,
-		nodeInfo.nodeSubType, nodeInfo.nodeStatus, parent, nodeInfo.metadata);
+			nodeInfo.nodeSubType, nodeInfo.nodeStatus, parent, nodeInfo.metadata);
 	}
 }

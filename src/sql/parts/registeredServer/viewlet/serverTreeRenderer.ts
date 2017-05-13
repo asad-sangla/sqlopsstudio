@@ -159,7 +159,14 @@ export class ServerTreeRenderer implements IRenderer {
 	}
 
 	private renderObjectExplorer(tree: ITree, treeNode: TreeNode, templateData: IObjectExplorerTemplateData): void {
-		var iconFilePath = require.toUrl('sql/media/objectTypes/' + treeNode.nodeTypeId + '.svg');
+		var iconName = treeNode.nodeTypeId;
+		if (treeNode.nodeStatus) {
+			iconName = treeNode.nodeTypeId + '_' + treeNode.nodeStatus;
+		}
+		if (treeNode.nodeSubType) {
+			iconName = treeNode.nodeTypeId + '_' + treeNode.nodeSubType;
+		}
+		var iconFilePath = require.toUrl('sql/media/objectTypes/' + iconName + '.svg');
 		if (!fs.existsSync(uri.parse(iconFilePath).fsPath)) {
 			iconFilePath = require.toUrl('sql/media/objectTypes/DefaultIcon.svg');
 		}

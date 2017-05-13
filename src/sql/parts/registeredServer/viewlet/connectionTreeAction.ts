@@ -77,7 +77,8 @@ export class ChangeConnectionAction extends Action {
 	}
 
 	constructor(
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
 	) {
 		super('registeredConnections.connect', ChangeConnectionAction.Label, ChangeConnectionAction.DisabledClass, false);
 		const self = this;
@@ -88,6 +89,10 @@ export class ChangeConnectionAction extends Action {
 		this._disposables.push(this._connectionManagementService.onDisconnect((disconnectParams) => {
 			self.setLabel();
 			self._connectionManagementService.closeDashboard(disconnectParams.connectionUri);
+		})
+		);
+		this._disposables.push(this._objectExplorerService.onUpdateObjectExplorerNodes((connection) => {
+			self.removeSpinning(connection);
 		})
 		);
 	}
@@ -108,6 +113,14 @@ export class ChangeConnectionAction extends Action {
 			return;
 		}
 		this.label = this._connectionManagementService.isProfileConnected(this._connectionProfile) ? 'Disconnect' : 'Connect';
+	}
+
+	private removeSpinning(connection: IConnectionProfile): void {
+		if (this._connectionProfile) {
+			if (connection.id === this._connectionProfile.id && this.parentContainer) {
+				this.parentContainer.classList.remove('connecting');
+			}
+		}
 	}
 
 	run(): TPromise<any> {
@@ -133,10 +146,6 @@ export class ChangeConnectionAction extends Action {
 
 			return new TPromise<boolean>((resolve, reject) => {
 				this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
-					if (this.parentContainer) {
-						this.parentContainer.classList.remove('connecting');
-					}
-
 					if (connectionResult && connectionResult.connected) {
 						this.update();
 					}

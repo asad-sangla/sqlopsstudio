@@ -10,6 +10,7 @@ import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { RefreshAction, AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction, ChangeConnectionAction, ActiveConnectionsFilterAction, RecentConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { TestConnectionManagementService } from 'sqltest/stubs/connectionManagementService.test';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
@@ -22,6 +23,7 @@ import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { ServerTreeDataSource } from 'sql/parts/registeredServer/viewlet/serverTreeDataSource';
 import { Builder, $ } from 'vs/base/browser/builder';
 import WinJS = require('vs/base/common/winjs.base');
+import { Emitter } from 'vs/base/common/event';
 
 suite('SQL Connection Tree Action tests', () => {
 
@@ -34,7 +36,10 @@ suite('SQL Connection Tree Action tests', () => {
 		connectionManagementService.callBase = true;
 		connectionManagementService.setup(x => x.isProfileConnected(TypeMoq.It.isAny())).returns(() => isConnectedReturnValue);
 
-		let changeConnectionAction: ChangeConnectionAction = new ChangeConnectionAction(connectionManagementService.object);
+		let objectExplorerService = TypeMoq.Mock.ofType(ObjectExplorerService, TypeMoq.MockBehavior.Loose, connectionManagementService.object);
+		objectExplorerService.callBase = true;
+		objectExplorerService.setup(x => x.onUpdateObjectExplorerNodes).returns(() => new Emitter<IConnectionProfile>().event);
+		let changeConnectionAction: ChangeConnectionAction = new ChangeConnectionAction(connectionManagementService.object, objectExplorerService.object);
 		let connection: ConnectionProfile = new ConnectionProfile(undefined, {
 			savePassword: false,
 			groupFullName: 'testGroup',
@@ -64,8 +69,10 @@ suite('SQL Connection Tree Action tests', () => {
 		let connectionManagementService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Loose);
 		connectionManagementService.callBase = true;
 		connectionManagementService.setup(x => x.isProfileConnected(TypeMoq.It.isAny())).returns(() => isConnectedReturnValue);
-
-		let changeConnectionAction: ChangeConnectionAction = new ChangeConnectionAction(connectionManagementService.object);
+		let objectExplorerService = TypeMoq.Mock.ofType(ObjectExplorerService, TypeMoq.MockBehavior.Loose, connectionManagementService.object);
+		objectExplorerService.callBase = true;
+		objectExplorerService.setup(x => x.onUpdateObjectExplorerNodes).returns(() => new Emitter<IConnectionProfile>().event);
+		let changeConnectionAction: ChangeConnectionAction = new ChangeConnectionAction(connectionManagementService.object, objectExplorerService.object);
 		let connection: ConnectionProfile = new ConnectionProfile(undefined, {
 			savePassword: false,
 			groupFullName: 'testGroup',
@@ -259,7 +266,7 @@ suite('SQL Connection Tree Action tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: { options: [] },
-			adminServicesProvider: { databaseInfoOptions:[], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
+			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
 		};
 
 		var connection = new ConnectionProfile(sqlProvider, {
@@ -342,7 +349,7 @@ suite('SQL Connection Tree Action tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: { options: [] },
-			adminServicesProvider: { databaseInfoOptions:[], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
+			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
 		};
 
 		var connection = new ConnectionProfile(sqlProvider, {
