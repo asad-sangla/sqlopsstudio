@@ -3,7 +3,7 @@ This document lists functional feature sceanrios based on 5/3 carbon implementat
 
 ## Definition
 
-Carbon's OE provides a holistic view of **'what'**, resources in servers and databases, e.g. server and database and its contained objects as resource to manage.
+Carbon's OE provides a holistic view of **'what'**, resources in servers and databases, e.g. server and database and its contained objects as resources to manage.
 
 Carbon's OE **DOES NOT** intend and / or allow to surface up 'how' to manage those resource as a part of OE structure. e.g. Replication, QDS views, Audits, PBM, Maintenance Plan, Logs etc. The functionalities of 'how' to manage is a functional domain of 'Manage' pages with corresponding insights and actions.
 
