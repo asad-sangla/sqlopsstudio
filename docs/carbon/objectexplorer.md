@@ -1,6 +1,8 @@
 # Functional Spec: Object Explorer
 This document lists functional feature sceanrios based on 5/3 carbon implementation targetting the first preview.
 
+> milestones: m1 - private preview, m2 - public preview, ga - GA
+
 ## Definition
 
 Carbon's OE provides a holistic view of **'what'**, resources in servers and databases, e.g. server and database and its contained objects as resources to manage.
