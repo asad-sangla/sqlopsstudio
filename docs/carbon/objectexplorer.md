@@ -21,7 +21,7 @@ Context menu of OE should provide simple access points for the following only. W
 ## Terms
 
 * Obejct Explorer - the name of viewlet
-	* Group
+	* Server Group
 		* Server profile
 
 > proposal: change VS Code's 'Explorer' to 'File Explorer'
@@ -29,7 +29,7 @@ Context menu of OE should provide simple access points for the following only. W
 ## OE Functional GAP analysis (5/3)
 
 I CAN add a new group to OE.
-* On OE, start **add group** action.
+* On OE, start **New server group** action.
 
 
 * Using add group dialog, configure the group settings.
