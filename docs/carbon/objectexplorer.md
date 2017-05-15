@@ -211,3 +211,95 @@ I CAN get an explicit and easy to understand error messages:
 
 - Pop-up error message indicating that the database is not accessible since it's not online. refer to the database state table above.
 
+## Server group and profile management
+
+* I CAN easily share the group and server profiles within multiple devices (PCs) and team.
+
+* I CAN define and share project specific (project folder) group and server profiles.
+
+	*  I CAN use workspace settings to share the group and server profiles per git project.
+
+* I CAN easily add a new server profile by copy, paste & edit existing server profile in the setttings file.
+
+* I CAN easily add / remove a server profile to and from a group using the settings file.
+
+	> feedback: use of guid for group and server make it very hard for the file level group and server profile management.
+
+```json
+{
+    "datasource.connectionGroups": [
+        {
+            "name": "ROOT",
+            "id": "2BB79484-38CA-4BB1-B81D-353C7BBF197C"
+        },
+        {
+            "name": "PROD",
+            "id": "C674E5D7-596E-4E75-9312-23CBD47AFE0F",
+            "parentId": "2BB79484-38CA-4BB1-B81D-353C7BBF197C"
+        },
+        {
+            "name": "Test",
+            "id": "4ACB324A-219B-48C8-BF1E-B2E676FFA719",
+            "parentId": "2BB79484-38CA-4BB1-B81D-353C7BBF197C"
+        }
+    ],
+    "datasource.connections": [
+        {
+            "options": {
+                "server": "localhost",
+                "database": "",
+                "authenticationType": "SqlLogin",
+                "user": "sa",
+                "password": "",
+                "applicationName": "carbon"
+            },
+            "groupId": "C674E5D7-596E-4E75-9312-23CBD47AFE0F",
+            "providerName": "MSSQL",
+            "savePassword": true,
+            "id": "C648794A-8CA7-4AE4-87B8-FCCEAE67DB3F"
+        },
+        {
+            "options": {
+                "server": "localhost",
+                "database": "SuperHeroDB",
+                "authenticationType": "SqlLogin",
+                "user": "sa",
+                "password": "",
+                "applicationName": "carbon"
+            },
+            "groupId": "C674E5D7-596E-4E75-9312-23CBD47AFE0F",
+            "providerName": "MSSQL",
+            "savePassword": true,
+            "id": "9BFB6C05-5F15-479C-95CD-4FDD5A842F21"
+        },
+        {
+            "options": {
+                "server": "localhost",
+                "database": "SuperHeroDB_Read_Log",
+                "authenticationType": "SqlLogin",
+                "user": "sa",
+                "password": "",
+                "applicationName": "carbon"
+            },
+            "groupId": "C674E5D7-596E-4E75-9312-23CBD47AFE0F",
+            "providerName": "MSSQL",
+            "savePassword": true,
+            "id": "AC76ECF8-C877-4C52-B943-167A33827ACE"
+        },
+        {
+            "options": {
+                "server": "localhost",
+                "database": "master",
+                "authenticationType": "SqlLogin",
+                "user": "sa",
+                "password": "",
+                "applicationName": "carbon"
+            },
+            "groupId": "4ACB324A-219B-48C8-BF1E-B2E676FFA719",
+            "providerName": "MSSQL",
+            "savePassword": true,
+            "id": "6C4B02D5-7B32-4706-BBE5-BB9C0E8F6D53"
+        }
+    ]
+```
+
