@@ -97,6 +97,11 @@ I CAN easily distinguish the server profile by viewing the following information
 * Database name
 * User name
 
+I CAN customize the default connection action between Manage and Editor
+
+* Manage (default): opens Manage page when I connect to a server using OE.
+* Editor: opens a new query editor when I connect to a server using OE.
+
 ### Context Menu
 
 * On OE
