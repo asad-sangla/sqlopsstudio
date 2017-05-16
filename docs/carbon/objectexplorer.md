@@ -3,20 +3,22 @@ This document lists functional feature sceanrios based on 5/3 carbon implementat
 
 > milestones: m1 - private preview, m2 - public preview, ga - GA
 
-## Definition
+## Definitions
 
-Carbon's OE provides a holistic view of **'what'**, resources in servers and databases, e.g. server and database and its contained objects as resources to manage.
+* Carbon's OE is a connection hub for multiple servers and databases that can be also managed in group(s). 
 
-Carbon's OE **DOES NOT** intend and / or allow to surface up 'how' to manage those resource as a part of OE structure. e.g. Replication, QDS views, Audits, PBM, Maintenance Plan, Logs etc. The functionalities of 'how' to manage is a functional domain of 'Manage' pages with corresponding insights and actions.
+* Carbon's OE provides a holistic view of **'what'** (resources) in servers and databases, e.g. server and database and its contained objects as resources to manage.
 
-Context menu of OE should provide simple access points for the following only. We should keep it simple.
+* Carbon's OE **DOES NOT** intend to and / or allow surface up **'how'** to manage those resources as a part of OE structure. e.g. Replication, QDS views, Audits, PBM, Maintenance Plan, Logs etc. The functionalities of 'how' to manage is a functional domain of 'Manage' pages with corresponding insights and actions.
 
-* Provisioning / scripting
-* Start a new query
-* View edit / data for table
-* Key tasks for Recovery and HA operations only.
-	* Note that OE context menu will not list HA configuration task which is a functional domain of Manage. Instead it will have a context menu for HA operation e.g. Failover.
-* Manage - all other management tasks are performed within MANAGE page context with insights for corresponding object types, e.g. server, database, table etc.
+* Context menu of OE should provide simple access points for the following only. We should keep it simple.
+
+	* Provisioning / scripting
+	* Start a new query
+	* View edit / data for table
+	* Key tasks for Recovery and HA operations only.
+		* Note that OE context menu will not list HA configuration task which is a functional domain of Manage. Instead it will have a context menu for HA operation e.g. Failover.
+	* Manage - all other management tasks are performed within MANAGE page context with insights for corresponding object types, e.g. server, database, table etc.
 
 ## Terms
 
@@ -66,13 +68,13 @@ I CAN connect and expand server and database node from the search / active conne
 
 I CAN easily know the database state and user_access state from OE.
 
-* OE fail quickly when user tries to expan a database with inaccessible state. Follow SSMSS model
+* OE fails quickly when user tries to expand a database with inaccessible state. Follow SSMS model:
 
-* Show corresponding database state icon
+	* Show corresponding database state icon
 
-* Show corresponding database state label
+	* Show corresponding database state label
 
-	* check state_desc and user_access_desc fields in sys.databases table.
+Table: state_desc (state) and user_access_desc (user_access) fields in sys.databases table.
 
 |State|Type|Icon|Label|accessible|note|
 |---|---|---|---|---|---|
