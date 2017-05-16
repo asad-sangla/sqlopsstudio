@@ -2,10 +2,12 @@
 
 This document describes functional scenarios and details of database backup in Carbon. The goal is to allow users to
 
-* Quickly create a backup of database as simple as click once using smart defaults. 
+* Quickly create a backup of database as simple as click once using smart defaults.
 * Or configure more based on user's backp and recovery plan needs to maximize the full functional potential of backup.
 
 * Backup is scriptable to run programmatically and /or to automate.
+
+> Note: Intelligent Recovery Plan builder and backup job automation / scripting is proposed for GA.
 
 ## Functional Pattern
 
@@ -86,13 +88,13 @@ I CAN sceanarios
 
 * I CAN encrypt backup to meet compliance requirements.
 
-* I CAN set backup expiration and easily clean up expired backups from media. 
+* I CAN set backup expiration and easily clean up expired backups from media.
 
 BACKUP page provides the following configuration options under **Advanced** section.
 
 * Backup component
     * Database: default
-    * Files and Filegrouos: List of Filegroup and files. 
+    * Files and Filegrouos: List of Filegroup and files.
         * User can select file(s) to backup.
         * UX design request - need a UX design.
 
@@ -105,17 +107,17 @@ BACKUP page provides the following configuration options under **Advanced** sect
         * Check media set: On / **Off**
             * check the existence of media set
 			> add user scenarios when to turn on check media set option
- 
+
     * Description
     * Backup media type
         * Disk (default)
         * Azure Storage (URL) - not supported in **Carbon preview**
 
-        > Backup azure storage container requires more investigation on non-windows OS. 
+        > Backup azure storage container requires more investigation on non-windows OS.
 
     * Backup media list
         * List of backup devices (disk file or Azure storage url)
-        * Add 
+        * Add
             * Disk file - opens **remote file browser**
             * Azure Storage - **not supported in Carbon preview**
         * Remove
@@ -150,9 +152,9 @@ I CAN scenarios
 
 * I CAN generate backup script with all configured backup options.
 
-* I CAN execute backup action against the current database. 
+* I CAN execute backup action against the current database.
 
-* I CAN view the progress of backup operation and its success / failure result. 
+* I CAN view the progress of backup operation and its success / failure result.
 
 * When backup fails, I CAN re-open backup page with the all configured values, fix configuration option that caused failure and re-run backup.
 
