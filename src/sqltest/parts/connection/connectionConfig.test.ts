@@ -121,7 +121,7 @@ suite('SQL ConnectionConfig tests', () => {
 			providerName: 'MSSQL',
 			groupId: 'test',
 			savePassword: true,
-			id: undefined
+			id: 'server1'
 		}
 
 
@@ -137,7 +137,7 @@ suite('SQL ConnectionConfig tests', () => {
 			providerName: 'MSSQL',
 			groupId: 'test',
 			savePassword: true,
-			id: undefined
+			id: 'server2'
 		}, {
 			options: {
 				serverName: 'server3',
@@ -149,7 +149,7 @@ suite('SQL ConnectionConfig tests', () => {
 			providerName: 'MSSQL',
 			groupId: 'g3',
 			savePassword: true,
-			id: undefined
+			id: 'server3'
 		}
 		],
 		value: [
@@ -360,6 +360,7 @@ suite('SQL ConnectionConfig tests', () => {
 		config.addConnection(connectionProfile).then(savedConnectionProfile => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			assert.notEqual(savedConnectionProfile.id, undefined);
 			done();
 		}).catch(error => {
 			assert.fail();
@@ -396,9 +397,10 @@ suite('SQL ConnectionConfig tests', () => {
 
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
-		config.addConnection(connectionProfile).then(success => {
+		config.addConnection(connectionProfile).then(savedConnectionProfile => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			assert.equal(savedConnectionProfile.id, profileFromConfig.id);
 			done();
 		}).catch(error => {
 			assert.fail();

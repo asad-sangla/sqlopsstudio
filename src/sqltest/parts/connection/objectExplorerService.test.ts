@@ -99,7 +99,7 @@ suite('Object Explorer Service tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: { options: [] },
-			adminServicesProvider: { databaseInfoOptions:[], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
+			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
 		};
 
 		connection = new ConnectionProfile(sqlProvider, {
@@ -197,7 +197,7 @@ suite('Object Explorer Service tests', () => {
 	});
 
 	test('update object explorer nodes should get active connection, create session, add to the active OE nodes successfully', () => {
-		Promise.all(objectExplorerService.updateObjectExplorerNodes()).then(() => {
+		objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
 			var treeNode = objectExplorerService.getObjectExplorerNode(connection);
 			assert.equal(treeNode !== null || treeNode !== undefined, true);
 			assert.equal(treeNode.getSession(), objectExplorerSession);
@@ -208,7 +208,7 @@ suite('Object Explorer Service tests', () => {
 	});
 
 	test('delete object explorerNode nodes should delete session, delete the root node to the active OE node', () => {
-		Promise.all(objectExplorerService.updateObjectExplorerNodes()).then(() => {
+		objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
 			var treeNode = objectExplorerService.getObjectExplorerNode(connection);
 			assert.equal(treeNode !== null || treeNode !== undefined, true);
 			objectExplorerService.deleteObjectExplorerNode(connection);

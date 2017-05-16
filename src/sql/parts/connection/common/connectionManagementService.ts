@@ -63,7 +63,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onDisconnect: Emitter<IConnectionParams>;
 	private _onConnectRequestSent: Emitter<void>;
 	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
-	private _connectionInfo: ConnectionManagementInfo;
 
 	private _connectionGlobalStatus: ConnectionGlobalStatus;
 
@@ -105,7 +104,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onDisconnect = new Emitter<IConnectionParams>();
 		this._onConnectionChanged = new Emitter<IConnectionChangedParams>();
 		this._onConnectRequestSent = new Emitter<void>();
-		this._connectionInfo = new ConnectionManagementInfo();
 
 		// Register Statusbar item
 		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
@@ -217,7 +215,15 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private tryConnect(connection: IConnectionProfile, owner: IConnectableInput, options?: IConnectionCompletionOptions): Promise<IConnectionResult> {
 		return new Promise<IConnectionResult>((resolve, reject) => {
 			// Load the password if it's not already loaded
+
+
 			this._connectionStore.addSavedPassword(connection).then(newConnection => {
+				if (Utils.isEmpty(newConnection.password) && this._connectionStore.isPasswordRequired(newConnection)) {
+					let existingConnection = this._connectionFactory.findConnectionProfile(connection);
+					if (existingConnection && existingConnection.connectionProfile) {
+						newConnection.password = existingConnection.connectionProfile.password;
+					}
+				}
 				// If the password is required and still not loaded show the dialog
 				if (Utils.isEmpty(newConnection.password) && this._connectionStore.isPasswordRequired(newConnection)) {
 					resolve(this.showConnectionDialogOnError(connection, owner, { connected: false, error: undefined }, options));
@@ -350,20 +356,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 					}
 					if (options.saveToSettings) {
 						this.saveToSettings(uri, connection).then(value => {
-							if (value) {
-								this._onAddConnectionProfile.fire();
-							}
+							this._onAddConnectionProfile.fire();
+							this.doActionsAfterConnectionComplete(value, options);
 						});
 					} else {
 						connection.saveProfile = false;
+						this.doActionsAfterConnectionComplete(uri, options);
 					}
-					if (options.showDashboard) {
-						this.showDashboard(uri, this._connectionInfo);
-					}
-					this._onConnect.fire(<IConnectionParams>{
-						connectionUri: uri,
-						connectionProfile: connection
-					});
+
 				} else {
 					if (callbacks.onConnectReject) {
 						callbacks.onConnectReject('Connection Not Accepted');
@@ -379,7 +379,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-
+	private doActionsAfterConnectionComplete(uri: string, options: IConnectionCompletionOptions, ) {
+		let connectionManagementInfo = this._connectionFactory.findConnection(uri);
+		if (options.showDashboard) {
+			this.showDashboard(uri, connectionManagementInfo);
+		}
+		this._onConnect.fire(<IConnectionParams>{
+			connectionUri: uri,
+			connectionProfile: connectionManagementInfo.connectionProfile
+		});
+	}
 
 	public showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
 		const self = this;
@@ -458,8 +467,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.getActiveConnections();
 	}
 
-	public getUnsavedConnections(): ConnectionProfile[] {
-		return this._connectionStore.getUnSavedConnections();
+	public getCapabilities(providerName: string): data.DataProtocolServerCapabilities {
+		let capabilities = this._capabilitiesService.getCapabilities();
+		if (capabilities !== undefined && capabilities.length > 0) {
+			return capabilities.find(c => c.providerName == providerName);
+		}
+		return undefined;
 	}
 
 	public getAdvancedProperties(): data.ConnectionOption[] {
@@ -566,12 +579,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	private saveToSettings(id: string, connection: IConnectionProfile): Promise<boolean> {
+	private saveToSettings(id: string, connection: IConnectionProfile): Promise<string> {
 
-		return new Promise<boolean>((resolve, reject) => {
+		return new Promise<string>((resolve, reject) => {
 			this._connectionStore.saveProfile(connection).then(savedProfile => {
-				this._connectionFactory.updateGroupId(savedProfile, id);
-				return resolve(true);
+				let newId = this._connectionFactory.updateConnectionProfile(savedProfile, id);
+				return resolve(newId);
 			});
 		});
 	}
@@ -608,7 +621,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		} else {
 			connection.connectHandler(false, info.messages);
 		}
-		this._connectionInfo = connection;
 
 		if (this._connectionFactory.isDefaultTypeUri(info.ownerUri)) {
 			this._connectionGlobalStatus.setStatusToConnected(info.connectionSummary);
@@ -634,7 +646,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public shutdown(): void {
 		this._connectionStore.clearActiveConnections();
-		this._connectionStore.clearUnsavedConnections();
 		this._connectionMemento.saveMemento();
 	}
 
@@ -821,7 +832,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public getConnectionInfo(fileUri: string): ConnectionManagementInfo {
-		return this._connectionFactory.isConnected(fileUri) ? this._connectionInfo : undefined;
+		return this._connectionFactory.isConnected(fileUri) ? this._connectionFactory.findConnection(fileUri) : undefined;
 	}
 
 	public listDatabases(connectionUri: string): Thenable<data.ListDatabasesResult> {

@@ -127,21 +127,12 @@ export class TreeUpdateUtils {
 
 		let groups = connectionManagementService.getConnectionGroups();
 		if (groups && groups.length > 0) {
-			let treeInput = TreeUpdateUtils.addUnsaved(groups[0], connectionManagementService);
+			let treeInput = groups[0];
 			treeInput.name = 'root';
 			return treeInput;
 		}
 		// Should never get to this case.
 		return undefined;
-	}
-
-	private static addUnsaved(root: ConnectionProfileGroup, connectionManagementService: IConnectionManagementService): ConnectionProfileGroup {
-		let unsaved = new ConnectionProfileGroup(Constants.unsavedGroupLabel, root, Constants.unsavedGroupId);
-		unsaved.addConnections(connectionManagementService.getUnsavedConnections());
-		if (unsaved.connections.length >= 1) {
-			root.addGroups([unsaved]);
-		}
-		return root;
 	}
 
 	public static hasObjectExplorerNode(connection: ConnectionProfile, connectionManagementService: IConnectionManagementService): boolean {

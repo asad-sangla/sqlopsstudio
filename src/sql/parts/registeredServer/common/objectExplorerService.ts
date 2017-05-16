@@ -39,7 +39,7 @@ export interface IObjectExplorerService {
 
 	getObjectExplorerNode(connection: IConnectionProfile): TreeNode;
 
-	updateObjectExplorerNodes(): Promise<void>[];
+	updateObjectExplorerNodes(connectionProfile: IConnectionProfile): Promise<void>;
 
 	deleteObjectExplorerNode(connection: IConnectionProfile): void;
 
@@ -68,17 +68,12 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	public get onUpdateObjectExplorerNodes(): Event<IConnectionProfile> {
 		return this._onUpdateObjectExplorerNodes.event;
 	}
-
-
-	public updateObjectExplorerNodes(): Promise<void>[] {
-		let connections = this._connectionManagementService.getActiveConnections();
-		let promises = connections.map(connection => {
-			return this._connectionManagementService.addSavedPassword(connection).then(withPassword => {
-				let connectionProfile = ConnectionProfile.convertToConnectionProfile(connection.ServerCapabilities, withPassword);
-				return this.updateNewObjectExplorerNode(connectionProfile);
-			});
+	public updateObjectExplorerNodes(connection: IConnectionProfile): Promise<void> {
+		return this._connectionManagementService.addSavedPassword(connection).then(withPassword => {
+			let connectionProfile = ConnectionProfile.convertToConnectionProfile(
+				this._connectionManagementService.getCapabilities(connection.providerName), withPassword);
+			return this.updateNewObjectExplorerNode(connectionProfile);
 		});
-		return promises;
 	}
 
 	public deleteObjectExplorerNode(connection: IConnectionProfile): void {

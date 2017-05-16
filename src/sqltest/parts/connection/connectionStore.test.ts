@@ -291,7 +291,7 @@ suite('SQL ConnectionStore tests', () => {
 			credentialStore.verify(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			assert.strictEqual(capturedCreds.password, defaultNamedProfile.password);
 			let credId: string = capturedCreds.credentialId;
-			assert.ok(credId.includes(ConnectionStore.CRED_MRU_USER), 'Expect credential to be marked as an MRU cred');
+			assert.ok(credId.includes(ConnectionStore.CRED_PROFILE_USER), 'Expect credential to be marked as an Profile cred');
 			assert.ok(Utils.isEmpty(current[0].password));
 		}).then(() => {
 			// When add integrated auth connection

@@ -37,8 +37,3 @@ export interface IConnectionProfileStore {
 	id: string;
 };
 
-export enum CredentialsQuickPickItemType {
-	Profile,
-	Mru,
-	NewConnection
-};

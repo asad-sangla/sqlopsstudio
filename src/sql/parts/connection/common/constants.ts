@@ -53,7 +53,6 @@ export const unsavedGroupLabel = 'Unsaved Connections';
 /* Memento constants */
 export const activeConnections = 'ACTIVE_CONNECTIONS';
 export const recentConnections = 'RECENT_CONNECTIONS';
-export const unsavedConnections = 'UNSAVED_CONNECTIONS';
 export const capabilitiesOptions = 'OPTIONS_METADATA';
 
 export const configRecentConnections = 'recentConnections';

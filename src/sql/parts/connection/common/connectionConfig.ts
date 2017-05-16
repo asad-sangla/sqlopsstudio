@@ -132,6 +132,7 @@ export class ConnectionConfig implements IConnectionConfig {
 					if (sameProfileInList) {
 						profiles = profiles.filter(value => value !== sameProfileInList);
 						newProfile.id = sameProfileInList.id;
+						connectionProfile.id = sameProfileInList.id;
 					}
 
 					profiles.push(newProfile);
