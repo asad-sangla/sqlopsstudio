@@ -96,7 +96,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 				resolve();
 			} else {
 				this.createNewSession(connection.providerName, connection).then(session => {
-					if (session.success && session.rootNode) {
+					if (session && session.success && session.rootNode) {
 						let server = this.toTreeNode(session.rootNode, null);
 						server.connection = connection;
 						server.session = session;
