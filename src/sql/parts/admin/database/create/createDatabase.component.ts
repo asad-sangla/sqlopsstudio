@@ -37,6 +37,8 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
 
     private _adminService: IAdminService;
 
+    public formSubmitted: boolean = false;
+
 	public ownerUri: string;
 
 	public connection: ConnectionManagementInfo;
@@ -45,7 +47,7 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
 
 	constructor(
         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
-        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef,
+        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private _changeDetectorRef: ChangeDetectorRef,
         @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
         this._adminService = this._bootstrapService.adminService;
@@ -65,6 +67,8 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
 
     public onSubmit(form: NgForm): void {
         this._adminService.createDatabase(this.ownerUri, this.getDatabaseInfo(form));
+        this.formSubmitted = true;
+        this._changeDetectorRef.detectChanges();
     }
 
 	public onOk(): void { }
@@ -90,7 +94,7 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
                     path: dbInfo.options['databaseFiles.' + i + '.folder']
                 };
            }
-           self.changeDetectorRef.detectChanges();
+           self._changeDetectorRef.detectChanges();
 		});
     }
 }

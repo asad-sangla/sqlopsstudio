@@ -15,7 +15,7 @@ suite('SQL AdminService tests', () => {
 
 	let adminService: AdminService;
 	setup(() => {
-		this.adminService = new AdminService(
+		adminService = new AdminService(
 			undefined, undefined, undefined, undefined
 		);
 	});
