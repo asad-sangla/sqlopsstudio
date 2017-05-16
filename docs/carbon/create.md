@@ -1,14 +1,14 @@
 # Create Page: Database and DB Object Provisioning
 This speclet describes CREATE functionality in Carbon. The goal is to allow users to:
 
-* Quickly create database and db objects with a minimum effort.
+* Quickly create database and db objects with a minimum effort with smart defaults.
 * Or configure more properites to maximize the full functional potential of db / db objects in SQL server.
 
 * All CREATE actions are scriptable to run programmatically and / or to automate.
 
 ## Functional Pattern
 
-Carbon's CREATE page helps user to provide the minimum required properties to successfully create an object. The rest of properties are pre-set with default values if necessary.
+Carbon's CREATE page helps user to provide the minimum required properties to successfully create an object. The rest of properties are pre-set with smart default values if necessary.
 
 All other properties are initially hidden in 'Advanced' expandable section and the section is collapsed by default. To configure more, user can simply expand 'Advanced' section and change values.
 
@@ -18,7 +18,7 @@ Carbon provides nearly 1-1 mapping with T-SQL syntax so that user can script a c
 
 ## CREATE DATABASE
 
-### Required properties
+### Required (basic) properties
 
 * Database name
 
@@ -34,33 +34,47 @@ Carbon provides nearly 1-1 mapping with T-SQL syntax so that user can script a c
 
 |Category|Property name|Interaction type|Default value|Default State|Priority|
 |:---|:---|:---|:---|:---|:---:|
-|General|Collation|dropdown|<default>||0|
-||Compatibility Level|dropdown|compat enum||0|
+|General|Collation|dropdown|server default||0|
 |Recovery|Recovery Model|dropdown|**full** / simple / bulk-logged||0|
 |Filegroups|Rows/Filestream/Memory Optimized Data|||||
 |Files|Database files|table with add/remove action||||
 
-### Filtered-out
+### More properties
+
+In Carbon, we propose not to surface up following options from CREATE page.
+
+1. Not all is a part of the CREATE DB experience.
+2. Most of these options are better suited in EDIT Database experience.
+
+Properties that are part of CREATE t-sql statement
+
 |Category|Property name|Interaction type|Default value|Default State|Priority|
 |:---|:---|:---|:---|:---|:---:|
-|Automatic|Auto Close||false|||
-||Auto Create Incremental Statistics||false|||
-||Auto Create Statistics||true|||
-||Auto Shrink||false|||
-||Auto Update Statistics||true|||
-||Auto Update Statistics Asynchronously||false|||
 |Containment|Containment Type|dropdown|**none**/partial||1|
 ||Default Fulltext Language LCID||1033|Enabled only when DB Containment type is set to partial||
 ||Default Language||English|||
 ||Nested Triggers Enabled||true|||
 ||Transform Noise Words||false|||
 ||Two Digit Year Cutoff||2049|||
+||Service Broker|Broker Enabled|false||||
+||DB Chaining Enabled||true||||
+
+Properties that can be updated with ALTER t-sql statement.
+
+|Category|Property name|Interaction type|Default value|Default State|Priority|
+|:---|:---|:---|:---|:---|:---:|
+||Compatibility Level|dropdown|compat enum||0|
+|Automatic|Auto Close||false|||
+||Auto Create Incremental Statistics||false|||
+||Auto Create Statistics||true|||
+||Auto Shrink||false|||
+||Auto Update Statistics||true|||
+||Auto Update Statistics Asynchronously||false|||
 |Cursor|Close Cursor on Commit Enabled||false|||
 ||Default Cursor||GLOBAL|||
 |Recovery|Page Verify|dropdown|CHECKSUM|||
 ||Target Recovery Time(Seconds)|inputbox|60|||
 |FTS|Use full-text indexing|checkbox|true|disabled||
-|Service Broker|Broker Enabled|true/false|false|||
 ||Honor Broker Priority|true/false|false|disabled|4|
 ||Service Brokcer Identifier|label|guidvalue|disabled|4|
 |Miscellaneous|Allow Snapshot Isolation||false|||
@@ -94,7 +108,6 @@ Carbon provides nearly 1-1 mapping with T-SQL syntax so that user can script a c
 ||Parameter sniffing for secondary|dropdown|Primary|||
 ||Query Optimizer Fixes|on/off|off|||
 ||Query Optimizer Fixes for Secondary|dropdown|Primary|||
-
 
 ## CREATE Login
 
