@@ -29,7 +29,6 @@ export class SqlConnectionWidget {
 	private _passwordInputBox: InputBox;
 	private _rememberPasswordCheckBox: Checkbox;
 	private _advancedButton: Button;
-	private _saveConnectionCheckbox: Checkbox;
 	private _callbacks: IConnectionComponentCallbacks;
 	private _integratedAuthTypeName: string = 'Integrated';
 	private _sqlAuthTypeName: string = 'SqlLogin';
@@ -37,6 +36,7 @@ export class SqlConnectionWidget {
 	private _toDispose: lifecycle.IDisposable[];
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
 	private _tableContainer: Builder;
+	private _saveProfile: boolean;
 
 	constructor(options: data.ConnectionOption[], callbacks: IConnectionComponentCallbacks) {
 		this._callbacks = callbacks;
@@ -78,7 +78,6 @@ export class SqlConnectionWidget {
 			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.databaseName].displayName, 'connection-label', 'connection-input'));
 		this._serverGroupInputBox = ConnectionDialogHelper.appendInputBox(
 			ConnectionDialogHelper.appendRow(this._tableContainer, 'Add to Server group', 'connection-label', 'connection-input'));
-		this._saveConnectionCheckbox = this.appendCheckbox(this._tableContainer, 'Save Connection', 'connection-checkbox', 'connection-input', true, (viaKeyboard: boolean) => this.onSaveConnectionChecked(viaKeyboard));
 		this._advancedButton = this.createAdvancedButton(this._tableContainer, 'Advanced...');
 	}
 
@@ -147,7 +146,7 @@ export class SqlConnectionWidget {
 	}
 
 	private onSaveConnectionChecked(viaKeyboard: boolean) {
-		if (this._saveConnectionCheckbox.checked) {
+		if (this._saveProfile) {
 			this._serverGroupInputBox.enable();
 		} else {
 			this._serverGroupInputBox.disable();
@@ -219,8 +218,8 @@ export class SqlConnectionWidget {
 			this._passwordInputBox.value = this.getModelValue(connectionInfo.password);
 			this._serverGroupInputBox.value = this.getModelValue(connectionInfo.groupFullName);
 			this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
-			this._saveConnectionCheckbox.checked = connectionInfo.saveProfile;
-			this.onSaveConnectionChecked(false);
+			this._saveProfile = connectionInfo.saveProfile;
+			this.onSaveConnectionChecked(this._saveProfile);
 			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
 				var authTypeDisplayName = this.getAuthTypeDisplayName(connectionInfo.authenticationType);
 				this._authTypeSelectBox.selectWithOptionName(authTypeDisplayName);
@@ -318,7 +317,6 @@ export class SqlConnectionWidget {
 			model.savePassword = this._rememberPasswordCheckBox.checked;
 			model.groupFullName = this.serverGroup;
 			model.groupId = undefined;
-			model.saveProfile = this._saveConnectionCheckbox.checked;
 		}
 		return validInputs;
 	}

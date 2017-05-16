@@ -129,7 +129,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	public addObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
 		this.messages.hide();
 		if (!this._objectExplorerService.getObjectExplorerNode(connection)) {
-			Promise.all(this._objectExplorerService.updateObjectExplorerNodes()).then(() => {
+			this._objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
 				var conn = this.getConnectionInTreeInput(connection.id);
 				if (conn) {
 					this.tree.refresh(conn).then(() => {

@@ -93,17 +93,21 @@ export class ConnectionFactory {
 	 * when the connection is stored, the group id get assigned to the profile and it can change the id
 	 * So for those kind of connections, we need to add the new id and the connection
 	 */
-	public updateGroupId(connection: IConnectionProfile, id: string): ConnectionManagementInfo {
+	public updateConnectionProfile(connection: IConnectionProfile, id: string): string {
 		let connectionInfo: ConnectionManagementInfo = this._connections[id];
+		let newId: string = id;
 		if (connectionInfo && this.isDefaultTypeUri(id)) {
 			connectionInfo.connectionProfile.groupId = connection.groupId;
-			let newId = this.getConnectionManagementId(connection);
+			newId = this.getConnectionManagementId(connection);
 			if (newId !== id) {
 				this._connections[newId] = connectionInfo;
 				this.deleteConnection(id);
 			}
 		}
-		return connectionInfo;
+		if (connection && connectionInfo) {
+			connectionInfo.connectionProfile.id = connection.id;
+		}
+		return newId;
 	}
 
 	public onConnectionComplete(summary: data.ConnectionInfoSummary): ConnectionManagementInfo {

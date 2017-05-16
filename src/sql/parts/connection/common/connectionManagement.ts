@@ -84,8 +84,6 @@ export interface IConnectionManagementService {
 
 	getRecentConnections(): ConnectionProfile[];
 
-	getUnsavedConnections(): ConnectionProfile[];
-
 	getActiveConnections(): ConnectionProfile[];
 
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
@@ -152,6 +150,8 @@ export interface IConnectionManagementService {
 	getProviderIdFromUri(ownerUri: string): string;
 
 	hasRegisteredServers(): boolean;
+
+	getCapabilities(providerName: string): data.DataProtocolServerCapabilities;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

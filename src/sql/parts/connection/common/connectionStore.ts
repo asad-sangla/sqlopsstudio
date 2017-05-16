@@ -9,7 +9,7 @@ import Constants = require('./constants');
 import ConnInfo = require('./connectionInfo');
 import Utils = require('./utils');
 import { ConnectionProfile } from '../common/connectionProfile';
-import { IConnectionProfile, CredentialsQuickPickItemType } from 'sql/parts/connection/common/interfaces';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICredentialsService } from 'sql/services/credentials/credentialsService';
 import { IConnectionConfig } from './iconnectionConfig';
 import { ConnectionConfig } from './connectionConfig';
@@ -61,17 +61,13 @@ export class ConnectionStore {
 	public static get CRED_SEPARATOR(): string { return '|'; }
 	public static get CRED_ID_PREFIX(): string { return 'id:'; }
 	public static get CRED_ITEMTYPE_PREFIX(): string { return 'itemtype:'; }
-	public static get CRED_PROFILE_USER(): string { return CredentialsQuickPickItemType[CredentialsQuickPickItemType.Profile]; };
-	public static get CRED_MRU_USER(): string { return CredentialsQuickPickItemType[CredentialsQuickPickItemType.Mru]; };
+	public static get CRED_PROFILE_USER(): string { return 'Profile'; }
 
-	public formatCredentialIdForCred(connectionProfile: IConnectionProfile, itemType?: CredentialsQuickPickItemType): string {
+	public formatCredentialIdForCred(connectionProfile: IConnectionProfile): string {
 		if (Utils.isEmpty(connectionProfile)) {
 			throw new Error('Missing Connection which is required');
 		}
 		let itemTypeString: string = ConnectionStore.CRED_PROFILE_USER;
-		if (itemType) {
-			itemTypeString = CredentialsQuickPickItemType[itemType];
-		}
 		return this.formatCredentialId(connectionProfile, itemTypeString);
 	}
 
@@ -135,7 +131,7 @@ export class ConnectionStore {
 			if (credentialsItem.savePassword && this.isPasswordRequired(credentialsItem)
 				&& Utils.isEmpty(credentialsItem.password)) {
 
-				let credentialId = this.formatCredentialIdForCred(credentialsItem, undefined);
+				let credentialId = this.formatCredentialIdForCred(credentialsItem);
 				self._credentialService.readCredential(credentialId)
 					.then(savedCred => {
 						if (savedCred) {
@@ -175,6 +171,7 @@ export class ConnectionStore {
 			self.saveProfileToConfig(savedProfile)
 				.then(savedConnectionProfile => {
 					profile.groupId = savedConnectionProfile.groupId;
+					profile.id = savedConnectionProfile.id;
 					// Only save if we successfully added the profile
 					return self.saveProfilePasswordIfNeeded(profile);
 					// And resolve / reject at the end of the process
@@ -194,11 +191,17 @@ export class ConnectionStore {
 
 	private saveProfileToConfig(profile: IConnectionProfile): Promise<IConnectionProfile> {
 		const self = this;
-		if (profile.saveProfile) {
-			return self._connectionConfig.addConnection(profile);
-		} else {
-			return self.addUnSavedConnection(profile);
-		}
+		return new Promise<IConnectionProfile>((resolve, reject) => {
+			if (profile.saveProfile) {
+				self._connectionConfig.addConnection(profile).then(savedProfile => {
+					resolve(savedProfile);
+				}).catch(error => {
+					reject(error);
+				});
+			} else {
+				resolve(profile);
+			}
+		});
 	}
 
 	private getCachedServerCapabilities(): data.DataProtocolServerCapabilities[] {
@@ -274,21 +277,6 @@ export class ConnectionStore {
 		return this.convertConfigValuesToConnectionProfiles(configValues);
 	}
 
-	/**
-	 * Gets the list of unsaved connections. These will not include the password - a separate call to
-	 * {addSavedPassword} is needed to fill that before connecting
-	 *
-	 * @returns {data.ConnectionInfo} the array of connections, empty if none are found
-	 */
-	public getUnSavedConnections(): ConnectionProfile[] {
-		let configValues: IConnectionProfile[] = this._memento[Constants.unsavedConnections];
-		if (!configValues) {
-			configValues = [];
-		}
-
-		return this.convertConfigValuesToConnectionProfiles(configValues);
-	}
-
 	public getProfileWithoutPassword(conn: IConnectionProfile): ConnectionProfile {
 		if (conn) {
 			let savedConn: ConnectionProfile = ConnectionProfile.convertToConnectionProfile(this._connectionConfig.getCapabilities(conn.providerName), conn);
@@ -308,7 +296,7 @@ export class ConnectionStore {
 	 * @returns {Promise<void>} a Promise that returns when the connection was saved
 	 */
 	public addActiveConnection(conn: IConnectionProfile): Promise<void> {
-		return this.addConnectionToMemento(conn, Constants.activeConnections, undefined, true).then(() => {
+		return this.addConnectionToMemento(conn, Constants.activeConnections, undefined, conn.savePassword).then(() => {
 			let maxConnections = this.getMaxRecentConnectionsCount();
 			return this.addConnectionToMemento(conn, Constants.recentConnections, maxConnections);
 		});
@@ -328,9 +316,12 @@ export class ConnectionStore {
 			}
 			self._memento[mementoKey] = configToSave;
 			if (savePassword) {
-				self.doSavePassword(conn, CredentialsQuickPickItemType.Mru);
+				self.doSavePassword(conn).then(result => {
+					resolve(undefined);
+				});
+			} else {
+				resolve(undefined);
 			}
-			resolve(undefined);
 		});
 	}
 
@@ -341,25 +332,6 @@ export class ConnectionStore {
 		}
 
 		return this.convertConfigValuesToConnectionProfiles(configValues);
-	}
-
-	/**
-	 * Adds a connection to the active connections list.
-	 * Password values are stored to a separate credential store if the "savePassword" option is true
-	 *
-	 * @param {IConnectionCredentials} conn the connection to add
-	 * @returns {Promise<void>} a Promise that returns when the connection was saved
-	 */
-	public addUnSavedConnection(conn: IConnectionProfile): Promise<IConnectionProfile> {
-
-		const self = this;
-		return new Promise<IConnectionProfile>((resolve, reject) => {
-			// Get all profiles
-			let configValues = self.getUnSavedConnections();
-			let configToSave = this.addToConnectionList(conn, configValues);
-			self._memento[Constants.unsavedConnections] = configToSave;
-			resolve(conn);
-		});
 	}
 
 	private addToConnectionList(conn: IConnectionProfile, list: ConnectionProfile[]): IConnectionProfile[] {
@@ -404,13 +376,6 @@ export class ConnectionStore {
 	}
 
 	/**
-	 * Clear all unsaved connections
-	 */
-	public clearUnsavedConnections(): void {
-		this._memento[Constants.unsavedConnections] = [];
-	}
-
-	/**
 	 * Remove a connection profile from the recently used list.
 	 */
 	private removeRecentlyUsed(conn: IConnectionProfile): Promise<void> {
@@ -444,35 +409,18 @@ export class ConnectionStore {
 		});
 	}
 
-	/**
-	 * Remove a connection profile from the unsave connections list.
-	 */
-	private removeUnsavedConnection(id: string): void {
-		// Get all profiles
-		let configValues: ConnectionProfile[] = this.getUnSavedConnections();
-		// Remove the connection from the list if it already exists
-		configValues = configValues.filter(value => value.getOptionsKey() !== id);
-		let newList = configValues.map(c => {
-			let connectionProfile = c.toIConnectionProfile();
-			return connectionProfile;
-		});
-
-		this._memento[Constants.unsavedConnections] = newList;
-	}
-
 	private saveProfilePasswordIfNeeded(profile: IConnectionProfile): Promise<boolean> {
 		if (!profile.savePassword) {
 			return Promise.resolve(true);
 		}
-		return this.doSavePassword(profile, CredentialsQuickPickItemType.Profile);
+		return this.doSavePassword(profile);
 	}
 
-	private doSavePassword(conn: IConnectionProfile, type: CredentialsQuickPickItemType): Promise<boolean> {
+	private doSavePassword(conn: IConnectionProfile): Promise<boolean> {
 		let self = this;
 		return new Promise<boolean>((resolve, reject) => {
 			if (Utils.isNotEmpty(conn.password)) {
-				let credType: string = type === CredentialsQuickPickItemType.Mru ? ConnectionStore.CRED_MRU_USER : ConnectionStore.CRED_PROFILE_USER;
-				let credentialId = this.formatCredentialId(conn, credType);
+				let credentialId = this.formatCredentialId(conn);
 				self._credentialService.saveCredential(credentialId, conn.password)
 					.then((result) => {
 						resolve(result);
@@ -561,9 +509,6 @@ export class ConnectionStore {
 		let oldParentId = source.parent.id;
 		return new Promise<void>((resolve, reject) => {
 			this._connectionConfig.changeGroupIdForConnection(source, targetGroupId).then(() => {
-				if (oldParentId === Constants.unsavedGroupId) {
-					this.removeUnsavedConnection(oldId);
-				}
 				resolve();
 			}, (error => {
 				reject(error);

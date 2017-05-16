@@ -194,4 +194,11 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		let withoutPassword = conn.withoutPassword();
 		assert.equal(withoutPassword.getOptionsKey(), conn.getOptionsKey());
 	});
+
+	test('cloneWithDatabase should create new profile with new id', () => {
+		let conn = new ConnectionProfile(msSQLCapabilities, connectionProfile);
+		let newProfile = conn.cloneWithDatabase('new db');
+		assert.notEqual(newProfile.id, conn.id);
+		assert.equal(newProfile.databaseName, 'new db');
+	});
 });

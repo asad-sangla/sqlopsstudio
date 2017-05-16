@@ -80,13 +80,13 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	deleteConnection(connection: ConnectionProfile): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			 resolve(true);
+			resolve(true);
 		});
 	}
 
 	deleteConnectionGroup(group: ConnectionProfileGroup): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			 resolve(true);
+			resolve(true);
 		});
 	}
 
@@ -112,8 +112,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
 		return new Promise<IConnectionResult>((resolve, reject) => {
-			 resolve({ connected: true, error : undefined});
-		 });
+			resolve({ connected: true, error: undefined });
+		});
 	}
 
 	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
@@ -126,12 +126,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	disconnectProfile(connection: ConnectionProfile): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			 resolve(true);
+			resolve(true);
 		});
-	}
-
-	getCapabilities(): data.DataProtocolServerCapabilities[] {
-		return [];
 	}
 
 	getConnectionProfile(fileUri: string): IConnectionProfile {
@@ -178,5 +174,9 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 	hasRegisteredServers(): boolean {
 		return true;
+	}
+
+	getCapabilities(providerName: string): data.DataProtocolServerCapabilities {
+		return undefined;
 	}
 }
