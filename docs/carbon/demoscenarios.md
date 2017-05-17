@@ -1,6 +1,6 @@
 # Highfidelity Mockup Demo Scenarios
 
-## Migration SQL Server database from Windows to Linux
+## Migration of SQL Server database from Windows to Linux
 
 Demonstrate the **migration of database** from Windows to Linux using core Carbon functionality and QDS insights.
 
