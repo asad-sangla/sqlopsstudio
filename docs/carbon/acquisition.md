@@ -85,6 +85,7 @@ Carbon ships monthly releases and supports auto-update when a new release is ava
 
 ##### Updates
 Carbon ships monthly releases and supports auto-update when a new release is available. If you're prompted by Carbon, accept the newest update and it will be installed (you won't need to do anything else to get the latest bits). If you'd rather control Carbon updates manually, see How do I opt out of auto-updates.
+
 -----------
 # Acquisition for 6/30 and Beyond
 
