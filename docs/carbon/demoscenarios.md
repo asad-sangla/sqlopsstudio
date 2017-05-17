@@ -33,6 +33,6 @@ SQL Server 2017 running on Linux with 20 databases - mix of mission critical and
 9. Crank the slider all the way to the right which will **include the latest backup as well as tail-log backup**.
 10. Specify a new database 'database-recovered'
 11. **Recover in just a few clicks**.
-12. Show the recovered database content in OE using SELECT TOP 1000 rows from a table.
+12. Show the recovered database content in OE and SELECT TOP 1000 rows from a table.
 
 
