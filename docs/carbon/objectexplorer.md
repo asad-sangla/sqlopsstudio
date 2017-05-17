@@ -89,6 +89,8 @@ Table: state_desc (state) and user_access_desc (user_access) fields in sys.datab
 |EMERGENCY|state||||
 |OFFLINE|state|offline db icon|(Offline)|No||
 
+> create / check git issue
+
 > check Azure SQLDB's COPYING and OFFLINE_SECONDARY states
 
 I CAN easily find out server connection vs database connection on OE using the icon.
@@ -103,6 +105,8 @@ I CAN customize the default connection action between Manage and Editor
 
 * Manage (default): opens Manage page when I connect to a server using OE.
 * Editor: opens a new query editor when I connect to a server using OE.
+
+> create git issue
 
 ### Context Menu
 
@@ -231,6 +235,8 @@ I CAN get an explicit and easy to understand error messages:
 * I CAN easily add / remove a server profile to and from a group using the settings file.
 
 	> feedback: use of guid for group and server make it very hard for the file level group and server profile management.
+
+    > spec specifically
 
 ```json
 {
