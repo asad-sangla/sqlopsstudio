@@ -30,7 +30,7 @@ SQL Server 2017 running on Linux with 20 databases - mix of mission critical and
 6. Show the **database with state insight** - the damaged database should be in 'RECOVERY PENDING' with a bright red mark on the database.
 7. On the database start Restore.
 8. **Restore page starts with timeslider showing insight about available backup to restore**.
-9. Crank the slider all the way to the right which will **include the latest backup as well as tail-log backup**.
+9. Crank the slider all the way to the right which will **include the latest backup as well as automatically generated tail-log backup**.
 10. Specify a new database 'database-recovered'
 11. **Recover in just a few clicks**.
 12. Show the recovered database content in OE and SELECT TOP 1000 rows from a table.
