@@ -27,7 +27,7 @@ SQL Server 2017 running on Linux with 20 databases - mix of mission critical and
 3. MANAGE page shows an **at-a-glance view of recovery RPO and recovery readiness information** about the database.
 4. Simulate diaster - go to interactive terminal in Carbon, docker /bin/bash in and delete database's mdf file to make it corrupted.
 5. Back to Server MANAGE page.
-6. Shows the **database with state insight** - the damaged database should be in 'RECOVERY PENDING' with a bright red mark on the database.
+6. Show the **database with state insight** - the damaged database should be in 'RECOVERY PENDING' with a bright red mark on the database.
 7. On the database start Restore.
 8. **Restore page starts with timeslider showing insight about available backup to restore**.
 9. Crank the slider all the way to the right which will **include the latest backup as well as tail-log backup**.
