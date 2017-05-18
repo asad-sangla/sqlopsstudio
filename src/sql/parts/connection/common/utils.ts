@@ -92,54 +92,6 @@ function isSameDatabase(currentDatabase: string, expectedDatabase: string): bool
 	return currentDatabase === expectedDatabase;
 }
 
-/**
- * Compares 2 authentication type strings to see if they are the same.
- * If either is undefined or empty, then it is assumed to be SQL authentication by default.
- */
-function isSameAuthenticationType(currentAuthenticationType: string, expectedAuthenticationType: string): boolean {
-	if (isEmpty(currentAuthenticationType)) {
-		currentAuthenticationType = Constants.sqlAuthentication;
-	}
-	if (isEmpty(expectedAuthenticationType)) {
-		expectedAuthenticationType = Constants.sqlAuthentication;
-	}
-	return currentAuthenticationType === expectedAuthenticationType;
-}
-
-/**
- * Compares 2 profiles to see if they match. Logic for matching:
- * If a profile name is used, can simply match on this.
- * If not, match on all key properties (server, db, auth type, user) being identical.
- * Other properties are ignored for this purpose
- *
-
- * @param {IConnectionProfile} currentProfile the profile to check
- * @param {IConnectionProfile} expectedProfile the profile to try to match
- * @returns boolean that is true if the profiles match
- */
-export function isSameProfile(currentProfile: IConnectionProfile, expectedProfile: IConnectionProfile): boolean {
-	if (currentProfile === undefined) {
-		return false;
-	}
-
-	//TODO add provider type (MS SQL, Postgres, ...)
-	return expectedProfile.serverName === currentProfile.serverName
-		&& isSameDatabase(expectedProfile.databaseName, currentProfile.databaseName)
-		&& isSameAuthenticationType(expectedProfile.authenticationType, currentProfile.authenticationType)
-		&& expectedProfile.userName === currentProfile.userName
-		&& expectedProfile.groupFullName === currentProfile.groupFullName;
-}
-
-export function isSameProfileStore(currentProfile: IConnectionProfileStore, expectedProfile: IConnectionProfileStore) {
-	//TODO: for each provider type get the list of identifications. hard coded for MSSQL for now
-	return expectedProfile.options['server'] === currentProfile.options['server']
-		&& isSameDatabase(expectedProfile.options['database'], currentProfile.options['database'])
-		&& isSameAuthenticationType(expectedProfile.options['authenticationType'], currentProfile.options['authenticationType'])
-		&& expectedProfile.options['user'] === currentProfile.options['user']
-		&& expectedProfile.groupId === currentProfile.groupId
-		&& expectedProfile.providerName === currentProfile.providerName;
-}
-
 // One-time use timer for performance testing
 export class Timer {
 	private _startTime: number[];

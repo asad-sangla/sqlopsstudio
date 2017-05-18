@@ -325,6 +325,18 @@ export class ConnectionStore {
 		});
 	}
 
+	public removeConnectionToMemento(conn: IConnectionProfile, mementoKey: string): Promise<void> {
+		const self = this;
+		return new Promise<void>((resolve, reject) => {
+			// Get all profiles
+			let configValues = self.getConnectionsFromMemento(mementoKey);
+			let configToSave = this.removeFromConnectionList(conn, configValues);
+
+			self._memento[mementoKey] = configToSave;
+			resolve(undefined);
+		});
+	}
+
 	public getConnectionsFromMemento(mementoKey: string): ConnectionProfile[] {
 		let configValues: IConnectionProfile[] = this._memento[mementoKey];
 		if (!configValues) {
@@ -356,6 +368,26 @@ export class ConnectionStore {
 		return newList.filter(n => n !== undefined);
 	}
 
+	private removeFromConnectionList(conn: IConnectionProfile, list: ConnectionProfile[]): IConnectionProfile[] {
+		let savedProfile: ConnectionProfile = this.getProfileWithoutPassword(conn);
+
+		// Remove the connection from the list if it already exists
+		list = list.filter(value => {
+			let equal = value && value.getConnectionInfoId() === savedProfile.getConnectionInfoId();
+			if (equal && savedProfile.saveProfile) {
+				equal = value.groupId === savedProfile.groupId ||
+					ConnectionProfileGroup.sameGroupName(value.groupFullName, savedProfile.groupFullName);
+			}
+			return !equal;
+		});
+
+		let newList = list.map(c => {
+			let connectionProfile = c ? c.toIConnectionProfile() : undefined;;
+			return connectionProfile;
+		});
+		return newList.filter(n => n !== undefined);
+	}
+
 	/**
 	 * Clear all recently used connections from the MRU list.
 	 */
@@ -379,34 +411,14 @@ export class ConnectionStore {
 	 * Remove a connection profile from the recently used list.
 	 */
 	private removeRecentlyUsed(conn: IConnectionProfile): Promise<void> {
-		const self = this;
-		return new Promise<void>((resolve, reject) => {
-			// Get all profiles
-			let configValues = self.getRecentlyUsedConnections();
-
-			// Remove the connection from the list if it already exists
-			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
-
-			// Update the MRU list
-			self._memento[Constants.recentConnections] = configValues;
-		});
+		return this.removeConnectionToMemento(conn, Constants.recentConnections);
 	}
 
 	/**
 	 * Remove a connection profile from the active connections list.
 	 */
-	private removeActiveConnection(conn: IConnectionProfile): Promise<void> {
-		const self = this;
-		return new Promise<void>((resolve, reject) => {
-			// Get all profiles
-			let configValues = self.getActiveConnections();
-
-			// Remove the connection from the list if it already exists
-			configValues = configValues.filter(value => !Utils.isSameProfile(value, conn));
-
-			// Update the Active list
-			self._memento[Constants.activeConnections] = configValues;
-		});
+	public removeActiveConnection(conn: IConnectionProfile): Promise<void> {
+		return this.removeConnectionToMemento(conn, Constants.activeConnections);
 	}
 
 	private saveProfilePasswordIfNeeded(profile: IConnectionProfile): Promise<boolean> {

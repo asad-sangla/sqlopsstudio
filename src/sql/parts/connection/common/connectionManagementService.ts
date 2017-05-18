@@ -773,9 +773,19 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public disconnectProfile(connection: ConnectionProfile): Promise<boolean> {
-		let uri = this._connectionFactory.getConnectionManagementId(connection);
-		return this.doDisconnect(connection, uri);
-		// close all dashboards
+		return new Promise<boolean>((resolve, reject) => {
+			let uri = this._connectionFactory.getConnectionManagementId(connection);
+
+			this.doDisconnect(connection, uri).then(result => {
+				if (result) {
+					this._connectionStore.removeActiveConnection(connection);
+					resolve(true);
+				} else {
+					reject(result);
+				}
+			});
+			// close all dashboards
+		});
 	}
 
 	public cancelConnection(connection: IConnectionProfile): Thenable<boolean> {
