@@ -1,6 +1,44 @@
 # Connect, Edit and Query : Script Developer Experience
 This speclet describes the developer functional requirements for 5/30 and 6/30 previews.
 
+## Discussion: Customer requirements
+
+* I CAN view query execution result in horizontal split because I use wide monitor for my dev works.
+
+    * show results and messages in tabs rather than one-document layout.
+
+* I CAN use carbon editor as a scrachpad
+    * No pop-up for unsaved files when closing Carbon.
+    * Change editor tab name without saving the file.
+
+* I CAN view editor sessions in a group / connected server perspective.
+    * Group tabs
+    * Show different colors per group / server.
+
+* I CAN access recent connection history directly from editor command bar using a short cut without poping up Connection dialog.
+
+* I CAN see the edtior connection, query execution status within editor session. 
+
+    * Suggestion 1 - show the status in the editor command bar
+
+    * Suggestion 2 - add editor status bar below Results / message pane.
+
+* I CAN see results and message together.
+
+    * Result Grid 1
+    * Message 1
+    * Result Grid 2
+    * Message 2 
+
+
+* I CAN see the result in graph and chart format in addition to the grid view.
+
+
+## Discussion: Functional requirement
+
+* I CAN browse the registered connections in Connection dialog make a connection.
+
+
 ## Functional Readiness Check & Suggestions
 
 > updated on 5/9
@@ -29,8 +67,6 @@ Reliablity
 
 #### Connection Dialog
 
-* I CAN browse the registered connections in Connection dialog.
-    * Flat list of registered connections.
 
 * I CAN distinguish recent connections with Server, Database and User Name.
  
