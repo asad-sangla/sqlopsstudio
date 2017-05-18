@@ -81,7 +81,7 @@ const vscodeResources = [
 	'out-build/sql/parts/grid/directives/{slick.dragrowselector.js,slick.autosizecolumn.js}',
 	'out-build/sql/parts/grid/load/loadJquery.js',
 	'out-build/sql/parts/grid/media/**',
-	'out-build/sql/parts/grid/views/**/*.html',	
+	'out-build/sql/parts/grid/views/**/*.html',
 	'!**/test/**'
 ];
 
@@ -370,3 +370,15 @@ gulp.task('upload-vscode-sourcemaps', ['minify-vscode'], () => {
 			prefix: commit + '/'
 		}));
 });
+
+// Install service locally before building carbon
+
+function installSqlToolsService(platform) {
+   var install = require('../extensions/credentials/client/out/languageservice/serviceInstallerUtil');
+   return install.installService(platform);
+}
+
+gulp.task('ext:install-service', () => {
+    return installSqlToolsService();
+});
+
