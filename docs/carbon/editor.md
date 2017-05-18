@@ -20,7 +20,6 @@ This speclet describes the developer functional requirements for 5/30 and 6/30 p
 * I CAN see the edtior connection, query execution status within editor session. 
 
     * Suggestion 1 - show the status in the editor command bar
-
     * Suggestion 2 - add editor status bar below Results / message pane.
 
 * I CAN see results and message together.
