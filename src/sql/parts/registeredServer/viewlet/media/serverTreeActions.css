@@ -4,13 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 /* Icons for various registered servers actions */
-
 .monaco-workbench .add-server-action {
 	background-image: url('new.svg');
 }
 
 .vs-dark .monaco-workbench .add-server-action,
 .hc-black .monaco-workbench .add-server-action {
+	background-image: url('new-inverse.svg');
+}
+
+.monaco-workbench .add-server-group-action {
+	background-image: url('new.svg');
+}
+
+.vs-dark .monaco-workbench .add-server-group-action,
+.hc-black .monaco-workbench .add-server-group-action {
 	background-image: url('new-inverse.svg');
 }
 

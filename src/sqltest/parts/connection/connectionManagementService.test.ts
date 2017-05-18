@@ -86,6 +86,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			connectionDialogService.object,
 			undefined,
 			undefined,
+			undefined,
 			workbenchEditorService.object,
 			undefined,
 			undefined,

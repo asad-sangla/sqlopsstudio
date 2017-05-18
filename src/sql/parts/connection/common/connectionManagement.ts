@@ -62,6 +62,11 @@ export interface IConnectionManagementService {
 	showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, error?: string): Promise<void>;
 
 	/**
+	 * Opens the add server group dialog
+	 */
+	showServerGroupDialog(): Promise<void>;
+
+	/**
 	 * Load the password and opens a new connection
 	 */
 	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult>;
@@ -158,6 +163,12 @@ export const IConnectionDialogService = createDecorator<IConnectionDialogService
 export interface IConnectionDialogService {
 	_serviceBrand: any;
 	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model: IConnectionProfile, error?: string): TPromise<void>;
+}
+
+export const IServerGroupController = createDecorator<IConnectionDialogService>('serverGroupController');
+export interface IServerGroupController {
+	_serviceBrand: any;
+	showDialog(): TPromise<void>;
 }
 
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');

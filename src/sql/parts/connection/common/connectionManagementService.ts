@@ -13,7 +13,7 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import {
 	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
 	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionChangedParams,
-	IConnectionParams, IConnectionResult
+	IConnectionParams, IConnectionResult, IServerGroupController
 } from 'sql/parts/connection/common/connectionManagement';
 import platform = require('vs/platform/platform');
 import { Memento } from 'vs/workbench/common/memento';
@@ -71,6 +71,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		private _connectionStore: ConnectionStore,
 		@ISplashScreenService private _splashScreen: ISplashScreenService,
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
+		@IServerGroupController private _serverGroupController: IServerGroupController,
 		@ICommandService private _commandService: ICommandService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
@@ -184,6 +185,20 @@ export class ConnectionManagementService implements IConnectionManagementService
 				model = this._connectionFactory.getConnectionProfile(params.input.uri);
 			}
 			self._connectionDialogService.showDialog(self, params, model, error).then(() => {
+				resolve();
+			}, error => {
+				reject();
+			});
+		});
+	}
+
+	/**
+	 * Opens the add server group dialog
+	 */
+	public showServerGroupDialog(): Promise<void> {
+		let self = this;
+		return new Promise<void>((resolve, reject) => {
+			self._serverGroupController.showDialog().then(() => {
 				resolve();
 			}, error => {
 				reject();

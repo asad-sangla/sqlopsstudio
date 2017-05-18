@@ -1,0 +1,121 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Theming */
+.monaco-shell .modal  {
+	background-color: rgba(0,0,0,0.4);
+}
+
+.vs-dark.monaco-shell .modal  {
+	background-color: rgba(74, 73, 73, 0.4);
+}
+
+.vs-dark.monaco-shell .modal-content{
+	background-color: #252526;
+}
+
+.hc-black.monaco-shell .modal-content{
+	background-color: #000;
+}
+
+.monaco-shell .server-group-dialog .modal-dialog  {
+	margin: auto auto auto auto;
+	height: calc(100% - 23px);
+	width: 500px;
+	right: -18px;
+	position: absolute;
+	overflow-y: hidden;
+}
+
+.monaco-shell .modal-content{
+	background-color: #F3F3F3;
+	height: 100%;
+	width: calc(100% - 20px);
+	font-size: 11px;
+}
+
+.monaco-shell .modal-body{
+	height: calc(100% - 108px);
+}
+
+.footer-table {
+	align-self: right;
+	border-spacing: 10px;
+}
+
+.footer-button {
+	padding-right:8px;
+	width: 100px;
+}
+
+.server-group-dialog .modal-title {
+	font-size: 15px;
+	float: left;
+}
+
+.server-group-dialog .add-server-group-body {
+	padding: 30px;
+	overflow-y: auto;
+}
+
+.serverGroup-label {
+	width: 100%;
+	padding-bottom: 5px;
+}
+
+.serverGroup-input {
+	width: 100%;
+	padding-bottom: 20px;
+}
+
+.vs-dark.monaco-shell .server-group-dialog .input {
+	background-color: #3C3C3C;
+}
+
+.vs-dark.monaco-shell .server-group-dialog input:disabled {
+	background-color: #E1E1E1;
+}
+
+.Group-color-options {
+	float: left;
+}
+
+.Group-color-options a.monaco-button.monaco-text-button {
+    width: 42px;
+	height: 20px;
+    margin: 5px;
+	outline-width: 0px;
+	outline-style: solid;
+	outline-color: #6fc3df;
+}
+
+.vs-dark.monaco-shell .Group-color-options a.monaco-button.monaco-text-button {
+	outline-color: #8e8c8c;
+}
+
+.Group-color-options a.monaco-button.monaco-text-button.selected {
+	outline-width: 3px;
+}
+
+.Group-color-options a.monaco-button.monaco-text-button:focus {
+	outline-width: 2px;
+}
+
+.server-group-dialog .dialogErrorMessage {
+	overflow: hidden;
+	padding-left: 20px;
+	overflow-y: auto;
+	max-height: 50px;
+}
+
+.server-group-dialog .errorIcon {
+	float: left;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+
+.server-group-dialog .error-icon {
+	content: url(status-error.svg);
+}

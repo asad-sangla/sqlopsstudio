@@ -200,6 +200,28 @@ export class AddServerAction extends Action {
 }
 
 /**
+ * Actions to add a server to the group
+ */
+export class AddServerGroupAction extends Action {
+	public static ID = 'registeredServers.addServerGroup';
+	public static LABEL = localize('addServerGroup', 'Add Server Group');
+
+	constructor(
+		id: string,
+		label: string,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = 'add-server-group-action';
+	}
+
+	public run(): TPromise<boolean> {
+		this._connectionManagementService.showServerGroupDialog();
+		return TPromise.as(true);
+	}
+}
+
+/**
  * Display active connections in the tree
  */
 export class ActiveConnectionsFilterAction extends Action {

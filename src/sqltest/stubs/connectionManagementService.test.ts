@@ -38,6 +38,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return undefined;
 	}
 
+	showServerGroupDialog(): Promise<void> {
+		return undefined;
+	}
+
 	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
 
 	}

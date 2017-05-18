@@ -14,7 +14,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { CollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { AddServerAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import { AddServerAction, AddServerGroupAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
@@ -33,6 +33,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 
 	public messages: builder.Builder;
 	private addServerAction: IAction;
+	private addServerGroupAction: IAction;
 	private recentConnectionsFilterAction: RecentConnectionsFilterAction;
 	private activeConnectionsFilterAction: ActiveConnectionsFilterAction;
 	private _searchStr: string;
@@ -49,6 +50,9 @@ export class ServerTreeView extends CollapsibleViewletView {
 		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
 			AddServerAction.ID,
 			AddServerAction.LABEL);
+		this.addServerGroupAction = this.instantiationService.createInstance(AddServerGroupAction,
+			AddServerGroupAction.ID,
+			AddServerGroupAction.LABEL);
 		this.activeConnectionsFilterAction = this.instantiationService.createInstance(
 			ActiveConnectionsFilterAction,
 			ActiveConnectionsFilterAction.ID,
@@ -59,6 +63,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 			RecentConnectionsFilterAction.LABEL,
 			this);
 	}
+
 	/**
 	 * Render header of the view
 	 */
@@ -107,7 +112,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 * Return actions for the view
 	 */
 	public getActions(): IAction[] {
-		return [this.addServerAction, this.activeConnectionsFilterAction, this.recentConnectionsFilterAction];
+		return [this.addServerAction, this.addServerGroupAction, this.activeConnectionsFilterAction, this.recentConnectionsFilterAction];
 	}
 
 	private getConnectionInTreeInput(connectionId: string): ConnectionProfile {

@@ -93,10 +93,11 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
-import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService, IServerGroupController } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import { ErrorMessageService } from 'sql/workbench/errorMessageDialog/errorMessageService';
+import { ServerGroupController } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupController';
 
 import { IBootstrapService, BootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { ICapabilitiesService, CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
@@ -564,6 +565,7 @@ export class Workbench implements IPartService {
 		this.splashScreenService = this.instantiationService.createInstance(SplashScreenService);
 		serviceCollection.set(ISplashScreenService, this.splashScreenService);
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
+		serviceCollection.set(IServerGroupController, this.instantiationService.createInstance(ServerGroupController));
 		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
