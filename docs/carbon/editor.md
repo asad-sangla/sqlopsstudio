@@ -5,15 +5,19 @@ This speclet describes the developer functional requirements for 5/30 and 6/30 p
 
 * I CAN view query execution result in horizontal split because I use wide monitor for my dev works.
 
-    * show results and messages in tabs rather than one-document layout.
+> related item: I CAN see results and messages in tabs rather than one-document layout.
 
-* I CAN use carbon editor as a scrachpad
+* I CAN use carbon editor as a scratchpad
     * No pop-up for unsaved files when closing Carbon.
     * Change editor tab name without saving the file.
 
+    > vscode hot-exit can provide similar functionality (6/30). what happen when people change workspace what will happen?
+
 * I CAN view editor sessions in a group / connected server perspective.
-    * Group tabs
+    * Group / filter editor tabs by connection
     * Show different colors per group / server.
+
+    > good value. Lots of shell works + big modification of VS code. GA+ based on post feedback. need a spec and design in full spectrum.
 
 * I CAN access recent connection history directly from editor command bar using a short cut without poping up Connection dialog.
 
@@ -29,13 +33,19 @@ This speclet describes the developer functional requirements for 5/30 and 6/30 p
     * Result Grid 2
     * Message 2 
 
+    > Line matching would be more useful than this? gather more customer feedback.
 
 * I CAN see the result in graph and chart format in addition to the grid view.
 
+> leverage existing ones.
 
 ## Discussion: Functional requirement
 
-* I CAN browse the registered connections in Connection dialog make a connection.
+* I CAN browse the registered connections in Connection dialog to make a connection.
+
+    > leverage ssdt connection dialog and its search experience
+
+    > we should add browse local instances including docker containers
 
 
 ## Functional Readiness Check & Suggestions
@@ -93,6 +103,8 @@ Defects
 * SQL: USE Database (open question: can we expand the database dropdown control using command palette?)
 
 
+> agreed to have cp.
+
 ### Source Control
 
 Defect
@@ -106,6 +118,8 @@ Defect
 * I CAN see the insert / update / delete statement in OUTPUT windows. 
 
     * Ideally, I CAN record changes and generate insert / update / delete statement from data edit actions in the same edit data session.
+
+    > generate upsert from **select** result grid.
 
 UI
 
