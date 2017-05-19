@@ -116,6 +116,10 @@
 	padding-left: 10px;
 }
 
-.server-group-dialog .error-icon {
-	content: url(status-error.svg);
+.vs-dark.monaco-shell .footer-button a.monaco-button.monaco-text-button {
+	outline-color: #8e8c8c;
+}
+
+.footer-button a.monaco-button.monaco-text-button:focus {
+	outline-width: 1px;
 }

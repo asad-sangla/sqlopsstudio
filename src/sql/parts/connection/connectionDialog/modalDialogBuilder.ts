@@ -58,7 +58,7 @@ export class ModalDialogBuilder {
 				});
 			});
 		})
-		.addClass(this._class);
+			.addClass(this._class);
 		return this._builder;
 	}
 
@@ -76,9 +76,9 @@ export class ModalDialogBuilder {
 
 	public showError(err: string) {
 		if (err === '') {
-			this._errorIconElement.setAttribute('style', 'visibility: hidden');
+			this._errorIconElement.style.visibility = 'hidden';
 		} else {
-			this._errorIconElement.setAttribute('style', 'visibility: visible');
+			this._errorIconElement.style.visibility = 'visible';
 		}
 		this._errorMessageLabel.setValue(err);
 	}
@@ -98,7 +98,9 @@ export class ModalDialogBuilder {
 			errorMessageContainer.div({ class: 'errorIcon' }, (iconContainer) => {
 				iconContainer.element('img', { 'class': 'error-icon' });
 				this._errorIconElement = iconContainer.getHTMLElement();
-				this._errorIconElement.setAttribute('style', 'visibility: hidden');
+				let iconFilePath = require.toUrl('sql/media/status-error.svg');
+				this._errorIconElement.style.content = 'url(' + iconFilePath + ')';
+				this._errorIconElement.style.visibility = 'hidden';
 			});
 			errorMessageContainer.div({ class: 'errorMessage' }, (messageContainer) => {
 				this._errorMessageLabel = new IconLabel(messageContainer.getHTMLElement());

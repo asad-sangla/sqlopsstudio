@@ -15,11 +15,16 @@ import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { KeyCode } from 'vs/base/common/keyCodes';
+import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 
 export interface IServerGroupCallbacks {
 	onAddServerGroup: () => void;
 	onCancel: () => void;
+}
+
+export interface IColorButtonInfo {
+	button: Button;
+	color: string;
 }
 
 export class ServerGroupDialog {
@@ -29,12 +34,13 @@ export class ServerGroupDialog {
 	private _addServerButton: Button;
 	private _closeButton: Button;
 	private _dialog: ModalDialogBuilder;
-	private _colorButtonsMap: { [color: string]: Button };
-	private _selectedColor: string;
+	private _colorButtonsMap: { [colorOption: number]: IColorButtonInfo };
+	private _selectedColorOption: number;
 	private _groupNameInputBox: InputBox;
 	private _groupDescriptionInputBox: InputBox;
 	private _toDispose: lifecycle.IDisposable[];
-	private _defaultColor: string;
+	private _defaultColor: number;
+	private _colors: string[];
 
 	constructor(container: HTMLElement,
 		callbacks: IServerGroupCallbacks) {
@@ -42,20 +48,21 @@ export class ServerGroupDialog {
 		this._callbacks = callbacks;
 		this._colorButtonsMap = {};
 		this._toDispose = [];
+		this._defaultColor = 1;
+		this._colors = ['#162d9c', '#861b1b', '#611773', '#92941e', '#214c34', '#734a17', '#37327b', '#5e5e61'];
 	}
 
 	public create(): HTMLElement {
 		this._dialog = new ModalDialogBuilder('serverGroupDialogModal', 'Create Server Group', 'server-group-dialog', 'serverGroupDialogBody');
 		this._builder = this._dialog.create();
 		this._dialog.addModalTitle();
-		var colors= ['#162d9c', '#861b1b', '#611773', '#92941e', '#214c34', '#734a17', '#37327b', '#5e5e61'];
-		this._defaultColor = colors[0];
+
 		this._dialog.bodyContainer.div({ class: 'add-server-group-body' }, (addServerGroupContent) => {
 			// Connection Group Name
 			addServerGroupContent.div({ class: 'serverGroup-label' }, (labelContainer) => {
 				labelContainer.innerHtml('Connection Group Name');
 			});
-			addServerGroupContent.div({class: 'serverGroup-input'}, (inputCellContainer) => {
+			addServerGroupContent.div({ class: 'serverGroup-input' }, (inputCellContainer) => {
 				this._groupNameInputBox = ConnectionDialogHelper.appendInputBox(inputCellContainer);
 			});
 
@@ -63,7 +70,7 @@ export class ServerGroupDialog {
 			addServerGroupContent.div({ class: 'serverGroup-label' }, (labelContainer) => {
 				labelContainer.innerHtml('Group Description');
 			});
-			addServerGroupContent.div({class: 'serverGroup-input'}, (inputCellContainer) => {
+			addServerGroupContent.div({ class: 'serverGroup-input' }, (inputCellContainer) => {
 				this._groupDescriptionInputBox = ConnectionDialogHelper.appendInputBox(inputCellContainer);
 			});
 
@@ -73,30 +80,41 @@ export class ServerGroupDialog {
 			});
 
 			addServerGroupContent.div({ class: 'Group-color-options' }, (groupColorContainer) => {
-				colors.forEach(color => {
+				for (let i = 0; i < this._colors.length; i++) {
+					let color = this._colors[i];
 					let colorButton = new Button(groupColorContainer);
 					colorButton.label = '';
 					colorButton.getElement().style.background = color;
 					colorButton.addListener2('click', () => {
-						this.onSelectGroupColor(color);
+						this.onSelectGroupColor(i + 1);
 					});
 
-					this._colorButtonsMap[color] = colorButton;
-				});
+					this._colorButtonsMap[i + 1] = { button: colorButton, color: color };
+				}
 			});
 		});
 		this._dialog.addErrorMessage();
 		this._addServerButton = this.createFooterButton(this._dialog.footerContainer, 'Add Server Group');
 		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
 
+		this.onSelectGroupColor(this._defaultColor);
+
 		this._builder.build(this._container);
 
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
 			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter)) {
+			if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
 				this.addGroup();
 			} else if (event.equals(KeyCode.Escape)) {
 				this.cancel();
+			} else if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
+				this.focusPrevious();
+			} else if (event.equals(KeyCode.Tab)) {
+				this.focusNext();
+			} else if (event.equals(KeyCode.RightArrow) || event.equals(KeyCode.LeftArrow)) {
+				this.focusNextColor(event.equals(KeyCode.RightArrow));
 			}
 		});
 
@@ -104,16 +122,65 @@ export class ServerGroupDialog {
 		return this._builder.getHTMLElement();
 	}
 
-	private onSelectGroupColor(color: string): void {
-		if (this._selectedColor != color) {
-			if (this._selectedColor) {
-				var recentSelectedButton = this._colorButtonsMap[this._selectedColor];
+	private focusNext(): void {
+		if (this._groupNameInputBox.hasFocus()) {
+			this._groupDescriptionInputBox.focus();
+		} else if (this._groupDescriptionInputBox.hasFocus()) {
+			this._colorButtonsMap[this._selectedColorOption].button.focus();
+		} else if (this.getIndexOfFocusedColor()) {
+			this._addServerButton.focus();
+		} else if (document.activeElement === this._addServerButton.getElement()) {
+			this._closeButton.focus();
+		}
+	}
+
+	private focusPrevious(): void {
+		if (document.activeElement === this._closeButton.getElement()) {
+			this._addServerButton.focus();
+		} else if (document.activeElement === this._addServerButton.getElement()) {
+			this._colorButtonsMap[this._selectedColorOption].button.focus();
+		} else if (this.getIndexOfFocusedColor()) {
+			this._groupDescriptionInputBox.focus();
+		} else if (this._groupDescriptionInputBox.hasFocus()) {
+			this._groupNameInputBox.focus();
+		}
+	}
+
+	private getIndexOfFocusedColor(): number {
+		let index: number;
+		for (let i = 1; i <= this._colors.length; i++) {
+			let button = this._colorButtonsMap[i].button;
+			if (document.activeElement === button.getElement()) {
+				index = i;
+			}
+		}
+		return index;
+	}
+
+	private focusNextColor(isNext: boolean): void {
+		let index = this.getIndexOfFocusedColor();
+		if (index) {
+			if (isNext) {
+				index++;
+			} else {
+				index--;
+			}
+			if ((index > 0) && (index <= this._colors.length)) {
+				this._colorButtonsMap[index].button.focus();
+			}
+		}
+	}
+
+	private onSelectGroupColor(colorOption: number): void {
+		if (this._selectedColorOption !== colorOption) {
+			if (this._selectedColorOption) {
+				var recentSelectedButton = this._colorButtonsMap[this._selectedColorOption].button;
 				recentSelectedButton.getElement().classList.remove('selected');
 			}
 
-			var selectedColorButton = this._colorButtonsMap[color];
+			var selectedColorButton = this._colorButtonsMap[colorOption].button;
 			selectedColorButton.getElement().classList.add('selected');
-			this._selectedColor = color;
+			this._selectedColorOption = colorOption;
 		}
 	}
 
@@ -157,7 +224,7 @@ export class ServerGroupDialog {
 	}
 
 	public get selectedColor(): string {
-		return this._selectedColor;
+		return this._colorButtonsMap[this._selectedColorOption].color;
 	}
 
 	public addGroup(): void {
@@ -207,5 +274,6 @@ export class ServerGroupDialog {
 	}
 
 	public dispose(): void {
+		this._toDispose = lifecycle.dispose(this._toDispose);
 	}
 }
