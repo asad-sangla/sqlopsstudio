@@ -16,6 +16,7 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 	providerName: string;
 	protected _serverCapabilities: data.DataProtocolServerCapabilities;
 	private static readonly MsSqlProviderName: string = 'MSSQL';
+	private static readonly PgSqlProviderName: string = 'PGSQL';
 	private static readonly SqlAuthentication = 'SqlLogin';
 
 	public constructor(serverCapabilities?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
@@ -107,7 +108,8 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		let optionMetadata = this._serverCapabilities.connectionProvider.options.find(
 			option => option.specialValueType === ConnectionOptionSpecialType.password);
 		let isPasswordRequired: boolean = optionMetadata.isRequired;
-		if (this.providerName === ProviderConnectionInfo.MsSqlProviderName) {
+		// DEV-NOTE: Have separate cases once we properly hook up pgsqltoolsservice
+		if (this.providerName === ProviderConnectionInfo.MsSqlProviderName || this.providerName === ProviderConnectionInfo.PgSqlProviderName) {
 			isPasswordRequired = this.authenticationType === ProviderConnectionInfo.SqlAuthentication && optionMetadata.isRequired;
 		}
 		return isPasswordRequired;

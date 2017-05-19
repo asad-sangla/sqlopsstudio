@@ -12,7 +12,7 @@ import {
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { withElementById } from 'vs/base/browser/builder';
-import { SqlConnectionController } from 'sql/parts/connection/connectionDialog/sqlConnectionController';
+import { ConnectionController } from 'sql/parts/connection/connectionDialog/connectionController';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
@@ -20,7 +20,6 @@ import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Severity from 'vs/base/common/severity';
 import data = require('data');
-import nls = require('vs/nls');
 
 export interface IConnectionResult {
 	isValid: boolean;
@@ -34,7 +33,7 @@ export interface IConnectionComponentCallbacks {
 }
 
 export interface IConnectionComponentController {
-	showSqlUiComponent(): HTMLElement;
+	showUiComponent(): HTMLElement;
 	initDialog(model: IConnectionProfile): void;
 	validateConnection(): IConnectionResult;
 	fillInConnectionInputs(connectionInfo: IConnectionProfile): void;
@@ -49,7 +48,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _connectionManagementService: IConnectionManagementService;
 	private _container: HTMLElement;
 	private _connectionDialog: ConnectionDialogWidget;
-	private _sqlConnectionController: SqlConnectionController;
+	private _connectionControllerMap: { [providerDisplayName: string]: IConnectionComponentController };
 	private _model: ConnectionProfile;
 	private _params: INewConnectionParams;
 	private _inputModel: IConnectionProfile;
@@ -57,6 +56,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _providerNameToDisplayNameMap: { [providerDisplayName: string]: string };
 	private _providerTypes: string[];
 	private _defaultProviderName: string = 'MSSQL';
+	private _currentProviderType: string = 'Microsoft SQL Server';
 
 	constructor(
 		@IPartService private _partService: IPartService,
@@ -66,6 +66,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	) {
 		this._capabilitiesMaps = {};
 		this._providerNameToDisplayNameMap = {};
+		this._connectionControllerMap = {};
 		this._providerTypes = [];
 		if (_capabilitiesService) {
 			_capabilitiesService.onProviderRegisteredEvent((capabilities => {
@@ -78,7 +79,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private handleOnConnect(params: INewConnectionParams): void {
 		this.handleProviderOnConnecting();
-		var result = this.sqlUiController.validateConnection();
+		var result = this.uiController.validateConnection();
 		if (result.isValid) {
 			this.handleDefaultOnConnect(params, result.connection);
 		} else {
@@ -118,40 +119,52 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		});
 	}
 
-	private get sqlUiController(): SqlConnectionController {
-		if (!this._sqlConnectionController) {
-			this._sqlConnectionController = new SqlConnectionController(this._container, this._connectionManagementService, this._capabilitiesMaps['MSSQL'], {
-				onSetConnectButton: (enable: boolean) => this.handleSetConnectButtonEnable(enable)
-			});
+	private get uiController(): IConnectionComponentController {
+		// Find the provider name from the selected provider type, or throw an error if it does not correspond to a known provider
+		let providerName = Object.keys(this._providerNameToDisplayNameMap).find(providerName => {
+			return this._currentProviderType === this._providerNameToDisplayNameMap[providerName];
+		});
+		if (!providerName) {
+			throw 'Invalid provider type';
 		}
-		return this._sqlConnectionController;
+
+		// Set the model name, initialize the controller if needed, and return the controller
+		this._model.providerName = providerName;
+		if (!this._connectionControllerMap[providerName]) {
+			this._connectionControllerMap[providerName] = new ConnectionController(this._container, this._connectionManagementService, this._capabilitiesMaps[providerName], {
+				onSetConnectButton: (enable: boolean) => this.handleSetConnectButtonEnable(enable)
+			}, providerName);
+		}
+		return this._connectionControllerMap[providerName];
 	}
 
 	private handleSetConnectButtonEnable(enable: boolean): void {
 		this._connectionDialog.connectButtonEnabled = enable;
 	}
 
-	private handleShowUiComponent(): HTMLElement {
-		return this.sqlUiController.showSqlUiComponent();
+	private handleShowUiComponent(selectedProviderType: string): HTMLElement {
+		this._currentProviderType = selectedProviderType;
+		return this.uiController.showUiComponent();
 	}
 
 	private handleInitDialog(): void {
-		this.sqlUiController.initDialog(this._model);
+		this.uiController.initDialog(this._model);
 	}
 
 	private handleFillInConnectionInputs(connectionInfo: IConnectionProfile): void {
 		this._connectionManagementService.addSavedPassword(connectionInfo).then(connectionWithPassword => {
 			var model = this.createModel(connectionWithPassword);
-			this.sqlUiController.fillInConnectionInputs(model);
+			this.uiController.fillInConnectionInputs(model);
 		});
+		this._connectionDialog.updateProvider(this._providerNameToDisplayNameMap[connectionInfo.providerName]);
 	}
 
 	private handleProviderOnResetConnection(): void {
-		this.sqlUiController.handleResetConnection();
+		this.uiController.handleResetConnection();
 	}
 
 	private handleProviderOnConnecting(): void {
-		this.sqlUiController.handleOnConnecting();
+		this.uiController.handleOnConnecting();
 	}
 
 	private UpdateModelServerCapabilities(model: IConnectionProfile) {
@@ -228,7 +241,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			this._connectionDialog = this._instantiationService.createInstance(ConnectionDialogWidget, container, {
 				onCancel: () => this.handleOnCancel(this._connectionDialog.newConnectionParams),
 				onConnect: () => this.handleOnConnect(this._connectionDialog.newConnectionParams),
-				onShowUiComponent: () => this.handleShowUiComponent(),
+				onShowUiComponent: (selectedProviderType: string) => this.handleShowUiComponent(selectedProviderType),
 				onInitDialog: () => this.handleInitDialog(),
 				onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => this.handleFillInConnectionInputs(connectionInfo),
 				onResetConnection: () => this.handleProviderOnResetConnection()

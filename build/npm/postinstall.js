@@ -33,6 +33,7 @@ const extensions = [
 	'git',
 	'json',
 	'mssql',
+	'pgsql',
 	'credentials',
 	'configuration-editing',
 	'extension-editing'

@@ -808,7 +808,10 @@ export class LanguageClient {
 			this.state = ClientState.StartFailed;
 			this._onReadyCallbacks.reject(error);
 			this.error('Starting client failed', error);
-			Window.showErrorMessage(`Couldn't start client ${this._name}`);
+			// TODO: Show this error for Postgres (github issue #833)
+			if (this._name !== 'pgSQLToolsService') {
+				Window.showErrorMessage(`Couldn't start client ${this._name}`);
+			}
 		});
 		return new Disposable(() => {
 			if (this.needsStop()) {

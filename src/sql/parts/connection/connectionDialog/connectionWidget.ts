@@ -18,9 +18,10 @@ import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDi
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionOptionSpecialType } from 'sql/parts/connection/common/connectionManagement';
+import * as Constants from 'sql/parts/connection/common/constants'
 import data = require('data');
 
-export class SqlConnectionWidget {
+export class ConnectionWidget {
 	private _builder: Builder;
 	private _serverGroupInputBox: InputBox;
 	private _serverNameInputBox: InputBox;
@@ -30,15 +31,18 @@ export class SqlConnectionWidget {
 	private _rememberPasswordCheckBox: Checkbox;
 	private _advancedButton: Button;
 	private _callbacks: IConnectionComponentCallbacks;
-	private _integratedAuthTypeName: string = 'Integrated';
-	private _sqlAuthTypeName: string = 'SqlLogin';
 	private _authTypeSelectBox: ConnectionDialogSelectBox;
 	private _toDispose: lifecycle.IDisposable[];
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
 	private _tableContainer: Builder;
+	private _providerName: string;
+	private _authTypeMap: { [providerName: string]: [AuthenticationType]} = {
+		[Constants.mssqlProviderName]: [new AuthenticationType('Integrated', false), new AuthenticationType('SqlLogin', true)],
+		[Constants.pgsqlProviderName]: [new AuthenticationType('SqlLogin', true)]
+	}
 	private _saveProfile: boolean;
 
-	constructor(options: data.ConnectionOption[], callbacks: IConnectionComponentCallbacks) {
+	constructor(options: data.ConnectionOption[], callbacks: IConnectionComponentCallbacks, providerName: string) {
 		this._callbacks = callbacks;
 		this._toDispose = [];
 		this._optionsMaps = {};
@@ -49,21 +53,22 @@ export class SqlConnectionWidget {
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
 		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
+		this._providerName = providerName
 	}
 
-	public createSqlConnectionWidget(): HTMLElement {
+	public createConnectionWidget(): HTMLElement {
 		this._builder = $().div({ class: 'connection-table' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this._tableContainer = tableContainer;
 			});
 		});
-		this.fillInSqlConnectionForm();
+		this.fillInConnectionForm();
 		this.registerListeners();
 		this.onAuthTypeSelected(this._authTypeSelectBox.value);
 		return this._builder.getHTMLElement();
 	}
 
-	private fillInSqlConnectionForm(): void {
+	private fillInConnectionForm(): void {
 		this._serverNameInputBox = ConnectionDialogHelper.appendInputBox(
 			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.serverName].displayName, 'connection-label', 'connection-input'));
 		ConnectionDialogHelper.appendInputSelectBox(
@@ -154,23 +159,17 @@ export class SqlConnectionWidget {
 	}
 
 	private onAuthTypeSelected(selectedAuthType: string) {
-		var integratedAuthTypeDisplayName = this.getAuthTypeDisplayName(this._integratedAuthTypeName);
-		var sqlAuthTypeDisplayName = this.getAuthTypeDisplayName(this._sqlAuthTypeName);
-
-		switch (selectedAuthType) {
-			case integratedAuthTypeDisplayName:
-				this._userNameInputBox.disable();
-				this._passwordInputBox.disable();
-				this._userNameInputBox.hideMessage();
-				this._passwordInputBox.hideMessage();
-				this._userNameInputBox.value = '';
-				this._passwordInputBox.value = '';
-				break;
-			case sqlAuthTypeDisplayName:
-				this._userNameInputBox.enable();
-				this._passwordInputBox.enable();
-			default:
-				break;
+		let currentAuthType = this.getMatchingAuthType(selectedAuthType);
+		if (!currentAuthType.showUsernameAndPassword) {
+			this._userNameInputBox.disable();
+			this._passwordInputBox.disable();
+			this._userNameInputBox.hideMessage();
+			this._passwordInputBox.hideMessage();
+			this._userNameInputBox.value = '';
+			this._passwordInputBox.value = '';
+		} else {
+			this._userNameInputBox.enable();
+			this._passwordInputBox.enable();
 		}
 	}
 
@@ -285,8 +284,8 @@ export class SqlConnectionWidget {
 	private validateInputs(): boolean {
 		let validInputs = true;
 		let option: data.ConnectionOption;
-		var sqlAuthTypeDisplayName = this.getAuthTypeDisplayName(this._sqlAuthTypeName);
-		if (this._authTypeSelectBox.value === sqlAuthTypeDisplayName) {
+		let currentAuthType = this.getMatchingAuthType(this._authTypeSelectBox.value);
+		if (currentAuthType.showUsernameAndPassword) {
 			option = this._optionsMaps[ConnectionOptionSpecialType.userName];
 			if (ConnectionDialogHelper.isEmptyString(this.userName) && option.isRequired) {
 				validInputs = false;
@@ -323,5 +322,19 @@ export class SqlConnectionWidget {
 
 	public dispose(): void {
 		this._toDispose = lifecycle.dispose(this._toDispose);
+	}
+
+	private getMatchingAuthType(displayName: string): AuthenticationType {
+		return this._authTypeMap[this._providerName].find(authType => this.getAuthTypeDisplayName(authType.name) === displayName);
+	}
+}
+
+class AuthenticationType {
+	public name: string;
+	public showUsernameAndPassword: boolean;
+
+	constructor(name: string, showUsernameAndPassword: boolean) {
+		this.name = name;
+		this.showUsernameAndPassword = showUsernameAndPassword;
 	}
 }

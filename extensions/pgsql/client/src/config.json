@@ -1,0 +1,8 @@
+{
+	"service": {
+		"downloadUrl": "http://dtnuget:8080/download/pgtoolsservice/pgsqltoolsservice-{#version#}.tar.gz",
+		"version": "0.1.0",
+		"installDir": "",
+		"executableFiles": ["pgsqltoolsservice-{#version#}/pgsqltoolsservice/server.py"]
+	}
+}

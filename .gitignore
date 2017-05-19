@@ -11,6 +11,7 @@ Thumbs.db
 *.vsix
 *BROWSE.VC*
 sqltoolsservice
+pgsqltoolsservice
 coverage
 test-reports
 .vscode-test

@@ -168,6 +168,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			let connectionProfileInstance = conn as ConnectionProfile;
 			if (connectionProfileInstance && conn instanceof ConnectionProfile) {
 				connectionProfile = connectionProfileInstance;
+				connectionProfile.setServerCapabilities(serverCapabilities);
 			} else {
 				connectionProfile = new ConnectionProfile(serverCapabilities, conn);
 			}

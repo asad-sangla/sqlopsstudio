@@ -27,7 +27,7 @@ import data = require('data');
 export interface IConnectionDialogCallbacks {
 	onConnect: () => void;
 	onCancel: () => void;
-	onShowUiComponent: () => HTMLElement;
+	onShowUiComponent: (selectedProviderType: string) => HTMLElement;
 	onInitDialog: () => void;
 	onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => void;
 	onResetConnection: () => void;
@@ -60,16 +60,16 @@ export class ConnectionDialogWidget {
 		this._builder = this._dialog.create();
 		this._dialog.addModalTitle();
 
-		this._dialog.bodyContainer.div({class:'connection-recent', id: 'recentConnection'});
+		this._dialog.bodyContainer.div({ class: 'connection-recent', id: 'recentConnection' });
 		this._dialog.addErrorMessage();
-		this._dialog.bodyContainer.div({class:'Connection-type'}, (modelTableContent) => {
+		this._dialog.bodyContainer.div({ class: 'Connection-type' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				ConnectionDialogHelper.appendInputSelectBox(
 					ConnectionDialogHelper.appendRow(tableContainer, 'Connection Type', 'connection-label', 'connection-input'), this._providerTypeSelectBox);
 			});
 		});
 
-		this._dialog.bodyContainer.div({class:'connection-provider-info', id: 'connectionProviderInfo'});
+		this._dialog.bodyContainer.div({ class: 'connection-provider-info', id: 'connectionProviderInfo' });
 
 		this._connectButton = this.createFooterButton(this._dialog.footerContainer, 'Connect');
 		this._connectButton.enabled = false;
@@ -92,7 +92,8 @@ export class ConnectionDialogWidget {
 	private onProviderTypeSelected(selectedProviderType: string) {
 		// Show connection form based on server type
 		jQuery('#connectionProviderInfo').empty();
-		jQuery('#connectionProviderInfo').append(this._callbacks.onShowUiComponent);
+		jQuery('#connectionProviderInfo').append(this._callbacks.onShowUiComponent(selectedProviderType));
+		this.initDialog();
 	}
 
 	private createFooterButton(container: Builder, title: string): Button {
@@ -228,6 +229,10 @@ export class ConnectionDialogWidget {
 
 	public set newConnectionParams(params: INewConnectionParams) {
 		this._newConnectionParams = params;
+	}
+
+	public updateProvider(displayName: string) {
+		this._providerTypeSelectBox.selectWithOptionName(displayName);
 	}
 
 	public dispose(): void {
