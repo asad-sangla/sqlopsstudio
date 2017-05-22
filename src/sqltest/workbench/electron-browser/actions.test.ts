@@ -42,7 +42,7 @@ suite('SQL Actions Tests', () => {
 			id: undefined
 		});
 		connection.id = 'testID';
-		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
+		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup', undefined, undefined);
 		conProfGroup.connections = [connection];
 
 		// Setting up our test table name

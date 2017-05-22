@@ -18,11 +18,11 @@ suite('SQL ConnectionProfileGroup tests', () => {
 	let group11Node: ConnectionProfileGroup;
 	let group2Node: ConnectionProfileGroup;
 	setup(() => {
-		root = new ConnectionProfileGroup(ConnectionProfileGroup.RootGroupName, undefined, ConnectionProfileGroup.RootGroupName);
+		root = new ConnectionProfileGroup(ConnectionProfileGroup.RootGroupName, undefined, ConnectionProfileGroup.RootGroupName, undefined, undefined);
 
-		group1Node = new ConnectionProfileGroup(Groups1, root, Groups1);
-		group2Node = new ConnectionProfileGroup(Groups2, root, Groups2);
-		group11Node = new ConnectionProfileGroup(Groups11, root, Groups11);
+		group1Node = new ConnectionProfileGroup(Groups1, root, Groups1, undefined, undefined);
+		group2Node = new ConnectionProfileGroup(Groups2, root, Groups2, undefined, undefined);
+		group11Node = new ConnectionProfileGroup(Groups11, root, Groups11, undefined, undefined);
 		root.addGroups([group1Node]);
 		group1Node.addGroups([group11Node]);
 		root.addGroups([group2Node]);

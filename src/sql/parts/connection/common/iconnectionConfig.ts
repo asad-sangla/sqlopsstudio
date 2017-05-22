@@ -18,6 +18,7 @@ import data = require('data');
  */
 export interface IConnectionConfig {
 	addConnection(profile: IConnectionProfile): Promise<IConnectionProfile>;
+	addGroup(profileGroup: IConnectionProfileGroup): Promise<string>;
 	getConnections(getWorkspaceConnections: boolean): ConnectionProfile[];
 	getAllGroups(): IConnectionProfileGroup[];
 	changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void>;

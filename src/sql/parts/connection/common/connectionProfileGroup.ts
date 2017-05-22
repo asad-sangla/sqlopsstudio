@@ -12,6 +12,8 @@ export interface IConnectionProfileGroup {
 	id: string;
 	parentId: string;
 	name: string;
+	color: string;
+	description: string;
 }
 
 export class ConnectionProfileGroup implements IConnectionProfileGroup {
@@ -23,7 +25,9 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	public constructor(
 		public name: string,
 		public parent: ConnectionProfileGroup,
-		public id: string
+		public id: string,
+		public color: string,
+		public description: string
 	) {
 		this.parentId = parent ? parent.id : undefined;
 		if (this.name === ConnectionProfileGroup.RootGroupName) {
@@ -43,7 +47,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 			});
 		}
 
-		return Object.assign({}, { name: this.name, id: this.id, parentId: this.parentId, children: subgroups });
+		return Object.assign({}, { name: this.name, id: this.id, parentId: this.parentId, children: subgroups, color: this.color, description: this.description });
 	}
 
 	public get groupName(): string {

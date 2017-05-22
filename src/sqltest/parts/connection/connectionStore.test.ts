@@ -169,12 +169,16 @@ suite('SQL ConnectionStore tests', () => {
 			{
 				id: 'root',
 				name: 'root',
-				parentId: ''
+				parentId: '',
+				color: '',
+				description:''
 			},
 			{
 				id: 'g1',
 				name: 'g1',
-				parentId: 'root'
+				parentId: 'root',
+				color: 'blue',
+				description: 'g1'
 			}
 		];
 		connectionConfig.setup(x => x.getAllGroups()).returns(() => groups);

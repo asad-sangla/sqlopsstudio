@@ -94,7 +94,7 @@ export class ServerGroupDialog {
 			});
 		});
 		this._dialog.addErrorMessage();
-		this._addServerButton = this.createFooterButton(this._dialog.footerContainer, 'Add Server Group');
+		this._addServerButton = this.createFooterButton(this._dialog.footerContainer, 'Create');
 		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
 
 		this.onSelectGroupColor(this._defaultColor);
@@ -102,24 +102,30 @@ export class ServerGroupDialog {
 		this._builder.build(this._container);
 
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
 				this.addGroup();
 			} else if (event.equals(KeyCode.Escape)) {
 				this.cancel();
 			} else if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
+				this.preventDefaultKeyboardEvent(e);
 				this.focusPrevious();
 			} else if (event.equals(KeyCode.Tab)) {
+				this.preventDefaultKeyboardEvent(e);
 				this.focusNext();
 			} else if (event.equals(KeyCode.RightArrow) || event.equals(KeyCode.LeftArrow)) {
+				this.preventDefaultKeyboardEvent(e);
 				this.focusNextColor(event.equals(KeyCode.RightArrow));
 			}
 		});
 
 		this.registerListeners();
 		return this._builder.getHTMLElement();
+	}
+
+	private preventDefaultKeyboardEvent(e: KeyboardEvent){
+		e.preventDefault();
+		e.stopPropagation();
 	}
 
 	private focusNext(): void {
@@ -191,7 +197,7 @@ export class ServerGroupDialog {
 				button = new Button(buttonContainer);
 				button.label = title;
 				button.addListener2('click', () => {
-					if (title === 'Add Server Group') {
+					if (title === 'Create') {
 						this.addGroup();
 					} else {
 						this.cancel();
@@ -230,7 +236,6 @@ export class ServerGroupDialog {
 	public addGroup(): void {
 		if (this.validateInputs()) {
 			this._callbacks.onAddServerGroup();
-			this.close();
 		}
 	}
 

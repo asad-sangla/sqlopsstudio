@@ -248,7 +248,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 			this.messages.domFocus();
 		}
 		// Add all connections to tree root and set tree input
-		let treeInput = new ConnectionProfileGroup('searchroot', undefined, 'searchroot');
+		let treeInput = new ConnectionProfileGroup('searchroot', undefined, 'searchroot', undefined, undefined);
 		treeInput.addConnections(filteredResults);
 		this.tree.setInput(treeInput).done(() => {
 			if (this.messages.isHidden()) {

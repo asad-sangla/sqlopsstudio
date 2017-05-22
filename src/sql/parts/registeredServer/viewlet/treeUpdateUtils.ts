@@ -74,7 +74,7 @@ export class TreeUpdateUtils {
 		} else if (viewKey === 'active') {
 			groups = connectionManagementService.getActiveConnections();
 		}
-		const treeInput = new ConnectionProfileGroup('root', null, undefined);
+		const treeInput = new ConnectionProfileGroup('root', null, undefined, undefined, undefined);
 		treeInput.addConnections(groups);
 		tree.setInput(treeInput).done(() => {
 			// Make sure to expand all folders that where expanded in the previous session

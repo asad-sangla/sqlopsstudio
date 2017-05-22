@@ -101,7 +101,7 @@ suite('SQL Connection Tree Action tests', () => {
 		connectionManagementService.setup(x => x.showConnectionDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => new Promise<void>((resolve, reject) => { resolve(); }));
 
 		let connectionTreeAction: AddServerAction = new AddServerAction(AddServerAction.ID, AddServerAction.LABEL, connectionManagementService.object);
-		let conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
+		let conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup', undefined, undefined);
 		connectionTreeAction.run(conProfGroup).then((value) => {
 			connectionManagementService.verify(x => x.showConnectionDialog(undefined, TypeMoq.It.isAny()), TypeMoq.Times.once());
 		}).then(() => done(), (err) => done(err));
@@ -217,7 +217,7 @@ suite('SQL Connection Tree Action tests', () => {
 		let connectionManagementService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Loose);
 		connectionManagementService.callBase = true;
 		connectionManagementService.setup(x => x.isProfileConnected(TypeMoq.It.isAny())).returns(() => isConnectedReturnValue);
-		let conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
+		let conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup', undefined, undefined);
 		let connectionAction: DeleteConnectionAction = new DeleteConnectionAction(DeleteConnectionAction.ID,
 			DeleteConnectionAction.DELETE_CONNECTION_LABEL,
 			conProfGroup,
@@ -249,7 +249,7 @@ suite('SQL Connection Tree Action tests', () => {
 			saveProfile: true,
 			id: 'testId'
 		});
-		connection.parent = new ConnectionProfileGroup(Constants.unsavedGroupLabel, undefined, Constants.unsavedGroupId);
+		connection.parent = new ConnectionProfileGroup(Constants.unsavedGroupLabel, undefined, Constants.unsavedGroupId, undefined, undefined);
 		let connectionAction: DeleteConnectionAction = new DeleteConnectionAction(DeleteConnectionAction.ID,
 			DeleteConnectionAction.DELETE_CONNECTION_LABEL,
 			connection,
@@ -284,7 +284,7 @@ suite('SQL Connection Tree Action tests', () => {
 			saveProfile: true,
 			id: 'testID'
 		});
-		var conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
+		var conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup', undefined, undefined);
 		conProfGroup.connections = [connection];
 		var connectionManagementService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Strict);
 		connectionManagementService.callBase = true;
@@ -367,7 +367,7 @@ suite('SQL Connection Tree Action tests', () => {
 			saveProfile: true,
 			id: 'testID'
 		});
-		var conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
+		var conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup', undefined, undefined);
 		conProfGroup.connections = [connection];
 		var connectionManagementService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Strict);
 		connectionManagementService.callBase = true;

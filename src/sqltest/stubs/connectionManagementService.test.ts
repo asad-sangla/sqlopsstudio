@@ -66,6 +66,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
+	saveProfileGroup(profile: IConnectionProfileGroup): Promise<string> {
+		return undefined;
+	}
+
 	getRecentConnections(): ConnectionProfile[] {
 		return [];
 	}

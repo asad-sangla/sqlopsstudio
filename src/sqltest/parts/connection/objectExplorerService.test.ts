@@ -117,7 +117,7 @@ suite('Object Explorer Service tests', () => {
 			saveProfile: true,
 			id: 'testID'
 		});
-		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
+		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup', undefined, undefined);
 		conProfGroup.connections = [connection];
 		connectionManagementService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Strict);
 		connectionManagementService.setup(x => x.getConnectionGroups()).returns(() => [conProfGroup]);

@@ -34,37 +34,51 @@ suite('SQL ConnectionConfig tests', () => {
 		workspace: [{
 			name: 'g1',
 			id: 'g1',
-			parentId: 'ROOT'
+			parentId: 'ROOT',
+			color: 'pink',
+			description: 'g1'
 		},
 		{
 			name: 'g1-1',
 			id: 'g1-1',
-			parentId: 'g1'
+			parentId: 'g1',
+			color: 'blue',
+			description: 'g1-1'
 		}
 		],
 		user: [{
 			name: 'ROOT',
 			id: 'ROOT',
-			parentId: ''
+			parentId: '',
+			color: 'white',
+			description: 'ROOT'
 		}, {
 			name: 'g2',
 			id: 'g2',
-			parentId: 'ROOT'
+			parentId: 'ROOT',
+			color: 'green',
+			description: 'g2'
 		},
 		{
 			name: 'g2-1',
 			id: 'g2-1',
-			parentId: 'g2'
+			parentId: 'g2',
+			color: 'yellow',
+			description: 'g2'
 		},
 		{
 			name: 'g3',
 			id: 'g3',
-			parentId: ''
+			parentId: '',
+			color: 'orange',
+			description: 'g3'
 		},
 		{
 			name: 'g3-1',
 			id: 'g3-1',
-			parentId: 'g3'
+			parentId: 'g3',
+			color: 'purple',
+			description: 'g3-1'
 		}
 		],
 		value: [],
@@ -76,34 +90,46 @@ suite('SQL ConnectionConfig tests', () => {
 			{
 				name: 'g1',
 				id: 'g1',
-				parentId: ''
+				parentId: '',
+				color: 'pink',
+				description: 'g1'
 			},
 			{
 				name: 'g1-1',
 				id: 'g1-1',
-				parentId: 'g1'
+				parentId: 'g1',
+				color: 'blue',
+				description: 'g1-1'
 			}
 		],
 		user: [
 			{
 				name: 'g2',
 				id: 'g2',
-				parentId: ''
+				parentId: '',
+				color: 'green',
+				description: 'g2'
 			},
 			{
 				name: 'g2-1',
 				id: 'g2-1',
-				parentId: 'g2'
+				parentId: 'g2',
+				color: 'yellow',
+				description: 'g2'
 			},
 			{
 				name: 'g1',
 				id: 'g1',
-				parentId: ''
+				parentId: '',
+				color: 'pink',
+				description: 'g1'
 			},
 			{
 				name: 'g1-2',
 				id: 'g1-2',
-				parentId: 'g1'
+				parentId: 'g1',
+				color: 'silver',
+				description: 'g1-2'
 			}],
 		value: [],
 		default: []
@@ -294,27 +320,37 @@ suite('SQL ConnectionConfig tests', () => {
 			{
 				name: 'g1',
 				id: 'g1',
-				parentId: ''
+				parentId: '',
+				color: 'pink',
+				description: 'g1'
 			},
 			{
 				name: 'g1-1',
 				id: 'g1-1',
-				parentId: 'g1'
+				parentId: 'g1',
+				color: 'blue',
+				description: 'g1-1'
 			},
 			{
 				name: 'g2',
 				id: 'g2',
-				parentId: ''
+				parentId: '',
+				color: 'yellow',
+				description: 'g2'
 			},
 			{
 				name: 'g2-1',
 				id: 'g2-1',
-				parentId: 'g2'
+				parentId: 'g2',
+				color: 'red',
+				description: 'g2'
 			},
 			{
 				name: 'g1-2',
 				id: 'g1-2',
-				parentId: 'g1'
+				parentId: 'g1',
+				color: 'green',
+				description: 'g1-2'
 			}];
 
 		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
@@ -566,8 +602,9 @@ suite('SQL ConnectionConfig tests', () => {
 		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
 		let expectedLength = configValueToConcat.user.length + 2;
 		let newGroups: string = 'ROOT/g1/g1-1';
+		let color: string = 'red';
 
-		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups, color, newGroups);
 		assert.notEqual(result, undefined);
 		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
 		let newGroup = result.groups.find(g => g.name === 'g1-1');
@@ -579,8 +616,9 @@ suite('SQL ConnectionConfig tests', () => {
 		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
 		let expectedLength = configValueToConcat.user.length + 1;
 		let newGroups: string = 'ROOT/g2/g2-5';
+		let color: string = 'red';
 
-		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups, color, newGroups);
 		assert.notEqual(result, undefined);
 		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
 		let newGroup = result.groups.find(g => g.name === 'g2-5');
@@ -592,8 +630,9 @@ suite('SQL ConnectionConfig tests', () => {
 		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
 		let expectedLength = configValueToConcat.user.length;
 		let newGroups: string = 'ROOT/g2/g2-1';
+		let color: string = 'red';
 
-		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups, color, newGroups);
 		assert.notEqual(result, undefined);
 		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
 		let newGroup = result.groups.find(g => g.name === 'g2-1');
@@ -651,8 +690,8 @@ suite('SQL ConnectionConfig tests', () => {
 			id: undefined
 		};
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
-		let connectionProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3');
-		let childGroup = new ConnectionProfileGroup('g3-1', connectionProfileGroup, 'g3-1');
+		let connectionProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3', undefined, undefined);
+		let childGroup = new ConnectionProfileGroup('g3-1', connectionProfileGroup, 'g3-1', undefined, undefined);
 		connectionProfileGroup.addGroups([childGroup]);
 		connectionProfileGroup.addConnections([connectionProfile]);
 
@@ -728,7 +767,7 @@ suite('SQL ConnectionConfig tests', () => {
 			Constants.connectionGroupsArrayName))
 			.returns(() => configValueToConcat);
 
-		let connectionProfileGroup = new ConnectionProfileGroup('g-renamed', undefined, 'g2');
+		let connectionProfileGroup = new ConnectionProfileGroup('g-renamed', undefined, 'g2', undefined, undefined);
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		config.renameGroup(connectionProfileGroup).then(() => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
@@ -757,8 +796,8 @@ suite('SQL ConnectionConfig tests', () => {
 			Constants.connectionGroupsArrayName))
 			.returns(() => configValueToConcat);
 
-		let sourceProfileGroup = new ConnectionProfileGroup('g2', undefined, 'g2');
-		let targetProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3');
+		let sourceProfileGroup = new ConnectionProfileGroup('g2', undefined, 'g2', undefined, undefined);
+		let targetProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3', undefined, undefined);
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		config.changeGroupIdForConnectionGroup(sourceProfileGroup, targetProfileGroup).then(() => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,

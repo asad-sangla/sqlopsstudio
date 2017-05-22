@@ -113,7 +113,7 @@ export class ConnectionConfig implements IConnectionConfig {
 	public addConnection(profile: IConnectionProfile): Promise<IConnectionProfile> {
 		return new Promise<IConnectionProfile>((resolve, reject) => {
 			if (profile.saveProfile) {
-				this.addGroup(profile).then(groupId => {
+				this.addGroupFromProfile(profile).then(groupId => {
 					let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
 					if (!profiles) {
 						profiles = [];
@@ -161,13 +161,35 @@ export class ConnectionConfig implements IConnectionConfig {
 	 *Returns group id
 	 * @param groupName
 	 */
-	public addGroup(profile: IConnectionProfile): Promise<string> {
+	public addGroupFromProfile(profile: IConnectionProfile): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
 			if (profile.groupId) {
 				resolve(profile.groupId);
 			} else {
 				let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
-				let result = this.saveGroup(groups, profile.groupFullName);
+				let result = this.saveGroup(groups, profile.groupFullName, undefined, undefined);
+				groups = result.groups;
+
+				this.writeConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
+					resolve(result.newGroupId);
+				}).catch(err => {
+					reject(err);
+				});
+			}
+		});
+	}
+
+	/**
+	 *Returns group id
+	 * @param groupName
+	 */
+	public addGroup(profileGroup: IConnectionProfileGroup): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			if (profileGroup.id) {
+				resolve(profileGroup.id);
+			} else {
+				let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+				let result = this.saveGroup(groups, profileGroup.name, profileGroup.color, profileGroup.description);
 				groups = result.groups;
 
 				this.writeConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
@@ -317,10 +339,10 @@ export class ConnectionConfig implements IConnectionConfig {
 		return this.writeConfiguration(Constants.connectionsArrayName, profiles);
 	}
 
-	public saveGroup(groups: IConnectionProfileGroup[], groupFullName: string): ISaveGroupResult {
+	public saveGroup(groups: IConnectionProfileGroup[], groupFullName: string, color: string, description: string): ISaveGroupResult {
 		let result: ISaveGroupResult;
 		let groupNames = ConnectionProfileGroup.getGroupFullNameParts(groupFullName);
-		result = this.saveGroupInTree(groups, undefined, groupNames, 0);
+		result = this.saveGroupInTree(groups, undefined, groupNames, color, description, 0);
 		return result;
 	}
 
@@ -345,7 +367,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		return sameGroupName;
 	}
 
-	private saveGroupInTree(groupTree: IConnectionProfileGroup[], parentId: string, groupNames: string[], index: number): ISaveGroupResult {
+	private saveGroupInTree(groupTree: IConnectionProfileGroup[], parentId: string, groupNames: string[], color: string, description: string, index: number): ISaveGroupResult {
 		if (!groupTree) {
 			groupTree = [];
 		}
@@ -356,7 +378,9 @@ export class ConnectionConfig implements IConnectionConfig {
 			let newGroup: IConnectionProfileGroup = {
 				name: groupName,
 				id: undefined,
-				parentId: parentId
+				parentId: parentId,
+				color: color,
+				description: description
 			};
 			let found = groupTree.find(group => this.isSameGroupName(group, newGroup));
 			if (found) {
@@ -364,14 +388,14 @@ export class ConnectionConfig implements IConnectionConfig {
 					newGroupId = found.id;
 					//Found the group full name
 				} else {
-					let result = this.saveGroupInTree(groupTree, found.id, groupNames, index + 1);
+					let result = this.saveGroupInTree(groupTree, found.id, groupNames, color, description, index + 1);
 					groupTree = result.groups;
 					newGroupId = result.newGroupId;
 				}
 
 			} else {
 				newGroup.id = Utils.generateGuid();
-				let result = this.saveGroupInTree(groupTree, newGroup.id, groupNames, index + 1);
+				let result = this.saveGroupInTree(groupTree, newGroup.id, groupNames, color, description, index + 1);
 				newGroupId = result.newGroupId;
 				groupTree = result.groups;
 				groupTree.push(newGroup);

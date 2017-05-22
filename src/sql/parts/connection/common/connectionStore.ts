@@ -189,6 +189,23 @@ export class ConnectionStore {
 		});
 	}
 
+	/**
+	 * Saves a connection profile group to the user settings.
+	 *
+	 * @param {IConnectionProfileGroup} profile the profile group to save
+	 * @returns {Promise<string>} a Promise that returns the id of connection group
+	 */
+	public saveProfileGroup(profile: IConnectionProfileGroup): Promise<string> {
+		const self = this;
+		return new Promise<string>((resolve, reject) => {
+			self._connectionConfig.addGroup(profile).then(groupId => {
+				resolve(groupId);
+			}).catch(error => {
+				reject(error);
+			});
+		});
+	}
+
 	private saveProfileToConfig(profile: IConnectionProfile): Promise<IConnectionProfile> {
 		const self = this;
 		return new Promise<IConnectionProfile>((resolve, reject) => {
@@ -462,7 +479,7 @@ export class ConnectionStore {
 		let children = groups.filter(g => g.parentId === (parent ? parent.id : undefined));
 		if (children) {
 			children.map(group => {
-				let connectionGroup = new ConnectionProfileGroup(group.name, parent, group.id);
+				let connectionGroup = new ConnectionProfileGroup(group.name, parent, group.id, group.color, group.description);
 				this.addGroupFullNameToMap(group.id, connectionGroup.fullName);
 				if (connections) {
 					let connectionsForGroup = connections.filter(conn => conn.groupId === connectionGroup.id);

@@ -22,7 +22,7 @@ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { ConnectionStore } from './connectionStore';
 import { IConnectionProfile } from './interfaces';
-import { ConnectionProfileGroup } from './connectionProfileGroup';
+import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ConnectionManagementInfo } from './connectionManagementInfo';
@@ -198,7 +198,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	public showServerGroupDialog(): Promise<void> {
 		let self = this;
 		return new Promise<void>((resolve, reject) => {
-			self._serverGroupController.showDialog().then(() => {
+			self._serverGroupController.showDialog(self).then(() => {
 				resolve();
 			}, error => {
 				reject();
@@ -482,10 +482,21 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.getActiveConnections();
 	}
 
+	public saveProfileGroup(profile: IConnectionProfileGroup): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			this._connectionStore.saveProfileGroup(profile).then(groupId => {
+				this._onAddConnectionProfile.fire();
+				resolve(groupId);
+			}).catch(err => {
+				reject(err);
+			});
+		});
+	}
+
 	public getCapabilities(providerName: string): data.DataProtocolServerCapabilities {
 		let capabilities = this._capabilitiesService.getCapabilities();
 		if (capabilities !== undefined && capabilities.length > 0) {
-			return capabilities.find(c => c.providerName == providerName);
+			return capabilities.find(c => c.providerName === providerName);
 		}
 		return undefined;
 	}

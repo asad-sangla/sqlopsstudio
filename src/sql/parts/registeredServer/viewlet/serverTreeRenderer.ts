@@ -190,9 +190,35 @@ export class ServerTreeRenderer implements IRenderer {
 		if (connectionProfileGroup.isRenamed) {
 			this.renderRenameBox(tree, connectionProfileGroup, templateData);
 		} else {
+			var rowElement = this.findParentElement(templateData.root, 'monaco-tree-row');
+			if (rowElement) {
+				if (connectionProfileGroup.color) {
+					rowElement.style.background = connectionProfileGroup.color;
+				} else {
+					// If the group doesn't contain specific color, assign the default color
+					rowElement.style.background = '#162d9c';
+				}
+			}
+			if (connectionProfileGroup.description && (connectionProfileGroup.description !== '')) {
+				templateData.root.title = connectionProfileGroup.description;
+			}
 			templateData.name.hidden = false;
 			templateData.name.textContent = connectionProfileGroup.name;
 		}
+	}
+
+	/**
+	 * Returns the first parent which contains the className
+	 */
+	private findParentElement(container: HTMLElement, className: string): HTMLElement {
+		var currentElement = container;
+		while (currentElement) {;
+			if (currentElement.className.includes(className)) {
+				break;
+			}
+			currentElement = currentElement.parentElement;
+		}
+		return currentElement;
 	}
 
 	private renderRenameBox(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {

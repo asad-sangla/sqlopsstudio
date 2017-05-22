@@ -91,6 +91,8 @@ export interface IConnectionManagementService {
 
 	getActiveConnections(): ConnectionProfile[];
 
+	saveProfileGroup(profile: IConnectionProfileGroup): Promise<string>;
+
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
 
 	changeGroupIdForConnection(source: ConnectionProfile, targetGroupName: string): Promise<void>;
@@ -168,7 +170,7 @@ export interface IConnectionDialogService {
 export const IServerGroupController = createDecorator<IConnectionDialogService>('serverGroupController');
 export interface IServerGroupController {
 	_serviceBrand: any;
-	showDialog(): TPromise<void>;
+	showDialog(connectionManagementService: IConnectionManagementService): TPromise<void>;
 }
 
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');
