@@ -18,6 +18,44 @@ Sanjay to initiate Executive Overview and socialization with LTs.
         - SQL Sentry
         - mladen prajck
 
+## Linux Townhall prep 5/25
+ - Dec (EOD): Sanjay
+
+ - Not under NDA - no PG content
+
+ - Take some screenshots just in case the demo-god does not help on the Carbon functionality itself.
+
+ - 20 min slide
+ - 10 min demo
+    - SSMS:Sanjay
+    - VSCode: Eric
+    - mssql-scripter: Tara
+
+## Carbon Webinar prep 5/30
+
+- Yammer announcement (done)
+    - Check if we can create a folder for Carbon to better discoverability: Tara
+
+    - If creating a folder is not possible, use a prefix. e.g. Carbon_xxxxx_versionNo.tar.gz, ...zip
+
+    - Under NDA - yes PG content can be included
+
+- Dec: Sanjay will start it and Erir and Tara to contribute to fill in blanks: ETA Tue
+
+- Prep and uploading for the private preview bits: Tara & Karl: ETA Tuesday morning
+
+- Word Doc: ETA Tue morning
+    - How to install: Tara
+    - How to use: Eric
+
+- What do we announce?
+
+- What we want to hear from?
+    - MANAGE with Insight: e.g. Audit
+    - OE (Basic vs Comprehensive)
+    - CREATE (Basic vs Comprehensive)
+    - Restore - SDR
+
 ## 0. What's remaining for May 30
 
 > (todo) Make it clear what we can share with Private preview participants
