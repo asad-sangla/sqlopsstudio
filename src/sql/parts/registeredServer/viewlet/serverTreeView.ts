@@ -14,7 +14,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { CollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { AddServerAction, AddServerGroupAction, RecentConnectionsFilterAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import { AddServerAction, AddServerGroupAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
@@ -23,7 +23,6 @@ import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreati
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 const $ = builder.$;
 
 /**
@@ -34,9 +33,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	public messages: builder.Builder;
 	private addServerAction: IAction;
 	private addServerGroupAction: IAction;
-	private recentConnectionsFilterAction: RecentConnectionsFilterAction;
 	private activeConnectionsFilterAction: ActiveConnectionsFilterAction;
-	private _searchStr: string;
 
 	constructor(actionRunner: IActionRunner, settings: any,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
@@ -58,11 +55,6 @@ export class ServerTreeView extends CollapsibleViewletView {
 			ActiveConnectionsFilterAction.ID,
 			ActiveConnectionsFilterAction.LABEL,
 			this);
-		this.recentConnectionsFilterAction = this.instantiationService.createInstance(RecentConnectionsFilterAction,
-			RecentConnectionsFilterAction.ID,
-			RecentConnectionsFilterAction.LABEL,
-			this);
-
 	}
 
 	/**
@@ -70,7 +62,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 */
 	public renderHeader(container: HTMLElement): void {
 		const titleDiv = $('div.title').appendTo(container);
-		$('span').text(nls.localize('registeredServers', "Registered Servers")).appendTo(titleDiv);
+		$('span').text(nls.localize('registeredServers', "Server Groups")).appendTo(titleDiv);
 		super.renderHeader(container);
 	}
 
@@ -121,7 +113,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 * Return actions for the view
 	 */
 	public getActions(): IAction[] {
-		return [this.addServerAction, this.addServerGroupAction, this.activeConnectionsFilterAction, this.recentConnectionsFilterAction];
+		return [this.addServerAction, this.addServerGroupAction, this.activeConnectionsFilterAction];
 	}
 
 	private getConnectionInTreeInput(connectionId: string): ConnectionProfile {
@@ -311,12 +303,9 @@ export class ServerTreeView extends CollapsibleViewletView {
 	private clearOtherActions(view?: string) {
 		if (!view) {
 			this.activeConnectionsFilterAction.isSet = false;
-			this.recentConnectionsFilterAction.isSet = false;
 		}
 		if (view === 'recent') {
 			this.activeConnectionsFilterAction.isSet = false;
-		} else if (view === 'active') {
-			this.recentConnectionsFilterAction.isSet = false;
 		}
 	}
 

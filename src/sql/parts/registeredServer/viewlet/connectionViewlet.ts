@@ -96,7 +96,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 					searchBoxContainer.getHTMLElement(),
 					null,
 					{
-						placeholder: 'Search',
+						placeholder: 'Search server names',
 						actions: [this.clearSearchAction]
 					}
 				);

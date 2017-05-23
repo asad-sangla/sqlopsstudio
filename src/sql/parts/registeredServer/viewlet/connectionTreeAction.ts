@@ -8,7 +8,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionCompletionOptions, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeView';
 import { ConnectionViewlet } from 'sql/parts/registeredServer/viewlet/connectionViewlet';
@@ -19,7 +19,6 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import * as Constants from 'sql/parts/connection/common/constants';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
-import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import Severity from 'vs/base/common/severity';
 
 export class RefreshAction extends Action {
@@ -61,32 +60,25 @@ export class RefreshAction extends Action {
 }
 
 export class ChangeConnectionAction extends Action {
+	public static ID = 'objectExplorer.connect';
+	public static LABEL = localize('ConnectAction', 'Connect/Disconnect');
 
-	private static EnabledClass: string = 'extension-action update';
-	private static DisabledClass: string = `${ChangeConnectionAction.EnabledClass} disabled`;
-	private static Label: string = localize('ConnectAction', 'Connect');
 	private _disposables: IDisposable[] = [];
 	private _connectionProfile: ConnectionProfile;
 
 	public parentContainer: HTMLElement;
 
-	get connectionProfile(): ConnectionProfile {
-		return this._connectionProfile;
-	}
-	set connectionProfile(profile: ConnectionProfile) {
-		this._connectionProfile = profile;
-		this.update();
-	}
-
 	constructor(
+		id: string,
+		label: string,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
-		super('registeredConnections.connect', ChangeConnectionAction.Label, ChangeConnectionAction.DisabledClass, false);
+		super(id, label);
 		const self = this;
 		this._disposables.push(this._connectionManagementService.onConnect(() => {
-			self.onConnect();
+			self.setLabel();
 		})
 		);
 		this._disposables.push(this._connectionManagementService.onDisconnect((disconnectParams) => {
@@ -109,16 +101,6 @@ export class ChangeConnectionAction extends Action {
 		this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
 	}
 
-	private update(): void {
-		this.enabled = true;
-		this.class = ChangeConnectionAction.EnabledClass;
-		this.setLabel();
-	}
-
-	private onConnect(): void {
-		this.setLabel();
-	}
-
 	private setLabel(): void {
 		if (!this._connectionProfile) {
 			this.label = 'Connect';
@@ -135,7 +117,11 @@ export class ChangeConnectionAction extends Action {
 		}
 	}
 
-	run(): TPromise<any> {
+	run(connectionProfile: ConnectionProfile): TPromise<any> {
+		if (connectionProfile instanceof ConnectionProfile) {
+			//set connectionProfile for context menu clicks
+			this._connectionProfile = connectionProfile;
+		}
 		if (!this._connectionProfile) {
 			return TPromise.as(true);
 		}
@@ -159,7 +145,7 @@ export class ChangeConnectionAction extends Action {
 			return new TPromise<boolean>((resolve, reject) => {
 				this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
 					if (connectionResult && connectionResult.connected) {
-						this.update();
+						this.setLabel();
 					}
 					resolve(true);
 				});
@@ -179,7 +165,7 @@ export class ChangeConnectionAction extends Action {
  */
 export class AddServerAction extends Action {
 	public static ID = 'registeredServers.addConnection';
-	public static LABEL = localize('addConnection', 'Add Connection');
+	public static LABEL = localize('addConnection', 'New Connection');
 
 	constructor(
 		id: string,
@@ -238,7 +224,7 @@ export class AddServerGroupAction extends Action {
  */
 export class ActiveConnectionsFilterAction extends Action {
 	public static ID = 'registeredServers.recentConnections';
-	public static LABEL = localize('activeConnections', 'Active Connections');
+	public static LABEL = localize('activeConnections', 'Show Active Connections');
 	private static enabledClass = 'active-connections-action';
 	private static disabledClass = 'active-connections-action-set';
 	private _isSet: boolean;
@@ -344,7 +330,6 @@ export class NewQueryAction extends Action {
 	) {
 		super(id, label);
 		this.class = 'extension-action update';
-		this.label = 'Query';
 	}
 
 	public run(connectionProfile: any): TPromise<boolean> {

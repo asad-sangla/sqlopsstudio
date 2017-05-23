@@ -52,8 +52,8 @@ export interface IObjectExplorerService {
 }
 
 interface SessionStatus {
-	nodes: { [nodePath: string]: NodeStatus },
-	connection: ConnectionProfile
+	nodes: { [nodePath: string]: NodeStatus };
+	connection: ConnectionProfile;
 
 }
 

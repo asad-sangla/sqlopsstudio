@@ -109,11 +109,11 @@ suite('SQL Object Explorer Service tests', () => {
 		};
 		let response: data.ObjectExplorerSessionResponse = {
 			sessionId: objectExplorerSession.sessionId
-		}
+		};
 
 		let failedResponse: data.ObjectExplorerSessionResponse = {
 			sessionId: failedSessionId
-		}
+		};
 
 		sqlOEProvider = TypeMoq.Mock.ofType(ObjectExplorerProviderTestService, TypeMoq.MockBehavior.Loose);
 		sqlOEProvider.callBase = true;

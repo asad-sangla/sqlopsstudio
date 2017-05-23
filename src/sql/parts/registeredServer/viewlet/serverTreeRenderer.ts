@@ -10,8 +10,6 @@ import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ITree, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { IConnectionProfileGroupTemplateData, IConnectionTemplateData, IObjectExplorerTemplateData } from 'sql/parts/registeredServer/viewlet/templateData';
-import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
-import { ChangeConnectionAction, NewQueryAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
@@ -34,8 +32,8 @@ import uri from 'vs/base/common/uri';
  */
 export class ServerTreeRenderer implements IRenderer {
 
-	public static CONNECTION_HEIGHT = 38;
-	public static CONNECTION_GROUP_HEIGHT = 32;
+	public static CONNECTION_HEIGHT = 28;
+	public static CONNECTION_GROUP_HEIGHT = 38;
 	private static CONNECTION_TEMPLATE_ID = 'connectionProfile';
 	private static CONNECTION_GROUP_TEMPLATE_ID = 'connectionProfileGroup';
 	public static OBJECTEXPLORER_HEIGHT = 28;
@@ -89,48 +87,13 @@ export class ServerTreeRenderer implements IRenderer {
 	public renderTemplate(tree: ITree, templateId: string, container: HTMLElement): any {
 
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
-			const root = append(container, $('.connection-tile'));
-			const iconGroup = append(root, $('.group-icon'));
-			const icon = dom.append(iconGroup, $('img.object-icon'));
-			const labelGroup = dom.append(root, $('div.label'));
-			const serverName = append(labelGroup, $('div.name'));
-			const databaseName = append(labelGroup, $('div.info'));
-			if (!this._isCompact) {
-				const actionOptions = { icon: true, label: true };
-				const actionbar = new ActionBar(root, {
-					animated: false
-				});
-				/* Add action bar for connection tile actions */
-				const connectAction = this._instantiationService.createInstance(ChangeConnectionAction);
-				connectAction.parentContainer = container;
-
-				const newQueryAction = this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL);
-				actionbar.push([connectAction, newQueryAction], actionOptions);
-				return {
-					root,
-					iconGroup,
-					icon,
-					labelGroup,
-					serverName,
-					databaseName,
-					set connectionProfile(profile: ConnectionProfile) {
-						connectAction.connectionProfile = profile;
-						newQueryAction.connectionProfile = profile;
-					}
-				};
-			}
-			return {
-				root,
-				iconGroup,
-				icon,
-				labelGroup,
-				serverName,
-				databaseName,
-				set connectionProfile(profile: ConnectionProfile) {
-					//no op
-				}
-			};
+			const connectionTemplate: IObjectExplorerTemplateData = Object.create(null);
+			connectionTemplate.root = dom.append(container, $('.connection-tile'));
+			connectionTemplate.icon = dom.append(connectionTemplate.root, $('img.object-icon'));
+			connectionTemplate.label = dom.append(connectionTemplate.root, $('div.label'));
+			return connectionTemplate;
 		} else if (templateId === ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID) {
+			container.classList.add('server-group');
 			const groupTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
 			groupTemplate.root = append(container, $('.server-group'));
 			groupTemplate.name = append(groupTemplate.root, $('span.name'));
@@ -140,7 +103,6 @@ export class ServerTreeRenderer implements IRenderer {
 			objectExplorerTemplate.root = dom.append(container, $('.object-element-group'));
 			objectExplorerTemplate.icon = dom.append(objectExplorerTemplate.root, $('img.object-icon'));
 			objectExplorerTemplate.label = dom.append(objectExplorerTemplate.root, $('div.label'));
-
 			return objectExplorerTemplate;
 		}
 	}
@@ -172,17 +134,20 @@ export class ServerTreeRenderer implements IRenderer {
 		}
 		templateData.icon.style.content = 'url(' + iconFilePath + ')';
 		templateData.label.textContent = treeNode.label;
+		templateData.root.title = treeNode.label;
 	}
 
 
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
-		var iconFilePath = require.toUrl('sql/media/objectTypes/Database.svg');
+		let iconFilePath = require.toUrl('sql/media/objectTypes/Database.svg');
 		templateData.icon.style.content = 'url(' + iconFilePath + ')';
-		templateData.serverName.textContent = connection.serverName;
-		templateData.databaseName.textContent = connection.databaseName;
-		if (!templateData.databaseName.textContent) {
-			templateData.databaseName.textContent = '<default>';
-		}
+
+		let databaseName = connection.databaseName ? connection.databaseName : '<default>';
+		let userName = connection.userName ? connection.userName : 'Windows Auth';
+		let label = connection.serverName + ', ' + databaseName + ' (' + userName + ')';
+
+		templateData.label.textContent = label;
+		templateData.root.title = label;
 		templateData.connectionProfile = connection;
 	}
 
@@ -196,7 +161,7 @@ export class ServerTreeRenderer implements IRenderer {
 					rowElement.style.background = connectionProfileGroup.color;
 				} else {
 					// If the group doesn't contain specific color, assign the default color
-					rowElement.style.background = '#162d9c';
+					rowElement.style.background = '#515151';
 				}
 			}
 			if (connectionProfileGroup.description && (connectionProfileGroup.description !== '')) {
@@ -212,7 +177,7 @@ export class ServerTreeRenderer implements IRenderer {
 	 */
 	private findParentElement(container: HTMLElement, className: string): HTMLElement {
 		var currentElement = container;
-		while (currentElement) {;
+		while (currentElement) {
 			if (currentElement.className.includes(className)) {
 				break;
 			}

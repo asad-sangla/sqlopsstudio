@@ -56,7 +56,7 @@ export class ConnectionDialogWidget {
 	public create(providerTypeOptions: string[], selectedProviderType: string): HTMLElement {
 		this._providerTypeSelectBox = new ConnectionDialogSelectBox(providerTypeOptions, selectedProviderType);
 
-		this._dialog = new ModalDialogBuilder('connectionDialogModal', 'Connect to Server', 'connection-dialog-widget', 'connectionDialogBody');
+		this._dialog = new ModalDialogBuilder('connectionDialogModal', 'New Connection', 'connection-dialog-widget', 'connectionDialogBody');
 		this._builder = this._dialog.create();
 		this._dialog.addModalTitle();
 

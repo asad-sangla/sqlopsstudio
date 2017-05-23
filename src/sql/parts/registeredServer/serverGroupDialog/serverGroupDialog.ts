@@ -49,11 +49,11 @@ export class ServerGroupDialog {
 		this._colorButtonsMap = {};
 		this._toDispose = [];
 		this._defaultColor = 1;
-		this._colors = ['#162d9c', '#861b1b', '#611773', '#92941e', '#214c34', '#734a17', '#37327b', '#5e5e61'];
+		this._colors = ['#515151', '#004760', '#771b00', '#700060', '#a17d01', '#006749', '#654502', '#3A0293'];
 	}
 
 	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder('serverGroupDialogModal', 'Create Server Group', 'server-group-dialog', 'serverGroupDialogBody');
+		this._dialog = new ModalDialogBuilder('serverGroupDialogModal', 'Add Server Group', 'server-group-dialog', 'serverGroupDialogBody');
 		this._builder = this._dialog.create();
 		this._dialog.addModalTitle();
 
@@ -123,7 +123,7 @@ export class ServerGroupDialog {
 		return this._builder.getHTMLElement();
 	}
 
-	private preventDefaultKeyboardEvent(e: KeyboardEvent){
+	private preventDefaultKeyboardEvent(e: KeyboardEvent) {
 		e.preventDefault();
 		e.stopPropagation();
 	}
