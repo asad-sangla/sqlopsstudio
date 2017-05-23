@@ -82,6 +82,8 @@ const vscodeResources = [
 	'out-build/sql/parts/grid/load/loadJquery.js',
 	'out-build/sql/parts/grid/media/**',
 	'out-build/sql/parts/grid/views/**/*.html',
+	'out-build/sql/media/objectTypes/*.svg',
+	'out-build/sql/media/font-awesome-4.7.0/fonts/**',
 	'!**/test/**'
 ];
 
