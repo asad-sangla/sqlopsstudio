@@ -135,13 +135,13 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		});
 
 		this._objectExplorerService.registerProvider(providerId, <data.ObjectExplorerProvider>{
-			createNewSession(connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {
+			createNewSession(connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSessionResponse> {
 				return self._proxy.$createObjectExplorerSession(handle, connection);
 			},
-			expandNode(nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+			expandNode(nodeInfo: data.ExpandNodeInfo): Thenable<boolean> {
 				return self._proxy.$expandObjectExplorerNode(handle, nodeInfo);
 			},
-			refreshNode(nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+			refreshNode(nodeInfo: data.ExpandNodeInfo): Thenable<boolean> {
 				return self._proxy.$refreshObjectExplorerNode(handle, nodeInfo);
 			},
 			closeSession(closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> {
@@ -179,7 +179,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			}
 		});
 
-		this._disasterRecoveryService.registerProvider(providerId,  <data.DisasterRecoveryProvider>{
+		this._disasterRecoveryService.registerProvider(providerId, <data.DisasterRecoveryProvider>{
 			backup(connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> {
 				return self._proxy.$backup(handle, connectionUri, backupInfo);
 			}
@@ -219,6 +219,14 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	}
 	public $onEditSessionReady(handle: number, ownerUri: string, success: boolean, message: string): void {
 		this._queryManagementService.onEditSessionReady(ownerUri, success, message);
+	}
+
+	public $onObjectExplorerSessionCreated(handle: number, sessionResponse: data.ObjectExplorerSession): void {
+		this._objectExplorerService.onSessionCreated(handle, sessionResponse);
+	}
+
+	public $onObjectExplorerNodeExpanded(handle: number, expandResponse: data.ObjectExplorerExpandInfo): void {
+		this._objectExplorerService.onNodeExpanded(handle, expandResponse);
 	}
 
 	public $unregisterProvider(handle: number): TPromise<any> {

@@ -6,14 +6,21 @@
 'use strict';
 
 export interface CreateSessionResponse {
+	sessionId: string;
+}
+
+export interface SessionCreatedParameters {
 	success: boolean;
 	sessionId: string;
 	rootNode: NodeInfo;
+	errorMessage: string;
 }
 
 export interface ExpandResponse {
+	nodePath: string;
 	sessionId: string;
 	nodes: NodeInfo[];
+	errorMessage: string;
 }
 
 export interface NodeInfo {
@@ -24,6 +31,7 @@ export interface NodeInfo {
 	label: string;
 	isLeaf: boolean;
 	metadata: ObjectMetadata;
+	errorMessage: string;
 }
 
 export interface ExpandParams {

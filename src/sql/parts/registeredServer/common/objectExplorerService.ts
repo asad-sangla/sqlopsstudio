@@ -12,6 +12,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import Event, { Emitter } from 'vs/base/common/event';
 import data = require('data');
+import Utils = require('sql/parts/connection/common/utils');
 
 export const SERVICE_ID = 'ObjectExplorerService';
 
@@ -20,7 +21,7 @@ export const IObjectExplorerService = createDecorator<IObjectExplorerService>(SE
 export interface IObjectExplorerService {
 	_serviceBrand: any;
 
-	createNewSession(providerId: string, connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession>;
+	createNewSession(providerId: string, connection: ConnectionProfile): Thenable<data.ObjectExplorerSessionResponse>;
 
 	closeSession(providerId: string, session: data.ObjectExplorerSession): Thenable<data.ObjectExplorerCloseSessionResponse>;
 
@@ -31,6 +32,10 @@ export interface IObjectExplorerService {
 	expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]>;
 
 	refreshTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]>;
+
+	onSessionCreated(handle: number, sessionResponse: data.ObjectExplorerSession);
+
+	onNodeExpanded(handle: number, sessionResponse: data.ObjectExplorerExpandInfo);
 
 	/**
 	 * Register a ObjectExplorer provider
@@ -43,8 +48,24 @@ export interface IObjectExplorerService {
 
 	deleteObjectExplorerNode(connection: IConnectionProfile): void;
 
-	onUpdateObjectExplorerNodes: Event<IConnectionProfile>;
+	onUpdateObjectExplorerNodes: Event<ObjectExplorerNodeEventArgs>;
 }
+
+interface SessionStatus {
+	nodes: { [nodePath: string]: NodeStatus },
+	connection: ConnectionProfile
+
+}
+
+interface NodeStatus {
+	expandHandler: (result: data.ObjectExplorerExpandInfo) => void;
+}
+
+export interface ObjectExplorerNodeEventArgs {
+	connection: IConnectionProfile;
+	errorMessage: string;
+}
+
 
 export class ObjectExplorerService implements IObjectExplorerService {
 
@@ -55,19 +76,23 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	private _providers: { [handle: string]: data.ObjectExplorerProvider; } = Object.create(null);
 
 	private _activeObjectExplorerNodes: { [id: string]: TreeNode };
+	private _sessions: { [sessionId: string]: SessionStatus };
 
-	private _onUpdateObjectExplorerNodes: Emitter<IConnectionProfile>;
+	private _onUpdateObjectExplorerNodes: Emitter<ObjectExplorerNodeEventArgs>;
 
 	constructor(
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
-		this._onUpdateObjectExplorerNodes = new Emitter<IConnectionProfile>();
+		this._onUpdateObjectExplorerNodes = new Emitter<ObjectExplorerNodeEventArgs>();
 		this._activeObjectExplorerNodes = {};
+		this._sessions = {};
+		this._providers = {};
 	}
 
-	public get onUpdateObjectExplorerNodes(): Event<IConnectionProfile> {
+	public get onUpdateObjectExplorerNodes(): Event<ObjectExplorerNodeEventArgs> {
 		return this._onUpdateObjectExplorerNodes.event;
 	}
+
 	public updateObjectExplorerNodes(connection: IConnectionProfile): Promise<void> {
 		return this._connectionManagementService.addSavedPassword(connection).then(withPassword => {
 			let connectionProfile = ConnectionProfile.convertToConnectionProfile(
@@ -77,31 +102,81 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public deleteObjectExplorerNode(connection: IConnectionProfile): void {
+		let self = this;
 		var connectionUri = connection.id;
 		var nodeTree = this._activeObjectExplorerNodes[connectionUri];
-		this.closeSession(connection.providerName, nodeTree.getSession()).then(() => {
-			delete this._activeObjectExplorerNodes[connectionUri];
-		});
+		if (nodeTree) {
+			self.closeSession(connection.providerName, nodeTree.getSession()).then(() => {
+				delete self._activeObjectExplorerNodes[connectionUri];
+				delete self._sessions[nodeTree.getSession().sessionId];
+			});
+		}
+	}
+
+	/**
+	 * Gets called when expanded node response is ready
+	 */
+	public onNodeExpanded(handle: number, expandResponse: data.ObjectExplorerExpandInfo) {
+
+		if (!Utils.isEmpty(expandResponse.errorMessage)) {
+			Utils.logDebug(expandResponse.errorMessage);
+		}
+
+		let nodeStatus = this._sessions[expandResponse.sessionId].nodes[expandResponse.nodePath];
+		if (nodeStatus && nodeStatus.expandHandler) {
+			nodeStatus.expandHandler(expandResponse);
+		} else {
+			Utils.logDebug(`Cannot find node status for session: ${expandResponse.sessionId} and node path: ${expandResponse.nodePath}`);
+		}
+	}
+
+	/**
+	 * Gets called when session is created
+	 */
+	public onSessionCreated(handle: number, session: data.ObjectExplorerSession) {
+		let connection: ConnectionProfile = undefined;
+		let errorMessage: string = undefined;
+		if (this._sessions[session.sessionId]) {
+			connection = this._sessions[session.sessionId].connection;
+
+			if (session && session.success && session.rootNode) {
+				let server = this.toTreeNode(session.rootNode, null);
+				server.connection = connection;
+				server.session = session;
+				this._activeObjectExplorerNodes[connection.id] = server;
+			} else {
+				errorMessage = session && !Utils.isEmpty(session.errorMessage) ? session.errorMessage : 'Failed to create OE session';
+				Utils.logDebug(errorMessage);
+			}
+
+		} else {
+			Utils.logDebug(`cannot find session ${session.sessionId}`);
+		}
+
+		this.sendUpdateNodeEvent(connection, errorMessage);
+	}
+
+	private sendUpdateNodeEvent(connection: ConnectionProfile, errorMessage: string = undefined) {
+		let eventArgs: ObjectExplorerNodeEventArgs = {
+			connection: <IConnectionProfile>connection,
+			errorMessage: errorMessage
+		};
+		this._onUpdateObjectExplorerNodes.fire(eventArgs);
 	}
 
 	private updateNewObjectExplorerNode(connection: ConnectionProfile): Promise<void> {
+		let self = this;
 		return new Promise<void>((resolve, reject) => {
-			if (this._activeObjectExplorerNodes[connection.id]) {
-				this._onUpdateObjectExplorerNodes.fire(<IConnectionProfile>connection);
+			if (self._activeObjectExplorerNodes[connection.id]) {
+				this.sendUpdateNodeEvent(connection);
 				resolve();
 			} else {
-				this.createNewSession(connection.providerName, connection).then(session => {
-					if (session && session.success && session.rootNode) {
-						let server = this.toTreeNode(session.rootNode, null);
-						server.connection = connection;
-						server.session = session;
-						this._activeObjectExplorerNodes[connection.id] = server;
-					} else {
-						// TODO: show the error
-					}
-					this._onUpdateObjectExplorerNodes.fire(<IConnectionProfile>connection);
+				// Create session will send the event or reject the promise
+				this.createNewSession(connection.providerName, connection).then(response => {
 					resolve();
-
+				}, error => {
+					this.sendUpdateNodeEvent(connection, error);
+					reject(error);
 				});
 			}
 		});
@@ -111,40 +186,85 @@ export class ObjectExplorerService implements IObjectExplorerService {
 		return this._activeObjectExplorerNodes[connection.id];
 	}
 
-	public createNewSession(providerId: string, connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {
-		let provider = this._providers[providerId];
-		if (provider) {
-			return provider.createNewSession(connection).then(result => {
-				return result;
-			}, error => {
-				return undefined;
-			});
-		}
-
-		return Promise.resolve(undefined);
+	public createNewSession(providerId: string, connection: ConnectionProfile): Thenable<data.ObjectExplorerSessionResponse> {
+		let self = this;
+		return new Promise<data.ObjectExplorerSessionResponse>((resolve, reject) => {
+			let provider = this._providers[providerId];
+			if (provider) {
+				provider.createNewSession(connection).then(result => {
+					self._sessions[result.sessionId] = {
+						connection: connection,
+						nodes: {}
+					};
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
+			} else {
+				reject(`Provider doesn't exist. id: ${providerId}`);
+			}
+		});
 	}
 
 	public expandNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo> {
-		let provider = this._providers[providerId];
-		if (provider) {
-			return provider.expandNode({
-				sessionId: session ? session.sessionId : undefined,
-				nodePath: nodePath
-			});
+		return new Promise<data.ObjectExplorerExpandInfo>((resolve, reject) => {
+			let provider = this._providers[providerId];
+			if (provider) {
+				this.expandOrRefreshNode(provider, session, nodePath).then(result => {
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
+			} else {
+				reject(`Provider doesn't exist. id: ${providerId}`);
+			}
+		});
+	}
+	private callExpandOrRefreshFromProvider(provider: data.ObjectExplorerProvider, nodeInfo: data.ExpandNodeInfo, refresh: boolean = false) {
+		if (refresh) {
+			return provider.refreshNode(nodeInfo);
+		} else {
+			return provider.expandNode(nodeInfo);
 		}
+	}
 
-		return Promise.resolve(undefined);
+	private expandOrRefreshNode(
+		provider: data.ObjectExplorerProvider,
+		session: data.ObjectExplorerSession,
+		nodePath: string,
+		refresh: boolean = false): Thenable<data.ObjectExplorerExpandInfo> {
+		let self = this;
+		return new Promise<data.ObjectExplorerExpandInfo>((resolve, reject) => {
+			if (session.sessionId in self._sessions && self._sessions[session.sessionId]) {
+				self._sessions[session.sessionId].nodes[nodePath] = {
+					expandHandler: ((expandResult) => {
+						if (expandResult && Utils.isEmpty(expandResult.errorMessage)) {
+							resolve(expandResult);
+						}
+						else {
+							reject(expandResult ? expandResult.errorMessage : undefined);
+						}
+						delete self._sessions[session.sessionId].nodes[nodePath];
+					})
+				};
+				self.callExpandOrRefreshFromProvider(provider, {
+					sessionId: session ? session.sessionId : undefined,
+					nodePath: nodePath
+				}, refresh).then(result => {
+				}, error => {
+					reject(error);
+				});
+			} else {
+				reject(`session cannot find to expand node. id: ${session.sessionId} nodePath: ${nodePath}`);
+			}
+		});
 	}
 
 	public refreshNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo> {
 		let provider = this._providers[providerId];
 		if (provider) {
-			return provider.refreshNode({
-				sessionId: session ? session.sessionId : undefined,
-				nodePath: nodePath
-			});
+			return this.expandOrRefreshNode(provider, session, nodePath, true);
 		}
-
 		return Promise.resolve(undefined);
 	}
 
@@ -171,30 +291,40 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	public expandTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]> {
-		return this.expandNode(parentTree.getConnectionProfile().providerName, session, parentTree.nodePath).then(expandResult => {
-			let children: TreeNode[] = [];
-			if (expandResult.nodes) {
-				children = expandResult.nodes.map(node => {
-					return this.toTreeNode(node, parentTree);
-				});
-				parentTree.children = children.filter(c => c !== undefined);
-			}
-			return children;
-
-		}, error => {
-
-		});
+		return this.expandOrRefreshTreeNode(session, parentTree);
 	}
 
 	public refreshTreeNode(session: data.ObjectExplorerSession, parentTree: TreeNode): Thenable<TreeNode[]> {
-		return this.refreshNode(parentTree.getConnectionProfile().providerName, session, parentTree.nodePath).then(expandResult => {
-			let children = expandResult.nodes.map(node => {
-				return this.toTreeNode(node, parentTree);
-			});
-			parentTree.children = children.filter(c => c !== undefined);
-			return children;
-		}, error => {
+		return this.expandOrRefreshTreeNode(session, parentTree, true);
+	}
 
+	private callExpandOrRefreshFromService(providerId: string, session: data.ObjectExplorerSession, nodePath: string, refresh: boolean = false): Thenable<data.ObjectExplorerExpandInfo> {
+		if (refresh) {
+			return this.refreshNode(providerId, session, nodePath);
+		} else {
+			return this.expandNode(providerId, session, nodePath);
+		}
+	}
+
+	private expandOrRefreshTreeNode(
+		session: data.ObjectExplorerSession,
+		parentTree: TreeNode,
+		refresh: boolean = false): Thenable<TreeNode[]> {
+		return new Promise<TreeNode[]>((resolve, reject) => {
+			this.callExpandOrRefreshFromService(parentTree.getConnectionProfile().providerName, session, parentTree.nodePath, refresh).then(expandResult => {
+				let children: TreeNode[] = [];
+				if (expandResult && expandResult.nodes) {
+					children = expandResult.nodes.map(node => {
+						return this.toTreeNode(node, parentTree);
+					});
+					parentTree.children = children.filter(c => c !== undefined);
+					resolve(children);
+				} else {
+					reject(expandResult && expandResult.errorMessage ? expandResult.errorMessage : 'Failed to expand node');
+				}
+			}, error => {
+				reject(error);
+			});
 		});
 	}
 

@@ -62,6 +62,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 			RecentConnectionsFilterAction.ID,
 			RecentConnectionsFilterAction.LABEL,
 			this);
+
 	}
 
 	/**
@@ -105,6 +106,14 @@ export class ServerTreeView extends CollapsibleViewletView {
 			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
 		})
 		);
+
+		if (this._objectExplorerService && this._objectExplorerService.onUpdateObjectExplorerNodes) {
+			this.toDispose.push(this._objectExplorerService.onUpdateObjectExplorerNodes(args => {
+				if (args.connection) {
+					self.onObjectExplorerSessionCreated(args.connection);
+				}
+			}));
+		}
 		self.refreshTree();
 	}
 
@@ -131,19 +140,25 @@ export class ServerTreeView extends CollapsibleViewletView {
 		return null;
 	}
 
+	private onObjectExplorerSessionCreated(connection: IConnectionProfile) {
+		var conn = this.getConnectionInTreeInput(connection.id);
+		if (conn) {
+			this.tree.refresh(conn).then(() => {
+				return this.tree.expand(conn).then(() => {
+					return this.tree.reveal(conn, 0.5).then(() => {
+					});
+				});
+			}).done(null, errors.onUnexpectedError);
+		}
+	}
+
 	public addObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
 		this.messages.hide();
 		if (!this._objectExplorerService.getObjectExplorerNode(connection)) {
 			this._objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
-				var conn = this.getConnectionInTreeInput(connection.id);
-				if (conn) {
-					this.tree.refresh(conn).then(() => {
-						return this.tree.expand(conn).then(() => {
-							return this.tree.reveal(conn, 0.5).then(() => {
-							});
-						});
-					}).done(null, errors.onUnexpectedError);
-				}
+				// The oe request is sent. an event will be raised when the session is created
+			}, error => {
+				// TODO stop the spinner
 			});
 		}
 	}

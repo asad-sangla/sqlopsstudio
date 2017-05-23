@@ -19,6 +19,8 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import * as Constants from 'sql/parts/connection/common/constants';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
+import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import Severity from 'vs/base/common/severity';
 
 export class RefreshAction extends Action {
 
@@ -78,7 +80,8 @@ export class ChangeConnectionAction extends Action {
 
 	constructor(
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 		super('registeredConnections.connect', ChangeConnectionAction.Label, ChangeConnectionAction.DisabledClass, false);
 		const self = this;
@@ -91,10 +94,19 @@ export class ChangeConnectionAction extends Action {
 			self._connectionManagementService.closeDashboard(disconnectParams.connectionUri);
 		})
 		);
-		this._disposables.push(this._objectExplorerService.onUpdateObjectExplorerNodes((connection) => {
-			self.removeSpinning(connection);
-		})
-		);
+		if (this._objectExplorerService && this._objectExplorerService.onUpdateObjectExplorerNodes) {
+			this._disposables.push(this._objectExplorerService.onUpdateObjectExplorerNodes((args) => {
+				self.removeSpinning(args.connection);
+				if (args.errorMessage !== undefined) {
+					self.showError(args.errorMessage);
+				}
+			})
+			);
+		}
+	}
+
+	private showError(errorMessage: string) {
+		this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
 	}
 
 	private update(): void {

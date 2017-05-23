@@ -337,13 +337,17 @@ declare module 'data' {
 	}
 
 	export interface ObjectExplorerProvider {
-		createNewSession(connInfo: ConnectionInfo): Thenable<ObjectExplorerSession>;
+		createNewSession(connInfo: ConnectionInfo): Thenable<ObjectExplorerSessionResponse>;
 
-		expandNode(nodeInfo: ExpandNodeInfo): Thenable<ObjectExplorerExpandInfo>;
+		expandNode(nodeInfo: ExpandNodeInfo): Thenable<boolean>;
 
-		refreshNode(nodeInfo: ExpandNodeInfo): Thenable<ObjectExplorerExpandInfo>;
+		refreshNode(nodeInfo: ExpandNodeInfo): Thenable<boolean>;
 
 		closeSession(closeSessionInfo: ObjectExplorerCloseSessionInfo): Thenable<ObjectExplorerCloseSessionResponse>;
+
+		registerOnSessionCreated(handler: (response: ObjectExplorerSession) => any);
+
+		registerOnExpandCompleted(handler: (response: ObjectExplorerExpandInfo) => any);
 
 	}
 
@@ -717,6 +721,7 @@ declare module 'data' {
 		label: string;
 		isLeaf: boolean;
 		metadata: ObjectMetadata;
+		errorMessage: string;
 	}
 
 	// Object Explorer interfaces  -----------------------------------------------------------------------
@@ -724,16 +729,23 @@ declare module 'data' {
 		success: boolean;
 		sessionId: string;
 		rootNode: NodeInfo;
+		errorMessage: string;
+	}
+
+	export interface ObjectExplorerSessionResponse {
+		sessionId: string;
 	}
 
 	export interface ObjectExplorerExpandInfo {
 		sessionId: string;
+		nodePath: string;
 		nodes: NodeInfo[];
+		errorMessage: string;
 	}
 
 	export interface ExpandNodeInfo {
 		sessionId: string,
-		nodePath: string
+		nodePath: string,
 	}
 
 	export interface ObjectExplorerCloseSessionInfo {

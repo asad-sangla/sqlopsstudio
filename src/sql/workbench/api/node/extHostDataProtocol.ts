@@ -215,21 +215,21 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	}
 
 	// Object Explorer Service
-	public $createObjectExplorerSession(handle: number, connInfo: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {
+	public $createObjectExplorerSession(handle: number, connInfo: data.ConnectionInfo): Thenable<data.ObjectExplorerSessionResponse> {
 		return this._runWithProvider(handle, provider => {
 			return provider.objectExplorerProvider ? provider.objectExplorerProvider.createNewSession(connInfo)
 				: Promise.resolve(undefined);
 		});
 	}
 
-	public $expandObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+	public $expandObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<boolean> {
 		return this._runWithProvider(handle, provider => {
 			return provider.objectExplorerProvider ? provider.objectExplorerProvider.expandNode(nodeInfo)
 				: Promise.resolve(undefined);
 		});
 	}
 
-	public $refreshObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+	public $refreshObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<boolean> {
 		return this._runWithProvider(handle, provider => {
 			return provider.objectExplorerProvider ? provider.objectExplorerProvider.refreshNode(nodeInfo)
 				: Promise.resolve(undefined);
@@ -241,6 +241,14 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 			return provider.objectExplorerProvider ? provider.objectExplorerProvider.closeSession(closeSessionInfo)
 				: Promise.resolve(undefined);
 		});
+	}
+
+	public $onObjectExplorerSessionCreated(handle: number, response: data.ObjectExplorerSession): void {
+		this._proxy.$onObjectExplorerSessionCreated(handle, response);
+	}
+
+	public $onObjectExplorerNodeExpanded(handle: number, response: data.ObjectExplorerExpandInfo): void {
+		this._proxy.$onObjectExplorerNodeExpanded(handle, response);
 	}
 
 	public $getDatabases(handle: number, connectionUri: string): Thenable<string[]> {
@@ -338,5 +346,5 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.backup(connectionUri, backupInfo)
 				: Promise.resolve(undefined);
 		});
-	 }
+	}
 }

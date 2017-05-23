@@ -26,7 +26,7 @@ import {
 	ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo,
 	SaveResultRequestResult as VSaveResultRequestResult,
 	SaveResultsRequestParams as VSaveResultsRequestParams, ObjectExplorerProvider,
-	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, AdminServicesProvider, DisasterRecoveryProvider
+	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo, AdminServicesProvider, DisasterRecoveryProvider
 } from 'data';
 
 import {
@@ -107,6 +107,7 @@ import {
 	EditUpdateCellRequest, EditUpdateCellParams, EditUpdateCellResult,
 	EditSubsetRequest, EditSubsetParams, EditSubsetResult,
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
+	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
 	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest
 } from './protocol';
 
@@ -1760,7 +1761,7 @@ export class LanguageClient {
 		};
 
 		let disasterRecoveryProvider: DisasterRecoveryProvider = {
-			backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse>{
+			backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse> {
 				let params: BackupParams = { ownerUri: connectionUri, backupInfo: backupInfo };
 				return self.doSendRequest(connection, BackupRequest.type, params, undefined).then(
 					(result) => {
@@ -1778,7 +1779,7 @@ export class LanguageClient {
 			createNewSession(connInfo: ConnectionInfo) {
 				return self.doSendRequest(connection, ObjectExplorerCreateSessionRequest.type,
 					self._c2p.asConnectionDetail(connInfo), undefined).then(
-					self._p2c.asObjectExplorerSession,
+					self._p2c.asObjectExplorerCreateSessionResponse,
 					(error) => {
 						self.logFailedRequest(ObjectExplorerCreateSessionRequest.type, error);
 						return Promise.resolve(undefined);
@@ -1789,7 +1790,9 @@ export class LanguageClient {
 			expandNode(nodeInfo: ExpandNodeInfo) {
 				return self.doSendRequest(connection, ObjectExplorerExpandRequest.type,
 					self._c2p.asExpandInfo(nodeInfo), undefined).then(
-					self._p2c.asObjectExplorerNodeInfo,
+					(result) => {
+						return result;
+					},
 					(error) => {
 						self.logFailedRequest(ObjectExplorerExpandRequest.type, error);
 						return Promise.resolve(undefined);
@@ -1800,7 +1803,9 @@ export class LanguageClient {
 			refreshNode(nodeInfo: ExpandNodeInfo) {
 				return self.doSendRequest(connection, ObjectExplorerRefreshRequest.type,
 					self._c2p.asExpandInfo(nodeInfo), undefined).then(
-					self._p2c.asObjectExplorerNodeInfo,
+					(result) => {
+						return result;
+					},
 					(error) => {
 						self.logFailedRequest(ObjectExplorerRefreshRequest.type, error);
 						return Promise.resolve(undefined);
@@ -1817,8 +1822,32 @@ export class LanguageClient {
 						return Promise.resolve(undefined);
 					}
 					);
-			}
+			},
+
+			registerOnSessionCreated(handler: (response: ObjectExplorerSession) => any) {
+				connection.onNotification(ObjectExplorerCreateSessionCompleteNotification.type, (params: ObjectExplorerSession) => {
+					handler({
+						sessionId: params.sessionId,
+						success: params.success,
+						rootNode: params.rootNode,
+						errorMessage: params.errorMessage
+					});
+				});
+			},
+
+			registerOnExpandCompleted(handler: (response: ObjectExplorerExpandInfo) => any) {
+				connection.onNotification(ObjectExplorerExpandCompleteNotification.type, (params: ObjectExplorerExpandInfo) => {
+					handler({
+						sessionId: params.sessionId,
+						nodes: params.nodes,
+						errorMessage: params.errorMessage,
+						nodePath: params.nodePath
+					});
+				});
+			},
 		};
+
+
 
 		let scriptingProvider: ScriptingProvider = {
 			scriptAsSelect(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult> {

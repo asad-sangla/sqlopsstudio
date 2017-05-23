@@ -32,8 +32,8 @@ export interface ISqlExtensionApiFactory {
  * This method instantiates and returns the extension API surface. This overrides the default ApiFactory by extending it to add Carbon-related functions
  */
 export function createApiFactory(
-		initData: IInitData, threadService: IThreadService, extensionService: ExtHostExtensionService,
-		contextService: IWorkspaceContextService, telemetryService: ITelemetryService): ISqlExtensionApiFactory {
+	initData: IInitData, threadService: IThreadService, extensionService: ExtHostExtensionService,
+	contextService: IWorkspaceContextService, telemetryService: ITelemetryService): ISqlExtensionApiFactory {
 	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService, contextService, telemetryService);
 
 	// Addressable instances
@@ -47,7 +47,7 @@ export function createApiFactory(
 		dataFactory: function (extension: IExtensionDescription): typeof data {
 			// namespace: credentials
 			const credentials: typeof data.credentials = {
-				registerProvider(provider: data.CredentialProvider): vscode.Disposable  {
+				registerProvider(provider: data.CredentialProvider): vscode.Disposable {
 					return extHostCredentialManagement.$registerCredentialProvider(provider);
 				},
 			};
@@ -69,25 +69,34 @@ export function createApiFactory(
 					});
 
 					// Query callbacks
-					provider.queryProvider.registerOnQueryComplete((result: data.QueryExecuteCompleteNotificationResult ) => {
+					provider.queryProvider.registerOnQueryComplete((result: data.QueryExecuteCompleteNotificationResult) => {
 						extHostDataProvider.$onQueryComplete(provider.handle, result);
 					});
 
-					provider.queryProvider.registerOnBatchStart((batchInfo: data.QueryExecuteBatchNotificationParams ) => {
+					provider.queryProvider.registerOnBatchStart((batchInfo: data.QueryExecuteBatchNotificationParams) => {
 						extHostDataProvider.$onBatchStart(provider.handle, batchInfo);
 					});
 
-					provider.queryProvider.registerOnBatchComplete((batchInfo: data.QueryExecuteBatchNotificationParams ) => {
+					provider.queryProvider.registerOnBatchComplete((batchInfo: data.QueryExecuteBatchNotificationParams) => {
 						extHostDataProvider.$onBatchComplete(provider.handle, batchInfo);
 					});
 
-					provider.queryProvider.registerOnResultSetComplete((resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams ) => {
+					provider.queryProvider.registerOnResultSetComplete((resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams) => {
 						extHostDataProvider.$onResultSetComplete(provider.handle, resultSetInfo);
 					});
 
-					provider.queryProvider.registerOnMessage((message: data.QueryExecuteMessageParams ) => {
+					provider.queryProvider.registerOnMessage((message: data.QueryExecuteMessageParams) => {
 						extHostDataProvider.$onQueryMessage(provider.handle, message);
 					});
+
+					provider.objectExplorerProvider.registerOnSessionCreated((response: data.ObjectExplorerSession) => {
+						extHostDataProvider.$onObjectExplorerSessionCreated(provider.handle, response);
+					});
+
+					provider.objectExplorerProvider.registerOnExpandCompleted((response: data.ObjectExplorerExpandInfo) => {
+						extHostDataProvider.$onObjectExplorerNodeExpanded(provider.handle, response);
+					});
+
 
 					// Edit Data callbacks
 					provider.queryProvider.registerOnEditSessionReady((ownerUri: string, success: boolean, message: string) => {
@@ -149,11 +158,11 @@ function defineAPI(factory: ISqlExtensionApiFactory, extensionPaths: TrieMap<IEx
 
 	// The module factory looks for an entry in the API map for an extension. If found, it reuses this.
 	// If not, it loads it & saves it in the map
-	let getModuleFactory = function(apiMap: Map<string, any>,
-			createApi: (extensionDescription: IExtensionDescription) => ApiImpl,
-			defaultImpl: ApiImpl,
-			setDefaultApiImpl: (defaultImpl: ApiImpl) => void,
-			parent: any): ApiImpl {
+	let getModuleFactory = function (apiMap: Map<string, any>,
+		createApi: (extensionDescription: IExtensionDescription) => ApiImpl,
+		defaultImpl: ApiImpl,
+		setDefaultApiImpl: (defaultImpl: ApiImpl) => void,
+		parent: any): ApiImpl {
 		// get extension id from filename and api for extension
 		const ext = extensionPaths.findSubstr(parent.filename);
 		if (ext) {
@@ -181,13 +190,13 @@ function defineAPI(factory: ISqlExtensionApiFactory, extensionPaths: TrieMap<IEx
 		if (request === 'vscode') {
 			return getModuleFactory(extApiImpl, (ext) => factory.vsCodeFactory(ext),
 				defaultApiImpl,
-				(impl) => defaultApiImpl = <typeof vscode> impl,
+				(impl) => defaultApiImpl = <typeof vscode>impl,
 				parent);
 		} else if (request === 'data') {
 			return getModuleFactory(dataExtApiImpl,
 				(ext) => factory.dataFactory(ext),
 				defaultDataApiImpl,
-				(impl) => defaultDataApiImpl = <typeof data> impl,
+				(impl) => defaultDataApiImpl = <typeof data>impl,
 				parent);
 		} else {
 			// Allow standard node_module load to occur

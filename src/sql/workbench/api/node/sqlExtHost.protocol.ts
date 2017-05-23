@@ -66,11 +66,11 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Object Explorer
 	 */
-	$createObjectExplorerSession(handle: number, connInfo: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> { throw ni(); }
+	$createObjectExplorerSession(handle: number, connInfo: data.ConnectionInfo): Thenable<data.ObjectExplorerSessionResponse> { throw ni(); }
 
-	$expandObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> { throw ni(); }
+	$expandObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<boolean> { throw ni(); }
 
-	$refreshObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> { throw ni(); }
+	$refreshObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<boolean> { throw ni(); }
 
 	$closeObjectExplorerSession(handle: number, closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> { throw ni(); }
 
@@ -182,7 +182,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Get the default database prototype
 	 */
-	$getDefaultDatabaseInfo(handle: number, connectionUri: string): Thenable<data.DatabaseInfo>  { throw ni(); }
+	$getDefaultDatabaseInfo(handle: number, connectionUri: string): Thenable<data.DatabaseInfo> { throw ni(); }
 
 	/**
 	 * Create a new login on the provided connection
@@ -217,6 +217,8 @@ export abstract class MainThreadDataProtocolShape {
 	$onBatchComplete(handle: number, batchInfo: data.QueryExecuteBatchNotificationParams): void { throw ni(); }
 	$onResultSetComplete(handle: number, resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void { throw ni(); }
 	$onQueryMessage(handle: number, message: data.QueryExecuteMessageParams): void { throw ni(); }
+	$onObjectExplorerSessionCreated(handle: number, message: data.ObjectExplorerSession): void { throw ni(); }
+	$onObjectExplorerNodeExpanded(handle: number, message: data.ObjectExplorerExpandInfo): void { throw ni(); }
 
 	/**
 	 * Callback when a session has completed initialization

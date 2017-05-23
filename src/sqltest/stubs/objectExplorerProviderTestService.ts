@@ -3,24 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import data = require('data');
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
 // Test stubs for commonly used objects
 
 export class ObjectExplorerProviderTestService implements data.ObjectExplorerProvider {
 
-	public createNewSession(connInfo: data.ConnectionInfo): Thenable<data.ObjectExplorerSession> {
+	public createNewSession(connInfo: ConnectionProfile): Thenable<data.ObjectExplorerCloseSessionResponse> {
 		return Promise.resolve(undefined);
 	}
 
-	public expandNode(nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+	public expandNode(nodeInfo: data.ExpandNodeInfo): Thenable<boolean> {
 		return Promise.resolve(undefined);
 	}
 
-	public refreshNode(nodeInfo: data.ExpandNodeInfo): Thenable<data.ObjectExplorerExpandInfo> {
+	public refreshNode(nodeInfo: data.ExpandNodeInfo): Thenable<boolean> {
 		return Promise.resolve(undefined);
 	}
 
 	public closeSession(closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> {
 		return Promise.resolve(undefined);
+	}
+
+	public registerOnSessionCreated(handler: (response: data.ObjectExplorerSession) => any): void {
+
+	}
+
+	public registerOnExpandCompleted(handler: (response: data.ObjectExplorerExpandInfo) => any): void {
+
 	}
 }

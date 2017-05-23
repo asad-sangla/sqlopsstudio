@@ -136,7 +136,8 @@ export class TreeUpdateUtils {
 	}
 
 	public static hasObjectExplorerNode(connection: ConnectionProfile, connectionManagementService: IConnectionManagementService): boolean {
-		return connectionManagementService.isConnected(undefined, connection);
+		let isConnected = connectionManagementService.isConnected(undefined, connection);
+		return isConnected;
 	}
 
 	public static getObjectExplorerNode(connection: ConnectionProfile, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<TreeNode[]> {

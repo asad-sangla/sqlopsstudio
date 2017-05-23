@@ -83,7 +83,9 @@ export interface Converter {
 
 	asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult;
 
-	asObjectExplorerSession(params: ls.CreateSessionResponse): data.ObjectExplorerSession;
+	asObjectExplorerSession(params: ls.SessionCreatedParameters): data.ObjectExplorerSession;
+
+	asObjectExplorerCreateSessionResponse(params: ls.CreateSessionResponse): data.ObjectExplorerSessionResponse;
 
 	asObjectExplorerNodeInfo(params: ls.ExpandResponse): data.ObjectExplorerExpandInfo;
 
@@ -573,18 +575,27 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
-	function asObjectExplorerSession(params: ls.CreateSessionResponse): data.ObjectExplorerSession {
+	function asObjectExplorerSession(params: ls.SessionCreatedParameters): data.ObjectExplorerSession {
 		return <data.ObjectExplorerSession>{
 			success: params.success,
 			sessionId: params.sessionId,
-			rootNode: params.rootNode
+			rootNode: params.rootNode,
+			errorMessage: params.errorMessage
+		};
+	}
+
+	function asObjectExplorerCreateSessionResponse(params: ls.CreateSessionResponse): data.ObjectExplorerSessionResponse {
+		return <data.ObjectExplorerSessionResponse>{
+			sessionId: params.sessionId
 		};
 	}
 
 	function asObjectExplorerNodeInfo(params: ls.ExpandResponse): data.ObjectExplorerExpandInfo {
 		return <data.ObjectExplorerExpandInfo>{
 			sessionId: params.sessionId,
-			nodes: params.nodes
+			nodes: params.nodes,
+			errorMessage: params.errorMessage,
+			nodePath: params.nodePath
 		};
 	}
 
@@ -638,6 +649,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asProviderMetadata,
 		asScriptingResult,
 		asObjectExplorerSession,
+		asObjectExplorerCreateSessionResponse,
 		asObjectExplorerNodeInfo,
 		asObjectExplorerCloseSessionResponse
 	};
