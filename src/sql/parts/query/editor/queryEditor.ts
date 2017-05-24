@@ -40,7 +40,7 @@ import * as queryContext from 'sql/parts/query/common/queryContext';
 import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
 import {
 	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
-	DisconnectDatabaseAction, ConnectDatabaseAction
+	DisconnectDatabaseAction, ConnectDatabaseAction, ToggleConnectDatabaseAction
 } from 'sql/parts/query/execution/queryActions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
@@ -82,8 +82,7 @@ export class QueryEditor extends BaseEditor {
 
 	private _runQueryAction: RunQueryAction;
 	private _cancelQueryAction: CancelQueryAction;
-	private _connectDatabaseAction: ConnectDatabaseAction;
-	private _disconnectDatabaseAction: DisconnectDatabaseAction;
+	private _toggleConnectDatabaseAction: ToggleConnectDatabaseAction;
 	private _changeConnectionAction: ConnectDatabaseAction;
 	private _listDatabasesAction: ListDatabasesAction;
 
@@ -365,8 +364,7 @@ export class QueryEditor extends BaseEditor {
 		// Create Actions for the toolbar
 		this._runQueryAction = this._instantiationService.createInstance(RunQueryAction, this);
 		this._cancelQueryAction = this._instantiationService.createInstance(CancelQueryAction, this);
-		this._connectDatabaseAction = this._instantiationService.createInstance(ConnectDatabaseAction, this, false);
-		this._disconnectDatabaseAction = this._instantiationService.createInstance(DisconnectDatabaseAction, this);
+		this._toggleConnectDatabaseAction = this._instantiationService.createInstance(ToggleConnectDatabaseAction, this, false);
 		this._changeConnectionAction = this._instantiationService.createInstance(ConnectDatabaseAction, this, true);
 		this._listDatabasesAction = this._instantiationService.createInstance(ListDatabasesAction, this);
 
@@ -378,8 +376,11 @@ export class QueryEditor extends BaseEditor {
 			{ action: this._runQueryAction },
 			{ action: this._cancelQueryAction },
 			{ element: separator },
+			{ action: this._toggleConnectDatabaseAction },
+			/*
 			{ action: this._connectDatabaseAction },
 			{ action: this._disconnectDatabaseAction },
+			*/
 			{ action: this._changeConnectionAction },
 			{ action: this._listDatabasesAction },
 		];
@@ -721,8 +722,12 @@ export class QueryEditor extends BaseEditor {
 		if (queryInput) {
 			this._cancelQueryAction.enabled = queryInput.cancelQueryEnabled;
 			this._changeConnectionAction.enabled = queryInput.changeConnectionEnabled;
-			this._connectDatabaseAction.enabled = queryInput.connectEnabled;
-			this._disconnectDatabaseAction.enabled = queryInput.disconnectEnabled;
+
+			// For the toggle database action, it should always be enabled since it's a toggle.
+			// We use inverse of connect enabled state for now, should refactor queryInput in the future to
+			// define connected as a boolean instead of using the enabled flag
+			this._toggleConnectDatabaseAction.enabled = true;
+			this._toggleConnectDatabaseAction.connected = !queryInput.connectEnabled;
 			this._runQueryAction.enabled = queryInput.runQueryEnabled;
 			if (queryInput.listDatabasesConnected) {
 				this.listDatabasesActionItem.onConnected();
@@ -781,14 +786,6 @@ export class QueryEditor extends BaseEditor {
 
 	public get cancelQueryAction(): CancelQueryAction{
 		return this._cancelQueryAction;
-	}
-
-	public get connectDatabaseAction(): ConnectDatabaseAction{
-		return this._connectDatabaseAction;
-	}
-
-	public get disconnectDatabaseAction(): DisconnectDatabaseAction{
-		return this._disconnectDatabaseAction;
 	}
 
 	public get changeConnectionAction(): ConnectDatabaseAction {

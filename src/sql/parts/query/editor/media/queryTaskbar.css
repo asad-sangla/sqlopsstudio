@@ -54,8 +54,10 @@
 
  li .queryTaskbarIcon {
 	margin-top: 4px;
-	padding-left: 22px;
+	padding-left: 16px;
+	padding-right: 6px;
 	background-repeat: no-repeat;
+	background-position: 0% 25%;
  }
 
 .listDatabasesSelectBox {
@@ -85,7 +87,7 @@
 /* Taskbar Icons */
 
 .queryTaskbarIcon {
-	background-size: 16px;
+	background-size: 11px;
 }
 
 .runQuery {
@@ -96,22 +98,53 @@
 	background-image: url('stop.svg');
 }
 
+.vs-dark .disconnectDatabase {
+	background-image: url('disconnect_inverse.svg');
+}
+
+.hc-black .disconnectDatabase {
+	background-image: url('disconnect_inverse.svg');
+}
+
 .disconnectDatabase {
 	background-image: url('disconnect.svg');
+}
+
+.vs-dark .connectDatabase {
+	background-image: url('connect_inverse.svg');
+}
+
+.hc-black .connectDatabase {
+	background-image: url('connect_inverse.svg');
 }
 
 .connectDatabase {
 	background-image: url('connect.svg');
 }
 
+.vs-dark .changeConnectionDatabase {
+	background-image: url('change_connection_inverse.svg');
+}
+
+.hc-black .changeConnectionDatabase {
+	background-image: url('change_connection_inverse.svg');
+}
+
 .changeConnectionDatabase {
-	background-image: url('changeConnection.svg');
+	background-image: url('change_connection.svg');
 }
 
 .cancelRefreshData {
 	background-image: url('stop.svg');
 }
 
+.vs-dark .refreshData {
+	background-image: url('refresh_inverse.svg');
+}
+
+.hc-black .refreshData {
+	background-image: url('refresh_inverse.svg');
+}
 .refreshData {
 	background-image: url('refresh.svg');
 }

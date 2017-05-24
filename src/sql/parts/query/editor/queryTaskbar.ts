@@ -101,7 +101,7 @@ export class QueryTaskbar {
 
 		for (let item of contentToSet) {
 			if (item.action) {
-				this.actionBar.pushAction(item.action, { icon: true, label: false, keybinding: this.getKeybindingLabel(item.action) });
+				this.actionBar.pushAction(item.action, { icon: true, label: true, keybinding: this.getKeybindingLabel(item.action) });
 			} else if (item.element) {
 				this.actionBar.pushElement(item.element);
 			}

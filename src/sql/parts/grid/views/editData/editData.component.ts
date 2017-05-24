@@ -224,14 +224,14 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 				self.dataService.getEditRows(offset, count).subscribe(result => {
 					let rowIndex = offset;
 					let gridData: IGridDataRow[] = result.subset.map(row => {
-						this.idMapping[rowIndex] = row.id;
+						self.idMapping[rowIndex] = row.id;
 						rowIndex++;
 						return {values: row.cells, row: row.id};
 					});
 
 					// Append a NULL row to the end of gridData
-					let lastRow = gridData[gridData.length-1];
-					gridData.push({values: lastRow.values.map(cell => {return {displayValue: 'NULL', isNull: false};}), row: lastRow.row+1});
+					let newLastRow = gridData.length == 0 ? 0 : (gridData[gridData.length-1].row + 1);
+					gridData.push({values: self.dataSet.columnDefinitions.map(cell => {return {displayValue: 'NULL', isNull: false};}), row: newLastRow});
 					resolve(gridData);
 				});
 			});
