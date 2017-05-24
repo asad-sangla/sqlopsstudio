@@ -87,6 +87,7 @@ const vscodeResources = [
 	'out-build/sql/parts/tasks/**/*.html',
 	'out-build/sql/media/objectTypes/*.svg',
 	'out-build/sql/media/font-awesome-4.7.0/fonts/**',
+	'out-build/sql/workbench/errorMessageDialog/media/*.svg',
 	'!**/test/**'
 ];
 
