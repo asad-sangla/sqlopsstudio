@@ -9,7 +9,7 @@
   "activationEvents": [
     "*"
   ],
-  "main": "./client/out/pgSqlMain",
+  "main": "./client/out/pgsqlMain",
   "extensionDependencies": [
     "vscode.sql"
   ],
