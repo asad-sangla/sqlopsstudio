@@ -18,7 +18,7 @@ import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDi
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionOptionSpecialType } from 'sql/parts/connection/common/connectionManagement';
-import * as Constants from 'sql/parts/connection/common/constants'
+import * as Constants from 'sql/parts/connection/common/constants';
 import data = require('data');
 
 export class ConnectionWidget {
@@ -39,7 +39,7 @@ export class ConnectionWidget {
 	private _authTypeMap: { [providerName: string]: [AuthenticationType]} = {
 		[Constants.mssqlProviderName]: [new AuthenticationType('Integrated', false), new AuthenticationType('SqlLogin', true)],
 		[Constants.pgsqlProviderName]: [new AuthenticationType('SqlLogin', true)]
-	}
+	};
 	private _saveProfile: boolean;
 
 	constructor(options: data.ConnectionOption[], callbacks: IConnectionComponentCallbacks, providerName: string) {
@@ -53,7 +53,7 @@ export class ConnectionWidget {
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
 		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
-		this._providerName = providerName
+		this._providerName = providerName;
 	}
 
 	public createConnectionWidget(): HTMLElement {
@@ -82,7 +82,7 @@ export class ConnectionWidget {
 		this._databaseNameInputBox = ConnectionDialogHelper.appendInputBox(
 			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.databaseName].displayName, 'connection-label', 'connection-input'));
 		this._serverGroupInputBox = ConnectionDialogHelper.appendInputBox(
-			ConnectionDialogHelper.appendRow(this._tableContainer, 'Add to Server group', 'connection-label', 'connection-input'));
+			ConnectionDialogHelper.appendRow(this._tableContainer, 'Server Group', 'connection-label', 'connection-input'));
 		this._advancedButton = this.createAdvancedButton(this._tableContainer, 'Advanced...');
 	}
 

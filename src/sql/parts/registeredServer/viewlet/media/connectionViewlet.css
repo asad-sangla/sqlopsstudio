@@ -62,12 +62,14 @@ margin-bottom: 2px;
 /* viewlet icon*/
 .monaco-workbench > .activitybar .monaco-action-bar .action-label.connectionViewlet {
 	background: url('server.svg') center center no-repeat;
+	height: 32px;
+	width: 32px;
 }
 
 /* Global action */
 
 .monaco-workbench > .activitybar .monaco-action-bar .action-label.connectionViewlet {
-	background-size: 22px;
+	background-size: 16px;
 	background-repeat: no-repeat;
 	background-position: 50% !important;
 }
@@ -120,4 +122,9 @@ margin-bottom: 2px;
 
 .monaco-tree .monaco-tree-rows.show-twisties > .monaco-tree-row.has-children > .content.server-group:before {
 	background: url('collapsed-dark.svg') 50% 50% no-repeat;
+}
+
+/* Add connection button */
+.server-explorer-viewlet .button-section {
+	padding: 20px;
 }

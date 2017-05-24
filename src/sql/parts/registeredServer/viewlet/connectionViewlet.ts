@@ -6,29 +6,26 @@
 'use strict';
 
 import 'vs/css!./media/connectionViewlet';
-import { localize } from 'vs/nls';
 import { ThrottledDelayer } from 'vs/base/common/async';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Builder, Dimension } from 'vs/base/browser/builder';
 import { Viewlet, IViewletView } from 'vs/workbench/browser/viewlet';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
-import { append, $, addStandardDisposableListener, EventType, addClass, removeClass, toggleClass } from 'vs/base/browser/dom';
+import { addStandardDisposableListener, toggleClass } from 'vs/base/browser/dom';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { isPromiseCanceledError } from 'vs/base/common/errors';
 import Severity from 'vs/base/common/severity';
-import { Button } from 'vs/base/browser/ui/button/button';
 import { IConnectionsViewlet, IConnectionManagementService, VIEWLET_ID } from 'sql/parts/connection/common/connectionManagement';
 import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeView';
-import { SplitView, Orientation } from 'vs/base/browser/ui/splitview/splitview';
-import { ConnectionProfileGroup } from "sql/parts/connection/common/connectionProfileGroup";
+import { SplitView } from 'vs/base/browser/ui/splitview/splitview';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { AddServerAction, ClearSearchAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import { ClearSearchAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 
 export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
@@ -36,7 +33,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	private root: HTMLElement;
 	private searchBox: InputBox;
 	private toDispose: IDisposable[] = [];
-	private connectionButton: Button;
 	private views: IViewletView[];
 	private serverTreeView: ServerTreeView;
 	private viewletContainer: Builder;
@@ -56,18 +52,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.searchDelayer = new ThrottledDelayer(500);
 		this.views = [];
 
-		this.connectionManagementService.onAddConnectionProfile(() => {
-			if (this.connectionButton) {
-				this.connectionButton.getElement().style.display = 'none';
-			}
-		});
-
 		this.clearSearchAction = this._instantiationService.createInstance(ClearSearchAction, ClearSearchAction.ID, ClearSearchAction.LABEL, this);
-	}
-
-
-	private newConnection(): void {
-		this.connectionManagementService.showConnectionDialog();
 	}
 
 	private onError(err: any): void {
@@ -83,13 +68,6 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		this.serverTreeView = this._instantiationService.createInstance(ServerTreeView, this.getActionRunner(), {});
 		parent.div({ class: 'server-explorer-viewlet' }, (viewletContainer) => {
 			this.viewletContainer = viewletContainer;
-			if (!this.connectionManagementService.hasRegisteredServers()) {
-				this.connectionButton = new Button(this.viewletContainer);
-				this.connectionButton.label = 'Add Server';
-				this.connectionButton.addListener2('click', () => {
-					this.newConnection();
-				});
-			}
 			viewletContainer.div({ class: 'search-box' }, (searchBoxContainer) => {
 				this.searchBoxContainer = searchBoxContainer;
 				this.searchBox = new InputBox(

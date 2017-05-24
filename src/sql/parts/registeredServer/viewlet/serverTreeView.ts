@@ -23,6 +23,7 @@ import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreati
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { Button } from 'vs/base/browser/ui/button/button';
 const $ = builder.$;
 
 /**
@@ -34,6 +35,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	private addServerAction: IAction;
 	private addServerGroupAction: IAction;
 	private activeConnectionsFilterAction: ActiveConnectionsFilterAction;
+	private _buttonSection: builder.Builder;
 
 	constructor(actionRunner: IActionRunner, settings: any,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
@@ -75,6 +77,15 @@ export class ServerTreeView extends CollapsibleViewletView {
 		$('span').text('No connections found.').appendTo(this.messages);
 		this.messages.hide();
 
+		if (!this._connectionManagementService.hasRegisteredServers()) {
+			this._buttonSection = $('div.button-section').appendTo(container);
+			var connectButton = new Button(this._buttonSection);
+			connectButton.label = 'Add Connection';
+			connectButton.addListener2('click', () => {
+				this._connectionManagementService.showConnectionDialog();
+			});
+		}
+
 		this.treeContainer = super.renderViewTree(container);
 		dom.addClass(this.treeContainer, 'servers-view');
 
@@ -83,6 +94,9 @@ export class ServerTreeView extends CollapsibleViewletView {
 		const self = this;
 		// Refresh Tree when these events are emitted
 		this.toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {
+			if (this._buttonSection) {
+				this._buttonSection.getHTMLElement().style.display = 'none';
+			}
 			self.refreshTree();
 		})
 		);

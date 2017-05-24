@@ -103,7 +103,7 @@ export class ServerGroupDialog {
 
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
+			if (event.equals(KeyCode.Enter)) {
 				this.addGroup();
 			} else if (event.equals(KeyCode.Escape)) {
 				this.cancel();
