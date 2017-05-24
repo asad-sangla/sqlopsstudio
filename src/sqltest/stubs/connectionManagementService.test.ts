@@ -74,6 +74,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return [];
 	}
 
+	public clearRecentConnectionsList(): void {
+		return;
+	}
+
 	getUnsavedConnections(): ConnectionProfile[] {
 		return [];
 	}

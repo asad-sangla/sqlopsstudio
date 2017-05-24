@@ -11,11 +11,14 @@ import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { Registry } from 'vs/platform/platform';
 import { DashboardEditor } from 'sql/parts/dashboard/dashboardEditor';
 import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
+import { ClearRecentConnectionsAction } from 'sql/parts/connection/common/connectionActions';
 
 import { ExtensionGalleryService } from 'vs/platform/extensionManagement/node/extensionGalleryService';
 import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { ExtensionTipsService } from 'vs/workbench/parts/extensions/electron-browser/extensionTipsService';
 import { ExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/node/extensionsWorkbenchService';
+import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
+import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 
 // Singletons
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService);
@@ -32,3 +35,15 @@ const dashboardEditorDescriptor = new EditorDescriptor(
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 	.registerEditor(dashboardEditorDescriptor, [new SyncDescriptor(DashboardInput)]);
+
+let actionRegistry = <IWorkbenchActionRegistry>Registry.as(Extensions.WorkbenchActions);
+
+// Connection Actions
+actionRegistry.registerWorkbenchAction(
+	new SyncActionDescriptor(
+		ClearRecentConnectionsAction,
+		ClearRecentConnectionsAction.ID,
+		ClearRecentConnectionsAction.LABEL
+	),
+	ClearRecentConnectionsAction.LABEL
+);

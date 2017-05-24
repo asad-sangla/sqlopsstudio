@@ -89,6 +89,8 @@ export interface IConnectionManagementService {
 
 	getRecentConnections(): ConnectionProfile[];
 
+	clearRecentConnectionsList(): void;
+
 	getActiveConnections(): ConnectionProfile[];
 
 	saveProfileGroup(profile: IConnectionProfileGroup): Promise<string>;

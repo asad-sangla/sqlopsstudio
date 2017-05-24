@@ -478,6 +478,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.getRecentlyUsedConnections();
 	}
 
+
+	public clearRecentConnectionsList(): void {
+		return this._connectionStore.clearRecentlyUsed();
+	}
+
 	public getActiveConnections(): ConnectionProfile[] {
 		return this._connectionStore.getActiveConnections();
 	}
