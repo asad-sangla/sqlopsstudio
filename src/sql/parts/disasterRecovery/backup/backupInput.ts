@@ -29,7 +29,7 @@ export class BackupInput extends EditorInput {
 	}
 
 	public getName(): string {
-		return this._connection.connectionProfile.serverName + ':' + this._connection.connectionProfile.databaseName + ' - backup';
+		return 'Backup ' + this._connection.connectionProfile.serverName + ':' + this._connection.connectionProfile.databaseName;
 	}
 
 	public getUri(): string {

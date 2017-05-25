@@ -6,9 +6,9 @@
 import { ApplicationRef, ComponentFactoryResolver, ModuleWithProviders, NgModule,
 	Inject, forwardRef } from '@angular/core';
 import { APP_BASE_HREF, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { ButtonModule, DataTableModule, DropdownModule, SharedModule, MessagesModule,
-	DataListModule, BreadcrumbModule } from 'primeng/primeng';
+import { ButtonModule, DataTableModule, SharedModule, MessagesModule } from 'primeng/primeng';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { BackupComponent, BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.component';
 
@@ -19,15 +19,13 @@ import { BackupComponent, BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/bac
 	],
 	entryComponents: [BackupComponent],
 	imports: [
+		FormsModule,
 		CommonModule,
 		BrowserModule,
 		ButtonModule,
 		DataTableModule,
 		SharedModule,
-		DropdownModule,
-		MessagesModule,
-		DataListModule,
-		BreadcrumbModule
+		MessagesModule
 	],
 	providers: [{ provide: APP_BASE_HREF, useValue: '/' }]
 })

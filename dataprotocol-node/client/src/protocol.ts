@@ -29,9 +29,9 @@ import {
 	DbCellValue, EditCell, EditRow, CreateSessionResponse, SessionCreatedParameters, ExpandParams, ExpandResponse, CloseSessionParams, CloseSessionResponse,
 	BackupInfo, BackupParams, BackupResponse,
 	LoginInfo, CreateLoginParams, CreateLoginResponse,
-	DatabaseInfo, CreateDatabaseParams, CreateDatabaseResponse,
+	DatabaseInfo, BackupConfigInfo, CreateDatabaseParams, CreateDatabaseResponse,
 	TaskInfo, ListTasksParams, ListTasksResponse,
-	DefaultDatabaseInfoParams, DefaultDatabaseInfoResponse
+	DefaultDatabaseInfoParams, DefaultDatabaseInfoResponse, BackupConfigInfoResponse
 } from 'dataprotocol-languageserver-types';
 
 
@@ -1415,4 +1415,8 @@ export namespace CreateLoginRequest {
 
 export namespace BackupRequest {
 	export const type: RequestType<BackupParams, BackupResponse, void> = { get method(): string { return 'disasterrecovery/backup'; } };
+}
+
+export namespace BackupConfigInfoRequest {
+	export const type: RequestType<DefaultDatabaseInfoParams, BackupConfigInfoResponse, void> = { get method(): string { return 'disasterrecovery/backupconfiginfo'; } };
 }

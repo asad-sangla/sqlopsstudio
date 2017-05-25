@@ -298,6 +298,17 @@ export interface DatabaseInfo {
 	options: {};
 }
 
+export interface BackupConfigInfo {
+	/**
+	 * default database options
+	 */
+	databaseInfo: {};
+
+	recoveryModel: string;
+	latestBackups: {};
+	defaultBackupFolder: string;
+}
+
 export interface LoginInfo {
 	name: string;
 }
@@ -321,6 +332,10 @@ export interface DefaultDatabaseInfoResponse {
 	defaultDatabaseInfo: DatabaseInfo;
 }
 
+export interface BackupConfigInfoResponse {
+	backupConfigInfo: BackupConfigInfo;
+}
+
 export interface CreateLoginParams {
 	ownerUri: string;
 
@@ -335,7 +350,26 @@ export interface CreateLoginResponse {
 // Disaster Recovery types
 
 export interface BackupInfo {
-	backupType: string;
+	ownerUri: string;
+
+	databaseName: string;
+
+	backupType: number;
+
+	backupComponent: number;
+
+	backupDeviceType: number;
+
+	selectedFiles: string;
+
+	backupsetName: string;
+
+	selectedFileGroup: {[path: string]: string};
+
+	// List of {key: backup path, value: device type}
+	backupPathDevices: {[path: string]: number};
+
+	backupPathList: [string];
 }
 
 export interface BackupParams {

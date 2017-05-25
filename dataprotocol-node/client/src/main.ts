@@ -52,10 +52,11 @@ import {
 	ISelectionData, QueryExecuteBatchNotificationParams,
 	MetadataQueryParams, MetadataQueryResult,
 	ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation,
-	DatabaseInfo, CreateDatabaseResponse, CreateDatabaseParams,
+	DatabaseInfo, BackupConfigInfo, CreateDatabaseResponse, CreateDatabaseParams,
 	LoginInfo, CreateLoginResponse, CreateLoginParams,
 	BackupInfo, BackupResponse, BackupParams,
-	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams
+	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams,
+	BackupConfigInfoResponse
 } from 'dataprotocol-languageserver-types';
 
 
@@ -108,7 +109,7 @@ import {
 	EditSubsetRequest, EditSubsetParams, EditSubsetResult,
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
 	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
-	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest
+	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, BackupConfigInfoRequest
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -1770,6 +1771,18 @@ export class LanguageClient {
 					(error) => {
 						self.logFailedRequest(BackupRequest.type, error);
 						return Promise.resolve([]);
+					}
+				);
+			},
+			getBackupConfigInfo(connectionUri: string): Thenable<BackupConfigInfo> {
+				let params: DefaultDatabaseInfoParams = { ownerUri: connectionUri };
+				return self.doSendRequest(connection, BackupConfigInfoRequest.type, params, undefined).then(
+					(result) => {
+						return result.backupConfigInfo;
+					},
+					(error) => {
+						self.logFailedRequest(BackupConfigInfoRequest.type, error);
+						return Promise.resolve(undefined);
 					}
 				);
 			}

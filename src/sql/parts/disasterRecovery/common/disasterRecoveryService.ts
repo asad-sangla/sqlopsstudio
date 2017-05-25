@@ -20,6 +20,8 @@ export const IDisasterRecoveryService = createDecorator<IDisasterRecoveryService
 export interface IDisasterRecoveryService {
 	_serviceBrand: any;
 
+    getBackupConfigInfo(connectionUri: string): Thenable<data.BackupConfigInfo>;
+
 	/**
 	 * Backup a data source using the provided connection
 	 */
@@ -45,6 +47,17 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService,
 				@IInstantiationService private _instantiationService: IInstantiationService,
 				@IWorkbenchEditorService private _editorService: IWorkbenchEditorService) {
+	}
+
+	public getBackupConfigInfo(connectionUri: string): Thenable<data.BackupConfigInfo> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			let provider = this._providers[providerId];
+			if (provider) {
+				return provider.getBackupConfigInfo(connectionUri);
+			}
+		}
+		return Promise.resolve(undefined);
 	}
 
 	public showBackupWizard(uri: string, connection: ConnectionManagementInfo): Promise<any> {

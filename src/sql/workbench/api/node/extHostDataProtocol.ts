@@ -347,4 +347,14 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 				: Promise.resolve(undefined);
 		});
 	}
+
+	/**
+	* Create a new database on the provided connection
+	*/
+	public $getBackupConfigInfo(handle: number, connectionUri: string): Thenable<data.BackupConfigInfo> {
+		return this._runWithProvider(handle, provider => {
+			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.getBackupConfigInfo(connectionUri)
+				: Promise.resolve(undefined);
+		});
+	}
 }

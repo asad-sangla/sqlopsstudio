@@ -16,7 +16,6 @@ import { CreateLoginInput } from 'sql/parts/admin/security/createLoginInput';
 import { BackupInput } from 'sql/parts/disasterRecovery/backup/backupInput';
 import { BackupEditor } from 'sql/parts/disasterRecovery/backup/backupEditor';
 
-
 // Task Dialog registration
 const taskDialogEditorDescriptor = new EditorDescriptor(
 	TaskDialogEditor.ID,
@@ -40,7 +39,6 @@ const backupEditorDescriptor = new EditorDescriptor(
  	'sql/parts/disasterRecovery/backup/backupEditor',
  	'BackupEditor'
  );
-
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 	.registerEditor(createLoginEditorDescriptor, [new SyncDescriptor(CreateLoginInput)]);

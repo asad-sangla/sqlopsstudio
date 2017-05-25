@@ -787,10 +787,34 @@ declare module 'data' {
 
 	// Disaster Recovery interfaces  -----------------------------------------------------------------------
 
+	export interface BackupConfigInfo {
+		databaseInfo: {};
+		recoveryModel: string;
+		latestBackups: {};
+		defaultBackupFolder: string;
+	}
+
 	export interface BackupInfo {
 		ownerUri: string;
 
-		backupType: string;
+		databaseName: string;
+
+		backupType: number;
+
+        backupComponent: number;
+
+		backupDeviceType: number;
+
+		selectedFiles: string;
+
+		backupsetName: string;
+
+		selectedFileGroup: {[path: string]: string};
+
+		// List of {key: backup path, value: device type}
+		backupPathDevices: {[path: string]: number};
+
+		backupPathList: [string];
 	}
 
 	export interface BackupResponse {
@@ -800,6 +824,7 @@ declare module 'data' {
 
 	export interface DisasterRecoveryProvider {
 		backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse>;
+		getBackupConfigInfo(connectionUri: string): Thenable<BackupConfigInfo>;
 	}
 
 

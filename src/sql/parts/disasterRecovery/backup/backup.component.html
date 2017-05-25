@@ -5,102 +5,97 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<div id="backup" style="display: flex; flex-flow: row; overflow: auto; ">
-	<div style="order: 1; margin: 5px; min-width: 125px">
-		<div class="backup-title" style="font-size: 15px; float: left;">Backup Database - <span style="font-style: italic">{{connection?.connectionProfile?.serverName}}/{{connection?.connectionProfile?.databaseName}}</span></div> <br />
+<form #myForm="ngForm" (ngSubmit)="onSubmit(f)">
+  <div class="form-group">
 
-		<div class = "backup-type" style="border-top:1px solid #e5e5e5; padding-right: 15px; padding-left: 15px; padding-top:15px; overflow-y:hidden">
-			<table class="backup-type-content" style="width: 30%; table-layout: fixed">
-				<tr>
-					<td class="backup-type-label" style="width: 80px; padding-bottom: 5px;">
-						<div style="display:block">Backup type</div>
-					</td>
-					<td class="backup-type select-type" style="padding-right: 8px; width:100px; padding-bottom: 5px;">
-						<select class="select-box" title="Full" style="background: #3C3C3C; color: #BBB">
-							<option value="Full">Full</option>
-							<option value="Differential">Differential</option>
-							<option value="TransactionLog">Transaction Log</option>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-
-		<div class = "backup-component" style="padding-right: 15px; padding-left: 15px; padding-top:15px; overflow-y:hidden">
-			<table class="backup-component-content" style="width: 30%; table-layout: fixed">
-				<tr>
-					<td class="backup-component-label" style="width: 80px; padding-bottom: 5px;">
-						<div style="display:block">Backup component</div>
-					</td>
-					<td class="backup-component select-type" style="padding-right: 8px; width:100px; padding-bottom: 5px;">
-						<select class="select-box" title="Database" style="background: #3C3C3C; color: #BBB">
-							<option value="Database">Database</option>
-							<option value="Files and Filegroups">Files and Filegroups</option>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-
+	<div class = "backup-database">
+		<table class="backup-database-content">
+			<tr>
+				<td class="backup-database-label">
+					<div style="display:block">Database</div>
+				</td>
+				<td class="backup-database-value">
+					<div style="display:block; width:100%">{{connection?.connectionProfile?.databaseName}}</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="recovery-model-label">
+					<div style="display:block">Recovery model</div>
+				</td>
+				<td class="recovery-model-value">
+					<div style="display:block">{{recoveryModel}}</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="backup-component-label">
+					<div style="display:block">Backup component</div>
+				</td>
+				<td class="backup-component-value">
+					<div style="display:block">Database</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="backup-type-label">
+					<div style="display:block">Backup type</div>
+				</td>
+				<td class="backup-type select-type">
+					<select name="backup-type-list" id="backup-type-list" #backupTypeContainer style="width:100%; background-color:#3C3C3C"></select>
+				</td>
+			</tr>
+		</table>
 	</div>
-</div>
 
-
-<div id="backup-destination" style="display: flex; flex-flow: row; overflow: auto; width: 100%">
-	<div style="order: 1; margin: 5px; min-width: 125px">
-
-		<div class = "backup-device" style="padding-right: 15px; padding-left: 15px; overflow-y:hidden">
-			<table class="backup-device-content" style="width: 30%; table-layout: fixed">
-				<tr>
-					<td class="backup-device-label" style="width: 80px; padding-bottom: 5px;">
-						<div style="display:block">Backup device</div>
-					</td>
-					<td class="backup-device select-type" style="padding-right: 8px; width:100px; padding-bottom: 5px;">
-						<select class="select-box" title="Disk" style="background: #3C3C3C; color: #BBB">
-							<option value="Disk">Disk</option>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-
-		<div class = "backup-path" style="padding-right: 15px; padding-left: 15px; overflow-y:hidden">
-			<table class="backup-path-content" style="width: 30%; table-layout: fixed">
-				<tr>
-					<td class="backup-path-label" style="width: 80px; padding-bottom: 5px;">
-						<div style="display:block">Backup path</div>
-					</td>
-					<td class="backup-path input" style="padding-right: 8px; width:100px; padding-bottom: 5px;">
-						<input type="file" name="backupfile" />
-					</td>
-				</tr>
-			</table>
-		</div>
-
-
+<!-- TODO: Show component selection when we have filegroup browser
+	<div class = "backup-component-radio">
+		<p>Backup Component</p>
+		<input type="radio" name="selectedBackupComponent" class="form-check-input" (ngModelChange)="onBackupComponentChanged($event)" [disabled]="disableDatabaseComponent" [ngModel]="selectedBackupComponent" value="Database">Database <br />
+		<input type="radio" name="selectedBackupComponent" class="form-check-input" (ngModelChange)="onBackupComponentChanged($event)" [disabled]="disableFileComponent" [ngModel]="selectedBackupComponent" value="Files and Filegroups">Files and Filegroups
+		<input type="text" name="selectedFilesText" [ngModel]="selectedFilesText" [disabled]="disableFileComponent">
+		<button class="Browse" [disabled]="disableFileComponent">Browse</button>
 	</div>
-</div>
+	-->
 
-<div id="backup-buttons" style="display: flex; flex-flow: row; height:150px; overflow: auto; width: 100%; text-align: right;">
-	<div style="order: 3; margin: 5px; min-width: 125px">
-		<table class="footer-buttons" align="right">
+	<div class = "backup-device" style="display:block">
+		Backup Device
+	</div>
+
+	<div class = "backup-path">
+		<select name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" style="width:50%; background-color:#3C3C3C"></select>
+	</div>
+
+	<div class = "backup-path-input-text">
+		<input name="backup-path-input" class="task-text-input" type="text" [(ngModel)]="backupPathInput" />
+		<button class="addButton" [disabled]="disableAdd" (click)="onAddClick()">Add</button>
+		<button class="removeButton" [disabled]="disableRemove" (click)="onRemoveClick()">Remove</button>
+	</div>
+
+	<div class="task-button-bar">
+		<button type="submit" class="okButton" [disabled]="disableOk" (click)="onOk()">OK</button>
+	</div>
+
+<!-- TODO: add script & cancel buttons
+	<div id="backup-buttons">
+		<table class="footer-buttons">
 			<tr>
 				<td>
-					<div class="footer-button">
-						<a class="monaco-button monaco-text-button" role="button" aria-disabled="false" tabindex="0">Script</a>
+					<div class="footer-button" >
+						<button class="scriptButton" [disabled]="disableOk" >Script</button>
 					</div>
 				</td>
 				<td>
 					<div class="footer-button">
-						<a class="monaco-button monaco-text-button" role="button" aria-disabled="false" tabindex="0">Execute</a>
+						<button type="submit" class="okButton" [disabled]="disableOk" (click)="onOk()" style="padding-right:8px; width: 100px; background: #0E639C; box-sizing: border-box; display: inline-block; padding: 4px; text-align: center; color: white; cursor: pointer;">OK</button>
 					</div>
 				</td>
 				<td>
 					<div class="footer-button">
-						<a class="monaco-button monaco-text-button" role="button" aria-disabled="false" tabindex="0">Cancel</a>
+						<button class="cancelButton">Cancel</button>
 					</div>
 				</td>
 			</tr>
 		</table>
 	</div>
-</div>
+-->
+  </div>
+</form>
+
