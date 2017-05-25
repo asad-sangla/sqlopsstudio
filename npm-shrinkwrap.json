@@ -293,7 +293,7 @@
       "resolved": "https://registry.npmjs.org/gulp-uglify/-/gulp-uglify-2.0.0.tgz",
       "dependencies": {
         "uglify-js": {
-          "resolved": "git+https://github.com/mishoo/UglifyJS2.git#3c2b3aeddb58848b076aacc05acc026b258e0110"
+          "resolved": "https://github.com/mishoo/UglifyJS2#harmony-v2.8.22"
         },
         "uglify-save-license": {
           "version": "0.4.1",
