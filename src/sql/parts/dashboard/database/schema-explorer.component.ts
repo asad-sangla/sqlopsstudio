@@ -5,7 +5,7 @@
 
 import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
-import { ChangeDetectorRef, OnInit } from '@angular/core';
+import { ChangeDetectorRef, OnInit, Component, Input, Inject, forwardRef } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/dashboard/common/dashboard';
 import {
 	MetadataType, IConnectableInput, IConnectionManagementService,
@@ -18,8 +18,6 @@ import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 import data = require('data');
-
-declare let AngularCore;
 
 export class ObjectMetadataWrapper {
 	public metadata: data.ObjectMetadata;
@@ -52,20 +50,20 @@ export class ObjectMetadataWrapper {
 /**
  * Schema Explorer component class
  */
-@AngularCore.Component({
+@Component({
 	selector: 'schema-explorer',
 	templateUrl: require.toUrl('sql/parts/dashboard/database/schema-explorer.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 
-	@AngularCore.Input() public loading: boolean;
-	@AngularCore.Input() public connection: ConnectionManagementInfo;
-	@AngularCore.Input() public metadataService: IMetadataService;
-	@AngularCore.Input() public scriptingService: IScriptingService;
-	@AngularCore.Input() public queryEditorService: IQueryEditorService;
-	@AngularCore.Input() public connectionService: IConnectionManagementService;
-	@AngularCore.Input() public ownerUri: string;
+	@Input() public loading: boolean;
+	@Input() public connection: ConnectionManagementInfo;
+	@Input() public metadataService: IMetadataService;
+	@Input() public scriptingService: IScriptingService;
+	@Input() public queryEditorService: IQueryEditorService;
+	@Input() public connectionService: IConnectionManagementService;
+	@Input() public ownerUri: string;
 
 
 	public objectMetadata: ObjectMetadataWrapper[];
@@ -75,7 +73,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 	public databaseIcon: string = require.toUrl('sql/parts/dashboard/media/database.svg');
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef
+		@Inject(forwardRef(() => ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef
 	) { }
 
 	public ngOnInit(): void {

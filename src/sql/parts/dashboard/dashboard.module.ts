@@ -3,8 +3,12 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { ApplicationRef, ComponentFactoryResolver, ModuleWithProviders } from '@angular/core';
-import { Routes } from '@angular/router';
+import { Inject, NgModule, forwardRef, ApplicationRef, ComponentFactoryResolver, ModuleWithProviders } from '@angular/core';
+import { CommonModule, APP_BASE_HREF } from '@angular/common';
+import { BrowserModule } from '@angular/platform-browser';
+import { RouterModule, Routes } from '@angular/router';
+import { ButtonModule, DataTableModule, SharedModule, DropdownModule, MessagesModule, DataListModule,
+	BreadcrumbModule } from 'primeng/primeng';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 
 import { DashboardComponent, DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dashboard.component';
@@ -16,12 +20,6 @@ import { ServerDashboardComponent } from 'sql/parts/dashboard/server/server-dash
 import { ObjectDashboardComponent } from 'sql/parts/dashboard/object/object-dashboard.component';
 import { ServerPropertiesWindowComponent } from 'sql/parts/dashboard/server/server-properties-window.component';
 import { DatabasePropertiesWindowComponent } from 'sql/parts/dashboard/database/database-properties-window.component';
-
-declare let AngularPlatformBrowser;
-declare let AngularCommon;
-declare let AngularCore;
-declare let AngularRouter;
-declare let PrimeNg;
 
 // Setup routes for various child components
 const appRoutes: Routes = [
@@ -37,7 +35,7 @@ const appRoutes: Routes = [
 ];
 
 // Connection Dashboard main angular module
-@AngularCore.NgModule({
+@NgModule({
 	declarations: [
 		DashboardComponent,
 		SchemaExplorerComponent,
@@ -51,24 +49,24 @@ const appRoutes: Routes = [
 	],
 	entryComponents: [DashboardComponent],
 	imports: [
-		AngularCommon.CommonModule,
-		AngularPlatformBrowser.BrowserModule,
-		PrimeNg.ButtonModule,
-		PrimeNg.DataTableModule,
-		PrimeNg.SharedModule,
-		PrimeNg.DropdownModule,
-		PrimeNg.MessagesModule,
-		PrimeNg.DataListModule,
-		PrimeNg.BreadcrumbModule,
-		<ModuleWithProviders>AngularRouter.RouterModule.forRoot(appRoutes)
+		CommonModule,
+		BrowserModule,
+		ButtonModule,
+		DataTableModule,
+		SharedModule,
+		DropdownModule,
+		MessagesModule,
+		DataListModule,
+		BreadcrumbModule,
+		<ModuleWithProviders>RouterModule.forRoot(appRoutes)
 	],
-	providers: [{ provide: AngularCommon.APP_BASE_HREF, useValue: '/' }]
+	providers: [{ provide: APP_BASE_HREF, useValue: '/' }]
 })
 export class DashboardModule {
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
-		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(forwardRef(() => ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
 	}
 

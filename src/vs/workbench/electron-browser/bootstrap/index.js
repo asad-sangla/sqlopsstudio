@@ -24,32 +24,17 @@ const ipc = electron.ipcRenderer;
 require('slickgrid/slick.core');
 const Slick = window.Slick;
 require('slickgrid/slick.grid');
-require('slickgrid/slick.editors');
+require('slickgrid/slick.editors');;
+require('reflect-metadata');
+require('zone.js');
+require('bootstrap');
 
-// Set other globals
 const _ = require('underscore')._;
 const rangy = require('rangy');
 const rangyCore = require('rangy/lib/rangy-core');
 const rangyTextRange = require('rangy/lib/rangy-textrange');
 const prettyData = require('pretty-data');
-require('reflect-metadata');
-require('zone.js');
-require('bootstrap');
-
-const PrimeNg = require('primeng/primeng');
-
-// Set temporary globals for angular relative path fix
-// TODO make it so these don't need to be globals
-const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
-const AngularCommon = require('@angular/common');
-const AngularCore = require('@angular/core');
-const AngularForms = require('@angular/forms');
-const AngularPlatformBrowser = require('@angular/platform-browser');
-const AngularRouter = require('@angular/router');
-const Rx = require('rxjs/Rx');
 const Figures = require('figures');
-
-AngularCore.enableProdMode();
 
 process.lazyEnv = new Promise(function (resolve) {
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
@@ -202,7 +187,16 @@ function main() {
 			recordStats: !!configuration.performance,
 			nodeCachedDataDir: configuration.nodeCachedDataDir,
 			onNodeCachedDataError: function (err) { nodeCachedDataErrors.push(err) },
-			nodeModules: [/*BUILD->INSERT_NODE_MODULES*/]
+			nodeModules: [
+				'@angular/common',
+				'@angular/core',
+				'@angular/forms',
+				'@angular/platform-browser',
+				'@angular/platform-browser-dynamic',
+				'@angular/router',
+				'primeng/primeng',
+				'rxjs/Rx'
+			]
 		});
 
 		if (nlsConfig.pseudo) {

@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ApplicationRef, ComponentFactoryResolver } from '@angular/core';
+import { ApplicationRef, ComponentFactoryResolver, forwardRef, NgModule,
+	Inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { BrowserModule } from '@angular/platform-browser';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 
 import { QueryComponent, QUERY_SELECTOR } from 'sql/parts/grid/views/query/query.component';
@@ -11,15 +14,11 @@ import { SlickGrid } from 'angular2-slickgrid';
 import { MouseDownDirective } from 'sql/parts/grid/directives/mousedown.directive';
 import { ScrollDirective } from 'sql/parts/grid/directives/scroll.directive';
 
-declare let AngularPlatformBrowser;
-declare let AngularCore;
-declare let AngularCommon;
-
-@AngularCore.NgModule({
+@NgModule({
 
 	imports: [
-		AngularCommon.CommonModule,
-		AngularPlatformBrowser.BrowserModule
+		CommonModule,
+		BrowserModule
 	],
 
 	declarations: [
@@ -36,8 +35,8 @@ declare let AngularCommon;
 export class QueryModule {
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
-		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(forwardRef(() => ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
 	}
 

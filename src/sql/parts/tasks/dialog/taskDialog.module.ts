@@ -3,19 +3,17 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Routes } from '@angular/router';
-import { ApplicationRef, ComponentFactoryResolver, ModuleWithProviders } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { ApplicationRef, ComponentFactoryResolver, ModuleWithProviders, NgModule,
+	Inject, forwardRef } from '@angular/core';
+import { APP_BASE_HREF, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { BrowserModule } from '@angular/platform-browser';
+import { DataTableModule } from 'primeng/primeng';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 
 import { TaskDialogComponent, TASKDIALOG_SELECTOR } from 'sql/parts/tasks/dialog/taskDialog.component';
 import { CreateDatabaseComponent } from 'sql/parts/admin/database/create/createDatabase.component';
-
-declare let AngularPlatformBrowser;
-declare let AngularCommon;
-declare let AngularCore;
-declare let AngularForms;
-declare let AngularRouter;
-declare let PrimeNg;
 
 // Setup routes for various child components
 const appRoutes: Routes = [
@@ -29,26 +27,26 @@ const appRoutes: Routes = [
 ];
 
 
-@AngularCore.NgModule({
+@NgModule({
 	declarations: [
 		TaskDialogComponent,
 		CreateDatabaseComponent
 	],
 	entryComponents: [TaskDialogComponent],
 	imports: [
-		AngularForms.FormsModule,
-		AngularCommon.CommonModule,
-		AngularPlatformBrowser.BrowserModule,
-		PrimeNg.DataTableModule,
-		<ModuleWithProviders>AngularRouter.RouterModule.forRoot(appRoutes)
+		FormsModule,
+		CommonModule,
+		BrowserModule,
+		DataTableModule,
+		<ModuleWithProviders>RouterModule.forRoot(appRoutes)
 	],
-	providers: [{ provide: AngularCommon.APP_BASE_HREF, useValue: '/' }]
+	providers: [{ provide: APP_BASE_HREF, useValue: '/' }]
 })
 export class TaskDialogModule {
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
-		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(forwardRef(() => ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
 	}
 

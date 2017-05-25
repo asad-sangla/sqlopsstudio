@@ -14,7 +14,8 @@ import 'vs/css!sql/parts/grid/media/slickGrid';
 import * as Constants from 'sql/parts/query/common/constants';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 
-import { ElementRef, QueryList, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
+import { ElementRef, QueryList, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject,
+	ViewChildren, forwardRef, EventEmitter } from '@angular/core';
 import { IGridDataRow, SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
 import { IGridIcon, IMessage, IRange, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
@@ -23,12 +24,11 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/
 import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
-declare let AngularCore;
 declare let rangy;
 
 export const QUERY_SELECTOR: string = 'query-component';
 
-@AngularCore.Component({
+@Component({
 	selector: QUERY_SELECTOR,
 	host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
 	templateUrl: require.toUrl('sql/parts/grid/views/query/query.template.html')
@@ -119,12 +119,12 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	private totalElapsedTimeSpan: number;
 	private complete = false;
 
-	@AngularCore.ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
+	@ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) el: ElementRef,
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) cd: ChangeDetectorRef,
-		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) bootstrapService: IBootstrapService
+		@Inject(forwardRef(() => ElementRef)) el: ElementRef,
+		@Inject(forwardRef(() => ChangeDetectorRef)) cd: ChangeDetectorRef,
+		@Inject(BOOTSTRAP_SERVICE_ID) bootstrapService: IBootstrapService
 	) {
 		super(el, cd, bootstrapService);
 		this._el.nativeElement.className = 'slickgridContainer';
@@ -269,7 +269,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		let undefinedDataSet = JSON.parse(JSON.stringify(dataSet));
 		undefinedDataSet.columnDefinitions = dataSet.columnDefinitions;
 		undefinedDataSet.dataRows = undefined;
-		undefinedDataSet.resized = new AngularCore.EventEmitter();
+		undefinedDataSet.resized = new EventEmitter();
 		self.placeHolderDataSets.push(undefinedDataSet);
 		self.onScroll(0);
 	}

@@ -22,16 +22,14 @@ import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disa
 import { DatabaseDashboardComponent } from './database/database-dashboard.component';
 import { ServerDashboardComponent } from './server/server-dashboard.component';
 import { ObjectDashboardComponent } from './object/object-dashboard.component';
-import { ElementRef } from '@angular/core';
+import { Component, ElementRef, Inject, forwardRef } from '@angular/core';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
-declare let AngularCore;
-
 export const DASHBOARD_SELECTOR: string = 'dashboard-component';
 
-@AngularCore.Component({
+@Component({
 	selector: DASHBOARD_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/dashboard/dashboard.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
@@ -65,8 +63,8 @@ export class DashboardComponent {
 	private disasterRecoveryService: IDisasterRecoveryService;
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
-		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
 		let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 

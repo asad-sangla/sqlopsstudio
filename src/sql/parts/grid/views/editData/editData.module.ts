@@ -4,21 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 
-import { ApplicationRef, ComponentFactoryResolver } from '@angular/core';
+import { ApplicationRef, ComponentFactoryResolver, NgModule, Inject, forwardRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { BrowserModule } from '@angular/platform-browser';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 
 import { EditDataComponent, EDITDATA_SELECTOR } from 'sql/parts/grid/views/editData/editData.component';
 import { SlickGrid } from 'angular2-slickgrid';
 
-declare let AngularPlatformBrowser;
-declare let AngularCore;
-declare let AngularCommon;
-
-@AngularCore.NgModule({
+@NgModule({
 
 	imports: [
-		AngularCommon.CommonModule,
-		AngularPlatformBrowser.BrowserModule
+		CommonModule,
+		BrowserModule
 	],
 
 	declarations: [
@@ -33,8 +31,8 @@ declare let AngularCommon;
 export class EditDataModule {
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
-		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(forwardRef(() => ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
 	}
 

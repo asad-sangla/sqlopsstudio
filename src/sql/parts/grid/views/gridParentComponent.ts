@@ -11,7 +11,7 @@ import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import { ElementRef, QueryList, ChangeDetectorRef } from '@angular/core';
+import { ElementRef, QueryList, ChangeDetectorRef, ViewChildren } from '@angular/core';
 import { IGridDataRow, ISlickRange, SlickGrid, FieldType } from 'angular2-slickgrid';
 import * as Constants from 'sql/parts/query/common/constants';
 import { IGridInfo, IRange, IGridDataSet, SaveFormat, JsonFormat, ExcelFormat, CsvFormat  } from 'sql/parts/grid/common/interfaces';
@@ -31,9 +31,7 @@ import { IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/c
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 
-declare let AngularCore;
 declare let rangy;
-declare let jQuery;
 
 export abstract class GridParentComponent {
 	// CONSTANTS
@@ -76,7 +74,7 @@ export abstract class GridParentComponent {
 	protected _messageActive = true;
 	protected activeGrid = 0;
 
-	@AngularCore.ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
+	@ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
 
 	// Edit Data functions
 	public onCellEditEnd: (event: {row: number, column: number, newValue: any}) => void;

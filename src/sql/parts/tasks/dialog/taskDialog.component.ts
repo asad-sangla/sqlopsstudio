@@ -9,13 +9,11 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { ITaskDialogComponent } from 'sql/parts/tasks/common/tasks';
 import { TaskDialogComponentParams } from 'sql/services/bootstrap/bootstrapParams';
-import { ElementRef } from '@angular/core';
-
-declare let AngularCore;
+import { ElementRef, Component, Inject, forwardRef } from '@angular/core';
 
 export const TASKDIALOG_SELECTOR: string = 'taskdialog-component';
 
-@AngularCore.Component({
+@Component({
 	selector: TASKDIALOG_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/tasks/dialog/taskDialog.component.html'),
 	styleUrls: [require.toUrl('sql/media/primeng.css')]
@@ -31,8 +29,8 @@ export class TaskDialogComponent {
 	public connection: ConnectionManagementInfo;
 
 	constructor(
-         @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
-         @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+         @Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
+         @Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	 ) {
 		this._parameters = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
         this.ownerUri = this._parameters.ownerUri;

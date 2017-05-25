@@ -6,6 +6,8 @@
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { $ } from 'vs/base/browser/dom';
 
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
 import { BootstrapParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
@@ -18,8 +20,6 @@ import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disa
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-
-declare let AngularPlatformBrowserDynamic;
 
 export const BOOTSTRAP_SERVICE_ID: string = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -118,7 +118,7 @@ export class BootstrapService implements IBootstrapService {
 
 		// Perform the bootsrap
 		let providers = [{ provide: BOOTSTRAP_SERVICE_ID, useValue: this }];
-		AngularPlatformBrowserDynamic.platformBrowserDynamic(providers).bootstrapModule(moduleType);
+		platformBrowserDynamic(providers).bootstrapModule(moduleType);
 
 		return uniqueSelectorString;
 	}

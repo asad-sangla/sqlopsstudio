@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/dashboard/media/dashboard';
-import { ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, Input, Inject, forwardRef, ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/dashboard/common/dashboard';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
@@ -13,24 +13,22 @@ import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import data = require('data');
 
-declare let AngularCore;
-
 /**
  * ObjectMetadata Explorer component class
  */
-@AngularCore.Component({
+@Component({
 	selector: 'objectmetadata-explorer',
 	templateUrl: require.toUrl('sql/parts/dashboard/object/objectmetadata-explorer.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/object/objectmetadata-explorer.component.css')]
 })
 export class ObjectMetadataExplorerComponent implements OnInit, IDashboardComponent {
 
-	@AngularCore.Input() public connection: ConnectionManagementInfo;;
-	@AngularCore.Input() public metadataService: IMetadataService;
-	@AngularCore.Input() public scriptingService: IScriptingService;
-	@AngularCore.Input() public queryEditorService: IQueryEditorService;
-	@AngularCore.Input() public ownerUri: string;
-	@AngularCore.Input() public objectMetadata: data.ObjectMetadata;
+	@Input() public connection: ConnectionManagementInfo;;
+	@Input() public metadataService: IMetadataService;
+	@Input() public scriptingService: IScriptingService;
+	@Input() public queryEditorService: IQueryEditorService;
+	@Input() public ownerUri: string;
+	@Input() public objectMetadata: data.ObjectMetadata;
 
 	public columns: data.ColumnMetadata[];
 
@@ -39,7 +37,7 @@ export class ObjectMetadataExplorerComponent implements OnInit, IDashboardCompon
 	public databaseIcon: string = require.toUrl('sql/parts/dashboard/media/database.svg');
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef
+		@Inject(forwardRef(() => ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef
 	) { }
 
 	public ngOnInit(): void {

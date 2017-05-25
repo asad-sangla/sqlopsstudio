@@ -6,7 +6,7 @@
 import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
 
-import { ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, Inject, forwardRef, ChangeDetectorRef } from '@angular/core';
 import { IDashboardPage } from 'sql/parts/dashboard/common/dashboard';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
@@ -19,9 +19,7 @@ import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disa
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import data = require('data');
 
-declare let AngularCore;
-
-@AngularCore.Component({
+@Component({
 	selector: 'app-database-dashboard',
 	templateUrl: require.toUrl('sql/parts/dashboard/database/database-dashboard.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
@@ -39,9 +37,9 @@ export class DatabaseDashboardComponent implements IDashboardPage {
 	public loading: boolean = false;
     public serverPageImage: string = require.toUrl('sql/parts/dashboard/media/server-page.svg');
 
-	@AngularCore.ViewChild('schemaExplorer') schemaExplorer: SchemaExplorerComponent;
+	@ViewChild('schemaExplorer') schemaExplorer: SchemaExplorerComponent;
 
-	constructor(@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef) {
+	constructor(@Inject(forwardRef(() => ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef) {
 	}
 
 	public injectState(

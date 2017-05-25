@@ -6,30 +6,28 @@
 import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
 
-import { ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, Input, Inject, forwardRef, ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/dashboard/common/dashboard';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
-declare let AngularCore;
-
 /**
  * Database Explorer component class
  */
-@AngularCore.Component({
+@Component({
 	selector: 'database-explorer',
 	templateUrl: require.toUrl('sql/parts/dashboard/server/database-explorer.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 
-	@AngularCore.Input() public connection: ConnectionManagementInfo;
-	@AngularCore.Input() public metadataService: IMetadataService;
-	@AngularCore.Input() public scriptingService: IScriptingService;
-	@AngularCore.Input() public queryEditorService: IQueryEditorService;
-	@AngularCore.Input() public ownerUri: string;
+	@Input() public connection: ConnectionManagementInfo;
+	@Input() public metadataService: IMetadataService;
+	@Input() public scriptingService: IScriptingService;
+	@Input() public queryEditorService: IQueryEditorService;
+	@Input() public ownerUri: string;
 
 	public databaseNames: string[];
 
@@ -38,7 +36,7 @@ export class DatabaseExplorerComponent implements OnInit, IDashboardComponent {
 	public databaseIcon: string = require.toUrl('sql/parts/dashboard/media/database.svg');
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef
+		@Inject(forwardRef(() => ChangeDetectorRef)) private changeDetectorRef: ChangeDetectorRef
 	) { }
 
 	public ngOnInit(): void {

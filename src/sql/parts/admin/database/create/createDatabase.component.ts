@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/media/primeng';
-import { ChangeDetectorRef, ElementRef } from '@angular/core';
+import { ChangeDetectorRef, ElementRef, Component, forwardRef, Inject } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { TaskDialogComponentParams } from 'sql/services/bootstrap/bootstrapParams';
@@ -13,9 +13,6 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { ITaskDialogComponent } from 'sql/parts/tasks/common/tasks';
 
 import data = require('data');
-
-declare let AngularCore;
-declare let AngularForms;
 
 export const CREATEDATABASE_SELECTOR: string = 'createdatabase-component';
 
@@ -28,7 +25,7 @@ export interface DatabaseFile {
     path: string;
 }
 
-@AngularCore.Component({
+@Component({
 	selector: CREATEDATABASE_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/admin/database/create/createDatabase.component.html'),
 	styleUrls: [require.toUrl('sql/media/primeng.css')]
@@ -46,9 +43,9 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
     public databaseFiles: DatabaseFile[] = [];
 
 	constructor(
-        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef,
-        @AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private _changeDetectorRef: ChangeDetectorRef,
-        @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+        @Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
+        @Inject(forwardRef(() => ChangeDetectorRef)) private _changeDetectorRef: ChangeDetectorRef,
+        @Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
         this._adminService = this._bootstrapService.adminService;
 	}

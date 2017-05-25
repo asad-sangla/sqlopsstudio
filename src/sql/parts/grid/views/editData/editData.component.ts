@@ -11,7 +11,7 @@ import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import { ElementRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
+import { ElementRef, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject, forwardRef, EventEmitter } from '@angular/core';
 import { IGridDataRow, VirtualizedCollection } from 'angular2-slickgrid';
 import { IMessage, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import * as Services from 'sql/parts/grid/services/sharedServices';
@@ -20,13 +20,9 @@ import { EditDataComponentParams } from 'sql/services/bootstrap/bootstrapParams'
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
 import { EditDataGridActionProvider } from 'sql/parts/grid/views/editData/editDataGridActions';
 
-declare let AngularCore;
-declare let rangy;
-declare let jQuery;
-
 export const EDITDATA_SELECTOR: string = 'editdata-component';
 
-@AngularCore.Component({
+@Component({
 	selector: EDITDATA_SELECTOR,
 	host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
 	templateUrl: require.toUrl('sql/parts/grid/views/editData/editData.component.html')
@@ -63,9 +59,9 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	public loadDataFunction: (offset: number, count: number) => Promise<IGridDataRow[]>;
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) el: ElementRef,
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) cd: ChangeDetectorRef,
-		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) bootstrapService: IBootstrapService
+		@Inject(forwardRef(() => ElementRef)) el: ElementRef,
+		@Inject(forwardRef(() => ChangeDetectorRef)) cd: ChangeDetectorRef,
+		@Inject(BOOTSTRAP_SERVICE_ID) bootstrapService: IBootstrapService
 	) {
 		super(el, cd, bootstrapService);
 		this._el.nativeElement.className = 'slickgridContainer';
@@ -318,7 +314,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		let undefinedDataSet = JSON.parse(JSON.stringify(dataSet));
 		undefinedDataSet.columnDefinitions = dataSet.columnDefinitions;
 		undefinedDataSet.dataRows = undefined;
-		undefinedDataSet.resized = new AngularCore.EventEmitter();
+		undefinedDataSet.resized = new EventEmitter();
 		self.placeHolderDataSets.push(undefinedDataSet);
 		self.messagesAdded = true;
 		self.onScroll(0);

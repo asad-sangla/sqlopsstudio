@@ -2,21 +2,20 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { ElementRef } from '@angular/core';
+import { ElementRef, Directive, Input, Output, EventEmitter, forwardRef,
+    Inject } from '@angular/core';
+import { Observable } from 'rxjs/Rx';
 
-declare let AngularCore;
-declare let Rx;
-
-@AngularCore.Directive({
+@Directive({
   selector: '[onScroll]'
 })
 export class ScrollDirective {
-    @AngularCore.Input() scrollEnabled: boolean = true;
-    @AngularCore.Output('onScroll') onScroll = new AngularCore.EventEmitter();
+    @Input() scrollEnabled: boolean = true;
+    @Output('onScroll') onScroll = new EventEmitter();
 
-    constructor(@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: ElementRef) {
+    constructor(@Inject(forwardRef(() => ElementRef)) private _el: ElementRef) {
         const self = this;
-        Rx.Observable.fromEvent(this._el.nativeElement, 'scroll').subscribe((event) => {
+        Observable.fromEvent(this._el.nativeElement, 'scroll').subscribe((event) => {
             if (self.scrollEnabled) {
                 self.onScroll.emit(self._el.nativeElement.scrollTop);
             }

@@ -3,40 +3,39 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { ApplicationRef, ComponentFactoryResolver, ModuleWithProviders } from '@angular/core';
+import { ApplicationRef, ComponentFactoryResolver, ModuleWithProviders, NgModule,
+	Inject, forwardRef } from '@angular/core';
+import { APP_BASE_HREF, CommonModule } from '@angular/common';
+import { BrowserModule } from '@angular/platform-browser';
+import { ButtonModule, DataTableModule, DropdownModule, SharedModule, MessagesModule,
+	DataListModule, BreadcrumbModule } from 'primeng/primeng';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { BackupComponent, BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.component';
 
-declare let AngularPlatformBrowser;
-declare let AngularCommon;
-declare let AngularCore;
-declare let AngularRouter;
-declare let PrimeNg;
-
 // Backup wizard main angular module
-@AngularCore.NgModule({
+@NgModule({
 	declarations: [
 		BackupComponent
 	],
 	entryComponents: [BackupComponent],
 	imports: [
-		AngularCommon.CommonModule,
-		AngularPlatformBrowser.BrowserModule,
-		PrimeNg.ButtonModule,
-		PrimeNg.DataTableModule,
-		PrimeNg.SharedModule,
-		PrimeNg.DropdownModule,
-		PrimeNg.MessagesModule,
-		PrimeNg.DataListModule,
-		PrimeNg.BreadcrumbModule
+		CommonModule,
+		BrowserModule,
+		ButtonModule,
+		DataTableModule,
+		SharedModule,
+		DropdownModule,
+		MessagesModule,
+		DataListModule,
+		BreadcrumbModule
 	],
-	providers: [{ provide: AngularCommon.APP_BASE_HREF, useValue: '/' }]
+	providers: [{ provide: APP_BASE_HREF, useValue: '/' }]
 })
 export class BackupModule {
 
 	constructor(
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
-		@AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(forwardRef(() => ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
 	}
 

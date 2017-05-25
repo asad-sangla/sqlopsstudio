@@ -6,7 +6,6 @@
 'use strict';
 
 import { Observable, Subject, Observer } from 'rxjs/Rx';
-declare let Rx;
 
 import { ResultSetSubset, EditUpdateCellResult, EditSubsetResult, EditCreateRowResult } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
@@ -32,8 +31,8 @@ export class DataService {
         @IQueryModelService private _queryModel: IQueryModelService
 
 	) {
-		this.queryEventObserver = new Rx.Subject();
-		this.gridContentObserver = new Rx.Subject();
+		this.queryEventObserver = new Subject();
+		this.gridContentObserver = new Subject();
 		this.editQueue = Promise.resolve();
 	}
 
@@ -47,7 +46,7 @@ export class DataService {
 	 */
 	getQueryRows(rowStart: number, numberOfRows: number, batchId: number, resultId: number): Observable<ResultSetSubset> {
 		const self = this;
-		return Rx.Observable.create(function (observer: Observer<ResultSetSubset>) {
+		return Observable.create(function (observer: Observer<ResultSetSubset>) {
 			self._queryModel.getQueryRows(self._uri, rowStart, numberOfRows, batchId, resultId).then(results => {
 				observer.next(results);
 			});
@@ -62,7 +61,7 @@ export class DataService {
 	 */
 	getEditRows(rowStart: number, numberOfRows: number): Observable<EditSubsetResult> {
 		const self = this;
-		return Rx.Observable.create(function (observer: Observer<EditSubsetResult>) {
+		return Observable.create(function (observer: Observer<EditSubsetResult>) {
 			self._queryModel.getEditRows(self._uri, rowStart, numberOfRows).then(results => {
 				observer.next(results);
 			});
