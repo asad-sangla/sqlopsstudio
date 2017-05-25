@@ -694,7 +694,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 				source.groupId = targetGroupId;
 				this._connectionStatusManager.updateConnectionProfile(source, id);
 			}
-		})
+		});
+	}
+
+	/**
+	 * Returns true if the connection can be moved to another group
+	 */
+	public canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean {
+		return this._connectionStore.canChangeConnectionConfig(profile, newGroupID);
 	}
 
 	public isRecent(connectionProfile: ConnectionProfile): boolean {

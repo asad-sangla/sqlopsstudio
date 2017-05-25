@@ -533,6 +533,10 @@ export class ConnectionStore {
 		return this._connectionConfig.changeGroupIdForConnectionGroup(source, target);
 	}
 
+	public canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean {
+		return this._connectionConfig.canChangeConnectionConfig(profile, newGroupID);
+	}
+
 	public changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void> {
 		let oldId = source.getOptionsKey();
 		let oldParentId = source.parent.id;

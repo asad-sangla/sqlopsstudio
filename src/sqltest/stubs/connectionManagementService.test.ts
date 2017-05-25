@@ -191,4 +191,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	getCapabilities(providerName: string): data.DataProtocolServerCapabilities {
 		return undefined;
 	}
+
+	canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean {
+		return true;
+	}
 }

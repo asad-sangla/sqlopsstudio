@@ -179,6 +179,8 @@ export interface IConnectionManagementService {
 	hasRegisteredServers(): boolean;
 
 	getCapabilities(providerName: string): data.DataProtocolServerCapabilities;
+
+	canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

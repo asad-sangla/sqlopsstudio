@@ -63,23 +63,35 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Returns DRAG_OVER_ACCEPT_BUBBLE_DOWN when element is a connection group or connection
 	 */
 	public onDragOver(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): IDragOverReaction {
+
+		let canDragOver: boolean = true;
 		if (targetElement instanceof ConnectionProfile || targetElement instanceof ConnectionProfileGroup) {
-			return DRAG_OVER_ACCEPT_BUBBLE_DOWN(true);
+			let targetConnectionProfileGroup = this.getTargetGroup(targetElement);
+			//Verify if the connection can be moved to the target group
+			const source = data.getData()[0];
+			if (source instanceof ConnectionProfile) {
+				if (!this._connectionManagementService.canChangeConnectionConfig(source, targetConnectionProfileGroup.id)) {
+					canDragOver = false;
+				}
+			}
+
+		} else {
+			canDragOver = false;
 		}
-		return DRAG_OVER_REJECT;
+
+		if (canDragOver) {
+			return DRAG_OVER_ACCEPT_BUBBLE_DOWN(true);
+		} else {
+			return DRAG_OVER_REJECT;
+		}
 	}
 
 	/**
 	 * Handle a drop in the server tree.
 	 */
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
-		let targetConnectionProfileGroup: ConnectionProfileGroup;
-		if (targetElement instanceof ConnectionProfile) {
-			targetConnectionProfileGroup = (<ConnectionProfile>targetElement).getParent();
-		}
-		else {
-			targetConnectionProfileGroup = <ConnectionProfileGroup>targetElement;
-		}
+		let targetConnectionProfileGroup: ConnectionProfileGroup = this.getTargetGroup(targetElement);
+
 		const source = data.getData()[0];
 		let oldParent: ConnectionProfileGroup = source.getParent();
 		const self = this;
@@ -98,6 +110,18 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 			}
 		}
 		return;
+	}
+
+	private getTargetGroup(targetElement: any): ConnectionProfileGroup {
+		let targetConnectionProfileGroup: ConnectionProfileGroup;
+		if (targetElement instanceof ConnectionProfile) {
+			targetConnectionProfileGroup = (<ConnectionProfile>targetElement).getParent();
+		}
+		else {
+			targetConnectionProfileGroup = <ConnectionProfileGroup>targetElement;
+		}
+
+		return targetConnectionProfileGroup;
 	}
 
 	private isDropAllowed(targetConnectionProfileGroup: ConnectionProfileGroup,

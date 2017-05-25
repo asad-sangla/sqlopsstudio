@@ -319,26 +319,27 @@ export class ConnectionConfig implements IConnectionConfig {
 	}
 
 	/**
+	 * Returns true if connection can be moved to another group
+	 */
+	public canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean {
+		let profiles = this.getConnections(true);
+		let existingProfile = profiles.find(p => p.getConnectionInfoId() === profile.getConnectionInfoId()
+			&& p.groupId === newGroupID);
+		return existingProfile === undefined;
+	}
+
+	/**
 	 * Moves the connection under the target group with the new ID.
 	 */
-	public changeGroupIdForConnection(profile: ConnectionProfile, newGroupID: string): Promise<void> {
+	private changeGroupIdForConnectionInSettings(profile: ConnectionProfile, newGroupID: string, target: ConfigurationTarget = ConfigurationTarget.USER): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			let profilesToSave: IConnectionProfileStore[];
-			let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
-			let providerCapabilities = this.getCapabilities(profile.providerName);
-			if (profile.parent && profile.parent.id === Constants.unsavedGroupId) {
-				profile.groupId = newGroupID;
-				profiles.push(ConnectionProfile.convertToProfileStore(providerCapabilities, profile));
-				profilesToSave = profiles;
-			} else {
-				let connectionProfiles = profiles.map((value) => {
-					return ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-				});
-				let existingProfile = connectionProfiles.find(p => p.getConnectionInfoId() === profile.getConnectionInfoId()
-					&& p.groupId === newGroupID);
-				if (existingProfile) {
-					// Same connection already exist in this group
-					reject('Same connection already exist in the group');
+			let profiles = target === ConfigurationTarget.USER ? this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user :
+				this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).workspace;
+			if (profiles) {
+				let providerCapabilities = this.getCapabilities(profile.providerName);
+				if (profile.parent && profile.parent.id === Constants.unsavedGroupId) {
+					profile.groupId = newGroupID;
+					profiles.push(ConnectionProfile.convertToProfileStore(providerCapabilities, profile));
 				} else {
 					profiles.forEach((value) => {
 						let configProf = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
@@ -346,13 +347,37 @@ export class ConnectionConfig implements IConnectionConfig {
 							value.groupId = newGroupID;
 						}
 					});
-
-					profilesToSave = profiles;
 				}
-			}
 
-			if (profilesToSave) {
-				resolve(this.writeConfiguration(Constants.connectionsArrayName, profiles));
+				this.writeConfiguration(Constants.connectionsArrayName, profiles, target).then(result => {
+					resolve();
+				}).catch(error => {
+					reject(error);
+				});
+			} else {
+				resolve();
+			}
+		});
+	}
+
+	/**
+	 * Moves the connection under the target group with the new ID.
+	 */
+	public changeGroupIdForConnection(profile: ConnectionProfile, newGroupID: string): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			if (!this.canChangeConnectionConfig(profile, newGroupID)) {
+				// Same connection already exists in this group
+				reject('Same connection already exists in the group');
+			} else {
+				this.changeGroupIdForConnectionInSettings(profile, newGroupID, ConfigurationTarget.USER).then(result1 => {
+					this.changeGroupIdForConnectionInSettings(profile, newGroupID, ConfigurationTarget.WORKSPACE).then(result2 => {
+						resolve();
+					}).catch(error2 => {
+						reject(error2);
+					});
+				}).catch(error1 => {
+					reject(error1);
+				});
 			}
 		});
 	}

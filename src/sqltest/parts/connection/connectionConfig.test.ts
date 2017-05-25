@@ -844,11 +844,14 @@ suite('SQL ConnectionConfig tests', () => {
 		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
 			calledValue = val.value as IConnectionProfileStore[];
 		}).returns(() => TPromise.as<void>(nothing));
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.WORKSPACE, TypeMoq.It.isAny())).callback((x: any, val: any) => {
+
+		}).returns(() => TPromise.as<void>(nothing));
 
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		config.changeGroupIdForConnection(connectionProfile, newId).then(() => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
-				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.atLeastOnce());
 			calledValue.forEach(con => {
 				if (con.options.serverName === 'server3') {
 					assert.equal(con.groupId, newId, 'Group parent was not changed');

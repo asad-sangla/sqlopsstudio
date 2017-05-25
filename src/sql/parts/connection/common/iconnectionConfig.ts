@@ -28,4 +28,5 @@ export interface IConnectionConfig {
 	renameGroup(group: ConnectionProfileGroup): Promise<void>;
 	deleteConnection(profile: ConnectionProfile): Promise<void>;
 	deleteGroup(group: ConnectionProfileGroup): Promise<void>;
+	canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean;
 }
