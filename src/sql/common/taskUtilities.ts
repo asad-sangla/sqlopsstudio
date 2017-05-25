@@ -5,8 +5,10 @@
 'use strict';
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { IConnectableInput, IConnectionManagementService,
-		IConnectionCompletionOptions, ConnectionType  } from 'sql/parts/connection/common/connectionManagement';
+import {
+	IConnectableInput, IConnectionManagementService,
+	IConnectionCompletionOptions, ConnectionType
+} from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
@@ -29,7 +31,7 @@ export class TaskUtilities {
 						// Connect our editor to the input connection
 						let options: IConnectionCompletionOptions = {
 							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
-							saveToSettings: false,
+							saveTheConnection: false,
 							showDashboard: false,
 							showConnectionDialogOnError: true
 						};
@@ -51,7 +53,7 @@ export class TaskUtilities {
 				// Connect our editor
 				let options: IConnectionCompletionOptions = {
 					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
-					saveToSettings: false,
+					saveTheConnection: false,
 					showDashboard: false,
 					showConnectionDialogOnError: true
 				};
@@ -88,7 +90,7 @@ export class TaskUtilities {
 				// Connect our editor to the input connection
 				let options: IConnectionCompletionOptions = {
 					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
-					saveToSettings: false,
+					saveTheConnection: false,
 					showDashboard: false,
 					showConnectionDialogOnError: true
 				};

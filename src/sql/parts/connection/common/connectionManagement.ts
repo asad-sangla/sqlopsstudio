@@ -23,10 +23,28 @@ export interface IConnectionsViewlet extends IViewlet {
 	search(text: string): void;
 }
 
+/**
+ * Options for the actions that could happen after connecting is complete
+ */
 export interface IConnectionCompletionOptions {
-	saveToSettings: boolean;
+	/**
+	 * save the connection to MRU and settings (only save to setting if profile.saveProfile is set to true)
+	 */
+	saveTheConnection: boolean;
+
+	/**
+	 * open the dashboard after connection is complete
+	 */
 	showDashboard: boolean;
+
+	/**
+	 * Parameters to be used if connecting from an editor
+	 */
 	params: INewConnectionParams;
+
+	/**
+	 * Open the connection dialog if connection fails
+	 */
 	showConnectionDialogOnError: boolean;
 }
 

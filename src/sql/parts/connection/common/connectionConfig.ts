@@ -322,21 +322,39 @@ export class ConnectionConfig implements IConnectionConfig {
 	 * Moves the connection under the target group with the new ID.
 	 */
 	public changeGroupIdForConnection(profile: ConnectionProfile, newGroupID: string): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			let profilesToSave: IConnectionProfileStore[];
+			let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
+			let providerCapabilities = this.getCapabilities(profile.providerName);
+			if (profile.parent && profile.parent.id === Constants.unsavedGroupId) {
+				profile.groupId = newGroupID;
+				profiles.push(ConnectionProfile.convertToProfileStore(providerCapabilities, profile));
+				profilesToSave = profiles;
+			} else {
+				let connectionProfiles = profiles.map((value) => {
+					return ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
+				});
+				let existingProfile = connectionProfiles.find(p => p.getConnectionInfoId() === profile.getConnectionInfoId()
+					&& p.groupId === newGroupID);
+				if (existingProfile) {
+					// Same connection already exist in this group
+					reject('Same connection already exist in the group');
+				} else {
+					profiles.forEach((value) => {
+						let configProf = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
+						if (configProf.getOptionsKey() === profile.getOptionsKey()) {
+							value.groupId = newGroupID;
+						}
+					});
 
-		let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
-		let providerCapabilities = this.getCapabilities(profile.providerName);
-		if (profile.parent && profile.parent.id === Constants.unsavedGroupId) {
-			profile.groupId = newGroupID;
-			profiles.push(ConnectionProfile.convertToProfileStore(providerCapabilities, profile));
-		} else {
-			profiles.forEach((value) => {
-				let configProf = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-				if (configProf.getOptionsKey() === profile.getOptionsKey()) {
-					value.groupId = newGroupID;
+					profilesToSave = profiles;
 				}
-			});
-		}
-		return this.writeConfiguration(Constants.connectionsArrayName, profiles);
+			}
+
+			if (profilesToSave) {
+				resolve(this.writeConfiguration(Constants.connectionsArrayName, profiles));
+			}
+		});
 	}
 
 	public saveGroup(groups: IConnectionProfileGroup[], groupFullName: string, color: string, description: string): ISaveGroupResult {

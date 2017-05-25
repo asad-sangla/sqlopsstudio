@@ -7,12 +7,12 @@
 
 import * as assert from 'assert';
 import data = require('data');
-import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
+import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { CapabilitiesTestService } from 'sqltest/stubs/capabilitiesTestService';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
-let connections: ConnectionFactory;
+let connections: ConnectionStatusManager;
 let capabilitiesService: CapabilitiesTestService;
 let connectionProfileObject: ConnectionProfile;
 let connectionProfile: IConnectionProfile = {
@@ -49,12 +49,12 @@ let editorConnectionProfile: IConnectionProfile = {
 let connection1Id: string;
 let connection2Id: string;
 
-suite('SQL ConnectionFactory tests', () => {
+suite('SQL ConnectionStatusManager tests', () => {
 	setup(() => {
 		capabilitiesService = new CapabilitiesTestService();
 		connectionProfileObject = new ConnectionProfile(capabilitiesService.getCapabilities().find(x => x.providerName === 'MSSQL')
 			, connectionProfile);
-		connections = new ConnectionFactory(capabilitiesService);
+		connections = new ConnectionStatusManager(capabilitiesService);
 		connection1Id = connections.getConnectionManagementId(connectionProfile);
 		connection2Id = 'connection2Id';
 		connections.addConnection(connectionProfile, connection1Id);

@@ -45,7 +45,7 @@ export class EditDataAction extends Action {
 							// Connect our editor
 							let options: IConnectionCompletionOptions = {
 								params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
-								saveToSettings: false,
+								saveTheConnection: false,
 								showDashboard: false,
 								showConnectionDialogOnError: true
 							};

@@ -32,7 +32,7 @@ import { ICredentialsService } from 'sql/services/credentials/credentialsService
 import * as data from 'data';
 import * as ConnectionContracts from 'sql/parts/connection/common/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
-import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
+import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ISplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
@@ -55,7 +55,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _uriToProvider: { [uri: string]: string; } = Object.create(null);
 
-	private _connectionFactory: ConnectionFactory;
+	private _connectionStatusManager: ConnectionStatusManager;
 
 	private _onAddConnectionProfile: Emitter<void>;
 	private _onDeleteConnectionProfile: Emitter<void>;
@@ -95,7 +95,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				_configurationEditService, this._workspaceConfigurationService, this._credentialsService, this._capabilitiesService);
 		}
 
-		this._connectionFactory = new ConnectionFactory(this._capabilitiesService);
+		this._connectionStatusManager = new ConnectionStatusManager(this._capabilitiesService);
 		this._connectionGlobalStatus = new ConnectionGlobalStatus(this._statusBarService);
 
 		// Setting up our event emitters
@@ -182,7 +182,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				params = { connectionType: ConnectionType.default };
 			}
 			if (!model && params.input && params.input.uri) {
-				model = this._connectionFactory.getConnectionProfile(params.input.uri);
+				model = this._connectionStatusManager.getConnectionProfile(params.input.uri);
 			}
 			self._connectionDialogService.showDialog(self, params, model, error).then(() => {
 				resolve();
@@ -234,7 +234,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 			this._connectionStore.addSavedPassword(connection).then(newConnection => {
 				if (Utils.isEmpty(newConnection.password) && this._connectionStore.isPasswordRequired(newConnection)) {
-					let existingConnection = this._connectionFactory.findConnectionProfile(connection);
+					let existingConnection = this._connectionStatusManager.findConnectionProfile(connection);
 					if (existingConnection && existingConnection.connectionProfile) {
 						newConnection.password = existingConnection.connectionProfile.password;
 					}
@@ -275,7 +275,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise<IConnectionResult>((resolve, reject) => {
 			if (options && options.showConnectionDialogOnError) {
 				let params: INewConnectionParams = options && options.params ? options.params : {
-					connectionType: this._connectionFactory.isDefaultTypeUri(owner.uri) ? ConnectionType.default : ConnectionType.editor,
+					connectionType: this._connectionStatusManager.isDefaultTypeUri(owner.uri) ? ConnectionType.default : ConnectionType.editor,
 					input: owner,
 					runQueryOnCompletion: false
 				};
@@ -299,7 +299,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 */
 	public connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
 		if (Utils.isEmpty(uri)) {
-			uri = this._connectionFactory.getConnectionManagementId(connection);
+			uri = this._connectionStatusManager.getConnectionManagementId(connection);
 		}
 		let input: IConnectableInput = options && options.params ? options.params.input : undefined;
 		if (!input) {
@@ -329,20 +329,23 @@ export class ConnectionManagementService implements IConnectionManagementService
 		Promise<IConnectionResult> {
 		if (!options) {
 			options = {
-				saveToSettings: true,
+				saveTheConnection: true,
 				showDashboard: false,
 				params: undefined,
 				showConnectionDialogOnError: false
 			};
 		}
-		options.saveToSettings = true;
+
+		// Always set the Save connection to true when connecting from the dialog so connections will be saved to MRU
+		// If connection.saveProfile is set to true, the connection will be saved to settings also
+		options.saveTheConnection = true;
 		return this.connectWithOptions(connection, uri, options, callbacks);
 	}
 
 	private connectWithOptions(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks):
 		Promise<IConnectionResult> {
 		if (Utils.isEmpty(uri)) {
-			uri = this._connectionFactory.getConnectionManagementId(connection);
+			uri = this._connectionStatusManager.getConnectionManagementId(connection);
 		}
 		if (!callbacks) {
 			callbacks = {
@@ -354,7 +357,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 		if (!options) {
 			options = {
-				saveToSettings: false,
+				saveTheConnection: false,
 				showDashboard: false,
 				params: undefined,
 				showConnectionDialogOnError: false
@@ -369,7 +372,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					if (callbacks.onConnectSuccess) {
 						callbacks.onConnectSuccess(options.params);
 					}
-					if (options.saveToSettings) {
+					if (options.saveTheConnection) {
 						this.saveToSettings(uri, connection).then(value => {
 							this._onAddConnectionProfile.fire();
 							this.doActionsAfterConnectionComplete(value, options);
@@ -395,7 +398,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	private doActionsAfterConnectionComplete(uri: string, options: IConnectionCompletionOptions, ) {
-		let connectionManagementInfo = this._connectionFactory.findConnection(uri);
+		let connectionManagementInfo = this._connectionStatusManager.findConnection(uri);
 		if (options.showDashboard) {
 			this.showDashboard(uri, connectionManagementInfo);
 		}
@@ -551,7 +554,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public getConnectionId(connectionProfile: ConnectionProfile): string {
-		return this._connectionFactory.getConnectionManagementId(connectionProfile);
+		return this._connectionStatusManager.getConnectionManagementId(connectionProfile);
 	}
 
 	// Request Senders
@@ -614,7 +617,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 		return new Promise<string>((resolve, reject) => {
 			this._connectionStore.saveProfile(connection).then(savedProfile => {
-				let newId = this._connectionFactory.updateConnectionProfile(savedProfile, id);
+				let newId = this._connectionStatusManager.updateConnectionProfile(savedProfile, id);
 				return resolve(newId);
 			});
 		});
@@ -638,7 +641,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public onConnectionComplete(handle: number, info: data.ConnectionInfoSummary): void {
 		const self = this;
-		let connection = this._connectionFactory.onConnectionComplete(info);
+		let connection = this._connectionStatusManager.onConnectionComplete(info);
 
 		if (Utils.isNotEmpty(info.connectionId)) {
 			if (info.connectionSummary && info.connectionSummary.databaseName) {
@@ -653,13 +656,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 			connection.connectHandler(false, info.messages);
 		}
 
-		if (this._connectionFactory.isDefaultTypeUri(info.ownerUri)) {
+		if (this._connectionStatusManager.isDefaultTypeUri(info.ownerUri)) {
 			this._connectionGlobalStatus.setStatusToConnected(info.connectionSummary);
 		}
 	}
 
 	public onConnectionChangedNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
-		let profile: IConnectionProfile = this._connectionFactory.onConnectionChanged(changedConnInfo);
+		let profile: IConnectionProfile = this._connectionStatusManager.onConnectionChanged(changedConnInfo);
 		if (profile) {
 			this._onConnectionChanged.fire(<IConnectionChangedParams>{
 				connectionInfo: profile,
@@ -685,7 +688,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void> {
-		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId);
+		let id = this._connectionStatusManager.getConnectionManagementId(source);
+		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId).then(result => {
+			if (id && targetGroupId) {
+				source.groupId = targetGroupId;
+				this._connectionStatusManager.updateConnectionProfile(source, id);
+			}
+		})
 	}
 
 	public isRecent(connectionProfile: ConnectionProfile): boolean {
@@ -732,7 +741,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	/**
-	 * Functions to handle the connecting lifecycle
+	 * Functions to handle the connecting life cycle
 	 */
 
 	// Connect an open URI to a connection profile
@@ -740,12 +749,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 		const self = this;
 
 		return new Promise<IConnectionResult>((resolve, reject) => {
-			let connectionInfo = this._connectionFactory.addConnection(connection, uri);
+			let connectionInfo = this._connectionStatusManager.addConnection(connection, uri);
 			// Setup the handler for the connection complete notification to call
 			connectionInfo.connectHandler = ((connectResult, error) => {
 				if (error) {
 					// Connection to the server failed
-					this._connectionFactory.deleteConnection(uri);
+					this._connectionStatusManager.deleteConnection(uri);
 					resolve({ connected: connectResult, error: error });
 				} else {
 					resolve({ connected: connectResult, error: error });
@@ -769,7 +778,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				{ key: nls.localize('no', 'No'), value: false }
 			];
 
-			self._quickOpenService.pick(choices.map(x => x.key), { placeHolder: nls.localize('cancelConnetionConfirmation', 'Are you sure you want to cancel this connection?'), ignoreFocusLost: true }).then((choice) => {
+			self._quickOpenService.pick(choices.map(x => x.key), { placeHolder: nls.localize('cancelConnectionConfirmation', 'Are you sure you want to cancel this connection?'), ignoreFocusLost: true }).then((choice) => {
 				let confirm = choices.find(x => x.key === choice);
 				resolve(confirm && confirm.value);
 			});
@@ -787,10 +796,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 			self.sendDisconnectRequest(fileUri).then((result) => {
 				// If the request was sent
 				if (result) {
-					this._connectionFactory.deleteConnection(fileUri);
+					this._connectionStatusManager.deleteConnection(fileUri);
 					this._notifyDisconnected(connection, fileUri);
 
-					if (this._connectionFactory.isDefaultTypeUri(fileUri)) {
+					if (this._connectionStatusManager.isDefaultTypeUri(fileUri)) {
 						this._connectionGlobalStatus.setStatusToDisconnected(fileUri);
 					}
 
@@ -805,7 +814,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public disconnectProfile(connection: ConnectionProfile): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			let uri = this._connectionFactory.getConnectionManagementId(connection);
+			let uri = this._connectionStatusManager.getConnectionManagementId(connection);
 
 			this.doDisconnect(connection, uri).then(result => {
 				if (result) {
@@ -820,7 +829,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public cancelConnection(connection: IConnectionProfile): Thenable<boolean> {
-		let fileUri = this._connectionFactory.getConnectionManagementId(connection);
+		let fileUri = this._connectionStatusManager.getConnectionManagementId(connection);
 		return this.cancelConnectionForUri(fileUri);
 	}
 
@@ -831,7 +840,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			let cancelParams: ConnectionContracts.CancelConnectParams = new ConnectionContracts.CancelConnectParams();
 			cancelParams.ownerUri = fileUri;
 
-			this._connectionFactory.deleteConnection(fileUri);
+			this._connectionStatusManager.deleteConnection(fileUri);
 			// Send connection cancellation request
 			resolve(self.sendCancelRequest(fileUri));
 		});
@@ -853,27 +862,27 @@ export class ConnectionManagementService implements IConnectionManagementService
 	// Is a certain file URI connected?
 	public isConnected(fileUri: string, connectionProfile?: ConnectionProfile): boolean {
 		if (connectionProfile) {
-			fileUri = this._connectionFactory.getConnectionManagementId(connectionProfile);
+			fileUri = this._connectionStatusManager.getConnectionManagementId(connectionProfile);
 		}
-		return this._connectionFactory.isConnected(fileUri);
+		return this._connectionStatusManager.isConnected(fileUri);
 	}
 
 	public isProfileConnected(connectionProfile: IConnectionProfile): boolean {
-		let connectionManagement = this._connectionFactory.findConnectionProfile(connectionProfile);
+		let connectionManagement = this._connectionStatusManager.findConnectionProfile(connectionProfile);
 		return connectionManagement && !connectionManagement.connecting;
 	}
 
 	// Is a certain file URI currently connecting
 	private isConnecting(fileUri: string): boolean {
-		return this._connectionFactory.isConnecting(fileUri);
+		return this._connectionStatusManager.isConnecting(fileUri);
 	}
 
 	public getConnectionProfile(fileUri: string): IConnectionProfile {
-		return this._connectionFactory.isConnected(fileUri) ? this._connectionFactory.getConnectionProfile(fileUri) : undefined;
+		return this._connectionStatusManager.isConnected(fileUri) ? this._connectionStatusManager.getConnectionProfile(fileUri) : undefined;
 	}
 
 	public getConnectionInfo(fileUri: string): ConnectionManagementInfo {
-		return this._connectionFactory.isConnected(fileUri) ? this._connectionFactory.findConnection(fileUri) : undefined;
+		return this._connectionStatusManager.isConnected(fileUri) ? this._connectionStatusManager.findConnection(fileUri) : undefined;
 	}
 
 	public listDatabases(connectionUri: string): Thenable<data.ListDatabasesResult> {
@@ -912,11 +921,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	/**
 	 * Deletes a connection from registered servers.
-	 * Disconnects a connection before removng from settings.
+	 * Disconnects a connection before removing from settings.
 	 */
 	public deleteConnection(connection: ConnectionProfile): Promise<boolean> {
 		// Disconnect if connected
-		let uri = this._connectionFactory.getConnectionManagementId(connection);
+		let uri = this._connectionStatusManager.getConnectionManagementId(connection);
 		if (this.isConnected(uri)) {
 			this.doDisconnect(connection, uri).then((result) => {
 				if (result) {
@@ -925,7 +934,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 						this._onDeleteConnectionProfile.fire();
 						Promise.resolve(true);
 					}).catch(err => {
-						// Reject promise if error occured writing to settings
+						// Reject promise if error occurred writing to settings
 						Promise.reject(err);
 					});
 
@@ -958,7 +967,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// Disconnect all these connections
 		let disconnected = [];
 		connections.forEach((con) => {
-			let uri = this._connectionFactory.getConnectionManagementId(con);
+			let uri = this._connectionStatusManager.getConnectionManagementId(con);
 			if (this.isConnected(uri)) {
 				disconnected.push(this.doDisconnect(con, uri));
 			}

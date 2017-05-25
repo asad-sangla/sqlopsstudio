@@ -11,7 +11,7 @@ import { IGroupEvent } from 'vs/workbench/common/editor';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { IConnectionManagementService, IConnectionParams } from 'sql/parts/connection/common/connectionManagement';
-import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
+import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -38,7 +38,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	private _connectionElement: HTMLElement;
 	private _connectionStatusEditors: { [connectionUri: string]: ConnectionStatusEditor };
 	private _toDispose: IDisposable[];
-	private _connectionFactory: ConnectionFactory;
+	private _connectionStatusManager: ConnectionStatusManager;
 
 	constructor(
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
@@ -47,7 +47,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 	) {
 		this._connectionStatusEditors = {};
-		this._connectionFactory = new ConnectionFactory(this._capabilitiesService);
+		this._connectionStatusManager = new ConnectionStatusManager(this._capabilitiesService);
 	}
 
 	public render(container: HTMLElement): IDisposable {
@@ -77,7 +77,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	private _onEditorsChanged(): void {
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor) {
-			let	uri = this._getEditorUri(activeEditor.input);
+			let uri = this._getEditorUri(activeEditor.input);
 
 			// Show active editor's query status
 			if (uri && uri in this._connectionStatusEditors) {
@@ -91,13 +91,13 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	}
 
 	private _onConnect(connectionParams: IConnectionParams): void {
-		if (!this._connectionFactory.isDefaultTypeUri(connectionParams.connectionUri)){
+		if (!this._connectionStatusManager.isDefaultTypeUri(connectionParams.connectionUri)) {
 			this._updateStatus(connectionParams.connectionUri, ConnectionActivityStatus.Connected, connectionParams.connectionProfile);
 		}
 	}
 
 	private _onDisconnect(connectionUri: IConnectionParams): void {
-		if (!this._connectionFactory.isDefaultTypeUri(connectionUri.connectionUri)){
+		if (!this._connectionStatusManager.isDefaultTypeUri(connectionUri.connectionUri)) {
 			this._updateStatus(connectionUri.connectionUri, ConnectionActivityStatus.Disconnected, undefined);
 		}
 	}
@@ -105,7 +105,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	// Update connection status for the editor
 	private _updateStatus(uri: string, newStatus: ConnectionActivityStatus, connectionProfile: IConnectionProfile) {
 		if (uri) {
-			if (!(uri in this._connectionStatusEditors)){
+			if (!(uri in this._connectionStatusEditors)) {
 				this._connectionStatusEditors[uri] = new ConnectionStatusEditor();
 			}
 			this._connectionStatusEditors[uri].connectionActivityStatus = newStatus;
@@ -119,8 +119,8 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor) {
 			let currentUri = this._getEditorUri(activeEditor.input);
-			if (uri === currentUri){
-				switch(this._connectionStatusEditors[uri].connectionActivityStatus){
+			if (uri === currentUri) {
+				switch (this._connectionStatusEditors[uri].connectionActivityStatus) {
 					case ConnectionActivityStatus.Connected:
 						this._setConnectionText(this._connectionStatusEditors[uri].connectionProfile);
 						show(this._connectionElement);
@@ -136,7 +136,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	// Set connection info to connection status bar
 	private _setConnectionText(connectionProfile: IConnectionProfile): void {
 		let text: string = connectionProfile.serverName;
-		if (text){
+		if (text) {
 			if (connectionProfile.databaseName && connectionProfile.databaseName !== '') {
 				text = text + ' : ' + connectionProfile.databaseName;
 			} else {
@@ -145,11 +145,11 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 		}
 
 		let tooltip: string =
-           'Server name: ' + connectionProfile.serverName + '\r\n' +
-           'Database name: ' + (connectionProfile.databaseName ? connectionProfile.databaseName : '<default>') + '\r\n';
+			'Server name: ' + connectionProfile.serverName + '\r\n' +
+			'Database name: ' + (connectionProfile.databaseName ? connectionProfile.databaseName : '<default>') + '\r\n';
 
 		if (connectionProfile.userName && connectionProfile.userName !== '') {
-           tooltip = tooltip + 'Login name: ' + connectionProfile.userName + '\r\n';
+			tooltip = tooltip + 'Login name: ' + connectionProfile.userName + '\r\n';
 		}
 
 		this._connectionElement.textContent = text;
@@ -159,7 +159,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	private _getEditorUri(input: IEditorInput): string {
 		let uri: URI;
 		if (input instanceof QueryInput) {
-			let queryCast: QueryInput = <QueryInput> input;
+			let queryCast: QueryInput = <QueryInput>input;
 			if (queryCast) {
 				uri = queryCast.getResource();
 			}

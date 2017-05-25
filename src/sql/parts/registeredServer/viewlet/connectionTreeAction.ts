@@ -132,7 +132,7 @@ export class ChangeConnectionAction extends Action {
 		} else {
 			let options: IConnectionCompletionOptions = {
 				params: undefined,
-				saveToSettings: false,
+				saveTheConnection: false,
 				showDashboard: true,
 				showConnectionDialogOnError: true
 			};

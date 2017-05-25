@@ -12,7 +12,7 @@ import { MenuItem } from 'primeng/primeng';
 import data = require('data');
 
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
+import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import { IDashboardPage } from 'sql/parts/dashboard/common/dashboard';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
@@ -140,7 +140,7 @@ export class DashboardComponent {
 
 	private onDatabaseChanged(): void {
 		this.loading = true;
-		this.ownerUri = ConnectionFactory.DashboardUriPrefix + 'browseconn:' + this.connection.connectionProfile.serverName + ';' + this.currentDatabaseName;
+		this.ownerUri = ConnectionStatusManager.DashboardUriPrefix + 'browseconn:' + this.connection.connectionProfile.serverName + ';' + this.currentDatabaseName;
 
 		var newProfile = this.connection.connectionProfile.cloneWithDatabase(this.currentDatabaseName);
 

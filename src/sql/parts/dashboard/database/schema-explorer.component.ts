@@ -7,8 +7,10 @@ import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
 import { ChangeDetectorRef, OnInit } from '@angular/core';
 import { IDashboardComponent } from 'sql/parts/dashboard/common/dashboard';
-import { MetadataType, IConnectableInput, IConnectionManagementService,
-		IConnectionCompletionOptions, ConnectionType  } from 'sql/parts/connection/common/connectionManagement';
+import {
+	MetadataType, IConnectableInput, IConnectionManagementService,
+	IConnectionCompletionOptions, ConnectionType
+} from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
@@ -39,7 +41,7 @@ export class ObjectMetadataWrapper {
 
 		let wrapperArray = new Array(objectMetadata.length);
 		for (let i = 0; i < objectMetadata.length; ++i) {
-			wrapperArray[i] = <ObjectMetadataWrapper> {
+			wrapperArray[i] = <ObjectMetadataWrapper>{
 				metadata: objectMetadata[i]
 			};
 		}
@@ -81,7 +83,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 	}
 
 	public clearLoadingWheel(): void {
-		setTimeout(function(){
+		setTimeout(function () {
 			$('.ui-datatable-emptymessage').css('content', 'none');
 			$('.ui-datatable-emptymessage').css('color', 'inherit');
 			$('.ui-datatable-emptymessage').css('height', 'inherit');
@@ -124,7 +126,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 	public isBrowseEnabled(): boolean {
 		return this.selectedObject
 			&& (this.selectedObject.metadata.metadataType === MetadataType.Table
-			|| this.selectedObject.metadata.metadataType === MetadataType.View);
+				|| this.selectedObject.metadata.metadataType === MetadataType.View);
 	}
 
 	public isExecuteEnabled(): boolean {
@@ -151,7 +153,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 		return metadataType === MetadataType.View;
 	}
 
-	public browseObjects() : void {
+	public browseObjects(): void {
 		$('#browse-button').click();
 	}
 
@@ -166,7 +168,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 						// Connect our editor to the input connection
 						let options: IConnectionCompletionOptions = {
 							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
-							saveToSettings: false,
+							saveTheConnection: false,
 							showDashboard: false,
 							showConnectionDialogOnError: true
 						};
@@ -186,7 +188,7 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 				// Connect our editor
 				let options: IConnectionCompletionOptions = {
 					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
-					saveToSettings: false,
+					saveTheConnection: false,
 					showDashboard: false,
 					showConnectionDialogOnError: true
 				};
@@ -204,11 +206,11 @@ export class SchemaExplorerComponent implements OnInit, IDashboardComponent {
 			this.scriptingService.scriptAsCreate(this.ownerUri, this.selectedObject.metadata).then(result => {
 				if (result && result.script) {
 
-					 let script = result.script;
-					 var startPos: number = script.indexOf('CREATE');
-					 if (startPos > 0) {
+					let script = result.script;
+					var startPos: number = script.indexOf('CREATE');
+					if (startPos > 0) {
 						script = script.substring(startPos);
-					 }
+					}
 
 					this.queryEditorService.newSqlEditor(script);
 				}

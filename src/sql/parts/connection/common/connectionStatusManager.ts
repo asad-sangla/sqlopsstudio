@@ -11,7 +11,7 @@ import { IConnectionProfile } from './interfaces';
 import Utils = require('./utils');
 import * as data from 'data';
 
-export class ConnectionFactory {
+export class ConnectionStatusManager {
 
 	private _connections: { [id: string]: ConnectionManagementInfo };
 	public static readonly DefaultUriPrefix: string = 'connection://';
@@ -146,6 +146,6 @@ export class ConnectionFactory {
 		return uri;
 	}
 	public isDefaultTypeUri(uri: string): boolean {
-		return uri && uri.startsWith(ConnectionFactory.DefaultUriPrefix);
+		return uri && uri.startsWith(ConnectionStatusManager.DefaultUriPrefix);
 	}
 }

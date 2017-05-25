@@ -102,7 +102,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		let fromEditor = params && params.connectionType === ConnectionType.editor;
 		let options: IConnectionCompletionOptions = {
 			params: params,
-			saveToSettings: !fromEditor,
+			saveTheConnection: !fromEditor,
 			showDashboard: !fromEditor,
 			showConnectionDialogOnError: false
 		};
@@ -176,7 +176,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		providerName = providerName ? providerName : this._defaultProviderName;
 		let serverCapabilities = this._capabilitiesMaps[providerName];
 		let newProfile = new ConnectionProfile(serverCapabilities, model);
+		newProfile.saveProfile = true;
 		newProfile.generateNewId();
+		// If connecting from a query editor set "save connection" to false
+		if (this._params && this._params.input && this._params.connectionType === ConnectionType.editor) {
+			newProfile.saveProfile = false;
+		}
 		return newProfile;
 	}
 
@@ -192,10 +197,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		return new TPromise<void>((resolve, reject) => {
 			if (this._defaultProviderName in this._capabilitiesMaps) {
 				this.UpdateModelServerCapabilities(this._inputModel);
-				// If connecting from a query editor set "save connection" to false
-				if (this._params && this._params.input && this._params.connectionType === ConnectionType.editor) {
-					this._model.saveProfile = false;
-				}
+
 				this.doShowDialog(this._params);
 			}
 			let none: void;

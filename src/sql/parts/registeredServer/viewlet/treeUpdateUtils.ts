@@ -7,7 +7,7 @@ import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionPr
 import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
+import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import * as Constants from 'sql/parts/connection/common/constants';
 import * as Utils from 'sql/parts/connection/common/utils';
@@ -32,14 +32,14 @@ export class TreeUpdateUtils {
 				if (!connectionManagementService.isProfileConnected(connectionProfile)) {
 					let options: IConnectionCompletionOptions = {
 						params: undefined,
-						saveToSettings: false,
+						saveTheConnection: false,
 						showDashboard: true,
 						showConnectionDialogOnError: false
 					};
 					connectionManagementService.connect(connectionProfile, undefined, options);
 				}
 				else {
-					let uri = ConnectionFactory.DefaultUriPrefix + connectionProfile.getOptionsKey();
+					let uri = ConnectionStatusManager.DefaultUriPrefix + connectionProfile.getOptionsKey();
 					var connectionInfo = new ConnectionManagementInfo();
 					connectionInfo.extensionTimer = new Utils.Timer();
 					connectionInfo.intelliSenseTimer = new Utils.Timer();
@@ -143,11 +143,15 @@ export class TreeUpdateUtils {
 	public static getObjectExplorerNode(connection: ConnectionProfile, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<TreeNode[]> {
 		if (connectionManagementService.isConnected(undefined, connection)) {
 			var rootNode = objectExplorerService.getObjectExplorerNode(connection);
-			return new TPromise<TreeNode[]>((resolve) => {
-				objectExplorerService.expandTreeNode(rootNode.getSession(), rootNode).then(() => {
-					resolve(rootNode.children);
+			if (rootNode) {
+				return new TPromise<TreeNode[]>((resolve) => {
+					objectExplorerService.expandTreeNode(rootNode.getSession(), rootNode).then(() => {
+						resolve(rootNode.children);
+					});
 				});
-			});
+			} else {
+				return TPromise.as(null);
+			}
 		} else {
 			return TPromise.as(null);
 		}
