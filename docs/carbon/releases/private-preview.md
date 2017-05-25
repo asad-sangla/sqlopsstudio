@@ -37,6 +37,8 @@ Project "Carbon" embraces 'open source' nature and shares feature previews from 
 
 * Error message dialog and error content design is in process.
 
+* Remote File Explorer for remote file system access tasks including CREATE DATABASE and BACKUP.
+
 
 ### Known Functional Issues
 
