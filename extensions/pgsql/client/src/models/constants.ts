@@ -56,6 +56,7 @@ export const configRecentConnections = 'recentConnections';
 export const configMaxRecentConnections = 'maxRecentConnections';
 export const configCopyRemoveNewLine = 'copyRemoveNewLine';
 export const configSplitPaneSelection = 'splitPaneSelection';
+export const configEnablePgSql = 'enabled';
 
 
 // localizable strings

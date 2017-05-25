@@ -288,9 +288,9 @@ export default class PgSqlToolsServiceClient {
         };
     }
 
-    private createServerOptions(servicePath): ServerOptions {
-        let serverArgs = [servicePath];
-        let serverCommand: string = 'python';
+    private createServerOptions(servicePath: string): ServerOptions {
+        let serverArgs = [];
+        let serverCommand: string = servicePath;
 
         // Enable diagnostic logging in the service if it is configured
         let config = workspace.getConfiguration(Constants.extensionConfigSectionName);
@@ -301,7 +301,7 @@ export default class PgSqlToolsServiceClient {
             }
         }
 
-        // run the service host using dotnet.exe from the path
+        // run the service host
         let serverOptions: ServerOptions = {  command: serverCommand, args: serverArgs, transport: TransportKind.stdio  };
         return serverOptions;
     }

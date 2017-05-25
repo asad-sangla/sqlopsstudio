@@ -54,6 +54,11 @@
           "type": "boolean",
           "default": false,
           "description": "[Optional] Log debug output to the VS Code console (Help -> Toggle Developer Tools)"
+        },
+        "pgsql.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "[Optional] Enable PostgreSQL support (currently in development)"
         }
       }
     }

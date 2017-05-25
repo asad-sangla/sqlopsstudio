@@ -5,7 +5,7 @@
 
 'use strict';
 
-import { Runtime, getRuntimeDisplayName } from '../models/platform';
+import { Runtime } from '../models/platform';
 import * as path from 'path';
 import { IConfig, IStatusView, IPackage, PackageError, IHttpClient, IDecompressProvider } from './interfaces';
 import { ILogger } from '../models/interfaces';
@@ -29,6 +29,20 @@ export default class ServiceDownloadProvider {
 	}
 
 	/**
+	 * Returns the download url for given platform
+	 */
+	public getDownloadFileName(platform: Runtime): string {
+		let fileNamesJson = this._config.getPgSqlToolsConfigValue('downloadFileNames');
+		let fileName = fileNamesJson[platform.toString()];
+
+		if (fileName === undefined) {
+			throw new Error(Constants.unsupportedPlatformErrorMessage);
+		}
+
+		return fileName;
+	}
+
+	/**
 	 * Returns SQL tools service installed folder.
 	 */
 	public getInstallDirectory(platform: Runtime): string {
@@ -36,7 +50,7 @@ export default class ServiceDownloadProvider {
 		let basePath = this.getInstallDirectoryRoot(platform);
 		let versionFromConfig = this._config.getPgSqlToolsPackageVersion();
 		basePath = basePath.replace('{#version#}', versionFromConfig);
-		basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
+		basePath = basePath.replace('{#platform#}', platform.toString());
 		if (!fse.existsSync(basePath)) {
 			fse.mkdirsSync(basePath);
 		}
@@ -46,10 +60,10 @@ export default class ServiceDownloadProvider {
 	private getLocalUserFolderPath(platform: Runtime): string {
 		if (platform){
 			switch(platform) {
-				case Runtime.Windows_7_64:
-				case Runtime.Windows_7_86:
+				case Runtime.Windows_64:
+				case Runtime.Windows_86:
 					return process.env.APPDATA;
-				case Runtime.OSX_10_11_64:
+				case Runtime.OSX:
 					return process.env.HOME + '/Library/Preferences';
 				default:
 					return '/var/local';
@@ -75,10 +89,11 @@ export default class ServiceDownloadProvider {
 		return basePath;
 	}
 
-	private getGetDownloadUrl(): string {
+	private getGetDownloadUrl(fileName: string): string {
 		let baseDownloadUrl = this._config.getPgSqlToolsServiceDownloadUrl();
 		let version = this._config.getPgSqlToolsPackageVersion();
 		baseDownloadUrl = baseDownloadUrl.replace('{#version#}', version);
+		baseDownloadUrl = baseDownloadUrl.replace('{#filename#}', fileName);
 		return baseDownloadUrl;
 	}
 
@@ -90,10 +105,11 @@ export default class ServiceDownloadProvider {
 		const strictSSL = this._config.getWorkspaceConfig('http.proxyStrictSSL', true);
 
 		return new Promise<boolean>((resolve, reject) => {
+			const fileName = this.getDownloadFileName(platform);
 			const installDirectory = this.getInstallDirectory(platform);
 
 			this._logger.appendLine(`${Constants.serviceInstallingTo} ${installDirectory}.`);
-			const urlString = this.getGetDownloadUrl();
+			const urlString = this.getGetDownloadUrl(fileName);
 
 			this._logger.appendLine(`${Constants.serviceDownloading} ${urlString}`);
 			let pkg: IPackage = {
