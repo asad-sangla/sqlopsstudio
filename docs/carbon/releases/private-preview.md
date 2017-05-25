@@ -4,7 +4,7 @@
 
 Project "Carbon" embraces 'open source' nature and shares feature previews from its early shape. The source code will be published as a public open source project soon. Currently implemented "Carbon" features are roughly in two engineering states.
 
-* **Punch-through**: Engineering focus is on **getting things up and running** in the service and API layers first. UX design is not implemented or in prcess at an early stage. Lots of rooms for bold changes through customer feedback and contributions.
+* **Punch-through**: Engineering focus is on **getting things up and running** in the service and API layers first. UX design is not implemented or in process at an early stage. Lots of rooms for bold changes through customer feedback and contributions.
 
 * **Alpha / Beta**: Functional scenarios and UX designs are implemented. Fit & finish is in process. Features still require various refinements through customer feedback.
 
