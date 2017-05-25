@@ -29,7 +29,7 @@ Project "Carbon" embraces 'open source' nature and shares feature previews from 
 
 ### Known Design Issues
 
-* MANAGE page layout: new design and implementation is in process.
+* MANAGE page layout: new design and implementation are in process.
 
 * Dialog UI layout: Fly-out dialog based UI implementation is in process. 
 
