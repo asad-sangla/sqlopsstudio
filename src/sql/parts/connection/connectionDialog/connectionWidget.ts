@@ -23,7 +23,8 @@ import data = require('data');
 
 export class ConnectionWidget {
 	private _builder: Builder;
-	private _serverGroupInputBox: InputBox;
+	private _serverGroupSelectBox: ConnectionDialogSelectBox;
+	private _serverGroupOptions: string[];
 	private _serverNameInputBox: InputBox;
 	private _databaseNameInputBox: InputBox;
 	private _userNameInputBox: InputBox;
@@ -36,11 +37,14 @@ export class ConnectionWidget {
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
 	private _tableContainer: Builder;
 	private _providerName: string;
-	private _authTypeMap: { [providerName: string]: [AuthenticationType]} = {
+	private _authTypeMap: { [providerName: string]: [AuthenticationType] } = {
 		[Constants.mssqlProviderName]: [new AuthenticationType('Integrated', false), new AuthenticationType('SqlLogin', true)],
 		[Constants.pgsqlProviderName]: [new AuthenticationType('SqlLogin', true)]
 	};
 	private _saveProfile: boolean;
+	public DefaultServerGroup = '<Default>';
+	private _addNewServerGroup = 'Add New Group...';
+	public NoneServerGroup = '<None>';
 
 	constructor(options: data.ConnectionOption[], callbacks: IConnectionComponentCallbacks, providerName: string) {
 		this._callbacks = callbacks;
@@ -57,6 +61,8 @@ export class ConnectionWidget {
 	}
 
 	public createConnectionWidget(): HTMLElement {
+		this._serverGroupOptions = [this.DefaultServerGroup];
+		this._serverGroupSelectBox = new ConnectionDialogSelectBox(this._serverGroupOptions, this.DefaultServerGroup);
 		this._builder = $().div({ class: 'connection-table' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this._tableContainer = tableContainer;
@@ -81,8 +87,8 @@ export class ConnectionWidget {
 		this._rememberPasswordCheckBox = this.appendCheckbox(this._tableContainer, 'Remember Password', 'connection-checkbox', 'connection-input', false);
 		this._databaseNameInputBox = ConnectionDialogHelper.appendInputBox(
 			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.databaseName].displayName, 'connection-label', 'connection-input'));
-		this._serverGroupInputBox = ConnectionDialogHelper.appendInputBox(
-			ConnectionDialogHelper.appendRow(this._tableContainer, 'Server Group', 'connection-label', 'connection-input'));
+		ConnectionDialogHelper.appendInputSelectBox(
+			ConnectionDialogHelper.appendRow(this._tableContainer, 'Server Group', 'connection-label', 'connection-input'), this._serverGroupSelectBox);
 		this._advancedButton = this.createAdvancedButton(this._tableContainer, 'Advanced...');
 	}
 
@@ -133,6 +139,10 @@ export class ConnectionWidget {
 			this.onAuthTypeSelected(selectedAuthType);
 		}));
 
+		this._toDispose.push(this._serverGroupSelectBox.onDidSelect(selectedGroup => {
+			this.onGroupSelected(selectedGroup);
+		}));
+
 		this._toDispose.push(this._serverNameInputBox.onDidChange(serverName => {
 			this.serverNameChanged(serverName);
 		}));
@@ -150,11 +160,9 @@ export class ConnectionWidget {
 		}));
 	}
 
-	private onSaveConnectionChecked(viaKeyboard: boolean) {
-		if (this._saveProfile) {
-			this._serverGroupInputBox.enable();
-		} else {
-			this._serverGroupInputBox.disable();
+	private onGroupSelected(selectedGroup: string) {
+		if (selectedGroup === this._addNewServerGroup) {
+			this._callbacks.onCreateNewServerGroup();
 		}
 	}
 
@@ -200,6 +208,19 @@ export class ConnectionWidget {
 		this._advancedButton.focus();
 	}
 
+	public focusOnServerGroup() {
+		this._serverGroupSelectBox.focus();
+	}
+
+	public updateServerGroup(connectionGroups: string[], groupName?: string) {
+		this._serverGroupOptions = connectionGroups;
+		this._serverGroupOptions.push(this._addNewServerGroup);
+		this._serverGroupSelectBox.setOptions(this._serverGroupOptions);
+		if (groupName) {
+			this._serverGroupSelectBox.selectWithOptionName(groupName);
+		}
+	}
+
 	public initDialog(connectionInfo: IConnectionProfile): void {
 		this.fillInConnectionInputs(connectionInfo);
 		this._serverNameInputBox.focus();
@@ -215,10 +236,20 @@ export class ConnectionWidget {
 			this._databaseNameInputBox.value = this.getModelValue(connectionInfo.databaseName);
 			this._userNameInputBox.value = this.getModelValue(connectionInfo.userName);
 			this._passwordInputBox.value = this.getModelValue(connectionInfo.password);
-			this._serverGroupInputBox.value = this.getModelValue(connectionInfo.groupFullName);
-			this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
 			this._saveProfile = connectionInfo.saveProfile;
-			this.onSaveConnectionChecked(this._saveProfile);
+			let groupName: string;
+			if (this._saveProfile) {
+				if (!connectionInfo.groupFullName) {
+					groupName = this.DefaultServerGroup;
+				} else {
+					groupName = connectionInfo.groupFullName.replace('root/', '');
+				}
+			} else {
+				groupName = this.NoneServerGroup;
+			}
+			this._serverGroupSelectBox.selectWithOptionName(groupName);
+			this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
+
 			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
 				var authTypeDisplayName = this.getAuthTypeDisplayName(connectionInfo.authenticationType);
 				this._authTypeSelectBox.selectWithOptionName(authTypeDisplayName);
@@ -255,10 +286,6 @@ export class ConnectionWidget {
 
 	public handleResetConnection(): void {
 		this._advancedButton.enabled = true;
-	}
-
-	public get serverGroup(): string {
-		return this._serverGroupInputBox.value;
 	}
 
 	public get serverName(): string {
@@ -314,7 +341,16 @@ export class ConnectionWidget {
 			model.password = this.password;
 			model.authenticationType = this.authenticationType;
 			model.savePassword = this._rememberPasswordCheckBox.checked;
-			model.groupFullName = this.serverGroup;
+			if (this._serverGroupSelectBox.value === this.DefaultServerGroup) {
+				model.groupFullName = '';
+				model.saveProfile = true;
+			} else if (this._serverGroupSelectBox.value === this.NoneServerGroup) {
+				model.groupFullName = '';
+				model.saveProfile = false;
+			} else if (this._serverGroupSelectBox.value !== this._addNewServerGroup) {
+				model.groupFullName = this._serverGroupSelectBox.value;
+				model.saveProfile = true;
+			}
 			model.groupId = undefined;
 		}
 		return validInputs;

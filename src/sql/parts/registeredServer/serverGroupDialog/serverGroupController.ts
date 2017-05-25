@@ -6,7 +6,7 @@
 'use strict';
 import {
 	IConnectionManagementService, IErrorMessageService,
-	IServerGroupController
+	IServerGroupController, IServerGroupDialogCallbacks
 } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ServerGroupDialog } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupDialog';
@@ -21,6 +21,7 @@ export class ServerGroupController implements IServerGroupController {
 	private _container: HTMLElement;
 	private _serverGroupDialog: ServerGroupDialog;
 	private _connectionManagementService: IConnectionManagementService;
+	private _callbacks: IServerGroupDialogCallbacks;
 
 	constructor(
 		@IPartService private _partService: IPartService,
@@ -37,6 +38,9 @@ export class ServerGroupController implements IServerGroupController {
 			description: this._serverGroupDialog.groupDescription
 		};
 		this._connectionManagementService.saveProfileGroup(newGroup).then(groupId => {
+			if (this._callbacks) {
+				this._callbacks.onAddGroup(this._serverGroupDialog.groupName);
+			}
 			this._serverGroupDialog.close();
 		}).catch(err => {
 			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
@@ -44,14 +48,22 @@ export class ServerGroupController implements IServerGroupController {
 
 	}
 
-	public showDialog(connectionManagementService: IConnectionManagementService): TPromise<void> {
+	private handleOnClose(): void {
+		if (this._callbacks) {
+			this._callbacks.onClose();
+		}
+	}
+
+	public showDialog(connectionManagementService: IConnectionManagementService, callbacks?: IServerGroupDialogCallbacks): TPromise<void> {
 		this._connectionManagementService = connectionManagementService;
+		this._callbacks = callbacks ? callbacks : undefined;
 		if (!this._serverGroupDialog) {
 			let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 			this._container = container;
 			this._serverGroupDialog = new ServerGroupDialog(container, {
 				onCancel: () => { },
 				onAddServerGroup: () => this.handleOnAddServerGroup(),
+				onClose: () => this.handleOnClose()
 			});
 			this._serverGroupDialog.create();
 		}

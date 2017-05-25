@@ -10,6 +10,7 @@ import { IConnectionComponentCallbacks, IConnectionComponentController, IConnect
 import { ConnectionWidget } from 'sql/parts/connection/connectionDialog/connectionWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import data = require('data');
 
 export class ConnectionController implements IConnectionComponentController {
@@ -31,10 +32,18 @@ export class ConnectionController implements IConnectionComponentController {
 			(property) => (property.specialValueType !== null && property.specialValueType !== undefined));
 		this._connectionWidget = new ConnectionWidget(specialOptions, {
 			onSetConnectButton: (enable: boolean) => this._callback.onSetConnectButton(enable),
+			onCreateNewServerGroup: () => this.onCreateNewServerGroup(),
 			onAdvancedProperties: () => this.handleOnAdvancedProperties(),
 			onSetAzureTimeOut: () => this.handleonSetAzureTimeOut()
 		}, providerName);
 		this._providerName = providerName;
+	}
+
+	private onCreateNewServerGroup(): void {
+		this._connectionManagementService.showServerGroupDialog({
+			onAddGroup: (groupName) => this._connectionWidget.updateServerGroup(this.getAllServerGroups(), groupName),
+			onClose: () => this._connectionWidget.focusOnServerGroup()
+		});
 	}
 
 	private handleonSetAzureTimeOut(): void {
@@ -58,7 +67,29 @@ export class ConnectionController implements IConnectionComponentController {
 		return this._connectionWidget.createConnectionWidget();
 	}
 
+	private getServerGroupHelper(group: ConnectionProfileGroup, groupNames: string[]): void {
+		if (group) {
+			if (group.fullName !== '') {
+				groupNames.push(group.fullName);
+			}
+			if (group.hasChildren()) {
+				group.children.forEach((child) => this.getServerGroupHelper(child, groupNames));
+			}
+		}
+	}
+
+	private getAllServerGroups(): string[] {
+		var connectionGroupRoot = this._connectionManagementService.getConnectionGroups();
+		var connectionGroupNames: string[] = [];
+		if (connectionGroupRoot && connectionGroupRoot.length > 0) {
+			this.getServerGroupHelper(connectionGroupRoot[0], connectionGroupNames);
+		}
+		connectionGroupNames.push(this._connectionWidget.DefaultServerGroup, this._connectionWidget.NoneServerGroup);
+		return connectionGroupNames;
+	}
+
 	public initDialog(connectionInfo: IConnectionProfile): void {
+		this._connectionWidget.updateServerGroup(this.getAllServerGroups());
 		this._model = connectionInfo;
 		this._model.providerName = this._providerName;
 		this._model.options['applicationName'] = 'carbon';

@@ -29,7 +29,9 @@ export class ConnectionDialogSelectBox extends SelectBox {
 	}
 
 	public selectWithOptionName(optionName: string): void {
-		this.select(this._optionsDictionary[optionName]);
+		if (this._optionsDictionary[optionName] !== null || this._optionsDictionary[optionName] !== undefined) {
+			this.select(this._optionsDictionary[optionName]);
+		}
 	}
 
 	public select(index: number): void {
@@ -37,6 +39,15 @@ export class ConnectionDialogSelectBox extends SelectBox {
 		if (this._dialogOptions !== undefined){
 			this._selectedOption = this._dialogOptions[index];
 		}
+	}
+
+	public setOptions(options: string[], selected?: number, disabled?: number): void {
+		this._optionsDictionary = [];
+		for (var i = 0; i<options.length; i++) {
+			this._optionsDictionary[options[i]] = i;
+		}
+		this._dialogOptions = options;
+		super.setOptions(options, selected, disabled);
 	}
 
 	public get value(): string {

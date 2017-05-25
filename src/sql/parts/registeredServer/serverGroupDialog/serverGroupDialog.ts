@@ -20,6 +20,7 @@ import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 export interface IServerGroupCallbacks {
 	onAddServerGroup: () => void;
 	onCancel: () => void;
+	onClose: () => void;
 }
 
 export interface IColorButtonInfo {
@@ -264,6 +265,7 @@ export class ServerGroupDialog {
 
 	public close() {
 		jQuery('#serverGroupDialogModal').modal('hide');
+		this._callbacks.onClose();
 	}
 
 	public open() {

@@ -28,6 +28,7 @@ export interface IConnectionResult {
 
 export interface IConnectionComponentCallbacks {
 	onSetConnectButton: (enable: boolean) => void;
+	onCreateNewServerGroup?: () => void;
 	onAdvancedProperties?: () => void;
 	onSetAzureTimeOut?: () => void;
 }

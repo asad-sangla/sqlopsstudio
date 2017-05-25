@@ -82,7 +82,7 @@ export interface IConnectionManagementService {
 	/**
 	 * Opens the add server group dialog
 	 */
-	showServerGroupDialog(): Promise<void>;
+	showServerGroupDialog(callbacks?: IServerGroupDialogCallbacks): Promise<void>;
 
 	/**
 	 * Load the password and opens a new connection
@@ -189,10 +189,14 @@ export interface IConnectionDialogService {
 	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model: IConnectionProfile, error?: string): TPromise<void>;
 }
 
-export const IServerGroupController = createDecorator<IConnectionDialogService>('serverGroupController');
+export interface IServerGroupDialogCallbacks {
+	onAddGroup(groupName: string): void;
+	onClose(): void;
+}
+export const IServerGroupController = createDecorator<IServerGroupController>('serverGroupController');
 export interface IServerGroupController {
 	_serviceBrand: any;
-	showDialog(connectionManagementService: IConnectionManagementService): TPromise<void>;
+	showDialog(connectionManagementService: IConnectionManagementService, callbacks?: IServerGroupDialogCallbacks): TPromise<void>;
 }
 
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');

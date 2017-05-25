@@ -13,7 +13,7 @@ import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/edi
 import {
 	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
 	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionChangedParams,
-	IConnectionParams, IConnectionResult, IServerGroupController
+	IConnectionParams, IConnectionResult, IServerGroupController, IServerGroupDialogCallbacks
 } from 'sql/parts/connection/common/connectionManagement';
 import platform = require('vs/platform/platform');
 import { Memento } from 'vs/workbench/common/memento';
@@ -195,10 +195,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 	/**
 	 * Opens the add server group dialog
 	 */
-	public showServerGroupDialog(): Promise<void> {
+	public showServerGroupDialog(callbacks?: IServerGroupDialogCallbacks): Promise<void> {
 		let self = this;
 		return new Promise<void>((resolve, reject) => {
-			self._serverGroupController.showDialog(self).then(() => {
+			self._serverGroupController.showDialog(self, callbacks).then(() => {
 				resolve();
 			}, error => {
 				reject();
