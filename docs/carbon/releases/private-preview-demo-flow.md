@@ -76,6 +76,8 @@ Quickly go over the state of art of Project "Carbon"
 18. On **CarbonPreviewDB** MANAGE page, search tables with **table:** command!! or a name part to show tables, views, functions and proc that have the same name part.
 
     * mention that each object type will have associated actions like SELECT Top 1000, Edit Data, SCRIPT AS etc.
+	
+Show settings.json as a way to have the setting portability.
 
 ### Show Editors 
 
