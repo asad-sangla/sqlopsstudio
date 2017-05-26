@@ -77,7 +77,9 @@ Quickly go over the state of art of Project "Carbon"
 
     * mention that each object type will have associated actions like SELECT Top 1000, Edit Data, SCRIPT AS etc.
 
-### Go to OE and browse down to Tables
+### Show Editors 
+
+Go to OE and browse down to Tables
 
 19. On a table, open contenxt menu and select **Edit Data**
 
@@ -85,9 +87,9 @@ Quickly go over the state of art of Project "Carbon"
 
 21. On the table, open context menu and select **SELECT Top 1000***
 
-22. Show the reulst.
+22. **Show the reulst**.
 
-23. Save as JSON
+23. **Save as JSON**
 
 ### Backup part 1
 
