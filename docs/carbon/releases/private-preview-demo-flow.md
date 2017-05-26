@@ -121,10 +121,16 @@ Quickly go over the state of art of Project "Carbon"
 
 
 1. OE - Basic, Comprehensive, Custom view
-    - Show settings.json pseudo code to change the mode and show / hide specific OE folder.
+    - It should be like survey like question and survey like answers.
+		- What was the pain point of OE in SSMS?
+		- What we have heard...
+		- Proposed solution idea - Option 1. Show Basics only Option 2. Basic, Comprehensive and Custom View
+		- Tell us whenever
+##### cut		
+	- Show settings.json pseudo code to change the mode and show / hide specific OE folder.
     - Show mockup of the result.
     - Show context menu mockup 
-        - explain configuration goes to MANAGE. Operations such as Restore, Failover stays in OE context menu.
+        - Explain configuration goes to MANAGE. Operations such as Restore, Failover stays in OE context menu.
 
 2. Manage with Insight
     - Use Audit as an exmaple
