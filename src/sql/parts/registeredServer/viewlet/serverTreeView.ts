@@ -46,7 +46,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		@IMessageService messageService: IMessageService,
 		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
 	) {
-		super(actionRunner, false, nls.localize({ key: 'registeredServersSection', comment: ['Registered Servers Tree'] }, "Registered Servers Section"), messageService, keybindingService, contextMenuService);
+		super(actionRunner, false, nls.localize({ key: 'registeredServersSection', comment: ['Servers Tree'] }, "Servers Section"), messageService, keybindingService, contextMenuService);
 		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
 			AddServerAction.ID,
 			AddServerAction.LABEL);

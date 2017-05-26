@@ -56,7 +56,7 @@ export class TreeCreationUtils {
 		}, {
 				indentPixels: 10,
 				twistiePixels: 20,
-				ariaLabel: nls.localize({ key: 'regTreeAriaLabel', comment: ['Registered Servers'] }, 'Registered Servers')
+				ariaLabel: nls.localize({ key: 'regTreeAriaLabel', comment: ['Servers'] }, 'Servers')
 			});
 
 	}
