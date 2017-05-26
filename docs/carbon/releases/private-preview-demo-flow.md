@@ -73,9 +73,9 @@ Quickly go over the state of art of Project "Carbon"
 
 17. Use snipet, show select statement with Peek Definition and IntelliSense.
 
-18. On **CarbonPreviewDB** MANAGE page, search tables with **table:** type command!! and name to show tables, views, functions and proc that have the name part.
+18. On **CarbonPreviewDB** MANAGE page, search tables with **table:** command!! or a name part to show tables, views, functions and proc that have the same name part.
 
-    * mention that each object type will has associated actions like SELECT Top 1000, Edit Data, SCRIPT AS etc.
+    * mention that each object type will have associated actions like SELECT Top 1000, Edit Data, SCRIPT AS etc.
 
 ### Go to OE and browse down to Tables
 
