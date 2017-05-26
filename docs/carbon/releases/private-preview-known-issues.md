@@ -51,5 +51,3 @@ Project "Carbon" embraces 'open source' nature and shares feature previews from 
 * SELECT TOP 1000 OE action on table may fail. 
 
 * SCRIPT CREATE OE action on a database object may fail.
-
-* T-SQL snippets are listed twice. One set for SQL Server and another set for PostgreSQL.
