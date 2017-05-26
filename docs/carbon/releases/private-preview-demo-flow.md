@@ -117,7 +117,7 @@ Quickly go over the state of art of Project "Carbon"
 33. on the terminal, show the backup file with **ls -l**
 
 
-## Post Demo - Mockups
+## Post Demo - Areas that we need feedback
 
 
 1. OE - Basic, Comprehensive, Custom view
