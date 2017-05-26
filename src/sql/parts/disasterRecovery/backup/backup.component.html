@@ -6,44 +6,48 @@
 -->
 
 <form #myForm="ngForm" (ngSubmit)="onSubmit(f)">
-  <div class="form-group">
 
-	<div class = "backup-database">
-		<table class="backup-database-content">
-			<tr>
-				<td class="backup-database-label">
-					<div style="display:block">Database</div>
-				</td>
-				<td class="backup-database-value">
-					<div style="display:block; width:100%">{{connection?.connectionProfile?.databaseName}}</div>
-				</td>
-			</tr>
-			<tr>
-				<td class="recovery-model-label">
-					<div style="display:block">Recovery model</div>
-				</td>
-				<td class="recovery-model-value">
-					<div style="display:block">{{recoveryModel}}</div>
-				</td>
-			</tr>
-			<tr>
-				<td class="backup-component-label">
-					<div style="display:block">Backup component</div>
-				</td>
-				<td class="backup-component-value">
-					<div style="display:block">Database</div>
-				</td>
-			</tr>
-			<tr>
-				<td class="backup-type-label">
-					<div style="display:block">Backup type</div>
-				</td>
-				<td class="backup-type select-type">
-					<select name="backup-type-list" id="backup-type-list" #backupTypeContainer style="width:100%; background-color:#3C3C3C"></select>
-				</td>
-			</tr>
-		</table>
-	</div>
+<div class="backup-content">
+	<table class="backup-input-table" style="width:100%">
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Database
+			</td>
+			<td class="task-text-input" style="background-color:#3C3C3C; color:#ffffff;">
+				<div>{{connection?.connectionProfile?.databaseName}}</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Recovery model
+			</td>
+			<td class="task-input-table-content-column" style="background-color:#3C3C3C; color:#ffffff;">
+				<div>{{recoveryModel}}</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Backup component
+			</td>
+			<td class="backup-component-value" style="background-color:#3C3C3C; color:#ffffff;">
+				<div style="display:block">Database</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Backup type
+			</td>
+			<td class="backup-type">
+				<select name="backup-type-list" id="backup-type-list" #backupTypeContainer style="width:100%; background-color:#3C3C3C; color:#ffffff; border-style:none;" ></select>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Backup Device
+			</td>
+		</tr>
+	</table>
+
 
 <!-- TODO: Show component selection when we have filegroup browser
 	<div class = "backup-component-radio">
@@ -55,47 +59,31 @@
 	</div>
 	-->
 
-	<div class = "backup-device" style="display:block">
-		Backup Device
-	</div>
+	<table class="backup-path-input-text" style="width:100%">
+		<tr>
+			<td colspan="3" style="width:100%;">
+			<select name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" style="border-style:none; width:100%; background-color:#3C3C3C; color:#ffffff"></select>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 100%">
+				<input name="backup-path-input" type="text" [(ngModel)]="backupPathInput" style="border-style:none; width:100%; background-color:#3C3C3C" />
+			</td>
+			<td>
+				<button class="addButton" style=" width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;" [disabled]="disableAdd" (click)="onAddClick()">Add</button>
+			</td>
+			<td>
+				<button class="removeButton" style=" width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;" [disabled]="disableRemove" (click)="onRemoveClick()">Remove</button>
+			</td>
+		</tr>
+		<tr>
+			<td></td><td></td>
+			<td style="float:right">
+				<button type="submit" class="okButton" [disabled]="disableOk" (click)="onOk()" style="float: right; width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;">OK</button>
+			</td>
+		</tr>
+	</table>
 
-	<div class = "backup-path">
-		<select name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" style="width:50%; background-color:#3C3C3C"></select>
-	</div>
-
-	<div class = "backup-path-input-text">
-		<input name="backup-path-input" class="task-text-input" type="text" [(ngModel)]="backupPathInput" />
-		<button class="addButton" [disabled]="disableAdd" (click)="onAddClick()">Add</button>
-		<button class="removeButton" [disabled]="disableRemove" (click)="onRemoveClick()">Remove</button>
-	</div>
-
-	<div class="task-button-bar">
-		<button type="submit" class="okButton" [disabled]="disableOk" (click)="onOk()">OK</button>
-	</div>
-
-<!-- TODO: add script & cancel buttons
-	<div id="backup-buttons">
-		<table class="footer-buttons">
-			<tr>
-				<td>
-					<div class="footer-button" >
-						<button class="scriptButton" [disabled]="disableOk" >Script</button>
-					</div>
-				</td>
-				<td>
-					<div class="footer-button">
-						<button type="submit" class="okButton" [disabled]="disableOk" (click)="onOk()" style="padding-right:8px; width: 100px; background: #0E639C; box-sizing: border-box; display: inline-block; padding: 4px; text-align: center; color: white; cursor: pointer;">OK</button>
-					</div>
-				</td>
-				<td>
-					<div class="footer-button">
-						<button class="cancelButton">Cancel</button>
-					</div>
-				</td>
-			</tr>
-		</table>
-	</div>
--->
   </div>
 </form>
 
