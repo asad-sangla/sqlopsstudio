@@ -6,7 +6,7 @@
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IConnectionManagementService, IConnectionCompletionOptions, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
-import { IQueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -45,7 +45,7 @@ export class EditDataAction extends Action {
 							// Connect our editor
 							let options: IConnectionCompletionOptions = {
 								params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
-								saveToSettings: false,
+								saveTheConnection: false,
 								showDashboard: false,
 								showConnectionDialogOnError: true
 							};

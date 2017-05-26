@@ -5,10 +5,75 @@
 
 'use strict';
 
-export interface CategoryValue {
-    displayName: string;
+export interface CreateSessionResponse {
+	sessionId: string;
+}
 
-    name: string;
+export interface SessionCreatedParameters {
+	success: boolean;
+	sessionId: string;
+	rootNode: NodeInfo;
+	errorMessage: string;
+}
+
+export interface ExpandResponse {
+	nodePath: string;
+	sessionId: string;
+	nodes: NodeInfo[];
+	errorMessage: string;
+}
+
+export interface NodeInfo {
+	nodePath: string;
+	nodeType: string;
+	nodeSubType: string;
+	nodeStatus: string;
+	label: string;
+	isLeaf: boolean;
+	metadata: ObjectMetadata;
+	errorMessage: string;
+}
+
+export interface ExpandParams {
+	sessionId: string;
+	nodePath: string;
+}
+
+export interface CloseSessionParams {
+	sessionId: string;
+}
+
+export interface CloseSessionResponse {
+	success: boolean;
+	sessionId: string;
+}
+
+export interface CategoryValue {
+	displayName: string;
+
+	name: string;
+}
+
+export interface ServiceOption {
+	name: string;
+
+	displayName: string;
+
+	description: string;
+
+	groupName: string;
+
+	valueType: string;
+
+	defaultValue: string;
+
+	objectType: string;
+
+	categoryValues: CategoryValue[];
+
+	isRequired: boolean;
+
+	isArray: boolean;
 }
 
 export interface ConnectionOption {
@@ -24,6 +89,8 @@ export interface ConnectionOption {
 
 	defaultValue: string;
 
+	objectType: string;
+
 	categoryValues: CategoryValue[];
 
 	specialValueType: string;
@@ -31,14 +98,23 @@ export interface ConnectionOption {
 	isIdentity: boolean;
 
 	isRequired: boolean;
+
+	isArray: boolean;
 }
 
-export interface ConnectionProviderOptions  {
+export interface ConnectionProviderOptions {
 	options: ConnectionOption[];
 }
 
+export interface AdminServicesProviderOptions {
+	databaseInfoOptions: ServiceOption[];
 
-export interface DataProtocolServerCapabilities  {
+	databaseFileInfoOptions: ServiceOption[];
+
+	fileGroupInfoOptions: ServiceOption[];
+}
+
+export interface DataProtocolServerCapabilities {
 	protocolVersion: string;
 
 	providerName: string;
@@ -46,6 +122,8 @@ export interface DataProtocolServerCapabilities  {
 	providerDisplayName: string;
 
 	connectionProvider: ConnectionProviderOptions;
+
+	adminServicesProvider: AdminServicesProviderOptions;
 }
 
 /**
@@ -188,6 +266,125 @@ export class CapabiltiesDiscoveryResult {
 	public capabilities: DataProtocolServerCapabilities;
 }
 
+// Task Services types
+
+export enum TaskState {
+	notStarted = 0,
+	running = 1,
+	complete = 2
+}
+
+export interface TaskInfo {
+	taskId: number;
+	state: TaskState;
+}
+
+export interface ListTasksParams {
+	ownerUri: string;
+
+	listActiveTasksOnly: boolean;
+}
+
+export interface ListTasksResponse {
+	tasks: TaskInfo[];
+}
+
+// Admin Services types
+
+export interface DatabaseInfo {
+	/**
+	 * database options
+	 */
+	options: {};
+}
+
+export interface BackupConfigInfo {
+	/**
+	 * default database options
+	 */
+	databaseInfo: {};
+
+	recoveryModel: string;
+	latestBackups: {};
+	defaultBackupFolder: string;
+}
+
+export interface LoginInfo {
+	name: string;
+}
+
+export interface CreateDatabaseParams {
+	ownerUri: string;
+
+	databaseInfo: DatabaseInfo;
+}
+
+export interface CreateDatabaseResponse {
+	result: boolean;
+	taskId: number;
+}
+
+export interface DefaultDatabaseInfoParams {
+	ownerUri: string;
+}
+
+export interface DefaultDatabaseInfoResponse {
+	defaultDatabaseInfo: DatabaseInfo;
+}
+
+export interface BackupConfigInfoResponse {
+	backupConfigInfo: BackupConfigInfo;
+}
+
+export interface CreateLoginParams {
+	ownerUri: string;
+
+	loginInfo: LoginInfo;
+}
+
+export interface CreateLoginResponse {
+	result: boolean;
+	taskId: number;
+}
+
+// Disaster Recovery types
+
+export interface BackupInfo {
+	ownerUri: string;
+
+	databaseName: string;
+
+	backupType: number;
+
+	backupComponent: number;
+
+	backupDeviceType: number;
+
+	selectedFiles: string;
+
+	backupsetName: string;
+
+	selectedFileGroup: {[path: string]: string};
+
+	// List of {key: backup path, value: device type}
+	backupPathDevices: {[path: string]: number};
+
+	backupPathList: [string];
+}
+
+export interface BackupParams {
+	ownerUri: string;
+
+	backupInfo: BackupInfo;
+}
+
+export interface BackupResponse {
+	result: boolean;
+	taskId: number;
+}
+
+
+// Query Execution types
 export interface ResultSetSummary {
 	id: number;
 	batchId: number;
@@ -296,16 +493,14 @@ export class MetadataQueryParams {
 	public ownerUri: string;
 }
 
-export enum MetadataType
-{
+export enum MetadataType {
 	Table = 0,
 	View = 1,
 	SProc = 2,
 	Function = 3
 }
 
-export class ObjectMetadata
-{
+export class ObjectMetadata {
 	metadataType: MetadataType;
 
 	metadataTypeName: string;
@@ -319,8 +514,7 @@ export class MetadataQueryResult {
 	public metadata: ObjectMetadata[];
 }
 
-export enum ScriptOperation
-{
+export enum ScriptOperation {
 	Select = 0,
 	Create = 1,
 	Insert = 2,
@@ -498,7 +692,7 @@ export namespace Range {
 	 * Checks whether the given literal conforms to the [Range](#Range) interface.
 	 */
 	export function is(value: any): value is Range {
-		let candidate  = value as Range;
+		let candidate = value as Range;
 		return Is.defined(candidate) && Position.is(candidate.start) && Position.is(candidate.end);
 	}
 }
@@ -656,7 +850,7 @@ export namespace Command {
 	/**
 	 * Creates a new Command literal.
 	 */
-	export function create(title: string, command: string, ...args:any[]): Command {
+	export function create(title: string, command: string, ...args: any[]): Command {
 		let result: Command = { title, command };
 		if (Is.defined(args) && args.length > 0) {
 			result.arguments = args;
@@ -1094,7 +1288,7 @@ export namespace CompletionList {
 	 * @param isIncomplete The list is not complete.
 	 */
 	export function create(items?: CompletionItem[], isIncomplete?: boolean): CompletionList {
-		return { items: items ? items : [], isIncomplete: !!isIncomplete};
+		return { items: items ? items : [], isIncomplete: !!isIncomplete };
 	}
 }
 
@@ -1705,7 +1899,7 @@ class FullTextDocument implements TextDocument {
 		this._lineOffsets = null;
 	}
 
-	private getLineOffsets() : number[] {
+	private getLineOffsets(): number[] {
 		if (this._lineOffsets === null) {
 			let lineOffsets: number[] = [];
 			let text = this._content;
@@ -1717,7 +1911,7 @@ class FullTextDocument implements TextDocument {
 				}
 				let ch = text.charAt(i);
 				isLineStart = (ch === '\r' || ch === '\n');
-				if (ch === '\r' && i + 1 < text.length && text.charAt(i+1) === '\n') {
+				if (ch === '\r' && i + 1 < text.length && text.charAt(i + 1) === '\n') {
 					i++;
 				}
 			}
@@ -1729,7 +1923,7 @@ class FullTextDocument implements TextDocument {
 		return this._lineOffsets;
 	}
 
-	public positionAt(offset:number) {
+	public positionAt(offset: number) {
 		offset = Math.max(Math.min(offset, this._content.length), 0);
 
 		let lineOffsets = this.getLineOffsets();

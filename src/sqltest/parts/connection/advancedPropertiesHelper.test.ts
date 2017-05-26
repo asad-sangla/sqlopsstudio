@@ -5,7 +5,7 @@
 
 'use strict';
 import { AdvancedPropertiesHelper, IAdvancedPropertyElement } from 'sql/parts/connection/connectionDialog/advancedPropertiesHelper';
-import { ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
+import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import data = require('data');
 import { Builder, $ } from 'vs/base/browser/builder';
@@ -42,7 +42,7 @@ suite('Advanced properties helper tests', () => {
 			isIdentity: false,
 			isRequired: false,
 			specialValueType: null,
-			valueType: ConnectionOptionType.category
+			valueType: ServiceOptionType.category
 		};
 
 		booleanProperty = {
@@ -55,7 +55,7 @@ suite('Advanced properties helper tests', () => {
 			isIdentity: false,
 			isRequired: false,
 			specialValueType: null,
-			valueType: ConnectionOptionType.boolean
+			valueType: ServiceOptionType.boolean
 		};
 
 		numberProperty = {
@@ -68,7 +68,7 @@ suite('Advanced properties helper tests', () => {
 			isIdentity: false,
 			isRequired: false,
 			specialValueType: null,
-			valueType: ConnectionOptionType.number
+			valueType: ServiceOptionType.number
 		};
 
 		stringProperty = {
@@ -81,7 +81,7 @@ suite('Advanced properties helper tests', () => {
 			isIdentity: false,
 			isRequired: false,
 			specialValueType: null,
-			valueType: ConnectionOptionType.string
+			valueType: ServiceOptionType.string
 		};
 
 

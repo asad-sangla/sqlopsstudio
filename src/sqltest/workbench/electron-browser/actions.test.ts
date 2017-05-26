@@ -7,7 +7,7 @@
 import { TestConnectionManagementService } from 'sqltest/stubs/connectionManagementService.test';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
-import { QueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { QueryEditorService } from 'sql/parts/query/services/queryEditorService';
 import { TestQuickOpenService } from 'vs/workbench/test/browser/quickopen.test';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -35,13 +35,14 @@ suite('SQL Actions Tests', () => {
 			password: 'test',
 			userName: 'testUsername',
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		});
 		connection.id = 'testID';
-		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup');
+		conProfGroup = new ConnectionProfileGroup('testGroup', undefined, 'testGroup', undefined, undefined);
 		conProfGroup.connections = [connection];
 
 		// Setting up our test table name

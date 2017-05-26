@@ -7,7 +7,7 @@
 
 import data = require('data');
 import * as interfaces from 'sql/parts/connection/common/interfaces';
-import { ConnectionOptionSpecialType, ConnectionOptionType } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionOptionSpecialType, ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 
 export class ProviderConnectionInfo implements data.ConnectionInfo {
 
@@ -16,7 +16,9 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 	providerName: string;
 	protected _serverCapabilities: data.DataProtocolServerCapabilities;
 	private static readonly MsSqlProviderName: string = 'MSSQL';
+	private static readonly PgSqlProviderName: string = 'PGSQL';
 	private static readonly SqlAuthentication = 'SqlLogin';
+	public static readonly ProviderPropertyName = 'providerName';
 
 	public constructor(serverCapabilities?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
 		this.options = {};
@@ -44,6 +46,10 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		instance.options = Object.assign({}, this.options);
 		instance.providerName = this.providerName;
 		return instance;
+	}
+
+	public get ServerCapabilities(): data.DataProtocolServerCapabilities {
+		return this._serverCapabilities;
 	}
 
 	public setServerCapabilities(value: data.DataProtocolServerCapabilities) {
@@ -103,7 +109,8 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		let optionMetadata = this._serverCapabilities.connectionProvider.options.find(
 			option => option.specialValueType === ConnectionOptionSpecialType.password);
 		let isPasswordRequired: boolean = optionMetadata.isRequired;
-		if (this.providerName === ProviderConnectionInfo.MsSqlProviderName) {
+		// DEV-NOTE: Have separate cases once we properly hook up pgsqltoolsservice
+		if (this.providerName === ProviderConnectionInfo.MsSqlProviderName || this.providerName === ProviderConnectionInfo.PgSqlProviderName) {
 			isPasswordRequired = this.authenticationType === ProviderConnectionInfo.SqlAuthentication && optionMetadata.isRequired;
 		}
 		return isPasswordRequired;
@@ -117,7 +124,12 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		return undefined;
 	}
 
-	public getUniqueId(): string {
+	/**
+	 * Returns a key derived the connections options (providerName, authenticationType, serverName, databaseName, userName, groupid)
+	 * This key uniquely identifies a connection in a group
+	 * Example: "providerName:MSSQL|authenticationType:|databaseName:database|serverName:server3|userName:user|group:testid"
+	 */
+	public getOptionsKey(): string {
 		let idNames = [];
 		if (this._serverCapabilities) {
 			idNames = this._serverCapabilities.connectionProvider.options.map(o => {
@@ -144,8 +156,22 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 			idValues.push(`${idNames[index]}${ProviderConnectionInfo.nameValueSeparator}${value}`);
 		}
 
-		return 'providerName' + ProviderConnectionInfo.nameValueSeparator +
-		this.providerName + ProviderConnectionInfo.idSeparator + idValues.join(ProviderConnectionInfo.idSeparator);
+		return ProviderConnectionInfo.ProviderPropertyName + ProviderConnectionInfo.nameValueSeparator +
+			this.providerName + ProviderConnectionInfo.idSeparator + idValues.join(ProviderConnectionInfo.idSeparator);
+	}
+
+	public static getProviderFromOptionsKey(optionsKey: string) {
+		let providerId: string = '';
+		if (optionsKey) {
+			let ids: string[] = optionsKey.split(ProviderConnectionInfo.idSeparator);
+			ids.forEach(id => {
+				let idParts = id.split(ProviderConnectionInfo.nameValueSeparator);
+				if (idParts.length >= 2 && idParts[0] === ProviderConnectionInfo.ProviderPropertyName) {
+					providerId = idParts[1];
+				}
+			});
+		}
+		return providerId;
 	}
 
 	public getSpecialTypeOptionName(type: number): string {
@@ -200,10 +226,10 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 
 		this._serverCapabilities.connectionProvider.options.forEach(element => {
 			if (element.specialValueType !== ConnectionOptionSpecialType.serverName &&
-			element.specialValueType !== ConnectionOptionSpecialType.databaseName &&
-			element.specialValueType !== ConnectionOptionSpecialType.authType &&
-			element.specialValueType !== ConnectionOptionSpecialType.password &&
-			element.isIdentity && element.valueType === ConnectionOptionType.string) {
+				element.specialValueType !== ConnectionOptionSpecialType.databaseName &&
+				element.specialValueType !== ConnectionOptionSpecialType.authType &&
+				element.specialValueType !== ConnectionOptionSpecialType.password &&
+				element.isIdentity && element.valueType === ServiceOptionType.string) {
 				let value = this.getOptionValue(element.name);
 				if (value) {
 					parts.push(value);

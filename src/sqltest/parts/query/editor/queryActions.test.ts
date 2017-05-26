@@ -16,9 +16,13 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { TPromise } from 'vs/base/common/winjs.base';
 import { ISelectionData } from 'data';
+import { TestThemeService } from 'sqltest/stubs/themeTestService';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
+
+let none: void;
 
 suite('SQL QueryAction Tests', () => {
 
@@ -34,7 +38,7 @@ suite('SQL QueryAction Tests', () => {
 		testQueryInput.setup(x => x.runQuery(undefined)).callback(() => { calledRunQueryOnInput = true; });
 
 		// Setup a reusable mock QueryEditor
-		editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict);
+		editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict, undefined, new TestThemeService());
 		editor.setup(x => x.currentQueryInput).returns(() => testQueryInput.object);
 		editor.setup(x => x.getSelection()).returns(() => undefined);
 		editor.setup(x => x.isSelectionEmpty()).returns(() => false);
@@ -59,7 +63,7 @@ suite('SQL QueryAction Tests', () => {
 		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAnyString())).returns(() => isConnectedReturnValue);
 
 		// ... Create an editor
-		let editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Loose);
+		let editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Loose, undefined, new TestThemeService());
 		editor.setup(x => x.currentQueryInput).returns(() => testQueryInput.object);
 
 		// If I create a QueryTaskbarAction and I pass a non-connected editor to _getConnectedQueryEditorUri
@@ -91,7 +95,8 @@ suite('SQL QueryAction Tests', () => {
 			.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
 				connectionParams = params;
 				countCalledShowDialog++;
-			});
+			})
+			.returns(() => TPromise.as(none));
 
 		// ... Mock "isConnected" in ConnectionManagementService
 		let connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {}, {}, connectionDialogService.object);
@@ -100,7 +105,7 @@ suite('SQL QueryAction Tests', () => {
 
 		// ... Mock QueryModelService
 		let queryModelService = TypeMoq.Mock.ofType(QueryModelService, TypeMoq.MockBehavior.Loose);
-		queryModelService.setup(x => x.runQuery(TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny())).callback(() => {
+		queryModelService.setup(x => x.runQuery(TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny(), TypeMoq.It.isAny())).callback(() => {
 			calledRunQuery = true;
 		});
 
@@ -144,7 +149,7 @@ suite('SQL QueryAction Tests', () => {
 		queryInput.setup(x => x.runQuery(undefined)).callback(() => {
 			countCalledRunQuery++;
 		});
-		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict);
+		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict, undefined, new TestThemeService());
 		queryEditor.setup(x => x.currentQueryInput).returns(() => queryInput.object);
 		queryEditor.setup(x => x.getSelection()).returns(() => undefined);
 		queryEditor.setup(x => x.isSelectionEmpty()).returns(() => isSelectionEmpty);
@@ -193,7 +198,8 @@ suite('SQL QueryAction Tests', () => {
 			.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
 				showDialogConnectionParams = params;
 				countCalledShowDialog++;
-			});
+			})
+			.returns(() => TPromise.as(none));
 
 		// ... Mock "getSelection" in QueryEditor
 		let queryInput = TypeMoq.Mock.ofType(QueryInput, TypeMoq.MockBehavior.Loose);
@@ -208,7 +214,7 @@ suite('SQL QueryAction Tests', () => {
 		});
 
 		// ... Mock "getSelection" in QueryEditor
-		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Loose);
+		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Loose, undefined, new TestThemeService());
 		queryEditor.setup(x => x.currentQueryInput).returns(() => queryInput.object);
 		queryEditor.setup(x => x.getSelection()).returns(() => {
 			return selectionToReturnInGetSelection;
@@ -349,7 +355,8 @@ suite('SQL QueryAction Tests', () => {
 			.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
 				connectionParams = params;
 				countCalledShowDialog++;
-			});
+			})
+			.returns(() => TPromise.as(none));
 
 		// ... Mock "isConnected" in ConnectionManagementService
 		let connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {}, {}, connectionDialogService.object);
@@ -394,7 +401,8 @@ suite('SQL QueryAction Tests', () => {
 			.callback((service: IConnectionManagementService, params: INewConnectionParams) => {
 				calledShowDialog++;
 				connectionParams = params;
-			});
+			})
+			.returns(() => TPromise.as(none));
 
 		// ... Mock "isConnected" in ConnectionManagementService
 		let connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {}, {}, connectionDialogService.object);

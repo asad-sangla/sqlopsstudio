@@ -33,15 +33,15 @@ const crypto = require('crypto');
 const dependencies = Object.keys(shrinkwrap.dependencies)
 	.concat(Array.isArray(product.extraNodeModules) ? product.extraNodeModules : []); // additional dependencies from our product configuration
 const baseModules = Object.keys(process.binding('natives')).filter(n => !/^_|\//.test(n));
-const nodeModules = ['electron', 'original-fs']
+const nodeModules = ['electron', 'original-fs', 'rxjs/Rx', 'primeng/primeng']
 	.concat(dependencies)
 	.concat(baseModules);
 
 // Build
 
 const builtInExtensions = [
-	{ name: 'ms-vscode.node-debug', version: '1.10.21' },
-	{ name: 'ms-vscode.node-debug2', version: '1.10.0' }
+	{ name: 'ms-vscode.node-debug', version: '1.11.19' },
+	{ name: 'ms-vscode.node-debug2', version: '1.11.13' }
 ];
 
 const vscodeEntryPoints = _.flatten([
@@ -57,33 +57,38 @@ const vscodeResources = [
 	'out-build/bootstrap.js',
 	'out-build/bootstrap-amd.js',
 	'out-build/paths.js',
-	'out-build/vs/**/*.{svg,png,cur}',
+	'out-build/vs/**/*.{svg,png,cur,html}',
 	'out-build/vs/base/node/{stdForkStart.js,terminateProcess.sh}',
 	'out-build/vs/base/browser/ui/octiconLabel/octicons/**',
 	'out-build/vs/workbench/browser/media/*-theme.css',
 	'out-build/vs/workbench/electron-browser/bootstrap/**',
 	'out-build/vs/workbench/parts/debug/**/*.json',
 	'out-build/vs/workbench/parts/execution/**/*.scpt',
-	'out-build/vs/workbench/parts/git/**/*.html',
 	'out-build/vs/workbench/parts/git/**/*.sh',
-	'out-build/vs/workbench/parts/html/browser/webview.html',
 	'out-build/vs/workbench/parts/html/browser/webview-pre.js',
 	'out-build/vs/**/markdown.css',
 	'out-build/vs/workbench/parts/tasks/**/*.json',
 	'out-build/vs/workbench/parts/terminal/electron-browser/terminalProcess.js',
 	'out-build/vs/workbench/parts/welcome/walkThrough/**/*.md',
-	'out-build/vs/workbench/parts/welcome/page/**/*.html',
 	'out-build/vs/workbench/services/files/**/*.exe',
 	'out-build/vs/workbench/services/files/**/*.md',
+	'out-build/vs/code/electron-browser/sharedProcess.js',
+	'out-build/sql/**/*.{svg,png,cur,html}',
+	'out-build/sql/parts/admin/**/*.html',
 	'out-build/sql/parts/connection/connectionDialog/media/**',
 	'out-build/sql/parts/common/dblist/**/*.html',
 	'out-build/sql/parts/common/dblist/media/**',
-	'out-build/sql/parts/connection/dashboard/**/*.html',
-	'out-build/sql/parts/connection/dashboard/media/**',
+	'out-build/sql/parts/dashboard/**/*.html',
+	'out-build/sql/parts/dashboard/media/**',
+	'out-build/sql/parts/disasterRecovery/**/*.html',
 	'out-build/sql/parts/grid/directives/{slick.dragrowselector.js,slick.autosizecolumn.js}',
 	'out-build/sql/parts/grid/load/loadJquery.js',
 	'out-build/sql/parts/grid/media/**',
 	'out-build/sql/parts/grid/views/**/*.html',
+	'out-build/sql/parts/tasks/**/*.html',
+	'out-build/sql/media/objectTypes/*.svg',
+	'out-build/sql/media/font-awesome-4.7.0/fonts/**',
+	'out-build/sql/workbench/errorMessageDialog/media/*.svg',
 	'!**/test/**'
 ];
 
@@ -280,9 +285,11 @@ function packageTask(platform, arch, opts) {
 			.pipe(util.cleanNodeModule('oniguruma', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node']))
 			.pipe(util.cleanNodeModule('windows-mutex', ['binding.gyp', 'build/**', 'src/**'], ['**/*.node']))
 			.pipe(util.cleanNodeModule('native-keymap', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node']))
+			.pipe(util.cleanNodeModule('jschardet', ['dist/**']))
 			.pipe(util.cleanNodeModule('windows-foreground-love', ['binding.gyp', 'build/**', 'src/**'], ['**/*.node']))
 			.pipe(util.cleanNodeModule('gc-signals', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node', 'src/index.js']))
-			.pipe(util.cleanNodeModule('node-pty', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['build/Release/**']));
+			.pipe(util.cleanNodeModule('v8-profiler', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node', 'src/index.js']))
+			.pipe(util.cleanNodeModule('node-pty', ['binding.gyp', 'build/**', 'src/**', 'tools/**'], ['build/Release/**']));
 
 		let all = es.merge(
 			packageJsonStream,
@@ -370,3 +377,15 @@ gulp.task('upload-vscode-sourcemaps', ['minify-vscode'], () => {
 			prefix: commit + '/'
 		}));
 });
+
+// Install service locally before building carbon
+
+function installSqlToolsService(platform) {
+   var install = require('../extensions/mssql/client/out/languageservice/serviceInstallerUtil');
+   return install.installService(platform, true);
+}
+
+gulp.task('ext:install-service', () => {
+    return installSqlToolsService();
+});
+

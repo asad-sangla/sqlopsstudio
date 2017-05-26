@@ -25,7 +25,7 @@ import { dispose, IDisposable } from 'vs/base/common/lifecycle';
 import { VIEWLET_ID } from 'vs/workbench/parts/files/common/files';
 import labels = require('vs/base/common/labels');
 import { ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
-import { IFileService, IFileStat } from 'vs/platform/files/common/files';
+import { IFileService, IFileStat, isEqual, isEqualOrParent } from 'vs/platform/files/common/files';
 import { toResource, IEditorIdentifier, EditorInput } from 'vs/workbench/common/editor';
 import { FileStat, NewStatPlaceholder } from 'vs/workbench/parts/files/common/explorerViewModel';
 import { ExplorerView } from 'vs/workbench/parts/files/browser/views/explorerView';
@@ -34,7 +34,6 @@ import { IActionProvider } from 'vs/base/parts/tree/browser/actionsRenderer';
 import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { CollapseAction } from 'vs/workbench/browser/viewlet';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { IQuickOpenService, IFilePickOpenEntry } from 'vs/platform/quickOpen/common/quickOpen';
 import { IHistoryService } from 'vs/workbench/services/history/common/history';
@@ -43,13 +42,12 @@ import { Position, IResourceInput, IEditorInput } from 'vs/platform/editor/commo
 import { IInstantiationService, IConstructorSignature2, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, IMessageWithAction, IConfirmation, Severity, CancelAction } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { Keybinding } from 'vs/base/common/keyCodes';
 import { getCodeEditor } from 'vs/editor/common/services/codeEditorService';
 import { IEditorViewState } from 'vs/editor/common/editorCommon';
 import { IBackupFileService } from 'vs/workbench/services/backup/common/backup';
 import { ITextModelResolverService } from 'vs/editor/common/services/resolverService';
 import { IWindowsService, IWindowService } from 'vs/platform/windows/common/windows';
-import { withFocussedFilesExplorerViewItem, revealInOSCommand, revealInExplorerCommand, copyPathCommand } from 'vs/workbench/parts/files/browser/fileCommands';
+import { withFocussedFilesExplorer, revealInOSCommand, revealInExplorerCommand, copyPathCommand } from 'vs/workbench/parts/files/browser/fileCommands';
 import { ITelemetryData } from 'vs/platform/telemetry/common/telemetry';
 
 export interface IEditableData {
@@ -289,15 +287,15 @@ class RenameFileAction extends BaseRenameAction {
 
 	public runAction(newName: string): TPromise<any> {
 
-		// 1. check for dirty files that are being moved and backup to new target
-		const dirty = this.textFileService.getDirty().filter(d => paths.isEqualOrParent(d.fsPath, this.element.resource.fsPath));
+		const dirty = this.textFileService.getDirty().filter(d => isEqualOrParent(d.fsPath, this.element.resource.fsPath, !isLinux /* ignorecase */));
 		const dirtyRenamed: URI[] = [];
 		return TPromise.join(dirty.map(d => {
+
 			const targetPath = paths.join(this.element.parent.resource.fsPath, newName);
 			let renamed: URI;
 
 			// If the dirty file itself got moved, just reparent it to the target folder
-			if (this.element.resource.fsPath === d.fsPath) {
+			if (isEqual(this.element.resource.fsPath, d.fsPath)) {
 				renamed = URI.file(targetPath);
 			}
 
@@ -526,7 +524,7 @@ export class GlobalNewUntitledFileAction extends Action {
 	}
 
 	public run(): TPromise<any> {
-		const input = this.untitledEditorService.createOrGet();
+		const input = this.untitledEditorService.createOrGet(undefined, 'sql');
 
 		return this.editorService.openEditor(input, { pinned: true }); // untitled are always pinned
 	}
@@ -667,7 +665,7 @@ export class BaseDeleteFileAction extends BaseFileAction {
 
 		// Handle dirty
 		let revertPromise: TPromise<any> = TPromise.as(null);
-		const dirty = this.textFileService.getDirty().filter(d => paths.isEqualOrParent(d.fsPath, this.element.resource.fsPath));
+		const dirty = this.textFileService.getDirty().filter(d => isEqualOrParent(d.fsPath, this.element.resource.fsPath, !isLinux /* ignorecase */));
 		if (dirty.length) {
 			let message: string;
 			if (this.element.isDirectory) {
@@ -939,7 +937,7 @@ export class PasteFileAction extends BaseFileAction {
 		super(PasteFileAction.ID, nls.localize('pasteFile', "Paste"), fileService, messageService, textFileService);
 
 		this.tree = tree;
-		this.element = element;
+		this.element = element || this.tree.getInput();
 		this._updateEnablement();
 	}
 
@@ -959,7 +957,7 @@ export class PasteFileAction extends BaseFileAction {
 		}
 
 		// Check if target is ancestor of pasted folder
-		if (this.element.resource.toString() !== fileToCopy.resource.toString() && paths.isEqualOrParent(this.element.resource.fsPath, fileToCopy.resource.fsPath)) {
+		if (!isEqual(this.element.resource.fsPath, fileToCopy.resource.fsPath) && isEqualOrParent(this.element.resource.fsPath, fileToCopy.resource.fsPath, !isLinux /* ignorecase */)) {
 			return false;
 		}
 
@@ -970,7 +968,7 @@ export class PasteFileAction extends BaseFileAction {
 
 		// Find target
 		let target: FileStat;
-		if (this.element.resource.toString() === fileToCopy.resource.toString()) {
+		if (isEqual(this.element.resource.fsPath, fileToCopy.resource.fsPath)) {
 			target = this.element.parent;
 		} else {
 			target = this.element.isDirectory ? this.element : this.element.parent;
@@ -988,9 +986,9 @@ export class PasteFileAction extends BaseFileAction {
 export const pasteIntoFocusedFilesExplorerViewItem = (accessor: ServicesAccessor) => {
 	const instantiationService = accessor.get(IInstantiationService);
 
-	withFocussedFilesExplorerViewItem(accessor).then(res => {
-		if (res && res.item) {
-			const pasteAction = instantiationService.createInstance(PasteFileAction, res.tree, res.item);
+	withFocussedFilesExplorer(accessor).then(res => {
+		if (res) {
+			const pasteAction = instantiationService.createInstance(PasteFileAction, res.tree, res.tree.getFocus());
 			if (pasteAction._isEnabled()) {
 				pasteAction.run().done(null, errors.onUnexpectedError);
 			}
@@ -1064,8 +1062,8 @@ export class DuplicateFileAction extends BaseFileAction {
 	private toCopyName(name: string, isFolder: boolean): string {
 
 		// file.1.txt=>file.2.txt
-		if (!isFolder && name.match(/(\d+)(\..*)$/)) {
-			return name.replace(/(\d+)(\..*)$/, (match, g1?, g2?) => { return (parseInt(g1) + 1) + g2; });
+		if (!isFolder && name.match(/(.*\.)(\d+)(\..*)$/)) {
+			return name.replace(/(.*\.)(\d+)(\..*)$/, (match, g1?, g2?, g3?) => { return g1 + (parseInt(g2) + 1) + g3; });
 		}
 
 		// file.txt=>file.1.txt
@@ -1276,7 +1274,7 @@ export class CompareResourcesAction extends Action {
 		}
 
 		// Check if target is identical to source
-		if (this.resource.toString() === globalResourceToCompare.toString()) {
+		if (isEqual(this.resource.fsPath, globalResourceToCompare.fsPath)) {
 			return false;
 		}
 
@@ -1371,7 +1369,7 @@ export abstract class BaseSaveFileAction extends BaseActionWithErrorReporting {
 				const editor = getCodeEditor(activeEditor);
 				if (editor) {
 					const activeResource = toResource(activeEditor.input, { supportSideBySide: true, filter: ['file', 'untitled'] });
-					if (activeResource && activeResource.toString() === source.toString()) {
+					if (activeResource && isEqual(activeResource.fsPath, source.fsPath)) {
 						viewStateOfSource = editor.saveViewState();
 					}
 				}
@@ -1873,12 +1871,7 @@ export class GlobalRevealInOSAction extends Action {
 	}
 
 	public run(): TPromise<any> {
-		const fileResource = toResource(this.editorService.getActiveEditorInput(), { supportSideBySide: true, filter: 'file' });
-		if (fileResource) {
-			this.instantiationService.invokeFunction.apply(this.instantiationService, [revealInOSCommand, fileResource]);
-		} else {
-			this.messageService.show(severity.Info, nls.localize('openFileToReveal', "Open a file first to reveal"));
-		}
+		this.instantiationService.invokeFunction.apply(this.instantiationService, [revealInOSCommand]);
 
 		return TPromise.as(true);
 	}
@@ -1921,23 +1914,10 @@ export class GlobalCopyPathAction extends Action {
 	}
 
 	public run(): TPromise<any> {
-		const activeEditor = this.editorService.getActiveEditor();
-		const fileResource = activeEditor ? toResource(activeEditor.input, { supportSideBySide: true, filter: 'file' }) : void 0;
-		if (fileResource) {
-			this.instantiationService.invokeFunction.apply(this.instantiationService, [copyPathCommand, fileResource]);
-			this.editorGroupService.focusGroup(activeEditor.position); // focus back to active editor group
-		} else {
-			this.messageService.show(severity.Info, nls.localize('openFileToCopy', "Open a file first to copy its path"));
-		}
+		this.instantiationService.invokeFunction.apply(this.instantiationService, [copyPathCommand]);
 
 		return TPromise.as(true);
 	}
-}
-
-export function keybindingForAction(id: string, keybindingService: IKeybindingService): Keybinding {
-	const [kb] = keybindingService.lookupKeybindings(id);
-
-	return kb;
 }
 
 export function validateFileName(parent: IFileStat, name: string, allowOverwriting: boolean = false): string {

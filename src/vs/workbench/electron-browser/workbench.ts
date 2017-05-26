@@ -52,6 +52,7 @@ import { IConfigurationEditingService } from 'vs/workbench/services/configuratio
 import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import { ContextKeyService } from 'vs/platform/contextkey/browser/contextKeyService';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { IKeybindingEditingService, KeybindingsEditingService } from 'vs/workbench/services/keybinding/common/keybindingEditing';
 import { ContextKeyExpr, RawContextKey, IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { IActivityBarService } from 'vs/workbench/services/activity/common/activityBarService';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
@@ -67,8 +68,6 @@ import { WorkbenchMessageService } from 'vs/workbench/services/message/browser/m
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
-import { IThemeService } from 'vs/workbench/services/themes/common/themeService';
-import { ThemeService } from 'vs/workbench/services/themes/electron-browser/themeService';
 import { ClipboardService } from 'vs/platform/clipboard/electron-browser/clipboardService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { IHistoryService } from 'vs/workbench/services/history/common/history';
@@ -94,23 +93,27 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWindowConfiguration } from 'vs/workbench/electron-browser/common';
 
-import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService, IServerGroupController } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
-import { ErrorMessageService } from 'sql/parts/common/errorMessageService';
+import { ErrorMessageService } from 'sql/workbench/errorMessageDialog/errorMessageService';
+import { ServerGroupController } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupController';
 
-import { IBootstrapService, BootstrapService } from 'sql/parts/bootstrap/bootstrapService';
-import { ICapabilitiesService, CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
-import { ICredentialsService, CredentialsService } from 'sql/parts/credentials/credentialsService';
-import { IMetadataService, MetadataService } from 'sql/parts/metadata/metadataService';
+import { IBootstrapService, BootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { ICapabilitiesService, CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
+import { ICredentialsService, CredentialsService } from 'sql/services/credentials/credentialsService';
+import { IMetadataService, MetadataService } from 'sql/services/metadata/metadataService';
+import { IObjectExplorerService, ObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
-import { IQueryEditorService, QueryEditorService } from 'sql/parts/editor/queryEditorService';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
+import { QueryEditorService } from 'sql/parts/query/services/queryEditorService';
 import { IQueryManagementService, QueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IEditorDescriptorService, EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
-import { IScriptingService, ScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IScriptingService, ScriptingService } from 'sql/services/scripting/scriptingService';
 import { ISplashScreenService, SplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
-
+import { IAdminService, AdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService, DisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -134,7 +137,6 @@ export interface IWorkbenchStartedInfo {
 	restoreViewletDuration: number;
 	restoreEditorsDuration: number;
 	pinnedViewlets: string[];
-	themeId: string;
 }
 
 export interface IWorkbenchCallbacks {
@@ -181,7 +183,6 @@ export class Workbench implements IPartService {
 	private editorService: WorkbenchEditorService;
 	private viewletService: IViewletService;
 	private contextKeyService: IContextKeyService;
-	private themeService: ThemeService;
 	private keybindingService: IKeybindingService;
 	private backupFileService: IBackupFileService;
 	private configurationEditingService: IConfigurationEditingService;
@@ -358,7 +359,7 @@ export class Workbench implements IPartService {
 				});
 			}));
 
-			if (this.storageService.getBoolean(Workbench.zenModeActiveSettingKey, StorageScope.GLOBAL, false)) {
+			if (this.storageService.getBoolean(Workbench.zenModeActiveSettingKey, StorageScope.WORKSPACE, false)) {
 				this.toggleZenMode(true);
 			}
 
@@ -370,10 +371,9 @@ export class Workbench implements IPartService {
 				if (this.callbacks && this.callbacks.onWorkbenchStarted) {
 					this.callbacks.onWorkbenchStarted({
 						customKeybindingsCount: this.keybindingService.customKeybindingsCount(),
-						restoreViewletDuration: viewletRestoreStopWatch ? viewletRestoreStopWatch.elapsed() : 0,
-						restoreEditorsDuration: editorRestoreStopWatch.elapsed(),
+						restoreViewletDuration: viewletRestoreStopWatch ? Math.round(viewletRestoreStopWatch.elapsed()) : 0,
+						restoreEditorsDuration: Math.round(editorRestoreStopWatch.elapsed()),
 						pinnedViewlets: this.activitybarPart.getPinned(),
-						themeId: this.themeService.getColorTheme().id
 					});
 				}
 
@@ -548,9 +548,8 @@ export class Workbench implements IPartService {
 		this.configurationEditingService = this.instantiationService.createInstance(ConfigurationEditingService);
 		serviceCollection.set(IConfigurationEditingService, this.configurationEditingService);
 
-		// Theme Service
-		this.themeService = this.instantiationService.createInstance(ThemeService, document.body);
-		serviceCollection.set(IThemeService, this.themeService);
+		// Keybinding Editing
+		serviceCollection.set(IKeybindingEditingService, this.instantiationService.createInstance(KeybindingsEditingService));
 
 		// Configuration Resolver
 		const workspace = this.contextService.getWorkspace();
@@ -568,6 +567,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
 		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
+		serviceCollection.set(IServerGroupController, this.instantiationService.createInstance(ServerGroupController));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
 		let connectionManagementService = this.instantiationService.createInstance(ConnectionManagementService, undefined, undefined);
 		serviceCollection.set(IConnectionManagementService, connectionManagementService);
@@ -576,7 +576,10 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));
 		serviceCollection.set(IEditorDescriptorService, this.instantiationService.createInstance(EditorDescriptorService));
 		serviceCollection.set(IMetadataService, this.instantiationService.createInstance(MetadataService));
+		serviceCollection.set(IObjectExplorerService, this.instantiationService.createInstance(ObjectExplorerService));
 		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));
+		serviceCollection.set(IAdminService, this.instantiationService.createInstance(AdminService));
+		serviceCollection.set(IDisasterRecoveryService, this.instantiationService.createInstance(DisasterRecoveryService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 
 		this.toDispose.push(connectionManagementService);
@@ -841,6 +844,10 @@ export class Workbench implements IPartService {
 		this.workbenchLayout.layout({ toggleMaximizedPanel: true });
 	}
 
+	public isPanelMaximized(): boolean {
+		return this.workbenchLayout.isPanelMaximized();
+	}
+
 	public getSideBarPosition(): Position {
 		return this.sideBarPosition;
 	}
@@ -859,6 +866,10 @@ export class Workbench implements IPartService {
 		this.sidebarPart.getContainer().removeClass(oldPositionValue);
 		this.activitybarPart.getContainer().addClass(newPositionValue);
 		this.sidebarPart.getContainer().addClass(newPositionValue);
+
+		// Update Styles
+		this.activitybarPart.updateStyles();
+		this.sidebarPart.updateStyles();
 
 		// Layout
 		this.workbenchLayout.layout();
@@ -892,7 +903,7 @@ export class Workbench implements IPartService {
 
 		const zenConfig = this.configurationService.getConfiguration<IZenModeSettings>('zenMode');
 		// Preserve zen mode only on reload. Real quit gets out of zen mode so novice users do not get stuck in zen mode.
-		this.storageService.store(Workbench.zenModeActiveSettingKey, (zenConfig.restore || reason === ShutdownReason.RELOAD) && this.zenMode.active, StorageScope.GLOBAL);
+		this.storageService.store(Workbench.zenModeActiveSettingKey, (zenConfig.restore || reason === ShutdownReason.RELOAD) && this.zenMode.active, StorageScope.WORKSPACE);
 
 		// Pass shutdown on to each participant
 		this.toShutdown.forEach(s => s.shutdown());
@@ -1012,11 +1023,6 @@ export class Workbench implements IPartService {
 			this.workbench.addClass('nopanel');
 		}
 
-		// Apply no-workspace state as CSS class
-		if (!this.contextService.hasWorkspace()) {
-			this.workbench.addClass('no-workspace');
-		}
-
 		// Apply title style if shown
 		const titleStyle = this.getCustomTitleBarStyle();
 		if (titleStyle) {
@@ -1075,7 +1081,7 @@ export class Workbench implements IPartService {
 	private createPanelPart(): void {
 		const panelPartContainer = $(this.workbench)
 			.div({
-				'class': ['part', 'panel', 'monaco-editor-background'],
+				'class': ['part', 'panel'],
 				id: Identifiers.PANEL_PART,
 				role: 'complementary'
 			});
@@ -1086,7 +1092,7 @@ export class Workbench implements IPartService {
 	private createEditorPart(): void {
 		const editorContainer = $(this.workbench)
 			.div({
-				'class': ['part', 'editor', 'monaco-editor-background', 'empty'],
+				'class': ['part', 'editor', 'empty'],
 				id: Identifiers.EDITOR_PART,
 				role: 'main'
 			});
@@ -1189,6 +1195,21 @@ export class Workbench implements IPartService {
 			this.windowService.toggleFullScreen().done(undefined, errors.onUnexpectedError);
 		}
 	}
+
+	// Resize requested part along the main axis
+	// layout will do all the math for us and adjusts the other Parts
+	public resizePart(part: Parts, sizeChange: number): void {
+		switch (part) {
+			case Parts.SIDEBAR_PART:
+			case Parts.PANEL_PART:
+			case Parts.EDITOR_PART:
+				this.workbenchLayout.resizePart(part, sizeChange);
+				break;
+			default:
+				return; // Cannot resize other parts
+		}
+	}
+
 
 	private shouldRestoreLastOpenedViewlet(): boolean {
 		if (!this.environmentService.isBuilt) {

@@ -7,6 +7,7 @@
 import { BulkListenerCallback } from 'vs/base/common/eventEmitter';
 import { MarkedString } from 'vs/base/common/htmlContent';
 import * as types from 'vs/base/common/types';
+import * as objects from 'vs/base/common/objects';
 import URI from 'vs/base/common/uri';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { ServicesAccessor, IConstructorSignature1 } from 'vs/platform/instantiation/common/instantiation';
@@ -21,6 +22,7 @@ import { IndentRange } from 'vs/editor/common/model/indentRanges';
 import { ICommandHandlerDescription } from 'vs/platform/commands/common/commands';
 import { ContextKeyExpr, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { FontInfo } from 'vs/editor/common/config/fontInfo';
+import { ITextSource } from 'vs/editor/common/model/textSource';
 
 /**
  * @internal
@@ -200,6 +202,11 @@ export type LineNumbersOption = 'on' | 'off' | 'relative' | ((lineNumber: number
  */
 export interface IEditorOptions {
 	/**
+	 * This editor is used inside a diff editor.
+	 * @internal
+	 */
+	inDiffEditor?: boolean;
+	/**
 	 * Enable experimental screen reader support.
 	 * Defaults to `true`.
 	 */
@@ -294,6 +301,11 @@ export interface IEditorOptions {
 	 */
 	overviewRulerLanes?: number;
 	/**
+	 * Controls if a border should be drawn around the overview ruler.
+	 * Defaults to `true`.
+	 */
+	overviewRulerBorder?: boolean;
+	/**
 	 * Control the cursor animation style, possible values are 'blink', 'smooth', 'phase', 'expand' and 'solid'.
 	 * Defaults to 'blink'.
 	 */
@@ -303,6 +315,12 @@ export interface IEditorOptions {
 	 * Defaults to false.
 	 */
 	mouseWheelZoom?: boolean;
+	/**
+	 * Control the mouse pointer style, either 'text' or 'default' or 'copy'
+	 * Defaults to 'text'
+	 * @internal
+	 */
+	mouseStyle?: 'text' | 'default' | 'copy';
 	/**
 	 * Control the cursor style, either 'block' or 'line'.
 	 * Defaults to 'line'.
@@ -358,6 +376,11 @@ export interface IEditorOptions {
 	 */
 	wordWrapColumn?: number;
 	/**
+	 * Force word wrapping when the text appears to be of a minified/generated file.
+	 * Defaults to true.
+	 */
+	wordWrapMinified?: boolean;
+	/**
 	 * Control indentation of wrapped lines. Can be: 'none', 'same' or 'indent'.
 	 * Defaults to 'same' in vscode and to 'none' in monaco-editor.
 	 */
@@ -403,7 +426,7 @@ export interface IEditorOptions {
 	 * Enable quick suggestions (shadow suggestions)
 	 * Defaults to true.
 	 */
-	quickSuggestions?: boolean;
+	quickSuggestions?: boolean | { other: boolean, comments: boolean, strings: boolean };
 	/**
 	 * Quick suggestions show delay (in ms)
 	 * Defaults to 500 (ms)
@@ -480,6 +503,11 @@ export interface IEditorOptions {
 	 * Defaults to true.
 	 */
 	selectionHighlight?: boolean;
+	/**
+	 * Enable semantic occurrences highlight.
+	 * Defaults to true.
+	 */
+	occurrencesHighlight?: boolean;
 	/**
 	 * Show code lens
 	 * Defaults to true.
@@ -690,6 +718,9 @@ export class InternalEditorMinimapOptions {
 export class EditorWrappingInfo {
 	readonly _editorWrappingInfoBrand: void;
 
+	readonly inDiffEditor: boolean;
+	readonly isDominatedByLongLines: boolean;
+	readonly isWordWrapMinified: boolean;
 	readonly isViewportWrapping: boolean;
 	readonly wrappingColumn: number;
 	readonly wrappingIndent: WrappingIndent;
@@ -701,6 +732,9 @@ export class EditorWrappingInfo {
 	 * @internal
 	 */
 	constructor(source: {
+		inDiffEditor: boolean;
+		isDominatedByLongLines: boolean;
+		isWordWrapMinified: boolean;
 		isViewportWrapping: boolean;
 		wrappingColumn: number;
 		wrappingIndent: WrappingIndent;
@@ -708,6 +742,9 @@ export class EditorWrappingInfo {
 		wordWrapBreakAfterCharacters: string;
 		wordWrapBreakObtrusiveCharacters: string;
 	}) {
+		this.inDiffEditor = Boolean(source.inDiffEditor);
+		this.isDominatedByLongLines = Boolean(source.isDominatedByLongLines);
+		this.isWordWrapMinified = Boolean(source.isWordWrapMinified);
 		this.isViewportWrapping = Boolean(source.isViewportWrapping);
 		this.wrappingColumn = source.wrappingColumn | 0;
 		this.wrappingIndent = source.wrappingIndent | 0;
@@ -721,7 +758,10 @@ export class EditorWrappingInfo {
 	 */
 	public equals(other: EditorWrappingInfo): boolean {
 		return (
-			this.isViewportWrapping === other.isViewportWrapping
+			this.inDiffEditor === other.inDiffEditor
+			&& this.isDominatedByLongLines === other.isDominatedByLongLines
+			&& this.isWordWrapMinified === other.isWordWrapMinified
+			&& this.isViewportWrapping === other.isViewportWrapping
 			&& this.wrappingColumn === other.wrappingColumn
 			&& this.wrappingIndent === other.wrappingIndent
 			&& this.wordWrapBreakBeforeCharacters === other.wordWrapBreakBeforeCharacters
@@ -755,6 +795,7 @@ export class InternalEditorViewOptions {
 	readonly revealHorizontalRightPadding: number;
 	readonly roundedSelection: boolean;
 	readonly overviewRulerLanes: number;
+	readonly overviewRulerBorder: boolean;
 	readonly cursorBlinking: TextEditorCursorBlinkingStyle;
 	readonly mouseWheelZoom: boolean;
 	readonly cursorStyle: TextEditorCursorStyle;
@@ -764,6 +805,7 @@ export class InternalEditorViewOptions {
 	readonly stopRenderingLineAfter: number;
 	readonly renderWhitespace: 'none' | 'boundary' | 'all';
 	readonly renderControlCharacters: boolean;
+	readonly fontLigatures: boolean;
 	readonly renderIndentGuides: boolean;
 	readonly renderLineHighlight: 'none' | 'gutter' | 'line' | 'all';
 	readonly scrollbar: InternalEditorScrollbarOptions;
@@ -788,6 +830,7 @@ export class InternalEditorViewOptions {
 		revealHorizontalRightPadding: number;
 		roundedSelection: boolean;
 		overviewRulerLanes: number;
+		overviewRulerBorder: boolean;
 		cursorBlinking: TextEditorCursorBlinkingStyle;
 		mouseWheelZoom: boolean;
 		cursorStyle: TextEditorCursorStyle;
@@ -797,6 +840,7 @@ export class InternalEditorViewOptions {
 		stopRenderingLineAfter: number;
 		renderWhitespace: 'none' | 'boundary' | 'all';
 		renderControlCharacters: boolean;
+		fontLigatures: boolean;
 		renderIndentGuides: boolean;
 		renderLineHighlight: 'none' | 'gutter' | 'line' | 'all';
 		scrollbar: InternalEditorScrollbarOptions;
@@ -817,6 +861,7 @@ export class InternalEditorViewOptions {
 		this.revealHorizontalRightPadding = source.revealHorizontalRightPadding | 0;
 		this.roundedSelection = Boolean(source.roundedSelection);
 		this.overviewRulerLanes = source.overviewRulerLanes | 0;
+		this.overviewRulerBorder = Boolean(source.overviewRulerBorder);
 		this.cursorBlinking = source.cursorBlinking | 0;
 		this.mouseWheelZoom = Boolean(source.mouseWheelZoom);
 		this.cursorStyle = source.cursorStyle | 0;
@@ -826,6 +871,7 @@ export class InternalEditorViewOptions {
 		this.stopRenderingLineAfter = source.stopRenderingLineAfter | 0;
 		this.renderWhitespace = source.renderWhitespace;
 		this.renderControlCharacters = Boolean(source.renderControlCharacters);
+		this.fontLigatures = Boolean(source.fontLigatures);
 		this.renderIndentGuides = Boolean(source.renderIndentGuides);
 		this.renderLineHighlight = source.renderLineHighlight;
 		this.scrollbar = source.scrollbar.clone();
@@ -880,6 +926,7 @@ export class InternalEditorViewOptions {
 			&& this.revealHorizontalRightPadding === other.revealHorizontalRightPadding
 			&& this.roundedSelection === other.roundedSelection
 			&& this.overviewRulerLanes === other.overviewRulerLanes
+			&& this.overviewRulerBorder === other.overviewRulerBorder
 			&& this.cursorBlinking === other.cursorBlinking
 			&& this.mouseWheelZoom === other.mouseWheelZoom
 			&& this.cursorStyle === other.cursorStyle
@@ -889,6 +936,7 @@ export class InternalEditorViewOptions {
 			&& this.stopRenderingLineAfter === other.stopRenderingLineAfter
 			&& this.renderWhitespace === other.renderWhitespace
 			&& this.renderControlCharacters === other.renderControlCharacters
+			&& this.fontLigatures === other.fontLigatures
 			&& this.renderIndentGuides === other.renderIndentGuides
 			&& this.renderLineHighlight === other.renderLineHighlight
 			&& this.scrollbar.equals(other.scrollbar)
@@ -916,6 +964,7 @@ export class InternalEditorViewOptions {
 			revealHorizontalRightPadding: this.revealHorizontalRightPadding !== newOpts.revealHorizontalRightPadding,
 			roundedSelection: this.roundedSelection !== newOpts.roundedSelection,
 			overviewRulerLanes: this.overviewRulerLanes !== newOpts.overviewRulerLanes,
+			overviewRulerBorder: this.overviewRulerBorder !== newOpts.overviewRulerBorder,
 			cursorBlinking: this.cursorBlinking !== newOpts.cursorBlinking,
 			mouseWheelZoom: this.mouseWheelZoom !== newOpts.mouseWheelZoom,
 			cursorStyle: this.cursorStyle !== newOpts.cursorStyle,
@@ -925,6 +974,7 @@ export class InternalEditorViewOptions {
 			stopRenderingLineAfter: this.stopRenderingLineAfter !== newOpts.stopRenderingLineAfter,
 			renderWhitespace: this.renderWhitespace !== newOpts.renderWhitespace,
 			renderControlCharacters: this.renderControlCharacters !== newOpts.renderControlCharacters,
+			fontLigatures: this.fontLigatures !== newOpts.fontLigatures,
 			renderIndentGuides: this.renderIndentGuides !== newOpts.renderIndentGuides,
 			renderLineHighlight: this.renderLineHighlight !== newOpts.renderLineHighlight,
 			scrollbar: (!this.scrollbar.equals(newOpts.scrollbar)),
@@ -956,6 +1006,7 @@ export interface IViewConfigurationChangedEvent {
 	readonly revealHorizontalRightPadding: boolean;
 	readonly roundedSelection: boolean;
 	readonly overviewRulerLanes: boolean;
+	readonly overviewRulerBorder: boolean;
 	readonly cursorBlinking: boolean;
 	readonly mouseWheelZoom: boolean;
 	readonly cursorStyle: boolean;
@@ -965,6 +1016,7 @@ export interface IViewConfigurationChangedEvent {
 	readonly stopRenderingLineAfter: boolean;
 	readonly renderWhitespace: boolean;
 	readonly renderControlCharacters: boolean;
+	readonly fontLigatures: boolean;
 	readonly renderIndentGuides: boolean;
 	readonly renderLineHighlight: boolean;
 	readonly scrollbar: boolean;
@@ -976,7 +1028,7 @@ export class EditorContribOptions {
 	readonly selectionClipboard: boolean;
 	readonly hover: boolean;
 	readonly contextmenu: boolean;
-	readonly quickSuggestions: boolean;
+	readonly quickSuggestions: boolean | { other: boolean, comments: boolean, strings: boolean };
 	readonly quickSuggestionsDelay: number;
 	readonly parameterHints: boolean;
 	readonly iconsInSuggestions: boolean;
@@ -991,6 +1043,7 @@ export class EditorContribOptions {
 	readonly suggestFontSize: number;
 	readonly suggestLineHeight: number;
 	readonly selectionHighlight: boolean;
+	readonly occurrencesHighlight: boolean;
 	readonly codeLens: boolean;
 	readonly folding: boolean;
 	readonly matchBrackets: boolean;
@@ -1002,7 +1055,7 @@ export class EditorContribOptions {
 		selectionClipboard: boolean;
 		hover: boolean;
 		contextmenu: boolean;
-		quickSuggestions: boolean;
+		quickSuggestions: boolean | { other: boolean, comments: boolean, strings: boolean };
 		quickSuggestionsDelay: number;
 		parameterHints: boolean;
 		iconsInSuggestions: boolean;
@@ -1017,6 +1070,7 @@ export class EditorContribOptions {
 		suggestFontSize: number;
 		suggestLineHeight: number;
 		selectionHighlight: boolean;
+		occurrencesHighlight: boolean;
 		codeLens: boolean;
 		folding: boolean;
 		matchBrackets: boolean;
@@ -1024,7 +1078,7 @@ export class EditorContribOptions {
 		this.selectionClipboard = Boolean(source.selectionClipboard);
 		this.hover = Boolean(source.hover);
 		this.contextmenu = Boolean(source.contextmenu);
-		this.quickSuggestions = Boolean(source.quickSuggestions);
+		this.quickSuggestions = source.quickSuggestions;
 		this.quickSuggestionsDelay = source.quickSuggestionsDelay || 0;
 		this.parameterHints = Boolean(source.parameterHints);
 		this.iconsInSuggestions = Boolean(source.iconsInSuggestions);
@@ -1039,6 +1093,7 @@ export class EditorContribOptions {
 		this.suggestFontSize = source.suggestFontSize;
 		this.suggestLineHeight = source.suggestLineHeight;
 		this.selectionHighlight = Boolean(source.selectionHighlight);
+		this.occurrencesHighlight = Boolean(source.occurrencesHighlight);
 		this.codeLens = Boolean(source.codeLens);
 		this.folding = Boolean(source.folding);
 		this.matchBrackets = Boolean(source.matchBrackets);
@@ -1052,7 +1107,7 @@ export class EditorContribOptions {
 			this.selectionClipboard === other.selectionClipboard
 			&& this.hover === other.hover
 			&& this.contextmenu === other.contextmenu
-			&& this.quickSuggestions === other.quickSuggestions
+			&& objects.equals(this.quickSuggestions, other.quickSuggestions)
 			&& this.quickSuggestionsDelay === other.quickSuggestionsDelay
 			&& this.parameterHints === other.parameterHints
 			&& this.iconsInSuggestions === other.iconsInSuggestions
@@ -1063,10 +1118,11 @@ export class EditorContribOptions {
 			&& this.acceptSuggestionOnCommitCharacter === other.acceptSuggestionOnCommitCharacter
 			&& this.snippetSuggestions === other.snippetSuggestions
 			&& this.emptySelectionClipboard === other.emptySelectionClipboard
-			&& this.wordBasedSuggestions === other.wordBasedSuggestions
+			&& objects.equals(this.wordBasedSuggestions, other.wordBasedSuggestions)
 			&& this.suggestFontSize === other.suggestFontSize
 			&& this.suggestLineHeight === other.suggestLineHeight
 			&& this.selectionHighlight === other.selectionHighlight
+			&& this.occurrencesHighlight === other.occurrencesHighlight
 			&& this.codeLens === other.codeLens
 			&& this.folding === other.folding
 			&& this.matchBrackets === other.matchBrackets
@@ -1711,7 +1767,7 @@ export interface ITextModel {
 	 * Replace the entire text buffer value contained in this model.
 	 * @internal
 	 */
-	setValueFromRawText(newValue: ITextSource): void;
+	setValueFromTextSource(newValue: ITextSource): void;
 
 	/**
 	 * Get the text stored in this model.
@@ -1725,12 +1781,6 @@ export interface ITextModel {
 	 * Get the length of the text stored in this model.
 	 */
 	getValueLength(eol?: EndOfLinePreference, preserveBOM?: boolean): number;
-
-	/**
-	 * Get the raw text stored in this model.
-	 * @internal
-	 */
-	toRawText(): IRawText;
 
 	/**
 	 * Check if the raw text stored in this model equals another raw text.
@@ -2002,12 +2052,17 @@ export interface IFoundBracket {
 export interface ITokenizedModel extends ITextModel {
 
 	/**
-	 * Tokenize if necessary and get the tokens for the line `lineNumber`.
-	 * @param lineNumber The line number
-	 * @param inaccurateTokensAcceptable Are inaccurate tokens acceptable? Defaults to false
+	 * Force tokenization information for `lineNumber` to be accurate.
 	 * @internal
 	 */
-	getLineTokens(lineNumber: number, inaccurateTokensAcceptable?: boolean): LineTokens;
+	forceTokenization(lineNumber: number): void;
+
+	/**
+	 * Get the tokens for the line `lineNumber`.
+	 * The tokens might be inaccurate. Use `forceTokenization` to ensure accurate tokens.
+	 * @internal
+	 */
+	getLineTokens(lineNumber: number): LineTokens;
 
 	/**
 	 * Get the language associated with this model.
@@ -2027,7 +2082,8 @@ export interface ITokenizedModel extends ITextModel {
 	setMode(languageIdentifier: LanguageIdentifier): void;
 
 	/**
-	 * Returns the true (inner-most) language mode at a given position.
+	 * Returns the real (inner-most) language mode at a given position.
+	 * The result might be inaccurate. Use `forceTokenization` to ensure accurate tokens.
 	 * @internal
 	 */
 	getLanguageIdAtPosition(lineNumber: number, column: number): LanguageId;
@@ -2444,92 +2500,10 @@ export interface IModelContentChangedEvent {
 }
 
 /**
- * The raw text backing a model.
- * @internal
- */
-export interface ITextSource {
-	/**
-	 * The entire text length.
-	 */
-	readonly length: number;
-	/**
-	 * The text split into lines.
-	 */
-	readonly lines: string[];
-	/**
-	 * The BOM (leading character sequence of the file).
-	 */
-	readonly BOM: string;
-	/**
-	 * The end of line sequence.
-	 */
-	readonly EOL: string;
-	/**
-	 * The text contains Unicode characters classified as "R" or "AL".
-	 */
-	readonly containsRTL: boolean;
-	/**
-	 * The text contains only characters inside the ASCII range 32-126 or \t \r \n
-	 */
-	readonly isBasicASCII: boolean;
-}
-
-/**
- * The text source
- * @internal
- */
-export interface ITextSource2 {
-	/**
-	 * The entire text length.
-	 */
-	readonly length: number;
-	/**
-	 * The text split into lines.
-	 */
-	readonly lines: string[];
-	/**
-	 * The BOM (leading character sequence of the file).
-	 */
-	readonly BOM: string;
-	/**
-	 * The number of lines ending with '\r\n'
-	 */
-	readonly totalCRCount: number;
-	/**
-	 * The text contains Unicode characters classified as "R" or "AL".
-	 */
-	readonly containsRTL: boolean;
-	/**
-	 * The text contains only characters inside the ASCII range 32-126 or \t \r \n
-	 */
-	readonly isBasicASCII: boolean;
-}
-
-/**
- * The raw text backing a model.
- * @internal
- */
-export interface IRawText extends ITextSource {
-	/**
-	 * The options associated with this text.
-	 */
-	readonly options: {
-		readonly tabSize: number;
-		readonly insertSpaces: boolean;
-		readonly defaultEOL: DefaultEndOfLine;
-		readonly trimAutoWhitespace: boolean;
-	};
-}
-
-/**
  * An event describing that a model has been reset to a new value.
  * @internal
  */
 export interface IModelContentChangedFlushEvent extends IModelContentChangedEvent {
-	/**
-	 * The new text content of the model.
-	 */
-	readonly detail: IRawText;
 }
 /**
  * An event describing that a line has changed in a model.
@@ -3175,7 +3149,6 @@ export interface ILineChange extends IChange {
 }
 /**
  * Information about a line in the diff editor
- * @internal
  */
 export interface IDiffLineInformation {
 	readonly equivalentLineNumber: number;
@@ -3586,7 +3559,7 @@ export interface IEditor {
 	/**
 	 * Scroll vertically or horizontally as necessary and reveal a position.
 	 */
-	revealPosition(position: IPosition): void;
+	revealPosition(position: IPosition, revealVerticalInCenter?: boolean, revealHorizontal?: boolean): void;
 
 	/**
 	 * Scroll vertically or horizontally as necessary and reveal a position centered vertically.
@@ -4060,14 +4033,12 @@ export interface ICommonDiffEditor extends IEditor {
 	/**
 	 * Get information based on computed diff about a line number from the original model.
 	 * If the diff computation is not finished or the model is missing, will return null.
-	 * @internal
 	 */
 	getDiffLineInformationForOriginal(lineNumber: number): IDiffLineInformation;
 
 	/**
 	 * Get information based on computed diff about a line number from the modified model.
 	 * If the diff computation is not finished or the model is missing, will return null.
-	 * @internal
 	 */
 	getDiffLineInformationForModified(lineNumber: number): IDiffLineInformation;
 
@@ -4433,24 +4404,8 @@ export var Handler = {
 	CursorLeft: 'cursorLeft',
 	CursorLeftSelect: 'cursorLeftSelect',
 
-	CursorWordLeft: 'cursorWordLeft',
-	CursorWordStartLeft: 'cursorWordStartLeft',
-	CursorWordEndLeft: 'cursorWordEndLeft',
-
-	CursorWordLeftSelect: 'cursorWordLeftSelect',
-	CursorWordStartLeftSelect: 'cursorWordStartLeftSelect',
-	CursorWordEndLeftSelect: 'cursorWordEndLeftSelect',
-
 	CursorRight: 'cursorRight',
 	CursorRightSelect: 'cursorRightSelect',
-
-	CursorWordRight: 'cursorWordRight',
-	CursorWordStartRight: 'cursorWordStartRight',
-	CursorWordEndRight: 'cursorWordEndRight',
-
-	CursorWordRightSelect: 'cursorWordRightSelect',
-	CursorWordStartRightSelect: 'cursorWordStartRightSelect',
-	CursorWordEndRightSelect: 'cursorWordEndRightSelect',
 
 	CursorUp: 'cursorUp',
 	CursorUpSelect: 'cursorUpSelect',
@@ -4505,14 +4460,6 @@ export var Handler = {
 
 	DeleteLeft: 'deleteLeft',
 	DeleteRight: 'deleteRight',
-
-	DeleteWordLeft: 'deleteWordLeft',
-	DeleteWordStartLeft: 'deleteWordStartLeft',
-	DeleteWordEndLeft: 'deleteWordEndLeft',
-
-	DeleteWordRight: 'deleteWordRight',
-	DeleteWordStartRight: 'deleteWordStartRight',
-	DeleteWordEndRight: 'deleteWordEndRight',
 
 	RemoveSecondaryCursors: 'removeSecondaryCursors',
 	CancelSelection: 'cancelSelection',

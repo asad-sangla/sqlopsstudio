@@ -10,7 +10,7 @@ import data = require('data');
 import * as TypeMoq from 'typemoq';
 import { ConnectionDialogTestService } from 'sqltest/stubs/connectionDialogTestService';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
-import { ConnectionFactory } from 'sql/parts/connection/common/connectionFactory';
+import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
 import { WorkbenchEditorTestService } from 'sqltest/stubs/workbenchEditorTestService';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -18,6 +18,7 @@ import { INewConnectionParams, ConnectionType, IConnectionCompletionOptions, ICo
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { EditorGroupTestService } from 'sqltest/stubs/editorGroupService';
 import { CapabilitiesTestService } from 'sqltest/stubs/capabilitiesTestService';
+import { ConnectionProviderStub } from 'sqltest/stubs/connectionProviderStub';
 
 
 suite('SQL ConnectionManagementService tests', () => {
@@ -27,7 +28,8 @@ suite('SQL ConnectionManagementService tests', () => {
 	let connectionStore: TypeMoq.Mock<ConnectionStore>;
 	let workbenchEditorService: TypeMoq.Mock<WorkbenchEditorTestService>;
 	let editorGroupService: TypeMoq.Mock<EditorGroupTestService>;
-	let connectionFactory: ConnectionFactory;
+	let connectionStatusManager: ConnectionStatusManager;
+	let connectionProvider: TypeMoq.Mock<ConnectionProviderStub>;
 
 	let none: void;
 
@@ -40,10 +42,11 @@ suite('SQL ConnectionManagementService tests', () => {
 		savePassword: true,
 		groupFullName: 'g2/g2-2',
 		groupId: 'group id',
-		getUniqueId: () => { return 'connectionId'; },
+		getOptionsKey: () => { return 'connectionId'; },
 		providerName: 'MSSQL',
 		options: {},
-		saveProfile: true
+		saveProfile: true,
+		id: undefined
 	};
 	let connectionProfileWithoutPassword: IConnectionProfile =
 		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
@@ -56,7 +59,8 @@ suite('SQL ConnectionManagementService tests', () => {
 		connectionStore = TypeMoq.Mock.ofType(ConnectionStore);
 		workbenchEditorService = TypeMoq.Mock.ofType(WorkbenchEditorTestService);
 		editorGroupService = TypeMoq.Mock.ofType(EditorGroupTestService);
-		connectionFactory = new ConnectionFactory(capabilitiesService);
+		connectionStatusManager = new ConnectionStatusManager(capabilitiesService);
+		connectionProvider = TypeMoq.Mock.ofType(ConnectionProviderStub);
 
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined)).returns(() => TPromise.as(none));
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined, undefined)).returns(() => TPromise.as(none));
@@ -73,11 +77,15 @@ suite('SQL ConnectionManagementService tests', () => {
 			c => c.serverName === connectionProfileWithoutPassword.serverName))).returns(() => Promise.resolve(connectionProfileWithoutPassword));
 		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
 
+		connectionProvider.setup(x => x.connect(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => undefined);
+
 		connectionManagementService = new ConnectionManagementService(
 			undefined,
 			connectionStore.object,
 			undefined,
 			connectionDialogService.object,
+			undefined,
+			undefined,
 			undefined,
 			workbenchEditorService.object,
 			undefined,
@@ -88,7 +96,10 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined,
 			capabilitiesService,
 			undefined,
-			editorGroupService.object);
+			editorGroupService.object,
+			undefined);
+
+		connectionManagementService.registerProvider('MSSQL', connectionProvider.object);
 	});
 
 	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string): void {
@@ -111,7 +122,7 @@ suite('SQL ConnectionManagementService tests', () => {
 	function verifyOptions(options?: IConnectionCompletionOptions, fromDialog?: boolean): void {
 
 		if (options) {
-			if (options.saveToSettings) {
+			if (options.saveTheConnection) {
 				connectionStore.verify(x => x.saveProfile(TypeMoq.It.isAny()), TypeMoq.Times.once());
 			}
 			if (options.showDashboard) {
@@ -128,7 +139,7 @@ suite('SQL ConnectionManagementService tests', () => {
 	function connect(uri: string, options?: IConnectionCompletionOptions, fromDialog?: boolean, connection?: IConnectionProfile, error?: string): Promise<IConnectionResult> {
 		let connectionToUse = connection ? connection : connectionProfile;
 		return new Promise<IConnectionResult>((resolve, reject) => {
-			let id = connectionToUse.getUniqueId();
+			let id = connectionToUse.getOptionsKey();
 			let defaultUri = 'connection://' + (id ? id : connection.serverName + ':' + connection.databaseName);
 			connectionManagementService.onConnectionRequestSent(() => {
 				let info: data.ConnectionInfoSummary = {
@@ -217,7 +228,7 @@ suite('SQL ConnectionManagementService tests', () => {
 		let uri: string = 'Editor Uri';
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
-			saveToSettings: true,
+			saveTheConnection: true,
 			showDashboard: false,
 			showConnectionDialogOnError: false
 		};
@@ -235,7 +246,7 @@ suite('SQL ConnectionManagementService tests', () => {
 		let uri: string = 'Editor Uri';
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
-			saveToSettings: false,
+			saveTheConnection: false,
 			showDashboard: true,
 			showConnectionDialogOnError: false
 		};
@@ -267,7 +278,7 @@ suite('SQL ConnectionManagementService tests', () => {
 				querySelection: undefined,
 				runQueryOnCompletion: false
 			},
-			saveToSettings: true,
+			saveTheConnection: true,
 			showDashboard: false,
 			showConnectionDialogOnError: true
 		};
@@ -297,7 +308,7 @@ suite('SQL ConnectionManagementService tests', () => {
 	});
 
 	test('connect with undefined uri and options should connect using the default uri', done => {
-		let uri: undefined;
+		let uri = undefined;
 		let options: IConnectionCompletionOptions = undefined;
 
 		connect(uri, options).then(() => {
@@ -310,13 +321,13 @@ suite('SQL ConnectionManagementService tests', () => {
 	});
 
 	test('failed connection should open the dialog if connection fails', done => {
-		let uri: undefined;
+		let uri = undefined;
 		let error: string = 'error';
 		let expectedConnection: boolean = false;
 		let expectedError: string = error;
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
-			saveToSettings: false,
+			saveTheConnection: false,
 			showDashboard: false,
 			showConnectionDialogOnError: true
 		};
@@ -333,13 +344,13 @@ suite('SQL ConnectionManagementService tests', () => {
 	});
 
 	test('failed connection should not open the dialog if the option is set to false even if connection fails', done => {
-		let uri: undefined;
+		let uri = undefined;
 		let error: string = 'error when options set to false';
 		let expectedConnection: boolean = false;
 		let expectedError: string = error;
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
-			saveToSettings: false,
+			saveTheConnection: false,
 			showDashboard: false,
 			showConnectionDialogOnError: false
 		};
@@ -357,12 +368,12 @@ suite('SQL ConnectionManagementService tests', () => {
 
 
 	test('connect when password is empty and required should open the dialog', done => {
-		let uri: undefined;
+		let uri = undefined;
 		let expectedConnection: boolean = false;
 		let expectedError: string = undefined;
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
-			saveToSettings: false,
+			saveTheConnection: false,
 			showDashboard: false,
 			showConnectionDialogOnError: true
 		};
@@ -379,7 +390,7 @@ suite('SQL ConnectionManagementService tests', () => {
 	});
 
 	test('connect from editor when empty password when it is required should open the dialog', done => {
-		let uri: 'editor 3';
+		let uri = 'editor 3';
 		let expectedConnection: boolean = false;
 		let expectedError: string = undefined;
 		let options: IConnectionCompletionOptions = {
@@ -395,7 +406,7 @@ suite('SQL ConnectionManagementService tests', () => {
 				querySelection: undefined,
 				runQueryOnCompletion: false
 			},
-			saveToSettings: true,
+			saveTheConnection: true,
 			showDashboard: false,
 			showConnectionDialogOnError: true
 		};

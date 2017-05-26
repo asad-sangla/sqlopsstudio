@@ -7,7 +7,7 @@
 
 
 import * as TypeMoq from 'typemoq';
-import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/common/connectionconfig';
+import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/common/connectionConfig';
 import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
@@ -15,10 +15,10 @@ import { IWorkspaceConfigurationValue } from 'vs/workbench/services/configuratio
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import * as Constants from 'sql/parts/connection/common/constants';
-import { IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as assert from 'assert';
-import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import data = require('data');
 import { Emitter } from 'vs/base/common/event';
 
@@ -34,37 +34,51 @@ suite('SQL ConnectionConfig tests', () => {
 		workspace: [{
 			name: 'g1',
 			id: 'g1',
-			parentId: 'ROOT'
+			parentId: 'ROOT',
+			color: 'pink',
+			description: 'g1'
 		},
 		{
 			name: 'g1-1',
 			id: 'g1-1',
-			parentId: 'g1'
+			parentId: 'g1',
+			color: 'blue',
+			description: 'g1-1'
 		}
 		],
 		user: [{
 			name: 'ROOT',
 			id: 'ROOT',
-			parentId: ''
+			parentId: '',
+			color: 'white',
+			description: 'ROOT'
 		}, {
 			name: 'g2',
 			id: 'g2',
-			parentId: 'ROOT'
+			parentId: 'ROOT',
+			color: 'green',
+			description: 'g2'
 		},
 		{
 			name: 'g2-1',
 			id: 'g2-1',
-			parentId: 'g2'
+			parentId: 'g2',
+			color: 'yellow',
+			description: 'g2'
 		},
 		{
 			name: 'g3',
 			id: 'g3',
-			parentId: ''
+			parentId: '',
+			color: 'orange',
+			description: 'g3'
 		},
 		{
 			name: 'g3-1',
 			id: 'g3-1',
-			parentId: 'g3'
+			parentId: 'g3',
+			color: 'purple',
+			description: 'g3-1'
 		}
 		],
 		value: [],
@@ -76,34 +90,46 @@ suite('SQL ConnectionConfig tests', () => {
 			{
 				name: 'g1',
 				id: 'g1',
-				parentId: ''
+				parentId: '',
+				color: 'pink',
+				description: 'g1'
 			},
 			{
 				name: 'g1-1',
 				id: 'g1-1',
-				parentId: 'g1'
+				parentId: 'g1',
+				color: 'blue',
+				description: 'g1-1'
 			}
 		],
 		user: [
 			{
 				name: 'g2',
 				id: 'g2',
-				parentId: ''
+				parentId: '',
+				color: 'green',
+				description: 'g2'
 			},
 			{
 				name: 'g2-1',
 				id: 'g2-1',
-				parentId: 'g2'
+				parentId: 'g2',
+				color: 'yellow',
+				description: 'g2'
 			},
 			{
 				name: 'g1',
 				id: 'g1',
-				parentId: ''
+				parentId: '',
+				color: 'pink',
+				description: 'g1'
 			},
 			{
 				name: 'g1-2',
 				id: 'g1-2',
-				parentId: 'g1'
+				parentId: 'g1',
+				color: 'silver',
+				description: 'g1-2'
 			}],
 		value: [],
 		default: []
@@ -120,7 +146,8 @@ suite('SQL ConnectionConfig tests', () => {
 			},
 			providerName: 'MSSQL',
 			groupId: 'test',
-			savePassword: true
+			savePassword: true,
+			id: 'server1'
 		}
 
 
@@ -135,7 +162,8 @@ suite('SQL ConnectionConfig tests', () => {
 			},
 			providerName: 'MSSQL',
 			groupId: 'test',
-			savePassword: true
+			savePassword: true,
+			id: 'server2'
 		}, {
 			options: {
 				serverName: 'server3',
@@ -145,8 +173,9 @@ suite('SQL ConnectionConfig tests', () => {
 				authenticationType: ''
 			},
 			providerName: 'MSSQL',
-			groupId: 'test',
-			savePassword: true
+			groupId: 'g3',
+			savePassword: true,
+			id: 'server3'
 		}
 		],
 		value: [
@@ -225,7 +254,8 @@ suite('SQL ConnectionConfig tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		capabilities.push(msSQLCapabilities);
 
@@ -233,9 +263,13 @@ suite('SQL ConnectionConfig tests', () => {
 		capabilitiesService.setup(x => x.onProviderRegisteredEvent).returns(() => onProviderRegistered.event);
 
 		workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
+		workspaceConfigurationServiceMock.setup(x => x.reloadConfiguration())
+			.returns(() => TPromise.as<{}>({}));
+
 		configEditingServiceMock = TypeMoq.Mock.ofType(ConfigurationEditingService);
 		let nothing: void;
-		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));;
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.WORKSPACE, TypeMoq.It.isAny())).returns(() => TPromise.as<void>(nothing));
 	});
 
 	function groupsAreEqual(groups1: IConnectionProfileGroup[], groups2: IConnectionProfileGroup[]): Boolean {
@@ -286,27 +320,37 @@ suite('SQL ConnectionConfig tests', () => {
 			{
 				name: 'g1',
 				id: 'g1',
-				parentId: ''
+				parentId: '',
+				color: 'pink',
+				description: 'g1'
 			},
 			{
 				name: 'g1-1',
 				id: 'g1-1',
-				parentId: 'g1'
+				parentId: 'g1',
+				color: 'blue',
+				description: 'g1-1'
 			},
 			{
 				name: 'g2',
 				id: 'g2',
-				parentId: ''
+				parentId: '',
+				color: 'yellow',
+				description: 'g2'
 			},
 			{
 				name: 'g2-1',
 				id: 'g2-1',
-				parentId: 'g2'
+				parentId: 'g2',
+				color: 'red',
+				description: 'g2'
 			},
 			{
 				name: 'g1-2',
 				id: 'g1-2',
-				parentId: 'g1'
+				parentId: 'g1',
+				color: 'green',
+				description: 'g1-2'
 			}];
 
 		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
@@ -331,10 +375,11 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: undefined,
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
@@ -351,6 +396,7 @@ suite('SQL ConnectionConfig tests', () => {
 		config.addConnection(connectionProfile).then(savedConnectionProfile => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			assert.notEqual(savedConnectionProfile.id, undefined);
 			done();
 		}).catch(error => {
 			assert.fail();
@@ -369,10 +415,11 @@ suite('SQL ConnectionConfig tests', () => {
 			groupId: profileFromConfig.groupId,
 			savePassword: true,
 			groupFullName: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 
 		let expectedNumberOfConnections = connections.user.length;
@@ -386,9 +433,10 @@ suite('SQL ConnectionConfig tests', () => {
 
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
-		config.addConnection(connectionProfile).then(success => {
+		config.addConnection(connectionProfile).then(savedConnectionProfile => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			assert.equal(savedConnectionProfile.id, profileFromConfig.id);
 			done();
 		}).catch(error => {
 			assert.fail();
@@ -406,10 +454,11 @@ suite('SQL ConnectionConfig tests', () => {
 			savePassword: true,
 			groupFullName: 'g2/g2-2',
 			groupId: undefined,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		};
 
 		let expectedNumberOfConnections = connections.user.length + 1;
@@ -461,6 +510,40 @@ suite('SQL ConnectionConfig tests', () => {
 		assert.equal(allConnections.length, connections.user.length);
 	});
 
+	test('getConnections should return connections with a valid id', () => {
+		let getWorkspaceConnections: boolean = false;
+		let connectionsWithNoId: IWorkspaceConfigurationValue<IConnectionProfileStore[]> = {
+			user: connections.user.map(c => {
+				c.id = undefined;
+				return c;
+			}),
+			default: connections.default,
+			workspace: connections.workspace.map(c => {
+				c.id = c.options['serverName'];
+				return c;
+			}),
+			value: connections.value
+		};
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connectionsWithNoId);
+
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		let allConnections = config.getConnections(getWorkspaceConnections);
+		assert.equal(allConnections.length, connections.user.length);
+		allConnections.forEach(connection => {
+			let userConnection = connectionsWithNoId.user.find(u => u.options['serverName'] === connection.serverName);
+			if (userConnection !== undefined) {
+				assert.notEqual(connection.id, connection.getOptionsKey());
+				assert.notEqual(connection.id, undefined);
+			} else {
+				let workspaceConnection = connectionsWithNoId.workspace.find(u => u.options['serverName'] === connection.serverName);
+				assert.notEqual(connection.id, connection.getOptionsKey());
+				assert.equal(workspaceConnection.id, connection.id);
+			}
+		});
+	});
+
 	test('getConnections update the capabilities in each profile when the provider capabilities is registered', () => {
 		let oldOptionName: string = 'oldOptionName';
 		let optionsMetadataFromConfig = capabilities[0].connectionProvider.options.concat({
@@ -484,7 +567,8 @@ suite('SQL ConnectionConfig tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		capabilitiesFromConfig.push(msSQLCapabilities2);
 		let connectionUsingOldMetadata = connections.user.map(c => {
@@ -503,13 +587,13 @@ suite('SQL ConnectionConfig tests', () => {
 		let allConnections = config.getConnections(false);
 		allConnections.forEach(element => {
 			assert.notEqual(element.serverName, undefined);
-			assert.notEqual(element.getUniqueId().indexOf('oldOptionValue|'), -1);
+			assert.notEqual(element.getOptionsKey().indexOf('oldOptionValue|'), -1);
 		});
 
 		onProviderRegistered.fire(msSQLCapabilities);
 		allConnections.forEach(element => {
 			assert.notEqual(element.serverName, undefined);
-			assert.equal(element.getUniqueId().indexOf('oldOptionValue|'), -1);
+			assert.equal(element.getOptionsKey().indexOf('oldOptionValue|'), -1);
 		});
 	});
 
@@ -518,8 +602,9 @@ suite('SQL ConnectionConfig tests', () => {
 		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
 		let expectedLength = configValueToConcat.user.length + 2;
 		let newGroups: string = 'ROOT/g1/g1-1';
+		let color: string = 'red';
 
-		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups, color, newGroups);
 		assert.notEqual(result, undefined);
 		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
 		let newGroup = result.groups.find(g => g.name === 'g1-1');
@@ -531,8 +616,9 @@ suite('SQL ConnectionConfig tests', () => {
 		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
 		let expectedLength = configValueToConcat.user.length + 1;
 		let newGroups: string = 'ROOT/g2/g2-5';
+		let color: string = 'red';
 
-		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups, color, newGroups);
 		assert.notEqual(result, undefined);
 		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
 		let newGroup = result.groups.find(g => g.name === 'g2-5');
@@ -544,12 +630,237 @@ suite('SQL ConnectionConfig tests', () => {
 		let groups: IConnectionProfileGroup[] = configValueToConcat.user;
 		let expectedLength = configValueToConcat.user.length;
 		let newGroups: string = 'ROOT/g2/g2-1';
+		let color: string = 'red';
 
-		let result: ISaveGroupResult = config.saveGroup(groups, newGroups);
+		let result: ISaveGroupResult = config.saveGroup(groups, newGroups, color, newGroups);
 		assert.notEqual(result, undefined);
 		assert.equal(result.groups.length, expectedLength, 'The result groups length is invalid');
 		let newGroup = result.groups.find(g => g.name === 'g2-1');
 		assert.equal(result.newGroupId, newGroup.id, 'The groups id is invalid');
 	});
+
+	test('deleteConnection should remove the connection from config', done => {
+		let newProfile: IConnectionProfile = {
+			serverName: 'server3',
+			databaseName: 'database',
+			userName: 'user',
+			password: 'password',
+			authenticationType: '',
+			savePassword: true,
+			groupFullName: 'g3',
+			groupId: 'g3',
+			getOptionsKey: undefined,
+			providerName: 'MSSQL',
+			options: {},
+			saveProfile: true,
+			id: undefined
+		};
+
+		let expectedNumberOfConnections = connections.user.length - 1;
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connections);
+
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.deleteConnection(connectionProfile).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			done();
+		}).catch(error => {
+			assert.fail();
+			done();
+		});
+	});
+
+	test('deleteConnectionGroup should remove the children connections and subgroups from config', done => {
+		let newProfile: IConnectionProfile = {
+			serverName: 'server3',
+			databaseName: 'database',
+			userName: 'user',
+			password: 'password',
+			authenticationType: '',
+			savePassword: true,
+			groupFullName: 'g3',
+			groupId: 'g3',
+			getOptionsKey: undefined,
+			providerName: 'MSSQL',
+			options: {},
+			saveProfile: true,
+			id: undefined
+		};
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let connectionProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3', undefined, undefined);
+		let childGroup = new ConnectionProfileGroup('g3-1', connectionProfileGroup, 'g3-1', undefined, undefined);
+		connectionProfileGroup.addGroups([childGroup]);
+		connectionProfileGroup.addConnections([connectionProfile]);
+
+		let expectedNumberOfConnections = connections.user.length - 1;
+		let expectedNumberOfGroups = configValueToConcat.user.length - 2;
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connections);
+
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
+			.returns(() => configValueToConcat);
+
+
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.deleteGroup(connectionProfileGroup).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileGroup[]).length === expectedNumberOfGroups)), TypeMoq.Times.once());
+			done();
+		}).catch(error => {
+			assert.fail();
+			done();
+		});
+	});
+
+	test('deleteConnection should not throw error for connection not in config', done => {
+		let newProfile: IConnectionProfile = {
+			serverName: 'server3',
+			databaseName: 'database',
+			userName: 'user',
+			password: 'password',
+			authenticationType: '',
+			savePassword: true,
+			groupFullName: 'g3',
+			groupId: 'newid',
+			getOptionsKey: undefined,
+			providerName: 'MSSQL',
+			options: {},
+			saveProfile: true,
+			id: undefined
+		};
+
+		let expectedNumberOfConnections = connections.user.length;
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connections);
+
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.deleteConnection(connectionProfile).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			done();
+		}).catch(error => {
+			assert.fail();
+			done();
+		});
+	});
+
+	test('renameGroup should change group name', done => {
+
+		let expectedNumberOfConnections = configValueToConcat.user.length;
+		let calledValue: any;
+		let called: boolean = false;
+		let nothing: void;
+		let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService> = TypeMoq.Mock.ofType(ConfigurationEditingService);
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
+			calledValue = val.value as IConnectionProfileStore[];
+		}).returns(() => TPromise.as<void>(nothing));
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
+			.returns(() => configValueToConcat);
+
+		let connectionProfileGroup = new ConnectionProfileGroup('g-renamed', undefined, 'g2', undefined, undefined);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.renameGroup(connectionProfileGroup).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			calledValue.forEach(con => {
+				if (con.id === 'g2') {
+					assert.equal(con.name, 'g-renamed', 'Group was not renamed');
+					called = true;
+				}
+			});
+			assert.equal(called, true, 'group was not renamed');
+		}).then(() => done(), (err) => done(err));
+	});
+
+
+	test('change group(parent) for connection group', done => {
+		let expectedNumberOfConnections = configValueToConcat.user.length;
+		let calledValue: any;
+		let called: boolean = false;
+		let nothing: void;
+		let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService> = TypeMoq.Mock.ofType(ConfigurationEditingService);
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
+			calledValue = val.value as IConnectionProfileStore[];
+		}).returns(() => TPromise.as<void>(nothing));
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionGroupsArrayName))
+			.returns(() => configValueToConcat);
+
+		let sourceProfileGroup = new ConnectionProfileGroup('g2', undefined, 'g2', undefined, undefined);
+		let targetProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3', undefined, undefined);
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.changeGroupIdForConnectionGroup(sourceProfileGroup, targetProfileGroup).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
+			calledValue.forEach(con => {
+				if (con.id === 'g2') {
+					assert.equal(con.parentId, 'g3', 'Group parent was not changed');
+					called = true;
+				}
+			});
+			assert.equal(called, true, 'Group parent was not changed');
+		}).then(() => done(), (err) => done(err));
+	});
+
+
+	test('change group(parent) for connection', done => {
+		let newProfile: IConnectionProfile = {
+			serverName: 'server3',
+			databaseName: 'database',
+			userName: 'user',
+			password: 'password',
+			authenticationType: '',
+			savePassword: true,
+			groupFullName: 'g3',
+			groupId: 'g3',
+			getOptionsKey: () => { return 'connectionId'; },
+			providerName: 'MSSQL',
+			options: {},
+			saveProfile: true,
+			id: 'test'
+		};
+
+		let expectedNumberOfConnections = connections.user.length;
+		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
+			Constants.connectionsArrayName))
+			.returns(() => connections);
+
+		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		let newId = 'newid';
+		let calledValue: any;
+		let called: boolean = false;
+		let nothing: void;
+		let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService> = TypeMoq.Mock.ofType(ConfigurationEditingService);
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
+			calledValue = val.value as IConnectionProfileStore[];
+		}).returns(() => TPromise.as<void>(nothing));
+		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.WORKSPACE, TypeMoq.It.isAny())).callback((x: any, val: any) => {
+
+		}).returns(() => TPromise.as<void>(nothing));
+
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.changeGroupIdForConnection(connectionProfile, newId).then(() => {
+			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
+				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.atLeastOnce());
+			calledValue.forEach(con => {
+				if (con.options.serverName === 'server3') {
+					assert.equal(con.groupId, newId, 'Group parent was not changed');
+					called = true;
+				}
+			});
+			assert.equal(called, true, 'Group parent was not changed');
+		}).then(() => done(), (err) => done(err));
+	});
+
 });
 

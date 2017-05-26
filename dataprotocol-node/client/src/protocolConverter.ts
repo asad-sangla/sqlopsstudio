@@ -82,6 +82,14 @@ export interface Converter {
 	asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata;
 
 	asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult;
+
+	asObjectExplorerSession(params: ls.SessionCreatedParameters): data.ObjectExplorerSession;
+
+	asObjectExplorerCreateSessionResponse(params: ls.CreateSessionResponse): data.ObjectExplorerSessionResponse;
+
+	asObjectExplorerNodeInfo(params: ls.ExpandResponse): data.ObjectExplorerExpandInfo;
+
+	asObjectExplorerCloseSessionResponse(params: ls.CloseSessionResponse): data.ObjectExplorerCloseSessionResponse;
 }
 
 export interface URIConverter {
@@ -165,10 +173,10 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 			return null;
 		}
 		if (Array.isArray(result)) {
-			let items = <ls.CompletionItem[]> result;
+			let items = <ls.CompletionItem[]>result;
 			return items.map(asCompletionItem);
 		}
-		let list = <ls.CompletionList> result;
+		let list = <ls.CompletionList>result;
 		return new code.CompletionList(list.items.map(asCompletionItem), list.isIncomplete);
 	}
 
@@ -291,7 +299,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	}
 
 	function asDocumentHighlightKind(item: ls.DocumentHighlightKind): code.DocumentHighlightKind {
-		switch(item) {
+		switch (item) {
 			case ls.DocumentHighlightKind.Text:
 				return code.DocumentHighlightKind.Text;
 			case ls.DocumentHighlightKind.Read:
@@ -397,17 +405,107 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return connSummary;
 	}
 
+	function asServiceOptionType(val: string): data.ServiceOptionType {
+		if (val === 'string') {
+			return data.ServiceOptionType.string;
+		} else if (val === 'multistring') {
+			return data.ServiceOptionType.multistring;
+		} else if (val === 'password') {
+			return data.ServiceOptionType.password;
+		} else if (val === 'number') {
+			return data.ServiceOptionType.number;
+		} else if (val === 'boolean') {
+			return data.ServiceOptionType.boolean;
+		} else if (val === 'category') {
+			return data.ServiceOptionType.category;
+		} else if (val === 'object') {
+			return data.ServiceOptionType.object;
+		}
+
+		// assume string for unknown value types
+		return data.ServiceOptionType.string;
+	}
+
 	function asServerCapabilities(result: ls.CapabiltiesDiscoveryResult): data.DataProtocolServerCapabilities {
 		let capabilities: data.DataProtocolServerCapabilities = {
 			protocolVersion: result.capabilities.protocolVersion,
 			providerName: result.capabilities.providerName,
 			providerDisplayName: result.capabilities.providerDisplayName,
-			connectionProvider: undefined
+			connectionProvider: undefined,
+			adminServicesProvider: undefined
 		};
 
-		if (!!result.capabilities.connectionProvider
-				&& !!result.capabilities.connectionProvider.options
-				&& result.capabilities.connectionProvider.options.length > 0) {
+		if (result.capabilities.adminServicesProvider) {
+			capabilities.adminServicesProvider = <data.AdminServicesOptions>{
+				databaseInfoOptions: new Array<data.ServiceOption>(),
+				databaseFileInfoOptions: new Array<data.ServiceOption>(),
+				fileGroupInfoOptions: new Array<data.ServiceOption>()
+			};
+
+			if (result.capabilities.adminServicesProvider.databaseInfoOptions
+				&& result.capabilities.adminServicesProvider.databaseInfoOptions.length > 0) {
+				for (let i = 0; i < result.capabilities.adminServicesProvider.databaseInfoOptions.length; ++i) {
+					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.databaseInfoOptions[i];
+					let descOption: data.ServiceOption = {
+						name: srcOption.name,
+						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
+						description: srcOption.description,
+						groupName: srcOption.groupName,
+						defaultValue: srcOption.defaultValue,
+						categoryValues: srcOption.categoryValues,
+						isRequired: srcOption.isRequired,
+						isArray: srcOption.isArray,
+						objectType: srcOption.objectType,
+						valueType: asServiceOptionType(srcOption.valueType)
+					};
+					capabilities.adminServicesProvider.databaseInfoOptions.push(descOption);
+				}
+			}
+
+			if (result.capabilities.adminServicesProvider.databaseFileInfoOptions
+				&& result.capabilities.adminServicesProvider.databaseFileInfoOptions.length > 0) {
+				for (let i = 0; i < result.capabilities.adminServicesProvider.databaseFileInfoOptions.length; ++i) {
+					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.databaseFileInfoOptions[i];
+					let descOption: data.ServiceOption = {
+						name: srcOption.name,
+						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
+						description: srcOption.description,
+						groupName: srcOption.groupName,
+						defaultValue: srcOption.defaultValue,
+						categoryValues: srcOption.categoryValues,
+						isRequired: srcOption.isRequired,
+						isArray: srcOption.isArray,
+						objectType: srcOption.objectType,
+						valueType: asServiceOptionType(srcOption.valueType),
+					};
+					capabilities.adminServicesProvider.databaseFileInfoOptions.push(descOption);
+				}
+			}
+
+			if (result.capabilities.adminServicesProvider.fileGroupInfoOptions
+				&& result.capabilities.adminServicesProvider.fileGroupInfoOptions.length > 0) {
+				for (let i = 0; i < result.capabilities.adminServicesProvider.fileGroupInfoOptions.length; ++i) {
+					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.fileGroupInfoOptions[i];
+					let descOption: data.ServiceOption = {
+						name: srcOption.name,
+						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
+						description: srcOption.description,
+						groupName: srcOption.groupName,
+						defaultValue: srcOption.defaultValue,
+						categoryValues: srcOption.categoryValues,
+						isRequired: srcOption.isRequired,
+						isArray: srcOption.isArray,
+						objectType: srcOption.objectType,
+						valueType: asServiceOptionType(srcOption.valueType),
+					};
+					capabilities.adminServicesProvider.fileGroupInfoOptions.push(descOption);
+				}
+			}
+		}
+
+		if (result.capabilities.connectionProvider
+			&& result.capabilities.connectionProvider.options
+			&& result.capabilities.connectionProvider.options.length > 0) {
 			capabilities.connectionProvider = <data.ConnectionProviderOptions>{
 				options: new Array<data.ConnectionOption>()
 			};
@@ -415,30 +513,16 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 				let srcOption: ls.ConnectionOption = result.capabilities.connectionProvider.options[i];
 				let descOption: data.ConnectionOption = {
 					name: srcOption.name,
-					displayName: !!srcOption.displayName ? srcOption.displayName : srcOption.name,
+					displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
 					description: srcOption.description,
 					groupName: srcOption.groupName,
 					defaultValue: srcOption.defaultValue,
 					categoryValues: srcOption.categoryValues,
 					isIdentity: srcOption.isIdentity,
 					isRequired: srcOption.isRequired,
-					valueType: undefined,
+					valueType: asServiceOptionType(srcOption.valueType),
 					specialValueType: undefined
 				};
-
-				if (srcOption.valueType === 'string') {
-					descOption.valueType = data.ConnectionOptionType.string;
-				} else if (srcOption.valueType === 'multistring') {
-					descOption.valueType = data.ConnectionOptionType.multistring;
-				} else if (srcOption.valueType === 'password') {
-					descOption.valueType = data.ConnectionOptionType.password;
-				} else if (srcOption.valueType === 'number') {
-					descOption.valueType = data.ConnectionOptionType.number;
-				} else if (srcOption.valueType === 'boolean') {
-					descOption.valueType = data.ConnectionOptionType.boolean;
-				} else if (srcOption.valueType === 'category') {
-					descOption.valueType = data.ConnectionOptionType.category;
-				}
 
 				if (srcOption.specialValueType === 'serverName') {
 					descOption.specialValueType = data.ConnectionOptionSpecialType.serverName;
@@ -463,7 +547,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		let objectMetadata: data.ObjectMetadata[] = [];
 
 		for (let i = 0; i < params.metadata.length; ++i) {
-			let metadata:ls.ObjectMetadata = params.metadata[i];
+			let metadata: ls.ObjectMetadata = params.metadata[i];
 
 			// the display string should come from the provider
 			// this is temporary mapping (3/13 karlb)
@@ -486,13 +570,44 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 			});
 		}
 
-		return <data.ProviderMetadata> {
+		return <data.ProviderMetadata>{
 			objectMetadata: objectMetadata
 		};
 	}
 
+	function asObjectExplorerSession(params: ls.SessionCreatedParameters): data.ObjectExplorerSession {
+		return <data.ObjectExplorerSession>{
+			success: params.success,
+			sessionId: params.sessionId,
+			rootNode: params.rootNode,
+			errorMessage: params.errorMessage
+		};
+	}
+
+	function asObjectExplorerCreateSessionResponse(params: ls.CreateSessionResponse): data.ObjectExplorerSessionResponse {
+		return <data.ObjectExplorerSessionResponse>{
+			sessionId: params.sessionId
+		};
+	}
+
+	function asObjectExplorerNodeInfo(params: ls.ExpandResponse): data.ObjectExplorerExpandInfo {
+		return <data.ObjectExplorerExpandInfo>{
+			sessionId: params.sessionId,
+			nodes: params.nodes,
+			errorMessage: params.errorMessage,
+			nodePath: params.nodePath
+		};
+	}
+
+	function asObjectExplorerCloseSessionResponse(params: ls.CloseSessionResponse): data.ObjectExplorerCloseSessionResponse {
+		return <data.ObjectExplorerCloseSessionResponse>{
+			sessionId: params.sessionId,
+			success: params.success
+		};
+	}
+
 	function asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult {
-		return <data.ScriptingResult> {
+		return <data.ScriptingResult>{
 			script: params.script
 		};
 	}
@@ -532,7 +647,11 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asConnectionSummary,
 		asServerCapabilities,
 		asProviderMetadata,
-		asScriptingResult
+		asScriptingResult,
+		asObjectExplorerSession,
+		asObjectExplorerCreateSessionResponse,
+		asObjectExplorerNodeInfo,
+		asObjectExplorerCloseSessionResponse
 	};
 }
 

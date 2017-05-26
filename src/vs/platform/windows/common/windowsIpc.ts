@@ -24,6 +24,7 @@ export interface IWindowsChannel extends IChannel {
 	call(command: 'setRepresentedFilename', arg: [number, string]): TPromise<void>;
 	call(command: 'addToRecentlyOpen', arg: { path: string, isFile?: boolean }[]): TPromise<void>;
 	call(command: 'removeFromRecentlyOpen', arg: string[]): TPromise<void>;
+	call(command: 'clearRecentPathsList'): TPromise<void>;
 	call(command: 'getRecentlyOpen', arg: number): TPromise<{ files: string[]; folders: string[]; }>;
 	call(command: 'focusWindow', arg: number): TPromise<void>;
 	call(command: 'isMaximized', arg: number): TPromise<boolean>;
@@ -36,10 +37,13 @@ export interface IWindowsChannel extends IChannel {
 	call(command: 'showWindow', arg: number): TPromise<void>;
 	call(command: 'getWindows'): TPromise<{ id: number; path: string; title: string; }[]>;
 	call(command: 'getWindowCount'): TPromise<number>;
+	call(command: 'relaunch', arg: { addArgs?: string[], removeArgs?: string[] }): TPromise<number>;
+	call(command: 'whenSharedProcessReady'): TPromise<void>;
+	call(command: 'toggleSharedProcess'): TPromise<void>;
 	call(command: 'log', arg: [string, string[]]): TPromise<void>;
 	call(command: 'closeExtensionHostWindow', arg: string): TPromise<void>;
 	call(command: 'showItemInFolder', arg: string): TPromise<void>;
-	call(command: 'openExternal', arg: string): TPromise<void>;
+	call(command: 'openExternal', arg: string): TPromise<boolean>;
 	call(command: 'startCrashReporter', arg: Electron.CrashReporterStartOptions): TPromise<void>;
 	call(command: string, arg?: any): TPromise<any>;
 }
@@ -69,6 +73,7 @@ export class WindowsChannel implements IWindowsChannel {
 			case 'setRepresentedFilename': return this.service.setRepresentedFilename(arg[0], arg[1]);
 			case 'addToRecentlyOpen': return this.service.addToRecentlyOpen(arg);
 			case 'removeFromRecentlyOpen': return this.service.removeFromRecentlyOpen(arg);
+			case 'clearRecentPathsList': return this.service.clearRecentPathsList();
 			case 'getRecentlyOpen': return this.service.getRecentlyOpen(arg);
 			case 'focusWindow': return this.service.focusWindow(arg);
 			case 'isMaximized': return this.service.isMaximized(arg);
@@ -80,6 +85,9 @@ export class WindowsChannel implements IWindowsChannel {
 			case 'showWindow': return this.service.showWindow(arg);
 			case 'getWindows': return this.service.getWindows();
 			case 'getWindowCount': return this.service.getWindowCount();
+			case 'relaunch': return this.service.relaunch(arg[0]);
+			case 'whenSharedProcessReady': return this.service.whenSharedProcessReady();
+			case 'toggleSharedProcess': return this.service.toggleSharedProcess();
 			case 'quit': return this.service.quit();
 			case 'log': return this.service.log(arg[0], arg[1]);
 			case 'closeExtensionHostWindow': return this.service.closeExtensionHostWindow(arg);
@@ -147,6 +155,10 @@ export class WindowsChannelClient implements IWindowsService {
 		return this.channel.call('removeFromRecentlyOpen', paths);
 	}
 
+	clearRecentPathsList(): TPromise<void> {
+		return this.channel.call('clearRecentPathsList');
+	}
+
 	getRecentlyOpen(windowId: number): TPromise<{ files: string[]; folders: string[]; }> {
 		return this.channel.call('getRecentlyOpen', windowId);
 	}
@@ -173,6 +185,18 @@ export class WindowsChannelClient implements IWindowsService {
 
 	quit(): TPromise<void> {
 		return this.channel.call('quit');
+	}
+
+	relaunch(options: { addArgs?: string[], removeArgs?: string[] }): TPromise<void> {
+		return this.channel.call('relaunch', [options]);
+	}
+
+	whenSharedProcessReady(): TPromise<void> {
+		return this.channel.call('whenSharedProcessReady');
+	}
+
+	toggleSharedProcess(): TPromise<void> {
+		return this.channel.call('toggleSharedProcess');
 	}
 
 	openWindow(paths: string[], options?: { forceNewWindow?: boolean, forceReuseWindow?: boolean }): TPromise<void> {
@@ -207,7 +231,7 @@ export class WindowsChannelClient implements IWindowsService {
 		return this.channel.call('showItemInFolder', path);
 	}
 
-	openExternal(url: string): TPromise<void> {
+	openExternal(url: string): TPromise<boolean> {
 		return this.channel.call('openExternal', url);
 	}
 

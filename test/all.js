@@ -56,7 +56,18 @@ function main() {
 			'lib': `../${ out }/lib`,
 			'bootstrap': `../${ out }/bootstrap`
 		},
-		catchError: true
+		catchError: true,
+		nodeModules: [
+			'@angular/common',
+			'@angular/core',
+			'@angular/forms',
+			'@angular/platform-browser',
+			'@angular/platform-browser-dynamic',
+			'@angular/router',
+			'angular2-grid',
+			'primeng/primeng',
+			'rxjs/Rx'
+		]
 	};
 
 	if (argv.coverage) {
@@ -149,7 +160,7 @@ function main() {
 
 			var coveragePath = path.join(path.dirname(__dirname), '.build', 'coverage');
 			var reportTypes = [];
-			if (argv.run) {
+			if (argv.run || argv.runGlob) {
 				// single file running
 				coveragePath += '-single';
 				reportTypes = ['lcovonly'];
@@ -180,13 +191,6 @@ function main() {
 	require('reflect-metadata');
 	global.window.Reflect = global.Reflect;
 	global.window.Zone = global.Zone;
-	global.PrimeNg = require('primeng/primeng');
-	global.AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
-	global.AngularCore = require('@angular/core');
-	global.AngularCommon = require('@angular/common');
-	global.AngularForms = require('@angular/forms');
-	global.AngularPlatformBrowser = require('@angular/platform-browser');
-	global.AngularRouter = require('@angular/router');
 
 	var didErr = false;
 	var write = process.stderr.write;
@@ -197,13 +201,28 @@ function main() {
 
 	var loadFunc = null;
 
-	if (argv.run) {
+	if (argv.runGlob) {
+		loadFunc = cb => {
+			const doRun = tests => {
+				const modulesToLoad = tests.map(test => {
+					if (path.isAbsolute(test)) {
+						test = path.relative(src, path.resolve(test));
+					}
+
+					return test.replace(/(\.js)|(\.d\.ts)|(\.js\.map)$/, '');
+				});
+				define(modulesToLoad, () => cb(null), cb);
+			};
+
+			glob(argv.runGlob, { cwd: src }, function (err, files) { doRun(files); });
+		};
+	} else if (argv.run) {
 		var tests = (typeof argv.run === 'string') ? [argv.run] : argv.run;
 		var modulesToLoad = tests.map(function(test) {
 			return path.relative(src, path.resolve(test)).replace(/(\.js)|(\.d\.ts)|(\.js\.map)$/, '');
 		});
-		loadFunc = function(cb) {
-			define(modulesToLoad, function () { cb(null); }, cb);
+		loadFunc = cb => {
+			define(modulesToLoad, () => cb(null), cb);
 		};
 	} else if (argv['only-monaco-editor']) {
 		loadFunc = function(cb) {
@@ -246,7 +265,7 @@ function main() {
 
 		process.stderr.write = write;
 
-		if (!argv.run) {
+		if (!argv.run && !argv.runGlob) {
 			// set up last test
 			suite('Loader', function () {
 				test('should not explode while loading', function () {
@@ -273,11 +292,8 @@ function main() {
 		// replace the default unexpected error handler to be useful during tests
 		loader(['vs/base/common/errors'], function(errors) {
 			errors.setUnexpectedErrorHandler(function (err) {
-				try {
-					throw new Error('oops');
-				} catch (e) {
-					unexpectedErrors.push((err && err.message ? err.message : err) + '\n' + e.stack);
-				}
+				let stack = (err && err.stack) || (new Error().stack);
+				unexpectedErrors.push((err && err.message ? err.message : err) + '\n' + stack);
 			});
 
 			// fire up mocha

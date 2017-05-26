@@ -20,17 +20,17 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Establish a connection to a data source using the provided ConnectionInfo instance.
 	 */
-	$connect(handle:number, connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> { throw ni(); }
+	$connect(handle: number, connectionUri: string, connection: data.ConnectionInfo): Thenable<boolean> { throw ni(); }
 
 	/**
 	 * Disconnect from a data source using the provided connectionUri string.
 	 */
-	$disconnect(handle:number, connectionUri: string): Thenable<boolean> { throw ni(); }
+	$disconnect(handle: number, connectionUri: string): Thenable<boolean> { throw ni(); }
 
 	/**
 	 * Cancel a connection to a data source using the provided connectionUri string.
 	 */
-	$cancelConnect(handle:number, connectionUri: string): Thenable<boolean> { throw ni(); }
+	$cancelConnect(handle: number, connectionUri: string): Thenable<boolean> { throw ni(); }
 
 	/**
 	 * List databases for a data source using the provided connectionUri string.
@@ -42,14 +42,14 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Callback when a connection request has completed
 	 */
-	$onConnectComplete(handle:number, connectionInfoSummary: data.ConnectionInfoSummary): void { throw ni(); }
+	$onConnectComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void { throw ni(); }
 
 	/**
 	 * Callback when a IntelliSense cache has been built
 	 */
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
 
-	$getServerCapabilities(handle:number, client: data.DataProtocolClientCapabilities): Thenable<data.DataProtocolServerCapabilities> { throw ni(); }
+	$getServerCapabilities(handle: number, client: data.DataProtocolClientCapabilities): Thenable<data.DataProtocolServerCapabilities> { throw ni(); }
 
 	/**
 	 * Metadata service methods
@@ -62,6 +62,17 @@ export abstract class ExtHostDataProtocolShape {
 	$getTableInfo(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> { throw ni(); }
 
 	$getViewInfo(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ColumnMetadata[]> { throw ni(); }
+
+	/**
+	 * Object Explorer
+	 */
+	$createObjectExplorerSession(handle: number, connInfo: data.ConnectionInfo): Thenable<data.ObjectExplorerSessionResponse> { throw ni(); }
+
+	$expandObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<boolean> { throw ni(); }
+
+	$refreshObjectExplorerNode(handle: number, nodeInfo: data.ExpandNodeInfo): Thenable<boolean> { throw ni(); }
+
+	$closeObjectExplorerSession(handle: number, closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> { throw ni(); }
 
 	/**
 	 * Scripting methods
@@ -84,7 +95,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Gets a subset of rows in a result set in order to display in the UI
 	 */
-    $getQueryRows(handle: number, rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> { throw ni(); }
+	$getQueryRows(handle: number, rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> { throw ni(); }
 
 	/**
 	 * Disposes the cached information regarding a query
@@ -162,6 +173,31 @@ export abstract class ExtHostDataProtocolShape {
 	 * Diposes an initialized edit session and cleans up pending edits
 	 */
 	$disposeEdit(handle: number, ownerUri: string): Thenable<void> { throw ni(); }
+
+	/**
+	 * Create a new database on the provided connection
+	 */
+	$createDatabase(handle: number, connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse> { throw ni(); }
+
+	/**
+	 * Get the default database prototype
+	 */
+	$getDefaultDatabaseInfo(handle: number, connectionUri: string): Thenable<data.DatabaseInfo> { throw ni(); }
+
+	/**
+	 * Create a new login on the provided connection
+	 */
+	$createLogin(handle: number, connectionUri: string, login: data.LoginInfo): Thenable<data.CreateLoginResponse> { throw ni(); }
+
+	/**
+	 * Backup a database
+	 */
+	$backup(handle: number, connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> { throw ni(); }
+
+	/**
+	 * Get the extended database prototype
+	 */
+	$getBackupConfigInfo(handle: number, connectionUri: string): Thenable<data.BackupConfigInfo>  { throw ni(); }
 }
 
 /**
@@ -172,11 +208,11 @@ export abstract class ExtHostCredentialManagementShape {
 
 	$readCredential(credentialId: string): Thenable<data.Credential> { throw ni(); }
 
-    $deleteCredential(credentialId: string): Thenable<boolean> { throw ni(); }
+	$deleteCredential(credentialId: string): Thenable<boolean> { throw ni(); }
 }
 
 export abstract class MainThreadDataProtocolShape {
-	$registerProvider(handle: number): TPromise<any> { throw ni(); }
+	$registerProvider(providerId: string, handle: number): TPromise<any> { throw ni(); }
 	$unregisterProvider(handle: number): TPromise<any> { throw ni(); }
 	$onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void { throw ni(); }
 	$onIntelliSenseCacheComplete(handle: number, connectionUri: string): void { throw ni(); }
@@ -186,6 +222,8 @@ export abstract class MainThreadDataProtocolShape {
 	$onBatchComplete(handle: number, batchInfo: data.QueryExecuteBatchNotificationParams): void { throw ni(); }
 	$onResultSetComplete(handle: number, resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void { throw ni(); }
 	$onQueryMessage(handle: number, message: data.QueryExecuteMessageParams): void { throw ni(); }
+	$onObjectExplorerSessionCreated(handle: number, message: data.ObjectExplorerSession): void { throw ni(); }
+	$onObjectExplorerNodeExpanded(handle: number, message: data.ObjectExplorerExpandInfo): void { throw ni(); }
 
 	/**
 	 * Callback when a session has completed initialization

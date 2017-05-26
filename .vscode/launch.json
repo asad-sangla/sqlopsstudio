@@ -1,10 +1,12 @@
 {
 	"version": "0.1.0",
 	"configurations": [
+
 		{
 			"type": "node",
 			"request": "launch",
 			"name": "Unit Tests",
+			"protocol": "legacy",
 			"program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
 			"runtimeExecutable": "${execPath}",
 			"stopOnEntry": false,
@@ -34,25 +36,57 @@
 			"type": "node",
 			"request": "attach",
 			"name": "Attach to Extension Host",
+			"protocol": "legacy",
 			"port": 5870,
 			"sourceMaps": true,
-			"outFiles": [ "${workspaceRoot}/out/**/*.js" ]
+			"restart": true,
+			"outFiles": [
+				"${workspaceRoot}/out/**/*.js"
+			]
 		},
 		{
 			"type": "node",
 			"request": "attach",
 			"name": "Attach to Shared Process",
+			"protocol": "legacy",
 			"port": 5871,
 			"sourceMaps": true,
-			"outFiles": [ "${workspaceRoot}/out/**/*.js" ]
+			"outFiles": [
+				"${workspaceRoot}/out/**/*.js"
+			]
+		},
+		{
+			"type": "node",
+			"request": "attach",
+			"protocol": "legacy",
+			"name": "Attach to Search process",
+			"port": 7890,
+			"sourceMaps": true,
+			"outFiles": [
+				"${workspaceRoot}/out/**/*.js"
+			]
 		},
 		{
 			"type": "node",
 			"request": "attach",
 			"name": "Attach to CLI Process",
+			"protocol": "legacy",
 			"port": 5874,
 			"sourceMaps": true,
-			"outFiles": [ "${workspaceRoot}/out/**/*.js" ]
+			"outFiles": [
+				"${workspaceRoot}/out/**/*.js"
+			]
+		},
+		{
+			"type": "node",
+			"request": "attach",
+			"name": "Attach to Main Process",
+			"protocol": "legacy",
+			"port": 5875,
+			"sourceMaps": true,
+			"outFiles": [
+				"${workspaceRoot}/out/**/*.js"
+			]
 		},
 		{
 			"type": "extensionHost",
@@ -65,7 +99,9 @@
 				"--extensionTestsPath=${workspaceRoot}/extensions/vscode-api-tests/out"
 			],
 			"sourceMaps": true,
-			"outFiles": [ "${workspaceRoot}/out/**/*.js" ]
+			"outFiles": [
+				"${workspaceRoot}/out/**/*.js"
+			]
 		},
 		{
 			"type": "extensionHost",
@@ -78,14 +114,15 @@
 				"--extensionTestsPath=${workspaceRoot}/extensions/vscode-colorize-tests/out"
 			],
 			"sourceMaps": true,
-			"outFiles": [ "${workspaceRoot}/out/**/*.js" ]
+			"outFiles": [
+				"${workspaceRoot}/out/**/*.js"
+			]
 		},
 		{
 			"type": "chrome",
 			"request": "attach",
 			"name": "Attach to Carbon",
-			"port": 9222,
-			"sourceMaps": true
+			"port": 9222
 		},
 		{
 			"type": "chrome",
@@ -100,18 +137,34 @@
 			"linux": {
 				"runtimeExecutable": "${workspaceRoot}/scripts/sql.sh"
 			},
-			"sourceMaps": true
+			"urlFilter": "*index.html*",
+			"sourceMaps": true,
+			"runtimeArgs": [
+				"--debug=5875"
+			],
+			"webRoot": "${workspaceRoot}"
 		},
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Debug Monaco",
-			"program": "${workspaceRoot}/build/lib/monaco.js",
-			"cwd": "${workspaceRoot}/build/lib"
-			// ,
-			// "port": 5870,
-			// "sourceMaps": true,
-			// "outFiles": [ "${workspaceRoot}/out/**/*.js" ]
+			"name": "Git Unit Tests",
+			"protocol": "inspector",
+			"program": "${workspaceRoot}/extensions/git/node_modules/mocha/bin/_mocha",
+			"stopOnEntry": false,
+			"cwd": "${workspaceRoot}/extensions/git",
+			"sourceMaps": true,
+			"outFiles": [
+				"${workspaceRoot}/extensions/git/out/**/*.js"
+			]
+		}
+	],
+	"compounds": [
+		{
+			"name": "Debug VS Code Main and Renderer",
+			"configurations": [
+				"Launch VS Code",
+				"Attach to Main Process"
+			]
 		}
 	]
 }

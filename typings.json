@@ -10,7 +10,9 @@
     "@angular/router": "npm:@angular/router/index.d.ts",
     "@angular/upgrade": "npm:@angular/upgrade/index.d.ts",
     "angular-in-memory-web-api": "npm:angular-in-memory-web-api/index.d.ts",
+    "angular2-grid": "npm:angular2-grid/dist/typings/main.d.ts",
     "angular2-slickgrid": "npm:angular2-slickgrid/index.d.ts",
+    "primeng": "npm:primeng/primeng.d.ts",
     "reflect-metadata": "npm:reflect-metadata/index.d.ts",
     "rxjs": "npm:rxjs/Rx.d.ts"
   },

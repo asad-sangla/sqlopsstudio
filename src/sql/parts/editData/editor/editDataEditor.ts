@@ -15,6 +15,7 @@ import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { Position } from 'vs/platform/editor/common/editor';
 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
@@ -30,9 +31,10 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import {
 	RefreshTableAction, StopRefreshTableAction,
 	ChangeMaxRowsAction, ChangeMaxRowsActionItem} from 'sql/parts/editData/execution/editDataActions';
-import { AppModule } from 'sql/parts/grid/views/editdata.module';
-import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
-import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { EditDataModule } from 'sql/parts/grid/views/editData/editData.module';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { EDITDATA_SELECTOR } from 'sql/parts/grid/views/editData/editData.component';
+import { EditDataComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 
 /**
  * Editor that hosts an action bar and a resultSetInput for an edit data session
@@ -40,7 +42,6 @@ import { EditDataComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
 export class EditDataEditor extends BaseEditor {
 
 	public static ID: string = 'workbench.editor.editDataEditor';
-	public static AngularSelectorString: string = 'slickgrid-container.slickgridContainer';
 
 	private _dimension: Dimension;
 	private _resultsEditorContainer: HTMLElement;
@@ -53,6 +54,7 @@ export class EditDataEditor extends BaseEditor {
 
 	constructor(
 		@ITelemetryService _telemetryService: ITelemetryService,
+		@IThemeService themeService: IThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
@@ -61,7 +63,7 @@ export class EditDataEditor extends BaseEditor {
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
-		super(EditDataEditor.ID, _telemetryService);
+		super(EditDataEditor.ID, _telemetryService, themeService);
 	}
 
 	// PUBLIC METHODS ////////////////////////////////////////////////////////////
@@ -300,10 +302,9 @@ export class EditDataEditor extends BaseEditor {
 				dataService: dataService
 			};
 			this._bootstrapService.bootstrap(
-				AppModule,
+				EditDataModule,
 				parent,
-				EditDataEditor.AngularSelectorString,
-				uri,
+				EDITDATA_SELECTOR,
 				params);
 		}
 		return TPromise.as<void>(null);

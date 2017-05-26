@@ -11,7 +11,6 @@ import 'vs/base/common/errors';
 
 // Editor
 import 'vs/editor/contrib/accessibility/browser/accessibility';
-import 'vs/editor/contrib/defineKeybinding/browser/defineKeybinding';
 import 'vs/editor/contrib/inspectTMScopes/electron-browser/inspectTMScopes';
 import 'vs/editor/contrib/selectionClipboard/electron-browser/selectionClipboard';
 import 'vs/editor/browser/editor.all';
@@ -27,6 +26,7 @@ import 'vs/workbench/browser/actions/toggleSidebarPosition';
 import 'vs/workbench/browser/actions/toggleEditorLayout';
 import 'vs/workbench/browser/actions/toggleZenMode';
 import 'vs/workbench/parts/preferences/browser/preferences.contribution';
+import 'vs/workbench/parts/preferences/browser/keybindingsEditorContribution';
 import 'vs/workbench/browser/actions/configureLocale';
 
 import 'vs/workbench/parts/quickopen/browser/quickopen.contribution';
@@ -121,8 +121,11 @@ import 'vs/workbench/parts/watermark/electron-browser/watermark';
 // import 'vs/workbench/parts/welcome/overlay/browser/welcomeOverlay';
 
 // SQL
+
+import 'sql/parts/tasks/common/tasks.contribution';
+import 'sql/parts/registeredServer/common/registeredServer.contribution';
+import 'sql/parts/registeredServer/viewlet/connectionViewlet';
 import 'sql/workbench/api/node/sqlExtHost.contribution';
 import 'sql/parts/connection/common/connection.contribution';
-import 'sql/parts/connection/viewlet/connectionViewlet';
 import 'sql/parts/query/common/query.contribution';
 import 'sql/workbench/electron-browser/main.contribution';

@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+'use strict';
+
 import { IViewlet } from 'vs/workbench/common/viewlet';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -21,10 +23,28 @@ export interface IConnectionsViewlet extends IViewlet {
 	search(text: string): void;
 }
 
+/**
+ * Options for the actions that could happen after connecting is complete
+ */
 export interface IConnectionCompletionOptions {
-	saveToSettings: boolean;
+	/**
+	 * save the connection to MRU and settings (only save to setting if profile.saveProfile is set to true)
+	 */
+	saveTheConnection: boolean;
+
+	/**
+	 * open the dashboard after connection is complete
+	 */
 	showDashboard: boolean;
+
+	/**
+	 * Parameters to be used if connecting from an editor
+	 */
 	params: INewConnectionParams;
+
+	/**
+	 * Open the connection dialog if connection fails
+	 */
 	showConnectionDialogOnError: boolean;
 }
 
@@ -50,7 +70,7 @@ export interface IConnectionManagementService {
 	// Event Emitters
 	onAddConnectionProfile: Event<void>;
 	onDeleteConnectionProfile: Event<void>;
-	onConnect: Event<void>;
+	onConnect: Event<IConnectionParams>;
 	onDisconnect: Event<IConnectionParams>;
 	onConnectionChanged: Event<IConnectionChangedParams>;
 
@@ -58,6 +78,11 @@ export interface IConnectionManagementService {
 	 * Opens the connection dialog to create new connection
 	 */
 	showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, error?: string): Promise<void>;
+
+	/**
+	 * Opens the add server group dialog
+	 */
+	showServerGroupDialog(callbacks?: IServerGroupDialogCallbacks): Promise<void>;
 
 	/**
 	 * Load the password and opens a new connection
@@ -82,15 +107,23 @@ export interface IConnectionManagementService {
 
 	getRecentConnections(): ConnectionProfile[];
 
-	getUnsavedConnections(): ConnectionProfile[];
+	clearRecentConnectionsList(): void;
 
-	getActiveConnections(): data.ConnectionInfo[];
+	getActiveConnections(): ConnectionProfile[];
+
+	saveProfileGroup(profile: IConnectionProfileGroup): Promise<string>;
 
 	changeGroupIdForConnectionGroup(source: IConnectionProfileGroup, target: IConnectionProfileGroup): Promise<void>;
 
 	changeGroupIdForConnection(source: ConnectionProfile, targetGroupName: string): Promise<void>;
 
+	deleteConnection(connection: ConnectionProfile): Promise<boolean>;
+
+	deleteConnectionGroup(group: ConnectionProfileGroup): Promise<boolean>;
+
 	getAdvancedProperties(): data.ConnectionOption[];
+
+	getConnectionId(connectionProfile: ConnectionProfile): string;
 
 	isConnected(fileUri: string): boolean;
 
@@ -116,6 +149,8 @@ export interface IConnectionManagementService {
 	 */
 	registerProvider(providerId: string, provider: data.ConnectionProvider): void;
 
+	renameGroup(group: ConnectionProfileGroup): Promise<void>;
+
 	getConnectionProfile(fileUri: string): IConnectionProfile;
 
 	getConnectionInfo(fileUri: string): ConnectionManagementInfo;
@@ -138,6 +173,14 @@ export interface IConnectionManagementService {
 	showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean>;
 
 	closeDashboard(uri: string): void;
+
+	getProviderIdFromUri(ownerUri: string): string;
+
+	hasRegisteredServers(): boolean;
+
+	getCapabilities(providerName: string): data.DataProtocolServerCapabilities;
+
+	canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
@@ -146,13 +189,23 @@ export interface IConnectionDialogService {
 	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model: IConnectionProfile, error?: string): TPromise<void>;
 }
 
+export interface IServerGroupDialogCallbacks {
+	onAddGroup(groupName: string): void;
+	onClose(): void;
+}
+export const IServerGroupController = createDecorator<IServerGroupController>('serverGroupController');
+export interface IServerGroupController {
+	_serviceBrand: any;
+	showDialog(connectionManagementService: IConnectionManagementService, callbacks?: IServerGroupDialogCallbacks): TPromise<void>;
+}
+
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');
 export interface IErrorMessageService {
 	_serviceBrand: any;
 	showDialog(container: HTMLElement, severity: Severity, headerTitle: string, message: string): void;
 }
 
-export enum ConnectionOptionType {
+export enum ServiceOptionType {
 	string = 0,
 	multistring = 1,
 	password = 2,
@@ -197,6 +250,7 @@ export enum MetadataType {
 }
 export interface IConnectionParams {
 	connectionUri: string;
+	connectionProfile: IConnectionProfile;
 }
 
 export interface IConnectionChangedParams extends IConnectionParams {

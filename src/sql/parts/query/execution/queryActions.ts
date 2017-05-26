@@ -11,16 +11,15 @@ import Event, { Emitter } from 'vs/base/common/event';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
-import { IBootstrapService } from 'sql/parts/bootstrap/bootstrapService';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
-import { DbListComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
-import { DbListModule, GetUniqueDbListUri, DBListAngularSelectorString } from 'sql/parts/common/dblist/dblist.module';
+import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
+import { DbListModule } from 'sql/parts/common/dblist/dblist.module';
 import { ISelectionData } from 'data';
 import nls = require('vs/nls');
-import * as dom from 'vs/base/browser/dom';
-const $ = dom.$;
 
 declare let AngularPlatformBrowserDynamic;
 
@@ -49,6 +48,11 @@ export abstract class QueryTaskbarAction extends Action {
 	 * This method is executed when the button is clicked.
 	 */
 	public abstract run(): TPromise<void>;
+
+	protected updateCssClass(enabledClass: string): void {
+		// set the class, useful on change of label or icon
+		this._setCssClass(enabledClass);
+	}
 
 	/**
 	 * Sets the CSS classes combining the parent and child classes.
@@ -104,7 +108,7 @@ export class RunQueryAction extends QueryTaskbarAction {
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
 		super(connectionManagementService, editor, RunQueryAction.ID, RunQueryAction.EnabledClass);
-		this.label = nls.localize('runQueryLabel', 'Run Query');
+		this.label = nls.localize('runQueryLabel', 'Run');
 	}
 
 	public run(): TPromise<void> {
@@ -147,7 +151,7 @@ export class CancelQueryAction extends QueryTaskbarAction {
 	) {
 		super(connectionManagementService, editor, CancelQueryAction.ID, CancelQueryAction.EnabledClass);
 		this.enabled = false;
-		this.label = nls.localize('cancelQueryLabel', 'Cancel Query');
+		this.label = nls.localize('cancelQueryLabel', 'Cancel');
 	}
 
 	public run(): TPromise<void> {
@@ -196,17 +200,86 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
 		isChangeConnectionAction: boolean,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
-		let enabledClass: string = ConnectDatabaseAction.EnabledDefaultClass;
+		let label: string;
+		let enabledClass: string;
+
 		if (isChangeConnectionAction) {
 			enabledClass = ConnectDatabaseAction.EnabledChangeClass;
+			label = nls.localize('changeConnectionDatabaseLabel', 'Change Connection');
+		} else {
+			enabledClass = ConnectDatabaseAction.EnabledDefaultClass;
+			label = nls.localize('connectDatabaseLabel', 'Connect');
 		}
 
 		super(connectionManagementService, editor, ConnectDatabaseAction.ID, enabledClass);
-		this.label = nls.localize('connectDatabaseLabel', 'Connect');
+
+		this.label = label;
 	}
 
 	public run(): TPromise<void> {
 		this.connectEditor(this.editor);
+		return TPromise.as(null);
+	}
+}
+
+/**
+ * Action class that either launches a connection dialogue for the current query file,
+ * or disconnects the active connection
+ */
+export class ToggleConnectDatabaseAction extends QueryTaskbarAction {
+
+	public static ConnectClass = 'connectDatabase';
+	public static DisconnectClass = 'disconnectDatabase';
+	public static ID = 'toggleConnectDatabaseAction';
+
+	private _connected: boolean;
+	private _connectLabel: string;
+	private _disconnectLabel: string;
+	constructor(
+		editor: QueryEditor,
+		isConnected: boolean,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
+	) {
+		let label: string;
+		let enabledClass: string;
+
+		super(connectionManagementService, editor, ToggleConnectDatabaseAction.ID, enabledClass);
+
+		this._connectLabel = nls.localize('connectDatabaseLabel', 'Connect');
+		this._disconnectLabel = nls.localize('disconnectDatabaseLabel', 'Disconnect');
+
+		this.connected = isConnected;
+	}
+
+	public get connected(): boolean {
+		return this._connected;
+	}
+
+	public set connected(value: boolean) {
+		// intentionally always updating, since parent class handles skipping if values
+		this._connected = value;
+		this.updateLabelAndIcon();
+	}
+
+	private updateLabelAndIcon(): void {
+		if (this._connected) {
+			// We are connected, so show option to disconnect
+			this.label = this._disconnectLabel;
+			this.updateCssClass(ToggleConnectDatabaseAction.DisconnectClass);
+		} else {
+			this.label = this._connectLabel;
+			this.updateCssClass(ToggleConnectDatabaseAction.ConnectClass);
+		}
+	}
+
+	public run(): TPromise<void> {
+		if (this.connected) {
+			// Call disconnectEditor regardless of the connection state and let the ConnectionManagementService
+			// determine if we need to disconnect, cancel an in-progress connection, or do nothing
+			this._connectionManagementService.disconnectEditor(this.editor.currentQueryInput);
+		} else {
+			this.connectEditor(this.editor);
+		}
 		return TPromise.as(null);
 	}
 }
@@ -244,9 +317,9 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 	private _onDatabaseChanged = new Emitter<string>();
 
 	public actionRunner: IActionRunner;
-	private container: HTMLElement;
-	private toDispose: IDisposable[];
-	private context: any;
+	private _container: HTMLElement;
+	private _toDispose: IDisposable[];
+	private _context: any;
 	private _currentDatabaseName: string;
 	private _isConnected: boolean;
 
@@ -255,30 +328,29 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
-		private editor: QueryEditor,
-		private action: ListDatabasesAction,
+		private _editor: QueryEditor,
+		private _action: ListDatabasesAction,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IBootstrapService private _bootstrapService: IBootstrapService,
 		@IMessageService private _messageService: IMessageService) {
 		super();
-		this.toDispose = [];
+		this._toDispose = [];
 	}
 
 	public render(container: HTMLElement): void {
-		this.container = container;
+		this._container = container;
 
 		// Get the bootstrap params and perform the bootstrap
 		let params: DbListComponentParams = { dbListInterop: this };
 		this._bootstrapService.bootstrap(
 			DbListModule,
 			container,
-			DBListAngularSelectorString,
-			GetUniqueDbListUri(),
+			DBLIST_SELECTOR,
 			params);
 	}
 
 	public setActionContext(context: any): void {
-		this.context = context;
+		this._context = context;
 	}
 
 	public isEnabled(): boolean {
@@ -286,21 +358,21 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 	}
 
 	public focus(): void {
-		this.container.focus();
+		this._container.focus();
 	}
 
 	public blur(): void {
-		this.container.blur();
+		this._container.blur();
 	}
 
 	public dispose(): void {
-		this.toDispose = dispose(this.toDispose);
+		this._toDispose = dispose(this._toDispose);
 	}
 
 	/**
 	 * Returns the URI of the given editor if it is not undefined and is connected.
 	 */
-	private _getConnectedQueryEditorUri(editor: QueryEditor): string {
+	private getConnectedQueryEditorUri(editor: QueryEditor): string {
 		if (!editor || !editor.uri) {
 			return undefined;
 		}
@@ -308,36 +380,36 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 	}
 
 	public lookupUri(id: string): string {
-		return this.editor ? this.editor.uri : undefined;
+		return this._editor ? this._editor.uri : undefined;
 	}
 
 	public databaseSelected(dbName: string): void {
 		let self = this;
-		let uri = this._getConnectedQueryEditorUri(this.editor);
+		let uri = this.getConnectedQueryEditorUri(this._editor);
 		if (uri) {
 			let profile = this._connectionManagementService.getConnectionProfile(uri);
 			if (profile) {
-				this._connectionManagementService.changeDatabase(this.editor.uri, dbName).then(result => {
+				this._connectionManagementService.changeDatabase(this._editor.uri, dbName).then(result => {
 					if (!result) {
 						// Change database failed. Ideally would revert to original, but for now reflect actual
 						// behavior by notifying of a disconnect. Note: we should ideally handle this via global notification
 						// to simplify control flow
-						self._showChangeDatabaseFailed();
+						self.showChangeDatabaseFailed();
 					}
 				}, error => {
-						self._showChangeDatabaseFailed();
+						self.showChangeDatabaseFailed();
 				});
 			}
 		}
 	}
 
-	private _showChangeDatabaseFailed() {
+	private showChangeDatabaseFailed() {
 		this.onDisconnect();
 		this._messageService.show(Severity.Error, 'Failed to change database');
 	}
 
 	public onConnected(): void {
-		let dbName = this._getCurrentDatabaseName();
+		let dbName = this.getCurrentDatabaseName();
 		this.updateConnection(dbName);
 	}
 
@@ -361,8 +433,8 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this._onDatabaseChanged.fire(undefined);
 	}
 
-	private _getCurrentDatabaseName() {
-		let uri = this._getConnectedQueryEditorUri(this.editor);
+	private getCurrentDatabaseName() {
+		let uri = this.getConnectedQueryEditorUri(this._editor);
 		if (uri) {
 			let profile = this._connectionManagementService.getConnectionProfile(uri);
 			if (profile) {

@@ -6,19 +6,20 @@
 import 'vs/css!sql/parts/common/dblist/dblist.component';
 import 'vs/css!sql/media/primeng';
 
-import { OnInit, OnDestroy } from '@angular/core';
+import { OnInit, OnDestroy, Component, Inject, forwardRef, ElementRef,
+	ChangeDetectorRef } from '@angular/core';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 import { IConnectionManagementService, } from 'sql/parts/connection/common/connectionManagement';
-import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/parts/bootstrap/bootstrapService';
-import { DbListComponentParams } from 'sql/parts/bootstrap/bootstrapParams';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { SelectItem } from 'primeng/primeng';
 
-declare let AngularCore;
+export const DBLIST_SELECTOR: string = 'dblist-component';
 
-@AngularCore.Component({
-	selector: 'database-list',
+@Component({
+	selector: DBLIST_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/common/dblist/dblist.component.html'),
 	styleUrls: [require.toUrl('sql/parts/common/dblist/dblist.component.css'), require.toUrl('sql/media/primeng.css')]
 })
@@ -34,15 +35,13 @@ export class DbListComponent implements OnInit, OnDestroy {
 	private connectionService: IConnectionManagementService;
 
 	constructor(
-        @AngularCore.Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ElementRef)) private _el: any,
-		@AngularCore.Inject(AngularCore.forwardRef(() => AngularCore.ChangeDetectorRef)) private changeDetectorRef: any) {
+        @Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
+		@Inject(forwardRef(() => ElementRef)) private _el: any,
+		@Inject(forwardRef(() => ChangeDetectorRef)) private changeDetectorRef: any) {
 	}
 
 	public ngOnInit(): void {
-
-        this.id = this._el.nativeElement.parentElement.getAttribute('bootstrap-id');
-        let bootstrapParams = <DbListComponentParams> this._bootstrapService.getBootstrapParams(this.id);
+        let bootstrapParams = <DbListComponentParams> this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 		this.dbListInterop = bootstrapParams.dbListInterop;
 
 		this.connectionService = this._bootstrapService.connectionManagementService;

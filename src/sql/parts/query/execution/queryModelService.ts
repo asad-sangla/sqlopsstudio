@@ -6,21 +6,24 @@
 'use strict';
 
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
-import nls = require('vs/nls');
-import Constants = require('sql/parts/connection/common/constants');
+import Constants = require('sql/parts/query/common/constants');
 import Utils = require('sql/parts/connection/common/utils');
-
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
+import { ISelectionData, ResultSetSubset, EditSubsetResult,
+		EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult } from 'data';
 import { ISlickRange } from 'angular2-slickgrid';
+import nls = require('vs/nls');
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
-import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import Event, { Emitter } from 'vs/base/common/event';
-import { ISelectionData, ResultSetSubset, EditSubsetResult,
-		EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult } from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
+import { QueryInput } from 'sql/parts/query/common/queryInput';
+
+import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
+import platform = require('vs/platform/platform');
+import { QueryStatusbarItem } from  'sql/parts/query/execution/queryStatus';
 
 interface QueryEvent {
 	type: string;
@@ -34,6 +37,8 @@ class QueryInfo {
 	public queryRunner: QueryRunner;
 	public dataService: DataService;
 	public queryEventQueue: QueryEvent[];
+	public selection: ISelectionData;
+	public queryInput: QueryInput;
 
 	// Notes if the angular components have obtained the DataService. If not, all messages sent
 	// via the data service will be lost.
@@ -71,6 +76,14 @@ export class QueryModelService implements IQueryModelService {
 		this._onRunQueryStart = new Emitter<string>();
 		this._onRunQueryComplete = new Emitter<string>();
 		this._onEditSessionReady = new Emitter<EditSessionReadyParams>();
+
+		// Register Statusbar item
+		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
+			QueryStatusbarItem,
+			statusbar.StatusbarAlignment.RIGHT,
+			100 /* High Priority */
+		));
+
 	}
 
 	// IQUERYMODEL /////////////////////////////////////////////////////////
@@ -96,6 +109,10 @@ export class QueryModelService implements IQueryModelService {
 	 */
 	public resizeResultsets(uri: string): void {
 		this._fireGridContentEvent(uri, GridContentEvents.ResizeContents);
+	}
+
+	public sendGridContentEvent(uri: string, eventName: string): void {
+		this._fireGridContentEvent(uri, eventName);
 	}
 
 	/**
@@ -133,13 +150,15 @@ export class QueryModelService implements IQueryModelService {
 		return undefined;
 	}
 
-	public openLink(uri: string, content: string, columnName: string, linkType: string): void {
-	}
-
 	public copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void {
+		this._queryInfoMap.get(uri).queryRunner.copyResults(selection, batchId, resultId, includeHeaders);
 	}
 
-	public setEditorSelection(uri: string, selection: ISelectionData): void {
+	public setEditorSelection(uri: string): void {
+		let info: QueryInfo = this._queryInfoMap.get(uri);
+		if (info) {
+			info.queryInput.updateSelection(info.selection);
+		}
 	}
 
 	public showWarning(uri: string, message: string): void {
@@ -157,7 +176,7 @@ export class QueryModelService implements IQueryModelService {
 	/**
 	 * Run a query for the given URI with the given text selection
 	 */
-	public runQuery(uri: string, selection: ISelectionData, title: string): void {
+	public runQuery(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void {
 		// Reuse existing query runner if it exists
 		let queryRunner: QueryRunner;
 		let info: QueryInfo;
@@ -188,10 +207,10 @@ export class QueryModelService implements IQueryModelService {
 					time: new Date().toLocaleTimeString(),
 					link: {
 						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1),
-						uri: ''
 					}
 				};
 				this._fireQueryEvent(uri, 'message', message);
+				info.selection = this._validateSelection(batch.selection);
 			});
 			queryRunner.eventEmitter.on('message', (message) => {
 				this._fireQueryEvent(uri, 'message', message);
@@ -211,6 +230,7 @@ export class QueryModelService implements IQueryModelService {
 			this._queryInfoMap.set(uri, info);
 		}
 
+		info.queryInput = queryInput;
 		queryRunner.runQuery(selection);
 	}
 
@@ -430,5 +450,15 @@ export class QueryModelService implements IQueryModelService {
 
 	private _getQueryInfo(uri: string): QueryInfo {
 		return this._queryInfoMap.get(uri);
+	}
+
+	// TODO remove this funciton and its usages when #821 in vscode-mssql is fixed and
+	// the SqlToolsService version is updated in this repo - coquagli 4/19/2017
+	private _validateSelection(selection: ISelectionData): ISelectionData {
+		selection.endColumn = Math.max(0, selection.endColumn);
+		selection.endLine = Math.max(0, selection.endLine);
+		selection.startColumn = Math.max(0, selection.startColumn);
+		selection.startLine = Math.max(0, selection.startLine);
+		return selection;
 	}
 }

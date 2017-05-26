@@ -5,7 +5,7 @@
 
 'use strict';
 import data = require('data');
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import Event from 'vs/base/common/event';
 
 
@@ -88,7 +88,8 @@ export class CapabilitiesTestService implements ICapabilitiesService {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		this._capabilities.push(msSQLCapabilities);
 

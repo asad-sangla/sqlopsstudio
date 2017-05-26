@@ -8,7 +8,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { SqlExtHostContext, ExtHostCredentialManagementShape, MainThreadCredentialManagementShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
-import { ICredentialsService } from 'sql/parts/credentials/credentialsService';
+import { ICredentialsService } from 'sql/services/credentials/credentialsService';
 import * as data from 'data';
 
 export class MainThreadCredentialManagement extends MainThreadCredentialManagementShape {

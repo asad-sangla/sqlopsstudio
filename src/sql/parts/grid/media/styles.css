@@ -35,6 +35,8 @@
   table-layout: fixed;
   border-collapse: collapse;
   width: 100%;
+	user-select: initial;
+	-webkit-user-select: initial;
 }
 
 .wideResultsMessage {
@@ -88,7 +90,7 @@
     height: 4px;
     width: 100%;
     z-index: 2;
-    background-color: var(--color-bg-content-light);
+    background-color: var(--color-resize-handle);
 }
 
 .header > span.shortCut {

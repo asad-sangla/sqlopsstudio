@@ -24,7 +24,7 @@ addons:
 
 before_install:
   - git submodule update --init --recursive
-  - git clone https://github.com/creationix/nvm.git ./.nvm
+  - git clone --depth 1 https://github.com/creationix/nvm.git ./.nvm
   - source ./.nvm/nvm.sh
   - nvm install 6.6.0
   - nvm use 6.6.0
@@ -40,12 +40,8 @@ install:
   - ./scripts/npm.sh install
 
 script:
-  - gulp hygiene --silent
   - gulp electron --silent
   - gulp compile --silent
-  - gulp optimize-vscode --silent
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/test.sh --reporter dot --coverage; else ./scripts/test.sh --reporter dot; fi
-  - ./scripts/test-integration.sh
+  - gulp optimize-vscode --max_old_space_size=8192 --silent
+  - ./scripts/test.sh --reporter dot
 
-after_success:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then node_modules/.bin/coveralls < .build/coverage/lcov.info; fi

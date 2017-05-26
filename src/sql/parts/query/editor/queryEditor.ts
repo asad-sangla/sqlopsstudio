@@ -16,28 +16,34 @@ import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from 'sql
 import { Orientation } from 'vs/base/browser/ui/sash/sash';
 
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
-import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
 
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
-import {
-	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
-	DisconnectDatabaseAction, ConnectDatabaseAction
-} from 'sql/parts/query/execution/queryActions';
+import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import { Action } from 'vs/base/common/actions';
-import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { ISelectionData } from 'data';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { CodeEditor } from 'vs/editor/browser/codeEditor';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { IRange } from 'vs/editor/common/editorCommon';
+
+import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
+import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
+import * as queryContext from 'sql/parts/query/common/queryContext';
+import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
+import {
+	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
+	DisconnectDatabaseAction, ConnectDatabaseAction, ToggleConnectDatabaseAction
+} from 'sql/parts/query/execution/queryActions';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 
 /**
  * Editor that hosts 2 sub-editors: A TextResourceEditor for SQL file editing, and a QueryResultsEditor
@@ -71,29 +77,37 @@ export class QueryEditor extends BaseEditor {
 	private _taskbarContainer: HTMLElement;
 	private _listDatabasesActionItem: ListDatabasesActionItem;
 
+
+	private queryEditorVisible: IContextKey<boolean>;
+
 	private _runQueryAction: RunQueryAction;
 	private _cancelQueryAction: CancelQueryAction;
-	private _connectDatabaseAction: ConnectDatabaseAction;
-	private _disconnectDatabaseAction: DisconnectDatabaseAction;
+	private _toggleConnectDatabaseAction: ToggleConnectDatabaseAction;
 	private _changeConnectionAction: ConnectDatabaseAction;
 	private _listDatabasesAction: ListDatabasesAction;
 
 	constructor(
 		@ITelemetryService _telemetryService: ITelemetryService,
+		@IThemeService themeService: IThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IEditorDescriptorService private _editorDescriptorService: IEditorDescriptorService,
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
+		@IContextKeyService contextKeyService: IContextKeyService,
 		editorOrientation?: Orientation
 	) {
-		super(QueryEditor.ID, _telemetryService);
+		super(QueryEditor.ID, _telemetryService, themeService);
 
 		if (editorOrientation) {
 			this._orientation = editorOrientation;
 		} else {
 			this._orientation = Orientation.HORIZONTAL;
+		}
+
+		if (contextKeyService) {
+			this.queryEditorVisible = queryContext.QueryEditorVisibleContext.bindTo(contextKeyService);
 		}
 	}
 
@@ -116,11 +130,18 @@ export class QueryEditor extends BaseEditor {
 	 */
 	public setInput(newInput: QueryInput, options?: EditorOptions): TPromise<void> {
 		const oldInput = <QueryInput>this.input;
-		if (!newInput.setup) {
-			this._register(newInput.updateTaskbar(() => this._updateTaskbar()));
-			this._register(newInput.showQueryResultsEditorEvent(() => this._showQueryResultsEditor()));
-			newInput.setupComplete();
+
+		if (newInput.matches(oldInput)) {
+			return TPromise.as(undefined);
 		}
+
+		// Make sure all event callbacks will be sent to this QueryEditor in the case that this QueryInput was moved from
+		// another QueryEditor
+		let taskbarCallback: IDisposable = newInput.updateTaskbarEvent(() => this._updateTaskbar());
+		let showResultsCallback: IDisposable = newInput.showQueryResultsEditorEvent(() => this._showQueryResultsEditor());
+		let selectionCallback: IDisposable = newInput.updateSelectionEvent((selection) => this._setSelection(selection));
+		newInput.setEventCallbacks([taskbarCallback, showResultsCallback, selectionCallback]);
+
 		return super.setInput(newInput, options)
 			.then(() => this._updateInput(oldInput, newInput, options));
 	}
@@ -136,7 +157,31 @@ export class QueryEditor extends BaseEditor {
 			this._sqlEditor.setVisible(visible, position);
 		}
 		super.setEditorVisible(visible, position);
+
+		// Note: must update after calling super.setEditorVisible so that the accurate count is handled
+		this.updateQueryEditorVisible(visible);
 	}
+
+
+	private updateQueryEditorVisible(currentEditorIsVisible: boolean): void {
+		if (this.queryEditorVisible) {
+			let visible = currentEditorIsVisible;
+			if (!currentEditorIsVisible) {
+				// Current editor is closing but still tracked as visible. Check if any other editor is visible
+				const candidates = [...this._editorService.getVisibleEditors()].filter(e => {
+					if (e && e.getId) {
+						return e.getId() === QueryEditor.ID;
+					}
+					return false;
+				});
+				// Note: require 2 or more candidates since current is closing but still
+				// counted as visible
+				visible = candidates.length > 1;
+			}
+			this.queryEditorVisible.set(visible);
+		}
+	}
+
 
 	/**
 	 * Changes the position of the editor.
@@ -232,7 +277,7 @@ export class QueryEditor extends BaseEditor {
 		this._editorGroupService.pinEditor(this.position, this.input);
 
 		let input = <QueryInput>this.input;
-		this._createSash(this.getContainer().getHTMLElement());
+		this._createSash();
 		this._createResultsEditorContainer();
 
 		this._createEditor(<QueryResultsInput>input.results, this._resultsEditorContainer)
@@ -319,8 +364,7 @@ export class QueryEditor extends BaseEditor {
 		// Create Actions for the toolbar
 		this._runQueryAction = this._instantiationService.createInstance(RunQueryAction, this);
 		this._cancelQueryAction = this._instantiationService.createInstance(CancelQueryAction, this);
-		this._connectDatabaseAction = this._instantiationService.createInstance(ConnectDatabaseAction, this, false);
-		this._disconnectDatabaseAction = this._instantiationService.createInstance(DisconnectDatabaseAction, this);
+		this._toggleConnectDatabaseAction = this._instantiationService.createInstance(ToggleConnectDatabaseAction, this, false);
 		this._changeConnectionAction = this._instantiationService.createInstance(ConnectDatabaseAction, this, true);
 		this._listDatabasesAction = this._instantiationService.createInstance(ListDatabasesAction, this);
 
@@ -332,8 +376,11 @@ export class QueryEditor extends BaseEditor {
 			{ action: this._runQueryAction },
 			{ action: this._cancelQueryAction },
 			{ element: separator },
+			{ action: this._toggleConnectDatabaseAction },
+			/*
 			{ action: this._connectDatabaseAction },
 			{ action: this._disconnectDatabaseAction },
+			*/
 			{ action: this._changeConnectionAction },
 			{ action: this._listDatabasesAction },
 		];
@@ -363,35 +410,22 @@ export class QueryEditor extends BaseEditor {
 	}
 
 	/**
-	 * Handles setting input for this editor. If this new input does not match the old input (e.g. a new file
-	 * has been opened with the same editor, or we are opening the editor for the first time).
+	 * Handles setting input for this editor.
 	 */
 	private _updateInput(oldInput: QueryInput, newInput: QueryInput, options?: EditorOptions): TPromise<void> {
-		let returnValue: TPromise<void>;
 
-		if (!newInput.matches(oldInput)) {
-			if (oldInput) {
-				this._disposeEditors();
+		if (oldInput) {
+			this._disposeEditors();
+		}
+
+		this._createSqlEditorContainer();
+		if (this._isResultsEditorVisible()) {
+			this._createResultsEditorContainer();
+
+			let uri: string = newInput.getQueryResultsInputResource();
+			if (uri) {
+				this._queryModelService.refreshResultsets(uri);
 			}
-
-			this._createSqlEditorContainer();
-			if (this._isResultsEditorVisible()) {
-				this._createResultsEditorContainer();
-
-				let uri: string = newInput.getQueryResultsInputResource();
-				if (uri) {
-					this._queryModelService.refreshResultsets(uri);
-				}
-			}
-
-			returnValue = this._setNewInput(newInput, options);
-		} else {
-			this._sqlEditor.setInput(newInput.sql, options);
-
-			if (this._isResultsEditorVisible()) {
-				this._resultsEditor.setInput(newInput.results, options);
-			}
-			returnValue = TPromise.as(null);
 		}
 
 		if (this._sash) {
@@ -403,7 +437,7 @@ export class QueryEditor extends BaseEditor {
 		}
 
 		this._updateTaskbar();
-		return returnValue;
+		return this._setNewInput(newInput, options);
 	}
 
 	/**
@@ -503,6 +537,8 @@ export class QueryEditor extends BaseEditor {
 	 * appends it.
 	 */
 	private _createResultsEditorContainer() {
+		this._createSash();
+
 		const parentElement = this.getContainer().getHTMLElement();
 		let input = <QueryInput>this.input;
 
@@ -524,16 +560,20 @@ export class QueryEditor extends BaseEditor {
 	/**
 	 * Creates the sash with the requested orientation and registers sash callbacks
 	 */
-	private _createSash(parentElement: HTMLElement): void {
-		if (this._orientation === Orientation.HORIZONTAL) {
-			this._sash = this._register(new HorizontalFlexibleSash(parentElement, this._minEditorSize));
-		} else {
-			this._sash = this._register(new VerticalFlexibleSash(parentElement, this._minEditorSize));
-			this._sash.setEdge(this._taskbarHeight + this._tabHeight);
-		}
-		this._setSashDimension();
+	private _createSash(): void {
+		if (!this._sash) {
+			let parentElement: HTMLElement	= this.getContainer().getHTMLElement();
 
-		this._register(this._sash.onPositionChange(position => this._doLayout()));
+			if (this._orientation === Orientation.HORIZONTAL) {
+				this._sash = this._register(new HorizontalFlexibleSash(parentElement, this._minEditorSize));
+			} else {
+				this._sash = this._register(new VerticalFlexibleSash(parentElement, this._minEditorSize));
+				this._sash.setEdge(this._taskbarHeight + this._tabHeight);
+			}
+			this._setSashDimension();
+
+			this._register(this._sash.onPositionChange(position => this._doLayout()));
+		}
 	}
 
 	private _setSashDimension(): void {
@@ -634,14 +674,20 @@ export class QueryEditor extends BaseEditor {
 			this._resultsEditor.dispose();
 			this._resultsEditor = null;
 		}
+
+		let thisEditorParent: HTMLElement = this.getContainer().getHTMLElement();
+
 		if (this._sqlEditorContainer) {
-			if (this._sqlEditorContainer.parentElement) {
+			let sqlEditorParent: HTMLElement = this._sqlEditorContainer.parentElement;
+			if (sqlEditorParent && sqlEditorParent === thisEditorParent) {
 				this._sqlEditorContainer.parentElement.removeChild(this._sqlEditorContainer);
 			}
 			this._sqlEditorContainer = null;
 		}
+
 		if (this._resultsEditorContainer) {
-			if (this._resultsEditorContainer.parentElement) {
+			let resultsEditorParent: HTMLElement = this._resultsEditorContainer.parentElement;
+			if (resultsEditorParent && resultsEditorParent === thisEditorParent) {
 				this._resultsEditorContainer.parentElement.removeChild(this._resultsEditorContainer);
 			}
 			this._resultsEditorContainer = null;
@@ -672,16 +718,36 @@ export class QueryEditor extends BaseEditor {
 	 */
 	private _updateTaskbar(): void {
 		let queryInput: QueryInput = <QueryInput>this.input;
-		this._cancelQueryAction.enabled = queryInput.cancelQueryEnabled;
-		this._changeConnectionAction.enabled = queryInput.changeConnectionEnabled;
-		this._connectDatabaseAction.enabled = queryInput.connectEnabled;
-		this._disconnectDatabaseAction.enabled = queryInput.disconnectEnabled;
-		this._runQueryAction.enabled = queryInput.runQueryEnabled;
-		if (queryInput.listDatabasesConnected) {
-			this.listDatabasesActionItem.onConnected();
-		} else {
-			this.listDatabasesActionItem.onDisconnect();
+
+		if (queryInput) {
+			this._cancelQueryAction.enabled = queryInput.cancelQueryEnabled;
+			this._changeConnectionAction.enabled = queryInput.changeConnectionEnabled;
+
+			// For the toggle database action, it should always be enabled since it's a toggle.
+			// We use inverse of connect enabled state for now, should refactor queryInput in the future to
+			// define connected as a boolean instead of using the enabled flag
+			this._toggleConnectDatabaseAction.enabled = true;
+			this._toggleConnectDatabaseAction.connected = !queryInput.connectEnabled;
+			this._runQueryAction.enabled = queryInput.runQueryEnabled;
+			if (queryInput.listDatabasesConnected) {
+				this.listDatabasesActionItem.onConnected();
+			} else {
+				this.listDatabasesActionItem.onDisconnect();
+			}
 		}
+	}
+
+	/**
+	 * Sets the text selection for the SQL editor based on the given ISelectionData.
+	 */
+	private _setSelection(selection: ISelectionData): void {
+		let rangeConversion: IRange = {
+				startLineNumber: selection.startLine + 1,
+				startColumn: selection.startColumn + 1,
+				endLineNumber: selection.endLine + 1,
+				endColumn: selection.endColumn + 1
+			};
+		this._sqlEditor.getControl().setSelection(rangeConversion);
 	}
 
 	// TESTING PROPERTIES ////////////////////////////////////////////////////////////
@@ -720,14 +786,6 @@ export class QueryEditor extends BaseEditor {
 
 	public get cancelQueryAction(): CancelQueryAction{
 		return this._cancelQueryAction;
-	}
-
-	public get connectDatabaseAction(): ConnectDatabaseAction{
-		return this._connectDatabaseAction;
-	}
-
-	public get disconnectDatabaseAction(): DisconnectDatabaseAction{
-		return this._disconnectDatabaseAction;
 	}
 
 	public get changeConnectionAction(): ConnectDatabaseAction {

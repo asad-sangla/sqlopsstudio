@@ -10,6 +10,7 @@ import { ConnectionProfileGroup } from './connectionProfileGroup';
 import data = require('data');
 import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
 import * as interfaces from 'sql/parts/connection/common/interfaces';
+import Utils = require('./utils');
 
 // Concrete implementation of the IConnectionProfile interface
 
@@ -32,19 +33,18 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			this.groupFullName = model.groupFullName;
 			this.savePassword = model.savePassword;
 			this.saveProfile = model.saveProfile;
+			this._id = model.id;
 		} else {
 			//Default for a new connection
 			this.savePassword = false;
 			this.saveProfile = true;
 			this._groupName = ConnectionProfile.RootGroupName;
+			this._id = Utils.generateGuid();
 		}
 	}
 
-	public equals(other: any): boolean {
-		if (!(other instanceof ConnectionProfile)) {
-			return false;
-		}
-		return other.getUniqueId() === this.getUniqueId() && other.serverName === this.serverName;
+	public generateNewId() {
+		this._id = Utils.generateGuid();
 	}
 
 	public getParent(): ConnectionProfileGroup {
@@ -52,7 +52,10 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	}
 
 	public get id(): string {
-		return this._id ? this._id : this.getUniqueId();
+		if (Utils.isEmpty(this._id)) {
+			this._id = Utils.generateGuid();
+		}
+		return this._id;
 	}
 
 	public set id(value: string) {
@@ -76,6 +79,18 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		return instance;
 	}
 
+	public cloneWithNewId(): ConnectionProfile {
+		let instance = this.clone();
+		instance.generateNewId();
+		return instance;
+	}
+
+	public cloneWithDatabase(databaseName: string): ConnectionProfile {
+		let instance = this.cloneWithNewId();
+		instance.databaseName = databaseName;
+		return instance;
+	}
+
 	public static readonly RootGroupName: string = '/';
 
 	public withoutPassword(): ConnectionProfile {
@@ -84,8 +99,13 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		return clone;
 	}
 
-	public getUniqueId(): string {
-		let id = super.getUniqueId();
+	/**
+	 * Returns a key derived the connections options (providerName, authenticationType, serverName, databaseName, userName, groupid)
+	 * This key uniquely identifies a connection in a group
+	 * Example: "providerName:MSSQL|authenticationType:|databaseName:database|serverName:server3|userName:user|group:testid"
+	 */
+	public getOptionsKey(): string {
+		let id = super.getOptionsKey();
 		return id + ProviderConnectionInfo.idSeparator + 'group' + ProviderConnectionInfo.nameValueSeparator + this.groupId;
 	}
 
@@ -93,7 +113,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	 * Returns the unique id for the connection that doesn't include the group name
 	 */
 	public getConnectionInfoId(): string {
-		return super.getUniqueId();
+		return super.getOptionsKey();
 	}
 
 	public onProviderRegistered(serverCapabilities: data.DataProtocolServerCapabilities): void {
@@ -107,7 +127,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			serverName: this.serverName,
 			databaseName: this.databaseName,
 			authenticationType: this.authenticationType,
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			groupId: this.groupId,
 			groupFullName: this.groupFullName,
 			password: this.password,
@@ -115,10 +135,17 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			savePassword: this.savePassword,
 			userName: this.userName,
 			options: this.options,
-			saveProfile: this.saveProfile
+			saveProfile: this.saveProfile,
+			id: this.id,
 		};
 
 		return result;
+	}
+
+	public toConnectionInfo(): data.ConnectionInfo {
+		return {
+			options: this.options
+		};
 	}
 
 	public static createFromStoredProfile(profile: interfaces.IConnectionProfileStore, serverCapabilities: data.DataProtocolServerCapabilities): ConnectionProfile {
@@ -128,6 +155,10 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		connectionInfo.providerName = profile.providerName;
 		connectionInfo.saveProfile = true;
 		connectionInfo.savePassword = profile.savePassword;
+		connectionInfo.id = profile.id;
+		if (Utils.isEmpty(profile.id)) {
+			connectionInfo.id = Utils.generateGuid();
+		}
 		return connectionInfo;
 	}
 
@@ -137,6 +168,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			let connectionProfileInstance = conn as ConnectionProfile;
 			if (connectionProfileInstance && conn instanceof ConnectionProfile) {
 				connectionProfile = connectionProfileInstance;
+				connectionProfile.setServerCapabilities(serverCapabilities);
 			} else {
 				connectionProfile = new ConnectionProfile(serverCapabilities, conn);
 			}
@@ -156,7 +188,8 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 				options: {},
 				groupId: connectionProfile.groupId,
 				providerName: connectionInfo.providerName,
-				savePassword: connectionInfo.savePassword
+				savePassword: connectionInfo.savePassword,
+				id: connectionInfo.id
 			};
 
 			profile.options = connectionInfo.options;

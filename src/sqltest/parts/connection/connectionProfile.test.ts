@@ -7,7 +7,7 @@
 
 
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/common/interfaces';
 import data = require('data');
 import * as assert from 'assert';
 
@@ -23,10 +23,25 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		savePassword: true,
 		groupFullName: 'g2/g2-2',
 		groupId: 'group id',
-		getUniqueId: undefined,
+		getOptionsKey: undefined,
 		providerName: 'MSSQL',
 		options: {},
-		saveProfile: true
+		saveProfile: true,
+		id: undefined
+	};
+
+	let storedProfile: IConnectionProfileStore = {
+		groupId: 'groupId',
+		id: 'id',
+		options: {
+			serverName: 'new server',
+			databaseName: 'database',
+			userName: 'user',
+			password: 'password',
+			authenticationType: ''
+		},
+		providerName: 'MSSQL',
+		savePassword: true
 	};
 
 	setup(() => {
@@ -99,7 +114,8 @@ suite('SQL ConnectionProfileInfo tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		capabilities.push(msSQLCapabilities);
 	});
@@ -138,11 +154,32 @@ suite('SQL ConnectionProfileInfo tests', () => {
 		assert.equal(conn.savePassword, connectionProfile.savePassword);
 	});
 
-	test('getUniqueId should create a valid unique id', () => {
+	test('getOptionsKey should create a valid unique id', () => {
 		let conn = new ConnectionProfile(msSQLCapabilities, connectionProfile);
 		let expectedId = 'providerName:MSSQL|authenticationType:|databaseName:database|serverName:new server|userName:user|group:group id';
-		let id = conn.getUniqueId();
+		let id = conn.getOptionsKey();
 		assert.equal(id, expectedId);
+	});
+
+	test('createFromStoredProfile should create connection profile from stored profile', () => {
+		let savedProfile = storedProfile;
+		let connectionProfile = ConnectionProfile.createFromStoredProfile(savedProfile, msSQLCapabilities);
+		assert.equal(savedProfile.groupId, connectionProfile.groupId);
+		assert.deepEqual(savedProfile.options, connectionProfile.options);
+		assert.deepEqual(savedProfile.providerName, connectionProfile.providerName);
+		assert.deepEqual(savedProfile.savePassword, connectionProfile.savePassword);
+		assert.deepEqual(savedProfile.id, connectionProfile.id);
+	});
+
+	test('createFromStoredProfile should set the id to new guid if not set in stored profile', () => {
+		let savedProfile = Object.assign({}, storedProfile, { id: undefined });
+		let connectionProfile = ConnectionProfile.createFromStoredProfile(savedProfile, msSQLCapabilities);
+		assert.equal(savedProfile.groupId, connectionProfile.groupId);
+		assert.deepEqual(savedProfile.options, connectionProfile.options);
+		assert.deepEqual(savedProfile.providerName, connectionProfile.providerName);
+		assert.equal(savedProfile.savePassword, connectionProfile.savePassword);
+		assert.notEqual(connectionProfile.id, undefined);
+		assert.equal(savedProfile.id, undefined);
 	});
 
 	test('withoutPassword should create a new instance without password', () => {
@@ -155,6 +192,13 @@ suite('SQL ConnectionProfileInfo tests', () => {
 	test('unique id should not include password', () => {
 		let conn = new ConnectionProfile(msSQLCapabilities, connectionProfile);
 		let withoutPassword = conn.withoutPassword();
-		assert.equal(withoutPassword.getUniqueId(), conn.getUniqueId());
+		assert.equal(withoutPassword.getOptionsKey(), conn.getOptionsKey());
+	});
+
+	test('cloneWithDatabase should create new profile with new id', () => {
+		let conn = new ConnectionProfile(msSQLCapabilities, connectionProfile);
+		let newProfile = conn.cloneWithDatabase('new db');
+		assert.notEqual(newProfile.id, conn.id);
+		assert.equal(newProfile.databaseName, 'new db');
 	});
 });

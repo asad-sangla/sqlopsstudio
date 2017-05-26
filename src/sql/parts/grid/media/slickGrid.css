@@ -113,13 +113,4 @@
 
 .grid input.editor-text {
 	width: 100%;
-	color: #FFFFFF
-}
-
-.grid .slick-cell.dirtyCell {
-	background-color: #4d4d4d;
-}
-
-.grid .slick-cell.dirtyRowHeader {
-	background-color: #4d4d4d;
 }

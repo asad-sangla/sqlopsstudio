@@ -9,11 +9,14 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { SqlExtHostContext, ExtHostDataProtocolShape, MainThreadDataProtocolShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { ICapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import * as data from 'data';
-import { IMetadataService } from 'sql/parts/metadata/metadataService';
-import { IScriptingService } from 'sql/parts/scripting/scriptingService';
+import { IMetadataService } from 'sql/services/metadata/metadataService';
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
+import { IScriptingService } from 'sql/services/scripting/scriptingService';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 
 /**
  * Main thread class for handling data protocol management registration.
@@ -32,7 +35,10 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IQueryManagementService private _queryManagementService: IQueryManagementService,
 		@IMetadataService private _metadataService: IMetadataService,
-		@IScriptingService private _scriptingService: IScriptingService
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+		@IScriptingService private _scriptingService: IScriptingService,
+		@IAdminService private _adminService: IAdminService,
+		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService
 	) {
 		super();
 		this._proxy = threadService.get(SqlExtHostContext.ExtHostDataProtocol);
@@ -42,13 +48,11 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		this._toDispose = dispose(this._toDispose);
 	}
 
-	public $registerProvider(handle: number): TPromise<any> {
+	public $registerProvider(providerId: string, handle: number): TPromise<any> {
 		let self = this;
 
-		let providerId: string = handle.toString();
-
 		// register connection management provider
-		this._connectionManagementService.registerProvider(providerId, <data.ConnectionProvider> {
+		this._connectionManagementService.registerProvider(providerId, <data.ConnectionProvider>{
 			connect(connectionUri: string, connectionInfo: data.ConnectionInfo): Thenable<boolean> {
 				return self._proxy.$connect(handle, connectionUri, connectionInfo);
 			},
@@ -70,8 +74,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		});
 
 		// register query provider
-		// TODO replace hard-coded queryType with plumbthrough
-		this._queryManagementService.addQueryRequestHandler('MSSQL', {
+		this._queryManagementService.addQueryRequestHandler(providerId, {
 			cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult> {
 				return self._proxy.$cancelQuery(handle, ownerUri);
 			},
@@ -116,7 +119,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			}
 		});
 
-		this._metadataService.registerProvider(providerId, <data.MetadataProvider> {
+		this._metadataService.registerProvider(providerId, <data.MetadataProvider>{
 			getMetadata(connectionUri: string): Thenable<data.ProviderMetadata> {
 				return self._proxy.$getMetadata(handle, connectionUri);
 			},
@@ -131,7 +134,22 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			}
 		});
 
-		this._scriptingService.registerProvider(providerId, <data.ScriptingProvider> {
+		this._objectExplorerService.registerProvider(providerId, <data.ObjectExplorerProvider>{
+			createNewSession(connection: data.ConnectionInfo): Thenable<data.ObjectExplorerSessionResponse> {
+				return self._proxy.$createObjectExplorerSession(handle, connection);
+			},
+			expandNode(nodeInfo: data.ExpandNodeInfo): Thenable<boolean> {
+				return self._proxy.$expandObjectExplorerNode(handle, nodeInfo);
+			},
+			refreshNode(nodeInfo: data.ExpandNodeInfo): Thenable<boolean> {
+				return self._proxy.$refreshObjectExplorerNode(handle, nodeInfo);
+			},
+			closeSession(closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> {
+				return self._proxy.$closeObjectExplorerSession(handle, closeSessionInfo);
+			}
+		});
+
+		this._scriptingService.registerProvider(providerId, <data.ScriptingProvider>{
 			scriptAsSelect(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 				return self._proxy.$scriptAsSelect(handle, connectionUri, metadata);
 			},
@@ -147,6 +165,27 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			scriptAsDelete(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 				return self._proxy.$scriptAsDelete(handle, connectionUri, metadata);
 			}
+		});
+
+		this._adminService.registerProvider(providerId, <data.AdminServicesProvider>{
+			createDatabase(connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse> {
+				return self._proxy.$createDatabase(handle, connectionUri, database);
+			},
+			getDefaultDatabaseInfo(connectionUri: string): Thenable<data.DatabaseInfo> {
+				return self._proxy.$getDefaultDatabaseInfo(handle, connectionUri);
+			},
+			createLogin(connectionUri: string, login: data.LoginInfo): Thenable<data.CreateLoginResponse> {
+				return self._proxy.$createLogin(handle, connectionUri, login);
+			}
+		});
+
+		this._disasterRecoveryService.registerProvider(providerId, <data.DisasterRecoveryProvider>{
+			backup(connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> {
+				return self._proxy.$backup(handle, connectionUri, backupInfo);
+			},
+			getBackupConfigInfo(connectionUri: string): Thenable<data.BackupConfigInfo> {
+				return self._proxy.$getBackupConfigInfo(handle, connectionUri);
+			},
 		});
 
 		return undefined;
@@ -183,6 +222,14 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	}
 	public $onEditSessionReady(handle: number, ownerUri: string, success: boolean, message: string): void {
 		this._queryManagementService.onEditSessionReady(ownerUri, success, message);
+	}
+
+	public $onObjectExplorerSessionCreated(handle: number, sessionResponse: data.ObjectExplorerSession): void {
+		this._objectExplorerService.onSessionCreated(handle, sessionResponse);
+	}
+
+	public $onObjectExplorerNodeExpanded(handle: number, expandResponse: data.ObjectExplorerExpandInfo): void {
+		this._objectExplorerService.onNodeExpanded(handle, expandResponse);
 	}
 
 	public $unregisterProvider(handle: number): TPromise<any> {

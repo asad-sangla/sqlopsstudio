@@ -5,21 +5,21 @@
 'use strict';
 
 import * as TypeMoq from 'typemoq';
-import { ConnectionConfig } from 'sql/parts/connection/common/connectionconfig';
+import { ConnectionConfig } from 'sql/parts/connection/common/connectionConfig';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import * as Constants from 'sql/parts/connection/common/constants';
 import { StorageTestService } from 'sqltest/stubs/storageTestService';
 import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
-import { CredentialsService } from 'sql/parts/credentials/credentialsService';
+import { CredentialsService } from 'sql/services/credentials/credentialsService';
 import * as assert from 'assert';
 import { Memento } from 'vs/workbench/common/memento';
 import * as Utils from 'sql/parts/connection/common/utils';
-import { CapabilitiesService } from 'sql/parts/capabilities/capabilitiesService';
+import { CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import data = require('data');
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { Emitter } from 'vs/base/common/event';
-import { IConnectionProfileGroup, ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 
 suite('SQL ConnectionStore tests', () => {
 	let defaultNamedProfile: IConnectionProfile;
@@ -47,10 +47,11 @@ suite('SQL ConnectionStore tests', () => {
 			savePassword: true,
 			groupId: '',
 			groupFullName: '',
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		});
 
 		defaultUnnamedProfile = Object.assign({}, {
@@ -62,10 +63,11 @@ suite('SQL ConnectionStore tests', () => {
 			savePassword: true,
 			groupId: '',
 			groupFullName: '',
-			getUniqueId: undefined,
+			getOptionsKey: undefined,
 			providerName: 'MSSQL',
 			options: {},
-			saveProfile: true
+			saveProfile: true,
+			id: undefined
 		});
 
 		let momento = new Memento('ConnectionManagement');
@@ -156,7 +158,8 @@ suite('SQL ConnectionStore tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		capabilities.push(msSQLCapabilities);
 		capabilitiesService.setup(x => x.getCapabilities()).returns(() => capabilities);
@@ -166,12 +169,16 @@ suite('SQL ConnectionStore tests', () => {
 			{
 				id: 'root',
 				name: 'root',
-				parentId: ''
+				parentId: '',
+				color: '',
+				description:''
 			},
 			{
 				id: 'g1',
 				name: 'g1',
-				parentId: 'root'
+				parentId: 'root',
+				color: 'blue',
+				description: 'g1'
 			}
 		];
 		connectionConfig.setup(x => x.getAllGroups()).returns(() => groups);
@@ -288,7 +295,7 @@ suite('SQL ConnectionStore tests', () => {
 			credentialStore.verify(x => x.saveCredential(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			assert.strictEqual(capturedCreds.password, defaultNamedProfile.password);
 			let credId: string = capturedCreds.credentialId;
-			assert.ok(credId.includes(ConnectionStore.CRED_MRU_USER), 'Expect credential to be marked as an MRU cred');
+			assert.ok(credId.includes(ConnectionStore.CRED_PROFILE_USER), 'Expect credential to be marked as an Profile cred');
 			assert.ok(Utils.isEmpty(current[0].password));
 		}).then(() => {
 			// When add integrated auth connection
@@ -367,7 +374,8 @@ suite('SQL ConnectionStore tests', () => {
 			protocolVersion: '1',
 			providerName: providerName,
 			providerDisplayName: providerName,
-			connectionProvider: connectionProvider
+			connectionProvider: connectionProvider,
+			adminServicesProvider: undefined
 		};
 		connectionConfig.setup(x => x.getCapabilities(providerName)).returns(() => providerCapabilities);
 

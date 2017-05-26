@@ -5,8 +5,8 @@
 
 'use strict';
 
-import 'vs/css!sql/parts/connection/connectionDialog/media/bootstrap';
-import 'vs/css!sql/parts/connection/connectionDialog/media/bootstrap-theme';
+import 'vs/css!sql/media/bootstrap';
+import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/splashScreen';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -32,12 +32,9 @@ export class SplashDialogWidget {
 	}
 
 	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder('splashDialogModal', 'Carbon', 'splash-dialog-widget', 'splashDialogBody');
+		this._dialog = new ModalDialogBuilder('splashDialogModal', '', 'splash-dialog-widget', 'splashDialogBody');
 		this._builder = this._dialog.create();
 		this._dialog.addModalTitle();
-		this._dialog.bodyContainer.div({class:'splash-type'}, (modelTableContent) => {
-			modelTableContent.innerHtml('Loading dependencies..');
-		});
 		this._builder.build(this._container);
 		return this._builder.getHTMLElement();
 	}

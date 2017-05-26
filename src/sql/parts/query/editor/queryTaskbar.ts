@@ -37,7 +37,7 @@ export class QueryTaskbar {
 
 	constructor(container: HTMLElement, contextMenuProvider: IContextMenuProvider, options: IToolBarOptions = { orientation: ActionsOrientation.HORIZONTAL }) {
 		this.options = options;
-		this.lookupKeybindings = typeof this.options.getKeyBinding === 'function' && typeof this.options.getKeyBindingLabel === 'function';
+		this.lookupKeybindings = typeof this.options.getKeyBinding === 'function' && typeof this.options.getKeyBinding === 'function';
 
 		let element = document.createElement('div');
 		element.className = 'monaco-toolbar';
@@ -101,7 +101,7 @@ export class QueryTaskbar {
 
 		for (let item of contentToSet) {
 			if (item.action) {
-				this.actionBar.pushAction(item.action, { icon: true, label: false, keybinding: this.getKeybindingLabel(item.action) });
+				this.actionBar.pushAction(item.action, { icon: true, label: true, keybinding: this.getKeybindingLabel(item.action) });
 			} else if (item.element) {
 				this.actionBar.pushElement(item.element);
 			}
@@ -110,7 +110,7 @@ export class QueryTaskbar {
 
 	private getKeybindingLabel(action: IAction): string {
 		const key = this.lookupKeybindings ? this.options.getKeyBinding(action) : void 0;
-		return key ? this.options.getKeyBindingLabel(key) : void 0;
+		return key ? key.getLabel() : '';
 	}
 
 	public addAction(primaryAction: IAction): void {

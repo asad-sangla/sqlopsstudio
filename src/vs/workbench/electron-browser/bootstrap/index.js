@@ -7,6 +7,11 @@
 
 'use strict';
 
+if (window.location.search.indexOf('prof-startup') >= 0) {
+	var profiler = require('v8-profiler');
+	profiler.startProfiling('renderer', true);
+}
+
 /*global window,document,define*/
 
 const path = require('path');
@@ -19,26 +24,16 @@ const ipc = electron.ipcRenderer;
 require('slickgrid/slick.core');
 const Slick = window.Slick;
 require('slickgrid/slick.grid');
-require('slickgrid/slick.editors');
-
-// Set other globals
-const _ = require('underscore')._;
-const rangy = require('rangy');
+require('slickgrid/slick.editors');;
 require('reflect-metadata');
 require('zone.js');
 require('bootstrap');
 
-const PrimeNg = require('primeng/primeng');
-
-// Set temporary globals for angular relative path fix
-// TODO make it so these don't need to be globals
-const AngularPlatformBrowserDynamic =  require('@angular/platform-browser-dynamic');
-const AngularCommon = require('@angular/common');
-const AngularCore = require('@angular/core');
-const AngularForms = require('@angular/forms');
-const AngularPlatformBrowser = require('@angular/platform-browser');
-const AngularRouter = require('@angular/router');
-const Rx = require('rxjs/Rx');
+const _ = require('underscore')._;
+const rangy = require('rangy');
+const rangyCore = require('rangy/lib/rangy-core');
+const rangyTextRange = require('rangy/lib/rangy-textrange');
+const prettyData = require('pretty-data');
 const Figures = require('figures');
 
 process.lazyEnv = new Promise(function (resolve) {
@@ -79,10 +74,7 @@ function parseURLQueryArgs() {
 function createScript(src, onload) {
 	const script = document.createElement('script');
 	script.src = src;
-
-	if (onload) {
-		script.addEventListener('load', onload);
-	}
+	script.addEventListener('load', onload);
 
 	const head = document.getElementsByTagName('head')[0];
 	head.insertBefore(script, head.lastChild);
@@ -163,7 +155,7 @@ function main() {
 
 	window.document.documentElement.setAttribute('lang', locale);
 
-	const enableDeveloperTools = process.env['VSCODE_DEV'] || !!configuration.extensionDevelopmentPath;
+	const enableDeveloperTools = (process.env['VSCODE_DEV'] || !!configuration.extensionDevelopmentPath) && !configuration.extensionTestsPath;
 	const unbind = registerListeners(enableDeveloperTools);
 
 	// disable pinch zoom & apply zoom level early to avoid glitches
@@ -195,7 +187,17 @@ function main() {
 			recordStats: !!configuration.performance,
 			nodeCachedDataDir: configuration.nodeCachedDataDir,
 			onNodeCachedDataError: function (err) { nodeCachedDataErrors.push(err) },
-			nodeModules: [/*BUILD->INSERT_NODE_MODULES*/]
+			nodeModules: [
+				'@angular/common',
+				'@angular/core',
+				'@angular/forms',
+				'@angular/platform-browser',
+				'@angular/platform-browser-dynamic',
+				'@angular/router',
+				'angular2-grid',
+				'primeng/primeng',
+				'rxjs/Rx'
+			]
 		});
 
 		if (nlsConfig.pseudo) {
@@ -208,10 +210,10 @@ function main() {
 		const timers = window.MonacoEnvironment.timers = {
 			isInitialStartup: !!configuration.isInitialStartup,
 			hasAccessibilitySupport: !!configuration.accessibilitySupport,
-			start: new Date(configuration.perfStartTime),
-			appReady: new Date(configuration.perfAppReady),
-			windowLoad: new Date(configuration.perfWindowLoadTime),
-			beforeLoadWorkbenchMain: new Date()
+			start: configuration.perfStartTime,
+			appReady: configuration.perfAppReady,
+			windowLoad: configuration.perfWindowLoadTime,
+			beforeLoadWorkbenchMain: Date.now()
 		};
 
 		require([
@@ -219,10 +221,9 @@ function main() {
 			'vs/nls!vs/workbench/electron-browser/workbench.main',
 			'vs/css!vs/workbench/electron-browser/workbench.main'
 		], function () {
-			timers.afterLoadWorkbenchMain = new Date();
+			timers.afterLoadWorkbenchMain = Date.now();
 
 			process.lazyEnv.then(function () {
-
 				require('vs/workbench/electron-browser/main')
 					.startup(configuration)
 					.done(function () {
@@ -231,7 +232,6 @@ function main() {
 						onError(error, enableDeveloperTools);
 					});
 			});
-
 		});
 	});
 }

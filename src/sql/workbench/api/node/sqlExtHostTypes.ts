@@ -5,13 +5,14 @@
 'use strict';
 
 // SQL added extension host types
-export enum ConnectionOptionType {
+export enum ServiceOptionType {
 	string = 0,
 	multistring = 1,
 	password = 2,
 	number = 3,
 	category = 4,
-	boolean = 5
+	boolean = 5,
+	object = 6
 }
 
 export enum ConnectionOptionSpecialType {

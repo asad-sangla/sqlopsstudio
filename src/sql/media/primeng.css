@@ -363,6 +363,10 @@
 .ui-breadcrumb ul li .ui-menuitem-link {
     text-decoration: none;
     color: #8f8f8f;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
 
 /* Button */
@@ -4277,4 +4281,80 @@ ui-datatable-scrollable-wrapper {
 
 .ui-treetable tbody .ui-treetable-row td input {
     outline: 0 none;
+}
+
+
+/* Task dialog styles */
+.monaco-shell .task-content .task-text-input {
+  width: calc(100% - 4px);
+}
+
+.monaco-shell .task-content select {
+  width: calc(100% - 4px);
+  max-width: 350px;
+}
+
+.monaco-shell .task-content .task-input-table {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.monaco-shell .task-content .task-input-table td {
+  padding-top: 1px;
+}
+
+.monaco-shell .task-content .task-input-table-label-column {
+  width: auto;
+  min-width: 150px;
+  padding-right: 5px;
+}
+
+.monaco-shell .task-content .task-input-table-content-column {
+  width: 100%;
+  padding: 0px;
+  margin: 0px;
+}
+
+.monaco-shell .task-content table {
+  border: 0px;
+  border-spacing: 0px;
+  padding: 0px;
+  margin: 0px;
+}
+
+.monaco-shell .task-content tr {
+  border: 0px;
+  border-spacing: 0px;
+  padding: 0px;
+  margin: 0px;
+}
+
+.monaco-shell .task-content td {
+  border: 0px;
+  border-spacing: 0px;
+  padding: 0px;
+  vertical-align: middle;
+}
+
+.monaco-shell .task-content label {
+  display: block;
+  float: left;
+  padding-right: 10px;
+  white-space: nowrap;
+}
+.monaco-shell .task-content input {
+  vertical-align: middle;
+}
+.monaco-shell .task-content label span {
+  vertical-align: middle;
+}
+
+.monaco-shell .task-content .task-button-bar {
+  align-content: right;
+  text-align: right;
+  width: 100%;
+}
+
+.monaco-shell .task-content .task-button-bar button {
+  width: 100px;
 }

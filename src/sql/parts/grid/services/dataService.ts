@@ -6,12 +6,13 @@
 'use strict';
 
 import { Observable, Subject, Observer } from 'rxjs/Rx';
-declare let Rx;
 
-import { ISlickRange } from 'angular2-slickgrid';
-import { ISelectionData, ResultSetSubset, EditUpdateCellResult, EditSubsetResult, EditCreateRowResult } from 'data';
+import { ResultSetSubset, EditUpdateCellResult, EditSubsetResult, EditCreateRowResult } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { ResultSerializer } from 'sql/parts/query/common/resultSerializer';
+import { ISaveRequest } from 'sql/parts/grid/common/interfaces';
+
+import { ISlickRange } from 'angular2-slickgrid';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 /**
@@ -19,16 +20,19 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
  * query running and grid interaction communication for a single URI.
  */
 export class DataService {
+
 	public queryEventObserver: Subject<any>;
 	public gridContentObserver: Subject<any>;
 	private editQueue: Promise<any>;
+
 	constructor(
 		private _uri: string,
 		@IInstantiationService private _instantiationService: IInstantiationService,
         @IQueryModelService private _queryModel: IQueryModelService
+
 	) {
-		this.queryEventObserver = new Rx.Subject();
-		this.gridContentObserver = new Rx.Subject();
+		this.queryEventObserver = new Subject();
+		this.gridContentObserver = new Subject();
 		this.editQueue = Promise.resolve();
 	}
 
@@ -42,7 +46,7 @@ export class DataService {
 	 */
 	getQueryRows(rowStart: number, numberOfRows: number, batchId: number, resultId: number): Observable<ResultSetSubset> {
 		const self = this;
-		return Rx.Observable.create(function (observer: Observer<ResultSetSubset>) {
+		return Observable.create(function (observer: Observer<ResultSetSubset>) {
 			self._queryModel.getQueryRows(self._uri, rowStart, numberOfRows, batchId, resultId).then(results => {
 				observer.next(results);
 			});
@@ -57,7 +61,7 @@ export class DataService {
 	 */
 	getEditRows(rowStart: number, numberOfRows: number): Observable<EditSubsetResult> {
 		const self = this;
-		return Rx.Observable.create(function (observer: Observer<EditSubsetResult>) {
+		return Observable.create(function (observer: Observer<EditSubsetResult>) {
 			self._queryModel.getEditRows(self._uri, rowStart, numberOfRows).then(results => {
 				observer.next(results);
 			});
@@ -154,9 +158,9 @@ export class DataService {
 	 * @param batchId The batch id of the batch with the result to save
 	 * @param resultId The id of the result to save as csv
 	 */
-	sendSaveRequest(batchIndex: number, resultSetNumber: number, format: string, selection: ISlickRange[]): void {
+	sendSaveRequest(saveRequest: ISaveRequest): void {
 		let serializer = this._instantiationService.createInstance(ResultSerializer);
-        serializer.saveResults(this._uri, batchIndex, resultSetNumber, format, selection);
+        serializer.saveResults(this._uri, saveRequest);
 	}
 
 	/**
@@ -165,6 +169,8 @@ export class DataService {
 	 * @param columnName The column name of the content
 	 */
 	openLink(content: string, columnName: string, linkType: string): void {
+		let serializer = this._instantiationService.createInstance(ResultSerializer);
+		serializer.openLink(content, columnName, linkType);
 	}
 
 	/**
@@ -175,13 +181,14 @@ export class DataService {
 	 * @param includeHeaders [Optional]: Should column headers be included in the copy selection
 	 */
 	copyResults(selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void {
+		this._queryModel.copyResults(this._uri, selection, batchId, resultId, includeHeaders);
 	}
 
 	/**
-	 * Sends a request to set the selection in the VScode window
-	 * @param selection The selection range in the VSCode window
+	 * Sends a request to set the selection in the QueryEditor.
 	 */
-	set editorSelection(selection: ISelectionData) {
+	setEditorSelection() {
+		this._queryModel.setEditorSelection(this._uri);
 	}
 
 	showWarning(message: string): void {

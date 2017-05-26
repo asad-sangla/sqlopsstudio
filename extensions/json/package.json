@@ -2,7 +2,7 @@
   "name": "json",
   "version": "0.1.0",
   "publisher": "vscode",
-  "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+  "aiKey": "AIF-5574968e-856d-40d2-af67-c89a14e76412",
   "engines": {
     "vscode": "0.10.x"
   },
@@ -106,8 +106,18 @@
             "verbose"
           ],
           "default": "off",
-          "description": "Traces the communication between VS Code and the JSON language server."
+          "description": "%json.tracing.desc%"
+        },
+        "json.colorDecorators.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "%json.colorDecorators.enable.desc%"
         }
+      }
+    },
+    "configurationDefaults": {
+      "[json]": {
+        "editor.quickSuggestions": { "strings": true }
       }
     }
   },

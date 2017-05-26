@@ -12,6 +12,7 @@ declare module 'data' {
 	}
 
 	export interface ConnectionInfoSummary {
+
 		/**
 		 * URI identifying the owner of the connection
 		 */
@@ -128,13 +129,14 @@ declare module 'data' {
 		registerOnConnectionChanged(handler: (changedConnInfo: ChangedConnectionInfo) => any);
 	}
 
-	export enum ConnectionOptionType {
+	export enum ServiceOptionType {
 		string = 0,
 		multistring = 1,
 		password = 2,
 		number = 3,
 		category = 4,
-		boolean = 5
+		boolean = 5,
+		object = 6
 	}
 
 	export enum ConnectionOptionSpecialType {
@@ -159,7 +161,7 @@ declare module 'data' {
 
 		groupName: string;
 
-		valueType: ConnectionOptionType;
+		valueType: ServiceOptionType;
 
 		specialValueType: ConnectionOptionSpecialType;
 
@@ -172,9 +174,40 @@ declare module 'data' {
 		isRequired: boolean;
 	}
 
-	export interface ConnectionProviderOptions  {
+	export interface ConnectionProviderOptions {
 		options: ConnectionOption[];
 	}
+
+	export interface ServiceOption {
+		name: string;
+
+		displayName: string;
+
+		description: string;
+
+		groupName: string;
+
+		valueType: ServiceOptionType;
+
+		defaultValue: string;
+
+		objectType: string;
+
+		categoryValues: CategoryValue[];
+
+		isRequired: boolean;
+
+		isArray: boolean;
+	}
+
+	export interface AdminServicesOptions {
+		databaseInfoOptions: ServiceOption[];
+
+		databaseFileInfoOptions: ServiceOption[];
+
+		fileGroupInfoOptions: ServiceOption[];
+	}
+
 
 	// List Databases Request ----------------------------------------------------------------------
 	export interface ListDatabasesResult {
@@ -204,6 +237,8 @@ declare module 'data' {
 		providerDisplayName: string;
 
 		connectionProvider: ConnectionProviderOptions;
+
+		adminServicesProvider: AdminServicesOptions;
 	}
 
 	export interface DataProtocolClientCapabilities {
@@ -216,8 +251,7 @@ declare module 'data' {
 		getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<DataProtocolServerCapabilities>
 	}
 
-	export enum MetadataType
-	{
+	export enum MetadataType {
 		Table = 0,
 		View = 1,
 		SProc = 2,
@@ -238,7 +272,7 @@ declare module 'data' {
 
 		hasExtendedProperties: boolean;
 
- 		defaultValue: string;
+		defaultValue: string;
 
 		/// <summary>
 		/// Escaped identifier for the name of the column
@@ -302,6 +336,21 @@ declare module 'data' {
 		getViewInfo(connectionUri: string, metadata: ObjectMetadata): Thenable<ColumnMetadata[]>;
 	}
 
+	export interface ObjectExplorerProvider {
+		createNewSession(connInfo: ConnectionInfo): Thenable<ObjectExplorerSessionResponse>;
+
+		expandNode(nodeInfo: ExpandNodeInfo): Thenable<boolean>;
+
+		refreshNode(nodeInfo: ExpandNodeInfo): Thenable<boolean>;
+
+		closeSession(closeSessionInfo: ObjectExplorerCloseSessionInfo): Thenable<ObjectExplorerCloseSessionResponse>;
+
+		registerOnSessionCreated(handler: (response: ObjectExplorerSession) => any);
+
+		registerOnExpandCompleted(handler: (response: ObjectExplorerExpandInfo) => any);
+
+	}
+
 	export interface ScriptingResult {
 		objectName: string;
 
@@ -328,6 +377,8 @@ declare module 'data' {
 	export interface DataProtocolProvider {
 		handle: number;
 
+		providerId: string;
+
 		capabilitiesProvider: CapabilitiesProvider;
 
 		connectionProvider: ConnectionProvider;
@@ -337,6 +388,12 @@ declare module 'data' {
 		metadataProvider: MetadataProvider;
 
 		scriptingProvider: ScriptingProvider;
+
+		objectExplorerProvider: ObjectExplorerProvider;
+
+		adminServicesProvider: AdminServicesProvider;
+
+		disasterRecoveryProvider: DisasterRecoveryProvider;
 	}
 
 	/**
@@ -589,8 +646,8 @@ declare module 'data' {
 	}
 
 	// edit/commit --------------------------------------------------------------------------------
-	export interface EditCommitParams extends IEditSessionOperationParams {	}
-	export interface EditCommitResult {}
+	export interface EditCommitParams extends IEditSessionOperationParams { }
+	export interface EditCommitResult { }
 
 	// edit/createRow -----------------------------------------------------------------------------
 	export interface EditCreateRowParams extends IEditSessionOperationParams { }
@@ -643,7 +700,7 @@ declare module 'data' {
 		newValue: string;
 	}
 
-	export interface EditUpdateCellResult extends EditCellResult{
+	export interface EditUpdateCellResult extends EditCellResult {
 	}
 
 	// edit/subset --------------------------------------------------------------------------------
@@ -655,4 +712,120 @@ declare module 'data' {
 		rowCount: number;
 		subset: EditRow[];
 	}
+
+	export interface NodeInfo {
+		nodePath: string;
+		nodeType: string;
+		nodeSubType: string;
+		nodeStatus: string;
+		label: string;
+		isLeaf: boolean;
+		metadata: ObjectMetadata;
+		errorMessage: string;
+	}
+
+	// Object Explorer interfaces  -----------------------------------------------------------------------
+	export interface ObjectExplorerSession {
+		success: boolean;
+		sessionId: string;
+		rootNode: NodeInfo;
+		errorMessage: string;
+	}
+
+	export interface ObjectExplorerSessionResponse {
+		sessionId: string;
+	}
+
+	export interface ObjectExplorerExpandInfo {
+		sessionId: string;
+		nodePath: string;
+		nodes: NodeInfo[];
+		errorMessage: string;
+	}
+
+	export interface ExpandNodeInfo {
+		sessionId: string,
+		nodePath: string,
+	}
+
+	export interface ObjectExplorerCloseSessionInfo {
+		sessionId: string
+	}
+
+	export interface ObjectExplorerCloseSessionResponse {
+		sessionId: string;
+		success: boolean;
+	}
+
+	// Admin Services interfaces  -----------------------------------------------------------------------
+	export interface DatabaseInfo {
+		options: {};
+	}
+
+	export interface LoginInfo {
+		name: string;
+	}
+
+	export interface CreateDatabaseResponse {
+		result: boolean;
+		taskId: number;
+	}
+
+	export interface CreateLoginResponse {
+		result: boolean;
+		taskId: number;
+	}
+
+	export interface AdminServicesProvider {
+		createDatabase(connectionUri: string, database: DatabaseInfo): Thenable<CreateDatabaseResponse>;
+
+		createLogin(connectionUri: string, login: LoginInfo): Thenable<CreateLoginResponse>;
+
+		getDefaultDatabaseInfo(connectionUri: string): Thenable<DatabaseInfo>;
+	}
+
+
+	// Disaster Recovery interfaces  -----------------------------------------------------------------------
+
+	export interface BackupConfigInfo {
+		databaseInfo: {};
+		recoveryModel: string;
+		latestBackups: {};
+		defaultBackupFolder: string;
+	}
+
+	export interface BackupInfo {
+		ownerUri: string;
+
+		databaseName: string;
+
+		backupType: number;
+
+        backupComponent: number;
+
+		backupDeviceType: number;
+
+		selectedFiles: string;
+
+		backupsetName: string;
+
+		selectedFileGroup: {[path: string]: string};
+
+		// List of {key: backup path, value: device type}
+		backupPathDevices: {[path: string]: number};
+
+		backupPathList: [string];
+	}
+
+	export interface BackupResponse {
+		result: boolean;
+		taskId: number;
+	}
+
+	export interface DisasterRecoveryProvider {
+		backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse>;
+		getBackupConfigInfo(connectionUri: string): Thenable<BackupConfigInfo>;
+	}
+
+
 }

@@ -8,6 +8,7 @@ import { DataService } from 'sql/parts/grid/services/dataService';
 import { ISlickRange } from 'angular2-slickgrid';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import Event from 'vs/base/common/event';
+import { QueryInput } from 'sql/parts/query/common/queryInput';
 import {
 	ISelectionData,
 	ResultSetSubset,
@@ -31,18 +32,18 @@ export interface IQueryModelService {
 	getConfig(): Promise<{ [key: string]: any }>;
 	getShortcuts(): Promise<any>;
 	getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
-	runQuery(uri: string, selection: ISelectionData, title: string): void;
+	runQuery(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void;
 	cancelQuery(input: QueryRunner | string): void;
 	isRunningQuery(uri: string): boolean;
 
 	getDataService(uri: string): DataService;
 	refreshResultsets(uri: string): void;
+	sendGridContentEvent(uri: string, eventName: string): void;
 	resizeResultsets(uri: string): void;
 	onAngularLoaded(uri: string): void;
 
-	openLink(uri: string, content: string, columnName: string, linkType: string): void;
 	copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void;
-	setEditorSelection(uri: string, selection: ISelectionData): void;
+	setEditorSelection(uri: string): void;
 	showWarning(uri: string, message: string): void;
 	showError(uri: string, message: string): void;
 
