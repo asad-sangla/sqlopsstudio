@@ -218,7 +218,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * Get the connections provider ID from an connection URI
 	 */
 	public getProviderIdFromUri(ownerUri: string): string {
-		return this._uriToProvider[ownerUri];
+		let providerId = this._uriToProvider[ownerUri];
+		if (Utils.isEmpty(providerId)) {
+			providerId = this._connectionStatusManager.getProviderIdFromUri(ownerUri);
+		}
+
+		return providerId;
 	}
 
 	/**

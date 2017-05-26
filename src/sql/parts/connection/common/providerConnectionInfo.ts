@@ -18,6 +18,7 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 	private static readonly MsSqlProviderName: string = 'MSSQL';
 	private static readonly PgSqlProviderName: string = 'PGSQL';
 	private static readonly SqlAuthentication = 'SqlLogin';
+	public static readonly ProviderPropertyName = 'providerName';
 
 	public constructor(serverCapabilities?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
 		this.options = {};
@@ -155,8 +156,22 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 			idValues.push(`${idNames[index]}${ProviderConnectionInfo.nameValueSeparator}${value}`);
 		}
 
-		return 'providerName' + ProviderConnectionInfo.nameValueSeparator +
+		return ProviderConnectionInfo.ProviderPropertyName + ProviderConnectionInfo.nameValueSeparator +
 			this.providerName + ProviderConnectionInfo.idSeparator + idValues.join(ProviderConnectionInfo.idSeparator);
+	}
+
+	public static getProviderFromOptionsKey(optionsKey: string) {
+		let providerId: string = '';
+		if (optionsKey) {
+			let ids: string[] = optionsKey.split(ProviderConnectionInfo.idSeparator);
+			ids.forEach(id => {
+				let idParts = id.split(ProviderConnectionInfo.nameValueSeparator);
+				if (idParts.length >= 2 && idParts[0] === ProviderConnectionInfo.ProviderPropertyName) {
+					providerId = idParts[1];
+				}
+			});
+		}
+		return providerId;
 	}
 
 	public getSpecialTypeOptionName(type: number): string {

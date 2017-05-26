@@ -68,21 +68,27 @@ export class ScriptSelectAction extends Action {
 	}
 
 	public run(actionContext: any): TPromise<boolean> {
-		if (actionContext instanceof ObjectExplorerActionsContext) {
-			//set objectExplorerTreeNode for context menu clicks
-			this._objectExplorerTreeNode = actionContext.treeNode;
-			this._container = actionContext.container;
-		}
-		ObjectExplorerActionUtilities.showLoadingIcon(this._container);
-		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
-		var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
-		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
+		return new TPromise<boolean>((resolve, reject) => {
+			if (actionContext instanceof ObjectExplorerActionsContext) {
+				//set objectExplorerTreeNode for context menu clicks
+				this._objectExplorerTreeNode = actionContext.treeNode;
+				this._container = actionContext.container;
+			}
+			ObjectExplorerActionUtilities.showLoadingIcon(this._container);
+			var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+			var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
+			var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
-		TaskUtilities.scriptSelect(connectionProfile, metadata, ownerUri, this.connectionManagementService, this.queryEditorService, this.scriptingService).then(() => {
-			ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+			TaskUtilities.scriptSelect(connectionProfile, metadata, ownerUri, this.connectionManagementService,
+				this.queryEditorService, this.scriptingService).then(() => {
+					ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+					resolve(true);
+				}).catch(error => {
+					ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+					reject(error);
+				});
+
 		});
-
-		return TPromise.as(true);
 	}
 }
 
@@ -135,20 +141,25 @@ export class ScriptCreateAction extends Action {
 	}
 
 	public run(actionContext: any): TPromise<boolean> {
-		if (actionContext instanceof ObjectExplorerActionsContext) {
-			//set objectExplorerTreeNode for context menu clicks
-			this._objectExplorerTreeNode = actionContext.treeNode;
-			this._container = actionContext.container;
-		}
-		ObjectExplorerActionUtilities.showLoadingIcon(this._container);
-		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
-		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
-		var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
+		return new TPromise<boolean>((resolve, reject) => {
+			if (actionContext instanceof ObjectExplorerActionsContext) {
+				//set objectExplorerTreeNode for context menu clicks
+				this._objectExplorerTreeNode = actionContext.treeNode;
+				this._container = actionContext.container;
+			}
+			ObjectExplorerActionUtilities.showLoadingIcon(this._container);
+			var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+			var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
+			var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
 
-		TaskUtilities.scriptCreate(metadata, ownerUri, this.queryEditorService, this.scriptingService).then(() => {
-			ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+			TaskUtilities.scriptCreate(connectionProfile, metadata, ownerUri, this.connectionManagementService, this.queryEditorService, this.scriptingService).then(() => {
+				ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+				resolve(true);
+			}).catch(error => {
+				ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+				reject(error);
+			});
 		});
-		return TPromise.as(true);
 	}
 }
 
@@ -199,9 +210,10 @@ export class ObjectExplorerActionUtilities {
 		return connectionProfile;
 	}
 
-	public static getGroupContainer(container: HTMLElement): HTMLElement {
+	private static getGroupContainer(container: HTMLElement): HTMLElement {
 		var groupElementName = 'object-element-group';
 		var element = container;
+
 		while (element && element.className !== groupElementName) {
 			element = element.parentElement;
 		}
@@ -219,7 +231,10 @@ export class ObjectExplorerActionUtilities {
 
 	public static hideLoadingIcon(container: HTMLElement): void {
 		if (container) {
-			this.getGroupContainer(container).classList.remove('loading');
+			let element = this.getGroupContainer(container);
+			if (element) {
+				element.classList.remove('loading');
+			}
 		}
 	}
 }

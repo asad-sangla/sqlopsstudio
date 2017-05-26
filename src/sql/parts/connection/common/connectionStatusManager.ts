@@ -141,11 +141,24 @@ export class ConnectionStatusManager {
 	public getConnectionManagementId(connection: IConnectionProfile): string {
 
 		let id = connection.getOptionsKey();
-		let uri = 'connection://' + (id ? id : connection.serverName + ':' + connection.databaseName);
+		let uri = ConnectionStatusManager.DefaultUriPrefix + (id ? id : connection.serverName + ':' + connection.databaseName);
 
 		return uri;
 	}
 	public isDefaultTypeUri(uri: string): boolean {
 		return uri && uri.startsWith(ConnectionStatusManager.DefaultUriPrefix);
+	}
+
+	public getProviderIdFromUri(ownerUri: string) {
+		let providerId: string = '';
+		let connection = this.findConnection(ownerUri);
+		if (connection) {
+			providerId = connection.connectionProfile.providerName;
+		}
+		if (Utils.isEmpty(providerId) && this.isDefaultTypeUri(ownerUri)) {
+			let optionsKey = ownerUri.replace(ConnectionStatusManager.DefaultUriPrefix, '');
+			providerId = ConnectionProfile.getProviderFromOptionsKey(optionsKey);
+		}
+		return providerId;
 	}
 }
