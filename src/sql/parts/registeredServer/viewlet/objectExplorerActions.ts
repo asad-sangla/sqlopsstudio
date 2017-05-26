@@ -202,15 +202,18 @@ export class ObjectExplorerActionUtilities {
 	public static getGroupContainer(container: HTMLElement): HTMLElement {
 		var groupElementName = 'object-element-group';
 		var element = container;
-		while (element.className !== groupElementName) {
+		while (element && element.className !== groupElementName) {
 			element = element.parentElement;
 		}
-		return element.parentElement;
+		return element ? element.parentElement : undefined;
 	}
 
 	public static showLoadingIcon(container: HTMLElement): void {
 		if (container) {
-			this.getGroupContainer(container).classList.add('loading');
+			let groupContainer = this.getGroupContainer(container);
+			if (groupContainer) {
+				groupContainer.classList.add('loading');
+			}
 		}
 	}
 

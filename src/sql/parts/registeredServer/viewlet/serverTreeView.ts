@@ -20,7 +20,7 @@ import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
-import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { TreeUpdateUtils, TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Button } from 'vs/base/browser/ui/button/button';
@@ -36,6 +36,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	private addServerGroupAction: IAction;
 	private activeConnectionsFilterAction: ActiveConnectionsFilterAction;
 	private _buttonSection: builder.Builder;
+	private treeSelectionHandler: TreeSelectionHandler;
 
 	constructor(actionRunner: IActionRunner, settings: any,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
@@ -57,6 +58,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 			ActiveConnectionsFilterAction.ID,
 			ActiveConnectionsFilterAction.LABEL,
 			this);
+		this.treeSelectionHandler = this.instantiationService.createInstance(TreeSelectionHandler);
 	}
 
 	/**
@@ -324,7 +326,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	}
 
 	private onSelected(event: any): void {
-		TreeUpdateUtils.OnTreeSelect(event, this.tree, this._connectionManagementService);
+		this.treeSelectionHandler.onTreeSelect(event, this.tree, this._connectionManagementService);
 	}
 
 	private onError(err: any): void {

@@ -12,16 +12,35 @@ import { ConnectionManagementInfo } from 'sql/parts/connection/common/connection
 import * as Constants from 'sql/parts/connection/common/constants';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
+
+import { IProgressService, IProgressRunner } from 'vs/platform/progress/common/progress';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import errors = require('vs/base/common/errors');
 
-export class TreeUpdateUtils {
+export class TreeSelectionHandler {
+	progressRunner: IProgressRunner;
+
+	constructor(@IProgressService private progressService: IProgressService) {
+
+	}
+
+	private onTreeActionStateChange(started: boolean): void {
+		if (this.progressRunner) {
+			this.progressRunner.done();
+		}
+
+		if (started) {
+			this.progressRunner = this.progressService.show(true);
+		} else {
+			this.progressRunner = null;
+		}
+	}
 
 	/**
 	 * Handle selection of tree element
 	 */
-	public static OnTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService) {
+	public onTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService) {
 		let selection = tree.getSelection();
 
 		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
@@ -29,6 +48,8 @@ export class TreeUpdateUtils {
 			let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
 			let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
 			if (isDoubleClick) {
+				let callback: Promise<any>;
+				this.onTreeActionStateChange(true);
 				if (!connectionManagementService.isProfileConnected(connectionProfile)) {
 					let options: IConnectionCompletionOptions = {
 						params: undefined,
@@ -36,7 +57,7 @@ export class TreeUpdateUtils {
 						showDashboard: true,
 						showConnectionDialogOnError: false
 					};
-					connectionManagementService.connect(connectionProfile, undefined, options);
+					callback = connectionManagementService.connect(connectionProfile, undefined, options);
 				}
 				else {
 					let uri = ConnectionStatusManager.DefaultUriPrefix + connectionProfile.getOptionsKey();
@@ -49,11 +70,14 @@ export class TreeUpdateUtils {
 					if (connectionManagementService.getConnectionInfo(uri)) {
 						connectionInfo.serverInfo = connectionManagementService.getConnectionInfo(uri).serverInfo;
 					}
-					connectionManagementService.showDashboard(uri, connectionInfo);
+					callback = connectionManagementService.showDashboard(uri, connectionInfo);
 				}
+				callback.then(() => this.onTreeActionStateChange(false));
 			}
 		}
 	}
+}
+export class TreeUpdateUtils {
 
 	/**
 	 * Set input for the tree.
