@@ -139,12 +139,14 @@ export class ServerTreeRenderer implements IRenderer {
 
 
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
-		if (this._connectionManagementService.isConnected(undefined, connection)) {
-			templateData.icon.classList.remove('disconnected');
-			templateData.icon.classList.add('connected');
-		} else {
-			templateData.icon.classList.remove('connected');
-			templateData.icon.classList.add('disconnected');
+		if (!this._isCompact) {
+			if (this._connectionManagementService.isConnected(undefined, connection)) {
+				templateData.icon.classList.remove('disconnected');
+				templateData.icon.classList.add('connected');
+			} else {
+				templateData.icon.classList.remove('connected');
+				templateData.icon.classList.add('disconnected');
+			}
 		}
 
 		let databaseName = connection.databaseName ? connection.databaseName : '<default>';

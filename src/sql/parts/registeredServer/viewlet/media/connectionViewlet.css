@@ -104,6 +104,15 @@ margin-bottom: 2px;
 	padding-right: 10px;
 }
 
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon {
+	content: url('server.svg');
+}
+
+.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon,
+.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon{
+	content: url('server_inverse.svg');
+}
+
 .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.connected {
 	content: url('connected_active_server.svg');
 }
