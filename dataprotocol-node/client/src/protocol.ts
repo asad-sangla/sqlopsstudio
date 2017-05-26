@@ -1307,6 +1307,7 @@ export interface EditInitializeFiltering {
 export interface EditInitializeParams extends EditSessionOperationParams {
 	filters: EditInitializeFiltering;
 	objectName: string;
+	schemaName: string;
 	objectType: string;
 }
 export interface EditInitializeResult { }

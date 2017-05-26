@@ -32,7 +32,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	private _rowLimit: number;
 	private _objectType: string;
 
-	constructor(private _uri: URI, private _tableName,
+	constructor(private _uri: URI, private _schemaName, private _tableName,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IMessageService private _messageService: IMessageService
@@ -75,6 +75,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 
 	// Getters/Setters
 	public get tableName(): string { return this._tableName; }
+	public get schemaName(): string { return this._schemaName; }
 	public get uri(): string { return this._uri.toString(); }
 	public get updateTaskbar(): Event<EditDataInput> { return this._updateTaskbar.event; }
 	public get showTableView(): Event<EditDataInput> { return this._showTableView.event; }
@@ -128,7 +129,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	}
 
 	public onConnectSuccess(params?: INewConnectionParams): void {
-		this._queryModelService.initializeEdit(this.uri, this.tableName, this._objectType, this._rowLimit);
+		this._queryModelService.initializeEdit(this.uri, this.schemaName, this.tableName, this._objectType, this._rowLimit);
 		this._showTableView.fire(this);
 	}
 

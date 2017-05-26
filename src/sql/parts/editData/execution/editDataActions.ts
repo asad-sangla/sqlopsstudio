@@ -78,7 +78,7 @@ export class RefreshTableAction extends EditDataAction {
 		if (this.isConnected(this.editor)) {
 			let input = this.editor.editDataInput;
 			this._queryModelService.disposeEdit(input.uri).then((result) => {
-				this._queryModelService.initializeEdit(input.uri, input.tableName, input.objectType, input.rowLimit);
+				this._queryModelService.initializeEdit(input.uri, input.schemaName, input.tableName, input.objectType, input.rowLimit);
 			}, error => {
 				this._messageService.show(Severity.Error, nls.localize('disposeEditFailure', 'Dipose Edit Failed With Error: ') + error);
 			});

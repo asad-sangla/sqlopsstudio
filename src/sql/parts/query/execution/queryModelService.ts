@@ -264,7 +264,7 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	// EDIT DATA METHODS /////////////////////////////////////////////////////
-	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): void {
+	initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): void {
 		// Reuse existing query runner if it exists
 		let queryRunner: QueryRunner;
 		let info: QueryInfo;
@@ -321,7 +321,7 @@ export class QueryModelService implements IQueryModelService {
 			this._queryInfoMap.set(ownerUri, info);
 		}
 
-		queryRunner.initializeEdit(ownerUri, objectName, objectType, rowLimit);
+		queryRunner.initializeEdit(ownerUri, schemaName, objectName, objectType, rowLimit);
 	}
 
 	public cancelInitializeEdit(input: QueryRunner | string): void {

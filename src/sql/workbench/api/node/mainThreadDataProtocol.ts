@@ -90,8 +90,8 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			saveResults(requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult> {
 				return self._proxy.$saveResults(handle, requestParams);
 			},
-			initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
-				return self._proxy.$initializeEdit(handle, ownerUri, objectName, objectType, rowLimit);
+			initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+				return self._proxy.$initializeEdit(handle, ownerUri, schemaName, objectName, objectType, rowLimit);
 			},
 			updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult> {
 				return self._proxy.$updateCell(handle, ownerUri, rowId, columnId, newValue);

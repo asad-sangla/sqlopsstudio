@@ -111,16 +111,17 @@ export class QueryEditorService implements IQueryEditorService {
 	/**
 	 * Creates new edit data session
 	 */
-	public newEditDataEditor(tableName: string): Promise<IConnectableInput> {
+	public newEditDataEditor(schemaName: string, tableName: string): Promise<IConnectableInput> {
 
 		return new Promise<IConnectableInput>((resolve, reject) => {
 			try {
 				// Create file path and file URI
-				let filePath = this.createEditDataFileName(tableName);
+				let objectName = schemaName ? schemaName + '.' + tableName : tableName;
+				let filePath = this.createEditDataFileName(objectName);
 				let docUri: URI = URI.from({ scheme: UntitledEditorInput.SCHEMA, path: filePath });
 
 				// Create an EditDataInput for editing
-				let editDataInput: EditDataInput = this._instantiationService.createInstance(EditDataInput, docUri, tableName);
+				let editDataInput: EditDataInput = this._instantiationService.createInstance(EditDataInput, docUri, schemaName, tableName);
 
 				this._editorService.openEditor(editDataInput, { pinned: true })
 					.then((editor) => {

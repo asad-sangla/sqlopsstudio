@@ -117,7 +117,7 @@ export class EditDataAction extends Action {
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
-		TaskUtilities.editData(connectionProfile, metadata.name, this.connectionManagementService, this.queryEditorService).then(() => {
+		TaskUtilities.editData(connectionProfile, metadata.name, metadata.schema, this.connectionManagementService, this.queryEditorService).then(() => {
 			ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
 		});
 		return TPromise.as(true);

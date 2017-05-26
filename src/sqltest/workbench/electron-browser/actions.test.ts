@@ -50,7 +50,7 @@ suite('SQL Actions Tests', () => {
 
 		// Mocking the editor service
 		editorService = TypeMoq.Mock.ofType(QueryEditorService, TypeMoq.MockBehavior.Strict);
-		editorService.setup(x => x.newEditDataEditor(TypeMoq.It.isAnyString())).returns((input) => {
+		editorService.setup(x => x.newEditDataEditor(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString())).returns((input) => {
 			// assert that our input matches our test table name
 			assert.equal(input, testTable);
 			let docUri: URI = URI.parse('testURI');
@@ -82,7 +82,7 @@ suite('SQL Actions Tests', () => {
 			quickOpen.verify(x => x.pick(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.never());
 			quickOpen.verify(x => x.input(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 
-			editorService.verify(x => x.newEditDataEditor(TypeMoq.It.isAnyString()), TypeMoq.Times.once());
+			editorService.verify(x => x.newEditDataEditor(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()), TypeMoq.Times.once());
 		}).then(() => done(), (err) => done(err));
 	});
 
@@ -96,7 +96,7 @@ suite('SQL Actions Tests', () => {
 			quickOpen.verify(x => x.pick(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			quickOpen.verify(x => x.input(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 
-			editorService.verify(x => x.newEditDataEditor(TypeMoq.It.isAnyString()), TypeMoq.Times.exactly(2));
+			editorService.verify(x => x.newEditDataEditor(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()), TypeMoq.Times.exactly(2));
 		}).then(() => done(), (err) => done(err));
 	});
 });

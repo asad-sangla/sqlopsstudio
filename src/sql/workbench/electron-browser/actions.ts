@@ -41,7 +41,7 @@ export class EditDataAction extends Action {
 				.then((tableName) => {
 					if (tableName) {
 						// open an edit data session on that table
-						this.queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
+						this.queryEditorService.newEditDataEditor(undefined, tableName).then((owner: EditDataInput) => {
 							// Connect our editor
 							let options: IConnectionCompletionOptions = {
 								params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },

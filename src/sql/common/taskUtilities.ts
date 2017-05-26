@@ -81,9 +81,9 @@ export class TaskUtilities {
 	/**
 	 * Opens a new Edit Data session
 	 */
-	public static editData(connectionProfile: IConnectionProfile, tableName: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): Promise<void> {
+	public static editData(connectionProfile: IConnectionProfile, tableName: string, schemaName: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): Promise<void> {
 		return new Promise<void>((resolve) => {
-			queryEditorService.newEditDataEditor(tableName).then((owner: EditDataInput) => {
+			queryEditorService.newEditDataEditor(schemaName, tableName).then((owner: EditDataInput) => {
 				// Connect our editor
 				let options: IConnectionCompletionOptions = {
 					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },

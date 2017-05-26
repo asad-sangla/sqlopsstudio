@@ -237,7 +237,7 @@ export default class QueryRunner {
 	/*
 	 * Handle a session ready event for Edit Data
 	 */
-	public initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+	public initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 		const self = this;
 
 		// Update internal state to show that we're executing the query
@@ -245,7 +245,7 @@ export default class QueryRunner {
 		this._totalElapsedMilliseconds = 0;
 		// TODO issue #228 add statusview callbacks here
 
-		return this._queryManagementService.initializeEdit(ownerUri, objectName, objectType, rowLimit).then(result => {
+		return this._queryManagementService.initializeEdit(ownerUri, schemaName, objectName, objectType, rowLimit).then(result => {
 			// The query has started, so lets fire up the result pane
 			self.eventEmitter.emit('start');
 			self._queryManagementService.registerRunner(self, ownerUri);

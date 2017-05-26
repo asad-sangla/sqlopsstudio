@@ -1600,9 +1600,9 @@ export class LanguageClient {
 				);
 			},
 
-			initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+			initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 				let filters: EditInitializeFiltering = { LimitResults: rowLimit };
-				let params: EditInitializeParams = { ownerUri: ownerUri, objectName: objectName, objectType: objectType, filters: filters };
+				let params: EditInitializeParams = { ownerUri: ownerUri, schemaName: schemaName, objectName: objectName, objectType: objectType, filters: filters };
 				return self.doSendRequest(connection, EditInitializeRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;

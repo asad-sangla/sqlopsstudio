@@ -8,6 +8,7 @@ import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/action
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
 
-
-const workbenchActionsRegistry = Registry.as<IWorkbenchActionRegistry>(Extensions.WorkbenchActions);
-workbenchActionsRegistry.registerWorkbenchAction(new SyncActionDescriptor(EditDataAction, EditDataAction.ID, EditDataAction.LABEL), 'Edit Data');
+// Disabling this until we have proper handling of the Edit Data action. It needs to prompt for an active / recent etc. connection to use, and then
+// if that's a master / default connection prompt for the actual DB to work against
+// const workbenchActionsRegistry = Registry.as<IWorkbenchActionRegistry>(Extensions.WorkbenchActions);
+// workbenchActionsRegistry.registerWorkbenchAction(new SyncActionDescriptor(EditDataAction, EditDataAction.ID, EditDataAction.LABEL), 'Edit Data');

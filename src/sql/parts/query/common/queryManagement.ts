@@ -36,7 +36,7 @@ export interface IQueryManagementService {
 	onEditSessionReady(ownerUri: string, success: boolean, message: string): void;
 
 	// Edit Data Functions
-	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void>;
+	initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void>;
 	disposeEdit(ownerUri: string): Thenable<void>;
 	updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult>;
 	commitEdit(ownerUri): Thenable<void>;
@@ -58,7 +58,7 @@ export interface QueryRequestHandler {
 	saveResults(requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult>;
 
 	// Edit Data actions
-	initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void>;
+	initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void>;
 	disposeEdit(ownerUri: string): Thenable<void>;
 	updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult>;
 	commitEdit(ownerUri): Thenable<void>;
@@ -192,9 +192,9 @@ export class QueryManagementService implements IQueryManagementService {
 	}
 
 	// Edit Data Functions
-	public initializeEdit(ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+	public initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
-			return runner.initializeEdit(ownerUri, objectName, objectType, rowLimit);
+			return runner.initializeEdit(ownerUri, schemaName, objectName, objectType, rowLimit);
 		});
 	}
 

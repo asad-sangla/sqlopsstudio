@@ -172,9 +172,9 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		});
 	}
 
-	$initializeEdit(handle: number, ownerUri: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
+	$initializeEdit(handle: number, ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 		return this._runWithProvider(handle, provider => {
-			return provider.queryProvider.initializeEdit(ownerUri, objectName, objectType, rowLimit);
+			return provider.queryProvider.initializeEdit(ownerUri, schemaName, objectName, objectType, rowLimit);
 		});
 	}
 
