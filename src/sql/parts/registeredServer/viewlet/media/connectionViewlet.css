@@ -123,6 +123,7 @@ margin-bottom: 2px;
 }
 
 /* loading for OE node */
+.server-explorer-viewlet .monaco-tree .monaco-tree-rows > .monaco-tree-row > .loading .connection-tile:before,
 .server-explorer-viewlet .monaco-tree .monaco-tree-rows > .monaco-tree-row > .loading .object-element-group:before {
 	content: ' ';
 	position: absolute;

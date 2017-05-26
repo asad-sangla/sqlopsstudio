@@ -20,6 +20,7 @@ import * as Constants from 'sql/parts/connection/common/constants';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import Severity from 'vs/base/common/severity';
+import { ObjectExplorerActionsContext, ObjectExplorerActionUtilities } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 
 export class RefreshAction extends Action {
 
@@ -66,7 +67,7 @@ export class ChangeConnectionAction extends Action {
 	private _disposables: IDisposable[] = [];
 	private _connectionProfile: ConnectionProfile;
 
-	public parentContainer: HTMLElement;
+	private _container: HTMLElement;
 
 	constructor(
 		id: string,
@@ -111,17 +112,20 @@ export class ChangeConnectionAction extends Action {
 
 	private removeSpinning(connection: IConnectionProfile): void {
 		if (this._connectionProfile) {
-			if (connection.id === this._connectionProfile.id && this.parentContainer) {
-				this.parentContainer.classList.remove('connecting');
+			if (connection.id === this._connectionProfile.id && this._container) {
+				ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.connectionElementClass);
 			}
 		}
 	}
 
-	run(connectionProfile: ConnectionProfile): TPromise<any> {
-		if (connectionProfile instanceof ConnectionProfile) {
-			//set connectionProfile for context menu clicks
-			this._connectionProfile = connectionProfile;
+	run(actionContext: ObjectExplorerActionsContext): TPromise<any> {
+
+		if (actionContext instanceof ObjectExplorerActionsContext) {
+			//set objectExplorerTreeNode for context menu clicks
+			this._connectionProfile = actionContext.connectionProfile;
+			this._container = actionContext.container;
 		}
+
 		if (!this._connectionProfile) {
 			return TPromise.as(true);
 		}
@@ -138,9 +142,7 @@ export class ChangeConnectionAction extends Action {
 			};
 
 			this.enabled = false;
-			if (this.parentContainer) {
-				this.parentContainer.classList.add('connecting');
-			}
+			ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.connectionElementClass);
 
 			return new TPromise<boolean>((resolve, reject) => {
 				this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
@@ -335,10 +337,9 @@ export class NewQueryAction extends Action {
 		this.class = 'extension-action update';
 	}
 
-	public run(connectionProfile: any): TPromise<boolean> {
-		if (connectionProfile instanceof ConnectionProfile) {
-			//set connectionProfile for context menu clicks
-			this._connectionProfile = connectionProfile;
+	public run(actionContext: ObjectExplorerActionsContext): TPromise<boolean> {
+		if (actionContext instanceof ObjectExplorerActionsContext) {
+			this._connectionProfile = actionContext.connectionProfile;
 		}
 
 		TaskUtilities.newQuery(this._connectionProfile, this.connectionManagementService, this.queryEditorService);

@@ -16,6 +16,7 @@ import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile
 
 export class ObjectExplorerActionsContext {
 	public treeNode: TreeNode;
+	public connectionProfile: ConnectionProfile;
 	public container: HTMLElement;
 }
 
@@ -40,11 +41,11 @@ export class NewQueryAction extends Action {
 			this._objectExplorerTreeNode = actionContext.treeNode;
 			this._container = actionContext.container;
 		}
-		ObjectExplorerActionUtilities.showLoadingIcon(this._container);
+		ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 
 		TaskUtilities.newQuery(connectionProfile, this.connectionManagementService, this.queryEditorService).then(() => {
-			ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+			ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		});
 
 		return TPromise.as(true);
@@ -74,20 +75,19 @@ export class ScriptSelectAction extends Action {
 				this._objectExplorerTreeNode = actionContext.treeNode;
 				this._container = actionContext.container;
 			}
-			ObjectExplorerActionUtilities.showLoadingIcon(this._container);
+			ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 			var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 			var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
 			var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
 			TaskUtilities.scriptSelect(connectionProfile, metadata, ownerUri, this.connectionManagementService,
 				this.queryEditorService, this.scriptingService).then(() => {
-					ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+					ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 					resolve(true);
 				}).catch(error => {
-					ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+					ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 					reject(error);
 				});
-
 		});
 	}
 }
@@ -113,12 +113,12 @@ export class EditDataAction extends Action {
 			this._objectExplorerTreeNode = actionContext.treeNode;
 			this._container = actionContext.container;
 		}
-		ObjectExplorerActionUtilities.showLoadingIcon(this._container);
+		ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
 		TaskUtilities.editData(connectionProfile, metadata.name, metadata.schema, this.connectionManagementService, this.queryEditorService).then(() => {
-			ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+			ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		});
 		return TPromise.as(true);
 	}
@@ -147,16 +147,16 @@ export class ScriptCreateAction extends Action {
 				this._objectExplorerTreeNode = actionContext.treeNode;
 				this._container = actionContext.container;
 			}
-			ObjectExplorerActionUtilities.showLoadingIcon(this._container);
+			ObjectExplorerActionUtilities.showLoadingIcon(this._container,  ObjectExplorerActionUtilities.objectExplorerElementClass);
 			var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 			var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 			var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
 
 			TaskUtilities.scriptCreate(connectionProfile, metadata, ownerUri, this.connectionManagementService, this.queryEditorService, this.scriptingService).then(() => {
-				ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+				ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 				resolve(true);
 			}).catch(error => {
-				ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+				ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 				reject(error);
 			});
 		});
@@ -186,10 +186,10 @@ export class DisconnectAction extends Action {
 
 		var connectionProfile = (<TreeNode>this._objectExplorerTreeNode).getConnectionProfile();
 		if (this.connectionManagementService.isProfileConnected(connectionProfile)) {
-			ObjectExplorerActionUtilities.showLoadingIcon(this._container);
+			ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 
 			this.connectionManagementService.disconnectProfile(connectionProfile).then(() => {
-				ObjectExplorerActionUtilities.hideLoadingIcon(this._container);
+				ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 			});
 		}
 
@@ -198,6 +198,9 @@ export class DisconnectAction extends Action {
 }
 
 export class ObjectExplorerActionUtilities {
+
+	public static readonly objectExplorerElementClass = 'object-element-group';
+	public static readonly connectionElementClass = 'connection-tile';
 	/**
 	 * Get connection profile with the current database
 	 */
@@ -210,28 +213,26 @@ export class ObjectExplorerActionUtilities {
 		return connectionProfile;
 	}
 
-	private static getGroupContainer(container: HTMLElement): HTMLElement {
-		var groupElementName = 'object-element-group';
+	private static getGroupContainer(container: HTMLElement, elementName: string): HTMLElement {
 		var element = container;
-
-		while (element && element.className !== groupElementName) {
+		while (element && element.className !== elementName) {
 			element = element.parentElement;
 		}
 		return element ? element.parentElement : undefined;
 	}
 
-	public static showLoadingIcon(container: HTMLElement): void {
+	public static showLoadingIcon(container: HTMLElement, elementName: string): void {
 		if (container) {
-			let groupContainer = this.getGroupContainer(container);
+			let groupContainer = this.getGroupContainer(container, elementName);
 			if (groupContainer) {
 				groupContainer.classList.add('loading');
 			}
 		}
 	}
 
-	public static hideLoadingIcon(container: HTMLElement): void {
+	public static hideLoadingIcon(container: HTMLElement, elementName: string): void {
 		if (container) {
-			let element = this.getGroupContainer(container);
+			let element = this.getGroupContainer(container, elementName);
 			if (element) {
 				element.classList.remove('loading');
 			}
