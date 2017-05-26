@@ -227,6 +227,7 @@ export class ActiveConnectionsFilterAction extends Action {
 	public static LABEL = localize('activeConnections', 'Show Active Connections');
 	private static enabledClass = 'active-connections-action';
 	private static disabledClass = 'active-connections-action-set';
+	private static clearAllLabel = localize('clearAll', 'Clear All');
 	private _isSet: boolean;
 	public get isSet(): boolean {
 		return this._isSet;
@@ -256,10 +257,12 @@ export class ActiveConnectionsFilterAction extends Action {
 			// show active connections in the tree
 			this.view.showFilteredTree('active');
 			this.isSet = true;
+			this.label = ActiveConnectionsFilterAction.clearAllLabel;
 		} else {
 			// show full tree
 			this.view.refreshTree();
 			this.isSet = false;
+			this.label = ActiveConnectionsFilterAction.LABEL;
 		}
 		return TPromise.as(true);
 	}

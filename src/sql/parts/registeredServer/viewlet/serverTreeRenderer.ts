@@ -139,8 +139,13 @@ export class ServerTreeRenderer implements IRenderer {
 
 
 	private renderConnection(tree: ITree, connection: ConnectionProfile, templateData: IConnectionTemplateData): void {
-		let iconFilePath = require.toUrl('sql/media/objectTypes/Database.svg');
-		templateData.icon.style.content = 'url(' + iconFilePath + ')';
+		if (this._connectionManagementService.isConnected(undefined, connection)) {
+			templateData.icon.classList.remove('disconnected');
+			templateData.icon.classList.add('connected');
+		} else {
+			templateData.icon.classList.remove('connected');
+			templateData.icon.classList.add('disconnected');
+		}
 
 		let databaseName = connection.databaseName ? connection.databaseName : '<default>';
 		let userName = connection.userName ? connection.userName : 'Windows Auth';

@@ -5,48 +5,43 @@
 
 /* Icons for various registered servers actions */
 .monaco-workbench .add-server-action {
-	background-image: url('new.svg');
+	background-image: url('add_server.svg');
 }
 
 .vs-dark .monaco-workbench .add-server-action,
 .hc-black .monaco-workbench .add-server-action {
-	background-image: url('new-inverse.svg');
+	background-image: url('add_server_inverse.svg');
 }
 
 .monaco-workbench .add-server-group-action {
-	background-image: url('new.svg');
+	background-image: url('new_servergroup.svg');
 }
 
 .vs-dark .monaco-workbench .add-server-group-action,
 .hc-black .monaco-workbench .add-server-group-action {
-	background-image: url('new-inverse.svg');
+	background-image: url('new_servergroup_inverse.svg');
 }
 
-.monaco-workbench .active-connections-action,
+.monaco-workbench .active-connections-action {
+	background-image: url('connected_active_server.svg');
+}
+
 .vs-dark .monaco-workbench .active-connections-action,
 .hc-black .monaco-workbench .active-connections-action{
-	background-image: url('status-added.svg');
-}
-.monaco-workbench .recent-connections-action,
-.vs-dark .monaco-workbench .recent-connections-action,
-.hc-black .monaco-workbench .recent-connections-action {
-	background-image: url('status-renamed.svg');
+	background-image: url('connected_active_server_inverse.svg');
 }
 
 /* toggle icon */
-.monaco-workbench .active-connections-action-set,
+.monaco-workbench .active-connections-action-set {
+	background-image: url('server.svg');
+}
+
 .vs-dark .monaco-workbench .active-connections-action-set,
 .hc-black .monaco-workbench .recent-connections-action {
-	background-image: url('status-added.svg');
+	background-image: url('server_inverse.svg');
 	opacity: 0.5;
 }
 
-.monaco-workbench .recent-connections-action-set,
-.vs-dark .monaco-workbench .recent-connections-action-set,
-.hc-black .monaco-workbench .recent-connections-action-set {
-	background-image: url('status-renamed.svg');
-	opacity: 0.5;
-}
 /* ------ */
 
 .monaco-workbench .clear-search {

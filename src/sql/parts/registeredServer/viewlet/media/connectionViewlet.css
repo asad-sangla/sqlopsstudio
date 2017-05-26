@@ -61,7 +61,7 @@ margin-bottom: 2px;
 
 /* viewlet icon*/
 .monaco-workbench > .activitybar .monaco-action-bar .action-label.connectionViewlet {
-	background: url('server.svg') center center no-repeat;
+	background: url('server_inverse.svg') center center no-repeat;
 	height: 32px;
 	width: 32px;
 }
@@ -69,7 +69,7 @@ margin-bottom: 2px;
 /* Global action */
 
 .monaco-workbench > .activitybar .monaco-action-bar .action-label.connectionViewlet {
-	background-size: 16px;
+	background-size: 22px;
 	background-repeat: no-repeat;
 	background-position: 50% !important;
 }
@@ -102,6 +102,24 @@ margin-bottom: 2px;
 	height: 16px;
 	width: 16px;
 	padding-right: 10px;
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.connected {
+	content: url('connected_active_server.svg');
+}
+
+.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.connected,
+.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.connected{
+	content: url('connected_active_server_inverse.svg');
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.disconnected {
+	content: url('disconnected_server.svg');
+}
+
+.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.disconnected,
+.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.disconnected{
+	content: url('disconnected_server_inverse.svg');
 }
 
 /* loading for OE node */
