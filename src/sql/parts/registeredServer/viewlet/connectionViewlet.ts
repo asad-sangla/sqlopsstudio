@@ -110,6 +110,8 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 		if (value) {
 			this.clearSearchAction.enabled = true;
 			this.serverTreeView.searchTree(value);
+		} else {
+			this.clearSearch();
 		}
 	}
 
