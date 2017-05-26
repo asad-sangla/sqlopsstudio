@@ -87,7 +87,7 @@ export default class ServiceDownloadProvider {
 
 		let installDirFromConfig = this._config.getSqlToolsInstallDirectory();
 		if (!installDirFromConfig || installDirFromConfig === '') {
-			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), '/carbon/sqltoolsservice/{#version#}/{#platform#}');
+			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), '/.carbon/sqltoolsservice/{#version#}/{#platform#}');
 		}
 		let basePath: string;
 		if (path.isAbsolute(installDirFromConfig)) {

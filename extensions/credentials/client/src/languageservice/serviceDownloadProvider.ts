@@ -82,7 +82,7 @@ export default class ServiceDownloadProvider {
 	public getInstallDirectoryRoot(platform: Runtime): string {
 		let installDirFromConfig = this._config.getSqlToolsInstallDirectory();
 		if (!installDirFromConfig || installDirFromConfig === '') {
-			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), '/carbon/credentialservice/{#version#}/{#platform#}');
+			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), '/.carbon/credentialservice/{#version#}/{#platform#}');
 		}
 		let basePath: string;
 		if (path.isAbsolute(installDirFromConfig)) {
