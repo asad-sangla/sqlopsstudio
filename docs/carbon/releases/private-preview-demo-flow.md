@@ -120,6 +120,22 @@ Go to OE and browse down to Tables
 
 33. on the terminal, show the backup file with **ls -l**
 
+> review note
+
+Making a group as a starting point it is a first class citizen
+Working on simple - basic core properties to provide good experience. And comprehensive view without cluttering
+
+run sqlcmd show it’s on docker / mac But showing more interesting
+
+also using the sqltoolsservice
+run mssql-scripter in integrated terminal and run the sql
+
+- have a small db. RE mssql-scripter using it.
+- open the sql, check it in, find and replace super heroe 2. 
+- show the diff. check it in.
+- create database using the script. 
+
+
 
 ## Post Demo - Areas that we need feedback
 
