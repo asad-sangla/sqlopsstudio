@@ -7,6 +7,7 @@
 
 import { workspace, Uri, Disposable, Event, EventEmitter, window } from 'vscode';
 import { debounce, throttle } from './decorators';
+import { fromGitUri } from './uri';
 import { Model } from './model';
 
 interface CacheRow {
@@ -52,21 +53,23 @@ export class GitContentProvider {
 	}
 
 	async provideTextDocumentContent(uri: Uri): Promise<string> {
-		let ref = uri.query;
+		const cacheKey = uri.toString();
+		const timestamp = new Date().getTime();
+		const cacheValue = { uri, timestamp };
+
+		this.cache[cacheKey] = cacheValue;
+
+		let { path, ref } = fromGitUri(uri);
 
 		if (ref === '~') {
-			const fileUri = uri.with({ scheme: 'file', query: '' });
+			const fileUri = Uri.file(path);
 			const uriString = fileUri.toString();
 			const [indexStatus] = this.model.indexGroup.resources.filter(r => r.original.toString() === uriString);
 			ref = indexStatus ? '' : 'HEAD';
 		}
 
-		const timestamp = new Date().getTime();
-		this.cache[uri.toString()] = { uri, timestamp };
-
 		try {
-			const result = await this.model.show(ref, uri);
-			return result;
+			return await this.model.show(ref, path);
 		} catch (err) {
 			return '';
 		}

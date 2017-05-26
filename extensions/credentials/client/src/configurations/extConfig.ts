@@ -37,6 +37,10 @@ export default class ExtConfig implements IConfig {
         return this.getSqlToolsConfigValue(Constants.sqlToolsServiceInstallDirConfigKey);
     }
 
+    public getSqlToolsPackageDirectory(): string {
+        return this.getSqlToolsConfigValue(Constants.sqlToolsServicePackageDirConfigKey);
+    }
+
     public getSqlToolsExecutableFiles(): string[] {
         return this.getSqlToolsConfigValue(Constants.sqlToolsServiceExecutableFilesConfigKey);
     }

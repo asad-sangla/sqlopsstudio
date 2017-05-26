@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.monaco-shell .modal  {
+	background-color: rgba(0,0,0,0.4);
+}
+
+.vs-dark.monaco-shell .modal  {
+	background-color: rgba(74, 73, 73, 0.4);
+}
+
+.error-dialog .modal-content {
+	position: relative;
+	background-color: #fff;
+	-webkit-background-clip: padding-box;
+	background-clip: padding-box;
+	border: 1px solid #999;
+	border: 1px solid rgba(0, 0, 0, .2);
+	border-radius: 6px;
+	outline: 0;
+	-webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+	box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+}
+
+.error-dialog .error-icon, .error-dialog .warning-icon , .error-dialog .info-icon{
+	width: 30px;
+	height: 30px;
+	float: left;
+	padding-right: 10px;
+}
+
+.error-dialog .error-icon {
+	content: url(status-error.svg);
+}
+
+.error-dialog .warning-icon {
+	content: url(status-warning.svg);
+}
+
+.error-dialog .info-icon {
+	content: url(status-info.svg);
+}
+
+.error-dialog .modal-title {
+	font-size: 15px;
+}
+
+.error-dialog .modal-body {
+	padding: 15px;
+	overflow: auto;
+	height: 200px;
+}
+
+.error-dialog .copyButtonIcon {
+	content: url('scriptToClipboard.svg');
+	width: 20px;
+	float: left;
+	cursor: pointer;
+}

@@ -15,7 +15,7 @@ export interface IStatusView {
 export interface IConfig {
     getSqlToolsServiceDownloadUrl(): string;
     getSqlToolsInstallDirectory(): string;
-    getSqlToolsInstallDirectory(): string;
+    getSqlToolsPackageDirectory(): string;
     getSqlToolsExecutableFiles(): string[];
     getSqlToolsPackageVersion(): string;
     getExtensionConfig(key: string, defaultValue?: any): any;

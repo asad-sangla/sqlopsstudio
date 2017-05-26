@@ -61,11 +61,11 @@ let serverProvider = new  ServerProvider(downloadProvider, config, statusView);
 /*
 * Installs the service for the given platform if it's not already installed.
 */
-export function installService(runtime: Runtime): Promise<String> {
+export function installService(runtime: Runtime, packaging?: boolean): Promise<String> {
     if (runtime === undefined) {
         return PlatformInformation.GetCurrent().then( platformInfo => {
             if (platformInfo.isValidRuntime()) {
-                return serverProvider.getOrDownloadServer(platformInfo.runtimeId);
+                return serverProvider.getOrDownloadServer(platformInfo.runtimeId, packaging);
             } else {
                 throw new Error('unsupported runtime');
             }
@@ -78,12 +78,12 @@ export function installService(runtime: Runtime): Promise<String> {
 /*
 * Returns the install folder path for given platform.
 */
-export function getServiceInstallDirectory(runtime: Runtime): Promise<string> {
+export function getServiceInstallDirectory(runtime: Runtime, packaging?: boolean): Promise<string> {
     return new Promise<string>((resolve, reject) => {
         if (runtime === undefined) {
             PlatformInformation.GetCurrent().then( platformInfo => {
                 if (platformInfo.isValidRuntime()) {
-                    resolve(downloadProvider.getInstallDirectory(platformInfo.runtimeId));
+                    resolve(downloadProvider.getInstallDirectory(platformInfo.runtimeId, packaging));
                 } else {
                     reject('unsupported runtime');
                 }
@@ -95,16 +95,6 @@ export function getServiceInstallDirectory(runtime: Runtime): Promise<string> {
         }
     });
 
-}
-
-/*
-* Returns the path to the root folder of service install location.
-*/
-export function getServiceInstallDirectoryRoot(): string {
-    let directoryPath: string = downloadProvider.getInstallDirectoryRoot();
-    directoryPath = directoryPath.replace('\\{#version#}\\{#platform#}', '');
-    directoryPath = directoryPath.replace('/{#version#}/{#platform#}', '');
-    return directoryPath;
 }
 
 

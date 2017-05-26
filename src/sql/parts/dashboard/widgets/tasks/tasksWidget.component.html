@@ -1,0 +1,16 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+<template ngFor let-task [ngForOf]="tasks | taskPipe:_config?.context" let-i="index">
+	<div (click)="task.action()"
+		style="position: absolute; display: flex; flex-flow: column; text-align: center; cursor: pointer"
+		[style.height.px]="_size"
+		[style.width.px]="_size"
+		[style.transform]="calculateTransform(i)">
+		<div class="task-icon" [style.background]="task.internal_icon" style="flex: 1 1 auto"></div>
+		{{task.name}}
+	</div>
+</template>

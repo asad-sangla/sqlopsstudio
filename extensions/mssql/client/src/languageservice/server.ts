@@ -23,6 +23,13 @@ export default class ServerProvider {
     }
 
     /**
+     * Public get method for downloadProvider
+     */
+    public get downloadProvider(): ServiceDownloadProvider {
+        return this._downloadProvider;
+    }
+
+    /**
      * Given a file path, returns the path to the SQL Tools service file.
      */
     public findServerPath(filePath: string): Promise<string> {
@@ -53,14 +60,14 @@ export default class ServerProvider {
    /**
     * Download the SQL tools service if doesn't exist and returns the file path.
     */
-    public getOrDownloadServer(runtime: Runtime): Promise<string> {
+    public getOrDownloadServer(runtime: Runtime, packaging?: boolean): Promise<string> {
         // Attempt to find launch file path first from options, and then from the default install location.
         // If SQL tools service can't be found, download it.
 
         return new Promise<string>((resolve, reject) => {
-            return this.getServerPath(runtime).then(result => {
+            return this.getServerPath(runtime, packaging).then(result => {
                 if (result === undefined) {
-                    return this.downloadServerFiles(runtime).then ( downloadResult => {
+                    return this.downloadServerFiles(runtime, packaging).then ( downloadResult => {
                         resolve(downloadResult);
                     });
                 } else {
@@ -77,18 +84,18 @@ export default class ServerProvider {
    /**
     * Returns the path of the installed service
     */
-    public getServerPath(runtime: Runtime): Promise<string> {
-        const installDirectory = this._downloadProvider.getInstallDirectory(runtime);
+    public getServerPath(runtime: Runtime, packaging?: boolean): Promise<string> {
+        const installDirectory = this._downloadProvider.getInstallDirectory(runtime, packaging);
         return this.findServerPath(installDirectory);
     }
 
    /**
     * Downloads the service and returns the path of the installed service
     */
-    public downloadServerFiles(runtime: Runtime): Promise<string> {
+    public downloadServerFiles(runtime: Runtime, packaging?: boolean): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            const installDirectory = this._downloadProvider.getInstallDirectory(runtime);
-            return this._downloadProvider.installSQLToolsService(runtime).then( _ => {
+            const installDirectory = this._downloadProvider.getInstallDirectory(runtime, packaging);
+            return this._downloadProvider.installSQLToolsService(runtime, packaging).then( _ => {
                 return this.findServerPath(installDirectory).then ( result => {
                     return resolve(result);
                 });

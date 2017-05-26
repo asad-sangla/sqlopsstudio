@@ -5,10 +5,10 @@
 
 'use strict';
 
-import {Runtime, getRuntimeDisplayName} from '../models/platform';
+import { Runtime, getRuntimeDisplayName } from '../models/platform';
 import * as path from 'path';
-import {IConfig, IStatusView, IPackage, PackageError, IHttpClient, IDecompressProvider} from './interfaces';
-import  {ILogger} from '../models/interfaces';
+import { IConfig, IStatusView, IPackage, PackageError, IHttpClient, IDecompressProvider } from './interfaces';
+import { ILogger } from '../models/interfaces';
 import Constants = require('../models/constants');
 import * as tmp from 'tmp';
 
@@ -19,137 +19,154 @@ let fse = require('fs-extra');
 */
 export default class ServiceDownloadProvider {
 
-    constructor(private _config: IConfig,
-                private _logger: ILogger,
-                private _statusView: IStatusView,
-                private _httpClient: IHttpClient,
-                private _decompressProvider: IDecompressProvider) {
-        // Ensure our temp files get cleaned up in case of error.
-        tmp.setGracefulCleanup();
-    }
+	constructor(private _config: IConfig,
+		private _logger: ILogger,
+		private _statusView: IStatusView,
+		private _httpClient: IHttpClient,
+		private _decompressProvider: IDecompressProvider) {
+		// Ensure our temp files get cleaned up in case of error.
+		tmp.setGracefulCleanup();
+	}
 
-   /**
-    * Returns the download url for given platform
-    */
-    public getDownloadFileName(platform: Runtime): string {
-        let fileNamesJson = this._config.getSqlToolsConfigValue('downloadFileNames');
-        let fileName = fileNamesJson[platform.toString()];
+	/**
+	 * Returns the download url for given platform
+	 */
+	public getDownloadFileName(platform: Runtime): string {
+		let fileNamesJson = this._config.getSqlToolsConfigValue('downloadFileNames');
+		let fileName = fileNamesJson[platform.toString()];
 
-        if (fileName === undefined) {
-            if (process.platform === 'linux') {
-                throw new Error('Unsupported linux distribution');
-            } else {
-                throw new Error(`Unsupported platform: ${process.platform}`);
-            }
-        }
+		if (fileName === undefined) {
+			if (process.platform === 'linux') {
+				throw new Error('Unsupported linux distribution');
+			} else {
+				throw new Error(`Unsupported platform: ${process.platform}`);
+			}
+		}
 
-        return fileName;
-    }
+		return fileName;
+	}
 
 
-   /**
-    * Returns SQL tools service installed folder.
-    */
-    public getInstallDirectory(platform: Runtime): string {
+	/**
+	 * Returns SQL tools service installed folder.
+	 */
+	public getInstallDirectory(platform: Runtime): string {
 
-        let basePath = this.getInstallDirectoryRoot();
-        let versionFromConfig = this._config.getSqlToolsPackageVersion();
-        basePath = basePath.replace('{#version#}', versionFromConfig);
-        basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
-        if (!fse.existsSync(basePath)) {
-            fse.mkdirsSync(basePath);
-        }
-        return basePath;
-    }
+		let basePath = this.getInstallDirectoryRoot(platform);
+		let versionFromConfig = this._config.getSqlToolsPackageVersion();
+		basePath = basePath.replace('{#version#}', versionFromConfig);
+		basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
+		if (!fse.existsSync(basePath)) {
+			fse.mkdirsSync(basePath);
+		}
+		return basePath;
+	}
 
-   /**
-    * Returns SQL tools service installed folder root.
-    */
-    public getInstallDirectoryRoot(): string {
-        let installDirFromConfig = this._config.getSqlToolsInstallDirectory();
-        let basePath: string;
-        if (path.isAbsolute(installDirFromConfig)) {
-            basePath = installDirFromConfig;
-        } else {
-            // The path from config is relative to the out folder
-            basePath = path.join(__dirname, '../../' + installDirFromConfig);
-        }
-        return basePath;
-    }
+	private getLocalUserFolderPath(platform: Runtime): string {
+		if (platform) {
+			switch (platform) {
+				case Runtime.Windows_7_64:
+				case Runtime.Windows_7_86:
+					return process.env.APPDATA;
+				case Runtime.OSX_10_11_64:
+					return process.env.HOME + '/Library/Preferences';
+				default:
+					return process.env.HOME;
+			}
+		}
+	}
 
-    private getGetDownloadUrl(fileName: string): string {
-        let baseDownloadUrl = this._config.getSqlToolsServiceDownloadUrl();
-        let version = this._config.getSqlToolsPackageVersion();
-        baseDownloadUrl = baseDownloadUrl.replace('{#version#}', version);
-        baseDownloadUrl = baseDownloadUrl.replace('{#fileName#}', fileName);
-        return baseDownloadUrl;
-    }
+	/**
+	 * Returns SQL tools service installed folder root.
+	 */
+	public getInstallDirectoryRoot(platform: Runtime): string {
+		let installDirFromConfig = this._config.getSqlToolsInstallDirectory();
+		if (!installDirFromConfig || installDirFromConfig === '') {
+			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), '/carbon/credentialservice/{#version#}/{#platform#}');
+		}
+		let basePath: string;
+		if (path.isAbsolute(installDirFromConfig)) {
+			basePath = installDirFromConfig;
+		} else {
+			// The path from config is relative to the out folder
+			basePath = path.join(__dirname, '../../' + installDirFromConfig);
+		}
+		return basePath;
+	}
 
-   /**
-    * Downloads the SQL tools service and decompress it in the install folder.
-    */
-    public installSQLToolsService(platform: Runtime): Promise<boolean> {
-        const proxy = <string>this._config.getWorkspaceConfig('http.proxy');
-        const strictSSL = this._config.getWorkspaceConfig('http.proxyStrictSSL', true);
+	private getGetDownloadUrl(fileName: string): string {
+		let baseDownloadUrl = this._config.getSqlToolsServiceDownloadUrl();
+		let version = this._config.getSqlToolsPackageVersion();
+		baseDownloadUrl = baseDownloadUrl.replace('{#version#}', version);
+		baseDownloadUrl = baseDownloadUrl.replace('{#fileName#}', fileName);
+		return baseDownloadUrl;
+	}
 
-        return new Promise<boolean>((resolve, reject) => {
-            const fileName = this.getDownloadFileName(platform);
-            const installDirectory = this.getInstallDirectory(platform);
+	/**
+	 * Downloads the SQL tools service and decompress it in the install folder.
+	 */
+	public installSQLToolsService(platform: Runtime): Promise<boolean> {
+		const proxy = <string>this._config.getWorkspaceConfig('http.proxy');
+		const strictSSL = this._config.getWorkspaceConfig('http.proxyStrictSSL', true);
 
-            this._logger.appendLine(`${Constants.serviceInstallingTo} ${installDirectory}.`);
-            const urlString = this.getGetDownloadUrl(fileName);
+		return new Promise<boolean>((resolve, reject) => {
+			const fileName = this.getDownloadFileName(platform);
+			const installDirectory = this.getInstallDirectory(platform);
 
-            this._logger.appendLine(`${Constants.serviceDownloading} ${urlString}`);
-            let pkg: IPackage = {
-                installPath: installDirectory,
-                url: urlString,
-                tmpFile: undefined
-            };
-            this.createTempFile(pkg).then(tmpResult => {
-                pkg.tmpFile = tmpResult;
+			this._logger.appendLine(`${Constants.serviceInstallingTo} ${installDirectory}.`);
+			const urlString = this.getGetDownloadUrl(fileName);
 
-                this._httpClient.downloadFile(pkg.url, pkg, this._logger, this._statusView, proxy, strictSSL).then(_ => {
+			this._logger.appendLine(`${Constants.serviceDownloading} ${urlString}`);
+			let pkg: IPackage = {
+				installPath: installDirectory,
+				url: urlString,
+				tmpFile: undefined
+			};
+			this.createTempFile(pkg).then(tmpResult => {
+				pkg.tmpFile = tmpResult;
 
-                    this._logger.logDebug(`Downloaded to ${pkg.tmpFile.name}...`);
-                    this._logger.appendLine(' Done!');
-                    this.install(pkg).then ( result => {
-                            resolve(true);
-                        }).catch(installError => {
-                            reject(installError);
-                        });
-                }).catch(downloadError => {
-                    this._logger.appendLine(`[ERROR] ${downloadError}`);
-                    reject(downloadError);
-                });
-            });
-        });
-    }
+				this._httpClient.downloadFile(pkg.url, pkg, this._logger, this._statusView, proxy, strictSSL).then(_ => {
 
-    private createTempFile(pkg: IPackage): Promise<tmp.SynchronousResult> {
-        return new Promise<tmp.SynchronousResult>((resolve, reject) => {
-            tmp.file({ prefix: 'package-' }, (err, path, fd, cleanupCallback) => {
-                if (err) {
-                    return reject(new PackageError('Error from tmp.file', pkg, err));
-                }
+					this._logger.logDebug(`Downloaded to ${pkg.tmpFile.name}...`);
+					this._logger.appendLine(' Done!');
+					this.install(pkg).then(result => {
+						resolve(true);
+					}).catch(installError => {
+						reject(installError);
+					});
+				}).catch(downloadError => {
+					this._logger.appendLine(`[ERROR] ${downloadError}`);
+					reject(downloadError);
+				});
+			});
+		});
+	}
 
-                resolve(<tmp.SynchronousResult>{ name: path, fd: fd, removeCallback: cleanupCallback });
-            });
-        });
-    }
+	private createTempFile(pkg: IPackage): Promise<tmp.SynchronousResult> {
+		return new Promise<tmp.SynchronousResult>((resolve, reject) => {
+			tmp.file({ prefix: 'package-' }, (err, path, fd, cleanupCallback) => {
+				if (err) {
+					return reject(new PackageError('Error from tmp.file', pkg, err));
+				}
 
-    private install(pkg: IPackage): Promise<void> {
-        this._logger.appendLine('Installing ...');
-        this._statusView.installingService();
+				resolve(<tmp.SynchronousResult>{ name: path, fd: fd, removeCallback: cleanupCallback });
+			});
+		});
+	}
 
-        return new Promise<void>((resolve, reject) => {
-            this._decompressProvider.decompress(pkg, this._logger).then(_ => {
-                this._statusView.serviceInstalled();
-                resolve();
-            }).catch(err  => {
-                reject(err);
-            });
-        });
-    }
+	private install(pkg: IPackage): Promise<void> {
+		this._logger.appendLine('Installing ...');
+		this._statusView.installingService();
+
+		return new Promise<void>((resolve, reject) => {
+			this._decompressProvider.decompress(pkg, this._logger).then(_ => {
+				this._statusView.serviceInstalled();
+				resolve();
+			}).catch(err => {
+				reject(err);
+			});
+		});
+	}
 }
 
 

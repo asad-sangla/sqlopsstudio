@@ -1,0 +1,89 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+
+<form #myForm="ngForm" (ngSubmit)="onSubmit(f)">
+
+<div class="backup-content">
+	<table class="backup-input-table" style="width:100%">
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Database
+			</td>
+			<td class="task-text-input" style="background-color:#3C3C3C; color:#ffffff;">
+				<div>{{connection?.connectionProfile?.databaseName}}</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Recovery model
+			</td>
+			<td class="task-input-table-content-column" style="background-color:#3C3C3C; color:#ffffff;">
+				<div>{{recoveryModel}}</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Backup component
+			</td>
+			<td class="backup-component-value" style="background-color:#3C3C3C; color:#ffffff;">
+				<div style="display:block">Database</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Backup type
+			</td>
+			<td class="backup-type">
+				<select name="backup-type-list" id="backup-type-list" #backupTypeContainer style="width:100%; background-color:#3C3C3C; color:#ffffff; border-style:none;" ></select>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+				Backup Device
+			</td>
+		</tr>
+	</table>
+
+
+<!-- TODO: Show component selection when we have filegroup browser
+	<div class = "backup-component-radio">
+		<p>Backup Component</p>
+		<input type="radio" name="selectedBackupComponent" class="form-check-input" (ngModelChange)="onBackupComponentChanged($event)" [disabled]="disableDatabaseComponent" [ngModel]="selectedBackupComponent" value="Database">Database <br />
+		<input type="radio" name="selectedBackupComponent" class="form-check-input" (ngModelChange)="onBackupComponentChanged($event)" [disabled]="disableFileComponent" [ngModel]="selectedBackupComponent" value="Files and Filegroups">Files and Filegroups
+		<input type="text" name="selectedFilesText" [ngModel]="selectedFilesText" [disabled]="disableFileComponent">
+		<button class="Browse" [disabled]="disableFileComponent">Browse</button>
+	</div>
+	-->
+
+	<table class="backup-path-input-text" style="width:100%">
+		<tr>
+			<td colspan="3" style="width:100%;">
+			<select name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" style="border-style:none; width:100%; background-color:#3C3C3C; color:#ffffff"></select>
+			</td>
+		</tr>
+		<tr>
+			<td class="task-input-table-label-column" style="width: 100%">
+				<input name="backup-path-input" type="text" [(ngModel)]="backupPathInput" style="border-style:none; width:100%; background-color:#3C3C3C" />
+			</td>
+			<td>
+				<button class="addButton" style=" width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;" [disabled]="disableAdd" (click)="onAddClick()">Add</button>
+			</td>
+			<td>
+				<button class="removeButton" style=" width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;" [disabled]="disableRemove" (click)="onRemoveClick()">Remove</button>
+			</td>
+		</tr>
+		<tr>
+			<td></td><td></td>
+			<td style="float:right">
+				<button type="submit" class="okButton" [disabled]="disableOk" (click)="onOk()" style="float: right; width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;">OK</button>
+			</td>
+		</tr>
+	</table>
+
+  </div>
+</form>
+

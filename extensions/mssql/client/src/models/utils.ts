@@ -4,7 +4,6 @@ import * as crypto from 'crypto';
 import * as os from 'os';
 import vscode = require('vscode');
 import Constants = require('./constants');
-import * as interfaces from './interfaces';
 import {ExtensionContext} from 'vscode';
 import fs = require('fs');
 
@@ -155,10 +154,6 @@ export function isNotEmpty(str: any): boolean {
     return <boolean>(str && '' !== str);
 }
 
-export function authTypeToString(value: interfaces.AuthenticationTypes): string {
-    return interfaces.AuthenticationTypes[value];
-}
-
 /**
  * Format a string. Behaves like C#'s string.Format() function.
  */
@@ -177,76 +172,6 @@ export function formatString(str: string, ...args: any[]): string {
     return result;
 }
 
-/**
- * Compares 2 database names to see if they are the same.
- * If either is undefined or empty, it is assumed to be 'master'
- */
-function isSameDatabase(currentDatabase: string, expectedDatabase: string): boolean {
-    if (isEmpty(currentDatabase)) {
-        currentDatabase = Constants.defaultDatabase;
-    }
-    if (isEmpty(expectedDatabase)) {
-        expectedDatabase = Constants.defaultDatabase;
-    }
-    return currentDatabase === expectedDatabase;
-}
-
-/**
- * Compares 2 authentication type strings to see if they are the same.
- * If either is undefined or empty, then it is assumed to be SQL authentication by default.
- */
-function isSameAuthenticationType(currentAuthenticationType: string, expectedAuthenticationType: string): boolean {
-    if (isEmpty(currentAuthenticationType)) {
-        currentAuthenticationType = Constants.sqlAuthentication;
-    }
-    if (isEmpty(expectedAuthenticationType)) {
-        expectedAuthenticationType = Constants.sqlAuthentication;
-    }
-    return currentAuthenticationType === expectedAuthenticationType;
-}
-
-/**
- * Compares 2 profiles to see if they match. Logic for matching:
- * If a profile name is used, can simply match on this.
- * If not, match on all key properties (server, db, auth type, user) being identical.
- * Other properties are ignored for this purpose
- *
- * @param {IConnectionProfile} currentProfile the profile to check
- * @param {IConnectionProfile} expectedProfile the profile to try to match
- * @returns boolean that is true if the profiles match
- */
-export function isSameProfile(currentProfile: interfaces.IConnectionProfile, expectedProfile: interfaces.IConnectionProfile): boolean {
-    if (currentProfile === undefined) {
-        return false;
-    }
-    if (expectedProfile.profileName) {
-        // Can match on profile name
-        return expectedProfile.profileName === currentProfile.profileName;
-    } else if (currentProfile.profileName) {
-        // This has a profile name but expected does not - can break early
-        return false;
-    }
-    return expectedProfile.server === currentProfile.server
-        && isSameDatabase(expectedProfile.database, currentProfile.database)
-        && isSameAuthenticationType(expectedProfile.authenticationType, currentProfile.authenticationType)
-        && expectedProfile.user === currentProfile.user;
-}
-
-/**
- * Compares 2 connections to see if they match. Logic for matching:
- * match on all key properties (server, db, auth type, user) being identical.
- * Other properties are ignored for this purpose
- *
- * @param {IConnectionCredentials} conn the connection to check
- * @param {IConnectionCredentials} expectedConn the connection to try to match
- * @returns boolean that is true if the connections match
- */
-export function isSameConnection(conn: interfaces.IConnectionCredentials, expectedConn: interfaces.IConnectionCredentials): boolean {
-    return expectedConn.server === conn.server
-        && isSameDatabase(expectedConn.database, conn.database)
-        && isSameAuthenticationType(expectedConn.authenticationType, conn.authenticationType)
-        && expectedConn.user === conn.user;
-}
 
 /**
  * Check if a file exists on disk
@@ -259,40 +184,6 @@ export function isFileExisting(filePath: string): boolean {
             return false;
         }
     }
-
-
-// One-time use timer for performance testing
-export class Timer {
-    private _startTime: number[];
-    private _endTime: number[];
-
-    constructor() {
-        this.start();
-    }
-
-    // Get the duration of time elapsed by the timer, in milliseconds
-    public getDuration(): number {
-		return 0;
-        // if (!this._startTime) {
-        //     return -1;
-        // } else if (!this._endTime) {
-        //     let endTime = process.hrtime(this._startTime);
-        //     return  endTime[0] * 1000 + endTime[1] / 1000000;
-        // } else {
-        //     return this._endTime[0] * 1000 + this._endTime[1] / 1000000;
-        // }
-    }
-
-    public start(): void {
-        this._startTime = process.hrtime();
-    }
-
-    public end(): void {
-        // if (!this._endTime) {
-        //     this._endTime = process.hrtime(this._startTime);
-        // }
-    }
-}
 
 /**
  * Takes a string in the format of HH:MM:SS.MS and returns a number representing the time in

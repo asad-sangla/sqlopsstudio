@@ -222,6 +222,7 @@ export const msgErrorOpeningConfigFile = 'Error: Unable to open connection profi
 
 export const sqlToolsServiceConfigKey = 'service';
 export const sqlToolsServiceInstallDirConfigKey = 'installDir';
+export const sqlToolsServicePackageDirConfigKey = 'packageDir';
 export const sqlToolsServiceExecutableFilesConfigKey = 'executableFiles';
 export const sqlToolsServiceVersionConfigKey = 'version';
 export const sqlToolsServiceDownloadUrlConfigKey = 'downloadUrl';

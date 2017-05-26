@@ -1,0 +1,121 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+#command-window {
+    width: 150px;
+    float: right;
+}
+
+#command-header {
+    text-align: center;
+    text-decoration: underline;
+    margin-top: 10px;
+}
+
+#command-tasks {
+    order: 3;
+    margin: 5px;
+    text-align: left;
+}
+
+#command-tasks .task-button {
+    color: #afafaf;
+    margin-bottom: 15px;
+    text-decoration: underline;
+}
+
+.dashboard-page {
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+}
+
+.task-icon {
+    opacity: 0.6;
+}
+
+.task-icon:hover {
+    opacity: 1;
+}
+
+/* Dropdown Button */
+.dropbtn {
+    cursor: pointer;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    transform: translateX(-10px);
+    position: absolute;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    color: white;
+}
+
+#connprofile {
+	height: 100px;
+}
+
+#server-command-window {
+    height: 40px;
+}
+
+.dashboard-search-box {
+	height: 28px;
+	line-height: 18px;
+	box-sizing: border-box;
+	padding: 4px;
+	border: none;
+	-webkit-appearance: textfield;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "HelveticaNeue-Light", "Ubuntu", "Droid Sans", sans-serif, "FontAwesome" !important;
+}
+
+.dashboard-button {
+    background: #0E639C;
+    color: #ffffff;
+    width: 125px;
+    margin: 3px;
+    text-align: left;
+    border-width: 0px;
+}
+
+.dashboard-button:hover {
+    background: #006BB3;
+    color: #ffffff;
+    width: 125px;
+    margin: 3px;
+    text-align: left;
+    border-width: 0px;
+}
+
+.dashboard-button-content {
+  vertical-align: middle;
+  padding: 5px 0px 5px 0px;
+}
+
+.ui-datatable-emptymessage {
+    color: transparent;
+    content: url('progress_36x_animation.gif');
+    height: 100%;
+    align-content: center;
+    border: none !important;
+    margin: auto;
+}

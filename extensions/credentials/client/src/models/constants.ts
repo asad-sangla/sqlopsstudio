@@ -22,6 +22,7 @@ export const invalidServiceFilePath = 'Invalid file path for Sql Tools Service';
 export const extensionNotInitializedError = 'Unable to execute the command while the extension is initializing. Please try again later.';
 export const sqlToolsServiceConfigKey = 'service';
 export const sqlToolsServiceInstallDirConfigKey = 'installDir';
+export const sqlToolsServicePackageDirConfigKey = 'packageDir';
 export const sqlToolsServiceExecutableFilesConfigKey = 'executableFiles';
 export const sqlToolsServiceVersionConfigKey = 'version';
 export const sqlToolsServiceDownloadUrlConfigKey = 'downloadUrl';
