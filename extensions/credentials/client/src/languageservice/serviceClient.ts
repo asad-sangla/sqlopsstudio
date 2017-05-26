@@ -26,6 +26,7 @@ import * as LanguageServiceContracts from '../models/contracts/languageService';
 
 let opener = require('opener');
 let _channel: OutputChannel = undefined;
+const fs = require('fs-extra');
 
 /**
  * @interface IMessage
@@ -168,29 +169,29 @@ export default class CredentialsServiceClient {
                     this._logger.appendLine();
                 }
                 this._logger.appendLine();
-                this._server.getServerPath(platformInfo.runtimeId).then(serverPath => {
-                    if (serverPath === undefined) {
-                        // Check if the service already installed and if not open the output channel to show the logs
-                        if (_channel !== undefined) {
-                            _channel.show();
+                    this._server.getServerPath(platformInfo.runtimeId).then(serverPath => {
+                        if (serverPath === undefined) {
+                            // Check if the service already installed and if not open the output channel to show the logs
+                            if (_channel !== undefined) {
+                                _channel.show();
+                            }
+                            this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
+                                this.initializeLanguageClient(installedServerPath, context);
+                                resolve(new ServerInitializationResult(true, true, installedServerPath));
+                            }).catch(downloadErr => {
+                                reject(downloadErr);
+                            });
+                        } else {
+                            this.initializeLanguageClient(serverPath, context);
+                            resolve(new ServerInitializationResult(false, true, serverPath));
                         }
-                        this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
-                            this.initializeLanguageClient(installedServerPath, context);
-                            resolve(new ServerInitializationResult(true, true, installedServerPath));
-                        }).catch(downloadErr => {
-                            reject(downloadErr);
-                        });
-                    } else {
-                        this.initializeLanguageClient(serverPath, context);
-                        resolve(new ServerInitializationResult(false, true, serverPath));
-                    }
-                }).catch(err => {
-                    Utils.logDebug(Constants.serviceLoadingFailed + ' ' + err );
-                    Utils.showErrorMsg(Constants.serviceLoadingFailed);
-                    Telemetry.sendTelemetryEvent('ServiceInitializingFailed');
-                    reject(err);
-                });
-            }
+                    }).catch(err => {
+                        Utils.logDebug(Constants.serviceLoadingFailed + ' ' + err );
+                        Utils.showErrorMsg(Constants.serviceLoadingFailed);
+                        Telemetry.sendTelemetryEvent('ServiceInitializingFailed');
+                        reject(err);
+                    });
+                }
         });
     }
 
@@ -199,8 +200,6 @@ export default class CredentialsServiceClient {
                 Utils.logDebug(Constants.invalidServiceFilePath);
                 throw new Error(Constants.invalidServiceFilePath);
          } else {
-            // let self = this;
-            // self.initializeLanguageConfiguration();
             let serverOptions: ServerOptions = this.createServerOptions(serverPath);
             this.client = this.createLanguageClient(serverOptions);
 

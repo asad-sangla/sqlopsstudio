@@ -40,6 +40,7 @@
     "escape-string-regexp": "^1.0.2",
     "fast-plist": "0.1.2",
     "figures": "^2.0.0",
+    "fs-extra": "^3.0.1",
     "gc-signals": "^0.0.1",
     "getmac": "1.0.7",
     "graceful-fs": "4.1.11",

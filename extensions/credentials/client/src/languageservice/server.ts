@@ -23,6 +23,13 @@ export default class ServerProvider {
     }
 
     /**
+     * Public get method for downloadProvider
+     */
+    public get downloadProvider(): ServiceDownloadProvider {
+        return this._downloadProvider;
+    }
+
+    /**
      * Given a file path, returns the path to the SQL Tools service file.
      */
     public findServerPath(filePath: string): Promise<string> {
