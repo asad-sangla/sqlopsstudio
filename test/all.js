@@ -64,6 +64,7 @@ function main() {
 			'@angular/platform-browser',
 			'@angular/platform-browser-dynamic',
 			'@angular/router',
+			'angular2-grid',
 			'primeng/primeng',
 			'rxjs/Rx'
 		]

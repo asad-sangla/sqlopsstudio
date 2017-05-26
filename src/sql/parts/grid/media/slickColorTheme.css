@@ -280,7 +280,7 @@
   background: transparent;
 }
 
-.vs-dark .monaco-workbench input {
+.vs-dark .monaco-workbench input, .vs-dark .monaco-workbench .input {
   color: var(--color-content);
   background-color: #3C3C3C;
 }

@@ -14,6 +14,7 @@
 /// <reference path="modules/@angular/router/index.d.ts" />
 /// <reference path="modules/@angular/upgrade/index.d.ts" />
 /// <reference path="modules/angular-in-memory-web-api/index.d.ts" />
+/// <reference path="modules/angular2-grid/index.d.ts" />
 /// <reference path="modules/angular2-slickgrid/index.d.ts" />
 /// <reference path="modules/primeng/index.d.ts" />
 /// <reference path="modules/reflect-metadata/index.d.ts" />

@@ -29,6 +29,7 @@
     "@angular/router": "~3.1.2",
     "@angular/upgrade": "~2.1.2",
     "angular-in-memory-web-api": "~0.1.13",
+    "angular2-grid": "1.0.1",
     "angular2-slickgrid": "git://github.com/Microsoft/angular2-slickgrid.git#master",
     "applicationinsights": "0.17.0",
     "bootstrap": "3.3.6",

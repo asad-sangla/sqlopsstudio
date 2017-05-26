@@ -4,8 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-
-<p-breadcrumb [model]="breadcrumbItems"></p-breadcrumb>
-
-<router-outlet></router-outlet>
-
+<div *ngIf="_config.name">{{_config.name}}</div>
+<template widget-host>
+</template>
+<div style="float: right" *ngIf="_config.loadedIcon"><img height="50px" src="{{_config.loadedIcon}}"/></div>

@@ -5,17 +5,16 @@
 
 import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
-import { MenuItem } from 'primeng/primeng';
 import data = require('data');
 
-import { ElementRef, Component, Inject, forwardRef, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { BackupInfo } from 'data';
 import { SelectItem } from 'primeng/primeng';
-import { $ } from 'vs/base/browser/builder';
 import { NgForm } from '@angular/forms';
 import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
 

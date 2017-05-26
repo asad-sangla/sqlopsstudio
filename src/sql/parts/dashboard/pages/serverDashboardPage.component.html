@@ -1,0 +1,15 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+<div class="dashboard-page" style="display: flex">
+	<div [ngGrid]="gridConfig" style="flex: 1 1 auto">
+		<dashboard-widget-wrapper *ngFor="let widget of widgets" style="overflow: hidden" [(ngGridItem)]="widget.gridItemConfig" [_config]="widget">
+		</dashboard-widget-wrapper>
+	</div>
+	<div style="flex: 0 0 auto; background-color: grey" height="100px">
+
+	</div>
+</div>

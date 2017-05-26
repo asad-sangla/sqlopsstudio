@@ -1221,11 +1221,13 @@ var AMDLoader;
             }
             // Walk the element's dependencies
             var dependencies = from.dependencies;
-            for (var i = 0, len = dependencies.length; i < len; i++) {
-                var path = this._findCyclePath(dependencies[i].id, toId, depth + 1);
-                if (path !== null) {
-                    path.push(fromId);
-                    return path;
+            if (dependencies) {
+                for (var i = 0, len = dependencies.length; i < len; i++) {
+                    var path = this._findCyclePath(dependencies[i].id, toId, depth + 1);
+                    if (path !== null) {
+                        path.push(fromId);
+                        return path;
+                    }
                 }
             }
             return null;

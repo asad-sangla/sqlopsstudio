@@ -57,6 +57,11 @@
       "from": "angular-in-memory-web-api@>=0.1.13 <0.2.0",
       "resolved": "https://registry.npmjs.org/angular-in-memory-web-api/-/angular-in-memory-web-api-0.1.17.tgz"
     },
+    "angular2-grid": {
+      "version": "1.0.1",
+      "from": "angular2-slickgrid@1.0.1",
+      "resolved": "https://registry.npmjs.org/angular2-grid/-/angular2-grid-1.0.1.tgz"
+    },
     "angular2-slickgrid": {
       "version": "1.2.3",
       "from": "angular2-slickgrid@1.2.3",
