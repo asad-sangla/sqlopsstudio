@@ -307,8 +307,15 @@ export class ServerTreeView extends CollapsibleViewletView {
 	 */
 	private isMatch(connection: ConnectionProfile, searchString: string): boolean {
 		searchString = searchString.trim().toLocaleUpperCase();
-		if ((connection.databaseName.toLocaleUpperCase()).includes(searchString) || (connection.serverName.toLocaleUpperCase()).includes(searchString)) {
+		if (this.checkIncludes(searchString, connection.databaseName) || this.checkIncludes(searchString, connection.serverName)) {
 			return true;
+		}
+		return false;
+	}
+
+	private checkIncludes(searchString: string, candidate: string): boolean {
+		if (candidate && searchString) {
+			return candidate.toLocaleUpperCase().includes(searchString);
 		}
 		return false;
 	}
