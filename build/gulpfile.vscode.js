@@ -73,6 +73,7 @@ const vscodeResources = [
 	'out-build/vs/workbench/services/files/**/*.exe',
 	'out-build/vs/workbench/services/files/**/*.md',
 	'out-build/vs/code/electron-browser/sharedProcess.js',
+	'out-build/sql/**/*.{svg,png,cur,html}',
 	'out-build/sql/parts/admin/**/*.html',
 	'out-build/sql/parts/connection/connectionDialog/media/**',
 	'out-build/sql/parts/common/dblist/**/*.html',
