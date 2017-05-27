@@ -54,7 +54,7 @@ export class NewQueryAction extends Action {
 
 export class ScriptSelectAction extends Action {
 	public static ID = 'objectExplorer.scriptSelect';
-	public static LABEL = localize('scriptSelect', 'Select Top 100');
+	public static LABEL = localize('scriptSelect', 'Select Top 1000');
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
 
@@ -233,7 +233,7 @@ export class ObjectExplorerActionUtilities {
 	public static hideLoadingIcon(container: HTMLElement, elementName: string): void {
 		if (container) {
 			let element = this.getGroupContainer(container, elementName);
-			if (element) {
+			if (element && element.classList) {
 				element.classList.remove('loading');
 			}
 		}

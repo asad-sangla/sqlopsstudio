@@ -13,6 +13,7 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import Event, { Emitter } from 'vs/base/common/event';
 import data = require('data');
 import Utils = require('sql/parts/connection/common/utils');
+import nls = require('vs/nls');
 
 export const SERVICE_ID = 'ObjectExplorerService';
 
@@ -145,7 +146,8 @@ export class ObjectExplorerService implements IObjectExplorerService {
 				server.session = session;
 				this._activeObjectExplorerNodes[connection.id] = server;
 			} else {
-				errorMessage = session && !Utils.isEmpty(session.errorMessage) ? session.errorMessage : 'Failed to create OE session';
+				errorMessage = session && !Utils.isEmpty(session.errorMessage) ? session.errorMessage :
+					nls.localize('OeSessionFailedError', 'Failed to create Object Explorer session');
 				Utils.logDebug(errorMessage);
 			}
 

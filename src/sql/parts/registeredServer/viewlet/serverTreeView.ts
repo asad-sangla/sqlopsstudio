@@ -166,7 +166,6 @@ export class ServerTreeView extends CollapsibleViewletView {
 			this._objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
 				// The oe request is sent. an event will be raised when the session is created
 			}, error => {
-				// TODO stop the spinner
 			});
 		}
 	}

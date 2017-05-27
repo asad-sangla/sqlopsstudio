@@ -42,8 +42,14 @@ export class RefreshAction extends Action {
 	public run(): TPromise<boolean> {
 		var treeNode: TreeNode;
 		if (this.element instanceof ConnectionProfile) {
-			if (this._connectionManagementService.isConnected(undefined, this.element)) {
-				treeNode = this._objectExplorerService.getObjectExplorerNode(this.element);
+			let connection: ConnectionProfile = this.element;
+			if (this._connectionManagementService.isConnected(undefined, connection)) {
+				treeNode = this._objectExplorerService.getObjectExplorerNode(connection);
+				if (treeNode === undefined) {
+					this._objectExplorerService.updateObjectExplorerNodes(connection.toIConnectionProfile()).then(() => {
+						treeNode = this._objectExplorerService.getObjectExplorerNode(connection);
+					});
+				}
 			}
 		} else if (this.element instanceof TreeNode) {
 			treeNode = this.element;

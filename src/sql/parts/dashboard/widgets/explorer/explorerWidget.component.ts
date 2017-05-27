@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 import { Component, Inject, forwardRef } from '@angular/core';
 import { Router } from '@angular/router';
@@ -31,7 +31,7 @@ export class ObjectMetadataWrapper {
 
 		let wrapperArray = new Array(objectMetadata.length);
 		for (let i = 0; i < objectMetadata.length; ++i) {
-			wrapperArray[i] = <ObjectMetadataWrapper> {
+			wrapperArray[i] = <ObjectMetadataWrapper>{
 				metadata: objectMetadata[i]
 			};
 		}
@@ -74,10 +74,12 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 		let self = this;
 		if (this._config.context === 'database') {
 			self._bootstrap.metadata.then((data) => {
-				self.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
-				self.tableData.sort(this.schemaSort);
-				if(self.tableData.length > 0) {
-					self.selectedRow = self.tableData[0];
+				if (data) {
+					self.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
+					self.tableData.sort(this.schemaSort);
+					if (self.tableData.length > 0) {
+						self.selectedRow = self.tableData[0];
+					}
 				}
 			});
 		} else {
