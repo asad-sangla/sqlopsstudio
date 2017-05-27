@@ -123,6 +123,12 @@ Go to OE and browse down to Tables
 > review note
 
 Making a group as a starting point it is a first class citizen
+- have multiple groups
+- have groups with different version of servers
+- show 2008 connection
+- show 2016 connection
+- sqltools2008, 2010, 2012, 2014, 2016
+
 Working on simple - basic core properties to provide good experience. And comprehensive view without cluttering
 
 run sqlcmd show it’s on docker / mac But showing more interesting
