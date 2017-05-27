@@ -137,13 +137,10 @@ export class BackupComponent{
 
     private setControlsForRecoveryModel(): void {
         let self = this;
-		if (self.recoveryModel === BackupConstants.recoveryModelSimple)
-		{
+		if (self.recoveryModel === BackupConstants.recoveryModelSimple) {
             self.selectedBackupComponent = BackupConstants.labelDatabase;
             self.disableFileComponent = true;
-		}
-		else
-		{
+		} else {
             self.disableFileComponent = false;
 		}
 
@@ -153,11 +150,9 @@ export class BackupComponent{
     private populateBackupTypesCombo(): void {
         let self = this;
         self.addToBackupTypeList(BackupConstants.labelFull);
-        if (self.databaseName !== 'master')
-        {
+        if (self.databaseName !== 'master')  {
             self.addToBackupTypeList(BackupConstants.labelDifferential);
-            if (self.recoveryModel !== BackupConstants.recoveryModelSimple)
-            {
+            if (self.recoveryModel !== BackupConstants.recoveryModelSimple) {
                 self.addToBackupTypeList(BackupConstants.labelLog);
             }
         }
@@ -167,7 +162,7 @@ export class BackupComponent{
     private setDefaultBackupName(): void {
         let self = this;
         // TODO: change the format
-        self.backupName = self.databaseName + "-" + self.getSelectedBackupType();
+        self.backupName = self.databaseName + '-' + self.getSelectedBackupType();
     }
 
     private setDefaultBackupPaths(): void {
@@ -175,17 +170,13 @@ export class BackupComponent{
         let previousBackupsCount = self.lastBackupLocations ? self.lastBackupLocations.length: 0;
         let previousNonUrlBackupsCount = 0;
         let urlSelected = false;
-        if (previousBackupsCount > 0)
-        {
-            for (var i = 0; i < previousBackupsCount; i++)
-            {
+        if (previousBackupsCount > 0) {
+            for (var i = 0; i < previousBackupsCount; i++)  {
                 let source = new RestoreItemSource(self.lastBackupLocations[i]);
                 let isFile = self.isBackupToFile(source.restoreItemDeviceType);
 
-                if (source.restoreItemDeviceType == BackupConstants.backupDeviceTypeURL)
-                {
-                    if (i == 0)
-                    {
+                if (source.restoreItemDeviceType == BackupConstants.backupDeviceTypeURL) {
+                    if (i == 0) {
                         // TODO: show URL backup
                         //Uri azureUri;
                         //Uri.TryCreate(source.RestoreItemLocation, UriKind.Absolute, out azureUri);
@@ -200,38 +191,35 @@ export class BackupComponent{
 
                 let lastBackupLocation = source.restoreItemLocation;
                 let destinationType = BackupConstants.deviceTypeLogicalDevice;
-                if (source.isLogicalDevice == false)
-                {
-                    if (isFile)
-                    {
+                if (source.isLogicalDevice === false) {
+                    if (isFile) {
                         destinationType = BackupConstants.deviceTypeFile;
-                    }
-                    else
-                    {
+                    } else {
                         destinationType = BackupConstants.deviceTypeTape;
                     }
                 }
 
-                if (lastBackupLocation.length > 0)
-                {
+                if (lastBackupLocation.length > 0) {
                     self.addNonUrlBackupDestination(lastBackupLocation, destinationType);
                     self.addToBackupPathList(lastBackupLocation);
                 }
             }
-        }
-        else {
-            if (self.defaultNewBackupFolder && self.defaultNewBackupFolder.length > 0)
-            {
-                let defaultNewBackupLocation = self.defaultNewBackupFolder + '\\' + self.sanitizeFileName(self.databaseName) + '.bak';
+        } else if (self.defaultNewBackupFolder && self.defaultNewBackupFolder.length > 0)  {
 
-                // Add a default new backup location
-                self.addNonUrlBackupDestination(defaultNewBackupLocation, BackupConstants.deviceTypeFile);
-                self.addToBackupPathList(defaultNewBackupLocation);
+            // TEMPORARY WORKAROUND: karlb 5/27 - try to guess path separator on server based on first character in path
+            let serverPathSeparator: string = '\\';
+            if (self.defaultNewBackupFolder[0] === '/') {
+                serverPathSeparator = '/';
             }
+
+            let defaultNewBackupLocation = self.defaultNewBackupFolder + serverPathSeparator + self.sanitizeFileName(self.databaseName) + '.bak';
+
+            // Add a default new backup location
+            self.addNonUrlBackupDestination(defaultNewBackupLocation, BackupConstants.deviceTypeFile);
+            self.addToBackupPathList(defaultNewBackupLocation);
         }
 
-        if (self.getBackupPathCount() > 0)
-        {
+        if (self.getBackupPathCount() > 0)  {
             self.pathElement.nativeElement.SelectedIndex = 0;
         }
 
@@ -264,20 +252,13 @@ export class BackupComponent{
 
     private isBackupToFile(controllerType: number): boolean {
         let isfile = false;
-        if (controllerType == 102)
-        {
+        if (controllerType === 102) {
             isfile = true;
-        }
-        else if (controllerType == 105)
-        {
+        }  else if (controllerType === 105)  {
             isfile = false;
-        }
-        else if (controllerType == BackupConstants.backupDeviceTypeDisk)
-        {
+        } else if (controllerType === BackupConstants.backupDeviceTypeDisk)  {
             isfile = true;
-        }
-        else if (controllerType == BackupConstants.backupDeviceTypeTape || controllerType == BackupConstants.backupDeviceTypeURL)
-        {
+        }  else if (controllerType === BackupConstants.backupDeviceTypeTape || controllerType === BackupConstants.backupDeviceTypeURL) {
             isfile = false;
         }
         return isfile;
@@ -286,18 +267,14 @@ export class BackupComponent{
 // #region UI event handlers
 
 	public onBackupTypeChanged(): void {
-        if (this.getSelectedBackupType() === BackupConstants.labelLog)
-		{
+        if (this.getSelectedBackupType() === BackupConstants.labelLog) {
             this.selectedBackupComponent = BackupConstants.labelDatabase;
             this.disableDatabaseComponent = true;
             this.disableFileComponent = true;
-		}
-		else
-		{
+		} else {
             this.disableDatabaseComponent = false;
 
-			if (this.recoveryModel !== BackupConstants.recoveryModelSimple)
-			{
+			if (this.recoveryModel !== BackupConstants.recoveryModelSimple) {
                 this.disableFileComponent = false;
 			}
 		}
@@ -333,7 +310,7 @@ export class BackupComponent{
     private addToBackupTypeList(backupType: string): void {
         let self = this;
         if (self.backupTypeElement) {
-            var option = document.createElement("option");
+            var option = document.createElement('option');
             option.value = backupType;
             option.innerHTML = backupType;
             self.backupTypeElement.nativeElement.appendChild(option);
@@ -343,7 +320,7 @@ export class BackupComponent{
     private addToBackupPathList(backupPath: string): void {
         let self = this;
         if (self.pathElement) {
-            var option = document.createElement("option");
+            var option = document.createElement('option');
             option.value = backupPath;
             option.innerHTML = backupPath;
             self.pathElement.nativeElement.appendChild(option);
@@ -354,8 +331,7 @@ export class BackupComponent{
         let self = this;
         if (self.pathElement) {
             return self.pathElement.nativeElement.childElementCount;
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -394,27 +370,21 @@ export class BackupComponent{
 
     public onRemoveClick(): void {
         let selectedCount = this.pathElement.nativeElement.selectedOptions.length;
-        for (var i = 0; i < selectedCount; i++)
-        {
+        for (var i = 0; i < selectedCount; i++) {
             // Remove the first element from the list
             let backupPathElement = this.pathElement.nativeElement.selectedOptions[0];
             delete this.dictOfBackupPathDevice[backupPathElement.innerHTML];
             this.pathElement.nativeElement.removeChild(backupPathElement);
         }
 
-        if (this.getBackupPathCount() > 0)
-        {
+        if (this.getBackupPathCount() > 0) {
             this.pathElement.nativeElement.SelectedIndex = 0;
-        }
-        else
-        {
+        } else {
             this.disableRemove = true;
         }
 
         this.enableActionButtons(); // enable only if destination is there
     }
-
-
 
 /* TODO: Add remote file browser
     private listOfBackupPaths_SelectedIndexChanged(): void {
@@ -423,16 +393,10 @@ export class BackupComponent{
     }
 */
 
-// #endregion UI event handlers
-
-// #region Private methods
-
     private addNonUrlBackupDestination(bakLocation: string, bakDeviceType: number): void {
         let self = this;
-        if (bakLocation.length > 0)
-        {
-            if (!(bakLocation in self.dictOfBackupPathDevice))
-            {
+        if (bakLocation.length > 0) {
+            if (!(bakLocation in self.dictOfBackupPathDevice)) {
                 self.dictOfBackupPathDevice[bakLocation] = bakDeviceType;
             }
         }
@@ -442,8 +406,7 @@ export class BackupComponent{
 	private enableActionButtons(): void {
 		if (this.HaveSource() && this.HaveDestination()) {
             this.disableOk = false;
-		}
-		else {
+		} else {
             this.disableOk = true;
 		}
 	}
@@ -452,12 +415,9 @@ export class BackupComponent{
 		// We have a database or files or transaction log to backup
 		if ((this.selectedBackupComponent === BackupConstants.labelDatabase)
 			|| (this.getSelectedBackupType() === BackupConstants.labelLog)
-            || (this.selectedFilesText.length > 0))
-		{
+            || (this.selectedFilesText.length > 0)) {
 			return true;
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
@@ -468,8 +428,4 @@ export class BackupComponent{
         }
         return false;
 	}
-
-// #endregion Private methods
-
 }
-

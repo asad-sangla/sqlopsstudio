@@ -65,14 +65,15 @@ async function init(context: ExtensionContext, disposables: Disposable[]): Promi
 		model
 	);
 
-	if (/^[01]/.test(info.version)) {
-		const update = localize('updateGit', "Update Git");
-		const choice = await window.showWarningMessage(localize('git20', "You seem to have git {0} installed. Code works best with git >= 2", info.version), update);
+	// turn off Git version prompt
+	// if (/^[01]/.test(info.version)) {
+	// 	const update = localize('updateGit', "Update Git");
+	// 	const choice = await window.showWarningMessage(localize('git20', "You seem to have git {0} installed. Code works best with git >= 2", info.version), update);
 
-		if (choice === update) {
-			commands.executeCommand('vscode.open', Uri.parse('https://git-scm.com/'));
-		}
-	}
+	// 	if (choice === update) {
+	// 		commands.executeCommand('vscode.open', Uri.parse('https://git-scm.com/'));
+	// 	}
+	// }
 }
 
 export function activate(context: ExtensionContext): any {
