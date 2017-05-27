@@ -50,9 +50,9 @@ suite('SQL Actions Tests', () => {
 
 		// Mocking the editor service
 		editorService = TypeMoq.Mock.ofType(QueryEditorService, TypeMoq.MockBehavior.Strict);
-		editorService.setup(x => x.newEditDataEditor(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString())).returns((input) => {
+		editorService.setup(x => x.newEditDataEditor(undefined, TypeMoq.It.isAnyString())).returns((schema, table) => {
 			// assert that our input matches our test table name
-			assert.equal(input, testTable);
+			assert.equal(table, testTable);
 			let docUri: URI = URI.parse('testURI');
 			return new Promise(() => docUri);
 		});
@@ -75,28 +75,27 @@ suite('SQL Actions Tests', () => {
 	test('Edit Data Action (With Connection)', (done) => {
 		// Setting up our object
 		let editDataAction = new EditDataAction(EditDataAction.ID, EditDataAction.LABEL, quickOpen.object, conManService.object, editorService.object, undefined);
-		// Runnig test function
+		// Running test function
 		return editDataAction.run(connection).then(() => {
-			// Verificiations
-			// conManService.verify(x => x.getConnections(), TypeMoq.Times.never());
+			// Verifications
 			quickOpen.verify(x => x.pick(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.never());
 			quickOpen.verify(x => x.input(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 
-			editorService.verify(x => x.newEditDataEditor(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()), TypeMoq.Times.once());
+			editorService.verify(x => x.newEditDataEditor(undefined, TypeMoq.It.isAnyString()), TypeMoq.Times.once());
 		}).then(() => done(), (err) => done(err));
 	});
 
 	test('Edit Data Action (No Connection)', (done) => {
 		// Setting up our object
 		let editDataAction = new EditDataAction(EditDataAction.ID, EditDataAction.LABEL, quickOpen.object, conManService.object, editorService.object, undefined);
-		// Runnig test function
+		// Running test function
 		return editDataAction.run().then(() => {
-			// Verificiations
+			// Verifications
 			conManService.verify(x => x.getConnectionGroups(), TypeMoq.Times.once());
 			quickOpen.verify(x => x.pick(TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
 			quickOpen.verify(x => x.input(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 
-			editorService.verify(x => x.newEditDataEditor(TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()), TypeMoq.Times.exactly(2));
+			editorService.verify(x => x.newEditDataEditor(undefined, TypeMoq.It.isAnyString()), TypeMoq.Times.exactly(2));
 		}).then(() => done(), (err) => done(err));
 	});
 });
