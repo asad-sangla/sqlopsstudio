@@ -87,7 +87,11 @@ export default class ServiceDownloadProvider {
 
 		let installDirFromConfig = this._config.getSqlToolsInstallDirectory();
 		if (!installDirFromConfig || installDirFromConfig === '') {
-			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), '/.carbon/sqltoolsservice/{#version#}/{#platform#}');
+			let rootFolderName: string = '.carbon';
+			if (platform === Runtime.Windows_7_64 || platform === Runtime.Windows_7_86) {
+				rootFolderName = 'carbon';
+			}
+			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), `/${rootFolderName}/sqltoolsservice/{#version#}/{#platform#}`);
 		}
 		let basePath: string;
 		if (path.isAbsolute(installDirFromConfig)) {
