@@ -30,12 +30,23 @@ import { FindInFilesActionId } from 'vs/workbench/parts/search/common/constants'
 import { OpenGlobalKeybindingsAction } from 'vs/workbench/parts/preferences/browser/preferencesActions';
 import { ToggleTerminalAction } from 'vs/workbench/parts/terminal/electron-browser/terminalActions';
 import { SelectColorThemeAction } from 'vs/workbench/parts/themes/electron-browser/themes.contribution';
+import { OpenConnectionsViewletAction } from 'sql/parts/registeredServer/common/registeredServer.contribution';
 
 interface WatermarkEntry {
 	text: string;
 	ids: string[];
 	mac?: boolean;
 }
+
+const showServers: WatermarkEntry = {
+	text: 'Show Servers',
+	ids: [OpenConnectionsViewletAction.ID]
+};
+
+const newSqlFile: WatermarkEntry = {
+	text: 'New SQL File',
+	ids: [GlobalNewUntitledFileAction.ID]
+};
 
 const showCommands: WatermarkEntry = {
 	text: nls.localize('watermark.showCommands', "Show All Commands"),
@@ -101,25 +112,20 @@ const openGlobalKeybindings: WatermarkEntry = {
 };
 
 const newUserEntries = [
-	showCommands,
-	selectTheme,
-	selectKeymap,
-	openFolderNonMacOnly,
-	openFileOrFolderMacOnly,
-	KeybindingsReferenceAction.AVAILABLE ? keybindingsReference : openGlobalKeybindings
+	showServers,
+	newSqlFile,
+	findInFiles
 ];
 
 const noFolderEntries = [
-	showCommands,
-	openFileNonMacOnly,
-	openFolderNonMacOnly,
-	openFileOrFolderMacOnly,
-	newUntitledFileMacOnly
+	showServers,
+	newSqlFile,
+	findInFiles
 ];
 
 const folderEntries = [
-	showCommands,
-	quickOpen,
+	showServers,
+	newSqlFile,
 	findInFiles
 ];
 

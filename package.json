@@ -1,6 +1,6 @@
 {
   "name": "carbon",
-  "version": "1.11.2",
+  "version": "0.1.0",
   "electronVersion": "1.4.6",
   "distro": "8c3e97e3425cc9814496472ab73e076de2ba99ee",
   "author": {
