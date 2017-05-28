@@ -50,9 +50,13 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Returns SQL tools service installed folder.
 	 */
-	public getInstallDirectory(platform: Runtime): string {
-
-		let basePath = this.getInstallDirectoryRoot(platform);
+	public getInstallDirectory(platform: Runtime, packaging?: boolean): string {
+		let basePath : string;
+		if (packaging) {
+			basePath = this.getPackageDirectoryRoot(platform);
+		} else {
+			basePath = this.getInstallDirectoryRoot(platform);
+		}
 		let versionFromConfig = this._config.getSqlToolsPackageVersion();
 		basePath = basePath.replace('{#version#}', versionFromConfig);
 		basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
@@ -98,6 +102,18 @@ export default class ServiceDownloadProvider {
 		return basePath;
 	}
 
+	public getPackageDirectoryRoot(platform: Runtime): string {
+		let packageDirFromConfig = this._config.getSqlToolsPackageDirectory();
+		let basePath: string;
+		if (path.isAbsolute(packageDirFromConfig)) {
+			basePath = packageDirFromConfig;
+		} else {
+			// The path from config is relative to the out folder
+			basePath = path.join(__dirname, '../../' + packageDirFromConfig);
+		}
+		return basePath;
+	}
+
 	private getGetDownloadUrl(fileName: string): string {
 		let baseDownloadUrl = this._config.getSqlToolsServiceDownloadUrl();
 		let version = this._config.getSqlToolsPackageVersion();
@@ -109,13 +125,13 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Downloads the SQL tools service and decompress it in the install folder.
 	 */
-	public installSQLToolsService(platform: Runtime): Promise<boolean> {
+	public installSQLToolsService(platform: Runtime, packaging?: boolean): Promise<boolean> {
 		const proxy = <string>this._config.getWorkspaceConfig('http.proxy');
 		const strictSSL = this._config.getWorkspaceConfig('http.proxyStrictSSL', true);
 
 		return new Promise<boolean>((resolve, reject) => {
 			const fileName = this.getDownloadFileName(platform);
-			const installDirectory = this.getInstallDirectory(platform);
+			const installDirectory = this.getInstallDirectory(platform, packaging);
 
 			this._logger.appendLine(`${Constants.serviceInstallingTo} ${installDirectory}.`);
 			const urlString = this.getGetDownloadUrl(fileName);

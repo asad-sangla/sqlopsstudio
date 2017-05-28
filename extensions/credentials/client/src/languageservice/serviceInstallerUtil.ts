@@ -13,41 +13,41 @@ import { IStatusView } from './interfaces';
 import { ILogger } from '../models/interfaces';
 
 class StubStatusView implements IStatusView {
-	installingService(): void {
-		console.log('...');
-	}
-	serviceInstalled(): void {
-		console.log('Service installed');
-	}
-	serviceInstallationFailed(): void {
-		console.log('Service installation failed');
-	}
-	updateServiceDownloadingProgress(downloadPercentage: number): void {
-		if (downloadPercentage === 100) {
-			process.stdout.write('100%');
-		}
-	}
+    installingService(): void {
+        console.log('...');
+    }
+    serviceInstalled(): void {
+        console.log('Service installed');
+    }
+    serviceInstallationFailed(): void {
+        console.log('Service installation failed');
+    }
+    updateServiceDownloadingProgress(downloadPercentage: number): void {
+        if (downloadPercentage === 100) {
+             process.stdout.write('100%');
+        }
+    }
 }
 
 class StubLogger implements ILogger {
-	logDebug(message: string): void {
-		console.log(message);
-	}
+    logDebug(message: string): void {
+        console.log(message);
+    }
 
-	increaseIndent(): void {
-		console.log('increaseIndent');
-	}
+    increaseIndent(): void {
+        console.log('increaseIndent');
+    }
 
-	decreaseIndent(): void {
-		console.log('decreaseIndent');
-	}
+    decreaseIndent(): void {
+        console.log('decreaseIndent');
+    }
 
-	append(message?: string): void {
-		process.stdout.write(message);
-	}
-	appendLine(message?: string): void {
-		console.log(message);
-	}
+    append(message?: string): void {
+        process.stdout.write(message);
+    }
+    appendLine(message?: string): void {
+        console.log(message);
+    }
 }
 
 const config = new Config();
@@ -61,39 +61,39 @@ let serverProvider = new ServerProvider(downloadProvider, config, statusView);
 /*
 * Installs the service for the given platform if it's not already installed.
 */
-export function installService(runtime: Runtime): Promise<String> {
-	if (runtime === undefined) {
-		return PlatformInformation.GetCurrent().then(platformInfo => {
-			if (platformInfo.isValidRuntime()) {
-				return serverProvider.getOrDownloadServer(platformInfo.runtimeId);
-			} else {
-				throw new Error('unsupported runtime');
-			}
-		});
-	} else {
-		return serverProvider.getOrDownloadServer(runtime);
-	}
+export function installService(runtime: Runtime, packaging?: boolean): Promise<String> {
+    if (runtime === undefined) {
+        return PlatformInformation.GetCurrent().then(platformInfo => {
+            if (platformInfo.isValidRuntime()) {
+                return serverProvider.getOrDownloadServer(platformInfo.runtimeId, packaging);
+            } else {
+                throw new Error('unsupported runtime');
+            }
+        });
+    } else {
+        return serverProvider.getOrDownloadServer(runtime);
+    }
 }
 
 /*
 * Returns the install folder path for given platform.
 */
-export function getServiceInstallDirectory(runtime: Runtime): Promise<string> {
-	return new Promise<string>((resolve, reject) => {
-		if (runtime === undefined) {
-			PlatformInformation.GetCurrent().then(platformInfo => {
-				if (platformInfo.isValidRuntime()) {
-					resolve(downloadProvider.getInstallDirectory(platformInfo.runtimeId));
-				} else {
-					reject('unsupported runtime');
-				}
-			}).catch(error => {
-				reject(error);
-			});
-		} else {
-			resolve(downloadProvider.getInstallDirectory(runtime));
-		}
-	});
+export function getServiceInstallDirectory(runtime: Runtime, packaging?: boolean): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        if (runtime === undefined) {
+            PlatformInformation.GetCurrent().then(platformInfo => {
+                if (platformInfo.isValidRuntime()) {
+                    resolve(downloadProvider.getInstallDirectory(platformInfo.runtimeId, packaging));
+                } else {
+                    reject('unsupported runtime');
+                }
+            }).catch(error => {
+                reject(error);
+            });
+        } else {
+            resolve(downloadProvider.getInstallDirectory(runtime));
+        }
+    });
 
 }
 

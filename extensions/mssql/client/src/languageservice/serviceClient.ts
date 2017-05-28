@@ -160,16 +160,23 @@ export default class SqlToolsServiceClient {
      * Copy the packaged service to user directory
      */
     private copyPackagedService(platformInfo: PlatformInformation, context: ExtensionContext, path: string): Promise<ServerInitializationResult> {
-        let serviceDownloadProvider = this._server.downloadProvider;
-        let srcPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, true);
-        let destPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId);
+
+        // turn-off local file copy since it's not working on macOS (karl 5/28)
         const self = this;
         return new Promise<ServerInitializationResult>( (resolve, reject) => {
-            fs.copy(srcPath, destPath, err => {
-                if (err) reject(err);
-                this.initializeLanguageClient(path, context);
-            });
+            self.initializeLanguageClient(path, context);
         });
+
+        // let serviceDownloadProvider = this._server.downloadProvider;
+        // let srcPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, true);
+        // let destPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId);
+        // const self = this;
+        // return new Promise<ServerInitializationResult>( (resolve, reject) => {
+        //     fs.copy(srcPath, destPath, err => {
+        //         if (err) reject(err);
+        //         this.initializeLanguageClient(path, context);
+        //     });
+        // });
     }
 
     public initializeForPlatform(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {

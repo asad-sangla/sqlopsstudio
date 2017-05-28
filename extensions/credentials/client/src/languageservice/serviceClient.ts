@@ -153,6 +153,27 @@ export default class CredentialsServiceClient {
          });
     }
 
+    /**
+     * Copy the packaged service to user directory
+     */
+    private copyPackagedService(platformInfo: PlatformInformation, context: ExtensionContext, path: string): Promise<ServerInitializationResult> {
+
+        // turn-off local file copy since it's not working on macOS (karl 5/28)
+        const self = this;
+        return new Promise<ServerInitializationResult>( (resolve, reject) => {
+            self.initializeLanguageClient(path, context);
+        });
+
+        // let destPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId);
+        // const self = this;
+        // return new Promise<ServerInitializationResult>( (resolve, reject) => {
+        //     fs.copy(srcPath, destPath, err => {
+        //         if (err) reject(err);
+        //         this.initializeLanguageClient(path, context);
+        //     });
+        // });
+    }
+
     public initializeForPlatform(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {
          return new Promise<ServerInitializationResult>( (resolve, reject) => {
             this._logger.appendLine(Constants.commandsNotAvailableWhileInstallingTheService);
@@ -169,29 +190,42 @@ export default class CredentialsServiceClient {
                     this._logger.appendLine();
                 }
                 this._logger.appendLine();
-                    this._server.getServerPath(platformInfo.runtimeId).then(serverPath => {
-                        if (serverPath === undefined) {
-                            // Check if the service already installed and if not open the output channel to show the logs
-                            if (_channel !== undefined) {
-                                _channel.show();
+                this._server.getServerPath(platformInfo.runtimeId, true).then(serverPackagePath => {
+                    // if the service wasn't packaged with installation then
+                    // check the user directory
+                    if (serverPackagePath === undefined) {
+                        this._server.getServerPath(platformInfo.runtimeId).then(serverPath => {
+                            if (serverPath === undefined) {
+                                // Check if the service already installed and if not open the output channel to show the logs
+                                if (_channel !== undefined) {
+                                    _channel.show();
+                                }
+                                this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
+                                    this.initializeLanguageClient(installedServerPath, context);
+                                    resolve(new ServerInitializationResult(true, true, installedServerPath));
+                                }).catch(downloadErr => {
+                                    reject(downloadErr);
+                                });
+                            } else {
+                                console.log(serverPath);
+                                this.initializeLanguageClient(serverPath, context);
+                                resolve(new ServerInitializationResult(false, true, serverPath));
                             }
-                            this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
-                                this.initializeLanguageClient(installedServerPath, context);
-                                resolve(new ServerInitializationResult(true, true, installedServerPath));
-                            }).catch(downloadErr => {
-                                reject(downloadErr);
-                            });
-                        } else {
-                            this.initializeLanguageClient(serverPath, context);
-                            resolve(new ServerInitializationResult(false, true, serverPath));
-                        }
-                    }).catch(err => {
-                        Utils.logDebug(Constants.serviceLoadingFailed + ' ' + err );
-                        Utils.showErrorMsg(Constants.serviceLoadingFailed);
-                        Telemetry.sendTelemetryEvent('ServiceInitializingFailed');
-                        reject(err);
-                    });
-                }
+                        }).catch(err => {
+                            Utils.logDebug(Constants.serviceLoadingFailed + ' ' + err );
+                            Utils.showErrorMsg(Constants.serviceLoadingFailed);
+                            Telemetry.sendTelemetryEvent('ServiceInitializingFailed');
+                            reject(err);
+                        });
+                    }
+                    else {
+                        // copy the service to user directory if service was
+                        // packaged with the installation
+                        this.copyPackagedService(platformInfo, context, serverPackagePath);
+                        this._logger.appendLine('Credentials Service copied to user local directory');
+                    }
+                });
+            }
         });
     }
 
