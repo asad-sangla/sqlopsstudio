@@ -54,15 +54,15 @@ Quickly go over the state of art of Project "Carbon"
     * update ```docker exec``` command in dockercommands.sh file docusing your docker container id
 
 * Download settings.json from email (I will send it) and save it in the previewdemo folder.
-    
-    * note that settings.json contains MS internal server information and it will not be shared in the previewdemo git repo since it is public. 
+
+    * note that settings.json contains MS internal server information and it will not be shared in the previewdemo git repo since it is public.
 
 ## Demo Flow
 
 ### Install Carbon on macOS using .zip
 
 *  Start carbon.app
-    * By-pass GateKeeper warning    
+    * By-pass GateKeeper warning
 
 ### Start carbon in a light theme and demonstrate the portability of Carbon settings
 
@@ -82,7 +82,7 @@ Quickly go over the state of art of Project "Carbon"
 
 ### Show Server Groups and Connections loaded from the settings file
 
-* Expand **Tools Test Servers** and show different SQL Server versions starting from SQL Server 2008. 
+* Expand **Tools Test Servers** and show different SQL Server versions starting from SQL Server 2008.
 
 * Mention that Carbon supports all supported version of SQL Servers on-prem and SQL Database and DW on Azure.
 
@@ -144,7 +144,7 @@ Quickly go over the state of art of Project "Carbon"
 
 * Click the first match in the Search result to show the diff.
 
-* Run **Replace** 
+* Run **Replace**
 
 ### Show Source Control (GIT)
 
@@ -180,7 +180,7 @@ Quickly go over the state of art of Project "Carbon"
 
 * Show the Search widget of **CarbonDB** which lists up database objects.
 
-* type in **table:** to filter the search result with table only. 
+* type in **table:** to filter the search result with table only.
 
 * explain about the search widget in contrast to OE's click and browse experience.
 
@@ -191,7 +191,7 @@ Quickly go over the state of art of Project "Carbon"
 
 * Type 'sql' to list snippets, and select 'sqlListTablesAndViews'.
 
-* Type the following statement using IntelliSense 
+* Type the following statement using IntelliSense
 
 ```
 
@@ -220,7 +220,7 @@ FROM HumanResources.vEmployees
 
 ### Show User defined snippet
 
-* (TBD) type in 'my' to list user defined snippet. 
+* (TBD) type in 'my' to list user defined snippet.
 
     > Have **backup status insight related snippet**.
 
@@ -261,7 +261,7 @@ FROM HumanResources.vEmployees
 
 * In the terminal, show the created backup file with **ls -l**
 
-
+**-------End of Demo Flow----------**
 #
 
 > review note on 5/26
@@ -281,9 +281,9 @@ also using the sqltoolsservice
 run mssql-scripter in integrated terminal and run the sql
 
 - have a small db. RE mssql-scripter using it.
-- open the sql, check it in, find and replace super heroe 2. 
+- open the sql, check it in, find and replace super heroe 2.
 - show the diff. check it in.
-- create database using the script. 
+- create database using the script.
 
 
 
@@ -296,16 +296,16 @@ run mssql-scripter in integrated terminal and run the sql
 		- What we have heard...
 		- Proposed solution idea - Option 1. Show Basics only Option 2. Basic, Comprehensive and Custom View
 		- Tell us whenever
-##### cut		
+##### cut
 	- Show settings.json pseudo code to change the mode and show / hide specific OE folder.
     - Show mockup of the result.
-    - Show context menu mockup 
+    - Show context menu mockup
         - Explain configuration goes to MANAGE. Operations such as Restore, Failover stays in OE context menu.
 
 2. Manage with Insight
     - Use Audit as an exmaple
     - Show how to configure Audit, Server Audit Spec and Database Audit Spec on OE in a disjoint flow with complexity
-    - Show mockup of 
+    - Show mockup of
         - Compliance Insight
         - Audit configuration Action
 
