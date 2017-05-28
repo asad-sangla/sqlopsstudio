@@ -242,24 +242,24 @@ FROM HumanResources.vEmployees
 
 ### Open Integrated Terminial
 
-26. Show ***cat dockercommand.sh***
+* Show ***cat dockercommand.sh***
 
-27. Terminal into the docker container
+* Terminal into the docker container
 
-28. ***CD /var/opt/mssql***
+* ***CD /var/opt/mssql***
 
-29. **ls** and **mkdir backup** folder
+* **ls** and **mkdir backup** folder
 
-30 **readlink -f backup** to get the full path
+* **readlink -f backup** to get the full path
 
 
 ### Backup part 2
 
-31. Paste the file path to Backup page
+* Paste the file path to Backup page
 
-32. Run backup
+* Run backup
 
-33. In the terminal, show the created backup file with **ls -l**
+* In the terminal, show the created backup file with **ls -l**
 
 
 #
