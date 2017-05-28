@@ -22,82 +22,223 @@ Quickly go over the state of art of Project "Carbon"
 ||T-SQL Editor||
 ||Query Result views||
 
+## Demo setup.
+
+* This demo is setup on macOS running SQL Server 2017 on Ubuntu running in a docker container. Install docker container and setup SQL Server 2017 following the simple quide on https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-setup-docker
+
+* Demo setup scripts are uploaded to [previewdemo git project](https://github.com/erickangMSFT/previewdemo).
+    > Clone the repository to **~/Project/previewdemo** (this important since sqldump.sh script uses this folder. Otherwise, modifie sqldump.sh script to use your own folder)
+
+* Install VSCode and mssql extension just for the demo prep.
+
+* Run following commands.
+
+    ```bash
+    cd ~/Projects/previewdemo
+    carbon .
+    ```
+
+* Creating **PreviewDemoDB**
+    * open **~/Projects/previewdemo/initdb/create_previewdemodb.sql** in carbon editor
+
+    * Connect to **localhost, master, sa**
+
+    * Run create_previewdemodb.sql
+
+* Prepare your dockercommands.sh
+
+    * open **~/Projects/previewdemo/bash/dockercommands.sh** in carbon or vscode.
+
+    * open Terminal and get docker container id by running ```docker ps```
+
+    * update ```docker exec``` command in dockercommands.sh file docusing your docker container id
+
+* Download settings.json from email (I will send it) and save it in the previewdemo folder.
+    
+    * note that settings.json contains MS internal server information and it will not be shared in the previewdemo git repo since it is public. 
+
 ## Demo Flow
 
 ### Install Carbon on macOS using .zip
 
-1. Start carbon.app
+*  Start carbon.app
     * By-pass GateKeeper warning    
 
-### Add the first connection and group
+### Start carbon in a light theme and demonstrate the portability of Carbon settings
 
-2. Using connection dialog, add **localhost, master, sa** connection
+* Show carbon's spash screen and initial experience that opens up Connection dialog with empty Servers viewlet.
 
-3. On OE, add a new server group, **CarbonPreview** using Add Server Group dialog
+* We have settings file that has all my server groups and connections definition.  I saved it from my PC to USB. Let's use that.
 
-4. On OE, drag and drop the connection into CarbonPreview group.
+* Presse ``` Ctrl +  ` ``` to open Integrated Terminal in carbon then Run
+
+    ```bash
+    cat settings.json
+    cp settings.json ~/Library/Application Support/Carbon/User
+    ```
+* Show that Carbon supports dark theme! Restart carbon to load server groups and connections.
+
+* Show all server groups and connections are populated.
+
+### Show Server Groups and Connections loaded from the settings file
+
+* Expand **Tools Test Servers** and show different SQL Server versions starting from SQL Server 2008. 
+
+* Mention that Carbon supports all supported version of SQL Servers on-prem and SQL Database and DW on Azure.
+
+* Mention that Server Group is a first class citizen feature in Carbon. We plan to support CMS and running queries on a group level in future version.
+
+
+### Add a group and connection
+
+* Click **Add Server Group** button.
+
+* Name it **Carbon Preview Servers** and set a color. Create a group.
+
+* On **Carbon Preview Servers** group, open context menu and select **Add Connection** menu.
+
+* Using connection dialog, add **localhost, master, sa** connection
 
 ### Connect to server
 
-5. Right mouseclick on the **localhost** connection on OE, click **Connect** menu to connect.
+* Right mouseclick on the **localhost** connection on OE, click **Connect** menu to connect.
 
-6. On Manage page, click **localhost** breadcrumb to go to Server page.
+* On OE, show the list of databases. Show **PreviewDemoDB**
 
-7. Show the list of databases. 
+### Create a new database using mssql-scripter
 
-### Create a new database
+* Mention about mssql-scripter private preview.
 
-8. Click **Create Database** task icon on MANAGE
+* Press ```CTRL+` ``` to open Integrated Terminial
 
-9. Create **CarbonPreviewDB** using CREATE DATABASE page. 
+* run following
 
-    * Talk about Simple and Comprehensive design concept. Say we will show mock-up after demo.
+    ```bash
+    cat ./bash/sqldump.sh
+    ```
+* Show the mssql-scripter command
 
-10. Click **localhost** breadcrumb.
+* run sqldump.sh
 
-11. Show **CarbonPreviewDB** is listed in the database search widget.
+    ```bash
+    ./bash/sqldump.sh
+    ```
 
-12. Double click to open MANAGE page for **CarbonPreviewDB**
+* do something while waiting for mssql-scripter finishes dumping database wihtout any progress indicator :)
 
-    * Talk about Manage with Insight concept. Say we will show mock-up after demo.
+* Open **File Explorer** show the files and mention that it is source controled with GIT.
 
-### Create database objects
+* Open database_script.sql
 
-13. On **CarbonPreviewDB** MANAGE page, click NEW QUERY task.
+* Mention that editor is powerd by VS Code.
 
-14. Editor opens up with connection to **CarbonPreviewDB** 
+* Show editor minimap: F1 --> 'settings' User Settings --> search 'mini' --> press Edit icon --> select True to turn on minimap.
 
-15. Show File explorer and Git.
+* Click **Search** on Action Bar.
 
-16. Open **carbonpreviewdb.sql** script that populates 10 tables with data, 5 view, 5 functions, 5 stored procedures and run the script.
+* Type in 'PreviewDemoDB' for Search word and press enter.
 
-17. Use snipet, show select statement with Peek Definition and IntelliSense.
+* Deselect all files except database_script.sql file.
 
-18. On **CarbonPreviewDB** MANAGE page, search tables with **table:** command!! or a name part to show tables, views, functions and proc that have the same name part.
+* Type in 'CarbonDB' for Replace word
 
-    * mention that each object type will have associated actions like SELECT Top 1000, Edit Data, SCRIPT AS etc.
-	
-Show settings.json as a way to have the setting portability.
+* Click the first match in the Search result to show the diff.
 
-### Show Editors 
+* Run **Replace** 
 
-Go to OE and browse down to Tables
+### Show Source Control (GIT)
 
-19. On a table, open contenxt menu and select **Edit Data**
+* Highlight the badge notification on GIT icon on Action Bar.
 
-20. Change a column value and run.
+* Click Source Control Icon
 
-21. On the table, open context menu and select **SELECT Top 1000***
+* Type 'Carbon demo' and commit the change.
 
-22. **Show the reulst**.
+* Mention that Carbon is integrated with source control
 
-23. **Save as JSON**
+
+### Create database and database objects
+
+* On Editor, click **Connect** button on Editor command bar.
+
+* Connect to **localhost** using Recent History.
+
+* Run database_script.sql
+
+
+### Database Search.
+
+* Show if the new database using MANAGE page.
+
+* Go to MANAGE page.
+
+* Click **localhost** on the breadcrumb.
+
+* Show **CarbonDB** is listed on Search widget.
+
+* Click **CarbonDB** to open its MANAGE page
+
+* Show the Search widget of **CarbonDB** which lists up database objects.
+
+* type in **table:** to filter the search result with table only. 
+
+* explain about the search widget in contrast to OE's click and browse experience.
+
+
+### Show Editor features.
+
+* On the CarbonDB Manage page, click **New Query** task icon.
+
+* Type 'sql' to list snippets, and select 'sqlListTablesAndViews'.
+
+* Type the following statement using IntelliSense 
+
+```
+
+SELECT <list of columns>
+FROM HumanResources.vEmployees
+
+```
+
+* Mouse over on ```vEmployees``` and click Peek Definition from context menu.
+
+* Show Peek Definition.
+
+### Edit Data and more Editor features.
+
+* Go to OE and browse down to Tables
+
+* On Person table, open contenxt menu and select **Edit Data**
+
+* Change a column value such as First name and run.
+
+* On the table, open context menu and select **SELECT Top 1000***
+
+* **Show the reulst**.
+
+* **Save as JSON**
+
+### Show User defined snippet
+
+* (TBD) type in 'my' to list user defined snippet. 
+
+    > Have **backup status insight related snippet**.
+
+* run the snippet.
+
+* Click F1 to open command palette.
+
+* Type in 'snippet' and select **Preferences:Open User Snippets** command.
+
+* Show the user defined snippets.
 
 ### Backup part 1
 
-24. Go back to **CarbonPreviewDB** Manage page.
+* Go back to **CarbonPreviewDB** Manage page.
 
-25. Click Backup it requires remote file path.
+* Explain about Manage with Insight.
+
+* Click **Backup** task. Tt requires remote file path.
 
 ### Open Integrated Terminial
 
@@ -118,9 +259,12 @@ Go to OE and browse down to Tables
 
 32. Run backup
 
-33. on the terminal, show the backup file with **ls -l**
+33. In the terminal, show the created backup file with **ls -l**
 
-> review note
+
+#
+
+> review note on 5/26
 
 Making a group as a starting point it is a first class citizen
 - have multiple groups
