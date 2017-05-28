@@ -244,7 +244,7 @@ export const serviceInitializingOutputChannelName = 'SqlToolsService Initializat
 
 export const gettingStartedGuideLink = 'https://aka.ms/mssql-getting-started';
 
-export const sqlToolsServiceCrashMessage = 'SQL Tools Service component could not start.';
+export const sqlToolsServiceCrashMessage = 'SQL Tools Service component exited unexpectedly. Please restart Carbon.';
 export const sqlToolsServiceCrashButton = 'View Known Issues';
 export const sqlToolsServiceCrashLink = 'https://github.com/Microsoft/vscode-mssql/wiki/SqlToolsService-Known-Issues';
 
