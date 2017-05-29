@@ -20,6 +20,8 @@ import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disa
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { IPartService } from 'vs/workbench/services/part/common/partService';
 
 export const BOOTSTRAP_SERVICE_ID: string = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -43,6 +45,8 @@ export interface IBootstrapService {
 	keybindingService: IKeybindingService;
 	contextKeyService: IContextKeyService;
 	contextMenuService: IContextMenuService;
+	errorMessageService: IErrorMessageService;
+	partService: IPartService;
 
 	/*
 	* Bootstraps the Angular module described. Components that need singleton services should inject the
@@ -96,7 +100,9 @@ export class BootstrapService implements IBootstrapService {
 		@IQueryModelService public queryModelService: IQueryModelService,
 		@IKeybindingService public keybindingService: IKeybindingService,
 		@IContextKeyService public contextKeyService: IContextKeyService,
-		@IContextMenuService public contextMenuService: IContextMenuService
+		@IContextMenuService public contextMenuService: IContextMenuService,
+		@IErrorMessageService public errorMessageService: IErrorMessageService,
+		@IPartService public partService: IPartService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();

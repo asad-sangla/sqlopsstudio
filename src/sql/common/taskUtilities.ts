@@ -16,6 +16,10 @@ import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { withElementById } from 'vs/base/browser/builder';
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import Severity from 'vs/base/common/severity';
 
 import data = require('data');
 
@@ -145,9 +149,20 @@ export class TaskUtilities {
 		});
 	}
 
-	public static showCreateDatabase(uri: string, connection: ConnectionManagementInfo, adminService: IAdminService): Promise<void> {
+	public static showCreateDatabase(
+		uri: string, connection: ConnectionManagementInfo,
+		adminService: IAdminService,
+		errorMessageService: IErrorMessageService,
+		partService: IPartService): Promise<void> {
+
 		return new Promise<void>((resolve) => {
-			adminService.showCreateDatabaseWizard(uri, connection);
+			// show not implemented
+			let container = withElementById(partService.getWorkbenchElementId()).getHTMLElement().parentElement;
+			errorMessageService.showDialog(container, Severity.Info,
+				'Coming Soon',
+				'This feature is not yet implement.  It will be available in an upcoming release.');
+
+			// adminService.showCreateDatabaseWizard(uri, connection);
 		});
 	}
 

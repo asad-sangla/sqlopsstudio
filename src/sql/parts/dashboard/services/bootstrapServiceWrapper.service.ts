@@ -130,7 +130,9 @@ export class BootstrapServiceWrapper {
 		TaskUtilities.showCreateDatabase(
 			this._uri,
 			this._bootstrapParams.connection,
-			this._bootstrapService.adminService);
+			this._bootstrapService.adminService,
+			this._bootstrapService.errorMessageService,
+			this._bootstrapService.partService);
 	}
 
 	public backup(): void {
