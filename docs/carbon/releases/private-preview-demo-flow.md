@@ -268,6 +268,20 @@ FROM HumanResources.vEmployees
 
 * In the terminal, show the created backup file with **ls -l**
 
+## Audit insight and configuration scenario
+
+* Let's make our demo database compliant with Audit.
+
+* One way is to go to OE, go to Audit folder and create a new audit then got to Server audit folder and create new server audit spec and go to a database, then create new database audit spec and repeat it for many other audit specs... too complex.
+
+* In MANAGE with Insight concept in carbon, you can get the compliance insight directly from MANAGE page and related Action. 
+
+* Let's simulate it.
+
+* run **insightSecurityServerAudit** to show the insight
+
+* run **
+
 **-------End of Demo Flow----------**
 #
 
