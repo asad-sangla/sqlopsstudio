@@ -56,6 +56,13 @@ Quickly go over the state of art of Project "Carbon"
 * Download settings.json from email (I will send it) and save it in the previewdemo folder.
 
     * note that settings.json contains MS internal server information and it will not be shared in the previewdemo git repo since it is public.
+	
+* Apply user snippet by download / git clone https://github.com/erickangMSFT/sql-snippets and run
+
+	* apply_snippet.sh
+	
+* To make caron launchable from commanline, run following (macOS only) after moving carbon.app to Application folder
+	* ln -s /Applications/carbon.app/Contents/Resources/app/bin/code carbon
 
 ## Demo Flow
 
@@ -64,9 +71,9 @@ Quickly go over the state of art of Project "Carbon"
 *  Start carbon.app
     * By-pass GateKeeper warning
 
-### Start carbon in a light theme and demonstrate the portability of Carbon settings
+### Start carbon and demonstrate the portability of Carbon settings
 
-* Show carbon's spash screen and initial experience that opens up Connection dialog with empty Servers viewlet.
+* Show carbon's splash screen and initial experience that opens up Connection dialog with empty Servers viewlet.
 
 * We have settings file that has all my server groups and connections definition.  I saved it from my PC to USB. Let's use that.
 
@@ -76,7 +83,7 @@ Quickly go over the state of art of Project "Carbon"
     cat settings.json
     cp settings.json ~/Library/Application Support/Carbon/User
     ```
-* Show that Carbon supports dark theme! Restart carbon to load server groups and connections.
+* Restart carbon to load server groups and connections.
 
 * Show all server groups and connections are populated.
 
@@ -124,7 +131,7 @@ Quickly go over the state of art of Project "Carbon"
     ./bash/sqldump.sh
     ```
 
-* do something while waiting for mssql-scripter finishes dumping database wihtout any progress indicator :)
+* do something while waiting for mssql-scripter finishes dumping database wihtout any progress indicator. Mention that mssql-scripter following POSIX standard and recommendations. Not having a progress indicator is a POSIX recommendation.
 
 * Open **File Explorer** show the files and mention that it is source controled with GIT.
 
@@ -220,9 +227,9 @@ FROM HumanResources.vEmployees
 
 ### Show User defined snippet
 
-* (TBD) type in 'my' to list user defined snippet.
+* (TBD) type in 'insight' to list all user defined snippet.
 
-    > Have **backup status insight related snippet**.
+* select **insightRecoveryBackupStatus** sniipet
 
 * run the snippet.
 
