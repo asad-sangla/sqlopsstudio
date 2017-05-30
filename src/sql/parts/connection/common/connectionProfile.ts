@@ -106,7 +106,10 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	 */
 	public getOptionsKey(): string {
 		let id = super.getOptionsKey();
-		return id + ProviderConnectionInfo.idSeparator + 'group' + ProviderConnectionInfo.nameValueSeparator + this.groupId;
+		return id;
+
+		// appending group is breaking OE commands when profile is loaded from dialog vs. from stored profile
+		//return id + ProviderConnectionInfo.idSeparator + 'group' + ProviderConnectionInfo.nameValueSeparator + this.groupId;
 	}
 
 	/**
