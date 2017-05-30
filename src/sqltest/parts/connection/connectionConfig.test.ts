@@ -769,7 +769,7 @@ suite('SQL ConnectionConfig tests', () => {
 
 		let connectionProfileGroup = new ConnectionProfileGroup('g-renamed', undefined, 'g2', undefined, undefined);
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
-		config.renameGroup(connectionProfileGroup).then(() => {
+		config.editGroup(connectionProfileGroup).then(() => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.once());
 			calledValue.forEach(con => {

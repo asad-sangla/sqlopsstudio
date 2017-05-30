@@ -222,7 +222,30 @@ export class AddServerGroupAction extends Action {
 	}
 
 	public run(): TPromise<boolean> {
-		this._connectionManagementService.showServerGroupDialog();
+		this._connectionManagementService.showCreateServerGroupDialog();
+		return TPromise.as(true);
+	}
+}
+
+/**
+ * Actions to edit a server group
+ */
+export class EditServerGroupAction extends Action {
+	public static ID = 'registeredServers.editServerGroup';
+	public static LABEL = localize('editServerGroup', 'Edit Server Group');
+
+	constructor(
+		id: string,
+		label: string,
+		private _group: ConnectionProfileGroup,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+		this.class = 'edit-server-group-action';
+	}
+
+	public run(): TPromise<boolean> {
+		this._connectionManagementService.showEditServerGroupDialog(this._group);
 		return TPromise.as(true);
 	}
 }

@@ -17,7 +17,6 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import { once } from 'vs/base/common/functional';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import types = require('vs/base/common/types');
 import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
@@ -219,9 +218,7 @@ export class ServerTreeRenderer implements IRenderer {
 				disposed = true;
 				if (renamed && inputBox.value && connectionProfileGroup.name !== inputBox.value) {
 					connectionProfileGroup.name = inputBox.value;
-					this._connectionManagementService.renameGroup(connectionProfileGroup).then(() => {
-						TreeUpdateUtils.registeredServerUpdate(tree, this._connectionManagementService);
-					});
+					this._connectionManagementService.editGroup(connectionProfileGroup);
 				}
 				tree.clearHighlight();
 				tree.DOMFocus();

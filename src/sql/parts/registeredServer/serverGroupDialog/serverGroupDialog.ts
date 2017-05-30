@@ -7,7 +7,7 @@
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/serverGroupDialog';
-import { Builder, $ } from 'vs/base/browser/builder';
+import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
 import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
@@ -16,6 +16,7 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
+import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 
 export interface IServerGroupCallbacks {
 	onAddServerGroup: () => void;
@@ -42,6 +43,8 @@ export class ServerGroupDialog {
 	private _toDispose: lifecycle.IDisposable[];
 	private _defaultColor: number;
 	private _colors: string[];
+	private readonly _addServerGroupTitle = 'Add Server Group';
+	private readonly _editServerGroupTitle = 'Edit Server Group';
 
 	constructor(container: HTMLElement,
 		callbacks: IServerGroupCallbacks) {
@@ -54,7 +57,7 @@ export class ServerGroupDialog {
 	}
 
 	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder('serverGroupDialogModal', 'Add Server Group', 'server-group-dialog', 'serverGroupDialogBody');
+		this._dialog = new ModalDialogBuilder('serverGroupDialogModal', this._addServerGroupTitle, 'server-group-dialog', 'serverGroupDialogBody');
 		this._builder = this._dialog.create();
 		this._dialog.addModalTitle();
 
@@ -95,7 +98,7 @@ export class ServerGroupDialog {
 			});
 		});
 		this._dialog.addErrorMessage();
-		this._addServerButton = this.createFooterButton(this._dialog.footerContainer, 'Create');
+		this._addServerButton = this.createFooterButton(this._dialog.footerContainer, 'OK');
 		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
 
 		this.onSelectGroupColor(this._defaultColor);
@@ -198,7 +201,7 @@ export class ServerGroupDialog {
 				button = new Button(buttonContainer);
 				button.label = title;
 				button.addListener2('click', () => {
-					if (title === 'Create') {
+					if (title === 'OK') {
 						this.addGroup();
 					} else {
 						this.cancel();
@@ -268,13 +271,31 @@ export class ServerGroupDialog {
 		this._callbacks.onClose();
 	}
 
-	public open() {
+	public open(editGroup: boolean, group?: ConnectionProfileGroup) {
 		// reset the dialog
 		this.hideError();
 		this._groupNameInputBox.hideMessage();
 		this._groupNameInputBox.value = '';
 		this._groupDescriptionInputBox.value = '';
 		this.onSelectGroupColor(this._defaultColor);
+
+		if (editGroup && group) {
+			this._dialog.setDialogTitle(this._editServerGroupTitle);
+			this._groupNameInputBox.value = group.name;
+			this._groupDescriptionInputBox.value = group.description;
+			let colorId: number;
+			for (var key in this._colorButtonsMap) {
+				if (this._colorButtonsMap[key].color === group.color) {
+					colorId = Number(key);
+					break;
+				}
+			}
+			if (colorId) {
+				this.onSelectGroupColor(colorId);
+			}
+		} else {
+			this._dialog.setDialogTitle(this._addServerGroupTitle);
+		}
 
 		jQuery('#serverGroupDialogModal').modal({ backdrop: false, keyboard: true });
 		this._groupNameInputBox.focus();

@@ -517,8 +517,15 @@ export class ConnectionStore {
 		return maxConnections;
 	}
 
-	public renameGroup(group: ConnectionProfileGroup): Promise<void> {
-		return this._connectionConfig.renameGroup(group);
+	public editGroup(group: ConnectionProfileGroup): Promise<any> {
+		const self = this;
+		return new Promise<string>((resolve, reject) => {
+			self._connectionConfig.editGroup(group).then(() => {
+				resolve(null);
+			}).catch(error => {
+				reject(error);
+			});
+		});
 	}
 
 	public deleteConnectionFromConfiguration(connection: ConnectionProfile): Promise<void> {

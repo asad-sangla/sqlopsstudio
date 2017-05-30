@@ -25,7 +25,7 @@ export interface IConnectionConfig {
 	changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void>;
 	setCachedMetadata(cachedMetaData: data.DataProtocolServerCapabilities[]): void;
 	getCapabilities(providerName: string): data.DataProtocolServerCapabilities;
-	renameGroup(group: ConnectionProfileGroup): Promise<void>;
+	editGroup(group: ConnectionProfileGroup): Promise<void>;
 	deleteConnection(profile: ConnectionProfile): Promise<void>;
 	deleteGroup(group: ConnectionProfileGroup): Promise<void>;
 	canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean;

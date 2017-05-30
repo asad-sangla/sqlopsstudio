@@ -43,7 +43,7 @@ import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ConnectionGlobalStatus } from 'sql/parts/connection/common/connectionGlobalStatus';
 import { ConnectionStatusbarItem } from 'sql/parts/connection/common/connectionStatus';
-import { CommandsRegistry, ICommandService, ICommandHandler } from 'vs/platform/commands/common/commands';
+import { ICommandService } from 'vs/platform/commands/common/commands';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -195,10 +195,24 @@ export class ConnectionManagementService implements IConnectionManagementService
 	/**
 	 * Opens the add server group dialog
 	 */
-	public showServerGroupDialog(callbacks?: IServerGroupDialogCallbacks): Promise<void> {
+	public showCreateServerGroupDialog(callbacks?: IServerGroupDialogCallbacks): Promise<void> {
 		let self = this;
 		return new Promise<void>((resolve, reject) => {
-			self._serverGroupController.showDialog(self, callbacks).then(() => {
+			self._serverGroupController.showCreateGroupDialog(self, callbacks).then(() => {
+				resolve();
+			}, error => {
+				reject();
+			});
+		});
+	}
+
+	/**
+	 * Opens the edit server group dialog
+	 */
+	public showEditServerGroupDialog(group: ConnectionProfileGroup): Promise<void> {
+		let self = this;
+		return new Promise<void>((resolve, reject) => {
+			self._serverGroupController.showEditGroupDialog(self, group).then(() => {
 				resolve();
 			}, error => {
 				reject();
@@ -927,8 +941,15 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return Promise.resolve(undefined);
 	}
 
-	public renameGroup(group: ConnectionProfileGroup): Promise<void> {
-		return this._connectionStore.renameGroup(group);
+	public editGroup(group: ConnectionProfileGroup): Promise<any> {
+		return new Promise<string>((resolve, reject) => {
+			this._connectionStore.editGroup(group).then(groupId => {
+				this._onAddConnectionProfile.fire();
+				resolve(null);
+			}).catch(err => {
+				reject(err);
+			});
+		});
 	}
 
 	/**

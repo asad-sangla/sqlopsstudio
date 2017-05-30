@@ -38,7 +38,11 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return undefined;
 	}
 
-	showServerGroupDialog(): Promise<void> {
+	showCreateServerGroupDialog(): Promise<void> {
+		return undefined;
+	}
+
+	showEditServerGroupDialog(group: ConnectionProfileGroup): Promise<void> {
 		return undefined;
 	}
 
@@ -177,7 +181,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return new Promise(() => true);
 	}
 
-	renameGroup(group: ConnectionProfileGroup): Promise<void> {
+	editGroup(group: ConnectionProfileGroup): Promise<void> {
 		return Promise.resolve();
 	}
 

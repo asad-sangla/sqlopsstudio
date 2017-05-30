@@ -40,7 +40,7 @@ export class ConnectionController implements IConnectionComponentController {
 	}
 
 	private onCreateNewServerGroup(): void {
-		this._connectionManagementService.showServerGroupDialog({
+		this._connectionManagementService.showCreateServerGroupDialog({
 			onAddGroup: (groupName) => this._connectionWidget.updateServerGroup(this.getAllServerGroups(), groupName),
 			onClose: () => this._connectionWidget.focusOnServerGroup()
 		});

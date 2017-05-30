@@ -10,7 +10,7 @@ import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegis
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { EditDataAction } from 'sql/workbench/electron-browser/actions';
-import { ChangeConnectionAction, AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction, RefreshAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import { ChangeConnectionAction, AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction, RefreshAction, EditServerGroupAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { NewQueryAction as OENewQueryAction, DisconnectAction, ScriptSelectAction, EditDataAction as OEEditDataAction, ScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
@@ -76,6 +76,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	public getConnectionProfileGroupActions(tree: ITree, element: ConnectionProfileGroup): IAction[] {
 		return [
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
+			this._instantiationService.createInstance(EditServerGroupAction, EditServerGroupAction.ID, EditServerGroupAction.LABEL, element),
 			this._instantiationService.createInstance(RenameGroupAction, RenameGroupAction.ID, RenameGroupAction.LABEL, tree, element),
 			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_GROUP_LABEL, element)
 		];

@@ -14,6 +14,7 @@ export class ModalDialogBuilder {
 	private _footerBuilder: Builder;
 	private _modelBody: Builder;
 	private _modalHeader: Builder;
+	private _modalTitle: Builder;
 	private _errorMessageLabel: IconLabel;
 	private _spinnerElement: HTMLElement;
 	private _errorIconElement: HTMLElement;
@@ -89,8 +90,16 @@ export class ModalDialogBuilder {
 
 	public addModalTitle() {
 		this._modalHeader.div({ class: 'modal-title' }, (modalTitle) => {
+			this._modalTitle = modalTitle;
 			modalTitle.innerHtml(this._title);
 		});
+	}
+
+	public setDialogTitle(title: string) {
+		this._title = title;
+		if (this._modalTitle) {
+			this._modalTitle.innerHtml(this._title);
+		}
 	}
 
 	public addErrorMessage(): void {

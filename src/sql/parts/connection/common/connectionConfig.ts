@@ -389,11 +389,13 @@ export class ConnectionConfig implements IConnectionConfig {
 		return result;
 	}
 
-	public renameGroup(source: ConnectionProfileGroup): Promise<void> {
+	public editGroup(source: ConnectionProfileGroup): Promise<void> {
 		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
 		groups = groups.map(g => {
 			if (g.id === source.id) {
 				g.name = source.name;
+				g.description = source.description;
+				g.color = source.color;
 				source.isRenamed = false;
 			}
 			return g;
