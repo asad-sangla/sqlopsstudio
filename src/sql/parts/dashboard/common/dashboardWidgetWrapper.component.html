@@ -4,7 +4,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div *ngIf="_config.name">{{_config.name}}</div>
-<template widget-host>
-</template>
-<div style="float: right" *ngIf="_config.loadedIcon"><img height="50px" src="{{_config.loadedIcon}}"/></div>
+<div style="display: flex; flex-flow: column; overflow: hidden; height: 100%">
+	<div *ngIf="_config.name" style="flex: 0 0">{{_config.name}}</div>
+	<template widget-host>
+	</template>
+	<div style="flex: 0 0;" *ngIf="_config.loadedIcon"><img style="float: right" height="50px" src="{{_config.loadedIcon}}"/></div>
+</div>

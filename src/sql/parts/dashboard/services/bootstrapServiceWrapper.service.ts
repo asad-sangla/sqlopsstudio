@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Injectable, Inject } from '@angular/core';
+import { Observable, Observer } from 'rxjs/Rx';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TaskUtilities } from 'sql/common/taskUtilities';
+import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 
 import data = require('data');
 
@@ -61,6 +63,7 @@ class Deferred<T> {
 export class BootstrapServiceWrapper {
 	private _uniqueSelector: string;
 	private _uri;
+	private onThemeChangeObs: Observable<IColorTheme>;
 	/* Bootstrap params*/
 	private _bootstrapParams: DashboardComponentParams;
 	private _bootstrapDeferred = new Deferred<DashboardComponentParams>();
@@ -73,7 +76,24 @@ export class BootstrapServiceWrapper {
 	private _connectionManagementDeferred = new Deferred<void>();
 
 
-	constructor(@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService) { }
+	constructor(@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService) {
+		let self = this;
+		self.onThemeChangeObs = Observable.create((observer: Observer<IColorTheme>) => {
+			self._bootstrapService.themeService.onDidColorThemeChange((e: IColorTheme) => {
+				observer.next(e);
+			});
+		});
+	 }
+
+	get theme(): IColorTheme {
+		return this._bootstrapService.themeService.getColorTheme();
+	}
+
+	public onThemeChange(cb: (e: IColorTheme) => void): void {
+		this.onThemeChangeObs.subscribe((event: IColorTheme) => {
+			cb(event);
+		});
+	}
 
 	set selector(selector: string) {
 		this._uniqueSelector = selector;

@@ -3,8 +3,10 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef } from '@angular/core';
+import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+
+import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { BootstrapServiceWrapper } from 'sql/parts/dashboard/services/bootstrapServiceWrapper.service';
@@ -13,8 +15,10 @@ export interface Task {
 	name: string;
 	action: () => void;
 	icon?: string;
+	inverse_icon?: string;
 	context?: string;
 	internal_icon?: SafeResourceUrl;
+	show_condition?: () => boolean;
 }
 
 @Component({
@@ -22,10 +26,13 @@ export interface Task {
 	templateUrl: require.toUrl('sql/parts/dashboard/widgets/tasks/tasksWidget.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
-export class TasksWidget extends DashboardWidget implements IDashboardWidget {
-	private _size: number = 108;
-	private _margins: number = 5;
+export class TasksWidget extends DashboardWidget implements IDashboardWidget, OnInit {
+	private isDarkTheme: boolean;
+	private _size: number = 100;
+	private _margins: number = 10;
+	private _trigger: number = 0;
 	private _rows: number = 2;
+	private _isAzure = false;
 	//tslint:disable-next-line
 	private tasks: Task[] = [
 		{
@@ -33,14 +40,16 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget {
 			action: () => {
 				this.newQuery();
 			},
-			icon: require.toUrl('sql/media/icons/file_inverse.svg')
+			icon: require.toUrl('sql/media/icons/file.svg'),
+			inverse_icon: require.toUrl('sql/media/icons/file_inverse.svg')
 		},
 		{
 			name: 'Create Database',
 			action: () => {
 				this.createDatabase();
 			},
-			icon: require.toUrl('sql/media/icons/new_database_inverse.svg')
+			icon: require.toUrl('sql/media/icons/new_database.svg'),
+			inverse_icon: require.toUrl('sql/media/icons/new_database_inverse.svg')
 		},
 		{
 			name: 'Backup',
@@ -48,24 +57,58 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget {
 				this.backup();
 			},
 			context: 'database',
-			icon: require.toUrl('sql/media/icons/backup_inverse.svg')
+			show_condition: (): boolean => {
+				return !this._isAzure;
+			},
+			icon: require.toUrl('sql/media/icons/backup.svg'),
+			inverse_icon: require.toUrl('sql/media/icons/backup_inverse.svg')
 		}
 	];
 
 	constructor(
 		@Inject(forwardRef(() => BootstrapServiceWrapper)) private _bootstrap: BootstrapServiceWrapper,
-		@Inject(forwardRef(() => DomSanitizer)) private _sanitizer: DomSanitizer
-	) {
-		super();
-		for (let task of this.tasks) {
-			if (task.icon) {
-				task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.icon + ') center center no-repeat');
+		@Inject(forwardRef(() => DomSanitizer)) private _sanitizer: DomSanitizer,
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef
+	) { super(); }
+
+	public ngOnInit(): void {
+		let self = this;
+		self._bootstrap.onThemeChange((e: IColorTheme) => {
+			self.updateIcons(e);
+		});
+		let theme = this._bootstrap.theme;
+		this.isDarkTheme = !theme.isDarkTheme();
+		self.updateIcons(theme);
+	}
+
+	private updateIcons(e: IColorTheme): void {
+		if (e.isDarkTheme() && !this.isDarkTheme) {
+			this.isDarkTheme = true;
+			for (let task of this.tasks) {
+				if (task.icon) {
+					task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.inverse_icon + ') center center no-repeat');
+				}
 			}
+			this._changeref.detectChanges();
+		} else if(e.isLightTheme() && this.isDarkTheme) {
+			this.isDarkTheme = false;
+			for (let task of this.tasks) {
+				if (task.icon) {
+					task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.icon + ') center center no-repeat');
+				}
+			}
+			this._changeref.detectChanges();
 		}
 	}
 
 	public load(config: WidgetConfig): boolean {
-		this._config = config;
+		let self = this;
+		self._config = config;
+		self._bootstrap.bootstrapParams.then(params => {
+			self._isAzure = params.connection.serverInfo.isCloud;
+			// trigger a refresh on the tasks to account for new info
+			self._trigger = self._trigger + 1;
+		});
 		return true;
 	}
 
@@ -83,10 +126,10 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget {
 
 	//tslint:disable-next-line
 	private calculateTransform(index: number): string {
-		let marginy = (((index % this._rows) + 1) * this._margins);
-		let marginx = (this._margins * (1 + (Math.floor(index / 2))));
-		let posx = ((this._size * (Math.floor(index / 2))) + marginx);
-		let posy = ((this._size * (index % this._rows)) + marginy);
+		let marginy = (1 + (index % this._rows)) * this._margins;
+		let marginx = (1 + (Math.floor(index / 2))) * this._margins;
+		let posx = (this._size * (Math.floor(index / 2))) + marginx;
+		let posy = (this._size * (index % this._rows)) + marginy;
 		return 'translate(' + posx + 'px, ' + posy  + 'px)';
 	}
 }

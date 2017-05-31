@@ -32,6 +32,14 @@
     overflow: scroll;
 }
 
+.vscode-dark .dashboard-widget {
+    background-color: rgb(37, 37, 38);
+}
+
+.vscode-light .dashboard-widget {
+    background-color: rgb(37, 37, 38);
+}
+
 .task-icon {
     opacity: 0.6;
 }
@@ -43,31 +51,33 @@
 /* Dropdown Button */
 .dropbtn {
     cursor: pointer;
-}
-
-/* The container <div> - needed to position the dropdown content */
-.dropdown {
-    position: relative;
-    display: inline-block;
+    opacity: 0.6
 }
 
 /* Dropdown Content (Hidden by Default) */
 .dropdown-content {
     display: none;
-    transform: translateX(-10px);
+    transform: translateX(-22px);
     position: absolute;
+    background: inherit;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
+    color: black
 }
 
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
     display: block;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: lightgray;
 }
 
 /* Change the background color of the dropdown button when the dropdown content is shown */
 .dropdown:hover .dropbtn {
-    color: white;
+    opacity: 1;
 }
 
 #connprofile {

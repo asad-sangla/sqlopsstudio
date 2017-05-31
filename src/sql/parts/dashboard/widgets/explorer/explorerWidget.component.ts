@@ -69,7 +69,6 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 		this.init();
 		return true;
 	}
-
 	private init(): void {
 		let self = this;
 		if (this._config.context === 'database') {

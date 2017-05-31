@@ -6,7 +6,7 @@
 -->
 <div class="dashboard-page" style="display: flex">
 	<div [ngGrid]="gridConfig" style="flex: 1 1 auto">
-		<dashboard-widget-wrapper *ngFor="let widget of widgets" style="overflow: hidden" [(ngGridItem)]="widget.gridItemConfig" [_config]="widget">
+		<dashboard-widget-wrapper *ngFor="let widget of widgets" [(ngGridItem)]="widget.gridItemConfig" [_config]="widget">
 		</dashboard-widget-wrapper>
 	</div>
 	<div style="flex: 0 0 auto; background-color: grey" height="100px">

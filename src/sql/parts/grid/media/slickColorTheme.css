@@ -166,6 +166,10 @@
   color: var(--color-content);
 }
 
+.vs .monaco-workbench .input {
+  background-color: white;
+}
+
 /*
  * vs-dark theme
  *

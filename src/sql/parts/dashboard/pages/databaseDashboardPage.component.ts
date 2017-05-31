@@ -11,7 +11,8 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 const widgets: Array<WidgetConfig> = [
 	{
 		name: 'Database Properties',
-		icon: 'sql/media/icons/database-inverse.svg',
+		icon: 'sql/media/icons/database.svg',
+		inverse_icon: 'sql/media/icons/database_inverse.svg',
 		selector: 'properties-widget',
 		gridItemConfig: {
 			sizex: 2,

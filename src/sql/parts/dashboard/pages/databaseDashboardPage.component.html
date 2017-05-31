@@ -6,7 +6,7 @@
 -->
 <div class="dashboard-page">
 	<div [ngGrid]="gridConfig">
-		<dashboard-widget-wrapper *ngFor="let widget of widgets" style="overflow: hidden" [(ngGridItem)]="widget.gridItemConfig" [_config]="widget">
+		<dashboard-widget-wrapper *ngFor="let widget of widgets" [(ngGridItem)]="widget.gridItemConfig" [_config]="widget">
 		</dashboard-widget-wrapper>
 	</div>
 </div>

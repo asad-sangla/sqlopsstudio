@@ -31,7 +31,7 @@ export class MetadataFilterPipe implements PipeTransform {
 		// save a local version of the string for comparison
 		let filterString = filter;
 
-		// determine is a filter applied
+		// determine is a filter is applied
 		let metadataType: MetadataType;
 
 		if (filter.indexOf(':') > 0) {
@@ -62,11 +62,12 @@ export class MetadataFilterPipe implements PipeTransform {
 			}
 		}
 
-		filterString = filterString.trim();
+		// format filter string for clean filter, no white space and lower case
+		filterString = filterString.trim().toLowerCase();
 
 		return items.filter(item => {
 			if (metadataType !== undefined) {
-				return item.metadata.metadataType === metadataType && item.metadata.name.includes(filterString);
+				return item.metadata.metadataType === metadataType && item.metadata.name.toLowerCase().includes(filterString);
 			} else {
 				return item.metadata.name.includes(filterString);
 			}

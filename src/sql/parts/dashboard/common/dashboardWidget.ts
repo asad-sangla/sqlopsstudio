@@ -11,6 +11,7 @@ export interface IDashboardWidget {
 export interface WidgetConfig {
 	name?: string;
 	icon?: string;
+	inverse_icon?: string;
 	loadedIcon?: string;
 	selector: string;
 	context: string;

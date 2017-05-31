@@ -9,7 +9,8 @@ import { $ } from 'vs/base/browser/dom';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { BootstrapParams } from 'sql/services/bootstrap/bootstrapParams';
-import { IConnectionManagementService, IConnectionDialogService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService }
+	from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
@@ -20,7 +21,7 @@ import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disa
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 
 export const BOOTSTRAP_SERVICE_ID: string = 'bootstrapService';
@@ -45,6 +46,7 @@ export interface IBootstrapService {
 	keybindingService: IKeybindingService;
 	contextKeyService: IContextKeyService;
 	contextMenuService: IContextMenuService;
+	themeService: IWorkbenchThemeService;
 	errorMessageService: IErrorMessageService;
 	partService: IPartService;
 
@@ -95,6 +97,7 @@ export class BootstrapService implements IBootstrapService {
 		@IScriptingService public scriptingService: IScriptingService,
 		@IQueryEditorService public queryEditorService: IQueryEditorService,
 		@IAdminService public adminService: IAdminService,
+		@IWorkbenchThemeService public themeService: IWorkbenchThemeService,
 		@IDisasterRecoveryService public disasterRecoveryService: IDisasterRecoveryService,
 		@IConnectionDialogService public connectionDialogService: IConnectionDialogService,
 		@IQueryModelService public queryModelService: IQueryModelService,
