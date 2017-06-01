@@ -7,16 +7,17 @@
 
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
+import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!./media/advancedProperties';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { SplitView, FixedCollapsibleView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
+import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
 import { AdvancedPropertiesHelper, IAdvancedPropertyElement } from 'sql/parts/connection/connectionDialog/advancedPropertiesHelper';
 import data = require('data');
-import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
+import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
@@ -79,11 +80,11 @@ export class AdvancedPropertiesDialog {
 
 	public create(): HTMLElement {
 		this._dialog = new ModalDialogBuilder('advancedDialogModal', 'Advanced Properties', 'advanced-dialog', 'advancedBody');
-		this._builder = this._dialog.create();
-		this._dialog.bodyContainer.div({class:'advancedDialog-properties', id: 'propertiesContent'});
+		this._builder = this._dialog.create(true);
+		this._dialog.bodyContainer.div({ class: 'advancedDialog-properties', id: 'propertiesContent' });
 		this._dialog.addErrorMessage();
-		this._dialog.bodyContainer.div({class:'advancedDialog-description'}, (descriptionContainer) => {
-			descriptionContainer.div({class:'modal-title'}, (propertyTitle) => {
+		this._dialog.bodyContainer.div({ class: 'advancedDialog-description' }, (descriptionContainer) => {
+			descriptionContainer.div({ class: 'modal-title' }, (propertyTitle) => {
 				this._propertyTitle = propertyTitle;
 			});
 			descriptionContainer.div({ class: 'advancedDialog-description-content' }, (propertyDescription) => {
@@ -110,7 +111,7 @@ export class AdvancedPropertiesDialog {
 	private fillInProperties(container: Builder, connectionOptions: data.ConnectionOption[]): void {
 		for (var i = 0; i < connectionOptions.length; i++) {
 			var property: data.ConnectionOption = connectionOptions[i];
-			var rowContainer = ConnectionDialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input');
+			var rowContainer = DialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input');
 			AdvancedPropertiesHelper.createAdvancedProperty(property, rowContainer, this._options, this._advancedPropertiesMap, (name) => this.onAdvancedPropertyLinkClicked(name));
 		}
 	}
@@ -127,7 +128,7 @@ export class AdvancedPropertiesDialog {
 
 	private createFooterButton(container: Builder, title: string): Button {
 		let button;
-		container.element('td', { class: 'footer-button' }, (cellContainer) => {
+		container.div({ class: 'footer-button' }, (cellContainer) => {
 			button = new Button(cellContainer);
 			button.label = title;
 			button.addListener2('click', () => {
@@ -156,7 +157,7 @@ export class AdvancedPropertiesDialog {
 
 	public ok(): void {
 		var errorMsg = AdvancedPropertiesHelper.validateInputs(this._advancedPropertiesMap);
-		if (ConnectionDialogHelper.isEmptyString(errorMsg)) {
+		if (DialogHelper.isEmptyString(errorMsg)) {
 			AdvancedPropertiesHelper.updateProperties(this._options, this._advancedPropertiesMap);
 			this._callbacks.onOk();
 			this.close();
@@ -177,7 +178,7 @@ export class AdvancedPropertiesDialog {
 		this._callbacks.onClose();
 	}
 
-	public open(connectionPropertiesMaps: { [category: string]:  data.ConnectionOption[] }, options: { [name: string]: any }) {
+	public open(connectionPropertiesMaps: { [category: string]: data.ConnectionOption[] }, options: { [name: string]: any }) {
 		this._options = options;
 		var firstProperty: string;
 		var containerGroup: Builder;

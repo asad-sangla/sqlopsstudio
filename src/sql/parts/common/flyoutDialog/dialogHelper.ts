@@ -7,40 +7,40 @@
 
 import { Builder } from 'vs/base/browser/builder';
 import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
-import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
+import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 
-export class ConnectionDialogHelper {
+export class DialogHelper {
 	static appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
 		let cellContainer: Builder;
 		container.element('tr', {}, (rowContainer) => {
-				rowContainer.element('td', {class: labelClass}, (labelCellContainer) => {
-						labelCellContainer.div({}, (labelContainer) => {
-								labelContainer.innerHtml(label);
-						});
+			rowContainer.element('td', { class: labelClass }, (labelCellContainer) => {
+				labelCellContainer.div({}, (labelContainer) => {
+					labelContainer.innerHtml(label);
 				});
-				rowContainer.element('td', {class: cellContainerClass}, (inputCellContainer) => {
-					cellContainer = inputCellContainer;
-				});
+			});
+			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
+				cellContainer = inputCellContainer;
+			});
 		});
 
 		return cellContainer;
 	}
 
 	static appendRowLink(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
-		let rowButton:Button;
+		let rowButton: Button;
 		container.element('tr', {}, (rowContainer) => {
-				rowContainer.element('td', {class: labelClass}, (labelCellContainer) => {
-						labelCellContainer.div({}, (labelContainer) => {
-								labelContainer.innerHtml(label);
-						});
+			rowContainer.element('td', { class: labelClass }, (labelCellContainer) => {
+				labelCellContainer.div({}, (labelContainer) => {
+					labelContainer.innerHtml(label);
 				});
-				rowContainer.element('td', {class: cellContainerClass}, (inputCellContainer) => {
-					inputCellContainer.element('div', {}, (rowContainer) => {
-						rowButton = new Button(rowContainer);
+			});
+			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
+				inputCellContainer.element('div', {}, (rowContainer) => {
+					rowButton = new Button(rowContainer);
 
-					});
 				});
+			});
 		});
 
 		return new Builder(rowButton.getElement());
@@ -50,12 +50,12 @@ export class ConnectionDialogHelper {
 		return new InputBox(container.getHTMLElement(), null, options);
 	}
 
-	static appendInputSelectBox(container: Builder, selectBox: ConnectionDialogSelectBox): ConnectionDialogSelectBox {
+	static appendInputSelectBox(container: Builder, selectBox: DialogSelectBox): DialogSelectBox {
 		selectBox.render(container.getHTMLElement());
 		return selectBox;
 	}
 
-	static isNumeric(num): boolean	{
+	static isNumeric(num): boolean {
 		return !isNaN(num);
 	}
 

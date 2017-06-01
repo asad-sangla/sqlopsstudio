@@ -5,10 +5,10 @@
 
 'use strict';
 
-import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
+import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
 import { Builder } from 'vs/base/browser/builder';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
-import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
+import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import data = require('data');
 
@@ -26,9 +26,9 @@ export class AdvancedPropertiesHelper {
 		var inputElement: HTMLElement;
 		switch (property.valueType) {
 			case ServiceOptionType.number:
-				propertyWidget = ConnectionDialogHelper.appendInputBox(rowContainer, {
+				propertyWidget = DialogHelper.appendInputBox(rowContainer, {
 					validationOptions: {
-						validation: (value: string) => !ConnectionDialogHelper.isNumeric(value) ? ({ type: MessageType.ERROR, content: 'Invalid input.  Numeric value expected.' }) : null
+						validation: (value: string) => !DialogHelper.isNumeric(value) ? ({ type: MessageType.ERROR, content: 'Invalid input.  Numeric value expected.' }) : null
 					}
 				});
 				propertyWidget.value = optionValue;
@@ -36,13 +36,13 @@ export class AdvancedPropertiesHelper {
 				break;
 			case ServiceOptionType.category:
 			case ServiceOptionType.boolean:
-				propertyWidget = new ConnectionDialogSelectBox(possibleInputs, optionValue.toString());
-				ConnectionDialogHelper.appendInputSelectBox(rowContainer, propertyWidget);
+				propertyWidget = new DialogSelectBox(possibleInputs, optionValue.toString());
+				DialogHelper.appendInputSelectBox(rowContainer, propertyWidget);
 				inputElement = this.findElement(rowContainer, 'select-box');
 				break;
 			case ServiceOptionType.string:
 			case ServiceOptionType.password:
-				propertyWidget = ConnectionDialogHelper.appendInputBox(rowContainer);
+				propertyWidget = DialogHelper.appendInputBox(rowContainer);
 				propertyWidget.value = optionValue;
 				if (property.valueType === ServiceOptionType.password) {
 					propertyWidget.inputElement.type = 'password';
@@ -97,14 +97,14 @@ export class AdvancedPropertiesHelper {
 			var widget = propertyElement.advancedPropertyWidget;
 			var isInputBox = (propertyElement.advancedProperty.valueType === ServiceOptionType.string ||
 				propertyElement.advancedProperty.valueType === ServiceOptionType.password ||
-				propertyElement.advancedProperty.valueType === ServiceOptionType.number );
+				propertyElement.advancedProperty.valueType === ServiceOptionType.number);
 
 			if (propertyElement.advancedProperty.valueType === ServiceOptionType.number) {
 				if (!widget.isInputValid()) {
 					errorMsg += propertyElement.advancedProperty.displayName + requiredNumberInput;
 				}
 			}
-			if (propertyElement.advancedProperty.isRequired && ConnectionDialogHelper.isEmptyString(widget.value) && isInputBox) {
+			if (propertyElement.advancedProperty.isRequired && DialogHelper.isEmptyString(widget.value) && isInputBox) {
 				widget.showMessage({ type: MessageType.ERROR, content: 'Missing required input.' });
 				errorMsg += propertyElement.advancedProperty.displayName + missingInputMsg;
 			}
@@ -116,10 +116,10 @@ export class AdvancedPropertiesHelper {
 		for (var key in advancedPropertiesMap) {
 			var propertyElement: IAdvancedPropertyElement = advancedPropertiesMap[key];
 			if (propertyElement.advancedPropertyWidget.value !== propertyElement.propertyValue) {
-				if (ConnectionDialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value) && options[key]) {
+				if (DialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value) && options[key]) {
 					delete options[key];
 				}
-				if (!ConnectionDialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value)) {
+				if (!DialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value)) {
 					if (propertyElement.advancedProperty.valueType === ServiceOptionType.boolean) {
 						options[key] = (propertyElement.advancedPropertyWidget.value === this.trueInputValue) ? true : false;
 					} else {

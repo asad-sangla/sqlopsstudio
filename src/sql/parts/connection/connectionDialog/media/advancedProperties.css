@@ -3,20 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.monaco-shell .advanced-dialog .modal-dialog  {
-	margin: auto auto auto auto;
-	height: calc(100% - 23px);
-	width: 500px;
-	right: -18px;
-	position: absolute;
-	overflow-y: hidden;
-}
-
-.monaco-shell .advanced-dialog .modal-body{
-	height: calc(100% - 138px);
-	overflow-y: auto;
-}
-
 .advancedDialog-label {
 	width: 120px;
 	padding-bottom: 5px;
@@ -28,35 +14,9 @@
 	padding-right: 7px;
 }
 
-.vs-dark.monaco-shell .advanced-dialog .input {
-	background-color: #3C3C3C;
-}
-
-.vs-dark.monaco-shell .advanced-dialog input:disabled {
-	background-color: #E1E1E1;
-}
-
 .advanced-dialog .select-box {
 	width: 321px;
-	height: 25px;
-	color: #6C6C6C;
-	font-size: 11px;
-	border: 1px solid transparent;
 	margin-left: 1px;
-	width: 100%;
-}
-
-.advanced-dialog .modal-title {
-	font-size: 15px;
-}
-
-.vs-dark.monaco-shell .advanced-dialog .select-box {
-	background: #3C3C3C;
-	color: #BBB;
-}
-
-.advanced-dialog .footer-buttons {
-	width: 200px;
 }
 
 #propertiesContent {
@@ -90,17 +50,4 @@
 
 td.advancedDialog-input.select-container {
 	padding-right: 9px;
-}
-
-.advanced-dialog .dialogErrorMessage {
-	overflow: hidden;
-	padding-left: 10px;
-	overflow-y: auto;
-	max-height: 50px;
-}
-
-.advanced-dialog .errorIcon {
-	float: left;
-	padding-right: 10px;
-	padding-left: 10px;
 }

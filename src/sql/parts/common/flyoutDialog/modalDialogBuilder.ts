@@ -26,9 +26,12 @@ export class ModalDialogBuilder {
 	) {
 	}
 
-	public create(): Builder {
+	public create(flyout: boolean): Builder {
 		this._builder = $().div({}, (div: Builder) => {
 			div.div({ class: 'modal fade', id: this._id, 'role': 'dialog' }, (dialogContainer) => {
+				if (flyout) {
+					dialogContainer.getHTMLElement().classList.add('flyout-dialog');
+				}
 				dialogContainer.div({ class: 'modal-dialog ', role: 'document' }, (modalDialog) => {
 					modalDialog.div({ class: 'modal-content' }, (modelContent) => {
 						modelContent.div({ class: 'modal-header' }, (modalHeader) => {
@@ -44,16 +47,12 @@ export class ModalDialogBuilder {
 							this._modelBody = modelBody;
 						});
 						modelContent.div({ class: 'modal-footer' }, (modelFooter) => {
-							modelFooter.element('table', { class: 'footer-buttons', align: 'right' }, (tableContainer) => {
-								tableContainer.element('tr', {}, (rowContainer) => {
-									this._footerBuilder = rowContainer;
-									rowContainer.element('td', { class: 'footer-spinner' }, (cellContainer) => {
-										cellContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {
-											this._spinnerElement = spinnerElement.getHTMLElement();
-										});
-									});
+							modelFooter.div({ 'class': 'footer-spinner' }, (spinnerContainer) => {
+								spinnerContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {
+									this._spinnerElement = spinnerElement.getHTMLElement();
 								});
 							});
+							this._footerBuilder = modelFooter;
 						});
 					});
 				});
@@ -107,7 +106,7 @@ export class ModalDialogBuilder {
 			errorMessageContainer.div({ class: 'errorIcon' }, (iconContainer) => {
 				iconContainer.element('img', { 'class': 'error-icon' });
 				this._errorIconElement = iconContainer.getHTMLElement();
-				let iconFilePath = require.toUrl('sql/media/status-error.svg');
+				let iconFilePath = require.toUrl('sql/parts/common/flyoutDialog/media/status-error.svg');
 				this._errorIconElement.style.content = 'url(' + iconFilePath + ')';
 				this._errorIconElement.style.visibility = 'hidden';
 			});

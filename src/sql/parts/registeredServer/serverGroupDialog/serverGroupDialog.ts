@@ -6,11 +6,12 @@
 'use strict';
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
+import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!./media/serverGroupDialog';
 import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
-import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
+import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
+import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
 import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import DOM = require('vs/base/browser/dom');
@@ -58,7 +59,7 @@ export class ServerGroupDialog {
 
 	public create(): HTMLElement {
 		this._dialog = new ModalDialogBuilder('serverGroupDialogModal', this._addServerGroupTitle, 'server-group-dialog', 'serverGroupDialogBody');
-		this._builder = this._dialog.create();
+		this._builder = this._dialog.create(true);
 		this._dialog.addModalTitle();
 
 		this._dialog.bodyContainer.div({ class: 'add-server-group-body' }, (addServerGroupContent) => {
@@ -67,7 +68,7 @@ export class ServerGroupDialog {
 				labelContainer.innerHtml('Connection Group Name');
 			});
 			addServerGroupContent.div({ class: 'serverGroup-input' }, (inputCellContainer) => {
-				this._groupNameInputBox = ConnectionDialogHelper.appendInputBox(inputCellContainer);
+				this._groupNameInputBox = DialogHelper.appendInputBox(inputCellContainer);
 			});
 
 			// Connection Group Description
@@ -75,7 +76,7 @@ export class ServerGroupDialog {
 				labelContainer.innerHtml('Group Description');
 			});
 			addServerGroupContent.div({ class: 'serverGroup-input' }, (inputCellContainer) => {
-				this._groupDescriptionInputBox = ConnectionDialogHelper.appendInputBox(inputCellContainer);
+				this._groupDescriptionInputBox = DialogHelper.appendInputBox(inputCellContainer);
 			});
 
 			// Connection Group Color
@@ -196,19 +197,16 @@ export class ServerGroupDialog {
 
 	private createFooterButton(container: Builder, title: string): Button {
 		let button;
-		container.element('td', (cellContainer) => {
-			cellContainer.div({ class: 'footer-button' }, (buttonContainer) => {
-				button = new Button(buttonContainer);
-				button.label = title;
-				button.addListener2('click', () => {
-					if (title === 'OK') {
-						this.addGroup();
-					} else {
-						this.cancel();
-					}
-				});
+		container.div({ class: 'footer-button' }, (buttonContainer) => {
+			button = new Button(buttonContainer);
+			button.label = title;
+			button.addListener2('click', () => {
+				if (title === 'OK') {
+					this.addGroup();
+				} else {
+					this.cancel();
+				}
 			});
-
 		});
 
 		return button;
@@ -252,7 +250,7 @@ export class ServerGroupDialog {
 	}
 
 	private validateInputs(): boolean {
-		if (ConnectionDialogHelper.isEmptyString(this.groupName)) {
+		if (DialogHelper.isEmptyString(this.groupName)) {
 			var errorMsg = 'Group name is required.';
 			this.showError(errorMsg);
 			this._groupNameInputBox.showMessage({ type: MessageType.ERROR, content: errorMsg });

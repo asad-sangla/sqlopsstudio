@@ -12,8 +12,8 @@ import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
-import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
+import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
+import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
 import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -23,7 +23,7 @@ import data = require('data');
 
 export class ConnectionWidget {
 	private _builder: Builder;
-	private _serverGroupSelectBox: ConnectionDialogSelectBox;
+	private _serverGroupSelectBox: DialogSelectBox;
 	private _serverGroupOptions: string[];
 	private _serverNameInputBox: InputBox;
 	private _databaseNameInputBox: InputBox;
@@ -32,7 +32,7 @@ export class ConnectionWidget {
 	private _rememberPasswordCheckBox: Checkbox;
 	private _advancedButton: Button;
 	private _callbacks: IConnectionComponentCallbacks;
-	private _authTypeSelectBox: ConnectionDialogSelectBox;
+	private _authTypeSelectBox: DialogSelectBox;
 	private _toDispose: lifecycle.IDisposable[];
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
 	private _tableContainer: Builder;
@@ -56,13 +56,13 @@ export class ConnectionWidget {
 		}
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		this._authTypeSelectBox = new ConnectionDialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
+		this._authTypeSelectBox = new DialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
 		this._providerName = providerName;
 	}
 
 	public createConnectionWidget(): HTMLElement {
 		this._serverGroupOptions = [this.DefaultServerGroup];
-		this._serverGroupSelectBox = new ConnectionDialogSelectBox(this._serverGroupOptions, this.DefaultServerGroup);
+		this._serverGroupSelectBox = new DialogSelectBox(this._serverGroupOptions, this.DefaultServerGroup);
 		this._builder = $().div({ class: 'connection-table' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this._tableContainer = tableContainer;
@@ -75,20 +75,20 @@ export class ConnectionWidget {
 	}
 
 	private fillInConnectionForm(): void {
-		this._serverNameInputBox = ConnectionDialogHelper.appendInputBox(
-			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.serverName].displayName, 'connection-label', 'connection-input'));
-		ConnectionDialogHelper.appendInputSelectBox(
-			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.authType].displayName, 'connection-label', 'connection-input'), this._authTypeSelectBox);
-		this._userNameInputBox = ConnectionDialogHelper.appendInputBox(
-			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.userName].displayName, 'connection-label', 'connection-input'));
-		this._passwordInputBox = ConnectionDialogHelper.appendInputBox(
-			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.password].displayName, 'connection-label', 'connection-input'));
+		this._serverNameInputBox = DialogHelper.appendInputBox(
+			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.serverName].displayName, 'connection-label', 'connection-input'));
+		DialogHelper.appendInputSelectBox(
+			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.authType].displayName, 'connection-label', 'connection-input'), this._authTypeSelectBox);
+		this._userNameInputBox = DialogHelper.appendInputBox(
+			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.userName].displayName, 'connection-label', 'connection-input'));
+		this._passwordInputBox = DialogHelper.appendInputBox(
+			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.password].displayName, 'connection-label', 'connection-input'));
 		this._passwordInputBox.inputElement.type = 'password';
-		this._rememberPasswordCheckBox = this.appendCheckbox(this._tableContainer, 'Remember Password', 'connection-checkbox', 'connection-input', false);
-		this._databaseNameInputBox = ConnectionDialogHelper.appendInputBox(
-			ConnectionDialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.databaseName].displayName, 'connection-label', 'connection-input'));
-		ConnectionDialogHelper.appendInputSelectBox(
-			ConnectionDialogHelper.appendRow(this._tableContainer, 'Server Group', 'connection-label', 'connection-input'), this._serverGroupSelectBox);
+		this._rememberPasswordCheckBox = this.appendCheckbox(this._tableContainer, 'Remember Password', 'sql-checkbox', 'connection-input', false);
+		this._databaseNameInputBox = DialogHelper.appendInputBox(
+			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.databaseName].displayName, 'connection-label', 'connection-input'));
+		DialogHelper.appendInputSelectBox(
+			DialogHelper.appendRow(this._tableContainer, 'Server Group', 'connection-label', 'connection-input'), this._serverGroupSelectBox);
 		this._advancedButton = this.createAdvancedButton(this._tableContainer, 'Advanced...');
 	}
 
@@ -182,7 +182,7 @@ export class ConnectionWidget {
 	}
 
 	private serverNameChanged(serverName: string) {
-		this._callbacks.onSetConnectButton(!ConnectionDialogHelper.isEmptyString(serverName));
+		this._callbacks.onSetConnectButton(!DialogHelper.isEmptyString(serverName));
 		if (this.isSubsetString(serverName.toLocaleLowerCase(), 'database.windows.net')) {
 			this._callbacks.onSetAzureTimeOut();
 		}
@@ -314,18 +314,18 @@ export class ConnectionWidget {
 		let currentAuthType = this.getMatchingAuthType(this._authTypeSelectBox.value);
 		if (currentAuthType.showUsernameAndPassword) {
 			option = this._optionsMaps[ConnectionOptionSpecialType.userName];
-			if (ConnectionDialogHelper.isEmptyString(this.userName) && option.isRequired) {
+			if (DialogHelper.isEmptyString(this.userName) && option.isRequired) {
 				validInputs = false;
 				this._userNameInputBox.showMessage({ type: MessageType.ERROR, content: 'User name is required.' });
 			}
 			option = this._optionsMaps[ConnectionOptionSpecialType.password];
-			if (ConnectionDialogHelper.isEmptyString(this.password) && option.isRequired) {
+			if (DialogHelper.isEmptyString(this.password) && option.isRequired) {
 				validInputs = false;
 				this._passwordInputBox.showMessage({ type: MessageType.ERROR, content: 'Password is required.' });
 			}
 		}
 		option = this._optionsMaps[ConnectionOptionSpecialType.databaseName];
-		if (ConnectionDialogHelper.isEmptyString(this.databaseName) && option.isRequired) {
+		if (DialogHelper.isEmptyString(this.databaseName) && option.isRequired) {
 			validInputs = false;
 			this._databaseNameInputBox.showMessage({ type: MessageType.ERROR, content: 'Database name is required.' });
 		}

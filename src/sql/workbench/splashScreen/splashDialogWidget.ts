@@ -10,7 +10,7 @@ import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/splashScreen';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
+import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export interface IConnectionDialogCallbacks {
@@ -33,7 +33,7 @@ export class SplashDialogWidget {
 
 	public create(): HTMLElement {
 		this._dialog = new ModalDialogBuilder('splashDialogModal', '', 'splash-dialog-widget', 'splashDialogBody');
-		this._builder = this._dialog.create();
+		this._builder = this._dialog.create(false);
 		this._dialog.addModalTitle();
 		this._builder.build(this._container);
 		return this._builder.getHTMLElement();

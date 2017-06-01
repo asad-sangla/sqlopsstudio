@@ -1,0 +1,141 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Theming */
+.monaco-shell .modal.flyout-dialog  {
+	background-color: rgba(0,0,0,0.4);
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog  {
+	background-color: rgba(74, 73, 73, 0.4);
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog .modal-content{
+	background-color: #252526;
+}
+
+.hc-black.monaco-shell .modal.flyout-dialog .modal-content{
+	background-color: #000;
+}
+
+.monaco-shell .modal.flyout-dialog .modal-dialog  {
+	margin: auto auto auto auto;
+	height: calc(100% - 23px);
+	width: 500px;
+	right: -18px;
+	position: absolute;
+	overflow-y: hidden;
+}
+
+.monaco-shell .modal.flyout-dialog .modal-content{
+	background-color: #F3F3F3;
+	height: 100%;
+	width: calc(100% - 20px);
+	font-size: 11px;
+}
+
+.monaco-shell .modal.flyout-dialog .modal-body{
+	height: calc(100% - 108px);
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog .input {
+	background-color: #3C3C3C;
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog input:disabled {
+	background-color: #E1E1E1;
+}
+
+.modal.flyout-dialog .select-box {
+	width: 100%;
+	height: 25px;
+	color: #6C6C6C;
+	font-size: 11px;
+	border: 1px solid transparent;
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog .select-box {
+	background: #3C3C3C;
+	color: #BBB;
+}
+
+.modal.flyout-dialog .modal-title {
+	font-size: 15px;
+}
+
+.modal.flyout-dialog .dialogErrorMessage {
+	overflow: hidden;
+	padding-left: 10px;
+	overflow-y: auto;
+	max-height: 50px;
+}
+
+.modal.flyout-dialog .modal-footer {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button {
+	padding-right:8px;
+	width: 100px;
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button {
+	outline-color: #8e8c8c;
+}
+
+.modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button:focus {
+	outline-width: 1px;
+}
+
+.modal.flyout-dialog .footer-spinner {
+	display: flex;
+	flex: 1;
+}
+
+.modal.flyout-dialog .hiddenSpinner {
+	content: url(progress_36x_animation.gif);
+	width: 20px;
+	height: 20px;
+	visibility: hidden;
+}
+
+.modal.flyout-dialog .spinner {
+	content: url(progress_36x_animation.gif);
+	width: 30px;
+	visibility: visible;
+}
+
+.modal.flyout-dialog .errorIcon {
+	float: left;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+
+.modal.flyout-dialog .custom-checkbox.sql-checkbox {
+	margin-right: 5px;
+	margin-top: 2px;
+	width: 12px;
+	height: 12px;
+}
+
+.modal.flyout-dialog .custom-checkbox.sql-checkbox.checked {
+	background: url('check.svg') center center no-repeat;
+	border-color:#3C3C3C;
+}
+
+.modal.flyout-dialog .custom-checkbox.sql-checkbox.unchecked {
+	border-color:#3C3C3C;
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog .custom-checkbox.sql-checkbox.checked {
+	background: url('check.svg') center center no-repeat;
+	border-color:#3C3C3C;
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog .custom-checkbox.sql-checkbox.unchecked {
+	background-color: #3C3C3C;
+	border-color: #E1E1E1;
+}

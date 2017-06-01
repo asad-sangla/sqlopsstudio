@@ -7,7 +7,7 @@
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 
-export class ConnectionDialogSelectBox extends SelectBox {
+export class DialogSelectBox extends SelectBox {
 	private _optionsDictionary;
 	private _dialogOptions: string[];
 	private _selectedOption: string;
@@ -16,7 +16,7 @@ export class ConnectionDialogSelectBox extends SelectBox {
 	constructor(options: string[], selectedOption: string) {
 		super(options, 0);
 		this._optionsDictionary = new Array();
-		for (var i = 0; i<options.length; i++) {
+		for (var i = 0; i < options.length; i++) {
 			this._optionsDictionary[options[i]] = i;
 		}
 		super.select(this._optionsDictionary[selectedOption]);
@@ -24,7 +24,7 @@ export class ConnectionDialogSelectBox extends SelectBox {
 		this._dialogOptions = options;
 		this._toDispose2 = [];
 		this._toDispose2.push(this.onDidSelect(newInput => {
-			this._selectedOption  = newInput;
+			this._selectedOption = newInput;
 		}));
 	}
 
@@ -36,14 +36,14 @@ export class ConnectionDialogSelectBox extends SelectBox {
 
 	public select(index: number): void {
 		super.select(index);
-		if (this._dialogOptions !== undefined){
+		if (this._dialogOptions !== undefined) {
 			this._selectedOption = this._dialogOptions[index];
 		}
 	}
 
 	public setOptions(options: string[], selected?: number, disabled?: number): void {
 		this._optionsDictionary = [];
-		for (var i = 0; i<options.length; i++) {
+		for (var i = 0; i < options.length; i++) {
 			this._optionsDictionary[options[i]] = i;
 		}
 		this._dialogOptions = options;

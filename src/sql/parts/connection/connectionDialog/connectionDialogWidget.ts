@@ -6,20 +6,21 @@
 'use strict';
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
+import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!./media/connectionDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { ConnectionDialogSelectBox } from 'sql/parts/connection/connectionDialog/connectionDialogSelectBox';
+import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ModalDialogBuilder } from 'sql/parts/connection/connectionDialog/modalDialogBuilder';
+import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
-import { ConnectionDialogHelper } from 'sql/parts/connection/connectionDialog/connectionDialogHelper';
+import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import data = require('data');
@@ -40,7 +41,7 @@ export class ConnectionDialogWidget {
 	private _connectButton: Button;
 	private _closeButton: Button;
 	private _dialog: ModalDialogBuilder;
-	private _providerTypeSelectBox: ConnectionDialogSelectBox;
+	private _providerTypeSelectBox: DialogSelectBox;
 	private _toDispose: lifecycle.IDisposable[];
 	private _newConnectionParams: INewConnectionParams;
 
@@ -54,18 +55,18 @@ export class ConnectionDialogWidget {
 	}
 
 	public create(providerTypeOptions: string[], selectedProviderType: string): HTMLElement {
-		this._providerTypeSelectBox = new ConnectionDialogSelectBox(providerTypeOptions, selectedProviderType);
+		this._providerTypeSelectBox = new DialogSelectBox(providerTypeOptions, selectedProviderType);
 
 		this._dialog = new ModalDialogBuilder('connectionDialogModal', 'New Connection', 'connection-dialog-widget', 'connectionDialogBody');
-		this._builder = this._dialog.create();
+		this._builder = this._dialog.create(true);
 		this._dialog.addModalTitle();
 
 		this._dialog.bodyContainer.div({ class: 'connection-recent', id: 'recentConnection' });
 		this._dialog.addErrorMessage();
 		this._dialog.bodyContainer.div({ class: 'Connection-type' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
-				ConnectionDialogHelper.appendInputSelectBox(
-					ConnectionDialogHelper.appendRow(tableContainer, 'Connection Type', 'connection-label', 'connection-input'), this._providerTypeSelectBox);
+				DialogHelper.appendInputSelectBox(
+					DialogHelper.appendRow(tableContainer, 'Connection Type', 'connection-label', 'connection-input'), this._providerTypeSelectBox);
 			});
 		});
 
@@ -98,19 +99,16 @@ export class ConnectionDialogWidget {
 
 	private createFooterButton(container: Builder, title: string): Button {
 		let button;
-		container.element('td', (cellContainer) => {
-			cellContainer.div({ class: 'footer-button' }, (buttonContainer) => {
-				button = new Button(buttonContainer);
-				button.label = title;
-				button.addListener2('click', () => {
-					if (title === 'Connect') {
-						this.connect();
-					} else {
-						this.cancel();
-					}
-				});
+		container.div({ class: 'footer-button' }, (buttonContainer) => {
+			button = new Button(buttonContainer);
+			button.label = title;
+			button.addListener2('click', () => {
+				if (title === 'Connect') {
+					this.connect();
+				} else {
+					this.cancel();
+				}
 			});
-
 		});
 
 		return button;
