@@ -7,7 +7,7 @@ import { Component, Inject, forwardRef } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
-import { BootstrapServiceWrapper } from 'sql/parts/dashboard/services/bootstrapServiceWrapper.service';
+import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
 
@@ -60,7 +60,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 	];
 
 	constructor(
-		@Inject(forwardRef(() => BootstrapServiceWrapper)) private _bootstrap: BootstrapServiceWrapper,
+		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
 		@Inject(forwardRef(() => Router)) private _router: Router
 	) { super(); }
 

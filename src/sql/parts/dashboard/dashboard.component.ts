@@ -12,7 +12,7 @@ import { MenuItem } from 'primeng/primeng';
 import { OnInit, Component, Inject, forwardRef, ElementRef } from '@angular/core';
 
 import { BreadcrumbService } from './services/breadcrumb.service';
-import { BootstrapServiceWrapper } from './services/bootstrapServiceWrapper.service';
+import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
 
 export const DASHBOARD_SELECTOR: string = 'dashboard-component';
 
@@ -26,7 +26,7 @@ export class DashboardComponent implements OnInit {
 
 	constructor(
 		@Inject(forwardRef(() => BreadcrumbService)) private _breadcrumbService: BreadcrumbService,
-		@Inject(forwardRef(() => BootstrapServiceWrapper)) private _bootstrapService: BootstrapServiceWrapper,
+		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrapService: DashboardServiceInterface,
 		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef
 		) {
 			this.breadcrumbItems = [];

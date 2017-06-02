@@ -14,7 +14,7 @@ import { IDashboardWidget, WidgetConfig } from './dashboardWidget';
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
 import { ExplorerWidget } from 'sql/parts/dashboard/widgets/explorer/explorerWidget.component';
 import { TasksWidget } from 'sql/parts/dashboard/widgets/tasks/tasksWidget.component';
-import { BootstrapServiceWrapper } from 'sql/parts/dashboard/services/bootstrapServiceWrapper.service';
+import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
 const componentMap = {
 	'properties-widget': PropertiesWidgetComponent,
@@ -35,7 +35,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit {
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
 		@Inject(forwardRef(() => ElementRef)) private _ref: ElementRef,
-		@Inject(forwardRef(() => BootstrapServiceWrapper)) private _bootstrap: BootstrapServiceWrapper,
+		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef
 	) { }
 

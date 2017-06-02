@@ -9,7 +9,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
-import { BootstrapServiceWrapper } from 'sql/parts/dashboard/services/bootstrapServiceWrapper.service';
+import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
 export interface Task {
 	name: string;
@@ -66,7 +66,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	];
 
 	constructor(
-		@Inject(forwardRef(() => BootstrapServiceWrapper)) private _bootstrap: BootstrapServiceWrapper,
+		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
 		@Inject(forwardRef(() => DomSanitizer)) private _sanitizer: DomSanitizer,
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef
 	) { super(); }
@@ -104,8 +104,8 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	public load(config: WidgetConfig): boolean {
 		let self = this;
 		self._config = config;
-		self._bootstrap.bootstrapParams.then(params => {
-			self._isAzure = params.connection.serverInfo.isCloud;
+		self._bootstrap.connectionInfo.then(connection => {
+			self._isAzure = connection.serverInfo.isCloud;
 			// trigger a refresh on the tasks to account for new info
 			self._trigger = self._trigger + 1;
 		});

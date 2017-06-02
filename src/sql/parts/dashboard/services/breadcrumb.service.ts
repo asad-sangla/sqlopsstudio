@@ -8,7 +8,7 @@ import { Subject } from 'rxjs/Rx';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 import { MenuItem } from 'primeng/primeng';
-import { BootstrapServiceWrapper } from './bootstrapServiceWrapper.service';
+import { DashboardServiceInterface } from './dashboardServiceInterface.service';
 
 export enum BreadcrumbClass {
 	DatabasePage = 0,
@@ -22,13 +22,16 @@ export class BreadcrumbService {
     private _connection: ConnectionManagementInfo;
     private _connectionWaitPromise: Promise<void>;
 
-    constructor(@Inject(forwardRef(() => BootstrapServiceWrapper)) private _bootstrap: BootstrapServiceWrapper) {
+    constructor(@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) {
         let self = this;
         self._connectionWaitPromise = new Promise<void>((resolve) => {
-            self._bootstrap.bootstrapParams.then((data) => {
-                self._connection = data.connection;
+            self._bootstrap.connectionInfo.then((data) => {
+                self._connection = data;
                 resolve();
             });
+        });
+        self._bootstrap.onConnectionChange((e: ConnectionManagementInfo) => {
+            self._connection = e;
         });
         self.breadcrumbItem = new Subject<MenuItem[]>();
     }

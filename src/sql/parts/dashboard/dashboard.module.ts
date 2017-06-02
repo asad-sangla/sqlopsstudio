@@ -15,7 +15,7 @@ import { ButtonModule, DataTableModule, SharedModule, DropdownModule, MessagesMo
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 /* Services */
 import { BreadcrumbService } from 'sql/parts/dashboard/services/breadcrumb.service';
-import { BootstrapServiceWrapper } from 'sql/parts/dashboard/services/bootstrapServiceWrapper.service';
+import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 /* Directives */
 import { WidgetDirective } from 'sql/parts/dashboard/common/widget.directive';
 /* Base Components */
@@ -80,7 +80,7 @@ const appRoutes: Routes = [
 	providers: [
 		{ provide: APP_BASE_HREF, useValue: '/' },
 		BreadcrumbService,
-		BootstrapServiceWrapper
+		DashboardServiceInterface
 	]
 })
 export class DashboardModule {

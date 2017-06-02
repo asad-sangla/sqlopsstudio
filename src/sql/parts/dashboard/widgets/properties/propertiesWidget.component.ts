@@ -6,7 +6,7 @@
 import { Component, Inject, forwardRef } from '@angular/core';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
-import { BootstrapServiceWrapper } from 'sql/parts/dashboard/services/bootstrapServiceWrapper.service';
+import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 @Component({
@@ -18,11 +18,11 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	private _connection: ConnectionManagementInfo;
 
 	constructor(
-		@Inject(forwardRef(() => BootstrapServiceWrapper)) private _bootstrap: BootstrapServiceWrapper
+		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface
 	) {
 		super();
-		this._bootstrap.bootstrapParams.then((data) => {
-			this._connection = data.connection;
+		this._bootstrap.connectionInfo.then((data) => {
+			this._connection = data;
 		});
 	}
 
