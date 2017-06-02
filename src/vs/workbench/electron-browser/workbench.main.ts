@@ -121,7 +121,8 @@ import 'vs/workbench/parts/watermark/electron-browser/watermark';
 // import 'vs/workbench/parts/welcome/overlay/browser/welcomeOverlay';
 
 // SQL
-
+import 'sql/parts/taskHistory/common/taskHistory.contribution';
+import 'sql/parts/taskHistory/viewlet/taskHistoryViewlet';
 import 'sql/parts/tasks/common/tasks.contribution';
 import 'sql/parts/registeredServer/common/registeredServer.contribution';
 import 'sql/parts/registeredServer/viewlet/connectionViewlet';
