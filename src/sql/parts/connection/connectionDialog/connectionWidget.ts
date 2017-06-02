@@ -37,9 +37,9 @@ export class ConnectionWidget {
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
 	private _tableContainer: Builder;
 	private _providerName: string;
-	private _authTypeMap: { [providerName: string]: [AuthenticationType] } = {
+	private _authTypeMap: { [providerName: string]: AuthenticationType[]} = {
 		[Constants.mssqlProviderName]: [new AuthenticationType('Integrated', false), new AuthenticationType('SqlLogin', true)],
-		[Constants.pgsqlProviderName]: [new AuthenticationType('SqlLogin', true)]
+		[Constants.pgsqlProviderName]: []
 	};
 	private _saveProfile: boolean;
 	public DefaultServerGroup = '<Default>';
@@ -56,7 +56,7 @@ export class ConnectionWidget {
 		}
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		this._authTypeSelectBox = new DialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
+		this._authTypeSelectBox = authTypeOption ? new DialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue) : undefined;
 		this._providerName = providerName;
 	}
 
@@ -70,15 +70,19 @@ export class ConnectionWidget {
 		});
 		this.fillInConnectionForm();
 		this.registerListeners();
-		this.onAuthTypeSelected(this._authTypeSelectBox.value);
+		if (this._authTypeSelectBox) {
+			this.onAuthTypeSelected(this._authTypeSelectBox.value);
+		}
 		return this._builder.getHTMLElement();
 	}
 
 	private fillInConnectionForm(): void {
 		this._serverNameInputBox = DialogHelper.appendInputBox(
 			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.serverName].displayName, 'connection-label', 'connection-input'));
-		DialogHelper.appendInputSelectBox(
-			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.authType].displayName, 'connection-label', 'connection-input'), this._authTypeSelectBox);
+		if (this._optionsMaps[ConnectionOptionSpecialType.authType]) {
+			DialogHelper.appendInputSelectBox(
+				DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.authType].displayName, 'connection-label', 'connection-input'), this._authTypeSelectBox);
+		}
 		this._userNameInputBox = DialogHelper.appendInputBox(
 			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.userName].displayName, 'connection-label', 'connection-input'));
 		this._passwordInputBox = DialogHelper.appendInputBox(
@@ -135,9 +139,11 @@ export class ConnectionWidget {
 	}
 
 	private registerListeners(): void {
-		this._toDispose.push(this._authTypeSelectBox.onDidSelect(selectedAuthType => {
-			this.onAuthTypeSelected(selectedAuthType);
-		}));
+		if (this._authTypeSelectBox) {
+			this._toDispose.push(this._authTypeSelectBox.onDidSelect(selectedAuthType => {
+				this.onAuthTypeSelected(selectedAuthType);
+			}));
+		}
 
 		this._toDispose.push(this._serverGroupSelectBox.onDidSelect(selectedGroup => {
 			this.onGroupSelected(selectedGroup);
@@ -305,14 +311,14 @@ export class ConnectionWidget {
 	}
 
 	public get authenticationType(): string {
-		return this.getAuthTypeName(this._authTypeSelectBox.value);
+		return this._authTypeSelectBox ? this.getAuthTypeName(this._authTypeSelectBox.value) : undefined;
 	}
 
 	private validateInputs(): boolean {
 		let validInputs = true;
 		let option: data.ConnectionOption;
-		let currentAuthType = this.getMatchingAuthType(this._authTypeSelectBox.value);
-		if (currentAuthType.showUsernameAndPassword) {
+		let currentAuthType = this._authTypeSelectBox ? this.getMatchingAuthType(this._authTypeSelectBox.value) : undefined;
+		if (!currentAuthType || currentAuthType.showUsernameAndPassword) {
 			option = this._optionsMaps[ConnectionOptionSpecialType.userName];
 			if (DialogHelper.isEmptyString(this.userName) && option.isRequired) {
 				validInputs = false;

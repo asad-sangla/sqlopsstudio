@@ -62,5 +62,7 @@ export const msgIsRequired = ' is required.';
 export const msgYes = 'Yes';
 export const msgNo = 'No';
 
-export const mssqlProviderName = 'MSSQL'
-export const pgsqlProviderName = 'PGSQL'
+export const mssqlProviderName = 'MSSQL';
+export const pgsqlProviderName = 'PGSQL';
+
+export const applicationName = 'carbon';

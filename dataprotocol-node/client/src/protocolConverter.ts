@@ -534,6 +534,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 					descOption.specialValueType = data.ConnectionOptionSpecialType.userName;
 				} else if (srcOption.specialValueType === 'password') {
 					descOption.specialValueType = data.ConnectionOptionSpecialType.password;
+				} else if (srcOption.specialValueType === 'appName') {
+					descOption.specialValueType = data.ConnectionOptionSpecialType.appName;
 				}
 
 				capabilities.connectionProvider.options.push(descOption);

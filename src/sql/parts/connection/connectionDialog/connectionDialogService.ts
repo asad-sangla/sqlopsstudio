@@ -122,9 +122,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private get uiController(): IConnectionComponentController {
 		// Find the provider name from the selected provider type, or throw an error if it does not correspond to a known provider
-		let providerName = Object.keys(this._providerNameToDisplayNameMap).find(providerName => {
-			return this._currentProviderType === this._providerNameToDisplayNameMap[providerName];
-		});
+		let providerName = this.getCurrentProviderName();
 		if (!providerName) {
 			throw 'Invalid provider type';
 		}
@@ -145,6 +143,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private handleShowUiComponent(selectedProviderType: string): HTMLElement {
 		this._currentProviderType = selectedProviderType;
+		this._model = new ConnectionProfile(this._capabilitiesMaps[this.getCurrentProviderName()], this._model);
 		return this.uiController.showUiComponent();
 	}
 
@@ -255,6 +254,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 		return new TPromise<void>(() => {
 			this._connectionDialog.open(this._connectionManagementService.getRecentConnections());
+		});
+	}
+
+	private getCurrentProviderName(): string {
+		return Object.keys(this._providerNameToDisplayNameMap).find(providerName => {
+			return this._currentProviderType === this._providerNameToDisplayNameMap[providerName];
 		});
 	}
 }

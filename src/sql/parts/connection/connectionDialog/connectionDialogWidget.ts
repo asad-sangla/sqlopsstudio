@@ -231,6 +231,7 @@ export class ConnectionDialogWidget {
 
 	public updateProvider(displayName: string) {
 		this._providerTypeSelectBox.selectWithOptionName(displayName);
+		this.onProviderTypeSelected(displayName);
 	}
 
 	public dispose(): void {

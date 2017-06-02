@@ -5,12 +5,13 @@
 
 'use strict';
 
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, ConnectionOptionSpecialType } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionComponentCallbacks, IConnectionComponentController, IConnectionResult } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import { ConnectionWidget } from 'sql/parts/connection/connectionDialog/connectionWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import * as Constants from 'sql/parts/connection/common/constants';
 import data = require('data');
 
 export class ConnectionController implements IConnectionComponentController {
@@ -92,7 +93,11 @@ export class ConnectionController implements IConnectionComponentController {
 		this._connectionWidget.updateServerGroup(this.getAllServerGroups());
 		this._model = connectionInfo;
 		this._model.providerName = this._providerName;
-		this._model.options['applicationName'] = 'carbon';
+		let appNameOption = this._providerOptions.find(option => option.specialValueType === ConnectionOptionSpecialType.appName);
+		if (appNameOption) {
+			let appNameKey = appNameOption.name;
+			this._model.options[appNameKey] = Constants.applicationName;
+		}
 		this._connectionWidget.initDialog(this._model);
 	}
 

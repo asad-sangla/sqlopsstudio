@@ -20,7 +20,8 @@ export enum ConnectionOptionSpecialType {
 	databaseName = 1,
 	authType = 2,
 	userName = 3,
-	password = 4
+	password = 4,
+	appName = 5
 }
 
 
