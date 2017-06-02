@@ -11,8 +11,10 @@ import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
+import { Subscription, Subject } from 'rxjs/Rx';
 import { ElementRef, QueryList, ChangeDetectorRef, ViewChildren } from '@angular/core';
 import { IGridDataRow, ISlickRange, SlickGrid, FieldType } from 'angular2-slickgrid';
+import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import * as Constants from 'sql/parts/query/common/constants';
 import { IGridInfo, IRange, IGridDataSet, SaveFormat, JsonFormat, ExcelFormat, CsvFormat  } from 'sql/parts/grid/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
@@ -57,7 +59,7 @@ export abstract class GridParentComponent {
 	protected contextMenuService: IContextMenuService;
 	protected actionProvider: actions.GridActionProvider;
 
-	private toDispose: IDisposable[];
+	protected toDispose: IDisposable[];
 
 
 	// Context keys to set when keybindings are available
@@ -109,7 +111,7 @@ export abstract class GridParentComponent {
 		const self = this;
 		this.initShortcutsBase();
 
-		this.dataService.gridContentObserver.subscribe((type) => {
+		this.subscribeWithDispose(this.dataService.gridContentObserver, (type) => {
 			switch (type) {
 				case GridContentEvents.RefreshContents:
 					 self.refreshResultsets();
@@ -157,6 +159,15 @@ export abstract class GridParentComponent {
 		this.keybindingService = this._bootstrapService.keybindingService;
 
 		this.bindKeys(this._bootstrapService.contextKeyService);
+	}
+
+	/*
+	 * Add the subscription to the list of things to be disposed on destroy, or else on a new component init
+	 * may get the "destroyed" object still getting called back.
+	 */
+	protected subscribeWithDispose<T>(subject: Subject<T>, event: (value: any)=> void): void {
+		let sub: Subscription = subject.subscribe(event);
+		this.toDispose.push(toDisposableSubscription(sub));
 	}
 
 	private bindKeys(contextKeyService: IContextKeyService): void {

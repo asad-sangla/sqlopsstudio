@@ -6,7 +6,8 @@
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { $ } from 'vs/base/browser/dom';
 
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { NgModuleRef } from '@angular/core';
+import { platformBrowserDynamic, } from '@angular/platform-browser-dynamic';
 
 import { BootstrapParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService }
@@ -23,6 +24,7 @@ import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
+import { IEditorInput } from 'vs/platform/editor/common/editor';
 
 export const BOOTSTRAP_SERVICE_ID: string = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -59,10 +61,11 @@ export interface IBootstrapService {
 	* container: 		The HTML container to append the selector HTMLElement
 	* selectorString: 	The tag name and class used to create the element, e.g. 'tagName.cssClassName'
 	* params: 			The parameters to be associated with the given id
+	* input:            Optional editor input. If specified, will listen to its onDispose event and destroy the module when this happens
 	*
 	* Returns the unique selector string that this module will bootstrap with.
 	*/
-	bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams): string;
+	bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams, input?: IEditorInput): string;
 
 	/*
 	* Gets the "params" entry associated with the given id and unassociates the id/entry pair.
@@ -112,8 +115,7 @@ export class BootstrapService implements IBootstrapService {
 		this._selectorCountMap = new Map<string, number>();
 	}
 
-	public bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams): string {
-
+	public bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams, input?: IEditorInput): string {
 		// Create the uniqueSelectorString
 		let uniqueSelectorString: string = this._getUniqueSelectorString(selectorString);
 		let selector: HTMLElement = $(uniqueSelectorString);
@@ -127,7 +129,11 @@ export class BootstrapService implements IBootstrapService {
 
 		// Perform the bootsrap
 		let providers = [{ provide: BOOTSTRAP_SERVICE_ID, useValue: this }];
-		platformBrowserDynamic(providers).bootstrapModule(moduleType);
+		platformBrowserDynamic(providers).bootstrapModule(moduleType).then(moduleRef => {
+			if (input) {
+				input.onDispose(() => moduleRef.destroy());
+			}
+		});
 
 		return uniqueSelectorString;
 	}

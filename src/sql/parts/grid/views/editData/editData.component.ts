@@ -77,7 +77,9 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		const self = this;
 		this.baseInit();
 
-		this.dataService.queryEventObserver.subscribe(event => {
+		// Add the subscription to the list of things to be disposed on destroy, or else on a new component init
+		// may get the "destroyed" object still getting called back.
+		this.subscribeWithDispose(this.dataService.queryEventObserver, (event) => {
 			switch (event.type) {
 				case 'start':
 					self.handleStart(self, event);
@@ -226,7 +228,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 					});
 
 					// Append a NULL row to the end of gridData
-					let newLastRow = gridData.length == 0 ? 0 : (gridData[gridData.length-1].row + 1);
+					let newLastRow = gridData.length === 0 ? 0 : (gridData[gridData.length-1].row + 1);
 					gridData.push({values: self.dataSet.columnDefinitions.map(cell => {return {displayValue: 'NULL', isNull: false};}), row: newLastRow});
 					resolve(gridData);
 				});
@@ -271,10 +273,11 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	}
 
 	handleResultSet(self: EditDataComponent, event: any): void {
-		// Add an extra 'new row'
-		event.data.rowCount++;
-		let resultSet = event.data;
+		// Clone the data before altering it to avoid impacting other subscribers
+		let resultSet = Object.assign({}, event.data);
 
+		// Add an extra 'new row'
+		resultSet.rowCount++;
 		// Precalculate the max height and min height
 		let maxHeight = this.getMaxHeight(resultSet.rowCount);
 		let minHeight = this.getMinHeight(resultSet.rowCount);

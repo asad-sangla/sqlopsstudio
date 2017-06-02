@@ -4,10 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TPromise } from 'vs/base/common/winjs.base';
-import { EditorInput,  EditorModel, ConfirmResult } from 'vs/workbench/common/editor';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { EditorInput,  EditorModel } from 'vs/workbench/common/editor';
+import { IConnectionManagementService, IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
-import { IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
@@ -162,18 +161,18 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 
 	private _disposeContainer() {
 		if(this._editorContainer && this._editorContainer.parentElement) {
-			this._editorContainer.parentElement.removeChild(this._editorContainer)
+			this._editorContainer.parentElement.removeChild(this._editorContainer);
 			this._editorContainer = null;
 		}
 	}
 
 	public close(): void {
-		// Dipose our edit session then disconnect our input
+		// Dispose our edit session then disconnect our input
 		this._queryModelService.disposeEdit(this.uri).then(() => {
-			this._connectionManagementService.disconnectEditor(this, true).then(() => {
-				this.dispose();
-				super.close();
-			});
+			return this._connectionManagementService.disconnectEditor(this, true);
+		}).then(() => {
+			this.dispose();
+			super.close();
 		});
 	}
 }

@@ -1425,7 +1425,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(QueryCancelRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1438,7 +1438,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(QueryExecuteRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1450,7 +1450,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(QueryExecuteSubsetRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1463,7 +1463,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(QueryDisposeRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.reject(error);
 					}
 				);
 			},
@@ -1660,7 +1660,7 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(EditSubsetRequest.type, error);
-						return Promise.resolve([]);
+						return Promise.reject(error);
 					}
 				);
 			},

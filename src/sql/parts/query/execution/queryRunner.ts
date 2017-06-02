@@ -275,6 +275,11 @@ export default class QueryRunner {
 
 		return new Promise<EditSubsetResult>((resolve, reject) => {
 			self._queryManagementService.getEditRows(rowData).then(result => {
+				if (!result.hasOwnProperty('rowCount')) {
+					let error = `Nothing returned from subset query`;
+					self._messageService.show(Severity.Error, error);
+					reject(error);
+				}
 				resolve(result);
 			}, error => {
 				// TODO localize
@@ -331,7 +336,7 @@ export default class QueryRunner {
 				resolve();
 			}, error => {
 				self._messageService.show(Severity.Error, 'Failed disposing query: ' + error);
-				reject();
+				reject(error);
 			});
 		});
 	}

@@ -142,7 +142,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		this.baseInit();
 		this.setupResizeBind();
 
-		this.dataService.queryEventObserver.subscribe(event => {
+		this.subscribeWithDispose(this.dataService.queryEventObserver, (event) => {
 			switch (event.type) {
 				case 'start':
 					self.handleStart(self, event);
@@ -162,7 +162,6 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			}
 			self._cd.detectChanges();
 		});
-
 		this.dataService.onAngularLoaded();
 	}
 

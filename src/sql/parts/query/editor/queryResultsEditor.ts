@@ -69,12 +69,16 @@ export class QueryResultsEditor extends BaseEditor {
 		input.setBootstrappedTrue();
 
 		// Get the bootstrap params and perform the bootstrap
+		// Note: pass in input so on disposal this is cleaned up.
+		// Otherwise many components will be left around and be subscribed
+		// to events from the backing data service
 		let params: QueryComponentParams = { dataService: dataService };
 		this._bootstrapService.bootstrap(
 			QueryModule,
 			this.getContainer().getHTMLElement(),
 			QUERY_SELECTOR,
-			params);
+			params,
+			input);
 	}
 
 	public dispose(): void {

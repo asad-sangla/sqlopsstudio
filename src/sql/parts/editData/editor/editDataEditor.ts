@@ -297,6 +297,9 @@ export class EditDataEditor extends BaseEditor {
 			input.setBootstrappedTrue();
 
 			// Get the bootstrap params and perform the bootstrap
+			// Note: pass in input so on disposal this is cleaned up.
+			// Otherwise many components will be left around and be subscribed
+			// to events from the backing data service
 			const parent = this._resultsEditorContainer;
 			let params: EditDataComponentParams = {
 				dataService: dataService
@@ -305,7 +308,8 @@ export class EditDataEditor extends BaseEditor {
 				EditDataModule,
 				parent,
 				EDITDATA_SELECTOR,
-				params);
+				params,
+				this.editDataInput);
 		}
 		return TPromise.as<void>(null);
 	}

@@ -341,6 +341,8 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this._container = container;
 
 		// Get the bootstrap params and perform the bootstrap
+		// Note: no need to dispose this since it's expected to live
+		// for the life of the app, and it's not input-specific
 		let params: DbListComponentParams = { dbListInterop: this };
 		this._bootstrapService.bootstrap(
 			DbListModule,
