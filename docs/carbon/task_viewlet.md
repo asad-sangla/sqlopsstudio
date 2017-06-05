@@ -5,13 +5,11 @@ This document describes the key functional scenario of Task viewlet. The goal of
 - View the history of successful, failed or in-progress tasks.
 - View the detail of successful, failed or in-progress task.
 
-## Functional Behavior
+## Task Execution History and Detail
 
-
-## Task History
-
-- Actionbar
+- On actionbar
 	- Badge icon that indicates the number of new successful / failed / in-progress task history entry.
+	- Reset the number by viewing each entry or mark all as viewed in the viewlet.
 
 - On viewlet
   - Success / Failure / In progress indicator icon
