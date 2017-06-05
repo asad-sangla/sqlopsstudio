@@ -23,7 +23,7 @@ This document describes the key functional scenario of Task viewlet. The goal of
   - Progress indicator for in progress task
   - Start, End, Ellapse Time
   - Error message for failed task
-  - Open Task fly-out to re-run. Reconstruct the settings on the fly out.
+  - Open Task fly-out to re-run. Reconstruct the settings on the task fly-out.
     - Success and Failed task only
   - View the Task configuration summary (or T-SQL script)
   - Save as a file.
