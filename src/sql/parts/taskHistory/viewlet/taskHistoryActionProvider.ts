@@ -9,7 +9,7 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ContributableActionProvider } from 'vs/workbench/browser/actionBarRegistry';
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { TaskNode } from 'sql/parts/taskHistory/common/taskNode';
 
 /**
  *  Provides actions for the history tasks
@@ -44,7 +44,7 @@ export class TaskHistoryActionProvider extends ContributableActionProvider {
 	/**
 	 * Return actions for history task
 	 */
-	public getTaskHistoryActions(tree: ITree, element: ConnectionProfile): IAction[] {
+	public getTaskHistoryActions(tree: ITree, element: TaskNode): IAction[] {
 		return [];
 	}
 }

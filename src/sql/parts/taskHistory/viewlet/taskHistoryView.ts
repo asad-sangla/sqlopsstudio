@@ -11,18 +11,17 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { CollapsibleViewletView } from 'vs/workbench/browser/viewlet';
-import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
-import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { AddServerAction, AddServerGroupAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
-import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
-import { TreeUpdateUtils, TreeSelectionHandler } from 'sql/parts/taskHistory/viewlet/treeUpdateUtils';
-import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { Button } from 'vs/base/browser/ui/button/button';
+import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
+import { TaskHistoryRenderer } from 'sql/parts/taskHistory/viewlet/taskHistoryRenderer';
+import { TaskHistoryDataSource } from 'sql/parts/taskHistory/viewlet/taskHistoryDataSource';
+import { TaskHistoryController } from 'sql/parts/taskHistory/viewlet/taskHistoryController';
+import { TaskHistoryActionProvider } from 'sql/parts/taskHistory/viewlet/taskHistoryActionProvider';
+import { DefaultFilter, DefaultDragAndDrop, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
+import { TaskService } from 'sql/parts/taskHistory/common/taskService';
+
 const $ = builder.$;
 
 /**
@@ -31,28 +30,16 @@ const $ = builder.$;
 export class TaskHistoryView extends CollapsibleViewletView {
 
 	public messages: builder.Builder;
-	private addServerAction: IAction;
-	private addServerGroupAction: IAction;
-	private activeConnectionsFilterAction: ActiveConnectionsFilterAction;
-	private _buttonSection: builder.Builder;
-	private treeSelectionHandler: TreeSelectionHandler;
+	private _taskService: TaskService;
 
 	constructor(actionRunner: IActionRunner, settings: any,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService messageService: IMessageService,
-		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
 	) {
 		super(actionRunner, false, nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'), messageService, keybindingService, contextMenuService);
-		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
-			AddServerAction.ID,
-			AddServerAction.LABEL);
-		this.addServerGroupAction = this.instantiationService.createInstance(AddServerGroupAction,
-			AddServerGroupAction.ID,
-			AddServerGroupAction.LABEL);
-		this.treeSelectionHandler = this.instantiationService.createInstance(TreeSelectionHandler);
+		this._taskService = new TaskService();
 	}
 
 	/**
@@ -70,53 +57,38 @@ export class TaskHistoryView extends CollapsibleViewletView {
 	public renderBody(container: HTMLElement): void {
 		// Add div to display no connections found message and hide it by default
 		this.messages = $('div.title').appendTo(container);
-		$('span').text('No connections found.').appendTo(this.messages);
+		$('span').text('No history task found.').appendTo(this.messages);
 		this.messages.hide();
 
-		if (!this._connectionManagementService.hasRegisteredServers()) {
-			this._buttonSection = $('div.button-section').appendTo(container);
-			var connectButton = new Button(this._buttonSection);
-			connectButton.label = 'Add Connection';
-			connectButton.addListener2('click', () => {
-				this._connectionManagementService.showConnectionDialog();
-			});
-		}
-
 		this.treeContainer = super.renderViewTree(container);
-		dom.addClass(this.treeContainer, 'servers-view');
+		dom.addClass(this.treeContainer, 'task-history-view');
 
-		this.tree = TreeCreationUtils.createRegisteredServersTree(this.treeContainer, this.instantiationService);
-		this.toDispose.push(this.tree.addListener2('selection', (event) => this.onSelected(event)));
+		this.tree = this.createTaskHistoryTree(this.treeContainer, this.instantiationService);
 		const self = this;
 		// Refresh Tree when these events are emitted
-		this.toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {
-			if (this._buttonSection) {
-				this._buttonSection.getHTMLElement().style.display = 'none';
-			}
-			self.refreshTree();
-		})
-		);
-		this.toDispose.push(this._connectionManagementService.onDeleteConnectionProfile(() => {
-			self.refreshTree();
-		})
-		);
-		this.toDispose.push(this._connectionManagementService.onConnect((connectionParams) => {
-			self.addObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
-		})
-		);
-		this.toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
-			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
-		})
-		);
-
-		if (this._objectExplorerService && this._objectExplorerService.onUpdateObjectExplorerNodes) {
-			this.toDispose.push(this._objectExplorerService.onUpdateObjectExplorerNodes(args => {
-				if (args.connection) {
-					self.onObjectExplorerSessionCreated(args.connection);
-				}
-			}));
-		}
 		self.refreshTree();
+	}
+
+	/**
+	 * Create a task history tree
+	 */
+	public createTaskHistoryTree(treeContainer: HTMLElement, instantiationService: IInstantiationService): Tree {
+		const dataSource = instantiationService.createInstance(TaskHistoryDataSource);
+		const actionProvider = instantiationService.createInstance(TaskHistoryActionProvider);
+		const renderer = instantiationService.createInstance(TaskHistoryRenderer);
+		const controller = instantiationService.createInstance(TaskHistoryController, actionProvider);
+		const dnd = new DefaultDragAndDrop();
+		const filter = new DefaultFilter();
+		const sorter = null;
+		const accessibilityProvider = new DefaultAccessibilityProvider();
+
+		return new Tree(treeContainer, {
+			dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider
+		}, {
+				indentPixels: 10,
+				twistiePixels: 20,
+				ariaLabel: nls.localize({ key: 'regTreeAriaLabel', comment: ['TaskHistory'] }, 'Task history')
+			});
 	}
 
 	/**
@@ -126,96 +98,38 @@ export class TaskHistoryView extends CollapsibleViewletView {
 		return [];
 	}
 
-	private getConnectionInTreeInput(connectionId: string): ConnectionProfile {
-		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
-		let connections = ConnectionProfileGroup.getConnectionsInGroup(root);
-		let results = connections.filter(con => {
-			if (connectionId === con.id) {
-				return true;
-			} else {
-				return false;
-			}
-		});
-		if (results && results.length > 0) {
-			return results[0];
-		}
-		return null;
-	}
-
-	private onObjectExplorerSessionCreated(connection: IConnectionProfile) {
-		var conn = this.getConnectionInTreeInput(connection.id);
-		if (conn) {
-			this.tree.refresh(conn).then(() => {
-				return this.tree.expand(conn).then(() => {
-					return this.tree.reveal(conn, 0.5).then(() => {
-					});
-				});
-			}).done(null, errors.onUnexpectedError);
-		}
-	}
-
-	public addObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
-		this.messages.hide();
-		if (!this._objectExplorerService.getObjectExplorerNode(connection)) {
-			this._objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
-				// The oe request is sent. an event will be raised when the session is created
-			}, error => {
-			});
-		}
-	}
-
-	public deleteObjectExplorerNodeAndRefreshTree(connection: IConnectionProfile): void {
-		if (connection) {
-			var conn = this.getConnectionInTreeInput(connection.id);
-			if (conn) {
-				this._objectExplorerService.deleteObjectExplorerNode(conn);
-				this.tree.refresh(conn);
-			}
-		}
-	}
-
 	public refreshTree(): void {
 		this.messages.hide();
-		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
-	}
+		let selectedElement: any;
+		let targetsToExpand: any[];
 
-	/**
-	 * Filter connections based on view (recent/active)
-	 */
-	private filterConnections(treeInput: ConnectionProfileGroup[], view: string): ConnectionProfileGroup[] {
-		if (!treeInput || treeInput.length === 0) {
-			return undefined;
+		// Focus
+		this.tree.DOMFocus();
+
+		if (this.tree) {
+			let selection = this.tree.getSelection();
+			if (selection && selection.length === 1) {
+				selectedElement = <any>selection[0];
+			}
+			targetsToExpand = this.tree.getExpandedElements();
 		}
-		let result = treeInput.map(group => {
-			// Keep active/recent connections and remove the rest
-			if (group.connections) {
-				group.connections = group.connections.filter(con => {
-					if (view === 'active') {
-						return this._connectionManagementService.isConnected(undefined, con);
-					} else if (view === 'recent') {
-						return this._connectionManagementService.isRecent(con);
-					}
-					return false;
-				});
-			}
-			group.children = this.filterConnections(group.children, view);
-			// Remove subgroups that are undefined
-			if (group.children) {
-				group.children = group.children.filter(group => {
-					return (group) ? true : false;
-				});
-			}
-			// Return a group only if it has a filtered result or subgroup.
-			if ((group.connections && group.connections.length > 0) || (group.children && group.children.length > 0)) {
-				return group;
-			}
-			return undefined;
-		});
-		return result;
-	}
 
-	private onSelected(event: any): void {
-		this.treeSelectionHandler.onTreeSelect(event, this.tree, this._connectionManagementService);
+		//Get the tree Input
+		let treeInput = this._taskService.getAllTasks();
+		if (treeInput) {
+			if (treeInput !== this.tree.getInput()) {
+				this.tree.setInput(treeInput).then(() => {
+					// Make sure to expand all folders that where expanded in the previous session
+					if (targetsToExpand) {
+						this.tree.expandAll(targetsToExpand);
+					}
+					if (selectedElement) {
+						this.tree.select(selectedElement);
+					}
+					this.tree.getFocus();
+				}, errors.onUnexpectedError);
+			}
+		}
 	}
 
 	private onError(err: any): void {

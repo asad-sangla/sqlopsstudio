@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import nls = require('vs/nls');
 import 'vs/css!sql/parts/taskHistory/viewlet/media/taskHistoryViewlet';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
@@ -18,7 +19,7 @@ import { VIEWLET_ID } from 'sql/parts/taskHistory/viewlet/taskHistoryViewlet';
 // Viewlet Action
 export class TaskHistoryViewletAction extends ToggleViewletAction {
 	public static ID = VIEWLET_ID;
-	public static LABEL = 'Show task history';
+	public static LABEL = nls.localize({ key: 'showTaskHistory', comment: ['Show task history'] }, 'Show task history');
 
 	constructor(
 		id: string,

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 export interface ITaskHistoryTemplateData {
 	root: HTMLElement;
-	label: HTMLSpanElement;
 	icon: HTMLElement;
+	title: HTMLSpanElement;
+	description: HTMLSpanElement;
 }
