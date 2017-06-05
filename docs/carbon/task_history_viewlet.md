@@ -16,9 +16,18 @@ This document describes the key functional scenario of Task viewlet. The goal of
 		- Stage 1 - show the viewlet when task is committed.
 	- Reset the number by viewing each entry or mark all as viewed in the viewlet.
 
+
 - On viewlet
   - Success / Failure / In progress indicator icon
   - Task name, server, database
+	- UX 
+		- 1st line - Icon, Task name, Source (Server & Database)
+		- On error - popup the error message.
+			- On error - doublec click to open error message text file.
+		- On Hover over, 
+			- Success: Start and End Time, elapse time
+			- Error: Start and End time, error message
+			- In progress: Start time, elapse time
   
   --6/30 cut line--
   - Open Detail page
