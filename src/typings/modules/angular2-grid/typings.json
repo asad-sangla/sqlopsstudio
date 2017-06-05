@@ -1,6 +1,0 @@
-{
-  "resolution": "main",
-  "tree": {
-    "src": "npm:angular2-grid/dist/typings/main.d.ts"
-  }
-}

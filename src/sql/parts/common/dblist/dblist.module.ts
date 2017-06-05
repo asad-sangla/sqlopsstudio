@@ -40,7 +40,7 @@ export class DbListModule {
 	ngDoBootstrap(appRef: ApplicationRef) {
 		const factory = this._resolver.resolveComponentFactory(DbListComponent);
 		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(DBLIST_SELECTOR);
-		factory.selector = uniqueSelector;
+		(<any>factory).factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}
 }

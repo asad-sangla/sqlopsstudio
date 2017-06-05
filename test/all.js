@@ -64,9 +64,11 @@ function main() {
 			'@angular/platform-browser',
 			'@angular/platform-browser-dynamic',
 			'@angular/router',
-			'angular2-grid',
+			'angular4-grid',
 			'primeng/primeng',
-			'rxjs/Rx'
+			'rxjs/Observable',
+			'rxjs/Subject',
+			'rxjs/Observer'
 		]
 	};
 

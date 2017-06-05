@@ -3,12 +3,12 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Inject, NgModule, forwardRef, ApplicationRef, ComponentFactoryResolver, ModuleWithProviders } from '@angular/core';
+import { Inject, NgModule, forwardRef, ApplicationRef, ComponentFactoryResolver } from '@angular/core';
 import { CommonModule, APP_BASE_HREF } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgGridModule } from 'angular2-grid';
+import { NgGridModule } from 'angular4-grid';
 import { ButtonModule, DataTableModule, SharedModule, DropdownModule, MessagesModule, DataListModule,
 	BreadcrumbModule } from 'primeng/primeng';
 
@@ -32,7 +32,7 @@ import { TaskPipe} from 'sql/parts/dashboard/widgets/tasks/tasksPipe.pipe';
 
 // Setup routes for various child components
 const appRoutes: Routes = [
-	{ path: 'database-dashboard/', component: DatabaseDashboardPage },
+	{ path: 'database-dashboard', component: DatabaseDashboardPage },
 	{ path: 'server-dashboard', component: ServerDashboardPage },
 	{
 		path: '',
@@ -75,7 +75,7 @@ const appRoutes: Routes = [
 		DataListModule,
 		BreadcrumbModule,
 		NgGridModule,
-		<ModuleWithProviders>RouterModule.forRoot(appRoutes)
+		RouterModule.forRoot(appRoutes)
 	],
 	providers: [
 		{ provide: APP_BASE_HREF, useValue: '/' },
@@ -94,7 +94,7 @@ export class DashboardModule {
 	ngDoBootstrap(appRef: ApplicationRef) {
 		const factory = this._resolver.resolveComponentFactory(DashboardComponent);
 		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(DASHBOARD_SELECTOR);
-		factory.selector = uniqueSelector;
+		(<any>factory).factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}
 }

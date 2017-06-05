@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Injectable, Inject } from '@angular/core';
-import { Observable, Observer, Subject } from 'rxjs/Rx';
+import { Observable } from 'rxjs/Observable';
+import { Observer } from 'rxjs/Observer';
+import { Subject } from 'rxjs/Subject';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
@@ -125,7 +127,6 @@ export class DashboardServiceInterface {
 		this._connectionManagementService = new SingleConnectionManagementService(this._bootstrapService.connectionManagementService, this._uri);
 		this._connectionManagementDeferred.resolve();
 	}
-
 	/**
 	 * Get the current theme of carbon
 	 * @returns the theme

@@ -53,7 +53,7 @@ export class TaskDialogModule {
 	ngDoBootstrap(appRef: ApplicationRef) {
 		const factory = this._resolver.resolveComponentFactory(TaskDialogComponent);
 		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(TASKDIALOG_SELECTOR);
-		factory.selector = uniqueSelector;
+		(<any>factory).factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}
 }

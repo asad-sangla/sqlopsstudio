@@ -1,6 +1,6 @@
 {
   "resolution": "main",
   "tree": {
-    "src": "npm:@angular/core/index.d.ts"
+    "src": "npm:@angular/core/core.d.ts"
   }
 }

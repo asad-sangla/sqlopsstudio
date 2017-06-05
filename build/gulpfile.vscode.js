@@ -33,7 +33,7 @@ const crypto = require('crypto');
 const dependencies = Object.keys(shrinkwrap.dependencies)
 	.concat(Array.isArray(product.extraNodeModules) ? product.extraNodeModules : []); // additional dependencies from our product configuration
 const baseModules = Object.keys(process.binding('natives')).filter(n => !/^_|\//.test(n));
-const nodeModules = ['electron', 'original-fs', 'rxjs/Rx', 'primeng/primeng']
+const nodeModules = ['electron', 'original-fs', 'rxjs/Observable', 'rxjs/Subject', 'rxjs/Observer', 'primeng/primeng']
 	.concat(dependencies)
 	.concat(baseModules);
 

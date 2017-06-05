@@ -45,7 +45,7 @@ export class BackupModule {
 	ngDoBootstrap(appRef: ApplicationRef) {
 		const factory = this._resolver.resolveComponentFactory(BackupComponent);
 		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(BACKUP_SELECTOR);
-		factory.selector = uniqueSelector;
+		(<any>factory).factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}
 }

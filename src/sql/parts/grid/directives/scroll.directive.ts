@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 import { ElementRef, Directive, Input, Output, EventEmitter, forwardRef,
     Inject } from '@angular/core';
-import { Observable } from 'rxjs/Rx';
+import { Observable } from 'rxjs/Observable';
 
 @Directive({
   selector: '[onScroll]'

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
-import { NgGridConfig } from 'angular2-grid';
+import { NgGridConfig } from 'angular4-grid';
 
 export class DashboardPage {
 

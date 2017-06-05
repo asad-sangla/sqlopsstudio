@@ -3,7 +3,7 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef } from '@angular/core';
+import { Component, Inject, forwardRef, ChangeDetectorRef } from '@angular/core';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -18,11 +18,13 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	private _connection: ConnectionManagementInfo;
 
 	constructor(
-		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface
+		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef
 	) {
 		super();
 		this._bootstrap.connectionInfo.then((data) => {
 			this._connection = data;
+			_changeRef.detectChanges();
 		});
 	}
 

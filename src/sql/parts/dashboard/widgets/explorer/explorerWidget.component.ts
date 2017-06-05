@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef } from '@angular/core';
+import { Component, Inject, forwardRef, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
@@ -61,7 +61,8 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
-		@Inject(forwardRef(() => Router)) private _router: Router
+		@Inject(forwardRef(() => Router)) private _router: Router,
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef
 	) { super(); }
 
 	public load(config: WidgetConfig): boolean {
@@ -71,7 +72,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 	}
 	private init(): void {
 		let self = this;
-		if (this._config.context === 'database') {
+		if (self._config.context === 'database') {
 			self._bootstrap.metadata.then((data) => {
 				if (data) {
 					self.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
@@ -80,10 +81,12 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 						self.selectedRow = self.tableData[0];
 					}
 				}
+				self._changeRef.detectChanges();
 			});
 		} else {
 			self._bootstrap.databaseNames.then((data) => {
-				this.tableData = data;
+				self.tableData = data;
+				self._changeRef.detectChanges();
 			});
 		}
 	}

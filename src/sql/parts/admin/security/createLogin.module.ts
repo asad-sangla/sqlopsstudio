@@ -33,7 +33,7 @@ export class CreateLoginModule {
 	ngDoBootstrap(appRef: ApplicationRef) {
 		const factory = this._resolver.resolveComponentFactory(CreateLoginComponent);
 		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(CREATELOGIN_SELECTOR);
-		factory.selector = uniqueSelector;
+		(<any>factory).factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}
 }

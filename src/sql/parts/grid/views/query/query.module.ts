@@ -43,7 +43,7 @@ export class QueryModule {
 	ngDoBootstrap(appRef: ApplicationRef) {
 		const factory = this._resolver.resolveComponentFactory(QueryComponent);
 		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(QUERY_SELECTOR);
-		factory.selector = uniqueSelector;
+		(<any>factory).factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}
 }

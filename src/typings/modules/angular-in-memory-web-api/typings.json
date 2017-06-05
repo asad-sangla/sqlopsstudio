@@ -1,6 +1,0 @@
-{
-  "resolution": "main",
-  "tree": {
-    "src": "npm:angular-in-memory-web-api/index.d.ts"
-  }
-}

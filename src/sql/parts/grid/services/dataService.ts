@@ -5,7 +5,9 @@
 
 'use strict';
 
-import { Observable, Subject, Observer } from 'rxjs/Rx';
+import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
+import { Observer } from 'rxjs/Observer';
 
 import { ResultSetSubset, EditUpdateCellResult, EditSubsetResult, EditCreateRowResult } from 'data';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';

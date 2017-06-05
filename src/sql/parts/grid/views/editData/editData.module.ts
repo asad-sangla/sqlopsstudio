@@ -39,7 +39,7 @@ export class EditDataModule {
 	ngDoBootstrap(appRef: ApplicationRef) {
 		const factory = this._resolver.resolveComponentFactory(EditDataComponent);
 		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(EDITDATA_SELECTOR);
-		factory.selector = uniqueSelector;
+		(<any>factory).factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}
 }

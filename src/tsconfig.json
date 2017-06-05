@@ -14,6 +14,11 @@
 		"typeRoots": [
 			"typings",
 			"../node_modules/@types"
-		]
+		],
+		"paths": {
+			"@angular/core": [
+				"../node_modules/@angular/core/core"
+			]
+		}
 	}
 }

@@ -19,13 +19,13 @@ export class GridSyncService {
     openTypeDropdown(columnIndex: number): void;
     private setColumnWidthPX(index, widthPX);
     underlyingSelectionModel: any;
-    updated: Observable<string>;
-    typeDropdownOffset: Observable<[number, number]>;
+    readonly updated: Observable<string>;
+    readonly typeDropdownOffset: Observable<[number, number]>;
     scrollLeftPX: number;
     scrollBarWidthPX: number;
     columnWidthPXs: number[];
     rowNumberColumnWidthPX: number;
-    selectionModel: SelectionModel;
+    readonly selectionModel: SelectionModel;
     isGridReadOnly: boolean;
     private notifyUpdates(propertyName);
 }
@@ -62,8 +62,8 @@ export class CancellationToken {
     private _isCanceled;
     private _canceled;
     cancel(): void;
-    isCanceled: boolean;
-    canceled: Observable<any>;
+    readonly isCanceled: boolean;
+    readonly canceled: Observable<any>;
 }
 export enum FieldType {
     String = 0,
@@ -104,8 +104,8 @@ export class SelectionModel implements ISlickSelectionModel {
     private _onSelectedRangesChanged;
     private _slickRangeFactory;
     constructor(_rowSelectionModel: ISlickSelectionModel, _handler: ISlickEventHandler, _onSelectedRangesChanged: ISlickEvent, _slickRangeFactory: (fromRow: number, fromCell: number, toRow: number, toCell: number) => ISlickRange);
-    range: ISlickRange[];
-    onSelectedRangesChanged: ISlickEvent;
+    readonly range: ISlickRange[];
+    readonly onSelectedRangesChanged: ISlickEvent;
     init(grid: ISlickGrid): void;
     destroy(): void;
     setSelectedRanges(ranges: ISlickRange[]): void;
@@ -122,7 +122,7 @@ export class SelectionModel implements ISlickSelectionModel {
     private static areRangesIdentical(lhs, rhs);
     private getColumnRange(columnId);
     private getColumnRangeByIndex(columnIndex);
-    private isColumnSelectionCurrently;
+    private readonly isColumnSelectionCurrently;
     private updateSelectedRanges(ranges);
 }
 export interface ISlickSelectionModel {
@@ -166,14 +166,13 @@ declare module '~angular2-slickgrid/components/js/slickgrid' {
 import { OnChanges, OnInit, OnDestroy, SimpleChange, EventEmitter, AfterViewInit } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { IObservableCollection, IGridDataRow, IColumnDefinition } from '~angular2-slickgrid/components/js/interfaces';
-import { ISlickRange } from '~angular2-slickgrid/components/js/selectionmodel';
+import { ISlickRange, ISlickEvent } from '~angular2-slickgrid/components/js/selectionmodel';
 export class SlickGrid implements OnChanges, OnInit, OnDestroy, AfterViewInit {
     private _el;
     private _gridSyncService;
     columnDefinitions: IColumnDefinition[];
     dataRows: IObservableCollection<IGridDataRow>;
     resized: Observable<any>;
-    editableColumnIds: string[];
     highlightedCells: {
         row: number;
         column: number;
@@ -181,56 +180,78 @@ export class SlickGrid implements OnChanges, OnInit, OnDestroy, AfterViewInit {
     blurredColumns: string[];
     contextColumns: string[];
     columnsLoading: string[];
-    overrideCellFn: (rowNumber, columnId, value?, data?) => string;
     showHeader: boolean;
     showDataTypeIcon: boolean;
     enableColumnReorder: boolean;
     enableAsyncPostRender: boolean;
     selectionModel: string;
     plugins: string[];
+    enableEditing: boolean;
+    topRowNumber: number;
+    overrideCellFn: (rowNumber, columnId, value?, data?) => string;
+    isColumnEditable: (column: number) => boolean;
+    isCellEditValid: (row: number, column: number, newValue: any) => boolean;
     loadFinished: EventEmitter<void>;
-    cellChanged: EventEmitter<{
-        column: string;
+    editingFinished: EventEmitter<any>;
+    contextMenu: EventEmitter<any>;
+    topRowNumberChange: EventEmitter<number>;
+    cellEditBegin: EventEmitter<{
         row: number;
+        column: number;
+    }>;
+    cellEditExit: EventEmitter<{
+        row: number;
+        column: number;
         newValue: any;
     }>;
-    editingFinished: EventEmitter<any>;
-    contextMenu: EventEmitter<{
-        x: number;
-        y: number;
+    rowEditBegin: EventEmitter<{
+        row: number;
     }>;
-    topRowNumber: number;
-    topRowNumberChange: EventEmitter<number>;
+    rowEditExit: EventEmitter<{
+        row: number;
+    }>;
     onFocus(): void;
     private _grid;
     private _gridColumns;
+    private _columnNameToIndex;
     private _gridData;
     private _rowHeight;
     private _resizeSubscription;
     private _gridSyncSubscription;
     private _topRow;
     private _leftPx;
-    private static getDataWithSchema(data, columns);
+    private _activeEditingRow;
+    private _activeEditingRowHasChanges;
     constructor(_el: any, _gridSyncService: any);
     ngOnChanges(changes: {
         [propName: string]: SimpleChange;
     }): void;
-    private invalidateRange(start, end);
     ngOnInit(): void;
     ngAfterViewInit(): void;
     ngOnDestroy(): void;
-    onResize(): void;
+    enterEditSession(): void;
+    endEditSession(): void;
+    readonly onSelectedRowsChanged: ISlickEvent;
+    getSelectedRows(): number[];
+    getColumnIndex(name: string): number;
     getSelectedRanges(): ISlickRange[];
     registerPlugin(plugin: string): void;
     setActive(): void;
     selection: ISlickRange[] | boolean;
+    subscribeToContextMenu(): void;
+    private initGrid();
+    private changeEditSession(enabled);
+    private handleEditorCellChange(rowNumber);
+    private static getDataWithSchema(data, columns);
+    private onResize();
+    private invalidateRange(start, end);
     private getColumnEditor;
     private getFormatter;
-    private initGrid();
     private subscribeToScroll();
     private subscribeToCellChanged();
+    private subscribeToBeforeEditCell();
+    private subscribeToActiveCellChanged();
     private updateColumnWidths();
-    subscribeToContextMenu(): void;
     private updateSchema();
     private getImagePathForDataType(type);
     private setCallbackOnDataRowsChanged();

@@ -8,6 +8,7 @@ declare module '~@angular/common/src/location/platform_location' {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
+import { InjectionToken } from '@angular/core';
 /**
  * This class should not be used directly by an application developer. Instead, use
  * {@link Location}.
@@ -15,22 +16,18 @@ declare module '~@angular/common/src/location/platform_location' {
  * `PlatformLocation` encapsulates all calls to DOM apis, which allows the Router to be platform
  * agnostic.
  * This means that we can have different implementation of `PlatformLocation` for the different
- * platforms
- * that angular supports. For example, the default `PlatformLocation` is {@link
- * BrowserPlatformLocation},
- * however when you run your app in a WebWorker you use {@link WebWorkerPlatformLocation}.
+ * platforms that angular supports. For example, `@angular/platform-browser` provides an
+ * implementation specific to the browser environment, while `@angular/platform-webworker` provides
+ * one suitable for use with web workers.
  *
  * The `PlatformLocation` class is used directly by all implementations of {@link LocationStrategy}
- * when
- * they need to interact with the DOM apis like pushState, popState, etc...
+ * when they need to interact with the DOM apis like pushState, popState, etc...
  *
  * {@link LocationStrategy} in turn is used by the {@link Location} service which is used directly
- * by
- * the {@link Router} in order to navigate between routes. Since all interactions between {@link
+ * by the {@link Router} in order to navigate between routes. Since all interactions between {@link
  * Router} /
  * {@link Location} / {@link LocationStrategy} and DOM apis flow through the `PlatformLocation`
- * class
- * they are all platform independent.
+ * class they are all platform independent.
  *
  * @stable
  */
@@ -38,14 +35,19 @@ export abstract class PlatformLocation {
     abstract getBaseHrefFromDOM(): string;
     abstract onPopState(fn: LocationChangeListener): void;
     abstract onHashChange(fn: LocationChangeListener): void;
-    pathname: string;
-    search: string;
-    hash: string;
+    readonly abstract pathname: string;
+    readonly abstract search: string;
+    readonly abstract hash: string;
     abstract replaceState(state: any, title: string, url: string): void;
     abstract pushState(state: any, title: string, url: string): void;
     abstract forward(): void;
     abstract back(): void;
 }
+/**
+ * @whatItDoes indicates when a location is initialized
+ * @experimental
+ */
+export const LOCATION_INITIALIZED: InjectionToken<Promise<any>>;
 /**
  * A serializable version of the event from onPopState or onHashChange
  *
@@ -75,12 +77,12 @@ declare module '~@angular/common/src/location/location_strategy' {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import { OpaqueToken } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 import { LocationChangeListener } from '~@angular/common/src/location/platform_location';
 /**
  * `LocationStrategy` is responsible for representing and reading route state
  * from the browser's URL. Angular provides two strategies:
- * {@link HashLocationStrategy} and {@link PathLocationStrategy} (default).
+ * {@link HashLocationStrategy} and {@link PathLocationStrategy}.
  *
  * This is used under the hood of the {@link Location} service.
  *
@@ -127,7 +129,7 @@ export abstract class LocationStrategy {
  *
  * @stable
  */
-export const APP_BASE_HREF: OpaqueToken;
+export const APP_BASE_HREF: InjectionToken<string>;
 }
 declare module '@angular/common/src/location/location_strategy' {
 export * from '~@angular/common/src/location/location_strategy';
@@ -139,6 +141,8 @@ declare module '~@angular/common/src/location/hash_location_strategy' {
 import { LocationStrategy } from '~@angular/common/src/location/location_strategy';
 import { LocationChangeListener, PlatformLocation } from '~@angular/common/src/location/platform_location';
 /**
+ * @whatItDoes Use URL hash for storing application location data.
+ * @description
  * `HashLocationStrategy` is a {@link LocationStrategy} used to configure the
  * {@link Location} service to represent its state in the
  * [hash fragment](https://en.wikipedia.org/wiki/Uniform_Resource_Locator#Syntax)
@@ -149,18 +153,7 @@ import { LocationChangeListener, PlatformLocation } from '~@angular/common/src/l
  *
  * ### Example
  *
- * ```
- * import {Component, NgModule} from '@angular/core';
- * import {
- *   LocationStrategy,
- *   HashLocationStrategy
- * } from '@angular/common';
- *
- * @NgModule({
- *   providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}]
- * })
- * class AppModule {}
- * ```
+ * {@example common/location/ts/hash_location_component.ts region='LocationComponent'}
  *
  * @stable
  */
@@ -188,13 +181,12 @@ declare module '~@angular/common/src/location/path_location_strategy' {
 import { LocationStrategy } from '~@angular/common/src/location/location_strategy';
 import { LocationChangeListener, PlatformLocation } from '~@angular/common/src/location/platform_location';
 /**
+ * @whatItDoes Use URL for storing application location data.
+ * @description
  * `PathLocationStrategy` is a {@link LocationStrategy} used to configure the
  * {@link Location} service to represent its state in the
  * [path](https://en.wikipedia.org/wiki/Uniform_Resource_Locator#Syntax) of the
  * browser's URL.
- *
- * `PathLocationStrategy` is the default binding for {@link LocationStrategy}
- * provided in {@link ROUTER_PROVIDERS}.
  *
  * If you're using `PathLocationStrategy`, you must provide a {@link APP_BASE_HREF}
  * or add a base element to the document. This URL prefix that will be preserved
@@ -207,6 +199,10 @@ import { LocationChangeListener, PlatformLocation } from '~@angular/common/src/l
  * Similarly, if you add `<base href='/my/app'/>` to the document and call
  * `location.go('/foo')`, the browser's URL will become
  * `example.com/my/app/foo`.
+ *
+ * ### Example
+ *
+ * {@example common/location/ts/path_location_component.ts region='LocationComponent'}
  *
  * @stable
  */
@@ -232,8 +228,15 @@ export * from '~@angular/common/src/location/path_location_strategy';
 // Source: node_modules/@angular/common/src/location/location.d.ts
 declare module '~@angular/common/src/location/location' {
 import { LocationStrategy } from '~@angular/common/src/location/location_strategy';
+/** @experimental */
+export interface PopStateEvent {
+    pop?: boolean;
+    type?: string;
+    url?: string;
+}
 /**
- * `Location` is a service that applications can use to interact with a browser's URL.
+ * @whatItDoes `Location` is a service that applications can use to interact with a browser's URL.
+ * @description
  * Depending on which {@link LocationStrategy} is used, `Location` will either persist
  * to the URL's path or the URL's hash segment.
  *
@@ -249,19 +252,7 @@ import { LocationStrategy } from '~@angular/common/src/location/location_strateg
  * - `/my/app/user/123/` **is not** normalized
  *
  * ### Example
- *
- * ```
- * import {Component} from '@angular/core';
- * import {Location} from '@angular/common';
- *
- * @Component({selector: 'app-component'})
- * class AppCmp {
- *   constructor(location: Location) {
- *     location.go('/foo');
- *   }
- * }
- * ```
- *
+ * {@example common/location/ts/path_location_component.ts region='LocationComponent'}
  * @stable
  */
 export class Location {
@@ -307,7 +298,7 @@ export class Location {
     /**
      * Subscribe to the platform's `popState` events.
      */
-    subscribe(onNext: (value: any) => void, onThrow?: (exception: any) => void, onReturn?: () => void): Object;
+    subscribe(onNext: (value: PopStateEvent) => void, onThrow?: ((exception: any) => void) | null, onReturn?: (() => void) | null): Object;
     /**
      * Given a string of url parameters, prepend with '?' if needed, otherwise return parameters as
      * is.
@@ -328,8 +319,8 @@ export * from '~@angular/common/src/location/location';
 }
 
 // Generated by typings
-// Source: node_modules/@angular/common/src/location.d.ts
-declare module '~@angular/common/src/location' {
+// Source: node_modules/@angular/common/src/location/index.d.ts
+declare module '~@angular/common/src/location/index' {
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -343,54 +334,15 @@ export * from '~@angular/common/src/location/hash_location_strategy';
 export * from '~@angular/common/src/location/path_location_strategy';
 export * from '~@angular/common/src/location/location';
 }
-declare module '@angular/common/src/location' {
-export * from '~@angular/common/src/location';
-}
-
-// Generated by typings
-// Source: node_modules/@angular/common/src/localization.d.ts
-declare module '~@angular/common/src/localization' {
-/**
- * @experimental
- */
-export abstract class NgLocalization {
-    abstract getPluralCategory(value: any): string;
-}
-/**
- * Returns the plural case based on the locale
- *
- * @experimental
- */
-export class NgLocaleLocalization extends NgLocalization {
-    private _locale;
-    constructor(_locale: string);
-    getPluralCategory(value: any): string;
-}
-/** @experimental */
-export enum Plural {
-    Zero = 0,
-    One = 1,
-    Two = 2,
-    Few = 3,
-    Many = 4,
-    Other = 5,
-}
-/**
- * Returns the plural case based on the locale
- *
- * @experimental
- */
-export function getPluralCase(locale: string, nLike: number | string): Plural;
-}
-declare module '@angular/common/src/localization' {
-export * from '~@angular/common/src/localization';
+declare module '@angular/common/src/location/index' {
+export * from '~@angular/common/src/location/index';
 }
 
 // Generated by typings
 // Source: node_modules/@angular/common/src/common_module.d.ts
 declare module '~@angular/common/src/common_module' {
 /**
- * The module that includes all the basic Angular directives like {@link NgIf}, {@link NgFor}, ...
+ * The module that includes all the basic Angular directives like {@link NgIf}, {@link NgForOf}, ...
  *
  * @stable
  */
@@ -399,6 +351,118 @@ export class CommonModule {
 }
 declare module '@angular/common/src/common_module' {
 export * from '~@angular/common/src/common_module';
+}
+
+// Generated by typings
+// Source: node_modules/@angular/common/src/platform_id.d.ts
+declare module '~@angular/common/src/platform_id' {
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+export const PLATFORM_BROWSER_ID = "browser";
+export const PLATFORM_SERVER_ID = "server";
+export const PLATFORM_WORKER_APP_ID = "browserWorkerApp";
+export const PLATFORM_WORKER_UI_ID = "browserWorkerUi";
+/**
+ * Returns whether a platform id represents a browser platform.
+ * @experimental
+ */
+export function isPlatformBrowser(platformId: Object): boolean;
+/**
+ * Returns whether a platform id represents a server platform.
+ * @experimental
+ */
+export function isPlatformServer(platformId: Object): boolean;
+/**
+ * Returns whether a platform id represents a web worker app platform.
+ * @experimental
+ */
+export function isPlatformWorkerApp(platformId: Object): boolean;
+/**
+ * Returns whether a platform id represents a web worker UI platform.
+ * @experimental
+ */
+export function isPlatformWorkerUi(platformId: Object): boolean;
+}
+declare module '@angular/common/src/platform_id' {
+export * from '~@angular/common/src/platform_id';
+}
+
+// Generated by typings
+// Source: node_modules/@angular/common/src/version.d.ts
+declare module '~@angular/common/src/version' {
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @module
+ * @description
+ * Entry point for all public APIs of the common package.
+ */
+import { Version } from '@angular/core';
+/**
+ * @stable
+ */
+export const VERSION: Version;
+}
+declare module '@angular/common/src/version' {
+export * from '~@angular/common/src/version';
+}
+
+// Generated by typings
+// Source: node_modules/@angular/common/src/common.d.ts
+declare module '~@angular/common/src/common' {
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @module
+ * @description
+ * Entry point for all public APIs of the common package.
+ */
+export * from '~@angular/common/src/location/index';
+export { NgLocaleLocalization, NgLocalization } from '~@angular/common/src/localization';
+export { CommonModule } from '~@angular/common/src/common_module';
+export { NgClass, NgFor, NgForOf, NgForOfContext, NgIf, NgIfContext, NgPlural, NgPluralCase, NgStyle, NgSwitch, NgSwitchCase, NgSwitchDefault, NgTemplateOutlet, NgComponentOutlet } from '~@angular/common/src/directives/index';
+export { AsyncPipe, DatePipe, I18nPluralPipe, I18nSelectPipe, JsonPipe, LowerCasePipe, CurrencyPipe, DecimalPipe, PercentPipe, SlicePipe, UpperCasePipe, TitleCasePipe } from '~@angular/common/src/pipes/index';
+export { PLATFORM_BROWSER_ID as ɵPLATFORM_BROWSER_ID, PLATFORM_SERVER_ID as ɵPLATFORM_SERVER_ID, PLATFORM_WORKER_APP_ID as ɵPLATFORM_WORKER_APP_ID, PLATFORM_WORKER_UI_ID as ɵPLATFORM_WORKER_UI_ID, isPlatformBrowser, isPlatformServer, isPlatformWorkerApp, isPlatformWorkerUi } from '~@angular/common/src/platform_id';
+export { VERSION } from '~@angular/common/src/version';
+}
+declare module '@angular/common/src/common' {
+export * from '~@angular/common/src/common';
+}
+
+// Generated by typings
+// Source: node_modules/@angular/common/public_api.d.ts
+declare module '~@angular/common/public_api' {
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @module
+ * @description
+ * Entry point for all public APIs of the common package.
+ */
+export * from '~@angular/common/src/common';
+}
+declare module '@angular/common/public_api' {
+export * from '~@angular/common/public_api';
 }
 
 // Generated by typings
@@ -426,6 +490,8 @@ import { DoCheck, ElementRef, IterableDiffers, KeyValueDiffers, Renderer } from 
  *     <some-element [ngClass]="{'first': true, 'second': true, 'third': false}">...</some-element>
  *
  *     <some-element [ngClass]="stringExp|arrayExp|objExp">...</some-element>
+ *
+ *     <some-element [ngClass]="{'class1 class2 class3' : true}">...</some-element>
  * ```
  *
  * @description
@@ -466,8 +532,8 @@ export * from '~@angular/common/src/directives/ng_class';
 }
 
 // Generated by typings
-// Source: node_modules/@angular/common/src/directives/ng_for.d.ts
-declare module '~@angular/common/src/directives/ng_for' {
+// Source: node_modules/@angular/common/src/directives/ng_component_outlet.d.ts
+declare module '~@angular/common/src/directives/ng_component_outlet' {
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -475,37 +541,132 @@ declare module '~@angular/common/src/directives/ng_for' {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import { ChangeDetectorRef, DoCheck, IterableDiffers, OnChanges, SimpleChanges, TemplateRef, TrackByFn, ViewContainerRef } from '@angular/core';
-export class NgForRow {
-    $implicit: any;
+import { Injector, NgModuleFactory, OnChanges, OnDestroy, SimpleChanges, Type, ViewContainerRef } from '@angular/core';
+/**
+ * Instantiates a single {@link Component} type and inserts its Host View into current View.
+ * `NgComponentOutlet` provides a declarative approach for dynamic component creation.
+ *
+ * `NgComponentOutlet` requires a component type, if a falsy value is set the view will clear and
+ * any existing component will get destroyed.
+ *
+ * ### Fine tune control
+ *
+ * You can control the component creation process by using the following optional attributes:
+ *
+ * * `ngComponentOutletInjector`: Optional custom {@link Injector} that will be used as parent for
+ * the Component. Defaults to the injector of the current view container.
+ *
+ * * `ngComponentOutletContent`: Optional list of projectable nodes to insert into the content
+ * section of the component, if exists.
+ *
+ * * `ngComponentOutletNgModuleFactory`: Optional module factory to allow dynamically loading other
+ * module, then load a component from that module.
+ *
+ * ### Syntax
+ *
+ * Simple
+ * ```
+ * <ng-container *ngComponentOutlet="componentTypeExpression"></ng-container>
+ * ```
+ *
+ * Customized injector/content
+ * ```
+ * <ng-container *ngComponentOutlet="componentTypeExpression;
+ *                                   injector: injectorExpression;
+ *                                   content: contentNodesExpression;">
+ * </ng-container>
+ * ```
+ *
+ * Customized ngModuleFactory
+ * ```
+ * <ng-container *ngComponentOutlet="componentTypeExpression;
+ *                                   ngModuleFactory: moduleFactory;">
+ * </ng-container>
+ * ```
+ * ## Example
+ *
+ * {@example common/ngComponentOutlet/ts/module.ts region='SimpleExample'}
+ *
+ * A more complete example with additional options:
+ *
+ * {@example common/ngComponentOutlet/ts/module.ts region='CompleteExample'}
+
+ * A more complete example with ngModuleFactory:
+ *
+ * {@example common/ngComponentOutlet/ts/module.ts region='NgModuleFactoryExample'}
+ *
+ * @experimental
+ */
+export class NgComponentOutlet implements OnChanges, OnDestroy {
+    private _viewContainerRef;
+    ngComponentOutlet: Type<any>;
+    ngComponentOutletInjector: Injector;
+    ngComponentOutletContent: any[][];
+    ngComponentOutletNgModuleFactory: NgModuleFactory<any>;
+    private _componentRef;
+    private _moduleRef;
+    constructor(_viewContainerRef: ViewContainerRef);
+    ngOnChanges(changes: SimpleChanges): void;
+    ngOnDestroy(): void;
+}
+}
+declare module '@angular/common/src/directives/ng_component_outlet' {
+export * from '~@angular/common/src/directives/ng_component_outlet';
+}
+
+// Generated by typings
+// Source: node_modules/@angular/common/src/directives/ng_for_of.d.ts
+declare module '~@angular/common/src/directives/ng_for_of' {
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+import { DoCheck, IterableDiffers, NgIterable, OnChanges, SimpleChanges, TemplateRef, TrackByFunction, ViewContainerRef } from '@angular/core';
+/**
+ * @stable
+ */
+export class NgForOfContext<T> {
+    $implicit: T;
+    ngForOf: NgIterable<T>;
     index: number;
     count: number;
-    constructor($implicit: any, index: number, count: number);
-    first: boolean;
-    last: boolean;
-    even: boolean;
-    odd: boolean;
+    constructor($implicit: T, ngForOf: NgIterable<T>, index: number, count: number);
+    readonly first: boolean;
+    readonly last: boolean;
+    readonly even: boolean;
+    readonly odd: boolean;
 }
 /**
- * The `NgFor` directive instantiates a template once per item from an iterable. The context for
- * each instantiated template inherits from the outer context with the given loop variable set
- * to the current item from the iterable.
+ * The `NgForOf` directive instantiates a template once per item from an iterable. The context
+ * for each instantiated template inherits from the outer context with the given loop variable
+ * set to the current item from the iterable.
  *
  * ### Local Variables
  *
- * `NgFor` provides several exported values that can be aliased to local variables:
+ * `NgForOf` provides several exported values that can be aliased to local variables:
  *
- * * `index` will be set to the current loop iteration for each template context.
- * * `first` will be set to a boolean value indicating whether the item is the first one in the
- *   iteration.
- * * `last` will be set to a boolean value indicating whether the item is the last one in the
- *   iteration.
- * * `even` will be set to a boolean value indicating whether this item has an even index.
- * * `odd` will be set to a boolean value indicating whether this item has an odd index.
+ * - `$implicit: T`: The value of the individual items in the iterable (`ngForOf`).
+ * - `ngForOf: NgIterable<T>`: The value of the iterable expression. Useful when the expression is
+ * more complex then a property access, for example when using the async pipe (`userStreams |
+ * async`).
+ * - `index: number`: The index of the current item in the iterable.
+ * - `first: boolean`: True when the item is the first item in the iterable.
+ * - `last: boolean`: True when the item is the last item in the iterable.
+ * - `even: boolean`: True when the item has an even index in the iterable.
+ * - `odd: boolean`: True when the item has an odd index in the iterable.
+ *
+ * ```
+ * <li *ngFor="let user of userObservable | async as users; index as i; first as isFirst">
+ *    {{i}}/{{users.length}}. {{user}} <span *ngIf="isFirst">default</span>
+ * </li>
+ * ```
  *
  * ### Change Propagation
  *
- * When the contents of the iterator changes, `NgFor` makes the corresponding changes to the DOM:
+ * When the contents of the iterator changes, `NgForOf` makes the corresponding changes to the DOM:
  *
  * * When an item is added, a new instance of the template is added to the DOM.
  * * When an item is removed, its template instance is removed from the DOM.
@@ -514,10 +675,9 @@ export class NgForRow {
  *
  * Angular uses object identity to track insertions and deletions within the iterator and reproduce
  * those changes in the DOM. This has important implications for animations and any stateful
- * controls
- * (such as `<input>` elements which accept user input) that are present. Inserted rows can be
- * animated in, deleted rows can be animated out, and unchanged rows retain any unsaved state such
- * as user input.
+ * controls (such as `<input>` elements which accept user input) that are present. Inserted rows can
+ * be animated in, deleted rows can be animated out, and unchanged rows retain any unsaved state
+ * such as user input.
  *
  * It is possible for the identities of elements in the iterator to change while the data does not.
  * This can happen, for example, if the iterator produced from an RPC to the server, and that
@@ -526,21 +686,21 @@ export class NgForRow {
  * elements were deleted and all new elements inserted). This is an expensive operation and should
  * be avoided if possible.
  *
- * To customize the default tracking algorithm, `NgFor` supports `trackBy` option.
+ * To customize the default tracking algorithm, `NgForOf` supports `trackBy` option.
  * `trackBy` takes a function which has two arguments: `index` and `item`.
  * If `trackBy` is given, Angular tracks changes by the return value of the function.
  *
  * ### Syntax
  *
- * - `<li *ngFor="let item of items; let i = index; trackBy: trackByFn">...</li>`
- * - `<li template="ngFor let item of items; let i = index; trackBy: trackByFn">...</li>`
+ * - `<li *ngFor="let item of items; index as i; trackBy: trackByFn">...</li>`
+ * - `<li template="ngFor let item of items; index as i; trackBy: trackByFn">...</li>`
  *
- * With `<template>` element:
+ * With `<ng-template>` element:
  *
  * ```
- * <template ngFor let-item [ngForOf]="items" let-i="index" [ngForTrackBy]="trackByFn">
+ * <ng-template ngFor let-item [ngForOf]="items" let-i="index" [ngForTrackBy]="trackByFn">
  *   <li>...</li>
- * </template>
+ * </ng-template>
  * ```
  *
  * ### Example
@@ -550,24 +710,33 @@ export class NgForRow {
  *
  * @stable
  */
-export class NgFor implements DoCheck, OnChanges {
+export class NgForOf<T> implements DoCheck, OnChanges {
     private _viewContainer;
     private _template;
     private _differs;
-    private _cdr;
-    ngForOf: any;
-    ngForTrackBy: TrackByFn;
+    ngForOf: NgIterable<T>;
+    ngForTrackBy: TrackByFunction<T>;
     private _differ;
-    constructor(_viewContainer: ViewContainerRef, _template: TemplateRef<NgForRow>, _differs: IterableDiffers, _cdr: ChangeDetectorRef);
-    ngForTemplate: TemplateRef<NgForRow>;
+    private _trackByFn;
+    constructor(_viewContainer: ViewContainerRef, _template: TemplateRef<NgForOfContext<T>>, _differs: IterableDiffers);
+    ngForTemplate: TemplateRef<NgForOfContext<T>>;
     ngOnChanges(changes: SimpleChanges): void;
     ngDoCheck(): void;
     private _applyChanges(changes);
     private _perViewChange(view, record);
 }
+/**
+ * @deprecated from v4.0.0 - Use NgForOf<any> instead.
+ */
+export type NgFor = NgForOf<any>;
+/**
+ * @deprecated from v4.0.0 - Use NgForOf instead.
+ */
+export const NgFor: typeof NgForOf;
+export function getTypeNameForDebugging(type: any): string;
 }
-declare module '@angular/common/src/directives/ng_for' {
-export * from '~@angular/common/src/directives/ng_for';
+declare module '@angular/common/src/directives/ng_for_of' {
+export * from '~@angular/common/src/directives/ng_for_of';
 }
 
 // Generated by typings
@@ -582,39 +751,157 @@ declare module '~@angular/common/src/directives/ng_if' {
  */
 import { TemplateRef, ViewContainerRef } from '@angular/core';
 /**
- * Removes or recreates a portion of the DOM tree based on an {expression}.
+ * Conditionally includes a template based on the value of an `expression`.
  *
- * If the expression assigned to `ngIf` evaluates to a falsy value then the element
- * is removed from the DOM, otherwise a clone of the element is reinserted into the DOM.
+ * `ngIf` evaluates the `expression` and then renders the `then` or `else` template in its place
+ * when expression is truthy or falsy respectively. Typically the:
+ *  - `then` template is the inline template of `ngIf` unless bound to a different value.
+ *  - `else` template is blank unless it is bound.
  *
- * ### Example ([live demo](http://plnkr.co/edit/fe0kgemFBtmQOY31b4tw?p=preview)):
+ * ## Most common usage
+ *
+ * The most common usage of the `ngIf` directive is to conditionally show the inline template as
+ * seen in this example:
+ * {@example common/ngIf/ts/module.ts region='NgIfSimple'}
+ *
+ * ## Showing an alternative template using `else`
+ *
+ * If it is necessary to display a template when the `expression` is falsy use the `else` template
+ * binding as shown. Note that the `else` binding points to a `<ng-template>` labeled `#elseBlock`.
+ * The template can be defined anywhere in the component view but is typically placed right after
+ * `ngIf` for readability.
+ *
+ * {@example common/ngIf/ts/module.ts region='NgIfElse'}
+ *
+ * ## Using non-inlined `then` template
+ *
+ * Usually the `then` template is the inlined template of the `ngIf`, but it can be changed using
+ * a binding (just like `else`). Because `then` and `else` are bindings, the template references can
+ * change at runtime as shown in this example.
+ *
+ * {@example common/ngIf/ts/module.ts region='NgIfThenElse'}
+ *
+ * ## Storing conditional result in a variable
+ *
+ * A common pattern is that we need to show a set of properties from the same object. If the
+ * object is undefined, then we have to use the safe-traversal-operator `?.` to guard against
+ * dereferencing a `null` value. This is especially the case when waiting on async data such as
+ * when using the `async` pipe as shown in folowing example:
  *
  * ```
- * <div *ngIf="errorCount > 0" class="error">
- *   <!-- Error message displayed when the errorCount property in the current context is greater
- * than 0. -->
- *   {{errorCount}} errors detected
- * </div>
+ * Hello {{ (userStream|async)?.last }}, {{ (userStream|async)?.first }}!
  * ```
+ *
+ * There are several inefficiencies in the above example:
+ *  - We create multiple subscriptions on `userStream`. One for each `async` pipe, or two in the
+ *    example above.
+ *  - We cannot display an alternative screen while waiting for the data to arrive asynchronously.
+ *  - We have to use the safe-traversal-operator `?.` to access properties, which is cumbersome.
+ *  - We have to place the `async` pipe in parenthesis.
+ *
+ * A better way to do this is to use `ngIf` and store the result of the condition in a local
+ * variable as shown in the the example below:
+ *
+ * {@example common/ngIf/ts/module.ts region='NgIfAs'}
+ *
+ * Notice that:
+ *  - We use only one `async` pipe and hence only one subscription gets created.
+ *  - `ngIf` stores the result of the `userStream|async` in the local variable `user`.
+ *  - The local `user` can then be bound repeatedly in a more efficient way.
+ *  - No need to use the safe-traversal-operator `?.` to access properties as `ngIf` will only
+ *    display the data if `userStream` returns a value.
+ *  - We can display an alternative template while waiting for the data.
  *
  * ### Syntax
  *
+ * Simple form:
  * - `<div *ngIf="condition">...</div>`
  * - `<div template="ngIf condition">...</div>`
- * - `<template [ngIf]="condition"><div>...</div></template>`
+ * - `<ng-template [ngIf]="condition"><div>...</div></ng-template>`
+ *
+ * Form with an else block:
+ * ```
+ * <div *ngIf="condition; else elseBlock">...</div>
+ * <ng-template #elseBlock>...</ng-template>
+ * ```
+ *
+ * Form with a `then` and `else` block:
+ * ```
+ * <div *ngIf="condition; then thenBlock else elseBlock"></div>
+ * <ng-template #thenBlock>...</ng-template>
+ * <ng-template #elseBlock>...</ng-template>
+ * ```
+ *
+ * Form with storing the value locally:
+ * ```
+ * <div *ngIf="condition as value; else elseBlock">{{value}}</div>
+ * <ng-template #elseBlock>...</ng-template>
+ * ```
  *
  * @stable
  */
 export class NgIf {
     private _viewContainer;
-    private _template;
-    private _hasView;
-    constructor(_viewContainer: ViewContainerRef, _template: TemplateRef<Object>);
+    private _context;
+    private _thenTemplateRef;
+    private _elseTemplateRef;
+    private _thenViewRef;
+    private _elseViewRef;
+    constructor(_viewContainer: ViewContainerRef, templateRef: TemplateRef<NgIfContext>);
+    ngIf: any;
+    ngIfThen: TemplateRef<NgIfContext>;
+    ngIfElse: TemplateRef<NgIfContext>;
+    private _updateView();
+}
+/**
+ * @stable
+ */
+export class NgIfContext {
+    $implicit: any;
     ngIf: any;
 }
 }
 declare module '@angular/common/src/directives/ng_if' {
 export * from '~@angular/common/src/directives/ng_if';
+}
+
+// Generated by typings
+// Source: node_modules/@angular/common/src/localization.d.ts
+declare module '~@angular/common/src/localization' {
+/**
+ * @experimental
+ */
+export abstract class NgLocalization {
+    abstract getPluralCategory(value: any): string;
+}
+/**
+ * Returns the plural case based on the locale
+ *
+ * @experimental
+ */
+export class NgLocaleLocalization extends NgLocalization {
+    protected locale: string;
+    constructor(locale: string);
+    getPluralCategory(value: any): string;
+}
+/** @experimental */
+export enum Plural {
+    Zero = 0,
+    One = 1,
+    Two = 2,
+    Few = 3,
+    Many = 4,
+    Other = 5,
+}
+/**
+ * Returns the plural case based on the locale
+ *
+ * @experimental
+ */
+export function getPluralCase(locale: string, nLike: number | string): Plural;
+}
+declare module '@angular/common/src/localization' {
+export * from '~@angular/common/src/localization';
 }
 
 // Generated by typings
@@ -638,10 +925,9 @@ import { SwitchView } from '~@angular/common/src/directives/ng_switch';
  * @howToUse
  * ```
  * <some-element [ngPlural]="value">
- *   <ng-container *ngPluralCase="'=0'">there is nothing</ng-container>
- *   <ng-container *ngPluralCase="'=1'">there is one</ng-container>
- *   <ng-container *ngPluralCase="'few'">there are a few</ng-container>
- *   <ng-container *ngPluralCase="'other'">there are exactly #</ng-container>
+ *   <ng-template ngPluralCase="=0">there is nothing</ng-template>
+ *   <ng-template ngPluralCase="=1">there is one</ng-template>
+ *   <ng-template ngPluralCase="few">there are a few</ng-template>
  * </some-element>
  * ```
  *
@@ -683,8 +969,8 @@ export class NgPlural {
  * @howToUse
  * ```
  * <some-element [ngPlural]="value">
- *   <ng-container *ngPluralCase="'=0'">...</ng-container>
- *   <ng-container *ngPluralCase="'other'">...</ng-container>
+ *   <ng-template ngPluralCase="=0">...</ng-template>
+ *   <ng-template ngPluralCase="other">...</ng-template>
  * </some-element>
  *```
  *
@@ -729,7 +1015,7 @@ import { DoCheck, ElementRef, KeyValueDiffers, Renderer } from '@angular/core';
  * @description
  *
  * The styles are updated according to the value of the expression evaluation:
- * - keys are style names with an option `.<unit>` suffix (ie 'top.px', 'font-style.em'),
+ * - keys are style names with an optional `.<unit>` suffix (ie 'top.px', 'font-style.em'),
  * - values are the values assigned to those properties (expressed in the given unit).
  *
  * @stable
@@ -763,13 +1049,15 @@ declare module '~@angular/common/src/directives/ng_switch' {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import { TemplateRef, ViewContainerRef } from '@angular/core';
+import { DoCheck, TemplateRef, ViewContainerRef } from '@angular/core';
 export class SwitchView {
     private _viewContainerRef;
     private _templateRef;
+    private _created;
     constructor(_viewContainerRef: ViewContainerRef, _templateRef: TemplateRef<Object>);
     create(): void;
     destroy(): void;
+    enforceState(created: boolean): void;
 }
 /**
  * @ngModule CommonModule
@@ -813,14 +1101,14 @@ export class SwitchView {
  * @stable
  */
 export class NgSwitch {
-    private _switchValue;
-    private _useDefault;
-    private _valueViews;
-    private _activeViews;
+    private _defaultViews;
+    private _defaultUsed;
+    private _caseCount;
+    private _lastCaseCheckIndex;
+    private _lastCasesMatched;
+    private _ngSwitch;
     ngSwitch: any;
-    private _emptyAllActiveViews();
-    private _activateViews(views?);
-    private _deregisterView(value, view);
+    private _updateDefaultCases(useDefault);
 }
 /**
  * @ngModule CommonModule
@@ -846,12 +1134,12 @@ export class NgSwitch {
  *
  * @stable
  */
-export class NgSwitchCase {
-    private _value;
+export class NgSwitchCase implements DoCheck {
+    private ngSwitch;
     private _view;
-    private _switch;
-    constructor(viewContainer: ViewContainerRef, templateRef: TemplateRef<Object>, ngSwitch: NgSwitch);
     ngSwitchCase: any;
+    constructor(viewContainer: ViewContainerRef, templateRef: TemplateRef<Object>, ngSwitch: NgSwitch);
+    ngDoCheck(): void;
 }
 /**
  * @ngModule CommonModule
@@ -877,7 +1165,7 @@ export class NgSwitchCase {
  * @stable
  */
 export class NgSwitchDefault {
-    constructor(viewContainer: ViewContainerRef, templateRef: TemplateRef<Object>, sswitch: NgSwitch);
+    constructor(viewContainer: ViewContainerRef, templateRef: TemplateRef<Object>, ngSwitch: NgSwitch);
 }
 }
 declare module '@angular/common/src/directives/ng_switch' {
@@ -902,29 +1190,33 @@ import { OnChanges, SimpleChanges, TemplateRef, ViewContainerRef } from '@angula
  *
  * @howToUse
  * ```
- * <template [ngTemplateOutlet]="templateRefExpression"
- *           [ngOutletContext]="objectExpression">
- * </template>
+ * <ng-container *ngTemplateOutlet="templateRefExp; context: contextExp"></ng-container>
  * ```
  *
  * @description
  *
- * You can attach a context object to the `EmbeddedViewRef` by setting `[ngOutletContext]`.
- * `[ngOutletContext]` should be an object, the object's keys will be the local template variables
- * available within the `TemplateRef`.
+ * You can attach a context object to the `EmbeddedViewRef` by setting `[ngTemplateOutletContext]`.
+ * `[ngTemplateOutletContext]` should be an object, the object's keys will be available for binding
+ * by the local template `let` declarations.
  *
  * Note: using the key `$implicit` in the context object will set it's value as default.
+ *
+ * ## Example
+ *
+ * {@example common/ngTemplateOutlet/ts/module.ts region='NgTemplateOutlet'}
  *
  * @experimental
  */
 export class NgTemplateOutlet implements OnChanges {
     private _viewContainerRef;
     private _viewRef;
-    private _context;
-    private _templateRef;
+    ngTemplateOutletContext: Object;
+    ngTemplateOutlet: TemplateRef<any>;
     constructor(_viewContainerRef: ViewContainerRef);
+    /**
+     * @deprecated v4.0.0 - Renamed to ngTemplateOutletContext.
+     */
     ngOutletContext: Object;
-    ngTemplateOutlet: TemplateRef<Object>;
     ngOnChanges(changes: SimpleChanges): void;
 }
 }
@@ -944,96 +1236,26 @@ declare module '~@angular/common/src/directives/index' {
  */
 import { Provider } from '@angular/core';
 import { NgClass } from '~@angular/common/src/directives/ng_class';
-import { NgFor } from '~@angular/common/src/directives/ng_for';
-import { NgIf } from '~@angular/common/src/directives/ng_if';
+import { NgComponentOutlet } from '~@angular/common/src/directives/ng_component_outlet';
+import { NgFor, NgForOf, NgForOfContext } from '~@angular/common/src/directives/ng_for_of';
+import { NgIf, NgIfContext } from '~@angular/common/src/directives/ng_if';
 import { NgPlural, NgPluralCase } from '~@angular/common/src/directives/ng_plural';
 import { NgStyle } from '~@angular/common/src/directives/ng_style';
 import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '~@angular/common/src/directives/ng_switch';
 import { NgTemplateOutlet } from '~@angular/common/src/directives/ng_template_outlet';
-export { NgClass, NgFor, NgIf, NgPlural, NgPluralCase, NgStyle, NgSwitch, NgSwitchCase, NgSwitchDefault, NgTemplateOutlet };
+export { NgClass, NgComponentOutlet, NgFor, NgForOf, NgForOfContext, NgIf, NgIfContext, NgPlural, NgPluralCase, NgStyle, NgSwitch, NgSwitchCase, NgSwitchDefault, NgTemplateOutlet };
 /**
  * A collection of Angular directives that are likely to be used in each and every Angular
  * application.
  */
 export const COMMON_DIRECTIVES: Provider[];
+/**
+ * A collection of deprecated directives that are no longer part of the core module.
+ */
+export const COMMON_DEPRECATED_DIRECTIVES: Provider[];
 }
 declare module '@angular/common/src/directives/index' {
 export * from '~@angular/common/src/directives/index';
-}
-
-// Generated by typings
-// Source: node_modules/@angular/common/src/facade/async.d.ts
-declare module '~@angular/common/src/facade/async' {
-/**
- * @license
- * Copyright Google Inc. All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-import { Subject } from 'rxjs/Subject';
-export { Observable } from 'rxjs/Observable';
-export { Subject } from 'rxjs/Subject';
-/**
- * Use by directives and components to emit custom Events.
- *
- * ### Examples
- *
- * In the following example, `Zippy` alternatively emits `open` and `close` events when its
- * title gets clicked:
- *
- * ```
- * @Component({
- *   selector: 'zippy',
- *   template: `
- *   <div class="zippy">
- *     <div (click)="toggle()">Toggle</div>
- *     <div [hidden]="!visible">
- *       <ng-content></ng-content>
- *     </div>
- *  </div>`})
- * export class Zippy {
- *   visible: boolean = true;
- *   @Output() open: EventEmitter<any> = new EventEmitter();
- *   @Output() close: EventEmitter<any> = new EventEmitter();
- *
- *   toggle() {
- *     this.visible = !this.visible;
- *     if (this.visible) {
- *       this.open.emit(null);
- *     } else {
- *       this.close.emit(null);
- *     }
- *   }
- * }
- * ```
- *
- * The events payload can be accessed by the parameter `$event` on the components output event
- * handler:
- *
- * ```
- * <zippy (open)="onOpen($event)" (close)="onClose($event)"></zippy>
- * ```
- *
- * Uses Rx.Observable but provides an adapter to make it work as specified here:
- * https://github.com/jhusain/observable-spec
- *
- * Once a reference implementation of the spec is available, switch to it.
- * @stable
- */
-export class EventEmitter<T> extends Subject<T> {
-    __isAsync: boolean;
-    /**
-     * Creates an instance of [EventEmitter], which depending on [isAsync],
-     * delivers events synchronously or asynchronously.
-     */
-    constructor(isAsync?: boolean);
-    emit(value?: T): void;
-    subscribe(generatorOrNext?: any, error?: any, complete?: any): any;
-}
-}
-declare module '@angular/common/src/facade/async' {
-export * from '~@angular/common/src/facade/async';
 }
 
 // Generated by typings
@@ -1046,8 +1268,8 @@ declare module '~@angular/common/src/pipes/async_pipe' {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import { ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { EventEmitter, Observable } from '~@angular/common/src/facade/async';
+import { ChangeDetectorRef, OnDestroy, PipeTransform } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
 /**
  * @ngModule CommonModule
  * @whatItDoes Unwraps a value from an asynchronous primitive.
@@ -1067,13 +1289,13 @@ import { EventEmitter, Observable } from '~@angular/common/src/facade/async';
  * {@example common/pipes/ts/async_pipe.ts region='AsyncPipePromise'}
  *
  * It's also possible to use `async` with Observables. The example below binds the `time` Observable
- * to the view. The Observable continuesly updates the view with the current time.
+ * to the view. The Observable continuously updates the view with the current time.
  *
  * {@example common/pipes/ts/async_pipe.ts region='AsyncPipeObservable'}
  *
  * @stable
  */
-export class AsyncPipe implements OnDestroy {
+export class AsyncPipe implements OnDestroy, PipeTransform {
     private _ref;
     private _latestValue;
     private _latestReturnedValue;
@@ -1082,7 +1304,10 @@ export class AsyncPipe implements OnDestroy {
     private _strategy;
     constructor(_ref: ChangeDetectorRef);
     ngOnDestroy(): void;
-    transform(obj: Observable<any> | Promise<any> | EventEmitter<any>): any;
+    transform<T>(obj: null): null;
+    transform<T>(obj: undefined): undefined;
+    transform<T>(obj: Observable<T>): T | null;
+    transform<T>(obj: Promise<T>): T | null;
     private _subscribe(obj);
     private _selectStrategy(obj);
     private _dispose();
@@ -1091,6 +1316,48 @@ export class AsyncPipe implements OnDestroy {
 }
 declare module '@angular/common/src/pipes/async_pipe' {
 export * from '~@angular/common/src/pipes/async_pipe';
+}
+
+// Generated by typings
+// Source: node_modules/@angular/common/src/pipes/case_conversion_pipes.d.ts
+declare module '~@angular/common/src/pipes/case_conversion_pipes' {
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+import { PipeTransform } from '@angular/core';
+/**
+ * Transforms text to lowercase.
+ *
+ * {@example  common/pipes/ts/lowerupper_pipe.ts region='LowerUpperPipe' }
+ *
+ * @stable
+ */
+export class LowerCasePipe implements PipeTransform {
+    transform(value: string): string;
+}
+/**
+ * Transforms text to titlecase.
+ *
+ * @stable
+ */
+export class TitleCasePipe implements PipeTransform {
+    transform(value: string): string;
+}
+/**
+ * Transforms text to uppercase.
+ *
+ * @stable
+ */
+export class UpperCasePipe implements PipeTransform {
+    transform(value: string): string;
+}
+}
+declare module '@angular/common/src/pipes/case_conversion_pipes' {
+export * from '~@angular/common/src/pipes/case_conversion_pipes';
 }
 
 // Generated by typings
@@ -1113,7 +1380,7 @@ import { PipeTransform } from '@angular/core';
  * Where:
  * - `expression` is a date object or a number (milliseconds since UTC epoch) or an ISO string
  * (https://www.w3.org/TR/NOTE-datetime).
- * - `format` indicates which date/time components to include. The format can be predifined as
+ * - `format` indicates which date/time components to include. The format can be predefined as
  *   shown below or custom as shown in the table.
  *   - `'medium'`: equivalent to `'yMMMdjms'` (e.g. `Sep 3, 2010, 12:05:08 PM` for `en-US`)
  *   - `'short'`: equivalent to `'yMdjm'` (e.g. `9/3/2010, 12:05 PM` for `en-US`)
@@ -1125,26 +1392,29 @@ import { PipeTransform } from '@angular/core';
  *   - `'shortTime'`: equivalent to `'jm'` (e.g. `12:05 PM` for `en-US`)
  *
  *
- *  | Component | Symbol | Short Form   | Long Form         | Numeric   | 2-digit   |
- *  |-----------|:------:|--------------|-------------------|-----------|-----------|
- *  | era       |   G    | G (AD)       | GGGG (Anno Domini)| -         | -         |
- *  | year      |   y    | -            | -                 | y (2015)  | yy (15)   |
- *  | month     |   M    | MMM (Sep)    | MMMM (September)  | M (9)     | MM (09)   |
- *  | day       |   d    | -            | -                 | d (3)     | dd (03)   |
- *  | weekday   |   E    | EEE (Sun)    | EEEE (Sunday)     | -         | -         |
- *  | hour      |   j    | -            | -                 | j (13)    | jj (13)   |
- *  | hour12    |   h    | -            | -                 | h (1 PM)  | hh (01 PM)|
- *  | hour24    |   H    | -            | -                 | H (13)    | HH (13)   |
- *  | minute    |   m    | -            | -                 | m (5)     | mm (05)   |
- *  | second    |   s    | -            | -                 | s (9)     | ss (09)   |
- *  | timezone  |   z    | -            | z (Pacific Standard Time)| -  | -         |
- *  | timezone  |   Z    | Z (GMT-8:00) | -                 | -         | -         |
- *  | timezone  |   a    | a (PM)       | -                 | -         | -         |
+ *  | Component | Symbol | Narrow | Short Form   | Long Form         | Numeric   | 2-digit   |
+ *  |-----------|:------:|--------|--------------|-------------------|-----------|-----------|
+ *  | era       |   G    | G (A)  | GGG (AD)     | GGGG (Anno Domini)| -         | -         |
+ *  | year      |   y    | -      | -            | -                 | y (2015)  | yy (15)   |
+ *  | month     |   M    | L (S)  | MMM (Sep)    | MMMM (September)  | M (9)     | MM (09)   |
+ *  | day       |   d    | -      | -            | -                 | d (3)     | dd (03)   |
+ *  | weekday   |   E    | E (S)  | EEE (Sun)    | EEEE (Sunday)     | -         | -         |
+ *  | hour      |   j    | -      | -            | -                 | j (13)    | jj (13)   |
+ *  | hour12    |   h    | -      | -            | -                 | h (1 PM)  | hh (01 PM)|
+ *  | hour24    |   H    | -      | -            | -                 | H (13)    | HH (13)   |
+ *  | minute    |   m    | -      | -            | -                 | m (5)     | mm (05)   |
+ *  | second    |   s    | -      | -            | -                 | s (9)     | ss (09)   |
+ *  | timezone  |   z    | -      | -            | z (Pacific Standard Time)| -  | -         |
+ *  | timezone  |   Z    | -      | Z (GMT-8:00) | -                 | -         | -         |
+ *  | timezone  |   a    | -      | a (PM)       | -                 | -         | -         |
  *
  * In javascript, only the components specified will be respected (not the ordering,
  * punctuations, ...) and details of the formatting will be dependent on the locale.
  *
  * Timezone of the formatted text will be the local system timezone of the end-user's machine.
+ *
+ * When the expression is a ISO string without time (e.g. 2016-09-19) the time zone offset is not
+ * applied and the formatted text will have the same day, month and year of the expression.
  *
  * WARNINGS:
  * - this pipe is marked as pure hence it will not be re-evaluated when the input is mutated.
@@ -1173,8 +1443,7 @@ import { PipeTransform } from '@angular/core';
 export class DatePipe implements PipeTransform {
     private _locale;
     constructor(_locale: string);
-    transform(value: any, pattern?: string): string;
-    private supports(obj);
+    transform(value: any, pattern?: string): string | null;
 }
 }
 declare module '@angular/common/src/pipes/date_pipe' {
@@ -1239,9 +1508,10 @@ import { PipeTransform } from '@angular/core';
  * @howToUse `expression | i18nSelect:mapping`
  * @description
  *
- *  Where:
- *  - `mapping`: is an object that indicates the text that should be displayed
+ *  Where `mapping` is an object that indicates the text that should be displayed
  *  for different values of the provided `expression`.
+ *  If none of the keys of the mapping match the value of the `expression`, then the content
+ *  of the `other` key is returned when present, otherwise an empty string is returned.
  *
  *  ## Example
  *
@@ -1250,7 +1520,7 @@ import { PipeTransform } from '@angular/core';
  *  @experimental
  */
 export class I18nSelectPipe implements PipeTransform {
-    transform(value: string, mapping: {
+    transform(value: string | null | undefined, mapping: {
         [key: string]: string;
     }): string;
 }
@@ -1289,39 +1559,6 @@ export class JsonPipe implements PipeTransform {
 }
 declare module '@angular/common/src/pipes/json_pipe' {
 export * from '~@angular/common/src/pipes/json_pipe';
-}
-
-// Generated by typings
-// Source: node_modules/@angular/common/src/pipes/lowercase_pipe.d.ts
-declare module '~@angular/common/src/pipes/lowercase_pipe' {
-/**
- * @license
- * Copyright Google Inc. All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-import { PipeTransform } from '@angular/core';
-/**
- * @ngModule CommonModule
- * @whatItDoes Transforms string to lowercase.
- * @howToUse `expression | lowercase`
- * @description
- *
- * Converts value into lowercase string using `String.prototype.toLowerCase()`.
- *
- * ### Example
- *
- * {@example common/pipes/ts/lowerupper_pipe.ts region='LowerUpperPipe'}
- *
- * @stable
- */
-export class LowerCasePipe implements PipeTransform {
-    transform(value: string): string;
-}
-}
-declare module '@angular/common/src/pipes/lowercase_pipe' {
-export * from '~@angular/common/src/pipes/lowercase_pipe';
 }
 
 // Generated by typings
@@ -1365,7 +1602,7 @@ import { PipeTransform } from '@angular/core';
 export class DecimalPipe implements PipeTransform {
     private _locale;
     constructor(_locale: string);
-    transform(value: any, digits?: string): string;
+    transform(value: any, digits?: string): string | null;
 }
 /**
  * @ngModule CommonModule
@@ -1390,7 +1627,7 @@ export class DecimalPipe implements PipeTransform {
 export class PercentPipe implements PipeTransform {
     private _locale;
     constructor(_locale: string);
-    transform(value: any, digits?: string): string;
+    transform(value: any, digits?: string): string | null;
 }
 /**
  * @ngModule CommonModule
@@ -1419,8 +1656,9 @@ export class PercentPipe implements PipeTransform {
 export class CurrencyPipe implements PipeTransform {
     private _locale;
     constructor(_locale: string);
-    transform(value: any, currencyCode?: string, symbolDisplay?: boolean, digits?: string): string;
+    transform(value: any, currencyCode?: string, symbolDisplay?: boolean, digits?: string): string | null;
 }
+export function isNumeric(value: any): boolean;
 }
 declare module '@angular/common/src/pipes/number_pipe' {
 export * from '~@angular/common/src/pipes/number_pipe';
@@ -1491,39 +1729,6 @@ export * from '~@angular/common/src/pipes/slice_pipe';
 }
 
 // Generated by typings
-// Source: node_modules/@angular/common/src/pipes/uppercase_pipe.d.ts
-declare module '~@angular/common/src/pipes/uppercase_pipe' {
-/**
- * @license
- * Copyright Google Inc. All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-import { PipeTransform } from '@angular/core';
-/**
- * @ngModule CommonModule
- * @whatItDoes Transforms string to uppercase.
- * @howToUse `expression | uppercase`
- * @description
- *
- * Converts value into lowercase string using `String.prototype.toUpperCase()`.
- *
- * ### Example
- *
- * {@example common/pipes/ts/lowerupper_pipe.ts region='LowerUpperPipe'}
- *
- * @stable
- */
-export class UpperCasePipe implements PipeTransform {
-    transform(value: string): string;
-}
-}
-declare module '@angular/common/src/pipes/uppercase_pipe' {
-export * from '~@angular/common/src/pipes/uppercase_pipe';
-}
-
-// Generated by typings
 // Source: node_modules/@angular/common/src/pipes/index.d.ts
 declare module '~@angular/common/src/pipes/index' {
 /**
@@ -1539,48 +1744,36 @@ declare module '~@angular/common/src/pipes/index' {
  * This module provides a set of common Pipes.
  */
 import { AsyncPipe } from '~@angular/common/src/pipes/async_pipe';
+import { LowerCasePipe, TitleCasePipe, UpperCasePipe } from '~@angular/common/src/pipes/case_conversion_pipes';
 import { DatePipe } from '~@angular/common/src/pipes/date_pipe';
 import { I18nPluralPipe } from '~@angular/common/src/pipes/i18n_plural_pipe';
 import { I18nSelectPipe } from '~@angular/common/src/pipes/i18n_select_pipe';
 import { JsonPipe } from '~@angular/common/src/pipes/json_pipe';
-import { LowerCasePipe } from '~@angular/common/src/pipes/lowercase_pipe';
 import { CurrencyPipe, DecimalPipe, PercentPipe } from '~@angular/common/src/pipes/number_pipe';
 import { SlicePipe } from '~@angular/common/src/pipes/slice_pipe';
-import { UpperCasePipe } from '~@angular/common/src/pipes/uppercase_pipe';
-export { AsyncPipe, CurrencyPipe, DatePipe, DecimalPipe, I18nPluralPipe, I18nSelectPipe, JsonPipe, LowerCasePipe, PercentPipe, SlicePipe, UpperCasePipe };
+export { AsyncPipe, CurrencyPipe, DatePipe, DecimalPipe, I18nPluralPipe, I18nSelectPipe, JsonPipe, LowerCasePipe, PercentPipe, SlicePipe, TitleCasePipe, UpperCasePipe };
 /**
  * A collection of Angular pipes that are likely to be used in each and every application.
  */
-export const COMMON_PIPES: (typeof AsyncPipe | typeof DatePipe | typeof I18nPluralPipe | typeof I18nSelectPipe | typeof DecimalPipe | typeof PercentPipe | typeof CurrencyPipe | typeof SlicePipe)[];
+export const COMMON_PIPES: (typeof AsyncPipe | typeof DecimalPipe | typeof PercentPipe | typeof CurrencyPipe | typeof DatePipe | typeof I18nPluralPipe | typeof I18nSelectPipe | typeof SlicePipe)[];
 }
 declare module '@angular/common/src/pipes/index' {
 export * from '~@angular/common/src/pipes/index';
 }
 
 // Generated by typings
-// Source: node_modules/@angular/common/index.d.ts
-declare module '~@angular/common/index' {
+// Source: node_modules/@angular/common/common.d.ts
+declare module '~@angular/common/common' {
 /**
- * @license
- * Copyright Google Inc. All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * Generated bundle index. Do not edit.
  */
-/**
- * @module
- * @description
- * Entry point for all public APIs of the common package.
- */
-export * from '~@angular/common/src/location';
-export { NgLocalization } from '~@angular/common/src/localization';
-export { CommonModule } from '~@angular/common/src/common_module';
-export { NgClass, NgFor, NgIf, NgPlural, NgPluralCase, NgStyle, NgSwitch, NgSwitchCase, NgSwitchDefault, NgTemplateOutlet } from '~@angular/common/src/directives/index';
-export { AsyncPipe, DatePipe, I18nPluralPipe, I18nSelectPipe, JsonPipe, LowerCasePipe, CurrencyPipe, DecimalPipe, PercentPipe, SlicePipe, UpperCasePipe } from '~@angular/common/src/pipes/index';
+export * from '~@angular/common/public_api';
+export { COMMON_DIRECTIVES as ɵa } from '~@angular/common/src/directives/index';
+export { COMMON_PIPES as ɵb } from '~@angular/common/src/pipes/index';
 }
-declare module '@angular/common/index' {
-export * from '~@angular/common/index';
+declare module '@angular/common/common' {
+export * from '~@angular/common/common';
 }
 declare module '@angular/common' {
-export * from '~@angular/common/index';
+export * from '~@angular/common/common';
 }

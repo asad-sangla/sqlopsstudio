@@ -1,6 +1,6 @@
 {
   "resolution": "main",
   "tree": {
-    "src": "npm:@angular//compiler//index.d.ts"
+    "src": "npm:@angular/compiler/compiler.d.ts"
   }
 }

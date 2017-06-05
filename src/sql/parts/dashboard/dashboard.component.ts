@@ -9,7 +9,7 @@ import 'vs/css!sql/media/font-awesome-4.7.0/css/font-awesome';
 
 
 import { MenuItem } from 'primeng/primeng';
-import { OnInit, Component, Inject, forwardRef, ElementRef } from '@angular/core';
+import { OnInit, Component, Inject, forwardRef, ElementRef, ChangeDetectorRef } from '@angular/core';
 
 import { BreadcrumbService } from './services/breadcrumb.service';
 import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
@@ -27,16 +27,19 @@ export class DashboardComponent implements OnInit {
 	constructor(
 		@Inject(forwardRef(() => BreadcrumbService)) private _breadcrumbService: BreadcrumbService,
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrapService: DashboardServiceInterface,
-		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef
+		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef
 		) {
 			this.breadcrumbItems = [];
 			this._bootstrapService.selector = this._el.nativeElement.tagName;
 		}
 
 	ngOnInit(): void {
-		this._breadcrumbService.breadcrumbItem.subscribe((val: MenuItem[]) => {
+		let self = this;
+		self._breadcrumbService.breadcrumbItem.subscribe((val: MenuItem[]) => {
 			if (val) {
-				this.breadcrumbItems = val;
+				self.breadcrumbItems = val;
+				self._changeRef.detectChanges();
 			}
 		});
 	}

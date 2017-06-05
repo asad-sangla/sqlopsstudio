@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Injectable, forwardRef, Inject } from '@angular/core';
-import { Subject } from 'rxjs/Rx';
+import { Subject } from 'rxjs/Subject';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 import { MenuItem } from 'primeng/primeng';
