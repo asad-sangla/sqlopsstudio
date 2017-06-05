@@ -6,17 +6,28 @@
     - M2: Public previewJune 30
 
 
-## 1. Wrapping up feature designs for June 30
+## June 30 Public Preview Readiness (M2)
+
+- Partnerships – in progress
+ 
+- Present “Carbon” to RohanK directs and other teams within DS.
+- Present “Carbon” to Sean Mcbreen & co. next week.
+  
+RE: High fidelity mockup with a core e2e scenario (Eric & Smitha)
+This is P0 for this week. Eric, can you nail this by Friday?
 
 - Documentation on docs.microsoft.com
-                - Installation
-                - Getting Started
+	- Installation
+    - Getting Started
+	- Port and revise private preview guides into docs.microsoft.com
  
-- High fidelity mockup with a core e2e scenario (Eric & Smitha)
-    * Backup - stepping stone: a server with 100 databases.
-                * Restore design
-    - Manage with insight (Tara / Eric / Sanjay)
-    - ETA: Friday
+- High fidelity mockup with a core e2e scenario (Eric & Smitha) in progress
+    - e2e scenario (north-star)
+	- Backup Plan Builder (Recovery Plan Builder) (in progress)
+	- Automation of agent job provisioning (in progress)
+	- Agent job monitor (in progress)
+	- Manage dashboard layout and sample insight (in progress)
+	- Restore Plan Builder (in progress)
 	
 - Branding to go public (in progress)
     - Get the branding naming request template from Sanjay
@@ -26,13 +37,20 @@
  - OSS (in progress)
     - start OSS process w/o the official name (3 weeks). Update the project / product name after the branding name is finalized. (complete)
 	- Discuss Cabon specific cases with CELA (June 06)
-	
+	- Github project preparation
+		- README.md
+		- Release.md
+		- Wiki
+			- Contribution
+			- Customizations Wiki (refer to mssql extension wiki)
+			- Pre-reqs and troubleshooting
+			- How to report issues
  
 - .NET 2.0 core + Windows Auth
     > Follow up on Kerberos setup experience on macOS and Linux
                 > Who will build a simple CLI / Bash script experience to set it up.
  
-- Acquisition
+- Acquisition (Tara)
     - M2: Specify M2 version of acquistion experience.
     > PM: spec review, functional testing
  
