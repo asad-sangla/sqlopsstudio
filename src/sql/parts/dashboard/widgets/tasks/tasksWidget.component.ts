@@ -7,6 +7,7 @@ import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit } from '@angul
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { PathUtilities } from 'sql/common/pathUtilities';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -86,7 +87,8 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 			this.isDarkTheme = true;
 			for (let task of this.tasks) {
 				if (task.icon) {
-					task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.inverse_icon + ') center center no-repeat');
+					task.inverse_icon = task.inverse_icon.replace(' ', '%20');
+					task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.inverse_icon  + ') center center no-repeat');
 				}
 			}
 			this._changeref.detectChanges();
@@ -94,7 +96,8 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 			this.isDarkTheme = false;
 			for (let task of this.tasks) {
 				if (task.icon) {
-					task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.icon + ') center center no-repeat');
+					task.inverse_icon = task.icon.replace(' ', '%20');
+					task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.icon  + ') center center no-repeat');
 				}
 			}
 			this._changeref.detectChanges();

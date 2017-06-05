@@ -23,6 +23,7 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import dom = require('vs/base/browser/dom');
 import * as fs from 'fs';
+import { PathUtilities } from 'sql/common/pathUtilities';
 import uri from 'vs/base/common/uri';
 
 /**
@@ -127,9 +128,9 @@ export class ServerTreeRenderer implements IRenderer {
 		if (treeNode.nodeSubType) {
 			iconName = treeNode.nodeTypeId + '_' + treeNode.nodeSubType;
 		}
-		var iconFilePath = require.toUrl('sql/media/objectTypes/' + iconName + '.svg');
+		var iconFilePath = PathUtilities.toUrl('sql/media/objectTypes/' + iconName + '.svg');
 		if (!fs.existsSync(uri.parse(iconFilePath).fsPath)) {
-			iconFilePath = require.toUrl('sql/media/objectTypes/DefaultIcon.svg');
+			iconFilePath = PathUtilities.toUrl('sql/media/objectTypes/DefaultIcon.svg');
 		}
 		templateData.icon.style.content = 'url(' + iconFilePath + ')';
 		templateData.label.textContent = treeNode.label;

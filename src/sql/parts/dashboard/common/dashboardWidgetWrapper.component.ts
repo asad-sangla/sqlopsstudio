@@ -9,6 +9,7 @@ import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeS
 
 import { WidgetDirective } from './widget.directive';
 import { IDashboardWidget, WidgetConfig } from './dashboardWidget';
+import { PathUtilities } from 'sql/common/pathUtilities';
 
 /* Widgets */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
@@ -76,10 +77,10 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit {
 		let border = theme.getColor('highContrastBorder');
 
 		if (theme.isLightTheme() && this._config.icon) {
-			this._config.loadedIcon = require.toUrl(this._config.icon);
+			this._config.loadedIcon = PathUtilities.toUrl(this._config.inverse_icon);
 			this._changeref.detectChanges();
 		} else if (theme.isDarkTheme() && this._config.inverse_icon) {
-			this._config.loadedIcon = require.toUrl(this._config.inverse_icon);
+			this._config.loadedIcon = PathUtilities.toUrl(this._config.inverse_icon);
 			this._changeref.detectChanges();
 		}
 
