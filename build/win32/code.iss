@@ -8,9 +8,9 @@ AppId={#AppId}
 AppName={#NameLong}
 AppVerName={#NameVersion}
 AppPublisher=Microsoft Corporation
-AppPublisherURL=https://code.visualstudio.com/
-AppSupportURL=https://code.visualstudio.com/
-AppUpdatesURL=https://code.visualstudio.com/
+AppPublisherURL=https://github.com/Microsoft/carbon
+AppSupportURL=https://github.com/Microsoft/carbon
+AppUpdatesURL=https://github.com/Microsoft/carbon
 DefaultDirName={pf}\{#DirName}
 DefaultGroupName={#NameLong}
 AllowNoIcons=yes
@@ -826,7 +826,7 @@ end;
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   Path: string;
-  VSCodePath: string;
+  CarbonPath: string;
   Parts: TArrayOfString;
   NewPath: string;
   i: Integer;
@@ -839,10 +839,10 @@ begin
     exit;
   end;
   NewPath := '';
-  VSCodePath := ExpandConstant('{app}\bin')
+  CarbonPath := ExpandConstant('{app}\bin')
   Explode(Parts, Path, ';');
   for i:=0 to GetArrayLength(Parts)-1 do begin
-    if CompareText(Parts[i], VSCodePath) <> 0 then begin
+    if CompareText(Parts[i], CarbonPath) <> 0 then begin
       NewPath := NewPath + Parts[i];
 
       if i < GetArrayLength(Parts) - 1 then begin

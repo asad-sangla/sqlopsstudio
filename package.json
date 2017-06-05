@@ -139,7 +139,7 @@
     "typemoq": "^0.3.2",
     "typescript": "2.1.5",
     "typescript-formatter": "4.0.1",
-    "uglify-js": "2.4.8",
+    "uglify-js": "mishoo/UglifyJS2#harmony-v2.8.22",
     "vinyl": "^0.4.5",
     "vinyl-fs": "^2.4.3",
     "vscode-nls-dev": "^2.0.1"
