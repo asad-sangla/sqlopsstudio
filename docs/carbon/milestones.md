@@ -11,10 +11,9 @@
 - Partnerships – in progress
  
 - Present “Carbon” to RohanK directs and other teams within DS.
+
 - Present “Carbon” to Sean Mcbreen & co. next week.
   
-RE: High fidelity mockup with a core e2e scenario (Eric & Smitha)
-This is P0 for this week. Eric, can you nail this by Friday?
 
 - Documentation on docs.microsoft.com
 	- Installation
