@@ -10,6 +10,9 @@ This document describes the key functional scenario of Task viewlet. The goal of
 
 ## Task History
 
+- Actionbar
+	- Badge icon that indicates the number of new successful / failed / in-progress task history entry.
+
 - On viewlet
   - Success / Failure / In progress indicator icon
   - Task name, server, database
