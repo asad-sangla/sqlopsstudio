@@ -4,6 +4,8 @@ This document describes the key functional scenario of Task viewlet. The goal of
 
 - View the history of successful, failed or in-progress tasks.
 - View the detail of successful, failed or in-progress task.
+- Re-run a task with the same or modified configuration.
+- Save the task execution history as a manage workflow creation or documentation.
 
 ## Task Execution History and Detail
 
