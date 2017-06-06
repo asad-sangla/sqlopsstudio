@@ -63,3 +63,21 @@ This speclet describes the funcitonal requirements for Server and Database Prope
 ### SQL DW on Azure
 
 #### Essentials
+
+(TBD)
+
+#
+
+6/05 team discussion
+Discussion note: (Kevin, Anthony, Eric)
+ 
+- Carbon public preview & GA – scoping principle for Azure support
+	- T-SQL interface only. Any feature that requires ARM / REST API is out of scope and backlog item for long term roadmap.
+	- Eric to revise Azure SQL Server / DB property list scoped to T-SQL retrievable.
+- Add ‘Manage’ context menu in OE to open Manage page to make it as user opt-in action.
+	- Add settings option to set the default behavior – Manage, New Query
+	- Add … to OE to indicate context menu is avail.
+- Refresh and long loading time (a few seconds)
+	- Based on #2, iteration 1 – no refresh, iteration 2 – manual, auto-refresh
+- Overall Azure support: make Azure CLI available from integrated terminal.
+ 
