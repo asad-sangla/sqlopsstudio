@@ -85,15 +85,17 @@ export class BackupComponent{
         let self = this;
 
         this._disasterRecoveryService.getBackupConfigInfo(this._uri).then(configInfo => {
-            self.lastBackupLocations = configInfo.latestBackups;
-            self.defaultNewBackupFolder = configInfo.defaultBackupFolder;
-            self.recoveryModel = configInfo.recoveryModel;
+            if (configInfo) {
+                self.lastBackupLocations = configInfo.latestBackups;
+                self.defaultNewBackupFolder = configInfo.defaultBackupFolder;
+                self.recoveryModel = configInfo.recoveryModel;
 
-            self.setControlsForRecoveryModel();
-            self.setDefaultBackupPaths();
-            self.setDefaultBackupName();
+                self.setControlsForRecoveryModel();
+                self.setDefaultBackupPaths();
+                self.setDefaultBackupName();
 
-            self._changeDetectorRef.detectChanges();
+                self._changeDetectorRef.detectChanges();
+            }
         });
     }
 
