@@ -439,7 +439,11 @@ export class ConnectionConfig implements IConnectionConfig {
 				}
 
 			} else {
-				newGroup.id = Utils.generateGuid();
+				if (ConnectionProfileGroup.isRoot(newGroup.name)) {
+					newGroup.id = Utils.defaultGroupId();
+				} else {
+					newGroup.id = Utils.generateGuid();
+				}
 				let result = this.saveGroupInTree(groupTree, newGroup.id, groupNames, color, description, index + 1);
 				newGroupId = result.newGroupId;
 				groupTree = result.groups;

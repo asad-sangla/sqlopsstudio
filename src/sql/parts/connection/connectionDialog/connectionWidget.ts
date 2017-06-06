@@ -19,12 +19,13 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionOptionSpecialType } from 'sql/parts/connection/common/connectionManagement';
 import * as Constants from 'sql/parts/connection/common/constants';
+import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import data = require('data');
 
 export class ConnectionWidget {
 	private _builder: Builder;
 	private _serverGroupSelectBox: DialogSelectBox;
-	private _serverGroupOptions: string[];
+	private _serverGroupOptions: IConnectionProfileGroup[];
 	private _serverNameInputBox: InputBox;
 	private _databaseNameInputBox: InputBox;
 	private _userNameInputBox: InputBox;
@@ -42,10 +43,28 @@ export class ConnectionWidget {
 		[Constants.pgsqlProviderName]: []
 	};
 	private _saveProfile: boolean;
-	public DefaultServerGroup = '<Default>';
-	private _addNewServerGroup = 'Add New Group...';
-	public NoneServerGroup = '<None>';
+	public DefaultServerGroup: IConnectionProfileGroup = {
+		id: '',
+		name: '<Default>',
+		parentId: undefined,
+		color: undefined,
+		description: undefined,
+	};
 
+	private _addNewServerGroup = {
+		id: '',
+		name: 'Add New Group...',
+		parentId: undefined,
+		color: undefined,
+		description: undefined,
+	};
+	public NoneServerGroup : IConnectionProfileGroup = {
+		id: '',
+		name: '<None>',
+		parentId: undefined,
+		color: undefined,
+		description: undefined,
+	};
 	constructor(options: data.ConnectionOption[], callbacks: IConnectionComponentCallbacks, providerName: string) {
 		this._callbacks = callbacks;
 		this._toDispose = [];
@@ -62,7 +81,7 @@ export class ConnectionWidget {
 
 	public createConnectionWidget(): HTMLElement {
 		this._serverGroupOptions = [this.DefaultServerGroup];
-		this._serverGroupSelectBox = new DialogSelectBox(this._serverGroupOptions, this.DefaultServerGroup);
+		this._serverGroupSelectBox = new DialogSelectBox(this._serverGroupOptions.map(g => g.name), this.DefaultServerGroup.name);
 		this._builder = $().div({ class: 'connection-table' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this._tableContainer = tableContainer;
@@ -167,7 +186,7 @@ export class ConnectionWidget {
 	}
 
 	private onGroupSelected(selectedGroup: string) {
-		if (selectedGroup === this._addNewServerGroup) {
+		if (selectedGroup === this._addNewServerGroup.name) {
 			this._callbacks.onCreateNewServerGroup();
 		}
 	}
@@ -218,10 +237,10 @@ export class ConnectionWidget {
 		this._serverGroupSelectBox.focus();
 	}
 
-	public updateServerGroup(connectionGroups: string[], groupName?: string) {
+	public updateServerGroup(connectionGroups: IConnectionProfileGroup[], groupName?: string) {
 		this._serverGroupOptions = connectionGroups;
 		this._serverGroupOptions.push(this._addNewServerGroup);
-		this._serverGroupSelectBox.setOptions(this._serverGroupOptions);
+		this._serverGroupSelectBox.setOptions(this._serverGroupOptions.map(g => g.name));
 		if (groupName) {
 			this._serverGroupSelectBox.selectWithOptionName(groupName);
 		}
@@ -246,12 +265,12 @@ export class ConnectionWidget {
 			let groupName: string;
 			if (this._saveProfile) {
 				if (!connectionInfo.groupFullName) {
-					groupName = this.DefaultServerGroup;
+					groupName = this.DefaultServerGroup.name;
 				} else {
 					groupName = connectionInfo.groupFullName.replace('root/', '');
 				}
 			} else {
-				groupName = this.NoneServerGroup;
+				groupName = this.NoneServerGroup.name;
 			}
 			this._serverGroupSelectBox.selectWithOptionName(groupName);
 			this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
@@ -347,19 +366,30 @@ export class ConnectionWidget {
 			model.password = this.password;
 			model.authenticationType = this.authenticationType;
 			model.savePassword = this._rememberPasswordCheckBox.checked;
-			if (this._serverGroupSelectBox.value === this.DefaultServerGroup) {
+			if (this._serverGroupSelectBox.value === this.DefaultServerGroup.name) {
 				model.groupFullName = '';
 				model.saveProfile = true;
-			} else if (this._serverGroupSelectBox.value === this.NoneServerGroup) {
+				model.groupId = this.findGroupId(model.groupFullName);
+			} else if (this._serverGroupSelectBox.value === this.NoneServerGroup.name) {
 				model.groupFullName = '';
 				model.saveProfile = false;
-			} else if (this._serverGroupSelectBox.value !== this._addNewServerGroup) {
+			} else if (this._serverGroupSelectBox.value !== this._addNewServerGroup.name) {
 				model.groupFullName = this._serverGroupSelectBox.value;
 				model.saveProfile = true;
+				model.groupId = this.findGroupId(model.groupFullName);
 			}
-			model.groupId = undefined;
 		}
 		return validInputs;
+	}
+
+	private findGroupId(groupFullName: string): string {
+		let group: IConnectionProfileGroup;
+		if (ConnectionProfileGroup.isRoot(groupFullName)) {
+			group = this._serverGroupOptions.find(g => ConnectionProfileGroup.isRoot(g.name));
+		} else {
+			group = this._serverGroupOptions.find(g => g.name === groupFullName);
+		}
+		return group ? group.id : undefined;
 	}
 
 	public dispose(): void {

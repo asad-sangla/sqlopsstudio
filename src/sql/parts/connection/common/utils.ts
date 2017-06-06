@@ -35,6 +35,10 @@ export function isNotEmpty(str: any): boolean {
 	return <boolean>(str && '' !== str);
 }
 
+export function defaultGroupId(): string {
+	return 'C777F06B-202E-4480-B475-FA416154D458';
+}
+
 // Generate a new GUID
 export function generateGuid(): string {
 	let hexValues: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];

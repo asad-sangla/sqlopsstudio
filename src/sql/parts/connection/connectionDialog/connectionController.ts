@@ -10,9 +10,10 @@ import { IConnectionComponentCallbacks, IConnectionComponentController, IConnect
 import { ConnectionWidget } from 'sql/parts/connection/connectionDialog/connectionWidget';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import * as Constants from 'sql/parts/connection/common/constants';
 import data = require('data');
+import * as Utils from 'sql/parts/connection/common/utils';
 
 export class ConnectionController implements IConnectionComponentController {
 	private _container: HTMLElement;
@@ -68,10 +69,10 @@ export class ConnectionController implements IConnectionComponentController {
 		return this._connectionWidget.createConnectionWidget();
 	}
 
-	private getServerGroupHelper(group: ConnectionProfileGroup, groupNames: string[]): void {
+	private getServerGroupHelper(group: ConnectionProfileGroup, groupNames: IConnectionProfileGroup[]): void {
 		if (group) {
 			if (group.fullName !== '') {
-				groupNames.push(group.fullName);
+				groupNames.push(group);
 			}
 			if (group.hasChildren()) {
 				group.children.forEach((child) => this.getServerGroupHelper(child, groupNames));
@@ -79,13 +80,20 @@ export class ConnectionController implements IConnectionComponentController {
 		}
 	}
 
-	private getAllServerGroups(): string[] {
+	private getAllServerGroups(): IConnectionProfileGroup[] {
 		var connectionGroupRoot = this._connectionManagementService.getConnectionGroups();
-		var connectionGroupNames: string[] = [];
+		var connectionGroupNames: IConnectionProfileGroup[] = [];
 		if (connectionGroupRoot && connectionGroupRoot.length > 0) {
 			this.getServerGroupHelper(connectionGroupRoot[0], connectionGroupNames);
 		}
-		connectionGroupNames.push(this._connectionWidget.DefaultServerGroup, this._connectionWidget.NoneServerGroup);
+		let defaultGroupId: string;
+		if (connectionGroupRoot && connectionGroupRoot.length > 0 && ConnectionProfileGroup.isRoot(connectionGroupRoot[0].name)) {
+			defaultGroupId = connectionGroupRoot[0].id;
+		} else {
+			defaultGroupId = Utils.defaultGroupId();
+		}
+		connectionGroupNames.push(Object.assign({},  this._connectionWidget.DefaultServerGroup, {id: defaultGroupId}));
+		connectionGroupNames.push(this._connectionWidget.NoneServerGroup);
 		return connectionGroupNames;
 	}
 
