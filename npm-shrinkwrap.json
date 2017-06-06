@@ -454,9 +454,9 @@
       "resolved": "https://registry.npmjs.org/object.omit/-/object.omit-2.0.1.tgz"
     },
     "oniguruma": {
-      "version": "6.2.1",
+      "version": "6.1.1",
       "from": "oniguruma@>=6.0.1 <7.0.0",
-      "resolved": "https://registry.npmjs.org/oniguruma/-/oniguruma-6.2.1.tgz"
+      "resolved": "https://registry.npmjs.org/oniguruma/-/oniguruma-6.1.1.tgz"
     },
     "parse-glob": {
       "version": "3.0.4",
@@ -666,8 +666,8 @@
     },
     "xterm": {
       "version": "2.4.0",
-      "from": "Tyriar/xterm.js#vscode-release/1.11",
-      "resolved": "git://github.com/Tyriar/xterm.js.git#18edbf652e8453227f1f680b8eda3d17b7c1ecc3"
+      "from": "tyriar/xterm.js#vscode-release/1.11",
+      "resolved": "git://github.com/tyriar/xterm.js.git#18edbf652e8453227f1f680b8eda3d17b7c1ecc3"
     },
     "yauzl": {
       "version": "2.3.1",
