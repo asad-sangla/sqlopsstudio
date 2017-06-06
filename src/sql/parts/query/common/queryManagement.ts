@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import QueryRunner from 'sql/parts/query/execution/queryRunner';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import data = require('data');
-import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 export const SERVICE_ID = 'queryManagementService';
@@ -80,6 +81,8 @@ export class QueryManagementService implements IQueryManagementService {
     // public for testing only
     public _handlerCallbackQueue: ((run: QueryRunner) => void)[] = [];
 
+	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) {
+	}
 
     // Registers queryRunners with their uris to distribute notifications.
     // Ensures that notifications are handled in the correct order by handling
@@ -126,8 +129,13 @@ export class QueryManagementService implements IQueryManagementService {
 		};
 	}
 
-	private _runAction<T>(queryType: string, action: (handler: QueryRequestHandler) => Thenable<T>): Thenable<T> {
-		let handler = this._requestHandlers.get(queryType);
+	private _runAction<T>(uri: string, action: (handler: QueryRequestHandler) => Thenable<T>): Thenable<T> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(uri);
+
+		if (!providerId) {
+			return TPromise.wrapError('Connection is required in order to interact with queries');
+		}
+		let handler = this._requestHandlers.get(providerId);
 		if (handler) {
 			return action(handler);
 		} else {
@@ -136,28 +144,28 @@ export class QueryManagementService implements IQueryManagementService {
 	}
 
 	public cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.cancelQuery(ownerUri);
 		});
 	}
 	public runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.runQuery(ownerUri, selection);
 		});
 	}
 	public getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(rowData.ownerUri, (runner) => {
 			return runner.getQueryRows(rowData);
 		});
 	}
 	public disposeQuery(ownerUri: string): Thenable<void> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.disposeQuery(ownerUri);
 		});
 	}
 
 	public saveResults(requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(requestParams.ownerUri, (runner) => {
 			return runner.saveResults(requestParams);
 		});
 	}
@@ -193,7 +201,7 @@ export class QueryManagementService implements IQueryManagementService {
 
 	// Edit Data Functions
 	public initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.initializeEdit(ownerUri, schemaName, objectName, objectType, rowLimit);
 		});
 	}
@@ -205,49 +213,49 @@ export class QueryManagementService implements IQueryManagementService {
 	}
 
 	public updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.updateCell(ownerUri, rowId, columnId, newValue);
 		});
 	}
 
 	public commitEdit(ownerUri: string): Thenable<void> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.commitEdit(ownerUri);
 		});
 	}
 
 	public createRow(ownerUri: string): Thenable<data.EditCreateRowResult> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.createRow(ownerUri);
 		});
 	}
 
 	public deleteRow(ownerUri: string, rowId: number): Thenable<void> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.deleteRow(ownerUri, rowId);
 		});
 	}
 
 	public disposeEdit(ownerUri: string): Thenable<void> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.disposeEdit(ownerUri);
 		});
 	}
 
 	public revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.revertCell(ownerUri, rowId, columnId);
 		});
 	}
 
 	public revertRow(ownerUri: string, rowId: number): Thenable<void> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(ownerUri, (runner) => {
 			return runner.revertRow(ownerUri, rowId);
 		});
 	}
 
 	public getEditRows(rowData: data.EditSubsetParams): Thenable<data.EditSubsetResult> {
-		return this._runAction(QueryManagementService.DefaultQueryType, (runner) => {
+		return this._runAction(rowData.ownerUri, (runner) => {
 			return runner.getEditRows(rowData);
 		});
 	}
