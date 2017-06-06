@@ -386,6 +386,9 @@ export class ConnectionWidget {
 		let group: IConnectionProfileGroup;
 		if (ConnectionProfileGroup.isRoot(groupFullName)) {
 			group = this._serverGroupOptions.find(g => ConnectionProfileGroup.isRoot(g.name));
+			if(group === undefined) {
+				group = this._serverGroupOptions.find(g => g.name === this.DefaultServerGroup.name);
+			}
 		} else {
 			group = this._serverGroupOptions.find(g => g.name === groupFullName);
 		}
