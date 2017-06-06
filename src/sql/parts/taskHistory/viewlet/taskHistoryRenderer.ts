@@ -16,7 +16,7 @@ import dom = require('vs/base/browser/dom');
  */
 export class TaskHistoryRenderer implements IRenderer {
 
-	public static readonly TASKOBJECT_HEIGHT = 55;
+	public static readonly TASKOBJECT_HEIGHT = 65;
 	private static readonly TASKOBJECT_TEMPLATE_ID = 'carbonTask';
 	private static readonly FAIL_CLASS = 'fail-status';
 	private static readonly SUCCESS_CLASS = 'success-status';
@@ -46,6 +46,7 @@ export class TaskHistoryRenderer implements IRenderer {
 		var titleContainer = dom.append(taskTemplate.root, $('div.task-details'));
 		taskTemplate.title = dom.append(titleContainer, $('div.title'));
 		taskTemplate.description = dom.append(titleContainer, $('div.description'));
+		taskTemplate.time = dom.append(titleContainer, $('div.time'));
 		return taskTemplate;
 	}
 
@@ -57,25 +58,66 @@ export class TaskHistoryRenderer implements IRenderer {
 	}
 
 	private renderTask(tree: ITree, taskNode: TaskNode, templateData: ITaskHistoryTemplateData): void {
-		switch (taskNode.status) {
-			case TaskStatus.success:
-				templateData.icon.classList.remove(TaskHistoryRenderer.FAIL_CLASS);
-				templateData.icon.classList.remove(TaskHistoryRenderer.INPROGRESS_CLASS);
-				templateData.icon.classList.add(TaskHistoryRenderer.SUCCESS_CLASS);
-				break;
-			case TaskStatus.fail:
-				templateData.icon.classList.remove(TaskHistoryRenderer.SUCCESS_CLASS);
-				templateData.icon.classList.remove(TaskHistoryRenderer.INPROGRESS_CLASS);
-				templateData.icon.classList.add(TaskHistoryRenderer.FAIL_CLASS);
-				break;
-			case TaskStatus.inProgress:
-				templateData.icon.classList.remove(TaskHistoryRenderer.FAIL_CLASS);
-				templateData.icon.classList.remove(TaskHistoryRenderer.SUCCESS_CLASS);
-				templateData.icon.classList.add(TaskHistoryRenderer.INPROGRESS_CLASS);
+		if (taskNode) {
+			switch (taskNode.status) {
+				case TaskStatus.success:
+					templateData.icon.classList.remove(TaskHistoryRenderer.FAIL_CLASS);
+					templateData.icon.classList.remove(TaskHistoryRenderer.INPROGRESS_CLASS);
+					templateData.icon.classList.add(TaskHistoryRenderer.SUCCESS_CLASS);
+					break;
+				case TaskStatus.fail:
+					templateData.icon.classList.remove(TaskHistoryRenderer.SUCCESS_CLASS);
+					templateData.icon.classList.remove(TaskHistoryRenderer.INPROGRESS_CLASS);
+					templateData.icon.classList.add(TaskHistoryRenderer.FAIL_CLASS);
+					break;
+				case TaskStatus.inProgress:
+					templateData.icon.classList.remove(TaskHistoryRenderer.FAIL_CLASS);
+					templateData.icon.classList.remove(TaskHistoryRenderer.SUCCESS_CLASS);
+					templateData.icon.classList.add(TaskHistoryRenderer.INPROGRESS_CLASS);
+			}
+			templateData.title.textContent = taskNode.taskName;
+			let description = taskNode.serverName;
+			if (taskNode.databaseName) {
+				description += ' | ' + taskNode.databaseName;
+			}
+			templateData.description.textContent = description;
+			this.timer(taskNode, templateData);
+
+			setInterval(function () {
+				let timeLabel = '';
+				if (taskNode.startTime) {
+					timeLabel = taskNode.startTime;
+				}
+
+				if (taskNode.endTime) {
+					timeLabel += ' - ' + taskNode.endTime;
+				}
+
+				if (taskNode.timer) {
+					var timeDuration = new Date(taskNode.timer.getDuration());
+					timeLabel += ' (' + timeDuration.getMinutes() + ':' + timeDuration.getSeconds() + ')';
+				}
+				templateData.time.textContent = timeLabel;
+				templateData.root.title = timeLabel;
+			}, 1000);
 		}
-		templateData.title.textContent = taskNode.taskType;
-		templateData.description.textContent = taskNode.description;
-		templateData.root.title = taskNode.description;
+	}
+
+	public timer(taskNode: TaskNode, templateData: ITaskHistoryTemplateData) {
+		let timeLabel = '';
+		if (taskNode.startTime) {
+			timeLabel = taskNode.startTime;
+		}
+		if (taskNode.endTime) {
+			timeLabel += ' - ' + taskNode.endTime;
+		}
+
+		if (taskNode.timer) {
+			var timeDuration = new Date(taskNode.timer.getDuration());
+			timeLabel += ' (' + timeDuration.getMinutes() + ':' + timeDuration.getSeconds() + ')';
+		}
+		templateData.time.textContent = timeLabel;
+		templateData.root.title = timeLabel;
 	}
 
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {

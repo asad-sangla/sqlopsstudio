@@ -25,15 +25,24 @@
 }
 
 /* task title and description */
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-details > .title,
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-details > .title {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	font-weight: 700;
+}
+
+/* style for server name | database name */
 .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-details > .description {
 	text-overflow: ellipsis;
 	overflow: hidden;
+	padding-left: 25px
 }
 
-/* style for description */
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-details > .description {
-	padding-left: 25px
+/* style for timing */
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-details > .time {
+	padding-left: 25px;
+	opacity: .6;
+	font-size: 80%;
 }
 
 /* task icon status */

@@ -7,4 +7,5 @@ export interface ITaskHistoryTemplateData {
 	icon: HTMLElement;
 	title: HTMLSpanElement;
 	description: HTMLSpanElement;
+	time: HTMLSpanElement;
 }
