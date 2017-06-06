@@ -159,24 +159,20 @@ export default class SqlToolsServiceClient {
     /**
      * Copy the packaged service to user directory
      */
-    private copyPackagedService(platformInfo: PlatformInformation, context: ExtensionContext, path: string): Promise<ServerInitializationResult> {
+    private copyPackagedService(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {
 
-        // turn-off local file copy since it's not working on macOS (karl 5/28)
+        let serviceDownloadProvider = this._server.downloadProvider;
+        let srcPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, true);
+        let destPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, false);
         const self = this;
         return new Promise<ServerInitializationResult>( (resolve, reject) => {
-            self.initializeLanguageClient(path, context);
+            fs.copy(srcPath, destPath, err => {
+                if (err) reject(err);
+                this._server.getServerPath(platformInfo.runtimeId).then(destServerPath => {
+                    this.initializeLanguageClient(destServerPath, context);
+                })
+            });
         });
-
-        // let serviceDownloadProvider = this._server.downloadProvider;
-        // let srcPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, true);
-        // let destPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId);
-        // const self = this;
-        // return new Promise<ServerInitializationResult>( (resolve, reject) => {
-        //     fs.copy(srcPath, destPath, err => {
-        //         if (err) reject(err);
-        //         this.initializeLanguageClient(path, context);
-        //     });
-        // });
     }
 
     public initializeForPlatform(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {
@@ -225,7 +221,7 @@ export default class SqlToolsServiceClient {
                     } else {
                         // copy the service to user directory if service was
                         // packaged with the installation
-                        this.copyPackagedService(platformInfo, context, serverPackagePath);
+                        this.copyPackagedService(platformInfo, context);
                         this._logger.appendLine("MSSQL Service copied to user local directory");
                     }
                 });

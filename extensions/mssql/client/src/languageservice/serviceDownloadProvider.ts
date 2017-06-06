@@ -51,12 +51,7 @@ export default class ServiceDownloadProvider {
 	 * Returns SQL tools service installed folder.
 	 */
 	public getInstallDirectory(platform: Runtime, packaging?: boolean): string {
-		let basePath : string;
-		if (packaging) {
-			basePath = this.getPackageDirectoryRoot(platform);
-		} else {
-			basePath = this.getInstallDirectoryRoot(platform);
-		}
+		let basePath = this.getInstallDirectoryRoot(platform, packaging);
 		let versionFromConfig = this._config.getSqlToolsPackageVersion();
 		basePath = basePath.replace('{#version#}', versionFromConfig);
 		basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
@@ -83,9 +78,13 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Returns SQL tools service installed folder root.
 	 */
-	public getInstallDirectoryRoot(platform: Runtime): string {
-
-		let installDirFromConfig = this._config.getSqlToolsInstallDirectory();
+	public getInstallDirectoryRoot(platform: Runtime, packaging?: boolean): string {
+		let installDirFromConfig : string;
+		if (packaging) {
+			installDirFromConfig = this._config.getSqlToolsPackageDirectory();
+		} else {
+			installDirFromConfig = this._config.getSqlToolsInstallDirectory();
+		}
 		if (!installDirFromConfig || installDirFromConfig === '') {
 			let rootFolderName: string = '.carbon';
 			if (platform === Runtime.Windows_7_64 || platform === Runtime.Windows_7_86) {
@@ -99,18 +98,6 @@ export default class ServiceDownloadProvider {
 		} else {
 			// The path from config is relative to the out folder
 			basePath = path.join(__dirname, '../../' + installDirFromConfig);
-		}
-		return basePath;
-	}
-
-	public getPackageDirectoryRoot(platform: Runtime): string {
-		let packageDirFromConfig = this._config.getSqlToolsPackageDirectory();
-		let basePath: string;
-		if (path.isAbsolute(packageDirFromConfig)) {
-			basePath = packageDirFromConfig;
-		} else {
-			// The path from config is relative to the out folder
-			basePath = path.join(__dirname, '../../' + packageDirFromConfig);
 		}
 		return basePath;
 	}

@@ -382,11 +382,19 @@ gulp.task('upload-vscode-sourcemaps', ['minify-vscode'], () => {
 // Install service locally before building carbon
 
 function installSqlToolsService(platform) {
-   var install = require('../extensions/mssql/client/out/languageservice/serviceInstallerUtil');
-   return install.installService(platform, true);
+   var mssql = require('../extensions/mssql/client/out/languageservice/serviceInstallerUtil');
+   return mssql.installService(platform, true);
 }
 
-gulp.task('ext:install-service', () => {
+function installCredentialsService(platform) {
+	var credentials = require('../extensions/credentials/client/out/languageservice/serviceInstallerUtil');
+	return credentials.installService(platform, true);
+}
+
+gulp.task('install-sqltoolsservice', () => {
     return installSqlToolsService();
 });
 
+gulp.task('install-credentialservice', () => {
+	return installCredentialsService();
+})
