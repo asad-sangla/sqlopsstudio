@@ -8,6 +8,7 @@
 import data = require('data');
 import * as interfaces from 'sql/parts/connection/common/interfaces';
 import { ConnectionOptionSpecialType, ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
+import * as Constants from 'sql/parts/connection/common/constants';
 
 export class ProviderConnectionInfo implements data.ConnectionInfo {
 
@@ -15,8 +16,6 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 
 	providerName: string;
 	protected _serverCapabilities: data.DataProtocolServerCapabilities;
-	private static readonly MsSqlProviderName: string = 'MSSQL';
-	private static readonly PgSqlProviderName: string = 'PGSQL';
 	private static readonly SqlAuthentication = 'SqlLogin';
 	public static readonly ProviderPropertyName = 'providerName';
 
@@ -109,8 +108,7 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		let optionMetadata = this._serverCapabilities.connectionProvider.options.find(
 			option => option.specialValueType === ConnectionOptionSpecialType.password);
 		let isPasswordRequired: boolean = optionMetadata.isRequired;
-		// DEV-NOTE: Have separate cases once we properly hook up pgsqltoolsservice
-		if (this.providerName === ProviderConnectionInfo.MsSqlProviderName || this.providerName === ProviderConnectionInfo.PgSqlProviderName) {
+		if (this.providerName === Constants.mssqlProviderName) {
 			isPasswordRequired = this.authenticationType === ProviderConnectionInfo.SqlAuthentication && optionMetadata.isRequired;
 		}
 		return isPasswordRequired;
