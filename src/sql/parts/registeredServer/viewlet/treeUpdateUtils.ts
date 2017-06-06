@@ -55,7 +55,7 @@ export class TreeSelectionHandler {
 						params: undefined,
 						saveTheConnection: false,
 						showDashboard: true,
-						showConnectionDialogOnError: false
+						showConnectionDialogOnError: true
 					};
 					callback = connectionManagementService.connect(connectionProfile, undefined, options);
 				}

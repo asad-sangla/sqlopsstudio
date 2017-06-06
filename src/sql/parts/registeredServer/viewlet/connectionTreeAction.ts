@@ -155,6 +155,7 @@ export class ChangeConnectionAction extends Action {
 					if (connectionResult && connectionResult.connected) {
 						this.setLabel();
 					}
+					ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.connectionElementClass);
 					resolve(true);
 				});
 			});
@@ -260,6 +261,7 @@ export class ActiveConnectionsFilterAction extends Action {
 	private static disabledClass = 'active-connections-action-set';
 	private static clearAllLabel = localize('clearAll', 'Clear All');
 	private _isSet: boolean;
+	public static readonly ACTIVE = 'active';
 	public get isSet(): boolean {
 		return this._isSet;
 	}
@@ -286,7 +288,7 @@ export class ActiveConnectionsFilterAction extends Action {
 		}
 		if (this.class === ActiveConnectionsFilterAction.enabledClass) {
 			// show active connections in the tree
-			this.view.showFilteredTree('active');
+			this.view.showFilteredTree(ActiveConnectionsFilterAction.ACTIVE);
 			this.isSet = true;
 			this.label = ActiveConnectionsFilterAction.clearAllLabel;
 		} else {
