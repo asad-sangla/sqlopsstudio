@@ -9,6 +9,6 @@
 			"Linux_64": "linux-x64.tar.gz"
 		},
 		"installDir": "",
-		"executableFiles": ["pgsqltoolsservice/server", "pgsqltoolsservice/server.exe"]
+		"executableFiles": ["pgsqltoolsservice/pgsqltoolsservice", "pgsqltoolsservice/pgsqltoolsservice.exe"]
 	}
 }
