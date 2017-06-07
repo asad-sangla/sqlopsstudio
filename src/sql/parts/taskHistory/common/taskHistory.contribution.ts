@@ -15,6 +15,48 @@ import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { Registry } from 'vs/platform/platform';
 import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
 import { VIEWLET_ID } from 'sql/parts/taskHistory/viewlet/taskHistoryViewlet';
+import lifecycle = require('vs/base/common/lifecycle');
+import ext = require('vs/workbench/common/contributions');
+import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
+import { IActivityBarService, NumberBadge } from 'vs/workbench/services/activity/common/activityBarService';
+
+export class StatusUpdater implements ext.IWorkbenchContribution {
+	static ID = 'data.taskhistory.statusUpdater';
+
+	private badgeHandle: lifecycle.IDisposable;
+	private toDispose: lifecycle.IDisposable[];
+
+	constructor(
+		@IActivityBarService private activityBarService: IActivityBarService,
+		@ITaskService private _taskService: ITaskService
+	) {
+		this.toDispose = [];
+		let self = this;
+		this.toDispose.push(this._taskService.onAddNewTask(args => {
+			self.onServiceChange();
+		}));
+		this.toDispose.push(this._taskService.onTaskComplete(task => {
+			self.onServiceChange();
+		}));
+	}
+
+	private onServiceChange(): void {
+		lifecycle.dispose(this.badgeHandle);
+		let NumOfInProgressTask = this._taskService.getNumberOfInProgressTasks();
+		let badge = new NumberBadge(NumOfInProgressTask, n => localize('inProgressTasksChangesBadge', '{0} in progress tasks', n));
+		this.badgeHandle = this.activityBarService.showActivity(VIEWLET_ID, badge, 'taskhistory-viewlet-label');
+	}
+
+	public getId(): string {
+		return StatusUpdater.ID;
+	}
+
+	public dispose(): void {
+		this.toDispose = lifecycle.dispose(this.toDispose);
+		lifecycle.dispose(this.badgeHandle);
+	}
+}
+
 
 // Viewlet Action
 export class TaskHistoryViewletAction extends ToggleViewletAction {
@@ -42,6 +84,9 @@ const viewletDescriptor = new ViewletDescriptor(
 );
 
 Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).registerViewlet(viewletDescriptor);
+
+// Register StatusUpdater
+(<ext.IWorkbenchContributionsRegistry>Registry.as(ext.Extensions.Workbench)).registerWorkbenchContribution(StatusUpdater);
 
 const registry = Registry.as<IWorkbenchActionRegistry>(ActionExtensions.WorkbenchActions);
 registry.registerWorkbenchAction(

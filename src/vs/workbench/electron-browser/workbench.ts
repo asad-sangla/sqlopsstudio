@@ -104,6 +104,7 @@ import { ICapabilitiesService, CapabilitiesService } from 'sql/services/capabili
 import { ICredentialsService, CredentialsService } from 'sql/services/credentials/credentialsService';
 import { IMetadataService, MetadataService } from 'sql/services/metadata/metadataService';
 import { IObjectExplorerService, ObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
+import { ITaskService, TaskService } from 'sql/parts/taskHistory/common/taskService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
@@ -565,6 +566,7 @@ export class Workbench implements IPartService {
 		this.splashScreenService = this.instantiationService.createInstance(SplashScreenService);
 		serviceCollection.set(ISplashScreenService, this.splashScreenService);
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
+		serviceCollection.set(ITaskService, this.instantiationService.createInstance(TaskService));
 		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(IServerGroupController, this.instantiationService.createInstance(ServerGroupController));

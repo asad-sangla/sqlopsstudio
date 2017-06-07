@@ -9,6 +9,7 @@ export enum TaskStatus {
 	fail = 0,
 	success = 1,
 	inProgress = 2,
+	cancel = 3
 }
 
 export class TaskNode {
@@ -58,17 +59,23 @@ export class TaskNode {
 	public children: TaskNode[];
 
 	/**
+ 	 * Task's message
+ 	 */
+	public message: string;
+
+	/**
      * Status of the task
      */
 	public status: TaskStatus;
 
-	constructor(nodeId: string, taskName: string, serverName: string, databaseName: string, startTime: string, status: TaskStatus) {
-		this.id = nodeId;
+	constructor(taskName: string, serverName: string, databaseName: string) {
+		this.id = Utils.generateGuid();
 		this.taskName = taskName;
 		this.serverName = serverName;
 		this.databaseName = databaseName;
-		this.startTime = startTime;
-		this.status = status;
+		this.timer = new Utils.Timer();
+		this.startTime = new Date().toLocaleTimeString();
+		this.status = TaskStatus.inProgress;
 		this.hasChildren = false;
 	}
 }

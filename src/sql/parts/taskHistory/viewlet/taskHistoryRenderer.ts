@@ -82,39 +82,29 @@ export class TaskHistoryRenderer implements IRenderer {
 			}
 			templateData.description.textContent = description;
 			this.timer(taskNode, templateData);
-
+			let self = this;
 			setInterval(function () {
-				let timeLabel = '';
-				if (taskNode.startTime) {
-					timeLabel = taskNode.startTime;
-				}
-
-				if (taskNode.endTime) {
-					timeLabel += ' - ' + taskNode.endTime;
-				}
-
-				if (taskNode.timer) {
-					var timeDuration = new Date(taskNode.timer.getDuration());
-					timeLabel += ' (' + timeDuration.getMinutes() + ':' + timeDuration.getSeconds() + ')';
-				}
-				templateData.time.textContent = timeLabel;
-				templateData.root.title = timeLabel;
+				self.timer(taskNode, templateData);
 			}, 1000);
 		}
 	}
 
 	public timer(taskNode: TaskNode, templateData: ITaskHistoryTemplateData) {
 		let timeLabel = '';
-		if (taskNode.startTime) {
-			timeLabel = taskNode.startTime;
-		}
-		if (taskNode.endTime) {
-			timeLabel += ' - ' + taskNode.endTime;
-		}
+		if (taskNode.status === TaskStatus.fail) {
+			timeLabel += 'Error: ' + taskNode.message;
+		} else {
+			if (taskNode.startTime) {
+				timeLabel = taskNode.startTime;
+			}
+			if (taskNode.endTime) {
+				timeLabel += ' - ' + taskNode.endTime;
+			}
 
-		if (taskNode.timer) {
-			var timeDuration = new Date(taskNode.timer.getDuration());
-			timeLabel += ' (' + timeDuration.getMinutes() + ':' + timeDuration.getSeconds() + ')';
+			if (taskNode.timer) {
+				var timeDuration = new Date(taskNode.timer.getDuration());
+				timeLabel += ' (' + timeDuration.getMinutes() + ':' + timeDuration.getSeconds() + ')';
+			}
 		}
 		templateData.time.textContent = timeLabel;
 		templateData.root.title = timeLabel;

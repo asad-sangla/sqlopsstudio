@@ -20,7 +20,9 @@ import { TaskHistoryDataSource } from 'sql/parts/taskHistory/viewlet/taskHistory
 import { TaskHistoryController } from 'sql/parts/taskHistory/viewlet/taskHistoryController';
 import { TaskHistoryActionProvider } from 'sql/parts/taskHistory/viewlet/taskHistoryActionProvider';
 import { DefaultFilter, DefaultDragAndDrop, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
-import { TaskService } from 'sql/parts/taskHistory/common/taskService';
+import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
+import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
+import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 
 const $ = builder.$;
 
@@ -30,16 +32,16 @@ const $ = builder.$;
 export class TaskHistoryView extends CollapsibleViewletView {
 
 	public messages: builder.Builder;
-	private _taskService: TaskService;
 
 	constructor(actionRunner: IActionRunner, settings: any,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService messageService: IMessageService,
+		@ITaskService private _taskService: ITaskService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 		super(actionRunner, false, nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'), messageService, keybindingService, contextMenuService);
-		this._taskService = new TaskService();
 	}
 
 	/**
@@ -64,7 +66,15 @@ export class TaskHistoryView extends CollapsibleViewletView {
 		dom.addClass(this.treeContainer, 'task-history-view');
 
 		this.tree = this.createTaskHistoryTree(this.treeContainer, this.instantiationService);
+
 		const self = this;
+		this.toDispose.push(this._taskService.onAddNewTask(args => {
+			self.refreshTree();
+		}));
+		this.toDispose.push(this._taskService.onTaskComplete(task => {
+			self.updateTask(task);
+		}));
+
 		// Refresh Tree when these events are emitted
 		self.refreshTree();
 	}
@@ -98,6 +108,14 @@ export class TaskHistoryView extends CollapsibleViewletView {
 		return [];
 	}
 
+	private updateTask(task: TaskNode): void {
+		if (task.status === TaskStatus.fail) {
+			var err = task.taskName + ': ' + task.message;
+			this._errorMessageService.showDialog(undefined, Severity.Error, 'Connection Error', err);
+		}
+		this.tree.refresh(task);
+	}
+
 	public refreshTree(): void {
 		this.messages.hide();
 		let selectedElement: any;
@@ -117,18 +135,16 @@ export class TaskHistoryView extends CollapsibleViewletView {
 		//Get the tree Input
 		let treeInput = this._taskService.getAllTasks();
 		if (treeInput) {
-			if (treeInput !== this.tree.getInput()) {
-				this.tree.setInput(treeInput).then(() => {
-					// Make sure to expand all folders that where expanded in the previous session
-					if (targetsToExpand) {
-						this.tree.expandAll(targetsToExpand);
-					}
-					if (selectedElement) {
-						this.tree.select(selectedElement);
-					}
-					this.tree.getFocus();
-				}, errors.onUnexpectedError);
-			}
+			this.tree.setInput(treeInput).then(() => {
+				// Make sure to expand all folders that where expanded in the previous session
+				if (targetsToExpand) {
+					this.tree.expandAll(targetsToExpand);
+				}
+				if (selectedElement) {
+					this.tree.select(selectedElement);
+				}
+				this.tree.getFocus();
+			}, errors.onUnexpectedError);
 		}
 	}
 

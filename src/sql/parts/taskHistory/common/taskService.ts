@@ -5,21 +5,89 @@
 
 'use strict';
 import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
-import * as Utils from 'sql/parts/connection/common/utils';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import Event, { Emitter } from 'vs/base/common/event';
+export const SERVICE_ID = 'taskHistoryService';
 
-export class TaskService {
+
+export const ITaskService = createDecorator<ITaskService>(SERVICE_ID);
+
+export interface ITaskService {
+	_serviceBrand: any;
+	onTaskComplete: Event<TaskNode>;
+	onAddNewTask: Event<TaskNode>;
+	handleNewTask(task: TaskNode): void;
+	handleTaskComplete(eventArgs: TaskStatusChangeArgs): void;
+	getAllTasks(): TaskNode;
+	getNumberOfInProgressTasks(): number;
+}
+
+export interface TaskStatusChangeArgs {
+	taskId: string;
+	status: TaskStatus;
+	message?: string;
+}
+
+
+export class TaskService implements ITaskService {
+	public _serviceBrand: any;
+	private _taskQueue: TaskNode;
+	private _onTaskComplete = new Emitter<TaskNode>();
+	private _onAddNewTask = new Emitter<TaskNode>();
+
+	constructor() {
+		this._taskQueue = new TaskNode('Root', undefined, undefined);
+		this._onTaskComplete = new Emitter<TaskNode>();
+		this._onAddNewTask = new Emitter<TaskNode>();
+	}
+
+	public handleNewTask(task: TaskNode): void {
+		if (this._taskQueue.hasChildren) {
+			this._taskQueue.children.unshift(task);
+		} else {
+			this._taskQueue.hasChildren = true;
+			this._taskQueue.children = [task];
+		}
+		this._onAddNewTask.fire(task);
+	}
+
+	public handleTaskComplete(eventArgs: TaskStatusChangeArgs): void {
+		var task = this.getTaskInQueue(eventArgs.taskId);
+		if (task) {
+			task.status = eventArgs.status;
+			if (eventArgs.message) {
+				task.message = eventArgs.message;
+			}
+			task.endTime = new Date().toLocaleTimeString();
+			task.timer.end();
+			this._onTaskComplete.fire(task);
+		}
+	}
+
+	private getTaskInQueue(taskId: string): TaskNode {
+		if (this._taskQueue.hasChildren) {
+			return this._taskQueue.children.find(x => x.id === taskId);
+		}
+		return undefined;
+	}
+
+	public get onTaskComplete(): Event<TaskNode> {
+		return this._onTaskComplete.event;
+	}
+
+	public get onAddNewTask(): Event<TaskNode> {
+		return this._onAddNewTask.event;
+	}
+
+	public getNumberOfInProgressTasks(): number {
+		if (this._taskQueue.hasChildren) {
+			var inProgressTasks = this._taskQueue.children.filter(x => x.status === TaskStatus.inProgress);
+			return inProgressTasks ? inProgressTasks.length : 0;
+		}
+		return 0;
+	}
+
 	public getAllTasks(): TaskNode {
-		var startTime = new Date().toLocaleTimeString();
-		var endTime = new Date().toLocaleTimeString();
-		var rootNode = new TaskNode('Root', 'RootType', undefined, undefined, undefined, TaskStatus.success);
-		var task1 = new TaskNode('Task1', 'Backup Task1', 'server1', 'db1', startTime, TaskStatus.success);
-		var task2 = new TaskNode('Task2', 'Restore Task1', 'server2', 'db2', startTime, TaskStatus.fail);
-		var task3 = new TaskNode('Task3', 'Restore Task2', 'server3', 'db3', startTime, TaskStatus.inProgress);
-		task3.timer = new Utils.Timer();
-		task1.endTime = endTime;
-		task2.endTime = endTime;
-		rootNode.hasChildren = true;
-		rootNode.children = [task1, task2, task3];
-		return rootNode;
+		return this._taskQueue;
 	}
 }
