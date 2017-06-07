@@ -64,7 +64,7 @@ suite('SQL Connection Tree Action tests', () => {
 			id: 'testId'
 		});
 		var actionContext = new ObjectExplorerActionsContext();
-			actionContext.connectionProfile = connection;
+		actionContext.connectionProfile = connection;
 		changeConnectionAction.run(actionContext).then((value) => {
 			connectionManagementService.verify(x => x.isProfileConnected(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 			connectionManagementService.verify(x => x.connect(TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny()), TypeMoq.Times.once());
@@ -98,7 +98,7 @@ suite('SQL Connection Tree Action tests', () => {
 			id: 'testId'
 		});
 		var actionContext = new ObjectExplorerActionsContext();
-			actionContext.connectionProfile = connection;
+		actionContext.connectionProfile = connection;
 		changeConnectionAction.run(actionContext).then((value) => {
 			connectionManagementService.verify(x => x.isProfileConnected(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 			connectionManagementService.verify(x => x.disconnectProfile(TypeMoq.It.isAny()), TypeMoq.Times.once());
@@ -332,7 +332,7 @@ suite('SQL Connection Tree Action tests', () => {
 		objectExplorerService.setup(x => x.getObjectExplorerNode(TypeMoq.It.isAny())).returns(() => tablesNode);
 		objectExplorerService.setup(x => x.refreshTreeNode(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as([table1Node, table2Node]));
 		let builder: Builder = $().div();
-		var dataSource = new ServerTreeDataSource(objectExplorerService.object, connectionManagementService.object);
+		var dataSource = new ServerTreeDataSource(objectExplorerService.object, connectionManagementService.object, undefined);
 		let tree = TypeMoq.Mock.ofType(Tree, TypeMoq.MockBehavior.Loose, builder.getHTMLElement(), { dataSource });
 		tree.callBase = true;
 
@@ -343,7 +343,8 @@ suite('SQL Connection Tree Action tests', () => {
 			tree.object,
 			connection,
 			connectionManagementService.object,
-			objectExplorerService.object);
+			objectExplorerService.object,
+			undefined);
 
 		connectionAction.run().then((value) => {
 			connectionManagementService.verify(x => x.isConnected(undefined, TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
@@ -417,7 +418,7 @@ suite('SQL Connection Tree Action tests', () => {
 		objectExplorerService.setup(x => x.getObjectExplorerNode(TypeMoq.It.isAny())).returns(() => tablesNode);
 		objectExplorerService.setup(x => x.refreshTreeNode(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as([table1Node, table2Node]));
 		let builder: Builder = $().div();
-		var dataSource = new ServerTreeDataSource(objectExplorerService.object, connectionManagementService.object);
+		var dataSource = new ServerTreeDataSource(objectExplorerService.object, connectionManagementService.object, undefined);
 		let tree = TypeMoq.Mock.ofType(Tree, TypeMoq.MockBehavior.Loose, builder.getHTMLElement(), { dataSource });
 		tree.callBase = true;
 
@@ -428,7 +429,8 @@ suite('SQL Connection Tree Action tests', () => {
 			tree.object,
 			connection,
 			connectionManagementService.object,
-			objectExplorerService.object);
+			objectExplorerService.object,
+			undefined);
 
 		connectionAction.run().then((value) => {
 			connectionManagementService.verify(x => x.isConnected(undefined, TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());

@@ -34,7 +34,8 @@ export class RefreshAction extends Action {
 		tree: ITree,
 		private element: ConnectionProfile | TreeNode,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 		super(id, label);
 		this._tree = tree;
@@ -60,9 +61,18 @@ export class RefreshAction extends Action {
 				this._tree.refresh(this.element).then(() => {
 					this._tree.expand(this.element);
 				});
+			}, error => {
+				this.showError(error);
+				return TPromise.as(true);
 			});
 		}
 		return TPromise.as(true);
+	}
+
+	private showError(errorMessage: string) {
+		if (this._errorMessageService) {
+			this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
+		}
 	}
 }
 
@@ -105,7 +115,9 @@ export class ChangeConnectionAction extends Action {
 	}
 
 	private showError(errorMessage: string) {
-		this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
+		if (this._errorMessageService) {
+			this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
+		}
 	}
 
 	private setLabel(): void {

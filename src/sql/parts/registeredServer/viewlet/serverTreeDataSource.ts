@@ -11,7 +11,8 @@ import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import Severity from 'vs/base/common/severity';
 
 /**
  * Implements the DataSource(that returns a parent/children of an element) for the server tree
@@ -20,7 +21,8 @@ export class ServerTreeDataSource implements IDataSource {
 
 	constructor(
 		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 	}
 
@@ -70,6 +72,9 @@ export class ServerTreeDataSource implements IDataSource {
 				return new TPromise<TreeNode[]>((resolve) => {
 					this._objectExplorerService.expandTreeNode(node.getSession(), node).then(() => {
 						resolve(node.children);
+					}, expandError => {
+						this.showError(expandError);
+						resolve([]);
 					});
 				});
 			}
@@ -90,6 +95,12 @@ export class ServerTreeDataSource implements IDataSource {
 			return TPromise.as(TreeUpdateUtils.getObjectExplorerParent(<TreeNode>element, this._connectionManagementService));
 		} else {
 			return TPromise.as(null);
+		}
+	}
+
+	private showError(errorMessage: string) {
+		if (this._errorMessageService) {
+			this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
 		}
 	}
 }

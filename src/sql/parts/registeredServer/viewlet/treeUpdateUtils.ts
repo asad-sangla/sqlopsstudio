@@ -21,7 +21,7 @@ import errors = require('vs/base/common/errors');
 export class TreeSelectionHandler {
 	progressRunner: IProgressRunner;
 
-	constructor(@IProgressService private progressService: IProgressService) {
+	constructor( @IProgressService private progressService: IProgressService) {
 
 	}
 
@@ -171,6 +171,8 @@ export class TreeUpdateUtils {
 				return new TPromise<TreeNode[]>((resolve) => {
 					objectExplorerService.expandTreeNode(rootNode.getSession(), rootNode).then(() => {
 						resolve(rootNode.children);
+					}, expandError => {
+						resolve([]);
 					});
 				});
 			} else {
