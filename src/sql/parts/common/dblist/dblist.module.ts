@@ -10,6 +10,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { DropdownModule } from 'primeng/primeng';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 
+const BrowserAnimationsModule = (<any> require.__$__nodeRequire('@angular/platform-browser/animations')).BrowserAnimationsModule;
+
 import { DbListComponent, DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
 
 @NgModule({
@@ -18,7 +20,8 @@ import { DbListComponent, DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist
 		CommonModule,
 		BrowserModule,
 		FormsModule,
-		DropdownModule
+		DropdownModule,
+		BrowserAnimationsModule
 	],
 
 	declarations: [

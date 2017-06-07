@@ -13,6 +13,9 @@ import { ButtonModule, DataTableModule, DropdownModule, SharedModule, MessagesMo
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { BackupComponent, BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.component';
 
+// work around
+const BrowserAnimationsModule = (<any> require.__$__nodeRequire('@angular/platform-browser/animations')).BrowserAnimationsModule;
+
 // Backup wizard main angular module
 @NgModule({
 	declarations: [
@@ -30,7 +33,8 @@ import { BackupComponent, BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/bac
 		MessagesModule,
 		DataListModule,
 		BreadcrumbModule,
-		MessagesModule
+		MessagesModule,
+		BrowserAnimationsModule
 	],
 	providers: [{ provide: APP_BASE_HREF, useValue: '/' }]
 })

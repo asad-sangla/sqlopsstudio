@@ -9,7 +9,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgGridModule } from 'angular4-grid';
-import { ButtonModule, DataTableModule, SharedModule, DropdownModule, MessagesModule, DataListModule,
+import { ButtonModule, DataTableModule, SharedModule, MessagesModule, DataListModule,
 	BreadcrumbModule } from 'primeng/primeng';
 
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
@@ -70,7 +70,6 @@ const appRoutes: Routes = [
 		DataTableModule,
 		FormsModule,
 		SharedModule,
-		DropdownModule,
 		MessagesModule,
 		DataListModule,
 		BreadcrumbModule,

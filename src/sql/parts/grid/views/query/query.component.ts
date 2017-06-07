@@ -28,6 +28,8 @@ declare let rangy;
 
 export const QUERY_SELECTOR: string = 'query-component';
 
+declare type PaneType = 'messages' | 'results';
+
 @Component({
 	selector: QUERY_SELECTOR,
 	host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
@@ -511,6 +513,18 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 					grid.resized.emit();
 				}
 		});
+	}
+
+	/* Helper function to toggle messages and results panes */
+	// tslint:disable-next-line:no-unused-variable
+	private togglePane(pane: PaneType): void {
+		if (pane === 'messages') {
+			this._messageActive = !this._messageActive;
+		} else if (pane === 'results') {
+			this.resultActive = !this.resultActive;
+		}
+		this._cd.detectChanges();
+		this.resizeGrids();
 	}
 
 }

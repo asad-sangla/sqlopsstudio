@@ -6,7 +6,7 @@
 -->
 
 <div class="fullsize vertBox edgesPadding">
-    <div *ngIf="dataSets.length > 0" id="resultspane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!resultActive" (click)="resultActive = !resultActive">
+    <div *ngIf="dataSets.length > 0" id="resultspane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!resultActive" (click)="togglePane('results')">
         <span> {{Constants.resultPaneLabel}} </span>
         <span class="queryResultsShortCut"> {{resultShortcut}} </span>
     </div>
@@ -40,7 +40,7 @@
             </span>
         </div>
     </div>
-    <div id="messagepane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!messageActive" (click)="messageActive = !messageActive" style="position: relative">
+    <div id="messagepane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!messageActive" (click)="togglePane('messages')" style="position: relative">
         <div id="messageResizeHandle" class="resizableHandle"></div>
         <span> {{Constants.messagePaneLabel}} </span>
         <span class="queryResultsShortCut"> {{messageShortcut}} </span>
