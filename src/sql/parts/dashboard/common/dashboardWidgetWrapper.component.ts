@@ -3,7 +3,8 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 import { Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
-	ElementRef, OnInit, ChangeDetectorRef } from '@angular/core';
+	ElementRef, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 
@@ -28,8 +29,9 @@ const componentMap = {
 	templateUrl: require.toUrl('sql/parts/dashboard/common/dashboardWidgetWrapper.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
-export class DashboardWidgetWrapper implements AfterContentInit, OnInit {
+export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestroy {
 	@Input() private _config: WidgetConfig;
+	private _themeSub: Subscription;
 
 	@ViewChild(WidgetDirective) widgetHost: WidgetDirective;
 
@@ -40,16 +42,20 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit {
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef
 	) { }
 
-	 ngOnInit(): void {
+	ngOnInit() {
 		let self = this;
-		self._bootstrap.onThemeChange((event: IColorTheme) => {
+		self._themeSub = self._bootstrap.onThemeChange((event: IColorTheme) => {
 			self.updateTheme(event);
 		});
-	 }
+	}
 
 	ngAfterContentInit() {
 		this.updateTheme(this._bootstrap.theme);
 		this.loadWidget();
+	}
+
+	ngOnDestroy() {
+		this._themeSub.unsubscribe();
 	}
 
 	private loadWidget(): void {
@@ -64,6 +70,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit {
 		// set widget styles to conform to its box
 		el.style.overflow = 'hidden';
 		el.style.flex = '1 1 auto';
+		el.style.position = 'relative';
 
 		if (!(<IDashboardWidget>componentRef.instance).load(this._config)) {
 			console.log('failed to load widget ' + this._config.selector);
@@ -72,9 +79,18 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit {
 
 	private updateTheme(theme: IColorTheme): void {
 		let el = <HTMLElement> this._ref.nativeElement;
-		let backgroundColor = theme.getColor('sideBarBackground');
+		let borderColor = theme.getColor('sideBarBackground');
+		let backgroundColor = theme.getColor('editorBackground');
 		let foregroundColor = theme.getColor('sideBarForeground');
 		let border = theme.getColor('highContrastBorder');
+
+		if (this._config.background_color) {
+			backgroundColor = theme.getColor(this._config.background_color);
+		}
+
+		if (this._config.border === 'none') {
+			borderColor = undefined;
+		}
 
 		if (theme.isLightTheme() && this._config.icon) {
 			this._config.loadedIcon = PathUtilities.toUrl(this._config.inverse_icon);
@@ -96,8 +112,11 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit {
 			el.style.borderColor = border.toString();
 			el.style.borderWidth = '1px';
 			el.style.borderStyle = 'solid';
+		} else if (borderColor) {
+			el.style.border = '3px solid ' + borderColor.toString();
 		} else {
 			el.style.border = 'none';
 		}
+
 	}
 }

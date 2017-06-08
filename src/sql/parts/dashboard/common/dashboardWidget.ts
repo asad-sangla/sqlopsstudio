@@ -17,6 +17,8 @@ export interface WidgetConfig {
 	context: string;
 	gridItemConfig?: NgGridItemConfig;
 	config?: any;
+	background_color?: string;
+	border?: string;
 }
 
 export abstract class DashboardWidget {

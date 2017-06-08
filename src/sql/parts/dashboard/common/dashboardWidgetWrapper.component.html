@@ -4,9 +4,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div style="display: flex; flex-flow: column; overflow: hidden; height: 100%">
-	<div *ngIf="_config.name" style="flex: 0 0">{{_config.name}}</div>
+<div style="display: flex; flex-flow: column; overflow: hidden; height: 100%; width: 100%">
+	<div *ngIf="_config.name || _config.loadedIcon" style="flex: 0 0">
+		<span *ngIf="_config.loadedIcon" style="margin-left: 5px"><img height="10px" src="{{_config.loadedIcon}}"/></span>
+		<span *ngIf="_config.name" style="margin-left: 5px">{{_config.name}}</span>
+	</div>
 	<ng-template widget-host>
 	</ng-template>
-	<div style="flex: 0 0;" *ngIf="_config.loadedIcon"><img style="float: right" height="50px" src="{{_config.loadedIcon}}"/></div>
 </div>

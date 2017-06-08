@@ -32,19 +32,11 @@
     overflow: scroll;
 }
 
-.vscode-dark .dashboard-widget {
-    background-color: rgb(37, 37, 38);
-}
-
-.vscode-light .dashboard-widget {
-    background-color: rgb(37, 37, 38);
-}
-
 .task-icon {
     opacity: 0.6;
 }
 
-.task-icon:hover {
+.task-tile:hover .task-icon {
     opacity: 1;
 }
 

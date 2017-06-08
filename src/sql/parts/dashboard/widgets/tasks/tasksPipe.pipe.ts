@@ -13,7 +13,7 @@ export class TaskPipe implements PipeTransform {
 	transform(items: Task[], context: string): Task[] {
 		return items.filter(item => {
 			if (item.show_condition) {
-				return item.show_condition();
+				return item.show_condition() && (item.context === undefined || item.context === context);
 			}
 
 			return item.context === undefined || item.context === context;

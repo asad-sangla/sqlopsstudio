@@ -10,16 +10,6 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 
 const widgets: Array<WidgetConfig> = [
 	{
-		name: 'Database Properties',
-		icon: 'sql/media/icons/server-page-inverse.svg',
-		selector: 'properties-widget',
-		gridItemConfig: {
-			sizex: 2,
-			sizey: 1
-		},
-		context: 'server'
-	},
-	{
 		name: 'Tasks',
 		selector: 'tasks-widget',
 		gridItemConfig: {
@@ -44,6 +34,14 @@ const widgets: Array<WidgetConfig> = [
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class ServerDashboardPage extends DashboardPage implements OnInit {
+	private propertiesConfig: WidgetConfig = {
+		name: 'Server Properties',
+		icon: 'sql/media/icons/server_page.svg',
+		inverse_icon: 'sql/media/icons/server_page_inverse.svg',
+		selector: 'properties-widget',
+		context: 'server',
+		background_color: 'editorBackground'
+	};
 
 	constructor(
 		@Inject(forwardRef(() => BreadcrumbService)) private breadcrumbService: BreadcrumbService) {

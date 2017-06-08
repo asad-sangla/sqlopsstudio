@@ -3,19 +3,25 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, Inject, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { Subject } from 'rxjs/Subject';
+import { Subscription } from 'rxjs/Subscription';
+
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
+
+
+import { IDisposable } from 'vs/base/common/lifecycle';
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 
-import data = require('data');
+import { BackupConfigInfo, ProviderMetadata } from 'data';
 
 /* Wrapper for a metadata service that contains the uri string to use on each request */
 class SingleConnectionMetadataService {
@@ -25,7 +31,7 @@ class SingleConnectionMetadataService {
 		private _uri: string
 	) { }
 
-	get metadata(): Thenable<data.ProviderMetadata> {
+	get metadata(): Thenable<ProviderMetadata> {
 		return this._metadataService.getMetadata(this._uri);
 	}
 
@@ -48,6 +54,19 @@ class SingleConnectionManagementService {
 
 	public get connectionInfo(): ConnectionManagementInfo {
 		return this._connectionService.getConnectionInfo(this._uri);
+	}
+}
+
+/* Wrapper for a disaster recovery service that contains the uri string to use */
+class SingleDisasterRecoveryService {
+
+	constructor(
+		private _disasterRecoveryService: IDisasterRecoveryService,
+		private _uri: string
+	) { }
+
+	public getDatabaseInfo(): Thenable<BackupConfigInfo> {
+		return this._disasterRecoveryService.getBackupConfigInfo(this._uri);
 	}
 }
 
@@ -74,36 +93,44 @@ class Deferred<T> {
 	usage of a widget.
 */
 @Injectable()
-export class DashboardServiceInterface {
+export class DashboardServiceInterface implements OnDestroy {
 	private _uniqueSelector: string;
 	private _uri;
 	/* Themeing */
 	private _onThemeChangeObs: Observable<IColorTheme>;
+	private onThemeDispose: IDisposable;
 	/* Bootstrap params*/
 	private _bootstrapParams: DashboardComponentParams;
 	/* Metadata */
 	private _metadataService: SingleConnectionMetadataService;
-	private _metadataDeferred = new Deferred<data.ProviderMetadata>();
+	private _metadataDeferred = new Deferred<ProviderMetadata>();
 	private _databaseNamesDeferred = new Deferred<string[]>();
 	/* Connection */
 	private _connectionManagementService: SingleConnectionManagementService;
 	private _connectionManagementDeferred = new Deferred<void>();
 	private _connectionInfo: ConnectionManagementInfo;
 	private _onConnectionChangeObs = new Subject<ConnectionManagementInfo>();
+	/* Disaster Recovery */
+	private _disasterRecoveryService: SingleDisasterRecoveryService;
+	private _disasterRecoveryDeferred = new Deferred<void>();
 
 	constructor(@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService) {
 		let self = this;
 		self._onThemeChangeObs = Observable.create((observer: Observer<IColorTheme>) => {
-			self._bootstrapService.themeService.onDidColorThemeChange((e: IColorTheme) => {
+			self.onThemeDispose = self._bootstrapService.themeService.onDidColorThemeChange((e: IColorTheme) => {
 				observer.next(e);
 			});
 		});
 	 }
 
-	 /**
-	  * Set the selector for this dashboard instance, should only be set once
-	  */
-	set selector(selector: string) {
+	 ngOnDestroy() {
+		this.onThemeDispose.dispose();
+	 }
+
+	/**
+	 * Set the selector for this dashboard instance, should only be set once
+	 */
+	public set selector(selector: string) {
 		this._uniqueSelector = selector;
 		this._getbootstrapParams();
 	}
@@ -117,7 +144,7 @@ export class DashboardServiceInterface {
 	 * Set the uri for this dashboard instance, should only be set once
 	 * Inits all the services that depend on knowing a uri
 	 */
-	set uri(uri: string) {
+	private set uri(uri: string) {
 		this._uri = uri;
 		/* resolve metadata promises */
 		this._metadataService = new SingleConnectionMetadataService(this._bootstrapService.metadataService, this._uri);
@@ -126,12 +153,15 @@ export class DashboardServiceInterface {
 		/* resolve connection promises */
 		this._connectionManagementService = new SingleConnectionManagementService(this._bootstrapService.connectionManagementService, this._uri);
 		this._connectionManagementDeferred.resolve();
+		/* resolve disaster recovery promises */
+		this._disasterRecoveryService = new SingleDisasterRecoveryService(this._bootstrapService.disasterRecoveryService, this._uri);
+		this._disasterRecoveryDeferred.resolve();
 	}
 	/**
 	 * Get the current theme of carbon
 	 * @returns the theme
 	 */
-	get theme(): IColorTheme {
+	public get theme(): IColorTheme {
 		return this._bootstrapService.themeService.getColorTheme();
 	}
 
@@ -139,8 +169,8 @@ export class DashboardServiceInterface {
 	 * Allows binding to on theme change for reactive themeing
 	 * @param cb The function to call when a theme is changed
 	 */
-	public onThemeChange(cb: (e: IColorTheme) => void): void {
-		this._onThemeChangeObs.subscribe((event: IColorTheme) => {
+	public onThemeChange(cb: (e: IColorTheme) => void): Subscription {
+		return this._onThemeChangeObs.subscribe((event: IColorTheme) => {
 			cb(event);
 		});
 	}
@@ -150,7 +180,7 @@ export class DashboardServiceInterface {
 	 * @returns A promise that will resolve instantly if the connection info
 	 * is already available or whenever the connectionManagementService has been init
 	 */
-	get connectionInfo(): Promise<ConnectionManagementInfo> {
+	public get connectionInfo(): Promise<ConnectionManagementInfo> {
 		let self = this;
 		if (self._connectionInfo) {
 			return Promise.resolve(self._connectionInfo);
@@ -179,7 +209,7 @@ export class DashboardServiceInterface {
 	 * Get the metadata for the current connection
 	 * @returns A promise that resolves when the metadata is available
 	 */
-	get metadata(): Promise<data.ProviderMetadata> {
+	public get metadata(): Promise<ProviderMetadata> {
 		return this._metadataDeferred.promise;
 	}
 
@@ -187,7 +217,7 @@ export class DashboardServiceInterface {
 	 * Get the database names for the current connection
 	 * @returns A promise that resolves when the metadata service is available
 	 */
-	get databaseNames(): Promise<string[]> {
+	public get databaseNames(): Promise<string[]> {
 		return this._databaseNamesDeferred.promise;
 	}
 
@@ -204,6 +234,21 @@ export class DashboardServiceInterface {
 					self._connectionInfo = self._connectionManagementService.connectionInfo;
 					self._onConnectionChangeObs.next(self._connectionInfo);
 					resolve(result);
+				});
+			});
+		});
+	}
+
+	/**
+	 * Get the info for the database current in the connection
+	 * @returns Promise that will resolve when the disaster recovery service is available
+	 */
+	public get databaseInfo(): Promise<BackupConfigInfo> {
+		let self = this;
+		return new Promise<BackupConfigInfo>((resolve) => {
+			self._disasterRecoveryDeferred.promise.then(() => {
+				self._disasterRecoveryService.getDatabaseInfo().then((data) => {
+					resolve(data);
 				});
 			});
 		});

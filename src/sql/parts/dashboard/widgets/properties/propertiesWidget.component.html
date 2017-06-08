@@ -4,16 +4,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div style="display: flex; flex-flow: row; overflow: auto">
-    <div style="order: 1; margin: 5px">
-		<span *ngIf="_config?.context === 'database'">
-    		<span style="font-weight: bold">Database Name</span> <span style="font-style: italic">{{_connection?.connectionProfile.databaseName}}</span> <br />
-		</span>
-        <span style="font-weight: bold">Server Name</span>  <span style="font-style: italic">{{_connection?.connectionProfile.serverName}}</span> <br />
+<div id="parent" style="position: absolute; height: 100%; width: 100%; margin: 10px; ">
+    <div [style.margin-right.px]="_clipped ? 20 : 0" [style.width]="_clipped ? 96 + '%' : '100%'" style="overflow: hidden">
+        <span id="child" style="white-space : nowrap; width: fit-content">
+            <ng-template ngFor let-item [ngForOf]="properties">
+                <ng-template [ngIf]="item.show()">
+                    <span style="margin-left: 10px; display: inline-block;">
+                        <div style="font-style: italic">{{item.title}}</div>
+                        <div style="font-weight: bold">{{item.value()}}</div>
+                    </span>
+                </ng-template>
+            </ng-template>
+        </span>
     </div>
-    <div style="order: 2; margin: 5px">
-        <span style="font-weight: bold">Server Version</span> <span style="font-style: italic">{{_connection?.serverInfo.serverVersion}}</span> <br />
-        <span style="font-weight: bold">Server Edition</span> <span style="font-style: italic">{{_connection?.serverInfo.serverEdition}} {{_connection?.serverInfo.serverLevel}}</span> <br />
-        <span style="font-weight: bold">Is Cloud</span> <span style="font-style: italic">{{_connection?.serverInfo.isCloud}}</span> <br />
-    </div>
+    <span *ngIf="_clipped" style="position: absolute; right: 0; top: 0; padding-top: 5px; padding-right: 14px; z-index: 2">
+        ...
+    </span>
 </div>

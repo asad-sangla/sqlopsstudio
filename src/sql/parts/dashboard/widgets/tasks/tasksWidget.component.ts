@@ -3,8 +3,9 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Subscription } from 'rxjs/Subscription';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { PathUtilities } from 'sql/common/pathUtilities';
@@ -27,13 +28,15 @@ export interface Task {
 	templateUrl: require.toUrl('sql/parts/dashboard/widgets/tasks/tasksWidget.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
-export class TasksWidget extends DashboardWidget implements IDashboardWidget, OnInit {
+export class TasksWidget extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
 	private isDarkTheme: boolean;
 	private _size: number = 100;
 	private _margins: number = 10;
 	private _trigger: number = 0;
 	private _rows: number = 2;
 	private _isAzure = false;
+	private _themeSub: Subscription;
+	private _tileBackground: string;
 	//tslint:disable-next-line
 	private tasks: Task[] = [
 		{
@@ -72,36 +75,38 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef
 	) { super(); }
 
-	public ngOnInit(): void {
+	ngOnInit() {
 		let self = this;
-		self._bootstrap.onThemeChange((e: IColorTheme) => {
-			self.updateIcons(e);
+		self._themeSub = self._bootstrap.onThemeChange((e: IColorTheme) => {
+			self.updateTheme(e);
 		});
 		let theme = this._bootstrap.theme;
 		this.isDarkTheme = !theme.isDarkTheme();
-		self.updateIcons(theme);
+		self.updateTheme(theme);
 	}
 
-	private updateIcons(e: IColorTheme): void {
+	ngOnDestroy() {
+		this._themeSub.unsubscribe();
+	}
+
+	private updateTheme(e: IColorTheme): void {
 		if (e.isDarkTheme() && !this.isDarkTheme) {
 			this.isDarkTheme = true;
 			for (let task of this.tasks) {
 				if (task.icon) {
-					task.inverse_icon = task.inverse_icon.replace(' ', '%20');
-					task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.inverse_icon  + ') center center no-repeat');
+					task.internal_icon = task.inverse_icon;
 				}
 			}
-			this._changeref.detectChanges();
 		} else if(e.isLightTheme() && this.isDarkTheme) {
 			this.isDarkTheme = false;
 			for (let task of this.tasks) {
 				if (task.icon) {
-					task.inverse_icon = task.icon.replace(' ', '%20');
-					task.internal_icon = this._sanitizer.bypassSecurityTrustStyle('url(' + task.icon  + ') center center no-repeat');
+					task.internal_icon = task.icon;
 				}
 			}
-			this._changeref.detectChanges();
 		}
+		this._tileBackground = e.getColor('sideBarBackground').toString();
+		this._changeref.detectChanges();
 	}
 
 	public load(config: WidgetConfig): boolean {
@@ -111,6 +116,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 			self._isAzure = connection.serverInfo.isCloud;
 			// trigger a refresh on the tasks to account for new info
 			self._trigger = self._trigger + 1;
+			this._changeref.detectChanges();
 		});
 		return true;
 	}
