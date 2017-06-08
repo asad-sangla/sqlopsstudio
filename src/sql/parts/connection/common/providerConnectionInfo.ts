@@ -14,7 +14,7 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 
 	options: { [name: string]: any };
 
-	providerName: string;
+	public providerName: string;
 	protected _serverCapabilities: data.DataProtocolServerCapabilities;
 	private static readonly SqlAuthentication = 'SqlLogin';
 	public static readonly ProviderPropertyName = 'providerName';

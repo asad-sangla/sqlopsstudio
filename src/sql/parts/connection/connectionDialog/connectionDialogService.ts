@@ -167,8 +167,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this.uiController.handleOnConnecting();
 	}
 
-	private UpdateModelServerCapabilities(model: IConnectionProfile) {
+	private updateModelServerCapabilities(model: IConnectionProfile) {
 		this._model = this.createModel(model);
+		this._currentProviderType = this._providerNameToDisplayNameMap[this._model.providerName];
+		if (this._connectionDialog) {
+			this._connectionDialog.updateProvider(this._currentProviderType);
+		}
 	}
 
 	private createModel(model: IConnectionProfile): ConnectionProfile {
@@ -196,7 +200,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private showDialogWithModel(): TPromise<void> {
 		return new TPromise<void>((resolve, reject) => {
 			if (this._defaultProviderName in this._capabilitiesMaps) {
-				this.UpdateModelServerCapabilities(this._inputModel);
+				this.updateModelServerCapabilities(this._inputModel);
 
 				this.doShowDialog(this._params);
 			}
@@ -223,7 +227,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			});
 		}
 
-		this.UpdateModelServerCapabilities(model);
+		this.updateModelServerCapabilities(model);
 		// If connecting from a query editor set "save connection" to false
 		if (params && params.input && params.connectionType === ConnectionType.editor) {
 			this._model.saveProfile = false;
