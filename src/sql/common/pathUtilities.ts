@@ -6,10 +6,14 @@
 export class PathUtilities {
 
 	/*
-	* Public method to import html/css/image files for angular
+	* Public method to import image files for angular
 	*/
 	public static toUrl(path: string) {
-		return require.toUrl(path).replace(' ', '%20');
+		/* the baseUrl for the uri comes
+		 * denormalized, so normalize the full
+		 * path again here
+		 */
+		var space = new RegExp(' ', 'g');
+		return require.toUrl(path).replace(space, '%20');
 	}
-
 }

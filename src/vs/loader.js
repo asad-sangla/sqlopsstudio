@@ -446,6 +446,17 @@ var AMDLoader;
                 if (!AMDLoader.Utilities.isAbsolutePath(result)) {
                     result = this.options.baseUrl + result;
                 }
+                /* Carbon code starts here */
+
+                /* since angular normalizes the url again
+                 * when getting the template, we 'denormalize'
+                 * the spaces in the uri for angular html files
+                 * only
+                 */
+                if (result.includes('component.html')){
+                    result = result.replace(new RegExp('%20', 'g'), ' ');
+                }
+                /* Carbon code ends here */
             }
             return this._addUrlArgsIfNecessaryToUrl(result);
         };

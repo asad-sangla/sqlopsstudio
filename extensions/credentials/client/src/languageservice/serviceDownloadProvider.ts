@@ -55,7 +55,7 @@ export default class ServiceDownloadProvider {
 		let versionFromConfig = this._config.getSqlToolsPackageVersion();
 		basePath = basePath.replace('{#version#}', versionFromConfig);
 		basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
-		if (!fse.existsSync(basePath)) {
+		if (!fse.existsSync(basePath) && !packaging) {
 			fse.mkdirsSync(basePath);
 		}
 		return basePath;

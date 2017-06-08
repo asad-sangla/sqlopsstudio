@@ -11,6 +11,7 @@ AppPublisher=Microsoft Corporation
 AppPublisherURL=https://github.com/Microsoft/carbon
 AppSupportURL=https://github.com/Microsoft/carbon
 AppUpdatesURL=https://github.com/Microsoft/carbon
+ArchitecturesInstallIn64BitMode=x64
 DefaultDirName={pf}\{#DirName}
 DefaultGroupName={#NameLong}
 AllowNoIcons=yes

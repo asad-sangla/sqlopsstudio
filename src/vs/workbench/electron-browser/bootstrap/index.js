@@ -86,13 +86,7 @@ function uriFromPath(_path) {
 		pathName = '/' + pathName;
 	}
 
-	/*
-	* This hack is for allowing spaces in installation paths
-	* when the app is optimized. The reason is the file uri
-	* is normalized twice, so we denormalize the path again
-	* after encoding when loading
-	*/
-	return encodeURI('file://' + pathName).replace('%20', ' ');
+	return encodeURI('file://' + pathName);
 }
 
 function registerListeners(enableDeveloperTools) {
