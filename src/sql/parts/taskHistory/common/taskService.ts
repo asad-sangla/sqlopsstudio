@@ -8,7 +8,11 @@ import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import Event, { Emitter } from 'vs/base/common/event';
 export const SERVICE_ID = 'taskHistoryService';
-
+import { ILifecycleService } from 'vs/platform/lifecycle/common/lifecycle';
+import { IChoiceService} from 'vs/platform/message/common/message';
+import { localize } from 'vs/nls';
+import Severity from 'vs/base/common/severity';
+import { TPromise } from 'vs/base/common/winjs.base';
 
 export const ITaskService = createDecorator<ITaskService>(SERVICE_ID);
 
@@ -35,10 +39,15 @@ export class TaskService implements ITaskService {
 	private _onTaskComplete = new Emitter<TaskNode>();
 	private _onAddNewTask = new Emitter<TaskNode>();
 
-	constructor() {
+	constructor(
+		@ILifecycleService lifecycleService: ILifecycleService,
+		@IChoiceService private choiceService: IChoiceService
+	) {
 		this._taskQueue = new TaskNode('Root', undefined, undefined);
 		this._onTaskComplete = new Emitter<TaskNode>();
 		this._onAddNewTask = new Emitter<TaskNode>();
+
+		lifecycleService.onWillShutdown(event => event.veto(this.beforeShutdown()));
 	}
 
 	public handleNewTask(task: TaskNode): void {
@@ -49,6 +58,31 @@ export class TaskService implements ITaskService {
 			this._taskQueue.children = [task];
 		}
 		this._onAddNewTask.fire(task);
+	}
+
+	public beforeShutdown(): TPromise<boolean> {
+		const message = localize('InProgressWarning', '1 or more tasks are in progress. Are you sure you want to quit?');
+		const options = [
+			localize('yes', "Yes"),
+			localize('no', "No")
+		];
+
+		return new TPromise<boolean>((resolve) => {
+			let numOfInprogressTasks = this.getNumberOfInProgressTasks();
+			if (numOfInprogressTasks > 0) {
+				this.choiceService.choose(Severity.Warning, message, options).done(choice => {
+					switch (choice) {
+						case 0:
+							// Todo: cancel the remaining tasks
+							resolve(false);
+						case 1:
+							resolve(true);
+					}
+				});
+			} else {
+				resolve(false);
+			}
+		});
 	}
 
 	public handleTaskComplete(eventArgs: TaskStatusChangeArgs): void {

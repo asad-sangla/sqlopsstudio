@@ -66,6 +66,7 @@ export class TaskHistoryView extends CollapsibleViewletView {
 		dom.addClass(this.treeContainer, 'task-history-view');
 
 		this.tree = this.createTaskHistoryTree(this.treeContainer, this.instantiationService);
+		this.toDispose.push(this.tree.addListener2('selection', (event) => this.onSelected(event)));
 
 		const self = this;
 		this.toDispose.push(this._taskService.onAddNewTask(args => {
@@ -109,10 +110,6 @@ export class TaskHistoryView extends CollapsibleViewletView {
 	}
 
 	private updateTask(task: TaskNode): void {
-		if (task.status === TaskStatus.fail) {
-			var err = task.taskName + ': ' + task.message;
-			this._errorMessageService.showDialog(undefined, Severity.Error, 'Connection Error', err);
-		}
 		this.tree.refresh(task);
 	}
 
@@ -145,6 +142,22 @@ export class TaskHistoryView extends CollapsibleViewletView {
 				}
 				this.tree.getFocus();
 			}, errors.onUnexpectedError);
+		}
+	}
+
+	private onSelected(event: any) {
+		let selection = this.tree.getSelection();
+
+		if (selection && selection.length > 0 && (selection[0] instanceof TaskNode)) {
+			let task = <TaskNode>selection[0];
+			let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
+			let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
+			if (isDoubleClick) {
+				if (task.status === TaskStatus.fail) {
+					var err = task.taskName + ': ' + task.message;
+					this._errorMessageService.showDialog(undefined, Severity.Error, 'Task Error', err);
+				}
+			}
 		}
 	}
 
