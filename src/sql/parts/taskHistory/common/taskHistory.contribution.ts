@@ -80,7 +80,7 @@ const viewletDescriptor = new ViewletDescriptor(
 	VIEWLET_ID,
 	'Task History',
 	'taskHistoryViewlet',
-	200
+	-90
 );
 
 Registry.as<ViewletRegistry>(ViewletExtensions.Viewlets).registerViewlet(viewletDescriptor);
@@ -94,7 +94,7 @@ registry.registerWorkbenchAction(
 		TaskHistoryViewletAction,
 		TaskHistoryViewletAction.ID,
 		TaskHistoryViewletAction.LABEL,
-		{ primary: KeyMod.CtrlCmd | KeyCode.Shift | KeyCode.KEY_T }),
+		{ primary: KeyMod.CtrlCmd | KeyCode.KEY_T }),
 	'View: Show Task Histry',
 	localize('view', "View")
 );
