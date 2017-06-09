@@ -8,8 +8,8 @@ export const maxDevices: number = 64;
 
 // Constants for backup physical device type
 export const backupDeviceTypeDisk = 2;
-export const backupDeviceTypeTape = 5; //(int)BackupDeviceType.Tape
-export const backupDeviceTypeURL = 9; //(int)BackupDeviceType.Url
+export const backupDeviceTypeTape = 5;
+export const backupDeviceTypeURL = 9;
 
 // Constants for backup media device type
 export const deviceTypeLogicalDevice = 0;
@@ -19,7 +19,6 @@ export const deviceTypeURL = 5;
 
 export const recoveryModelSimple = 'Simple';
 export const recoveryModelFull = 'Full';
-
 
 // Constants for UI strings
 export const labelDatabase = 'Database';

@@ -4,7 +4,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-
 <form #myForm="ngForm" (ngSubmit)="onSubmit(f)">
 
 <div class="backup-content">
@@ -56,8 +55,8 @@
 		<input type="radio" name="selectedBackupComponent" class="form-check-input" (ngModelChange)="onBackupComponentChanged($event)" [disabled]="disableFileComponent" [ngModel]="selectedBackupComponent" value="Files and Filegroups">Files and Filegroups
 		<input type="text" name="selectedFilesText" [ngModel]="selectedFilesText" [disabled]="disableFileComponent">
 		<button class="Browse" [disabled]="disableFileComponent">Browse</button>
-	</div>
-	-->
+	</div> -->
+
 
 	<table class="backup-path-input-text" style="width:100%">
 		<tr>
@@ -86,4 +85,3 @@
 
   </div>
 </form>
-

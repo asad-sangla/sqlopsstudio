@@ -14,7 +14,7 @@ import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
-import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
+import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { withElementById } from 'vs/base/browser/builder';
@@ -172,9 +172,9 @@ export class TaskUtilities {
 		});
 	}
 
-	public static showBackup(uri: string, connection: ConnectionManagementInfo, disasterRecoveryService: IDisasterRecoveryService): Promise<void> {
+	public static showBackup(uri: string, connection: ConnectionManagementInfo, disasterRecoveryUiService: IDisasterRecoveryUiService): Promise<void> {
 		return new Promise<void>((resolve) => {
-			disasterRecoveryService.showBackupWizard(uri, connection);
+			disasterRecoveryUiService.showBackup(uri, connection);
 		});
 	}
 }

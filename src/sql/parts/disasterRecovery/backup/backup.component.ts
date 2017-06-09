@@ -12,7 +12,7 @@ import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
-import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { BackupInfo } from 'data';
 import { SelectItem } from 'primeng/primeng';
 import { NgForm } from '@angular/forms';
@@ -118,7 +118,7 @@ export class BackupComponent{
             ownerUri: this._uri,
             databaseName: this.databaseName,
             backupType: this.getBackupTypeNumber(),
-            backupComponent: 0, //TODO: change later when we have filegroup options (this.selectedBackupComponent === BackupConstants.labelDatabase ? 0 : 1),
+            backupComponent: 0, //TODO: change later when we have filegroup options
             backupDeviceType: 2, //Disk
             backupPathList: backupPathArray,
             selectedFiles: this.selectedFilesText,
@@ -163,7 +163,6 @@ export class BackupComponent{
 
     private setDefaultBackupName(): void {
         let self = this;
-        // TODO: change the format
         self.backupName = self.databaseName + '-' + self.getSelectedBackupType();
     }
 
@@ -214,7 +213,7 @@ export class BackupComponent{
                 serverPathSeparator = '/';
             }
 
-            let defaultNewBackupLocation = self.defaultNewBackupFolder + serverPathSeparator + self.sanitizeFileName(self.databaseName) + '.bak';
+            let defaultNewBackupLocation = self.defaultNewBackupFolder + serverPathSeparator + self.databaseName + '.bak';
 
             // Add a default new backup location
             self.addNonUrlBackupDestination(defaultNewBackupLocation, BackupConstants.deviceTypeFile);
@@ -224,32 +223,6 @@ export class BackupComponent{
         if (self.getBackupPathCount() > 0)  {
             self.pathElement.nativeElement.SelectedIndex = 0;
         }
-
-        //TODO: add HADR check
-        //self.UpdateHADRControls();
-    }
-
-    private sanitizeFileName(name: string): string {
-     // @@ change this
-     /*   char[] result = name.ToCharArray();
-        string illegalCharacters = "\\/:*?\"<>|";
-\ / : * ? " < > |
-        int resultLength    = result.GetLength(0);
-        int illegalLength   = illegalCharacters.Length;
-
-        for (var resultIndex = 0; resultIndex < resultLength; resultIndex++)
-        {
-            for (var illegalIndex = 0; illegalIndex < illegalLength; illegalIndex++)
-            {
-                if (result[resultIndex] == illegalCharacters[illegalIndex])
-                {
-                    result[resultIndex] = '_';
-                }
-            }
-        }
-        return new string(result);
-*/
-        return name;
     }
 
     private isBackupToFile(controllerType: number): boolean {
@@ -280,7 +253,6 @@ export class BackupComponent{
                 this.disableFileComponent = false;
 			}
 		}
-		//this.UpdateHADRControls();
 		this.setDefaultBackupName();
         //this.enableActionButtons();
 	}
@@ -354,7 +326,6 @@ export class BackupComponent{
                 if ((this.getBackupPathCount() < BackupConstants.maxDevices - 1)) {
                     this.addToBackupPathList(this.backupPathInput);
                     this.dictOfBackupPathDevice[this.backupPathInput] = BackupConstants.deviceTypeFile;
-                    //TODO: logical device type
                     this.disableRemove = false;
                 }
                 else
@@ -387,13 +358,6 @@ export class BackupComponent{
 
         this.enableActionButtons(); // enable only if destination is there
     }
-
-/* TODO: Add remote file browser
-    private listOfBackupPaths_SelectedIndexChanged(): void {
-        int Count = this.listOfBackupPaths.SelectedItems.Count;
-        this.setActionButtons(); // enable only if destination is there
-    }
-*/
 
     private addNonUrlBackupDestination(bakLocation: string, bakDeviceType: number): void {
         let self = this;

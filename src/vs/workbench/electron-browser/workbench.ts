@@ -99,7 +99,8 @@ import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/c
 import { ErrorMessageService } from 'sql/workbench/errorMessageDialog/errorMessageService';
 import { ServerGroupController } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupController';
 
-import { IBootstrapService, BootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { BootstrapService } from 'sql/services/bootstrap/bootstrapServiceImpl';
 import { ICapabilitiesService, CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/services/credentials/credentialsService';
 import { IMetadataService, MetadataService } from 'sql/services/metadata/metadataService';
@@ -114,7 +115,9 @@ import { IEditorDescriptorService, EditorDescriptorService } from 'sql/parts/que
 import { IScriptingService, ScriptingService } from 'sql/services/scripting/scriptingService';
 import { ISplashScreenService, SplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
 import { IAdminService, AdminService } from 'sql/parts/admin/common/adminService';
-import { IDisasterRecoveryService, DisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
+import { DisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
+import { DisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/disasterRecoveryUiService';
+import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -582,6 +585,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));
 		serviceCollection.set(IAdminService, this.instantiationService.createInstance(AdminService));
 		serviceCollection.set(IDisasterRecoveryService, this.instantiationService.createInstance(DisasterRecoveryService));
+		serviceCollection.set(IDisasterRecoveryUiService, this.instantiationService.createInstance(DisasterRecoveryUiService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 
 		this.toDispose.push(connectionManagementService);

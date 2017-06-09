@@ -26,7 +26,7 @@ export class ModalDialogBuilder {
 	) {
 	}
 
-	public create(flyout: boolean): Builder {
+	public create(flyout: boolean, addfooter: boolean = true): Builder {
 		this._builder = $().div({}, (div: Builder) => {
 			div.div({ class: 'modal fade', id: this._id, 'role': 'dialog' }, (dialogContainer) => {
 				if (flyout) {
@@ -46,14 +46,17 @@ export class ModalDialogBuilder {
 
 							this._modelBody = modelBody;
 						});
-						modelContent.div({ class: 'modal-footer' }, (modelFooter) => {
-							modelFooter.div({ 'class': 'footer-spinner' }, (spinnerContainer) => {
-								spinnerContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {
-									this._spinnerElement = spinnerElement.getHTMLElement();
+
+						if (addfooter) {
+							modelContent.div({ class: 'modal-footer' }, (modelFooter) => {
+								modelFooter.div({ 'class': 'footer-spinner' }, (spinnerContainer) => {
+									spinnerContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {
+										this._spinnerElement = spinnerElement.getHTMLElement();
+									});
 								});
+								this._footerBuilder = modelFooter;
 							});
-							this._footerBuilder = modelFooter;
-						});
+						}
 					});
 				});
 			});

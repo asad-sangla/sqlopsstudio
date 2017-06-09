@@ -15,8 +15,7 @@ import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
-
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
@@ -280,9 +279,11 @@ export class DashboardServiceInterface implements OnDestroy {
 	 * Opens the backup dialog for the current connection
 	 */
 	public backup(): void {
+		let self = this;
+
 		TaskUtilities.showBackup(
 			this._uri,
 			this._bootstrapParams.connection,
-			this._bootstrapService.disasterRecoveryService);
+			this._bootstrapService.disasterRecoveryUiService);
 	}
 }
