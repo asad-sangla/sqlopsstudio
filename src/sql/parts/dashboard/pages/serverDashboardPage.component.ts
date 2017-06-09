@@ -3,8 +3,9 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { OnInit, Component, Inject, forwardRef } from '@angular/core';
-import { DashboardPage } from 'sql/parts/dashboard/common/dashboardPage';
+import { OnInit, Inject, forwardRef } from '@angular/core';
+
+import { DashboardPage } from 'sql/parts/dashboard/common/dashboardPage.component';
 import { BreadcrumbClass, BreadcrumbService } from 'sql/parts/dashboard/services/breadcrumb.service';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 
@@ -28,11 +29,6 @@ const widgets: Array<WidgetConfig> = [
 	}
 ];
 
-@Component({
-	selector: 'server-dashboard',
-	templateUrl: require.toUrl('sql/parts/dashboard/pages/serverDashboardPage.component.html'),
-	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
-})
 export class ServerDashboardPage extends DashboardPage implements OnInit {
 	private propertiesConfig: WidgetConfig = {
 		name: 'Server Properties',

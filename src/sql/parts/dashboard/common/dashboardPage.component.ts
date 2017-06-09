@@ -3,9 +3,16 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
+import { Component } from '@angular/core';
 import { NgGridConfig } from 'angular4-grid';
 
+import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
+
+@Component({
+	selector: 'dashboard-page',
+	templateUrl: require.toUrl('sql/parts/dashboard/pages/serverDashboardPage.component.html'),
+	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
+})
 export class DashboardPage {
 
 	protected SKELETON_WIDTH = 5;

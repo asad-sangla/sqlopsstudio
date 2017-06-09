@@ -23,6 +23,7 @@ import { DashboardComponent, DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dash
 import { DatabaseDashboardPage } from 'sql/parts/dashboard/pages/databaseDashboardPage.component';
 import { ServerDashboardPage } from 'sql/parts/dashboard/pages/serverDashboardPage.component';
 import { DashboardWidgetWrapper } from 'sql/parts/dashboard/common/dashboardWidgetWrapper.component';
+import { DashboardPage } from 'sql/parts/dashboard/common/dashboardPage.component';
 /* Widget Components */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
 import { ExplorerWidget } from 'sql/parts/dashboard/widgets/explorer/explorerWidget.component';
@@ -54,7 +55,8 @@ const appRoutes: Routes = [
 		MetadataFilterPipe,
 		TasksWidget,
 		TaskPipe,
-		PropertiesWidgetComponent
+		PropertiesWidgetComponent,
+		DashboardPage
 	],
 	// also for widgets
 	entryComponents: [
