@@ -1,7 +1,7 @@
 {
 	"service": {
 		"downloadUrl": "http://dtnuget:8080/download/pgtoolsservice/{#version#}/pgsqltoolsservice-{#filename#}",
-		"version": "1.0.0-alpha.19",
+		"version": "1.0.0-alpha.22",
 		"downloadFileNames": {
 			"Windows_64": "win-x64.zip",
 			"Windows_86": "win-x86.zip",
@@ -9,6 +9,6 @@
 			"Linux_64": "linux-x64.tar.gz"
 		},
 		"installDir": "",
-		"executableFiles": ["pgsqltoolsservice/pgsqltoolsservice", "pgsqltoolsservice/pgsqltoolsservice.exe"]
+		"executableFiles": ["pgsqltoolsservice/pgtoolsservice_main", "pgsqltoolsservice/pgtoolsservice_main.exe"]
 	}
 }
