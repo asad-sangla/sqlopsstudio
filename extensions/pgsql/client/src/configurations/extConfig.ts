@@ -37,6 +37,10 @@ export default class ExtConfig implements IConfig {
         return this.getPgSqlToolsConfigValue(Constants.pgSqlToolsServiceInstallDirConfigKey);
     }
 
+    public getPgSqlToolsPackageDirectory(): string {
+        return this.getPgSqlToolsConfigValue(Constants.pgSqlToolsServicePackageDirConfigKey);
+    }
+
     public getPgSqlToolsExecutableFiles(): string[] {
         return this.getPgSqlToolsConfigValue(Constants.pgSqlToolsServiceExecutableFilesConfigKey);
     }

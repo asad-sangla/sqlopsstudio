@@ -26,6 +26,10 @@ export default class Config implements IConfig {
         return this.getPgSqlToolsConfigValue(Constants.pgSqlToolsServiceDownloadUrlConfigKey);
     }
 
+    public getPgSqlToolsPackageDirectory(): string {
+        return this.getPgSqlToolsConfigValue(Constants.pgSqlToolsServicePackageDirConfigKey);
+    }
+
     public getPgSqlToolsInstallDirectory(): string {
         return this.getPgSqlToolsConfigValue(Constants.pgSqlToolsServiceInstallDirConfigKey);
     }

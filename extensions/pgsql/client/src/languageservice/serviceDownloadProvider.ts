@@ -45,9 +45,9 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Returns SQL tools service installed folder.
 	 */
-	public getInstallDirectory(platform: Runtime): string {
+	public getInstallDirectory(platform: Runtime, packaging?: boolean): string {
 
-		let basePath = this.getInstallDirectoryRoot(platform);
+		let basePath = this.getInstallDirectoryRoot(platform, packaging);
 		let versionFromConfig = this._config.getPgSqlToolsPackageVersion();
 		basePath = basePath.replace('{#version#}', versionFromConfig);
 		basePath = basePath.replace('{#platform#}', platform.toString());
@@ -74,10 +74,19 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Returns SQL tools service installed folder root.
 	 */
-	public getInstallDirectoryRoot(platform: Runtime): string {
-		let installDirFromConfig = this._config.getPgSqlToolsInstallDirectory();
-		if(!installDirFromConfig || installDirFromConfig === '') {
-			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), '/carbon/pgsqltoolsservice/{#platform#}/{#version#}');
+	public getInstallDirectoryRoot(platform: Runtime, packaging?: boolean): string {
+		let installDirFromConfig : string;
+		if (packaging) {
+			installDirFromConfig = this._config.getPgSqlToolsPackageDirectory();
+		} else {
+			installDirFromConfig = this._config.getPgSqlToolsInstallDirectory();
+		}
+		if (!installDirFromConfig || installDirFromConfig === '') {
+			let rootFolderName: string = '.carbon';
+			if (platform === Runtime.Windows_64 || platform === Runtime.Windows_86) {
+				rootFolderName = 'carbon';
+			}
+			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), `/${rootFolderName}/pgsqltoolsservice/{#version#}/{#platform#}`);
 		}
 		let basePath: string;
 		if (path.isAbsolute(installDirFromConfig)) {

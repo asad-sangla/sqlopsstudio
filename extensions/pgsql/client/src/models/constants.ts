@@ -222,6 +222,7 @@ export const msgErrorOpeningConfigFile = 'Error: Unable to open connection profi
 
 export const pgSqlToolsServiceConfigKey = 'service';
 export const pgSqlToolsServiceInstallDirConfigKey = 'installDir';
+export const pgSqlToolsServicePackageDirConfigKey = 'packageDir';
 export const pgSqlToolsServiceExecutableFilesConfigKey = 'executableFiles';
 export const pgSqlToolsServiceVersionConfigKey = 'version';
 export const pgSqlToolsServiceDownloadUrlConfigKey = 'downloadUrl';

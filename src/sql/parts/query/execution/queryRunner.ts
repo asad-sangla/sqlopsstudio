@@ -142,7 +142,7 @@ export default class QueryRunner {
 		// Store the batch sets we got back as a source of "truth"
 		this._isExecuting = false;
 		this._hasCompleted = true;
-		this._batchSets = result.batchSummaries;
+		this._batchSets = result.batchSummaries ? result.batchSummaries : [];
 
 		this._batchSets.map((batch) => {
 			if (batch.selection) {
@@ -191,12 +191,31 @@ export default class QueryRunner {
 	 * Handle a ResultSetComplete from the service layer
 	 */
 	public handleResultSetComplete(result: QueryExecuteResultSetCompleteNotificationParams): void {
-		let resultSet = result.resultSetSummary;
-		let batchSet = this._batchSets[resultSet.batchId];
-
-		// Store the result set in the batch and emit that a result set has completed
-		batchSet.resultSetSummaries[resultSet.id] = resultSet;
-		this.eventEmitter.emit('resultSet', resultSet);
+		if (result && result.resultSetSummary) {
+			let resultSet = result.resultSetSummary;
+			let batchSet: BatchSummary;
+			if (!resultSet.batchId) {
+				// Missing the batchId. In this case, default to always using the first batch in the list
+				// or create one in the case the DMP extension didn't obey the contract perfectly
+				if (this._batchSets.length > 0) {
+					batchSet = this._batchSets[0];
+				} else {
+					batchSet = <BatchSummary> {
+						id: 0,
+						selection: undefined,
+						hasError: false
+					};
+					this._batchSets[0] = batchSet;
+				}
+			} else {
+				batchSet = this._batchSets[resultSet.batchId];
+			}
+			if (batchSet) {
+				// Store the result set in the batch and emit that a result set has completed
+				batchSet.resultSetSummaries[resultSet.id] = resultSet;
+				this.eventEmitter.emit('resultSet', resultSet);
+			}
+		}
 	}
 
 	/**

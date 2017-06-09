@@ -200,14 +200,18 @@ export class QueryModelService implements IQueryModelService {
 				this._fireQueryEvent(uri, 'resultSet', resultSet);
 			});
 			queryRunner.eventEmitter.on('batchStart', (batch) => {
+				let link = undefined;
+				if (batch.selection) {
+					link = {
+						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1)
+					};
+				}
 				let message = {
 					message: Constants.runQueryBatchStartMessage,
 					batchId: undefined,
 					isError: false,
 					time: new Date().toLocaleTimeString(),
-					link: {
-						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1),
-					}
+					link: link
 				};
 				this._fireQueryEvent(uri, 'message', message);
 				info.selection = this._validateSelection(batch.selection);
@@ -287,15 +291,19 @@ export class QueryModelService implements IQueryModelService {
 				this._fireQueryEvent(ownerUri, 'resultSet', resultSet);
 			});
 			queryRunner.eventEmitter.on('batchStart', (batch) => {
+				let link = undefined;
+				if (batch.selection) {
+					link = {
+						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1),
+						uri: ''
+					};
+				}
 				let message = {
 					message: Constants.runQueryBatchStartMessage,
 					batchId: undefined,
 					isError: false,
 					time: new Date().toLocaleTimeString(),
-					link: {
-						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1),
-						uri: ''
-					}
+					link: link
 				};
 				this._fireQueryEvent(ownerUri, 'message', message);
 			});
@@ -455,10 +463,13 @@ export class QueryModelService implements IQueryModelService {
 	// TODO remove this funciton and its usages when #821 in vscode-mssql is fixed and
 	// the SqlToolsService version is updated in this repo - coquagli 4/19/2017
 	private _validateSelection(selection: ISelectionData): ISelectionData {
-		selection.endColumn = Math.max(0, selection.endColumn);
-		selection.endLine = Math.max(0, selection.endLine);
-		selection.startColumn = Math.max(0, selection.startColumn);
-		selection.startLine = Math.max(0, selection.startLine);
+		if (!selection) {
+			selection = <ISelectionData>{};
+		}
+		selection.endColumn = selection ? Math.max(0, selection.endColumn) : 0;
+		selection.endLine = selection ? Math.max(0, selection.endLine) : 0;
+		selection.startColumn = selection ? Math.max(0, selection.startColumn) : 0;
+		selection.startLine = selection ?  Math.max(0, selection.startLine) : 0;
 		return selection;
 	}
 }

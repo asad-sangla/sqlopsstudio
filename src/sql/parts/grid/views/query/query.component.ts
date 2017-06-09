@@ -207,6 +207,12 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	handleResultSet(self: QueryComponent, event: any): void {
 		let resultSet = event.data;
 
+		// No column info found, so define a column of no name by default
+		if (!resultSet.columnInfo)
+		{
+			resultSet.columnInfo = [];
+			resultSet.columnInfo[0] = {columnName: ''};
+		}
 		// Setup a function for generating a promise to lookup result subsets
 		let loadDataFunction = (offset: number, count: number): Promise<IGridDataRow[]> => {
 			return new Promise<IGridDataRow[]>((resolve, reject) => {

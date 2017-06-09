@@ -15,7 +15,7 @@ export interface IStatusView {
 export interface IConfig {
     getPgSqlToolsServiceDownloadUrl(): string;
     getPgSqlToolsInstallDirectory(): string;
-    getPgSqlToolsInstallDirectory(): string;
+    getPgSqlToolsPackageDirectory(): string;
     getPgSqlToolsExecutableFiles(): string[];
     getPgSqlToolsPackageVersion(): string;
     getExtensionConfig(key: string, defaultValue?: any): any;
