@@ -19,6 +19,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	onAddConnectionProfile = undefined;
 	onDeleteConnectionProfile = undefined;
 	onConnectionChanged = undefined;
+	onLanguageFlavorChanged = undefined;
 
 	public get onConnect(): Event<any> {
 		let conEvent = new Emitter<any>();

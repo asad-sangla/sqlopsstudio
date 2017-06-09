@@ -42,6 +42,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	) {
 		super();
 		this._proxy = threadService.get(SqlExtHostContext.ExtHostDataProtocol);
+		if (this._connectionManagementService) {
+			this._connectionManagementService.onLanguageFlavorChanged(e => this._proxy.$languageFlavorChanged(e), this, this._toDispose);
+		}
 	}
 
 	public dispose(): void {

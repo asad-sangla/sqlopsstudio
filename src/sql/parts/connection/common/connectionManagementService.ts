@@ -63,6 +63,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onDisconnect: Emitter<IConnectionParams>;
 	private _onConnectRequestSent: Emitter<void>;
 	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
+	private _onLanguageFlavorChanged: Emitter<data.DidChangeLanguageFlavorParams>;
 
 	private _connectionGlobalStatus: ConnectionGlobalStatus;
 
@@ -105,6 +106,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onDisconnect = new Emitter<IConnectionParams>();
 		this._onConnectionChanged = new Emitter<IConnectionChangedParams>();
 		this._onConnectRequestSent = new Emitter<void>();
+		this._onLanguageFlavorChanged = new Emitter<data.DidChangeLanguageFlavorParams>();
 
 		// Register Statusbar item
 		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
@@ -151,6 +153,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public get onConnectionRequestSent(): Event<void> {
 		return this._onConnectRequestSent.event;
+	}
+
+	public get onLanguageFlavorChanged(): Event<data.DidChangeLanguageFlavorParams> {
+		return this._onLanguageFlavorChanged.event;
 	}
 
 	private _providerCount: number = 0;
@@ -576,6 +582,24 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStatusManager.getConnectionManagementId(connectionProfile);
 	}
 
+	/**
+	 * Sends a notification that the language flavor for a given URI has changed.
+	 * For SQL, this would be the specific SQL implementation being used.
+	 *
+	 * @param {string} uri the URI of the resource whose language has changed
+	 * @param {string} language the base language
+	 * @param {string} flavor the specific language flavor that's been set
+	 *
+	 * @memberof ConnectionManagementService
+	 */
+	public doChangeLanguageFlavor(uri: string, language: string, flavor: string) {
+		this._onLanguageFlavorChanged.fire({
+				uri: uri,
+				language: language,
+				flavor: flavor
+			});
+	}
+
 	// Request Senders
 	private sendConnectRequest(connection: IConnectionProfile, uri: string): Thenable<boolean> {
 		let connectionInfo = Object.assign({}, {
@@ -588,6 +612,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise<boolean>((resolve, reject) => {
 			this._providers[connection.providerName].connect(uri, connectionInfo);
 			this._onConnectRequestSent.fire();
+
+			// TODO make this generic enough to handle non-SQL languages too
+			this.doChangeLanguageFlavor(uri, 'sql', connection.providerName);
 			resolve(true);
 		});
 	}

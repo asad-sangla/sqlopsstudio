@@ -422,11 +422,25 @@ declare module 'data' {
 		deleteCredential(credentialId: string): Thenable<boolean>;
 	}
 
+
+	export interface DidChangeLanguageFlavorParams {
+		uri: string;
+		language: string;
+		flavor: string;
+	}
+
 	/**
 	 * Namespace for Data Management Protocol global methods
 	 */
 	export namespace dataprotocol {
 		export function registerProvider(provider: DataProtocolProvider): vscode.Disposable;
+
+		/**
+		 * An [event](#Event) which fires when the specific flavor of a language used in DMP
+		 * connections has changed. And example is for a SQL connection, the flavor changes
+		 * to MSSQL or PGSQL
+		 */
+		export const onDidChangeLanguageFlavor: vscode.Event<DidChangeLanguageFlavorParams>;
 	}
 
 	/**

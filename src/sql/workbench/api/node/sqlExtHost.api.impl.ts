@@ -97,7 +97,6 @@ export function createApiFactory(
 						extHostDataProvider.$onObjectExplorerNodeExpanded(provider.handle, response);
 					});
 
-
 					// Edit Data callbacks
 					provider.queryProvider.registerOnEditSessionReady((ownerUri: string, success: boolean, message: string) => {
 						extHostDataProvider.$onEditSessionReady(provider.handle, ownerUri, success, message);
@@ -105,6 +104,9 @@ export function createApiFactory(
 
 					// Complete registration
 					return extHostDataProvider.$registerProvider(provider);
+				},
+				onDidChangeLanguageFlavor(listener: (e: data.DidChangeLanguageFlavorParams) => any, thisArgs?: any, disposables?: extHostTypes.Disposable[]) {
+					return extHostDataProvider.onDidChangeLanguageFlavor(listener, thisArgs, disposables);
 				}
 			};
 

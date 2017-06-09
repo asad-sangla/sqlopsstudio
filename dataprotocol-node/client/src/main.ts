@@ -109,7 +109,8 @@ import {
 	EditSubsetRequest, EditSubsetParams, EditSubsetResult,
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
 	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
-	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, BackupConfigInfoRequest
+	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, BackupConfigInfoRequest,
+	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -1940,6 +1941,11 @@ export class LanguageClient {
 
 			disasterRecoveryProvider: disasterRecoveryProvider
 		}));
+
+		// Hook to the workspace-wide notifications that aren't routed to a specific provider
+		dataprotocol.onDidChangeLanguageFlavor(e => {
+			self.sendNotification(LanguageFlavorChangedNotification.type, e);
+		}, this, this._listeners);
 	}
 
 	private hookCompletionProvider(documentSelector: DocumentSelector, connection: IConnection): void {

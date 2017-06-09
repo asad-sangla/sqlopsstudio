@@ -40,6 +40,14 @@ export abstract class ExtHostDataProtocolShape {
 	$listDatabases(handle: number, connectionUri: string): Thenable<data.ListDatabasesResult> { throw ni(); }
 
 	/**
+	 * Notifies all listeners on the Extension Host side that a language change occurred
+	 * for a dataprotocol language. The sub-flavor is the specific implementation used for query
+	 * and other events
+	 * @param params information on what URI was changed and the new language
+	 */
+	$languageFlavorChanged(params: data.DidChangeLanguageFlavorParams): void { throw ni(); }
+
+	/**
 	 * Callback when a connection request has completed
 	 */
 	$onConnectComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void { throw ni(); }

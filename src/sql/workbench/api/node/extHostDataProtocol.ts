@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
+import Event, { Emitter } from 'vs/base/common/event';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { SqlMainContext, MainThreadDataProtocolShape, ExtHostDataProtocolShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import * as vscode from 'vscode';
@@ -11,6 +12,10 @@ import * as data from 'data';
 import { Disposable } from 'vs/workbench/api/node/extHostTypes';
 
 export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
+
+	private readonly _onDidChangeLanguageFlavor = new Emitter<data.DidChangeLanguageFlavorParams>();
+
+	readonly onDidChangeLanguageFlavor: Event<data.DidChangeLanguageFlavorParams> = this._onDidChangeLanguageFlavor.event;
 
 	private _proxy: MainThreadDataProtocolShape;
 
@@ -41,6 +46,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 			? action(provider)
 			: undefined;
 	}
+
 
 	$registerProvider(provider: data.DataProtocolProvider): vscode.Disposable {
 		provider.handle = this._nextHandle();
@@ -97,6 +103,11 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 
 	public $onConnectionChanged(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
 		this._proxy.$onConnectionChangeNotification(handle, changedConnInfo);
+	}
+
+	// Protocol-wide Event Handlers
+	public $languageFlavorChanged(params: data.DidChangeLanguageFlavorParams): void {
+		this._onDidChangeLanguageFlavor.fire(params);
 	}
 
 	// Query Management handlers

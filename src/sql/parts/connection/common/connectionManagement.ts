@@ -73,6 +73,7 @@ export interface IConnectionManagementService {
 	onConnect: Event<IConnectionParams>;
 	onDisconnect: Event<IConnectionParams>;
 	onConnectionChanged: Event<IConnectionChangedParams>;
+	onLanguageFlavorChanged: Event<data.DidChangeLanguageFlavorParams>;
 
 	/**
 	 * Opens the connection dialog to create new connection

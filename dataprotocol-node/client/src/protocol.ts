@@ -1042,6 +1042,22 @@ export namespace ListDatabasesRequest {
 	export const type: RequestType<ListDatabasesParams, ListDatabasesResult, void> = { get method(): string { return 'connection/listdatabases'; } };
 }
 
+// Language Flavor Changed ================================================================================
+
+/**
+ * Parameters to provide when sending a language flavor changed notification
+ */
+export interface DidChangeLanguageFlavorParams {
+	uri: string;
+	language: string;
+	flavor: string;
+}
+
+// ------------------------------- < Language Flavor Changed Notification > ---------------------------------------
+export namespace LanguageFlavorChangedNotification {
+		export const type: NotificationType<DidChangeLanguageFlavorParams> = { get method(): string { return 'connection/languageflavorchanged'; } };
+}
+
 // ------------------------------- < Table Metadata Request > ---------------------------------------
 
 // Table metadata request format
