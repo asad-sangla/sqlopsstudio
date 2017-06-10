@@ -10,7 +10,7 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 
 @Component({
 	selector: 'dashboard-page',
-	templateUrl: require.toUrl('sql/parts/dashboard/pages/serverDashboardPage.component.html'),
+	templateUrl: require.toUrl('sql/parts/dashboard/common/dashboardPage.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class DashboardPage {
