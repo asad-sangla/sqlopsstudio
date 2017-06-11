@@ -106,7 +106,7 @@ export class ErrorMessageDialog {
 		container.div({ class: 'modal-copy' }, (cellContainer) => {
 			let button = new Button(cellContainer);
 			button.icon = 'copyButtonIcon';
-			button.addListener2('click', () => {
+			button.addListener('click', () => {
 				clipboard.writeText(this._message);
 			});
 			cellContainer.child(0).title('Copy to Clipboard');
@@ -118,7 +118,7 @@ export class ErrorMessageDialog {
 		container.element('td', { class: 'footer-button' }, (cellContainer) => {
 			button = new Button(cellContainer);
 			button.label = title;
-			button.addListener2('click', () => {
+			button.addListener('click', () => {
 				if (title === 'OK') {
 					this.ok();
 				}

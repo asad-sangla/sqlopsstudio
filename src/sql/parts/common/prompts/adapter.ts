@@ -128,11 +128,10 @@ export default class Prompt implements IPrompter {
         }, Promise.resolve());
 
         return promptResult.catch(err => {
-            if (err instanceof EscapeException) {
-                return;
+            if (!(err instanceof EscapeException)) {
+                this._messageService.show(Severity.Error, err.message);
             }
-
-            this._messageService.show(Severity.Error, err.message);
+            return undefined;
         });
     }
 

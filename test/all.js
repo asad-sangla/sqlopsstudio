@@ -16,6 +16,8 @@ var minimatch = require('minimatch');
 var fs = require('fs');
 var vm = require('vm');
 var TEST_GLOB = '**/*test*/**/*.test.js';
+
+// {{SQL CARBON EDIT}}
 var SQL_TEST_GLOB = '**/sqltest/**/*.test.js';
 
 var optimist = require('optimist')
@@ -45,6 +47,7 @@ function main() {
 		console.error(e.stack || e);
 	});
 
+  // {{SQL CARBON EDIT}}
 	var loaderConfig = {
 		nodeRequire: require,
 		nodeMain: __filename,

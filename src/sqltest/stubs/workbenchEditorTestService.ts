@@ -101,7 +101,7 @@ export class WorkbenchEditorTestService implements IWorkbenchEditorService {
 	/**
 	 * Allows to resolve an untyped input to a workbench typed instanceof editor input
 	 */
-	createInput(input: IResourceInput | IResourceDiffInput | IResourceSideBySideInput): TPromise<IEditorInput> {
+	createInput(input: IResourceInput | IResourceDiffInput | IResourceSideBySideInput): IEditorInput {
 		return undefined;
 	}
 }

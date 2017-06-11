@@ -266,6 +266,7 @@ suite('Files - TextFileService', () => {
 		}, error => onError(error, done));
 	});
 
+	// {{SQL CARBON EDIT}}
 	/*
 	suite('Hot Exit', () => {
 		suite('"onExit" setting', () => {

@@ -16,14 +16,15 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import paths = require('vs/base/common/paths');
 import diagnostics = require('vs/base/common/diagnostics');
 import types = require('vs/base/common/types');
-import { EventType as EditorEventType } from 'vs/editor/common/editorCommon';
 import { IMode } from 'vs/editor/common/modes';
-import { ILifecycleService } from 'vs/platform/lifecycle/common/lifecycle';
+import { ILifecycleService, LifecyclePhase } from 'vs/platform/lifecycle/common/lifecycle';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { ITextFileService, IAutoSaveConfiguration, ModelState, ITextFileEditorModel, IModelSaveOptions, ISaveErrorHandler, ISaveParticipant, StateChange, SaveReason, IRawTextContent } from 'vs/workbench/services/textfile/common/textfiles';
 import { EncodingMode, EditorModel } from 'vs/workbench/common/editor';
 import { BaseTextEditorModel } from 'vs/workbench/common/editor/textEditorModel';
 import { IBackupFileService, BACKUP_FILE_RESOLVE_OPTIONS } from 'vs/workbench/services/backup/common/backup';
-import { IFileService, IFileStat, IFileOperationResult, FileOperationResult, IContent, CONTENT_CHANGE_EVENT_BUFFER_DELAY, FileChangesEvent, FileChangeType } from 'vs/platform/files/common/files';
+import { IFileService, IFileStat, IFileOperationResult, FileOperationResult, IContent, CONTENT_CHANGE_EVENT_BUFFER_DELAY, FileChangesEvent, FileChangeType, isEqualOrParent } from 'vs/platform/files/common/files';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IModeService } from 'vs/editor/common/services/modeService';
@@ -82,7 +83,9 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@ITelemetryService private telemetryService: ITelemetryService,
 		@ITextFileService private textFileService: ITextFileService,
-		@IBackupFileService private backupFileService: IBackupFileService
+		@IBackupFileService private backupFileService: IBackupFileService,
+		@IEnvironmentService private environmentService: IEnvironmentService,
+		@IWorkspaceContextService private contextService: IWorkspaceContextService
 	) {
 		super(modelService, modeService);
 
@@ -129,14 +132,32 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 
 	private onFileChanges(e: FileChangesEvent): void {
 
-		// Handle added if we are in orphan mode
-		if (this.inOrphanMode && e.contains(this.resource, FileChangeType.ADDED)) {
-			this.setOrphaned(false);
-		}
+		// Track ADD and DELETES for updates of this model to orphan-mode
+		const newInOrphanModeGuess = e.contains(this.resource, FileChangeType.DELETED) && !e.contains(this.resource, FileChangeType.ADDED);
+		if (this.inOrphanMode !== newInOrphanModeGuess) {
+			let checkOrphanedPromise: TPromise<boolean>;
+			if (newInOrphanModeGuess) {
+				// We have received reports of users seeing delete events even though the file still
+				// exists (network shares issue: https://github.com/Microsoft/vscode/issues/13665).
+				// Since we do not want to mark the model as orphaned, we have to check if the
+				// file is really gone and not just a faulty file event (TODO@Ben revisit when we
+				// have a more stable file watcher in place for this scenario).
+				checkOrphanedPromise = TPromise.timeout(100).then(() => {
+					if (this.disposed) {
+						return true;
+					}
 
-		// Handle deletes
-		if (!this.inOrphanMode && e.contains(this.resource, FileChangeType.DELETED)) {
-			this.setOrphaned(true);
+					return this.fileService.existsFile(this.resource).then(exists => !exists);
+				});
+			} else {
+				checkOrphanedPromise = TPromise.as(false);
+			}
+
+			checkOrphanedPromise.done(newInOrphanModeValidated => {
+				if (this.inOrphanMode !== newInOrphanModeValidated && !this.disposed) {
+					this.setOrphaned(newInOrphanModeValidated);
+				}
+			});
 		}
 	}
 
@@ -274,7 +295,7 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 					mtime: Date.now(),
 					etag: void 0,
 					value: '', /* will be filled later from backup */
-					encoding: this.fileService.getEncoding(this.resource)
+					encoding: this.fileService.getEncoding(this.resource, this.preferredEncoding)
 				};
 
 				return this.loadWithContent(content, backup);
@@ -330,7 +351,7 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 		}
 
 		// Otherwise bubble up the error
-		return TPromise.wrapError(error);
+		return TPromise.wrapError<EditorModel>(error);
 	}
 
 	private loadWithContent(content: IRawTextContent | IContent, backup?: URI): TPromise<EditorModel> {
@@ -417,25 +438,15 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 					this.setDirty(false);
 				}
 
-				this.toDispose.push(this.textEditorModel.addBulkListener((events) => {
-					let hasContentChangeEvent = false;
-					for (let i = 0, len = events.length; i < len; i++) {
-						let eventType = events[i].getType();
-						if (eventType === EditorEventType.ModelContentChanged2) {
-							hasContentChangeEvent = true;
-							break;
-						}
-					}
-					if (hasContentChangeEvent) {
-						this.onModelContentChanged();
-					}
+				this.toDispose.push(this.textEditorModel.onDidChangeContent((e) => {
+					this.onModelContentChanged();
 				}));
 
 				return this;
 			}, error => {
 				this.createTextEditorModelPromise = null;
 
-				return TPromise.wrapError(error);
+				return TPromise.wrapError<TextFileEditorModel>(error);
 			});
 		});
 
@@ -612,7 +623,7 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 		// We DO NOT run any save participant if we are in the shutdown phase and files are being
 		// saved as a result of that.
 		let saveParticipantPromise = TPromise.as(versionId);
-		if (TextFileEditorModel.saveParticipant && !this.lifecycleService.willShutdown) {
+		if (TextFileEditorModel.saveParticipant && this.lifecycleService.phase !== LifecyclePhase.ShuttingDown) {
 			const onCompleteOrError = () => {
 				this.blockModelContentChange = false;
 
@@ -658,7 +669,13 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 				diag(`doSave(${versionId}) - after updateContent()`, this.resource, new Date());
 
 				// Telemetry
-				this.telemetryService.publicLog('filePUT', { mimeType: guessMimeTypes(this.resource.fsPath).join(', '), ext: paths.extname(this.lastResolvedDiskStat.resource.fsPath) });
+				if ((this.contextService.getWorkspace() && isEqualOrParent(this.resource.fsPath, this.contextService.toResource('.vscode').fsPath)) ||
+					this.resource.fsPath === this.environmentService.appSettingsPath) {
+					// Do not log write to user settings.json and .vscode folder as a filePUT event as it ruins our JSON usage data
+					this.telemetryService.publicLog('settingsWritten');
+				} else {
+					this.telemetryService.publicLog('filePUT', { mimeType: guessMimeTypes(this.resource.fsPath).join(', '), ext: paths.extname(this.lastResolvedDiskStat.resource.fsPath) });
+				}
 
 				// Update dirty state unless model has changed meanwhile
 				if (versionId === this.versionId) {

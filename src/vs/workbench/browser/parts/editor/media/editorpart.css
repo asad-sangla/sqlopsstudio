@@ -8,6 +8,7 @@
 	background-position: 50% 50%;
 }
 
+/* {{SQL CARBON EDIT}} */
 .monaco-workbench > .part.editor.empty {
 	background-image: url('letterpress.svg');
 	background-size: 256px 256px;

@@ -8,6 +8,7 @@
 import { IThemeService, ITheme, IThemingParticipant } from 'vs/platform/theme/common/themeService';
 import { Color } from 'vs/base/common/color';
 import { IDisposable } from 'vs/base/common/lifecycle';
+import { ColorIdentifier } from 'vs/platform/theme/common/colorRegistry';
 
 export class TestTheme implements ITheme {
 	selector: string;
@@ -18,6 +19,10 @@ export class TestTheme implements ITheme {
 	}
 
 	isDefault(color: string): boolean {
+		throw new Error('Method not implemented.');
+	}
+
+	defines(color: ColorIdentifier): boolean {
 		throw new Error('Method not implemented.');
 	}
 }

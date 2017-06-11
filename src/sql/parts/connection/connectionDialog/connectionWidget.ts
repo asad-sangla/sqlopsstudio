@@ -123,7 +123,7 @@ export class ConnectionWidget {
 				cellContainer.div({ class: 'advanced-button' }, (divContainer) => {
 					button = new Button(divContainer);
 					button.label = title;
-					button.addListener2('click', () => {
+					button.addListener('click', () => {
 						//open advanced page
 						this._callbacks.onAdvancedProperties();
 					});

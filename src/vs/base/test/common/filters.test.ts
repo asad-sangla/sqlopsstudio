@@ -5,7 +5,7 @@
 'use strict';
 
 import * as assert from 'assert';
-import { IFilter, or, matchesPrefix, matchesStrictPrefix, matchesCamelCase, matchesSubString, matchesContiguousSubString, matchesWords, fuzzyScore } from 'vs/base/common/filters';
+import { IFilter, or, matchesPrefix, matchesStrictPrefix, matchesCamelCase, matchesSubString, matchesContiguousSubString, matchesWords, fuzzyScore, nextTypoPermutation, fuzzyScoreGraceful } from 'vs/base/common/filters';
 
 function filterOk(filter: IFilter, word: string, wordToMatchAgainst: string, highlights?: { start: number; end: number; }[]) {
 	let r = filter(word, wordToMatchAgainst);
@@ -195,7 +195,7 @@ suite('Filters', () => {
 
 	function assertMatches(pattern: string, word: string, decoratedWord: string, filter: typeof fuzzyScore) {
 		let r = filter(pattern, word);
-		assert.ok(Boolean(r) === Boolean(decoratedWord));
+		assert.ok(!decoratedWord === (!r || r[1].length === 0));
 		if (r) {
 			const [, matches] = r;
 			let pos = 0;
@@ -211,7 +211,7 @@ suite('Filters', () => {
 	test('fuzzyScore, #23215', function () {
 		assertMatches('tit', 'win.tit', 'win.^t^i^t', fuzzyScore);
 		assertMatches('title', 'win.title', 'win.^t^i^t^l^e', fuzzyScore);
-		assertMatches('WordCla', 'WordCharacterClassifier', '^W^o^r^d^CharacterC^l^assifier', fuzzyScore);
+		assertMatches('WordCla', 'WordCharacterClassifier', '^W^o^r^dCharacter^C^l^assifier', fuzzyScore);
 		assertMatches('WordCCla', 'WordCharacterClassifier', '^W^o^r^d^Character^C^l^assifier', fuzzyScore);
 	});
 
@@ -253,13 +253,13 @@ suite('Filters', () => {
 		assertMatches('LLL', 'SVisualLoggerLogsList', 'SVisual^Logger^Logs^List', fuzzyScore);
 		assertMatches('LLLL', 'SVilLoLosLi', undefined, fuzzyScore);
 		assertMatches('LLLL', 'SVisualLoggerLogsList', undefined, fuzzyScore);
-		assertMatches('TEdit', 'TextEdit', '^T^extE^d^i^t', fuzzyScore);
-		assertMatches('TEdit', 'TextEditor', '^T^extE^d^i^tor', fuzzyScore);
+		assertMatches('TEdit', 'TextEdit', '^Text^E^d^i^t', fuzzyScore);
+		assertMatches('TEdit', 'TextEditor', '^Text^E^d^i^tor', fuzzyScore);
 		assertMatches('TEdit', 'Textedit', '^T^exte^d^i^t', fuzzyScore);
-		assertMatches('TEdit', 'text_edit', '^t^ext_e^d^i^t', fuzzyScore);
-		assertMatches('TEditDit', 'TextEditorDecorationType', '^T^extE^d^i^tor^Decorat^ion^Type', fuzzyScore);
-		assertMatches('TEdit', 'TextEditorDecorationType', '^T^extE^d^i^torDecorationType', fuzzyScore);
-		assertMatches('Tedit', 'TextEdit', '^T^extE^d^i^t', fuzzyScore);
+		assertMatches('TEdit', 'text_edit', '^text_^e^d^i^t', fuzzyScore);
+		assertMatches('TEditDit', 'TextEditorDecorationType', '^Text^E^d^i^tor^Decorat^ion^Type', fuzzyScore);
+		assertMatches('TEdit', 'TextEditorDecorationType', '^Text^E^d^i^torDecorationType', fuzzyScore);
+		assertMatches('Tedit', 'TextEdit', '^Text^E^d^i^t', fuzzyScore);
 		assertMatches('ba', '?AB?', undefined, fuzzyScore);
 		assertMatches('bkn', 'the_black_knight', 'the_^black_^k^night', fuzzyScore);
 		assertMatches('bt', 'the_black_knight', 'the_^black_knigh^t', fuzzyScore);
@@ -294,6 +294,49 @@ suite('Filters', () => {
 		assertMatches('fo', 'bar/foo', 'bar/^f^oo', fuzzyScore);
 		assertMatches('fo', 'bar\\foo', 'bar\\^f^oo', fuzzyScore);
 	});
+
+	test('fuzzyScore, many matches', function () {
+
+		assertMatches(
+			'aaaaaa',
+			'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+			'^a^a^a^a^a^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+			fuzzyScore
+		);
+	});
+
+	test('fuzzyScore, issue #26423', function () {
+		assertMatches(
+			'fsfsfs',
+			'dsafdsafdsafdsafdsafdsafdsafasdfdsa',
+			undefined,
+			fuzzyScore
+		);
+		assertMatches(
+			'fsfsfsfsfsfsfsf',
+			'dsafdsafdsafdsafdsafdsafdsafasdfdsafdsafdsafdsafdsfdsafdsfdfdfasdnfdsajfndsjnafjndsajlknfdsa',
+			undefined,
+			fuzzyScore
+		);
+	});
+
+	test('Fuzzy IntelliSense matching vs Haxe metadata completion, #26995', function () {
+		assertMatches('f', ':Foo', ':^Foo', fuzzyScore);
+		assertMatches('f', ':foo', ':^foo', fuzzyScore);
+	});
+
+	test('Vscode 1.12 no longer obeys \'sortText\' in completion items (from language server), #26096', function () {
+		assertMatches('  ', '  group', undefined, fuzzyScore);
+		assertMatches('  g', '  group', '  ^group', fuzzyScore);
+		assertMatches('g', '  group', '  ^group', fuzzyScore);
+		assertMatches('g g', '  groupGroup', undefined, fuzzyScore);
+		assertMatches('g g', '  group Group', '  ^group^ ^Group', fuzzyScore);
+		assertMatches(' g g', '  group Group', '  ^group^ ^Group', fuzzyScore);
+		assertMatches('zz', 'zzGroup', '^z^zGroup', fuzzyScore);
+		assertMatches('zzg', 'zzGroup', '^z^z^Group', fuzzyScore);
+		assertMatches('g', 'zzGroup', 'zz^Group', fuzzyScore);
+	});
+
 	function assertTopScore(filter: typeof fuzzyScore, pattern: string, expected: number, ...words: string[]) {
 		let topScore = -(100 * 10);
 		let topIdx = 0;
@@ -315,6 +358,9 @@ suite('Filters', () => {
 
 		assertTopScore(fuzzyScore, 'cons', 2, 'ArrayBufferConstructor', 'Console', 'console');
 		assertTopScore(fuzzyScore, 'Foo', 1, 'foo', 'Foo', 'foo');
+
+		// #24904
+		assertTopScore(fuzzyScore, 'onMess', 1, 'onmessage', 'onMessage', 'onThisMegaEscape');
 
 		assertTopScore(fuzzyScore, 'CC', 1, 'camelCase', 'CamelCase');
 		assertTopScore(fuzzyScore, 'cC', 0, 'camelCase', 'CamelCase');
@@ -345,5 +391,29 @@ suite('Filters', () => {
 		assertTopScore(fuzzyScore, 'is', 0, 'isValidViewletId', 'import statement');
 
 		assertTopScore(fuzzyScore, 'title', 1, 'files.trimTrailingWhitespace', 'window.title');
+	});
+
+	test('nextTypoPermutation', function () {
+
+		function assertTypos(pattern: string, ...variants: string[]) {
+			let pos = 1;
+			for (const expected of variants) {
+				const actual = nextTypoPermutation(pattern, pos);
+				assert.equal(actual, expected);
+				pos += 1;
+			}
+			assert.equal(nextTypoPermutation(pattern, pos), undefined);
+		}
+
+		assertTypos('abc', 'acb');
+		assertTypos('foboar', 'fbooar', 'foobar', 'fobaor', 'fobora');
+	});
+
+	test('fuzzyScoreGraceful', function () {
+
+		assertMatches('tkb', 'the_black_knight', '^the_^black_^knight', fuzzyScoreGraceful);
+		assertMatches('tkbk', 'the_black_knight', '^the_^blac^k_^knight', fuzzyScoreGraceful);
+		assertMatches('tkkb', 'the_black_knight', undefined, fuzzyScoreGraceful);
+		assertMatches('tkb', 'no_match', undefined, fuzzyScoreGraceful);
 	});
 });

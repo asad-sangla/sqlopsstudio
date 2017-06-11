@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 var path = require("path");
 var gulp = require("gulp");
 var sourcemaps = require("gulp-sourcemaps");
@@ -22,6 +23,7 @@ var REPO_ROOT_PATH = path.join(__dirname, '../..');
 function log(prefix, message) {
     gulpUtil.log(gulpUtil.colors.cyan('[' + prefix + ']'), message);
 }
+// {{SQL CARBON EDIT}}
 function loaderConfig(emptyPaths) {
     var result = {
         paths: {
@@ -163,7 +165,8 @@ function optimizeTask(opts) {
             includeContent: true
         }))
             .pipe(i18n.processNlsFiles({
-            fileHeader: bundledFileHeader
+            fileHeader: bundledFileHeader,
+            languages: opts.languages
         }))
             .pipe(gulp.dest(out));
     };

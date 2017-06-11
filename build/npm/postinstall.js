@@ -25,7 +25,6 @@ const protocol = [
 ];
 
 protocol.forEach(item => npmInstall(`dataprotocol-node/${item}`));
-
 npmInstall('extensions'); // node modules shared by all extensions
 
 const extensions = [
@@ -36,7 +35,11 @@ const extensions = [
 	'pgsql',
 	'credentials',
 	'configuration-editing',
-	'extension-editing'
+	'extension-editing',
+	'markdown',
+	'merge-conflict'
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));
+
+npmInstall(`build`); // node modules required for build

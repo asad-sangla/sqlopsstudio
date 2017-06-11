@@ -60,7 +60,7 @@ export class QueryActionBar extends EventEmitter implements IActionRunner {
 			this._toDispose.push(this._actionRunner);
 		}
 
-		this._toDispose.push(this.addEmitter2(this._actionRunner));
+		this._toDispose.push(this.addEmitter(this._actionRunner));
 
 		this._items = [];
 		this._focusedItem = undefined;
@@ -226,7 +226,7 @@ export class QueryActionBar extends EventEmitter implements IActionRunner {
 
 			item.actionRunner = this._actionRunner;
 			item.setActionContext(this.context);
-			this.addEmitter2(item);
+			this.addEmitter(item);
 			item.render(actionItemElement);
 
 			if (index === null || index < 0 || index >= this._actionsList.children.length) {

@@ -7,6 +7,8 @@ import * as Platform from 'vs/base/common/platform';
 import * as os from 'os';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as uuid from 'vs/base/common/uuid';
+
+// {{SQL CARBON EDIT}}
 import product from 'vs/platform/node/product';
 
 export const machineIdStorageKey = 'telemetry.machineId';
@@ -20,9 +22,11 @@ export function resolveCommonProperties(commit: string, version: string): TPromi
 	result['version'] = version;
 	result['common.osVersion'] = os.release();
 	result['common.platform'] = Platform.Platform[Platform.platform];
-	// carbon-edit-start
-	result['common.application.name'] = product.nameLong;
-	// carbon-edit-end
+	result['common.nodePlatform'] = process.platform;
+	result['common.nodeArch'] = process.arch;
+	
+	// {{SQL CARBON EDIT}}
+	result['common.application.name'] = product.nameLong;	
 
 	// dynamic properties which value differs on each call
 	let seq = 0;

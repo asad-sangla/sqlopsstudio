@@ -33,6 +33,8 @@ suite('Telemetry - common properties', function () {
 			assert.ok('sessionID' in props);
 			assert.ok('timestamp' in props);
 			assert.ok('common.platform' in props);
+			assert.ok('common.nodePlatform' in props);
+			assert.ok('common.nodeArch' in props);
 			assert.ok('common.timesincesessionstart' in props);
 			assert.ok('common.sequence' in props);
 
@@ -40,9 +42,9 @@ suite('Telemetry - common properties', function () {
 			// assert.ok('common.version.renderer' in first.data);
 			assert.ok('common.osVersion' in props, 'osVersion');
 			assert.ok('version' in props);
-			// carbon-edit-start
+
+			// {{SQL CARBON EDIT}}
 			assert.ok('common.application.name');
-			// carbon-edit-end
 
 			assert.ok('common.firstSessionDate' in props, 'firstSessionDate');
 			assert.ok('common.lastSessionDate' in props, 'lastSessionDate'); // conditional, see below, 'lastSessionDate'ow
@@ -55,11 +57,6 @@ suite('Telemetry - common properties', function () {
 				assert.ok('common.sqm.userid' in props, 'userid');
 				assert.ok('common.sqm.machineid' in props, 'machineid');
 			}
-
-			// carbon-edit-start
-			// 18 : 16 should be 19 : 17 in carbon
-			assert.equal(Object.keys(props).length, process.platform === 'win32' ? 19 : 17);
-			// carbon-edit-end
 		});
 	});
 

@@ -102,7 +102,7 @@ export class ConnectionDialogWidget {
 		container.div({ class: 'footer-button' }, (buttonContainer) => {
 			button = new Button(buttonContainer);
 			button.label = title;
-			button.addListener2('click', () => {
+			button.addListener('click', () => {
 				if (title === 'Connect') {
 					this.connect();
 				} else {
@@ -140,8 +140,8 @@ export class ConnectionDialogWidget {
 			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
 				divContainer.element('div', { class: 'explorer-servers' }, (treeContainer: Builder) => {
 					let recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true);
-					recentConnectionTree.addListener2('selection', (event: any) => this.OnRecentConnectionClick(event));
-					recentConnectionTree.addListener2('selection',
+					recentConnectionTree.addListener('selection', (event: any) => this.OnRecentConnectionClick(event));
+					recentConnectionTree.addListener('selection',
 						(event: any) => {
 							this.onRecentConnectionDoubleClick(event, recentConnectionTree);
 						});

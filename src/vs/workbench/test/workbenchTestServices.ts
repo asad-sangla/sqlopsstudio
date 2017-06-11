@@ -28,7 +28,7 @@ import { IEditorInput, IEditorOptions, Position, Direction, IEditor, IResourceIn
 import { IUntitledEditorService, UntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
 import { IMessageService, IConfirmation } from 'vs/platform/message/common/message';
 import { IWorkspace, IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { ILifecycleService, ShutdownEvent, ShutdownReason } from 'vs/platform/lifecycle/common/lifecycle';
+import { ILifecycleService, ShutdownEvent, ShutdownReason, StartupKind, LifecyclePhase } from 'vs/platform/lifecycle/common/lifecycle';
 import { EditorStacksModel } from 'vs/workbench/common/editor/editorStacksModel';
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
@@ -50,8 +50,7 @@ import { IWindowsService, IWindowService } from 'vs/platform/windows/common/wind
 import { TestWorkspace } from 'vs/platform/workspace/test/common/testWorkspace';
 import { RawTextSource, IRawTextSource } from 'vs/editor/common/model/textSource';
 import { IEnvironmentService } from 'vs/platform/environment/common/environment';
-import { IThemeService, ITheme, IThemingParticipant } from 'vs/platform/theme/common/themeService';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { IThemeService, ITheme, DARK } from 'vs/platform/theme/common/themeService';
 import { Color } from 'vs/base/common/color';
 import { isLinux } from 'vs/base/common/platform';
 
@@ -158,7 +157,7 @@ export class TestTextFileService extends TextFileService {
 			const error = this.resolveTextContentError;
 			this.resolveTextContentError = null;
 
-			return TPromise.wrapError(error);
+			return TPromise.wrapError<IRawTextContent>(error);
 		}
 
 		return this.fileService.resolveContent(resource, options).then((content) => {
@@ -191,8 +190,6 @@ export class TestTextFileService extends TextFileService {
 		this.cleanupBackupsBeforeShutdownCalled = true;
 		return TPromise.as(void 0);
 	}
-
-	public showHotExitMessage(): void { }
 }
 
 export function workbenchInstantiationService(): IInstantiationService {
@@ -568,8 +565,8 @@ export class TestEditorService implements IWorkbenchEditorService {
 		return TPromise.as(null);
 	}
 
-	public createInput(input: IResourceInput): TPromise<IEditorInput> {
-		return TPromise.as(null);
+	public createInput(input: IResourceInput): IEditorInput {
+		return null;
 	}
 }
 
@@ -775,6 +772,10 @@ export class TestWindowService implements IWindowService {
 
 	public _serviceBrand: any;
 
+	isFocused(): TPromise<boolean> {
+		return TPromise.as(false);
+	}
+
 	getCurrentWindowId(): number {
 		return 0;
 	}
@@ -846,19 +847,23 @@ export class TestWindowService implements IWindowService {
 	unmaximizeWindow(): TPromise<void> {
 		return TPromise.as(void 0);
 	}
+
+	onWindowTitleDoubleClick(): TPromise<void> {
+		return TPromise.as(void 0);
+	}
 }
 
 export class TestLifecycleService implements ILifecycleService {
 
 	public _serviceBrand: any;
 
-	public willShutdown: boolean;
+	public phase: LifecyclePhase;
+	public startupKind: StartupKind;
 
+	private _onDidChangePhase = new Emitter<LifecyclePhase>();
 	private _onWillShutdown = new Emitter<ShutdownEvent>();
 	private _onShutdown = new Emitter<ShutdownReason>();
 
-	constructor() {
-	}
 
 	public fireShutdown(reason = ShutdownReason.QUIT): void {
 		this._onShutdown.fire(reason);
@@ -866,6 +871,10 @@ export class TestLifecycleService implements ILifecycleService {
 
 	public fireWillShutdown(event: ShutdownEvent): void {
 		this._onWillShutdown.fire(event);
+	}
+
+	public get onDidChangePhase(): Event<LifecyclePhase> {
+		return this._onDidChangePhase.event;
 	}
 
 	public get onWillShutdown(): Event<ShutdownEvent> {
@@ -885,6 +894,10 @@ export class TestWindowsService implements IWindowsService {
 
 	onWindowOpen: Event<number>;
 	onWindowFocus: Event<number>;
+
+	isFocused(windowId: number): TPromise<boolean> {
+		return TPromise.as(false);
+	}
 
 	openFileFolderPicker(windowId: number, forceNewWindow?: boolean): TPromise<void> {
 		return TPromise.as(void 0);
@@ -936,6 +949,9 @@ export class TestWindowsService implements IWindowsService {
 		return TPromise.as(void 0);
 	}
 	unmaximizeWindow(windowId: number): TPromise<void> {
+		return TPromise.as(void 0);
+	}
+	onWindowTitleDoubleClick(windowId: number): TPromise<void> {
 		return TPromise.as(void 0);
 	}
 	setDocumentEdited(windowId: number, flag: boolean): TPromise<void> {
@@ -993,29 +1009,47 @@ export class TestWindowsService implements IWindowsService {
 }
 
 export class TestTheme implements ITheme {
-	selector: string;
-	type: 'light' | 'dark' | 'hc';
 
-	getColor(color: string, useDefault?: boolean): Color {
-		throw new Error('Method not implemented.');
+	constructor(private colors: { [id: string]: string; } = {}, public type = DARK) {
 	}
 
-	isDefault(color: string): boolean {
+	getColor(color: string, useDefault?: boolean): Color {
+		let value = this.colors[color];
+		if (value) {
+			return Color.fromHex(value);
+		}
+		return void 0;
+	}
+
+	defines(color: string): boolean {
 		throw new Error('Method not implemented.');
 	}
 }
 
-const testTheme = new TestTheme();
-
 export class TestThemeService implements IThemeService {
 
 	_serviceBrand: any;
+	_theme: ITheme;
+	_onThemeChange = new Emitter<ITheme>();
 
-	getTheme(): ITheme {
-		return testTheme;
+	constructor(theme = new TestTheme()) {
+		this._theme = theme;
 	}
 
-	onThemeChange(participant: IThemingParticipant): IDisposable {
-		return { dispose: () => { } };
+	getTheme(): ITheme {
+		return this._theme;
+	}
+
+	setTheme(theme: ITheme) {
+		this._theme = theme;
+		this.fireThemeChange();
+	}
+
+	fireThemeChange() {
+		this._onThemeChange.fire(this._theme);
+	}
+
+	public get onThemeChange(): Event<ITheme> {
+		return this._onThemeChange.event;
 	}
 }

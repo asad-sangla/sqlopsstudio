@@ -7,6 +7,7 @@ import { Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterCo
 import { Subscription } from 'rxjs/Subscription';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { ThemeUtilities } from 'sql/common/themeUtilities';
 
 import { WidgetDirective } from './widget.directive';
 import { IDashboardWidget, WidgetConfig } from './dashboardWidget';
@@ -92,10 +93,10 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 			borderColor = undefined;
 		}
 
-		if (theme.isLightTheme() && this._config.icon) {
+		if (ThemeUtilities.isLightTheme(theme) && this._config.icon) {
 			this._config.loadedIcon = PathUtilities.toUrl(this._config.inverse_icon);
 			this._changeref.detectChanges();
-		} else if (theme.isDarkTheme() && this._config.inverse_icon) {
+		} else if (ThemeUtilities.isDarkTheme(theme) && this._config.inverse_icon) {
 			this._config.loadedIcon = PathUtilities.toUrl(this._config.inverse_icon);
 			this._changeref.detectChanges();
 		}

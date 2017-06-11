@@ -66,7 +66,7 @@ export class TaskHistoryView extends CollapsibleViewletView {
 		dom.addClass(this.treeContainer, 'task-history-view');
 
 		this.tree = this.createTaskHistoryTree(this.treeContainer, this.instantiationService);
-		this.toDispose.push(this.tree.addListener2('selection', (event) => this.onSelected(event)));
+		this.toDispose.push(this.tree.addListener('selection', (event) => this.onSelected(event)));
 
 		const self = this;
 		this.toDispose.push(this._taskService.onAddNewTask(args => {

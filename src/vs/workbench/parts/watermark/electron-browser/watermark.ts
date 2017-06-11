@@ -30,6 +30,8 @@ import { FindInFilesActionId } from 'vs/workbench/parts/search/common/constants'
 import { OpenGlobalKeybindingsAction } from 'vs/workbench/parts/preferences/browser/preferencesActions';
 import { ToggleTerminalAction } from 'vs/workbench/parts/terminal/electron-browser/terminalActions';
 import { SelectColorThemeAction } from 'vs/workbench/parts/themes/electron-browser/themes.contribution';
+
+// {{SQL CARBON EDIT}}
 import { OpenConnectionsViewletAction } from 'sql/parts/registeredServer/common/registeredServer.contribution';
 
 interface WatermarkEntry {
@@ -38,6 +40,7 @@ interface WatermarkEntry {
 	mac?: boolean;
 }
 
+// {{SQL CARBON EDIT}}
 const showServers: WatermarkEntry = {
 	text: 'Show Servers',
 	ids: [OpenConnectionsViewletAction.ID]
@@ -111,6 +114,7 @@ const openGlobalKeybindings: WatermarkEntry = {
 	ids: [OpenGlobalKeybindingsAction.ID]
 };
 
+// {{SQL CARBON EDIT}}
 const newUserEntries = [
 	showServers,
 	newSqlFile,

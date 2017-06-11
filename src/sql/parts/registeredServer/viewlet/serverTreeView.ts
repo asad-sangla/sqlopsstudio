@@ -83,7 +83,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 			this._buttonSection = $('div.button-section').appendTo(container);
 			var connectButton = new Button(this._buttonSection);
 			connectButton.label = 'Add Connection';
-			connectButton.addListener2('click', () => {
+			connectButton.addListener('click', () => {
 				this._connectionManagementService.showConnectionDialog();
 			});
 		}
@@ -92,7 +92,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		dom.addClass(this.treeContainer, 'servers-view');
 
 		this.tree = TreeCreationUtils.createRegisteredServersTree(this.treeContainer, this.instantiationService);
-		this.toDispose.push(this.tree.addListener2('selection', (event) => this.onSelected(event)));
+		this.toDispose.push(this.tree.addListener('selection', (event) => this.onSelected(event)));
 		const self = this;
 		// Refresh Tree when these events are emitted
 		this.toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {

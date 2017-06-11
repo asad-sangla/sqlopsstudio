@@ -399,9 +399,7 @@ export class QueryEditorService implements IQueryEditorService {
 	private static _hasSqlFileMode(input: EditorInput): boolean {
 		if (input instanceof UntitledEditorInput) {
 			let untitledCast: UntitledEditorInput = <UntitledEditorInput> input;
-			if (untitledCast) {
-				return untitledCast.getModeId() === this.sqlModeId;
-			}
+			return untitledCast && (untitledCast.getModeId() === undefined || untitledCast.getModeId() === this.sqlModeId);
 		}
 
 		return false;

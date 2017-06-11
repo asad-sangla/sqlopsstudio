@@ -90,7 +90,7 @@ export class ServerGroupDialog {
 					let colorButton = new Button(groupColorContainer);
 					colorButton.label = '';
 					colorButton.getElement().style.background = color;
-					colorButton.addListener2('click', () => {
+					colorButton.addListener('click', () => {
 						this.onSelectGroupColor(i + 1);
 					});
 
@@ -200,7 +200,7 @@ export class ServerGroupDialog {
 		container.div({ class: 'footer-button' }, (buttonContainer) => {
 			button = new Button(buttonContainer);
 			button.label = title;
-			button.addListener2('click', () => {
+			button.addListener('click', () => {
 				if (title === 'OK') {
 					this.addGroup();
 				} else {

@@ -8,7 +8,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subscription } from 'rxjs/Subscription';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
-import { PathUtilities } from 'sql/common/pathUtilities';
+import { ThemeUtilities } from 'sql/common/themeUtilities';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -81,7 +81,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 			self.updateTheme(e);
 		});
 		let theme = this._bootstrap.theme;
-		this.isDarkTheme = !theme.isDarkTheme();
+		this.isDarkTheme = !ThemeUtilities.isDarkTheme(theme);
 		self.updateTheme(theme);
 	}
 
@@ -90,14 +90,14 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	}
 
 	private updateTheme(e: IColorTheme): void {
-		if (e.isDarkTheme() && !this.isDarkTheme) {
+		if (ThemeUtilities.isDarkTheme(e) && !this.isDarkTheme) {
 			this.isDarkTheme = true;
 			for (let task of this.tasks) {
 				if (task.icon) {
 					task.internal_icon = task.inverse_icon;
 				}
 			}
-		} else if(e.isLightTheme() && this.isDarkTheme) {
+		} else if(ThemeUtilities.isDarkTheme(e) && this.isDarkTheme) {
 			this.isDarkTheme = false;
 			for (let task of this.tasks) {
 				if (task.icon) {

@@ -11,12 +11,8 @@
 
 /* viewlet icon*/
 .monaco-workbench > .activitybar .monaco-action-bar .action-label.taskHistoryViewlet {
-	background: url('run_history_inverse.svg') center center no-repeat;
-	height: 32px;
-	width: 32px;
-	background-size: 22px;
-	background-repeat: no-repeat;
-	background-position: 50% !important;
+	-webkit-mask: url('run_history_inverse.svg') no-repeat 50% 50%;
+	-webkit-mask-size: 22px 22px;
 }
 
 .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group {

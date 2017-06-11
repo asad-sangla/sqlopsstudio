@@ -28,6 +28,7 @@ function log(prefix: string, message: string): void {
 	gulpUtil.log(gulpUtil.colors.cyan('[' + prefix + ']'), message);
 }
 
+// {{SQL CARBON EDIT}}
 export function loaderConfig(emptyPaths: string[]) {
 	const result = {
 		paths: {
@@ -159,6 +160,10 @@ export interface IOptimizeTaskOpts {
 	 * (out folder name)
 	 */
 	out: string;
+	/**
+	 * (languages to process)
+	 */
+	languages: string[];
 }
 export function optimizeTask(opts: IOptimizeTaskOpts): () => NodeJS.ReadWriteStream {
 	const entryPoints = opts.entryPoints;
@@ -229,7 +234,8 @@ export function optimizeTask(opts: IOptimizeTaskOpts): () => NodeJS.ReadWriteStr
 				includeContent: true
 			}))
 			.pipe(i18n.processNlsFiles({
-				fileHeader: bundledFileHeader
+				fileHeader: bundledFileHeader,
+				languages: opts.languages
 			}))
 			.pipe(gulp.dest(out));
 	};

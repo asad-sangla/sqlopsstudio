@@ -2,7 +2,7 @@
   "name": "json",
   "version": "0.1.0",
   "publisher": "vscode",
-  "aiKey": "AIF-5574968e-856d-40d2-af67-c89a14e76412",
+  "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "engines": {
     "vscode": "0.10.x"
   },
@@ -122,7 +122,7 @@
     }
   },
   "dependencies": {
-    "vscode-extension-telemetry": "^0.0.6",
+    "vscode-extension-telemetry": "^0.0.7",
     "vscode-languageclient": "^3.1.0-alpha.1",
     "vscode-nls": "^2.0.2"
   },

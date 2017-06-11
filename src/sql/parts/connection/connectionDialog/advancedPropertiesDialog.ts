@@ -120,7 +120,7 @@ export class AdvancedPropertiesDialog {
 		container.div({ class: 'modal-go-back' }, (cellContainer) => {
 			let button = new Button(cellContainer);
 			button.icon = 'backButtonIcon';
-			button.addListener2('click', () => {
+			button.addListener('click', () => {
 				this.cancel();
 			});
 		});
@@ -131,7 +131,7 @@ export class AdvancedPropertiesDialog {
 		container.div({ class: 'footer-button' }, (cellContainer) => {
 			button = new Button(cellContainer);
 			button.label = title;
-			button.addListener2('click', () => {
+			button.addListener('click', () => {
 				if (title === 'OK') {
 					this.ok();
 				} else {

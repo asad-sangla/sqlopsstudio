@@ -14,11 +14,13 @@ if (window.location.search.indexOf('prof-startup') >= 0) {
 
 /*global window,document,define*/
 
+const startTimer = require('../../../base/node/startupTimers').startTimer;
 const path = require('path');
 const electron = require('electron');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
 
+// {{SQL CARBON EDIT}}
 // SQL global imports
 // Require slickgrid
 require('slickgrid/slick.core');
@@ -37,7 +39,12 @@ const prettyData = require('pretty-data');
 const Figures = require('figures');
 
 process.lazyEnv = new Promise(function (resolve) {
+	const handle = setTimeout(function () {
+		resolve();
+		console.warn('renderer did not receive lazyEnv in time')
+	}, 10000);
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
+		clearTimeout(handle);
 		assign(process.env, shellEnv);
 		resolve(process.env);
 	});
@@ -86,7 +93,14 @@ function uriFromPath(_path) {
 		pathName = '/' + pathName;
 	}
 
-	return encodeURI('file://' + pathName);
+  // {{SQL CARBON EDIT}}
+	/*
+	* This hack is for allowing spaces in installation paths
+	* when the app is optimized. The reason is the file uri
+	* is normalized twice, so we denormalize the path again
+	* after encoding when loading
+	*/
+	return encodeURI('file://' + pathName).replace('%20', ' ');
 }
 
 function registerListeners(enableDeveloperTools) {
@@ -160,11 +174,12 @@ function main() {
 
 	// disable pinch zoom & apply zoom level early to avoid glitches
 	const zoomLevel = configuration.zoomLevel;
-	webFrame.setZoomLevelLimits(1, 1);
+	webFrame.setVisualZoomLevelLimits(1, 1);
 	if (typeof zoomLevel === 'number' && zoomLevel !== 0) {
 		webFrame.setZoomLevel(zoomLevel);
 	}
 
+  // {{SQL CARBON EDIT}}
 	// Load the loader and start loading the workbench
 	const appRoot = uriFromPath(configuration.appRoot);
 	const rootUrl = appRoot + '/out';
@@ -175,12 +190,16 @@ function main() {
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation
+	const loaderTimer = startTimer('load:loader')
 	createScript(rootUrl + '/vs/loader.js', function () {
 		define('fs', ['original-fs'], function (originalFS) { return originalFS; }); // replace the patched electron fs with the original node fs for all AMD code
+		loaderTimer.stop();
 
 		window.MonacoEnvironment = {};
 
-		const nodeCachedDataErrors = window.MonacoEnvironment.nodeCachedDataErrors = [];
+		const onNodeCachedData = window.MonacoEnvironment.onNodeCachedData = [];
+    
+    // {{SQL CARBON EDIT}}
 		require.config({
 			baseUrl: rootUrl,
 			'vs/nls': nlsConfig,
@@ -218,11 +237,13 @@ function main() {
 			beforeLoadWorkbenchMain: Date.now()
 		};
 
+		const workbenchMainTimer = startTimer('load:workbench.main')
 		require([
 			'vs/workbench/electron-browser/workbench.main',
 			'vs/nls!vs/workbench/electron-browser/workbench.main',
 			'vs/css!vs/workbench/electron-browser/workbench.main'
 		], function () {
+			workbenchMainTimer.stop();
 			timers.afterLoadWorkbenchMain = Date.now();
 
 			process.lazyEnv.then(function () {

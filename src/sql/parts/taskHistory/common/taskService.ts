@@ -70,7 +70,7 @@ export class TaskService implements ITaskService {
 		return new TPromise<boolean>((resolve) => {
 			let numOfInprogressTasks = this.getNumberOfInProgressTasks();
 			if (numOfInprogressTasks > 0) {
-				this.choiceService.choose(Severity.Warning, message, options).done(choice => {
+				this.choiceService.choose(Severity.Warning, message, options, 0, false).done(choice => {
 					switch (choice) {
 						case 0:
 							// Todo: cancel the remaining tasks
