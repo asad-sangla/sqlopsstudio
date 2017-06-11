@@ -105,7 +105,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 				}
 			}
 		}
-		this._tileBackground = e.getColor('sideBarBackground').toString();
+		this._tileBackground = e.getColor('sideBar.background', true).toString();
 		this._changeref.detectChanges();
 	}
 

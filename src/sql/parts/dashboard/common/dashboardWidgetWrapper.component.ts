@@ -80,10 +80,11 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 	private updateTheme(theme: IColorTheme): void {
 		let el = <HTMLElement> this._ref.nativeElement;
-		let borderColor = theme.getColor('sideBarBackground');
-		let backgroundColor = theme.getColor('editorBackground');
-		let foregroundColor = theme.getColor('sideBarForeground');
-		let border = theme.getColor('highContrastBorder');
+		let borderColor = theme.getColor('sideBar.background', true);
+		let backgroundColor = theme.getColor('editor.background', true);
+		let foregroundColor = theme.getColor('sideBar.foreground', true);
+		// TODO: highContrastBorder does not exist, how to handle?
+		let border = theme.getColor('highContrastBorder', true);
 
 		if (this._config.background_color) {
 			backgroundColor = theme.getColor(this._config.background_color);

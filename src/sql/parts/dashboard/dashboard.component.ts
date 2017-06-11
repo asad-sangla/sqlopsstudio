@@ -60,7 +60,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 	private updateTheme(theme: IColorTheme): void {
 		let el = <HTMLElement> this._el.nativeElement;
-		$(el).find('#header')[0].style.borderBottomColor = theme.getColor('sideBarBackground').toString();
+		$(el).find('#header')[0].style.borderBottomColor = theme.getColor('sideBar.background', true).toString();
 	}
 
 }

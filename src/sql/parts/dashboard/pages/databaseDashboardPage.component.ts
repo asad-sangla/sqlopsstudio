@@ -14,7 +14,7 @@ const widgets: Array<WidgetConfig> = [
 		name: 'Tasks',
 		selector: 'tasks-widget',
 		gridItemConfig: {
-			sizex: 3,
+			sizex: 2,
 			sizey: 1
 		},
 		context: 'database'
@@ -36,7 +36,7 @@ export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 		inverse_icon: 'sql/media/icons/database_inverse.svg',
 		selector: 'properties-widget',
 		context: 'database',
-		background_color: 'editorBackground'
+		background_color: 'editor.background'
 	};
 
 	constructor(
