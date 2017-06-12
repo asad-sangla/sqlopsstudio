@@ -66,7 +66,7 @@ export default class ServiceDownloadProvider {
 				case Runtime.OSX:
 					return process.env.HOME + '/Library/Preferences';
 				default:
-					return '/var/local';
+					return process.env.HOME;
 			}
 		}
 	}
