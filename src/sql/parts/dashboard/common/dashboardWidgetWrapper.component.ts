@@ -3,14 +3,14 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 import { Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
-	ElementRef, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, InjectionToken, Injector } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { ThemeUtilities } from 'sql/common/themeUtilities';
 
 import { WidgetDirective } from './widget.directive';
-import { IDashboardWidget, WidgetConfig } from './dashboardWidget';
+import { IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from './dashboardWidget';
 import { PathUtilities } from 'sql/common/pathUtilities';
 
 /* Widgets */
@@ -40,7 +40,8 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
 		@Inject(forwardRef(() => ElementRef)) private _ref: ElementRef,
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
-		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef,
+		@Inject(forwardRef(() => Injector)) private _injector: Injector
 	) { }
 
 	ngOnInit() {
@@ -65,17 +66,14 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 		let viewContainerRef = this.widgetHost.viewContainerRef;
 		viewContainerRef.clear();
 
-		let componentRef = viewContainerRef.createComponent(componentFactory);
+		let injector = ReflectiveInjector.resolveAndCreate([{ provide: WIDGET_CONFIG, useValue: this._config}], this._injector);
+		let componentRef = viewContainerRef.createComponent(componentFactory, 0, injector);
 		let el = <HTMLElement> componentRef.location.nativeElement;
 
 		// set widget styles to conform to its box
 		el.style.overflow = 'hidden';
 		el.style.flex = '1 1 auto';
 		el.style.position = 'relative';
-
-		if (!(<IDashboardWidget>componentRef.instance).load(this._config)) {
-			console.log('failed to load widget ' + this._config.selector);
-		}
 	}
 
 	private updateTheme(theme: IColorTheme): void {

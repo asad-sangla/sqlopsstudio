@@ -6,7 +6,7 @@
 import { Component, Inject, forwardRef, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
+import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
@@ -62,14 +62,13 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
 		@Inject(forwardRef(() => Router)) private _router: Router,
-		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef
-	) { super(); }
-
-	public load(config: WidgetConfig): boolean {
-		this._config = config;
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
+		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig
+	) {
+		super();
 		this.init();
-		return true;
 	}
+
 	private init(): void {
 		let self = this;
 		if (self._config.context === 'database') {

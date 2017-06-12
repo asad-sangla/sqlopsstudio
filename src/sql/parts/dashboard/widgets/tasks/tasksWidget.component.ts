@@ -7,11 +7,11 @@ import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy } f
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subscription } from 'rxjs/Subscription';
 
-import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { ThemeUtilities } from 'sql/common/themeUtilities';
-
-import { DashboardWidget, IDashboardWidget, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
+import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
+
+import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 
 export interface Task {
 	name: string;
@@ -72,8 +72,18 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
 		@Inject(forwardRef(() => DomSanitizer)) private _sanitizer: DomSanitizer,
-		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef
-	) { super(); }
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeref: ChangeDetectorRef,
+		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig
+	) {
+		super();
+		let self = this;
+		self._bootstrap.connectionInfo.then(connection => {
+			self._isAzure = connection.serverInfo.isCloud;
+			// trigger a refresh on the tasks to account for new info
+			self._trigger = self._trigger + 1;
+			self._changeref.detectChanges();
+		});
+	}
 
 	ngOnInit() {
 		let self = this;
@@ -107,18 +117,6 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		}
 		this._tileBackground = e.getColor('sideBar.background', true).toString();
 		this._changeref.detectChanges();
-	}
-
-	public load(config: WidgetConfig): boolean {
-		let self = this;
-		self._config = config;
-		self._bootstrap.connectionInfo.then(connection => {
-			self._isAzure = connection.serverInfo.isCloud;
-			// trigger a refresh on the tasks to account for new info
-			self._trigger = self._trigger + 1;
-			this._changeref.detectChanges();
-		});
-		return true;
 	}
 
 	private newQuery(): void {
