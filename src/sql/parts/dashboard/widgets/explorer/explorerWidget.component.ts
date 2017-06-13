@@ -8,7 +8,7 @@ import 'vs/css!sql/media/icons/icons';
 
 import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -71,7 +71,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	private filterString = '';
 	private selected: number;
 	private hovered: number;
-	private themeSub: Subscription;
+	private themeSub: IDisposable;
 	//tslint:disable-next-line
 	private filterArray = [
 		'view',
@@ -92,14 +92,14 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 
 	ngOnInit() {
 		let self = this;
-		self.themeSub = self._bootstrap.onThemeChange((theme: IColorTheme) => {
+		self.themeSub = self._bootstrap.themeService.onDidColorThemeChange((theme: IColorTheme) => {
 			self.updateColorTheme(theme);
 		});
-		self.updateColorTheme(self._bootstrap.theme);
+		self.updateColorTheme(self._bootstrap.themeService.getColorTheme());
 	}
 
 	ngOnDestroy() {
-		this.themeSub.unsubscribe();
+		this.themeSub.dispose();
 	}
 
 	private updateColorTheme(theme: IColorTheme): void {
