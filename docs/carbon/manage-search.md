@@ -35,6 +35,7 @@ Search database objects in the selected database
 ### On Database
 
 Context Menu
+
 |Menu Item|Description|Action|
 |:---|:---|:---|
 |Manage|Open Database Manage page||
@@ -43,6 +44,7 @@ Context Menu
 
 ## On Table 
 Context menu
+
 |Menu Item|Description|Action|
 |:---|---:|---:|
 |Select Top 1000|||
@@ -52,6 +54,7 @@ Context menu
 
 ## On View
 Context menu
+
 |Menu Item|Description|Action|
 |:---|:---|:---|
 |Select Top 1000|||
@@ -60,6 +63,7 @@ Context menu
 
 ## On Function and Stored Procedures
 Context menu
+
 |Menu Item|Description|Action|
 |:---|:---|:---|
 |Script Create|||
