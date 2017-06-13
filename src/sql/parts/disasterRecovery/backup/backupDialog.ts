@@ -14,7 +14,10 @@ import { BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.compon
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { Builder } from 'vs/base/browser/builder';
+import * as DOM from 'vs/base/browser/dom';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import * as lifecycle from 'vs/base/common/lifecycle';
+import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 
 export class BackupDialog {
 	private _builder: Builder;
@@ -39,6 +42,14 @@ export class BackupDialog {
 
 		this._dialog.addErrorMessage();
 		this._builder.build(this._container);
+
+		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Escape)) {
+				this.close();
+			}
+		});
+
 		return this._builder.getHTMLElement();
 	}
 

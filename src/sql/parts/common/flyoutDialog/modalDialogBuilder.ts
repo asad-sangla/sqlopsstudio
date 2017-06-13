@@ -26,7 +26,13 @@ export class ModalDialogBuilder {
 	) {
 	}
 
+	/*
+	* Create modal dialog
+	* flyout: indicates whether the dialog should be flyout or not
+	* addfooter: true if the dialog is created using DOM manipulation, false if created through angular component template
+	*/
 	public create(flyout: boolean, addfooter: boolean = true): Builder {
+		let modalBodyClass = (addfooter === true ? 'modal-body' : 'modal-task-body');
 		this._builder = $().div({}, (div: Builder) => {
 			div.div({ class: 'modal fade', id: this._id, 'role': 'dialog' }, (dialogContainer) => {
 				if (flyout) {
@@ -42,8 +48,7 @@ export class ModalDialogBuilder {
 								});
 							this._modalHeader = modalHeader;
 						});
-						modelContent.div({ class: 'modal-body', id: this._bodyId }, (modelBody) => {
-
+						modelContent.div({ class: modalBodyClass, id: this._bodyId }, (modelBody) => {
 							this._modelBody = modelBody;
 						});
 

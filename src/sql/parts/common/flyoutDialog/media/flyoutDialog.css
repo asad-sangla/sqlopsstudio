@@ -40,6 +40,10 @@
 	height: calc(100% - 108px);
 }
 
+.monaco-shell .modal.flyout-dialog .modal-task-body{
+	height: 100%;
+}
+
 .vs-dark.monaco-shell .modal.flyout-dialog .input {
 	background-color: #3C3C3C;
 }

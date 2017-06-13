@@ -1,0 +1,53 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+.backup-form {
+	height: 100%;
+}
+
+.backup-content {
+	padding: 15px;
+	overflow-y: auto;
+	height: calc(100% - 138px);
+}
+
+.backup-table-content {
+	width:100%;
+	table-layout: fixed;
+	border-spacing: 5px;
+}
+
+.backup-path-content {
+	width:100%;
+	border-spacing: 5px;
+}
+
+.backup-label {
+	width: 80px;
+	padding-bottom: 5px;
+	font-size: 12px;
+}
+
+.backup-input {
+	padding: 4px;
+	width: 200px;
+	background-color: #3C3C3C;
+	border: 1px solid transparent;
+}
+
+.backup-path-input {
+	border-style:none;
+	width:100%;
+	background-color:#3C3C3C;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.backup-path-button {
+	width: 25px;
+	background: #0E639C;
+	color: #ffffff;
+	border-style:none;
+	padding: 3px;
+}

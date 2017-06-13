@@ -3,12 +3,10 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/dashboard/media/dashboard';
+import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
 import 'vs/css!sql/media/primeng';
 import data = require('data');
-
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
@@ -35,7 +33,8 @@ export class RestoreItemSource {
 @Component({
 	selector: BACKUP_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/disasterRecovery/backup/backup.component.html'),
-	styleUrls: [require.toUrl('sql/media/primeng.css')]
+	styleUrls: [require.toUrl('sql/parts/disasterRecovery/backup/media/backupDialog.css'),
+                require.toUrl('sql/media/primeng.css')]
 })
 
 export class BackupComponent{

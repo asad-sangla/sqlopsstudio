@@ -4,45 +4,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<form #myForm="ngForm" (ngSubmit)="onSubmit(f)">
+<form class="backup-form" #myForm="ngForm" (ngSubmit)="onSubmit(f)">
 
 <div class="backup-content">
-	<table class="backup-input-table" style="width:100%">
+	<table class="backup-table-content">
 		<tr>
-			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+			<td class="backup-label">
 				Database
 			</td>
-			<td class="task-text-input" style="background-color:#3C3C3C; color:#ffffff;">
+			<td class="backup-input">
 				<div>{{connection?.connectionProfile?.databaseName}}</div>
 			</td>
 		</tr>
 		<tr>
-			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+			<td class="backup-label">
 				Recovery model
 			</td>
-			<td class="task-input-table-content-column" style="background-color:#3C3C3C; color:#ffffff;">
+			<td class="backup-input">
 				<div>{{recoveryModel}}</div>
 			</td>
 		</tr>
 		<tr>
-			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+			<td class="backup-label">
 				Backup component
 			</td>
-			<td class="backup-component-value" style="background-color:#3C3C3C; color:#ffffff;">
+			<td class="backup-input">
 				<div style="display:block">Database</div>
 			</td>
 		</tr>
 		<tr>
-			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
+			<td class="backup-label">
 				Backup type
 			</td>
-			<td class="backup-type">
-				<select name="backup-type-list" id="backup-type-list" #backupTypeContainer style="width:100%; background-color:#3C3C3C; color:#ffffff; border-style:none;" ></select>
-			</td>
-		</tr>
-		<tr>
-			<td class="task-input-table-label-column" style="width: 150px; padding-right: 5px">
-				Backup Device
+			<td class="backup-input-box">
+				<select class="select-box" name="backup-type-list" id="backup-type-list" #backupTypeContainer></select>
 			</td>
 		</tr>
 	</table>
@@ -57,31 +52,37 @@
 		<button class="Browse" [disabled]="disableFileComponent">Browse</button>
 	</div> -->
 
-
-	<table class="backup-path-input-text" style="width:100%">
+	<table class="backup-path-content">
 		<tr>
-			<td colspan="3" style="width:100%;">
-			<select name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" style="border-style:none; width:100%; background-color:#3C3C3C; color:#ffffff"></select>
+			<td class="backup-label" colspan="3">
+				Backup Device
 			</td>
 		</tr>
 		<tr>
-			<td class="task-input-table-label-column" style="width: 100%">
-				<input name="backup-path-input" type="text" [(ngModel)]="backupPathInput" style="border-style:none; width:100%; background-color:#3C3C3C" />
-			</td>
-			<td>
-				<button class="addButton" style=" width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;" [disabled]="disableAdd" (click)="onAddClick()">Add</button>
-			</td>
-			<td>
-				<button class="removeButton" style=" width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;" [disabled]="disableRemove" (click)="onRemoveClick()">Remove</button>
+			<td colspan="3">
+				<select name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" style="border-style:none; width:100%; background-color:#3C3C3C; color:#ffffff"></select>
 			</td>
 		</tr>
 		<tr>
-			<td></td><td></td>
-			<td style="float:right">
-				<button type="submit" class="okButton" [disabled]="disableOk" (click)="onOk()" style="float: right; width: 100px; background: #0E639C; color: #ffffff; border-style:none; padding-top: 3px; padding-bottom: 3px;">OK</button>
+			<td style="width:100%">
+				<input class="backup-path-input" name="backup-path-input" type="text" [(ngModel)]="backupPathInput" />
+			</td>
+			<td>
+				<button class="backup-path-button" [disabled]="disableAdd" (click)="onAddClick()">+</button>
+			</td>
+			<td>
+				<button class="backup-path-button" [disabled]="disableRemove" (click)="onRemoveClick()">-</button>
 			</td>
 		</tr>
 	</table>
+  </div>
 
+  <div class="modal-footer">
+	<div class="footer-button">
+		<a class="monaco-button monaco-text-button" type="submit" role="button" (click)="onOk()">OK</a>
+	</div>
+	<div class="footer-button">
+		<a class="monaco-button monaco-text-button" tabindex="0" role="button">Cancel</a>
+	</div>
   </div>
 </form>
