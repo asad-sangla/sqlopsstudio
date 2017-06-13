@@ -4,10 +4,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div style="display: flex; flex-flow: column; position: absolute; height:100%; width:100%">
+<div style="display: flex; flex-flow: column; position: absolute; height:100%; width:100%; padding: 10px; box-sizing: border-box">
     <div  height="28px" class="input" style="border-bottom: 0 none; flex: 0 0 auto; display: flex">
-        <input *ngIf="_config.context === 'database'" class="dashboard-search-box" [(ngModel)]="filterString" style="flex: 1 1 auto;" #gb type="text" pInputText size="50" placeholder="&#xf002;   Search connection metadata">
-        <input *ngIf="_config.context === 'server'" class="dashboard-search-box" [(ngModel)]="filterString" style="flex: 1 1 auto;" #gb type="text" pInputText size="50" placeholder="&#xf002;   Search databases">
+        <input *ngIf="_config.context === 'database'" class="dashboard-search-box"
+                [(ngModel)]="filterString"
+                (keyup)="_changeRef.detectChanges()"
+                style="flex: 1 1 auto;"
+                type="text"
+                placeholder="&#xf002;   Search connection metadata">
+        <input *ngIf="_config.context === 'server'" class="dashboard-search-box"
+                [(ngModel)]="filterString"
+                (keyup)="_changeRef.detectChanges()"
+                style="flex: 1 1 auto;"
+                type="text"
+                placeholder="&#xf002;   Search databases">
         <span *ngIf="_config.context === 'database'" class="dropdown">
             <span class="dashboard-search-box dropbtn" style="flex: 0 0 auto">&#xf0b0;</span>
             <div class="dropdown-content" style="width: 40px; background: white">
@@ -18,23 +28,29 @@
         </span>
     </div>
     <div class="database-table" style="overflow: scroll; flex: 1 1 auto">
-        <div *ngFor="let row of tableData | metadataFilter:filterString" style="display: flex; flex-flow: row" class="database-row">
-            <span style="flex: 0 0 auto">
+        <div *ngFor="let row of tableData | metadataFilter:filterString; let i = index"
+            [ngStyle]="{ 'background-color': selected === i ? _colors.selectionColor : hovered === i ? _colors.hoverColor : _colors.backgroundColor }"
+            (mouseover)="handleHover(i, true)"
+            (mouseleave)="handleHover(i, false)"
+            style="display: flex; flex-flow: row"
+            class="database-row">
+            <span style="flex: 0 0 auto; margin-right: 3px">
                 <div *ngIf="row.metadata?.metadataType === dataType.Table">
-                    <i class="fa fa-table fa-lg" style="padding: 4px"></i>
+                    <div class="icon table" style="padding: 8px"></div>
                 </div>
                 <div *ngIf="row.metadata?.metadataType === dataType.SProc">
-                    <i class="fa fa-wrench fa-lg" style="padding: 4px"></i>
+                    <div class="icon stored-procedure" style="padding: 8px"></div>
                 </div>
                 <div *ngIf="row.metadata?.metadataType === dataType.View">
-                    <i class="fa fa-binoculars fa-lg" style="padding: 4px"></i>
+                    <div class="icon view" style="padding: 8px"></div>
                 </div>
                 <div *ngIf="_config.context === 'server'">
-                    <i class="fa fa-database fa-lg" style="padding: 4px"></i>
+                    <div class="icon database" style="padding: 8px"></div>
                 </div>
             </span>
-            <span *ngIf="_config.context === 'database'" style="flex: 1 1 auto" (click)="handleItemClick(row.metadata.name)">{{row.metadata.name}}</span>
-            <span *ngIf="_config.context === 'server'" style="flex: 1 1 auto" (click)="handleItemClick(row)">{{row}}</span>
+            <span *ngIf="_config.context === 'database'" style="flex: 1 1 auto" (click)="handleItemClick(row.metadata.name, i)">{{row.metadata.name}}</span>
+            <span *ngIf="_config.context === 'server'" style="flex: 1 1 auto" (click)="handleItemClick(row, i)">{{row}}</span>
+            <span *ngIf="hovered === i || selected === i" style="flex: 0 0 auto; padding-right: 5px">...</span>
         </div>
     </div>
 </div>

@@ -1,0 +1,49 @@
+.vs .icon.backup {
+	background-image: url("backup.svg");
+	background-repeat: no-repeat;
+}
+
+.vs-dark .icon.backup {
+	background-image: url("backup_inverse.svg");
+	background-repeat: no-repeat;
+}
+
+.vs .icon.database {
+	background-image: url("database.svg");
+	background-repeat: no-repeat;
+}
+
+.vs-dark .icon.database {
+	background-image: url("database_inverse.svg");
+	background-repeat: no-repeat;
+}
+
+.vs .icon.file {
+	background-image: url("file.svg");
+	background-repeat: no-repeat;
+}
+
+.vs-dark .icon.file {
+	background-image: url("file_inverse.svg");
+	background-repeat: no-repeat;
+}
+
+.vs .icon.new-database {
+	background-image: url("new_database.svg");
+	background-repeat: no-repeat;
+}
+
+.vs-dark .icon.new-database {
+	background-image: url("new_database_inverse.svg");
+	background-repeat: no-repeat;
+}
+
+.vs .icon.server-page {
+	background-image: url("server_page.svg");
+	background-repeat: no-repeat;
+}
+
+.vs-dark .icon.server-page {
+	background-image: url("server_page_inverse.svg");
+	background-repeat: no-repeat;
+}

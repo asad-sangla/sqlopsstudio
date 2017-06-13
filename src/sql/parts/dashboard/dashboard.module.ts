@@ -9,8 +9,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgGridModule } from 'angular4-grid';
-import { ButtonModule, DataTableModule, SharedModule, MessagesModule, DataListModule,
-	BreadcrumbModule } from 'primeng/primeng';
+import { BreadcrumbModule } from 'primeng/primeng';
 
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 /* Services */
@@ -27,7 +26,7 @@ import { DashboardPage } from 'sql/parts/dashboard/common/dashboardPage.componen
 /* Widget Components */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
 import { ExplorerWidget } from 'sql/parts/dashboard/widgets/explorer/explorerWidget.component';
-import { MetadataFilterPipe } from 'sql/parts/dashboard/widgets/explorer/explorerFilter.pipe';
+import { ExplorerFilter } from 'sql/parts/dashboard/widgets/explorer/explorerFilter.pipe';
 import { TasksWidget } from 'sql/parts/dashboard/widgets/tasks/tasksWidget.component';
 import { TaskPipe} from 'sql/parts/dashboard/widgets/tasks/tasksPipe.pipe';
 
@@ -52,7 +51,7 @@ const appRoutes: Routes = [
 		DatabaseDashboardPage,
 		WidgetDirective,
 		ExplorerWidget,
-		MetadataFilterPipe,
+		ExplorerFilter,
 		TasksWidget,
 		TaskPipe,
 		PropertiesWidgetComponent,
@@ -68,12 +67,7 @@ const appRoutes: Routes = [
 	imports: [
 		CommonModule,
 		BrowserModule,
-		ButtonModule,
-		DataTableModule,
 		FormsModule,
-		SharedModule,
-		MessagesModule,
-		DataListModule,
 		BreadcrumbModule,
 		NgGridModule,
 		RouterModule.forRoot(appRoutes)

@@ -3,12 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef, ChangeDetectorRef } from '@angular/core';
+import 'vs/css!sql/media/objectTypes/objecttypes';
+import 'vs/css!sql/media/icons/icons';
+
+import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs/Subscription';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
+
+import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+
 import data = require('data');
 
 export class ObjectMetadataWrapper {
@@ -39,18 +46,32 @@ export class ObjectMetadataWrapper {
 	}
 }
 
+interface Colors {
+	selectionColor: string;
+	hoverColor: string;
+	backgroundColor: string;
+}
+
 @Component({
 	selector: 'explorer-widget',
 	templateUrl: require.toUrl('sql/parts/dashboard/widgets/explorer/explorerWidget.component.html'),
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
-export class ExplorerWidget extends DashboardWidget implements IDashboardWidget {
+export class ExplorerWidget extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
 
 	private tableData: ObjectMetadataWrapper[] | string[];
 	private selectedRow: ObjectMetadataWrapper;
+	private _colors: Colors = {
+		selectionColor: '',
+		hoverColor: '',
+		backgroundColor: ''
+	};
 	//tslint:disable-next-line
 	private dataType = MetadataType;
 	private filterString = '';
+	private selected: number;
+	private hovered: number;
+	private themeSub: Subscription;
 	//tslint:disable-next-line
 	private filterArray = [
 		'view',
@@ -67,6 +88,25 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 	) {
 		super();
 		this.init();
+	}
+
+	ngOnInit() {
+		let self = this;
+		self.themeSub = self._bootstrap.onThemeChange((theme: IColorTheme) => {
+			self.updateColorTheme(theme);
+		});
+		self.updateColorTheme(self._bootstrap.theme);
+	}
+
+	ngOnDestroy() {
+		this.themeSub.unsubscribe();
+	}
+
+	private updateColorTheme(theme: IColorTheme): void {
+		this._colors.selectionColor = theme.getColor('list.activeSelectionBackground').toString();
+		this._colors.hoverColor = theme.getColor('list.hoverBackground').toString();
+		this._colors.backgroundColor = theme.getColor('editor.background').toString();
+		this._changeRef.detectChanges();
 	}
 
 	private init(): void {
@@ -116,13 +156,26 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 	}
 
 	//tslint:disable-next-line
-	private handleItemClick(val: string): void {
+	private handleHover(index: number, enter: boolean): void {
+		if (this.hovered === index && !enter) {
+			this.hovered = undefined;
+		} else {
+			this.hovered = index;
+		}
+
+		this._changeRef.detectChanges();
+	}
+
+	//tslint:disable-next-line
+	private handleItemClick(val: string, index: number): void {
 		let self = this;
+		self.selected = index;
 		if (self._config.context === 'server') {
 			self._bootstrap.connectionManagementService.changeDatabase(val).then(result => {
 				self._router.navigate(['/database']);
 			});
 		}
+		self._changeRef.detectChanges();
 	}
 
 	//tslint:disable-next-line

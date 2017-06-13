@@ -9,12 +9,17 @@ import { ObjectMetadataWrapper } from './explorerWidget.component';
 
 
 @Pipe({
-	name: 'metadataFilter'
+	name: 'metadataFilter',
+	pure: false
 })
-export class MetadataFilterPipe implements PipeTransform {
+export class ExplorerFilter implements PipeTransform {
 	transform(items: ObjectMetadataWrapper[] | string[], filter: string): ObjectMetadataWrapper[] | string[] {
-		if (!items || !filter) {
+		if (!items) {
 			return items;
+		}
+
+		if (!filter) {
+			return [];
 		}
 
 		// handle case when passed a string array
@@ -57,6 +62,8 @@ export class MetadataFilterPipe implements PipeTransform {
 				case 'function':
 					metadataType = MetadataType.Function;
 					break;
+				case 'all':
+					return items;
 				default:
 					break;
 			}
