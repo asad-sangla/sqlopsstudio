@@ -38,7 +38,7 @@ Context Menu
 |Menu Item|Description|Action|
 |:---|:---|:---|
 |Manage|Open Database Manage page||
-|New Query|Start a new editor connected to the selected database|
+|New Query|Start a new editor connected to the selected database||
 |Backup|Open Backup dialog||
 
 ## On Table 
