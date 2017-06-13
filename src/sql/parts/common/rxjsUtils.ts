@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { Subscription } from 'rxjs/Rx';
+import { Subscription } from 'rxjs/Subscription';
 import { IDisposable } from 'vs/base/common/lifecycle';
 
 export function toDisposableSubscription(sub: Subscription): IDisposable {

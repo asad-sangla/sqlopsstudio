@@ -3,15 +3,18 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
+/* Node Modules */
 import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { Subscription } from 'rxjs/Subscription';
 
+/* SQL imports */
 import { ThemeUtilities } from 'sql/common/themeUtilities';
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
+/* VS imports */
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 export interface Task {
 	name: string;
@@ -32,10 +35,9 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	private isDarkTheme: boolean;
 	private _size: number = 100;
 	private _margins: number = 10;
-	private _trigger: number = 0;
 	private _rows: number = 2;
 	private _isAzure = false;
-	private _themeSub: Subscription;
+	private _themeDispose: IDisposable;
 	private _tileBackground: string;
 	//tslint:disable-next-line
 	private tasks: Task[] = [
@@ -77,26 +79,22 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	) {
 		super();
 		let self = this;
-		self._bootstrap.connectionInfo.then(connection => {
-			self._isAzure = connection.serverInfo.isCloud;
-			// trigger a refresh on the tasks to account for new info
-			self._trigger = self._trigger + 1;
-			self._changeref.detectChanges();
-		});
+		let connInfo = self._bootstrap.connectionManagementService.connectionInfo;
+		self._isAzure = connInfo.serverInfo.isCloud;
 	}
 
 	ngOnInit() {
 		let self = this;
-		self._themeSub = self._bootstrap.onThemeChange((e: IColorTheme) => {
+		self._themeDispose = self._bootstrap.themeService.onDidColorThemeChange((e: IColorTheme) => {
 			self.updateTheme(e);
 		});
-		let theme = this._bootstrap.theme;
+		let theme = this._bootstrap.themeService.getColorTheme();
 		this.isDarkTheme = !ThemeUtilities.isDarkTheme(theme);
 		self.updateTheme(theme);
 	}
 
 	ngOnDestroy() {
-		this._themeSub.unsubscribe();
+		this._themeDispose.dispose();
 	}
 
 	private updateTheme(e: IColorTheme): void {

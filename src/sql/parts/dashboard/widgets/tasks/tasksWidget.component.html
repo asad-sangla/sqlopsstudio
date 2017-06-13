@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<ng-template ngFor let-task [ngForOf]="tasks | taskPipe:_config?.context:_trigger" let-i="index">
+<ng-template ngFor let-task [ngForOf]="tasks | taskPipe:_config?.context" let-i="index">
 	<div (click)="task.action()"
 		style="position: absolute; cursor: pointer; display: flex; flex-flow: row; align-items: center"
 		class="task-tile"

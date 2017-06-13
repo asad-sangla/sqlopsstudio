@@ -142,17 +142,14 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig
 	) {
 		super();
-		let self = this;
-		self._bootstrap.connectionInfo.then((data) => {
-			self._connection = data;
-			_changeRef.detectChanges();
-			if (!self._connection.serverInfo.isCloud) {
-				self._bootstrap.databaseInfo.then((data) => {
-					self._databaseInfo = data;
-					_changeRef.detectChanges();
-				});
-			}
-		});
+		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
+		if (!this._connection.serverInfo.isCloud) {
+			let self = this;
+			self._bootstrap.disasterRecoveryService.databaseInfo.then((data) => {
+				self._databaseInfo = data;
+				_changeRef.detectChanges();
+			});
+		}
 	}
 
 	ngOnInit() {

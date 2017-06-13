@@ -19,6 +19,8 @@ import { ExplorerWidget } from 'sql/parts/dashboard/widgets/explorer/explorerWid
 import { TasksWidget } from 'sql/parts/dashboard/widgets/tasks/tasksWidget.component';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
+import { IDisposable } from 'vs/base/common/lifecycle';
+
 const componentMap = {
 	'properties-widget': PropertiesWidgetComponent,
 	'explorer-widget': ExplorerWidget,
@@ -32,7 +34,7 @@ const componentMap = {
 })
 export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestroy {
 	@Input() private _config: WidgetConfig;
-	private _themeSub: Subscription;
+	private _themeDispose: IDisposable;
 
 	@ViewChild(WidgetDirective) widgetHost: WidgetDirective;
 
@@ -46,18 +48,18 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 	ngOnInit() {
 		let self = this;
-		self._themeSub = self._bootstrap.onThemeChange((event: IColorTheme) => {
+		self._themeDispose = self._bootstrap.themeService.onDidColorThemeChange((event: IColorTheme) => {
 			self.updateTheme(event);
 		});
 	}
 
 	ngAfterContentInit() {
-		this.updateTheme(this._bootstrap.theme);
+		this.updateTheme(this._bootstrap.themeService.getColorTheme());
 		this.loadWidget();
 	}
 
 	ngOnDestroy() {
-		this._themeSub.unsubscribe();
+		this._themeDispose.dispose();
 	}
 
 	private loadWidget(): void {

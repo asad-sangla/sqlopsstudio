@@ -88,13 +88,15 @@ export class DashboardModule {
 
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _resolver: ComponentFactoryResolver,
-		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
+		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface
 	) {
 	}
 
 	ngDoBootstrap(appRef: ApplicationRef) {
 		const factory = this._resolver.resolveComponentFactory(DashboardComponent);
 		const uniqueSelector: string = this._bootstrapService.getUniqueSelector(DASHBOARD_SELECTOR);
+		this._bootstrap.selector = uniqueSelector;
 		(<any>factory).factory.selector = uniqueSelector;
 		appRef.bootstrap(factory);
 	}

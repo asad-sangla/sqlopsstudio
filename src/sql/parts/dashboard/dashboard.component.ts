@@ -10,9 +10,11 @@ import 'vs/css!sql/media/font-awesome-4.7.0/css/font-awesome';
 
 import { MenuItem } from 'primeng/primeng';
 import { OnInit, Component, Inject, forwardRef, ElementRef, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+
+import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 import { BreadcrumbService } from './services/breadcrumb.service';
 import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
@@ -26,7 +28,7 @@ export const DASHBOARD_SELECTOR: string = 'dashboard-component';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 	private breadcrumbItems: MenuItem[];
-	private _subs: Array<Subscription> = new Array();
+	private _subs: Array<IDisposable> = new Array();
 
 	constructor(
 		@Inject(forwardRef(() => BreadcrumbService)) private _breadcrumbService: BreadcrumbService,
@@ -35,26 +37,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef
 		) {
 			this.breadcrumbItems = [];
-			this._bootstrapService.selector = this._el.nativeElement.tagName;
 		}
 
 	ngOnInit() {
 		let self = this;
-		self._subs.push(self._breadcrumbService.breadcrumbItem.subscribe((val: MenuItem[]) => {
+		self._subs.push(toDisposableSubscription(self._breadcrumbService.breadcrumbItem.subscribe((val: MenuItem[]) => {
 			if (val) {
 				self.breadcrumbItems = val;
 				self._changeRef.detectChanges();
 			}
-		}));
-		self._subs.push(self._bootstrapService.onThemeChange((e) => {
+		})));
+		self._subs.push(self._bootstrapService.themeService.onDidColorThemeChange((e) => {
 			self.updateTheme(e);
 		}));
-		self.updateTheme(self._bootstrapService.theme);
+		self.updateTheme(self._bootstrapService.themeService.getColorTheme());
 	}
 
 	ngOnDestroy() {
 		this._subs.forEach((value) => {
-			value.unsubscribe();
+			value.dispose();
 		});
 	}
 

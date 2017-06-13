@@ -20,17 +20,11 @@ export class BreadcrumbService {
     public breadcrumbItem: Subject<MenuItem[]>;
     private itemBreadcrums: MenuItem[];
     private _connection: ConnectionManagementInfo;
-    private _connectionWaitPromise: Promise<void>;
 
     constructor(@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) {
         let self = this;
-        self._connectionWaitPromise = new Promise<void>((resolve) => {
-            self._bootstrap.connectionInfo.then((data) => {
-                self._connection = data;
-                resolve();
-            });
-        });
-        self._bootstrap.onConnectionChange((e: ConnectionManagementInfo) => {
+        self._connection = self._bootstrap.connectionManagementService.connectionInfo;
+        self._bootstrap.connectionManagementService.onDidChangeConnection((e: ConnectionManagementInfo) => {
             self._connection = e;
         });
         self.breadcrumbItem = new Subject<MenuItem[]>();
@@ -38,13 +32,7 @@ export class BreadcrumbService {
 
     public setBreadcrumbs(page: BreadcrumbClass) {
         let self = this;
-        if (self._connection) {
-            self._setBreadcrumbs(page);
-        } else {
-            self._connectionWaitPromise.then(() => {
-                self._setBreadcrumbs(page);
-            });
-        }
+        self._setBreadcrumbs(page);
     }
 
     private _setBreadcrumbs(page: BreadcrumbClass) {

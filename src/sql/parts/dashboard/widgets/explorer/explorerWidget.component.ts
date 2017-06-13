@@ -72,7 +72,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 	private init(): void {
 		let self = this;
 		if (self._config.context === 'database') {
-			self._bootstrap.metadata.then((data) => {
+			self._bootstrap.metadataService.metadata.then((data) => {
 				if (data) {
 					self.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
 					self.tableData.sort(this.schemaSort);
@@ -83,7 +83,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 				self._changeRef.detectChanges();
 			});
 		} else {
-			self._bootstrap.databaseNames.then((data) => {
+			self._bootstrap.metadataService.databaseNames.then((data) => {
 				self.tableData = data;
 				self._changeRef.detectChanges();
 			});
@@ -119,7 +119,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget 
 	private handleItemClick(val: string): void {
 		let self = this;
 		if (self._config.context === 'server') {
-			self._bootstrap.changeDatabase(val).then(result => {
+			self._bootstrap.connectionManagementService.changeDatabase(val).then(result => {
 				self._router.navigate(['/database']);
 			});
 		}
