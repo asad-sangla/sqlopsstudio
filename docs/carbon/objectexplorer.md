@@ -84,9 +84,9 @@ Table: state_desc (state) and user_access_desc (user_access) fields in sys.datab
 |ONLINE|state|normal DB icon|none|Yes||
 |RESTORING|state|RESTORING DB icon|(Restoring)|No||
 |RECOVERING|state|normal|(RECOVERING)|No||
-|RECOVERY_PENDING|state|normal|(Recovery Pending)|No||
-|SUSPECT|state||||
-|EMERGENCY|state||||
+|RECOVERY_PENDING|state|offline db icon|(Recovery Pending)|No||
+|SUSPECT|state|offline db icon|(Suspect)||
+|EMERGENCY|state|normal|(Emergency)||
 |OFFLINE|state|offline db icon|(Offline)|No||
 
 > create / check git issue
