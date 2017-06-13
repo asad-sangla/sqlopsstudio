@@ -3,16 +3,15 @@ This speclet describes the funcitonal requirements for Server and Database Prope
 
 ## Goals
 
-- Provide must-know properties for SQL Server and Databases on MANAGE-Property essentials widget for easy at-a-glance check.
+- Provide important properties for SQL Server and Databases on MANAGE-Property essentials widget for easy at-a-glance check.
 - Provide comprehensive properties for SQL Server and Databases organized in a useful layout and grouping so that user can easily browse-n-find or search-with-keyword.
 - Provide an easy way to modify properties for SQL Server and Databases then generate script or execute the change immediately.
 
-## On-prem
+## On-premises
 
 ### SQL Server
 
 #### Essentials
-
 
 |Property|Display Name|Comment|
 |:---|:---|:---|
@@ -20,14 +19,14 @@ This speclet describes the funcitonal requirements for Server and Database Prope
 |SQL Server Edition|Edition||
 |Computer Name|Computer Name||
 |OS Version|OS Version|Display in user friendly os name and version|
-|Compatibility Level|Compatibility Level||
+
+> note: detail out the display format of version information. i.e. user friendly format
 
 ### SQL Server Databases
 
 #### Essentials
 |Property|Display Name|Comment|
 |:---|:---|:---|
-|Database State|Status|e.g. Online, Offline, Suspect, Recovery Pending etc|
 |Recovery Model|Recovery Model||
 |Last Database Backup|Last Database Backup|Date-time (UTC)|
 |Last Log Backup|Last Log Backup|Date-time (UTC)|
@@ -36,16 +35,16 @@ This speclet describes the funcitonal requirements for Server and Database Prope
 
 ## Azure
 
+* Scoping principles
+	- Carbon will display porperties that can be queried via T-SQL interface only (for the initial scope).
+	- Displayed properties are read-only.
+	- Manage actions are AZURE-CLI based.
+
 ### SQL Server on Azure
 
 #### Essentials
 |Property|Display Name|Comment|
 |:---|:---|:---|
-|Resource group|Resource group||
-|Status|Status||
-|Location|Location||
-|Subscription ID|Subscription ID||
-|Auditing|Auditing||
 
 
 ### SQL Database on Azure
@@ -53,12 +52,25 @@ This speclet describes the funcitonal requirements for Server and Database Prope
 #### Essentials
 |Property|Display Name|Comment|
 |:---|:---|:---|
-|Resource group|Resource group||
-|Status|Status||
-|Location|Location||
 |Server name|Server name||
 |Pricing tier|Pricing tier||
-|Subscription ID|Subscription ID||
+|Edition|Edition||
+|Owner|Owner||
+
+sample lookup query
+```sql
+select
+d.name,
+o.service_objective,
+o. edition,
+d.create_date,
+d.compatibility_level,
+d.collation_name,
+d.state_desc,
+d.is_encrypted
+from sys.databases d
+join sys.database_service_objectives o on d.database_id = o.database_id
+```
 
 ### SQL DW on Azure
 
@@ -70,7 +82,7 @@ This speclet describes the funcitonal requirements for Server and Database Prope
 
 6/05 team discussion
 Discussion note: (Kevin, Anthony, Eric)
- 
+
 - Carbon public preview & GA – scoping principle for Azure support
 	- T-SQL interface only. Any feature that requires ARM / REST API is out of scope and backlog item for long term roadmap.
 	- Eric to revise Azure SQL Server / DB property list scoped to T-SQL retrievable.
@@ -80,4 +92,4 @@ Discussion note: (Kevin, Anthony, Eric)
 - Refresh and long loading time (a few seconds)
 	- Based on #2, iteration 1 – no refresh, iteration 2 – manual, auto-refresh
 - Overall Azure support: make Azure CLI available from integrated terminal.
- 
+
