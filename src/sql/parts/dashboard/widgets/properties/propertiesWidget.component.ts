@@ -9,13 +9,15 @@ import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from '
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
-import { BackupConfigInfo } from 'data';
+import { DatabaseInfo } from 'data';
 
 interface Property {
 	title: string;
 	value: () => string;
 	show?: () => boolean;
 }
+
+const NEVER_BACKED_UP = '1/1/0001 12:00:00 AM';
 
 @Component({
 	selector: 'properties-widget',
@@ -24,7 +26,7 @@ interface Property {
 })
 export class PropertiesWidgetComponent extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
 	private _connection: ConnectionManagementInfo;
-	private _databaseInfo: BackupConfigInfo;
+	private _databaseInfo: DatabaseInfo;
 	private _clipped: boolean;
 	private _eventHandler: () => any;
 	private _parent;
@@ -49,10 +51,9 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 			}
 		},
 		{
-			//TODO
 			title: 'Computer Name',
 			value: () => {
-				return this._connection.serverInfo['Computer Name'] || '--';
+				return this._connection.serverInfo['machineName'] || '--';
 			},
 			show: () => {
 				return this._connection !== undefined && this._config.context === 'server';
@@ -68,57 +69,45 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 			}
 		},
 		{
-			title: 'Compatibility Level',
-			value: () => {
-				return this._connection.serverInfo.serverLevel || '--';
-			},
-			show: () => {
-				return this._connection !== undefined && this._config.context === 'server';
-			}
-		},
-		{
 			title: 'Status',
 			value: () => {
-				return this._databaseInfo.databaseInfo['options']['databaseState'] || '--';
+				return this._databaseInfo.options['databaseState'] || '--';
 			},
 			show: () => {
 				return this._databaseInfo !== undefined && this._config.context === 'database';
 			}
 		},
 		{
-			//TODO
 			title: 'Recovery Model',
 			value: () => {
-				return this._databaseInfo.databaseInfo['options']['recoveryModel'] || '--';
+				return this._databaseInfo.options['recoveryModel'] || '--';
 			},
 			show: () => {
 				return this._databaseInfo !== undefined && this._config.context === 'database';
 			}
 		},
 		{
-			//TODO
 			title: 'Last Database Backup',
 			value: () => {
-				return this._databaseInfo.databaseInfo['options']['lastBackup'] || '--';
+				return (this._databaseInfo.options['lastBackupDate'] === NEVER_BACKED_UP ? '' : this._databaseInfo.options['lastBackupDate']) || '--';
 			},
 			show: () => {
 				return this._databaseInfo !== undefined && this._config.context === 'database';
 			}
 		},
 		{
-			//TODO
 			title: 'Last Log Backup',
 			value: () => {
-				return this._databaseInfo.databaseInfo['options']['lastLog'] || '--';
+				return (this._databaseInfo.options['lastLogBackupDate'] === NEVER_BACKED_UP ? '' : this._databaseInfo.options['lastBackupDate']) || '--';
 			},
 			show: () => {
 				return this._databaseInfo !== undefined && this._config.context === 'database';
 			}
 		},
 		{
-			title: 'Compatability Level',
+			title: 'Compatibility Level',
 			value: () => {
-				return this._connection.serverInfo.serverLevel || '--';
+				return this._databaseInfo.options['compatibilityLevel'] || '--';
 			},
 			show: () => {
 				return this._databaseInfo !== undefined && this._config.context === 'database';
@@ -127,7 +116,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		{
 			title: 'Owner',
 			value: () => {
-				return this._databaseInfo.databaseInfo['options']['owner'] || '--';
+				return this._databaseInfo.options['owner'] || '--';
 			},
 			show: () => {
 				return this._databaseInfo !== undefined && this._config.context === 'database';
@@ -142,13 +131,17 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig
 	) {
 		super();
+		let self = this;
 		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
-		if (!this._connection.serverInfo.isCloud) {
-			let self = this;
-			self._bootstrap.disasterRecoveryService.databaseInfo.then((data) => {
+		if (!self._connection.serverInfo.isCloud) {
+			self._bootstrap.adminService.databaseInfo.then((data) => {
 				self._databaseInfo = data;
 				_changeRef.detectChanges();
 			});
+		} else {
+			self._databaseInfo = {
+				options: {}
+			};
 		}
 	}
 

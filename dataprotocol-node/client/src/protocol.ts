@@ -28,7 +28,7 @@ import {
 	BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
 	DbCellValue, EditCell, EditRow, CreateSessionResponse, SessionCreatedParameters, ExpandParams, ExpandResponse, CloseSessionParams, CloseSessionResponse,
 	BackupInfo, BackupParams, BackupResponse,
-	LoginInfo, CreateLoginParams, CreateLoginResponse,
+	LoginInfo, CreateLoginParams, CreateLoginResponse, GetDatabaseInfoParams, GetDatabaseInfoResponse,
 	DatabaseInfo, BackupConfigInfo, CreateDatabaseParams, CreateDatabaseResponse,
 	TaskInfo, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo,
 	DefaultDatabaseInfoParams, DefaultDatabaseInfoResponse, BackupConfigInfoResponse
@@ -1441,6 +1441,10 @@ export namespace DefaultDatabaseInfoRequest {
 
 export namespace CreateLoginRequest {
 	export const type: RequestType<CreateLoginParams, CreateLoginResponse, void> = { get method(): string { return 'admin/createlogin'; } };
+}
+
+export namespace GetDatabaseInfoRequest {
+	export const type: RequestType<GetDatabaseInfoParams, GetDatabaseInfoResponse, void> = { get method(): string { return 'admin/getdatabaseinfo'; } };
 }
 
 // ------------------------------- < Disaster Recovery Events > ------------------------------------

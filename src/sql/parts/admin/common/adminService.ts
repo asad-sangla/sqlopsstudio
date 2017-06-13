@@ -7,12 +7,14 @@
 export const SERVICE_ID = 'adminService';
 
 import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { CreateLoginInput } from 'sql/parts/admin/security/createLoginInput';
 import { TaskDialogInput } from 'sql/parts/tasks/dialog/taskDialogInput';
+
+import { TPromise } from 'vs/base/common/winjs.base';
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 import data = require('data');
 
@@ -30,6 +32,8 @@ export interface IAdminService {
 	createDatabase(connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse>;
 
 	getDefaultDatabaseInfo(connectionUri: string): Thenable<data.DatabaseInfo>;
+
+	getDatabaseInfo(connectionUri: string): Thenable<data.DatabaseInfo>;
 }
 
 export class AdminService implements IAdminService {
@@ -49,6 +53,20 @@ export class AdminService implements IAdminService {
 			_capabilitiesService.onProviderRegisteredEvent((capabilities => {
 				this._providerOptions[capabilities.providerName] = capabilities.adminServicesProvider;
 			}));
+		}
+	}
+
+	private _runAction<T>(uri: string, action: (handler: data.AdminServicesProvider) => Thenable<T>): Thenable<T> {
+		let providerId: string = this._connectionService.getProviderIdFromUri(uri);
+
+		if (!providerId) {
+			return TPromise.wrapError('Connection is required in order to interact with adminservice');
+		}
+		let handler = this._providers[providerId];
+		if (handler) {
+			return action(handler);
+		} else {
+			return TPromise.wrapError('No Handler Registered');
 		}
 	}
 
@@ -105,6 +123,12 @@ export class AdminService implements IAdminService {
 			}
 		}
 		return Promise.resolve(undefined);
+	}
+
+	public getDatabaseInfo(connectionUri: string): Thenable<data.DatabaseInfo> {
+		return this._runAction(connectionUri, (runner) => {
+			return runner.getDatabaseInfo(connectionUri);
+		});
 	}
 
 	public registerProvider(providerId: string, provider: data.AdminServicesProvider): void {

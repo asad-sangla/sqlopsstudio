@@ -363,6 +363,16 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	}
 
 	/**
+	 * Get the info on a database
+	 */
+	public $getDatabaseInfo(handle: number, connectionUri: string): Thenable<data.DatabaseInfo> {
+		return this._runWithProvider(handle, provider => {
+			return provider.adminServicesProvider ? provider.adminServicesProvider.getDatabaseInfo(connectionUri)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
 	 * Create a new login on the provided connection
 	 */
 	public $createLogin(handle: number, connectionUri: string, login: data.LoginInfo): Thenable<data.CreateLoginResponse> {

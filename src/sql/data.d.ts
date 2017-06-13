@@ -799,6 +799,8 @@ declare module 'data' {
 		createLogin(connectionUri: string, login: LoginInfo): Thenable<CreateLoginResponse>;
 
 		getDefaultDatabaseInfo(connectionUri: string): Thenable<DatabaseInfo>;
+
+		getDatabaseInfo(connectionUri: string): Thenable<DatabaseInfo>;
 	}
 
 	// Task service interfaces ----------------------------------------------------------------------------

@@ -199,6 +199,11 @@ export abstract class ExtHostDataProtocolShape {
 	$getDefaultDatabaseInfo(handle: number, connectionUri: string): Thenable<data.DatabaseInfo> { throw ni(); }
 
 	/**
+	 * Get the database info
+	 */
+	$getDatabaseInfo(handle: number, connectionUri: string): Thenable<data.DatabaseInfo> { throw ni(); }
+
+	/**
 	 * Create a new login on the provided connection
 	 */
 	$createLogin(handle: number, connectionUri: string, login: data.LoginInfo): Thenable<data.CreateLoginResponse> { throw ni(); }

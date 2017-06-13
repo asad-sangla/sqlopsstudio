@@ -13,11 +13,11 @@ import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
 
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 
-import { BackupConfigInfo, ProviderMetadata } from 'data';
+import { ProviderMetadata, DatabaseInfo } from 'data';
 
 /* Wrapper for a metadata service that contains the uri string to use on each request */
 export class SingleConnectionMetadataService {
@@ -63,16 +63,15 @@ export class SingleConnectionManagementService {
 	}
 }
 
-/* Wrapper for a disaster recovery service that contains the uri string to use */
-export class SingleDisasterRecoveryService {
+export class SingleAdminService {
 
 	constructor(
-		private _disasterRecoveryService: IDisasterRecoveryService,
+		private _adminService: IAdminService,
 		private _uri: string
 	) { }
 
-	public get databaseInfo(): Thenable<BackupConfigInfo> {
-		return this._disasterRecoveryService.getBackupConfigInfo(this._uri);
+	public get databaseInfo(): Thenable<DatabaseInfo> {
+		return this._adminService.getDatabaseInfo(this._uri);
 	}
 }
 
@@ -101,7 +100,7 @@ class Deferred<T> {
 @Injectable()
 export class DashboardServiceInterface {
 	private _uniqueSelector: string;
-	private _uri;
+	private _uri: string;
 	/* Bootstrap params*/
 	private _bootstrapParams: DashboardComponentParams;
 	/* Metadata */
@@ -111,7 +110,7 @@ export class DashboardServiceInterface {
 	/* Themeing */
 	public themeService: IWorkbenchThemeService;
 	/* Disaster Recovery */
-	public disasterRecoveryService: SingleDisasterRecoveryService;
+	public adminService: SingleAdminService;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
@@ -140,7 +139,7 @@ export class DashboardServiceInterface {
 		this._uri = uri;
 		this.metadataService = new SingleConnectionMetadataService(this._bootstrapService.metadataService, this._uri);
 		this.connectionManagementService = new SingleConnectionManagementService(this._bootstrapService.connectionManagementService, this._uri);
-		this.disasterRecoveryService = new SingleDisasterRecoveryService(this._bootstrapService.disasterRecoveryService, this._uri);
+		this.adminService = new SingleAdminService(this._bootstrapService.adminService, this._uri);
 	}
 
 	/**
@@ -169,7 +168,6 @@ export class DashboardServiceInterface {
 	 * Opens the backup dialog for the current connection
 	 */
 	public backup(): void {
-
 		TaskUtilities.showBackup(
 			this._uri,
 			this._bootstrapParams.connection,

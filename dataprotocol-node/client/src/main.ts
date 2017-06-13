@@ -58,6 +58,7 @@ import {
 	LoginInfo, CreateLoginResponse, CreateLoginParams,
 	BackupInfo, BackupResponse, BackupParams,
 	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams,
+	GetDatabaseInfoResponse, GetDatabaseInfoParams,
 	BackupConfigInfoResponse
 } from 'dataprotocol-languageserver-types';
 
@@ -111,7 +112,7 @@ import {
 	EditSubsetRequest, EditSubsetParams, EditSubsetResult,
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
 	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
-	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, BackupConfigInfoRequest,
+	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, GetDatabaseInfoRequest, BackupConfigInfoRequest,
 	ListTasksRequest, CancelTaskRequest, TaskStatusChangedNotification, TaskCreatedNotification,
 	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams
 } from './protocol';
@@ -1748,6 +1749,18 @@ export class LanguageClient {
 					(error) => {
 						self.logFailedRequest(DefaultDatabaseInfoRequest.type, error);
 						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getDatabaseInfo(connectionUri: string): Thenable<DatabaseInfo> {
+				let params: GetDatabaseInfoParams = { ownerUri: connectionUri };
+				return self.doSendRequest(connection, GetDatabaseInfoRequest.type, params, undefined).then(
+					(result) => {
+						return result.databaseInfo;
+					},
+					(error) => {
+						self.logFailedRequest(GetDatabaseInfoRequest.type, error);
+						return Promise.reject(error);
 					}
 				);
 			},

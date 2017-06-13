@@ -350,6 +350,14 @@ export interface DefaultDatabaseInfoResponse {
 	defaultDatabaseInfo: DatabaseInfo;
 }
 
+export interface GetDatabaseInfoResponse {
+	databaseInfo: DatabaseInfo;
+}
+
+export interface GetDatabaseInfoParams {
+	ownerUri: string;
+}
+
 export interface BackupConfigInfoResponse {
 	backupConfigInfo: BackupConfigInfo;
 }
