@@ -60,12 +60,12 @@ export class TaskHistoryRenderer implements IRenderer {
 	private renderTask(tree: ITree, taskNode: TaskNode, templateData: ITaskHistoryTemplateData): void {
 		if (taskNode) {
 			switch (taskNode.status) {
-				case TaskStatus.success:
+				case TaskStatus.succeeded:
 					templateData.icon.classList.remove(TaskHistoryRenderer.FAIL_CLASS);
 					templateData.icon.classList.remove(TaskHistoryRenderer.INPROGRESS_CLASS);
 					templateData.icon.classList.add(TaskHistoryRenderer.SUCCESS_CLASS);
 					break;
-				case TaskStatus.fail:
+				case TaskStatus.failed:
 					templateData.icon.classList.remove(TaskHistoryRenderer.SUCCESS_CLASS);
 					templateData.icon.classList.remove(TaskHistoryRenderer.INPROGRESS_CLASS);
 					templateData.icon.classList.add(TaskHistoryRenderer.FAIL_CLASS);
@@ -91,7 +91,7 @@ export class TaskHistoryRenderer implements IRenderer {
 
 	public timer(taskNode: TaskNode, templateData: ITaskHistoryTemplateData) {
 		let timeLabel = '';
-		if (taskNode.status === TaskStatus.fail) {
+		if (taskNode.status === TaskStatus.failed) {
 			timeLabel += 'Error: ' + taskNode.message;
 		} else {
 			if (taskNode.startTime) {

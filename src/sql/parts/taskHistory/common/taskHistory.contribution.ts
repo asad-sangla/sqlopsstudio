@@ -32,12 +32,15 @@ export class StatusUpdater implements ext.IWorkbenchContribution {
 	) {
 		this.toDispose = [];
 		let self = this;
+
 		this.toDispose.push(this._taskService.onAddNewTask(args => {
 			self.onServiceChange();
 		}));
+
 		this.toDispose.push(this._taskService.onTaskComplete(task => {
 			self.onServiceChange();
 		}));
+
 	}
 
 	private onServiceChange(): void {

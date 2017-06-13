@@ -83,6 +83,12 @@ export abstract class ExtHostDataProtocolShape {
 	$closeObjectExplorerSession(handle: number, closeSessionInfo: data.ObjectExplorerCloseSessionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> { throw ni(); }
 
 	/**
+	 * Tasks
+	 */
+	$getAllTasks(handle: number, listTasksParams: data.ListTasksParams): Thenable<data.ListTasksResponse> { throw ni(); }
+	$cancelTask(handle: number, cancelTaskParams: data.CancelTaskParams): Thenable<boolean> { throw ni(); }
+
+	/**
 	 * Scripting methods
 	 */
 	$scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
@@ -205,7 +211,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Get the extended database prototype
 	 */
-	$getBackupConfigInfo(handle: number, connectionUri: string): Thenable<data.BackupConfigInfo>  { throw ni(); }
+	$getBackupConfigInfo(handle: number, connectionUri: string): Thenable<data.BackupConfigInfo> { throw ni(); }
 }
 
 /**
@@ -232,6 +238,8 @@ export abstract class MainThreadDataProtocolShape {
 	$onQueryMessage(handle: number, message: data.QueryExecuteMessageParams): void { throw ni(); }
 	$onObjectExplorerSessionCreated(handle: number, message: data.ObjectExplorerSession): void { throw ni(); }
 	$onObjectExplorerNodeExpanded(handle: number, message: data.ObjectExplorerExpandInfo): void { throw ni(); }
+	$onTaskCreated(handle: number, sessionResponse: data.TaskInfo): void { throw ni(); }
+	$onTaskStatusChanged(handle: number, sessionResponse: data.TaskProgressInfo): void { throw ni(); }
 
 	/**
 	 * Callback when a session has completed initialization

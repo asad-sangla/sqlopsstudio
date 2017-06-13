@@ -6,10 +6,12 @@
 import * as Utils from 'sql/parts/connection/common/utils';
 
 export enum TaskStatus {
-	fail = 0,
-	success = 1,
-	inProgress = 2,
-	cancel = 3
+	notStarted = 0,
+	inProgress = 1,
+	succeeded = 2,
+	succeededWithWarning = 3,
+	failed = 4,
+	canceled = 5
 }
 
 export class TaskNode {
@@ -32,6 +34,12 @@ export class TaskNode {
      * Database Name
      */
 	public databaseName: string;
+
+	/**
+     * Provider Name
+     */
+	public providerName: string;
+
 
 	/**
      * The start time of the task
@@ -68,8 +76,13 @@ export class TaskNode {
      */
 	public status: TaskStatus;
 
-	constructor(taskName: string, serverName: string, databaseName: string) {
-		this.id = Utils.generateGuid();
+	constructor(taskName: string, serverName: string, databaseName: string, taskId: string = undefined) {
+		if (taskId) {
+			this.id = taskId;
+		} else {
+			this.id = Utils.generateGuid();
+		}
+
 		this.taskName = taskName;
 		this.serverName = serverName;
 		this.databaseName = databaseName;

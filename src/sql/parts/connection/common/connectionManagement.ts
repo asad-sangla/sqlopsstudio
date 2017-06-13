@@ -256,6 +256,16 @@ export enum MetadataType {
 	SProc = 2,
 	Function = 3
 }
+
+export enum TaskStatus {
+	notStarted = 0,
+	inProgress = 1,
+	succeeded = 2,
+	succeededWithWarning = 3,
+	failed = 4,
+	canceled = 5
+}
+
 export interface IConnectionParams {
 	connectionUri: string;
 	connectionProfile: IConnectionProfile;

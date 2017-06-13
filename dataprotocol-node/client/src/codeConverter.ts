@@ -79,6 +79,10 @@ export interface Converter {
 	asExpandInfo(nodeInfo: data.ExpandNodeInfo): ls.ExpandParams;
 
 	asCloseSessionInfo(nodeInfo: data.ObjectExplorerCloseSessionInfo): ls.CloseSessionParams;
+
+	asListTasksParams(params: data.ListTasksParams): ls.ListTasksParams;
+
+	asCancelTaskParams(params: data.CancelTaskParams): ls.CancelTaskParams;
 }
 
 export interface URIConverter {
@@ -385,6 +389,18 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asListTasksParams(params: data.ListTasksParams): ls.ListTasksParams {
+		return <ls.ListTasksParams>{
+			listActiveTasksOnly: params.listActiveTasksOnly
+		};
+	}
+
+	function asCancelTaskParams(params: data.CancelTaskParams): ls.CancelTaskParams {
+		return <ls.CancelTaskParams>{
+			taskId: params.taskId
+		};
+	}
+
 
 	return {
 		asUri,
@@ -419,7 +435,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asScriptingScriptAsParams,
 		asConnectionDetail,
 		asExpandInfo,
-		asCloseSessionInfo
+		asCloseSessionInfo,
+		asListTasksParams,
+		asCancelTaskParams
 	};
 }
 

@@ -262,6 +262,29 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		this._proxy.$onObjectExplorerNodeExpanded(handle, response);
 	}
 
+	// Task Service
+	public $getAllTasks(handle: number, listTasksParams: data.ListTasksParams): Thenable<data.ListTasksResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.taskServicesProvider ? provider.taskServicesProvider.getAllTasks(listTasksParams)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	public $cancelTask(handle: number, cancelTaskParams: data.CancelTaskParams): Thenable<boolean> {
+		return this._runWithProvider(handle, provider => {
+			return provider.taskServicesProvider ? provider.taskServicesProvider.cancelTask(cancelTaskParams)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	public $onTaskStatusChanged(handle: number, response: data.TaskProgressInfo): void {
+		this._proxy.$onTaskStatusChanged(handle, response);
+	}
+
+	public $onTaskCreated(handle: number, response: data.TaskInfo): void {
+		this._proxy.$onTaskCreated(handle, response);
+	}
+
 	public $getDatabases(handle: number, connectionUri: string): Thenable<string[]> {
 		return this._runWithProvider(handle, provider => {
 			return provider.metadataProvider ? provider.metadataProvider.getDatabases(connectionUri)

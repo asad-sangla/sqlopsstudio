@@ -17,6 +17,7 @@ import { IObjectExplorerService } from 'sql/parts/registeredServer/common/object
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
 
 /**
  * Main thread class for handling data protocol management registration.
@@ -38,7 +39,8 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
 		@IScriptingService private _scriptingService: IScriptingService,
 		@IAdminService private _adminService: IAdminService,
-		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService
+		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService,
+		@ITaskService private _taskService: ITaskService
 	) {
 		super();
 		this._proxy = threadService.get(SqlExtHostContext.ExtHostDataProtocol);
@@ -152,6 +154,15 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			}
 		});
 
+		this._taskService.registerProvider(providerId, <data.TaskServicesProvider>{
+			getAllTasks(listTasksParams: data.ListTasksParams): Thenable<data.ListTasksResponse> {
+				return self._proxy.$getAllTasks(handle, listTasksParams);
+			},
+			cancelTask(cancelTaskParams: data.CancelTaskParams): Thenable<boolean> {
+				return self._proxy.$cancelTask(handle, cancelTaskParams);
+			}
+		});
+
 		this._scriptingService.registerProvider(providerId, <data.ScriptingProvider>{
 			scriptAsSelect(connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
 				return self._proxy.$scriptAsSelect(handle, connectionUri, metadata);
@@ -227,12 +238,22 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		this._queryManagementService.onEditSessionReady(ownerUri, success, message);
 	}
 
+	//OE handlers
 	public $onObjectExplorerSessionCreated(handle: number, sessionResponse: data.ObjectExplorerSession): void {
 		this._objectExplorerService.onSessionCreated(handle, sessionResponse);
 	}
 
 	public $onObjectExplorerNodeExpanded(handle: number, expandResponse: data.ObjectExplorerExpandInfo): void {
 		this._objectExplorerService.onNodeExpanded(handle, expandResponse);
+	}
+
+	//Tasks handlers
+	public $onTaskCreated(handle: number, taskInfo: data.TaskInfo): void {
+		this._taskService.onNewTaskCreated(handle, taskInfo);
+	}
+
+	public $onTaskStatusChanged(handle: number, taskProgressInfo: data.TaskProgressInfo): void {
+		this._taskService.onTaskStatusChanged(handle, taskProgressInfo);
 	}
 
 	public $unregisterProvider(handle: number): TPromise<any> {

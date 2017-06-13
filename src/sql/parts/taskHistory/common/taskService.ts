@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+import * as data from 'data';
 import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import Event, { Emitter } from 'vs/base/common/event';
 export const SERVICE_ID = 'taskHistoryService';
 import { ILifecycleService } from 'vs/platform/lifecycle/common/lifecycle';
-import { IChoiceService} from 'vs/platform/message/common/message';
+import { IChoiceService } from 'vs/platform/message/common/message';
 import { localize } from 'vs/nls';
 import Severity from 'vs/base/common/severity';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -24,20 +25,26 @@ export interface ITaskService {
 	handleTaskComplete(eventArgs: TaskStatusChangeArgs): void;
 	getAllTasks(): TaskNode;
 	getNumberOfInProgressTasks(): number;
+	onNewTaskCreated(handle: number, taskInfo: data.TaskInfo);
+	onTaskStatusChanged(handle: number, taskProgressInfo: data.TaskProgressInfo);
+	/**
+	 * Register a ObjectExplorer provider
+	 */
+	registerProvider(providerId: string, provider: data.TaskServicesProvider): void;
 }
 
 export interface TaskStatusChangeArgs {
 	taskId: string;
-	status: TaskStatus;
+	status: data.TaskStatus;
 	message?: string;
 }
-
 
 export class TaskService implements ITaskService {
 	public _serviceBrand: any;
 	private _taskQueue: TaskNode;
 	private _onTaskComplete = new Emitter<TaskNode>();
 	private _onAddNewTask = new Emitter<TaskNode>();
+	private _providers: { [handle: string]: data.TaskServicesProvider; } = Object.create(null);
 
 	constructor(
 		@ILifecycleService lifecycleService: ILifecycleService,
@@ -48,6 +55,55 @@ export class TaskService implements ITaskService {
 		this._onAddNewTask = new Emitter<TaskNode>();
 
 		lifecycleService.onWillShutdown(event => event.veto(this.beforeShutdown()));
+
+	}
+
+	/**
+	 * Register a ObjectExplorer provider
+	 */
+	public registerProvider(providerId: string, provider: data.TaskServicesProvider): void {
+		this._providers[providerId] = provider;
+	}
+
+	public onNewTaskCreated(handle: number, taskInfo: data.TaskInfo) {
+		let node: TaskNode = new TaskNode(taskInfo.name, taskInfo.serverName, taskInfo.databaseName, taskInfo.taskId);
+		node.providerName = taskInfo.providerName;
+		this.handleNewTask(node);
+	}
+
+	public onTaskStatusChanged(handle: number, taskProgressInfo: data.TaskProgressInfo) {
+		this.handleTaskComplete({
+			taskId: taskProgressInfo.taskId,
+			status: taskProgressInfo.status,
+			message: taskProgressInfo.message
+		});
+	}
+
+	public cancelTask(providerId: string, taskId: string): Thenable<boolean> {
+		let provider = this._providers[providerId];
+		if (provider) {
+			return provider.cancelTask({
+				taskId: taskId
+			});
+		}
+		return Promise.resolve(undefined);
+	}
+
+	private cancelAllTasks(): Thenable<void> {
+		return new TPromise<void>((resolve, reject) => {
+			let promises = this._taskQueue.children.map(task => {
+				if (task.status === TaskStatus.inProgress || task.status === TaskStatus.notStarted) {
+					return this.cancelTask(task.providerName, task.id);
+				}
+				return Promise.resolve(true);
+			});
+
+			Promise.all(promises).then(result => {
+				resolve(undefined);
+			}).catch(error => {
+				reject(error);
+			});
+		});
 	}
 
 	public handleNewTask(task: TaskNode): void {
@@ -67,14 +123,17 @@ export class TaskService implements ITaskService {
 			localize('no', "No")
 		];
 
-		return new TPromise<boolean>((resolve) => {
+		return new TPromise<boolean>((resolve, reject) => {
 			let numOfInprogressTasks = this.getNumberOfInProgressTasks();
 			if (numOfInprogressTasks > 0) {
 				this.choiceService.choose(Severity.Warning, message, options, 0, false).done(choice => {
 					switch (choice) {
 						case 0:
-							// Todo: cancel the remaining tasks
-							resolve(false);
+							this.cancelAllTasks().then(() => {
+								resolve(false);
+							}, error => {
+								reject(error);
+							});
 						case 1:
 							resolve(true);
 					}
@@ -92,9 +151,18 @@ export class TaskService implements ITaskService {
 			if (eventArgs.message) {
 				task.message = eventArgs.message;
 			}
-			task.endTime = new Date().toLocaleTimeString();
-			task.timer.end();
-			this._onTaskComplete.fire(task);
+			switch (task.status) {
+				case TaskStatus.canceled:
+				case TaskStatus.succeeded:
+				case TaskStatus.succeededWithWarning:
+				case TaskStatus.failed:
+					task.endTime = new Date().toLocaleTimeString();
+					task.timer.end();
+					this._onTaskComplete.fire(task);
+					break;
+				default:
+					break;
+			}
 		}
 	}
 

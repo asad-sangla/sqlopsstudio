@@ -90,6 +90,10 @@ export interface Converter {
 	asObjectExplorerNodeInfo(params: ls.ExpandResponse): data.ObjectExplorerExpandInfo;
 
 	asObjectExplorerCloseSessionResponse(params: ls.CloseSessionResponse): data.ObjectExplorerCloseSessionResponse;
+
+	asListTasksResponse(response: ls.ListTasksResponse): data.ListTasksResponse;
+
+	asTaskInfo(params: ls.TaskInfo): data.TaskInfo;
 }
 
 export interface URIConverter {
@@ -614,6 +618,24 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asListTasksResponse(response: ls.ListTasksResponse): data.ListTasksResponse {
+		return <data.ListTasksResponse>{
+			tasks: response.tasks
+		};
+	}
+
+	function asTaskInfo(params: ls.TaskInfo): data.TaskInfo {
+		return <data.TaskInfo>{
+			taskId: params.taskId,
+			status: params.status,
+			serverName: params.serverName,
+			name: params.name,
+			databaseName: params.databaseName,
+			description: params.description,
+			providerName: params.providerName
+		};
+	}
+
 	return {
 		asUri,
 		asDiagnostics,
@@ -653,7 +675,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asObjectExplorerSession,
 		asObjectExplorerCreateSessionResponse,
 		asObjectExplorerNodeInfo,
-		asObjectExplorerCloseSessionResponse
+		asObjectExplorerCloseSessionResponse,
+		asListTasksResponse,
+		asTaskInfo,
 	};
 }
 

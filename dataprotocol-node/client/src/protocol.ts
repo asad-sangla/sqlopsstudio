@@ -30,7 +30,7 @@ import {
 	BackupInfo, BackupParams, BackupResponse,
 	LoginInfo, CreateLoginParams, CreateLoginResponse,
 	DatabaseInfo, BackupConfigInfo, CreateDatabaseParams, CreateDatabaseResponse,
-	TaskInfo, ListTasksParams, ListTasksResponse,
+	TaskInfo, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo,
 	DefaultDatabaseInfoParams, DefaultDatabaseInfoResponse, BackupConfigInfoResponse
 } from 'dataprotocol-languageserver-types';
 
@@ -1412,6 +1412,21 @@ export namespace ObjectExplorerExpandCompleteNotification {
 
 export namespace ListTasksRequest {
 	export const type: RequestType<ListTasksParams, ListTasksResponse, void> = { get method(): string { return 'tasks/listtasks'; } };
+}
+
+export namespace CancelTaskRequest {
+	export const type: RequestType<CancelTaskParams, boolean, void> = { get method(): string { return 'tasks/canceltask'; } };
+}
+
+// ------------------------------- < Task Service Events > ------------------------------------
+
+
+export namespace TaskStatusChangedNotification {
+	export const type: NotificationType<TaskProgressInfo> = { get method(): string { return 'tasks/statuschanged'; } };
+}
+
+export namespace TaskCreatedNotification {
+	export const type: NotificationType<TaskInfo> = { get method(): string { return 'tasks/newtaskcreated'; } };
 }
 
 // ------------------------------- < Admin Service Events > ------------------------------------

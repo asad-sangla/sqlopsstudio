@@ -26,7 +26,9 @@ import {
 	ListDatabasesResult as VListDatabasesResult, ChangedConnectionInfo,
 	SaveResultRequestResult as VSaveResultRequestResult,
 	SaveResultsRequestParams as VSaveResultsRequestParams, ObjectExplorerProvider,
-	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo, AdminServicesProvider, DisasterRecoveryProvider
+	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo,
+	TaskServicesProvider, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo, TaskInfo,
+	AdminServicesProvider, DisasterRecoveryProvider
 } from 'data';
 
 import {
@@ -110,6 +112,7 @@ import {
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
 	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
 	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, BackupConfigInfoRequest,
+	ListTasksRequest, CancelTaskRequest, TaskStatusChangedNotification, TaskCreatedNotification,
 	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams
 } from './protocol';
 
@@ -1920,6 +1923,49 @@ export class LanguageClient {
 			}
 		};
 
+		let taskServicesProvider: TaskServicesProvider = {
+			getAllTasks(listTasksParams: ListTasksParams): Thenable<ListTasksResponse> {
+				return self.doSendRequest(connection, ListTasksRequest.type,
+					self._c2p.asListTasksParams(listTasksParams), undefined).then(
+					self._p2c.asListTasksResponse,
+					(error) => {
+						self.logFailedRequest(ListTasksRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+					);
+
+			},
+			cancelTask(cancelTaskParams: CancelTaskParams): Thenable<boolean> {
+				return self.doSendRequest(connection, CancelTaskRequest.type,
+					self._c2p.asCancelTaskParams(cancelTaskParams), undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(CancelTaskRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+					);
+			},
+
+			registerOnTaskCreated(handler: (response: TaskInfo) => any) {
+				connection.onNotification(TaskCreatedNotification.type, (params: TaskInfo) => {
+					handler(self._p2c.asTaskInfo(params));
+				});
+			},
+
+			registerOnTaskStatusChanged(handler: (response: TaskProgressInfo) => any) {
+				connection.onNotification(TaskStatusChangedNotification.type, (params: TaskProgressInfo) => {
+					handler({
+						taskId: params.taskId,
+						status: params.status,
+						message: params.message,
+						duration: params.duration
+					});
+				});
+			}
+		};
+
 		this._providers.push(dataprotocol.registerProvider({
 			handle: -1,
 
@@ -1939,7 +1985,9 @@ export class LanguageClient {
 
 			adminServicesProvider: adminServicesProvider,
 
-			disasterRecoveryProvider: disasterRecoveryProvider
+			disasterRecoveryProvider: disasterRecoveryProvider,
+
+			taskServicesProvider: taskServicesProvider
 		}));
 
 		// Hook to the workspace-wide notifications that aren't routed to a specific provider

@@ -153,7 +153,7 @@ export class TaskHistoryView extends CollapsibleViewletView {
 			let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
 			let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
 			if (isDoubleClick) {
-				if (task.status === TaskStatus.fail) {
+				if (task.status === TaskStatus.failed) {
 					var err = task.taskName + ': ' + task.message;
 					this._errorMessageService.showDialog(undefined, Severity.Error, 'Task Error', err);
 				}

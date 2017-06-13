@@ -89,12 +89,22 @@ export function createApiFactory(
 						extHostDataProvider.$onQueryMessage(provider.handle, message);
 					});
 
+					//OE callbacks
 					provider.objectExplorerProvider.registerOnSessionCreated((response: data.ObjectExplorerSession) => {
 						extHostDataProvider.$onObjectExplorerSessionCreated(provider.handle, response);
 					});
 
 					provider.objectExplorerProvider.registerOnExpandCompleted((response: data.ObjectExplorerExpandInfo) => {
 						extHostDataProvider.$onObjectExplorerNodeExpanded(provider.handle, response);
+					});
+
+					//Tasks callbacks
+					provider.taskServicesProvider.registerOnTaskCreated((response: data.TaskInfo) => {
+						extHostDataProvider.$onTaskCreated(provider.handle, response);
+					});
+
+					provider.taskServicesProvider.registerOnTaskStatusChanged((response: data.TaskProgressInfo) => {
+						extHostDataProvider.$onTaskStatusChanged(provider.handle, response);
 					});
 
 					// Edit Data callbacks
@@ -116,7 +126,8 @@ export function createApiFactory(
 				ServiceOptionType: sqlExtHostTypes.ServiceOptionType,
 				ConnectionOptionSpecialType: sqlExtHostTypes.ConnectionOptionSpecialType,
 				EditRowState: sqlExtHostTypes.EditRowState,
-				MetadataType: sqlExtHostTypes.MetadataType
+				MetadataType: sqlExtHostTypes.MetadataType,
+				TaskStatus: sqlExtHostTypes.TaskStatus
 			};
 		}
 	};

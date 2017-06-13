@@ -337,21 +337,6 @@ declare module 'data' {
 		getViewInfo(connectionUri: string, metadata: ObjectMetadata): Thenable<ColumnMetadata[]>;
 	}
 
-	export interface ObjectExplorerProvider {
-		createNewSession(connInfo: ConnectionInfo): Thenable<ObjectExplorerSessionResponse>;
-
-		expandNode(nodeInfo: ExpandNodeInfo): Thenable<boolean>;
-
-		refreshNode(nodeInfo: ExpandNodeInfo): Thenable<boolean>;
-
-		closeSession(closeSessionInfo: ObjectExplorerCloseSessionInfo): Thenable<ObjectExplorerCloseSessionResponse>;
-
-		registerOnSessionCreated(handler: (response: ObjectExplorerSession) => any);
-
-		registerOnExpandCompleted(handler: (response: ObjectExplorerExpandInfo) => any);
-
-	}
-
 	export interface ScriptingResult {
 		objectName: string;
 
@@ -395,6 +380,8 @@ declare module 'data' {
 		adminServicesProvider: AdminServicesProvider;
 
 		disasterRecoveryProvider: DisasterRecoveryProvider;
+
+		taskServicesProvider: TaskServicesProvider;
 	}
 
 	/**
@@ -772,6 +759,21 @@ declare module 'data' {
 		success: boolean;
 	}
 
+	export interface ObjectExplorerProvider {
+		createNewSession(connInfo: ConnectionInfo): Thenable<ObjectExplorerSessionResponse>;
+
+		expandNode(nodeInfo: ExpandNodeInfo): Thenable<boolean>;
+
+		refreshNode(nodeInfo: ExpandNodeInfo): Thenable<boolean>;
+
+		closeSession(closeSessionInfo: ObjectExplorerCloseSessionInfo): Thenable<ObjectExplorerCloseSessionResponse>;
+
+		registerOnSessionCreated(handler: (response: ObjectExplorerSession) => any);
+
+		registerOnExpandCompleted(handler: (response: ObjectExplorerExpandInfo) => any);
+
+	}
+
 	// Admin Services interfaces  -----------------------------------------------------------------------
 	export interface DatabaseInfo {
 		options: {};
@@ -799,6 +801,54 @@ declare module 'data' {
 		getDefaultDatabaseInfo(connectionUri: string): Thenable<DatabaseInfo>;
 	}
 
+	// Task service interfaces ----------------------------------------------------------------------------
+	export enum TaskStatus {
+		notStarted = 0,
+		inProgress = 1,
+		succeeded = 2,
+		succeededWithWarning = 3,
+		failed = 4,
+		canceled = 5
+	}
+
+	export interface ListTasksParams {
+		listActiveTasksOnly: boolean;
+	}
+
+	export interface TaskInfo {
+		taskId: string;
+		status: TaskStatus;
+		serverName: string;
+		databaseName: string;
+		name: string;
+		description: string;
+		providerName: string;
+	}
+
+	export interface ListTasksResponse {
+		tasks: TaskInfo[];
+	}
+
+	export interface CancelTaskParams {
+		taskId: string;
+	}
+
+	export interface TaskProgressInfo {
+		taskId: string;
+		status: TaskStatus;
+		message: string;
+		duration: number;
+	}
+
+	export interface TaskServicesProvider {
+		getAllTasks(listTasksParams: ListTasksParams): Thenable<ListTasksResponse>;
+
+		cancelTask(cancelTaskParams: CancelTaskParams): Thenable<boolean>;
+
+		registerOnTaskCreated(handler: (response: TaskInfo) => any);
+
+		registerOnTaskStatusChanged(handler: (response: TaskProgressInfo) => any);
+	}
 
 	// Disaster Recovery interfaces  -----------------------------------------------------------------------
 
@@ -816,7 +866,7 @@ declare module 'data' {
 
 		backupType: number;
 
-        backupComponent: number;
+		backupComponent: number;
 
 		backupDeviceType: number;
 
@@ -824,10 +874,10 @@ declare module 'data' {
 
 		backupsetName: string;
 
-		selectedFileGroup: {[path: string]: string};
+		selectedFileGroup: { [path: string]: string };
 
 		// List of {key: backup path, value: device type}
-		backupPathDevices: {[path: string]: number};
+		backupPathDevices: { [path: string]: number };
 
 		backupPathList: [string];
 	}

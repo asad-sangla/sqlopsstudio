@@ -268,25 +268,43 @@ export class CapabiltiesDiscoveryResult {
 
 // Task Services types
 
-export enum TaskState {
+export enum TaskStatus {
 	notStarted = 0,
-	running = 1,
-	complete = 2
+	inProgress = 1,
+	succeeded = 2,
+	succeededWithWarning = 3,
+	failed = 4,
+	canceled = 5
 }
 
 export interface TaskInfo {
-	taskId: number;
-	state: TaskState;
+	taskId: string;
+	status: TaskStatus;
+	serverName: string;
+	databaseName: string;
+	name: string;
+	description: string;
+	providerName: string;
 }
 
 export interface ListTasksParams {
-	ownerUri: string;
 
 	listActiveTasksOnly: boolean;
 }
 
 export interface ListTasksResponse {
 	tasks: TaskInfo[];
+}
+
+export interface CancelTaskParams {
+	taskId: string;
+}
+
+export interface TaskProgressInfo {
+	taskId: string;
+	status: TaskStatus;
+	message: string;
+	duration: number;
 }
 
 // Admin Services types
@@ -364,10 +382,10 @@ export interface BackupInfo {
 
 	backupsetName: string;
 
-	selectedFileGroup: {[path: string]: string};
+	selectedFileGroup: { [path: string]: string };
 
 	// List of {key: backup path, value: device type}
-	backupPathDevices: {[path: string]: number};
+	backupPathDevices: { [path: string]: number };
 
 	backupPathList: [string];
 }

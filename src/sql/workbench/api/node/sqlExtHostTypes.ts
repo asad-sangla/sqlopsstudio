@@ -25,8 +25,7 @@ export enum ConnectionOptionSpecialType {
 }
 
 
-export enum MetadataType
-{
+export enum MetadataType {
 	Table = 0,
 	View = 1,
 	SProc = 2,
@@ -38,4 +37,14 @@ export enum EditRowState {
 	dirtyInsert = 1,
 	dirtyDelete = 2,
 	dirtyUpdate = 3
+}
+
+
+export enum TaskStatus {
+	notStarted = 0,
+	inProgress = 1,
+	succeeded = 2,
+	succeededWithWarning = 3,
+	failed = 4,
+	canceled = 5
 }
