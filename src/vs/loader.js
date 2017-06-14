@@ -452,6 +452,11 @@ var AMDLoader;
                 if (!AMDLoader.Utilities.isAbsolutePath(result)) {
                     result = this.options.baseUrl + result;
                 }
+                // {{SQL CARBON EDIT}}
+                // angular specific require
+                if (result.includes('component.html')) {
+                    result = result.replace(new RegExp('%20', 'g'), ' ');
+                }
             }
             return this._addUrlArgsIfNecessaryToUrl(result);
         };

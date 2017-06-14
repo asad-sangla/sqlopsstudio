@@ -53,7 +53,7 @@ function buildWin32Setup(arch) {
 			AppMutex: product.win32MutexName,
 			AppId: product.win32AppId,
 			AppUserId: product.win32AppUserModelId,
-			SourceDir: buildPath(arch),
+			SourceDir: buildPath,
 			RepoDir: repoPath,
 			OutputDir: setupDir(arch)
 		};
