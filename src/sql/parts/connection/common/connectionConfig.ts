@@ -163,7 +163,7 @@ export class ConnectionConfig implements IConnectionConfig {
 	 */
 	public addGroupFromProfile(profile: IConnectionProfile): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
-			if (profile.groupId) {
+			if (profile.groupId && profile.groupId !== Utils.defaultGroupId()) {
 				resolve(profile.groupId);
 			} else {
 				let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
