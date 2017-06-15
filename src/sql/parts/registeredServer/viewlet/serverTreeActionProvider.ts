@@ -10,7 +10,7 @@ import { ContributableActionProvider } from 'vs/workbench/browser/actions';
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ChangeConnectionAction, AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction, RefreshAction, EditServerGroupAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
-import { NewQueryAction as OENewQueryAction, DisconnectAction, ScriptSelectAction, EditDataAction as OEEditDataAction, ScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
+import { OENewQueryAction, DisconnectAction, OEScriptSelectAction, OEEditDataAction, OEScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
@@ -91,15 +91,15 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 			actions.push(this._instantiationService.createInstance(DisconnectAction, DisconnectAction.ID, DisconnectAction.LABEL));
 		}
 		if (treeNode.nodeTypeId === NodeType.Table) {
-			actions.push(this._instantiationService.createInstance(ScriptSelectAction, ScriptSelectAction.ID, ScriptSelectAction.LABEL));
-			actions.push(this._instantiationService.createInstance(OEEditDataAction, OEEditDataAction.ID, OEEditDataAction.LABEL));
-			actions.push(this._instantiationService.createInstance(ScriptCreateAction, ScriptCreateAction.ID, ScriptCreateAction.LABEL));
+			actions.push(this._instantiationService.createInstance(OEScriptSelectAction));
+			actions.push(this._instantiationService.createInstance(OEEditDataAction));
+			actions.push(this._instantiationService.createInstance(OEScriptCreateAction));
 		}
 		if (treeNode.nodeTypeId === NodeType.View) {
-			actions.push(this._instantiationService.createInstance(ScriptSelectAction, ScriptSelectAction.ID, ScriptSelectAction.LABEL));
-			actions.push(this._instantiationService.createInstance(ScriptCreateAction, ScriptCreateAction.ID, ScriptCreateAction.LABEL));
+			actions.push(this._instantiationService.createInstance(OEScriptSelectAction));
+			actions.push(this._instantiationService.createInstance(OEScriptCreateAction));
 		}
-		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL));
+		actions.push(this._instantiationService.createInstance(OENewQueryAction));
 		actions.push(this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, treeNode));
 		return actions;
 	}

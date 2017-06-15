@@ -21,6 +21,7 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IEditorInput } from 'vs/platform/editor/common/editor';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export const BOOTSTRAP_SERVICE_ID: string = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -48,6 +49,7 @@ export interface IBootstrapService {
 	themeService: IWorkbenchThemeService;
 	errorMessageService: IErrorMessageService;
 	partService: IPartService;
+	instantiationService: IInstantiationService;
 
 	/*
 	* Bootstraps the Angular module described. Components that need singleton services should inject the

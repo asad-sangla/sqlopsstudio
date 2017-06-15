@@ -129,7 +129,7 @@ export interface IConnectionManagementService {
 
 	getAdvancedProperties(): data.ConnectionOption[];
 
-	getConnectionId(connectionProfile: ConnectionProfile): string;
+	getConnectionId(connectionProfile: IConnectionProfile): string;
 
 	isConnected(fileUri: string): boolean;
 

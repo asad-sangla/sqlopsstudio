@@ -3,10 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { $ } from 'vs/base/browser/dom';
 
-import { NgModuleRef } from '@angular/core';
 import { platformBrowserDynamic, } from '@angular/platform-browser-dynamic';
 
 import { BootstrapParams } from 'sql/services/bootstrap/bootstrapParams';
@@ -18,7 +17,6 @@ import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
-import { DisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/disasterRecoveryUiService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
@@ -58,7 +56,8 @@ export class BootstrapService implements IBootstrapService {
 		@IContextKeyService public contextKeyService: IContextKeyService,
 		@IContextMenuService public contextMenuService: IContextMenuService,
 		@IErrorMessageService public errorMessageService: IErrorMessageService,
-		@IPartService public partService: IPartService
+		@IPartService public partService: IPartService,
+		@IInstantiationService public instantiationService: IInstantiationService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();

@@ -8,18 +8,20 @@ import 'vs/css!sql/media/icons/icons';
 
 import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { IDisposable } from 'vs/base/common/lifecycle';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
+import { BaseActionContext } from 'sql/common/baseActions';
+import { GetExplorerActions, DashboardActionContext } from './explorerActions';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
-import data = require('data');
+import { ObjectMetadata } from 'data';
 
 export class ObjectMetadataWrapper {
-	public metadata: data.ObjectMetadata;
+	public metadata: ObjectMetadata;
 
 	public isEqualTo(wrapper: ObjectMetadataWrapper): boolean {
 		if (!wrapper) {
@@ -31,7 +33,7 @@ export class ObjectMetadataWrapper {
 			&& this.metadata.name === wrapper.metadata.name;
 	}
 
-	public static createFromObjectMetadata(objectMetadata: data.ObjectMetadata[]): ObjectMetadataWrapper[] {
+	public static createFromObjectMetadata(objectMetadata: ObjectMetadata[]): ObjectMetadataWrapper[] {
 		if (!objectMetadata) {
 			return undefined;
 		}
@@ -66,6 +68,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		hoverColor: '',
 		backgroundColor: ''
 	};
+	private isCloud: boolean;
 	//tslint:disable-next-line
 	private dataType = MetadataType;
 	private filterString = '';
@@ -87,6 +90,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig
 	) {
 		super();
+		this.isCloud = _bootstrap.connectionManagementService.connectionInfo.serverInfo.isCloud;
 		this.init();
 	}
 
@@ -166,20 +170,66 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		this._changeRef.detectChanges();
 	}
 
+	/**
+	 * Handles action when an item is double clicked in the explorer widget
+	 * @param val If on server page, explorer objects will be strings representing databases;
+	 * If on databasepage, explorer objects will be ObjectMetadataWrapper representing object types;
+	 *
+	 */
 	//tslint:disable-next-line
-	private handleItemClick(val: string, index: number): void {
+	private handleItemDoubleClick(val: string | ObjectMetadataWrapper): void {
 		let self = this;
-		self.selected = index;
-		if (self._config.context === 'server') {
-			self._bootstrap.connectionManagementService.changeDatabase(val).then(result => {
-				self._router.navigate(['/database']);
-			});
-		}
-		self._changeRef.detectChanges();
+		self._bootstrap.connectionManagementService.changeDatabase(val as string).then(result => {
+			self._router.navigate(['/database']);
+		});
 	}
 
+	/**
+	 * Handles action when a item is clicked in the explorer widget
+	 * @param val If on server page, explorer objects will be strings representing databases;
+	 * If on databasepage, explorer objects will be ObjectMetadataWrapper representing object types;
+	 * @param index Index of the value in the array the ngFor template is built from
+	 * @param event Click event
+	 */
 	//tslint:disable-next-line
-	private _typeof(val: any, type: string): boolean {
-		return typeof val === type;
+	private handleItemClick(val: string | ObjectMetadataWrapper, index: number, event: any): void {
+		let self = this;
+		self.selected = index;
+		// event will exist if the context menu span was clicked
+		if (event) {
+			if (self._config.context === 'server') {
+				let anchor = { x: event.pageX + 1, y: event.pageY };
+				self._bootstrap.contextMenuService.showContextMenu({
+					getAnchor: () => anchor,
+					getActions: () => GetExplorerActions(undefined, self.isCloud, self._bootstrap),
+					getActionsContext: () => {
+						return <DashboardActionContext> {
+							uri: self._bootstrap.getUnderlyingUri(),
+							profile: self._bootstrap.connectionManagementService.connectionInfo.connectionProfile,
+							connInfo: self._bootstrap.connectionManagementService.connectionInfo,
+							databasename: val as string
+						};
+					}
+				});
+
+			} else if (self._config.context === 'database') {
+				let object = val as ObjectMetadataWrapper;
+				let anchor = { x: event.pageX + 1, y: event.pageY };
+				self._bootstrap.contextMenuService.showContextMenu({
+					getAnchor: () => anchor,
+					getActions: () => GetExplorerActions(object.metadata.metadataType, self.isCloud, self._bootstrap),
+					getActionsContext: () => {
+						return <BaseActionContext> {
+							object: object.metadata,
+							uri: self._bootstrap.getUnderlyingUri(),
+							profile: self._bootstrap.connectionManagementService.connectionInfo.connectionProfile
+						};
+					}
+				});
+			} else {
+				console.log('Unknown dashboard context: ', self._config.context);
+			}
+		}
+	self._changeRef.detectChanges();
 	}
 }

@@ -13,6 +13,7 @@ import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction } from 'sql/common/baseActions';
 
 export class ObjectExplorerActionsContext {
 	public treeNode: TreeNode;
@@ -20,19 +21,16 @@ export class ObjectExplorerActionsContext {
 	public container: HTMLElement;
 }
 
-export class NewQueryAction extends Action {
-	public static ID = 'objectExplorer.newQuery';
-	public static LABEL = localize('newQuery', 'New Query');
+export class OENewQueryAction extends NewQueryAction {
+	protected static ID = 'objectExplorer.' + NewQueryAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
 
 	constructor(
-		id: string,
-		label: string,
-		@IQueryEditorService private queryEditorService: IQueryEditorService,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
+		@IQueryEditorService protected queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
 	) {
-		super(id, label);
+		super(queryEditorService, connectionManagementService, OENewQueryAction.ID);
 	}
 
 	public run(actionContext: any): TPromise<boolean> {
@@ -44,67 +42,54 @@ export class NewQueryAction extends Action {
 		ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 
-		TaskUtilities.newQuery(connectionProfile, this.connectionManagementService, this.queryEditorService).then(() => {
+		return super.run({profile: connectionProfile}).then(() => {
 			ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
+			return true;
 		});
-
-		return TPromise.as(true);
 	}
 }
 
-export class ScriptSelectAction extends Action {
-	public static ID = 'objectExplorer.scriptSelect';
-	public static LABEL = localize('scriptSelect', 'Select Top 1000');
+export class OEScriptSelectAction extends ScriptSelectAction {
+	protected static ID = 'objectExplorer.' + ScriptSelectAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
 
 	constructor(
-		id: string,
-		label: string,
-		@IScriptingService private scriptingService: IScriptingService,
-		@IQueryEditorService private queryEditorService: IQueryEditorService,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
+		@IScriptingService protected scriptingService: IScriptingService,
+		@IQueryEditorService protected queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
 	) {
-		super(id, label);
+		super(queryEditorService, connectionManagementService, scriptingService, OEScriptSelectAction.ID);
 	}
 
 	public run(actionContext: any): TPromise<boolean> {
-		return new TPromise<boolean>((resolve, reject) => {
-			if (actionContext instanceof ObjectExplorerActionsContext) {
-				//set objectExplorerTreeNode for context menu clicks
-				this._objectExplorerTreeNode = actionContext.treeNode;
-				this._container = actionContext.container;
-			}
-			ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
-			var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
-			var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
-			var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
+		if (actionContext instanceof ObjectExplorerActionsContext) {
+			//set objectExplorerTreeNode for context menu clicks
+			this._objectExplorerTreeNode = actionContext.treeNode;
+			this._container = actionContext.container;
+		}
+		ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
+		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+		var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
+		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
-			TaskUtilities.scriptSelect(connectionProfile, metadata, ownerUri, this.connectionManagementService,
-				this.queryEditorService, this.scriptingService).then(() => {
-					ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
-					resolve(true);
-				}).catch(error => {
-					ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
-					reject(error);
-				});
+		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
+			ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
+			return result;
 		});
 	}
 }
 
-export class EditDataAction extends Action {
-	public static ID = 'objectExplorer.editData';
-	public static LABEL = localize('editData', 'Edit Data');
+export class OEEditDataAction extends EditDataAction {
+	protected static ID = 'objectExplorer.' + EditDataAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
 
 	constructor(
-		id: string,
-		label: string,
-		@IQueryEditorService private queryEditorService: IQueryEditorService,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
+		@IQueryEditorService protected queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
 	) {
-		super(id, label);
+		super(queryEditorService, connectionManagementService, OEEditDataAction.ID);
 	}
 
 	public run(actionContext: any): TPromise<boolean> {
@@ -117,48 +102,40 @@ export class EditDataAction extends Action {
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
-		TaskUtilities.editData(connectionProfile, metadata.name, metadata.schema, this.connectionManagementService, this.queryEditorService).then(() => {
+		return super.run({ profile: connectionProfile, object: metadata }).then((result) => {
 			ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
+			return true;
 		});
-		return TPromise.as(true);
 	}
 }
 
-export class ScriptCreateAction extends Action {
-	public static ID = 'objectExplorer.scriptCreate';
-	public static LABEL = localize('scriptCreate', 'Script Create');
+export class OEScriptCreateAction extends ScriptCreateAction {
+	protected static ID = 'objectExplorer.' + ScriptCreateAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
 
 	constructor(
-		id: string,
-		label: string,
-		@IScriptingService private scriptingService: IScriptingService,
-		@IQueryEditorService private queryEditorService: IQueryEditorService,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
+		@IScriptingService protected scriptingService: IScriptingService,
+		@IQueryEditorService protected queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
 	) {
-		super(id, label);
+		super(queryEditorService, connectionManagementService, scriptingService, OEScriptCreateAction.ID);
 	}
 
 	public run(actionContext: any): TPromise<boolean> {
-		return new TPromise<boolean>((resolve, reject) => {
-			if (actionContext instanceof ObjectExplorerActionsContext) {
-				//set objectExplorerTreeNode for context menu clicks
-				this._objectExplorerTreeNode = actionContext.treeNode;
-				this._container = actionContext.container;
-			}
-			ObjectExplorerActionUtilities.showLoadingIcon(this._container,  ObjectExplorerActionUtilities.objectExplorerElementClass);
-			var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
-			var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
-			var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
+		if (actionContext instanceof ObjectExplorerActionsContext) {
+			//set objectExplorerTreeNode for context menu clicks
+			this._objectExplorerTreeNode = actionContext.treeNode;
+			this._container = actionContext.container;
+		}
+		ObjectExplorerActionUtilities.showLoadingIcon(this._container,  ObjectExplorerActionUtilities.objectExplorerElementClass);
+		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
+		var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
 
-			TaskUtilities.scriptCreate(connectionProfile, metadata, ownerUri, this.connectionManagementService, this.queryEditorService, this.scriptingService).then(() => {
-				ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
-				resolve(true);
-			}).catch(error => {
-				ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
-				reject(error);
-			});
+		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
+			ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
+			return result;
 		});
 	}
 }

@@ -48,9 +48,9 @@
                     <div class="icon database" style="padding: 8px"></div>
                 </div>
             </span>
-            <span *ngIf="_config.context === 'database'" style="flex: 1 1 auto" (click)="handleItemClick(row.metadata.name, i)">{{row.metadata.name}}</span>
-            <span *ngIf="_config.context === 'server'" style="flex: 1 1 auto" (click)="handleItemClick(row, i)">{{row}}</span>
-            <span *ngIf="hovered === i || selected === i" style="flex: 0 0 auto; padding-right: 5px">...</span>
+            <span *ngIf="_config.context === 'database'" style="flex: 1 1 auto" (click)="handleItemClick(undefined, i)">{{row.metadata.name}}</span>
+            <span *ngIf="_config.context === 'server'" style="flex: 1 1 auto" (dblclick)="handleItemDoubleClick(row)" (click)="handleItemClick(undefined, i)">{{row}}</span>
+            <span *ngIf="hovered === i || selected === i" style="flex: 0 0 auto; padding-right: 5px" (click)="handleItemClick(row, i, $event)">...</span>
         </div>
     </div>
 </div>

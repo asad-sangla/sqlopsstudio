@@ -16,6 +16,8 @@ import { ConnectionManagementInfo } from 'sql/parts/connection/common/connection
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 import { ProviderMetadata, DatabaseInfo } from 'data';
 
@@ -103,12 +105,11 @@ export class DashboardServiceInterface {
 	private _uri: string;
 	/* Bootstrap params*/
 	private _bootstrapParams: DashboardComponentParams;
-	/* Metadata */
 	public metadataService: SingleConnectionMetadataService;
-	/* Connection */
 	public connectionManagementService: SingleConnectionManagementService;
-	/* Themeing */
 	public themeService: IWorkbenchThemeService;
+	public contextMenuService: IContextMenuService;
+	public instantiationService: IInstantiationService;
 	/* Disaster Recovery */
 	public adminService: SingleAdminService;
 
@@ -116,6 +117,8 @@ export class DashboardServiceInterface {
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
 		this.themeService = this._bootstrapService.themeService;
+		this.contextMenuService = this._bootstrapService.contextMenuService;
+		this.instantiationService = this._bootstrapService.instantiationService;
 	 }
 
 	 /**
@@ -172,5 +175,13 @@ export class DashboardServiceInterface {
 			this._uri,
 			this._bootstrapParams.connection,
 			this._bootstrapService.disasterRecoveryUiService);
+	}
+
+	/**
+	 * Gets the underlying Uri for dashboard
+	 * In general don't use this, use specific services instances exposed publically
+	 */
+	public getUnderlyingUri(): string {
+		return this._uri;
 	}
 }

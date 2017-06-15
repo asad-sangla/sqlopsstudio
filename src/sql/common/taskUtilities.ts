@@ -5,10 +5,9 @@
 'use strict';
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import {
 	IConnectableInput, IConnectionManagementService,
-	IConnectionCompletionOptions, ConnectionType
+	IConnectionCompletionOptions, ConnectionType, IErrorMessageService
 } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
@@ -16,7 +15,6 @@ import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { withElementById } from 'vs/base/browser/builder';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Severity from 'vs/base/common/severity';
@@ -25,7 +23,7 @@ import data = require('data');
 
 export class TaskUtilities {
 
-	private static connectIfNotAlreadyConnected(connectionProfile: ConnectionProfile, connectionService: IConnectionManagementService): Promise<void> {
+	private static connectIfNotAlreadyConnected(connectionProfile: IConnectionProfile, connectionService: IConnectionManagementService): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			let uri = connectionService.getConnectionId(connectionProfile);
 			if (!connectionService.isConnected(uri)) {
@@ -51,7 +49,7 @@ export class TaskUtilities {
 	/**
 	 * Select the top rows from an object
 	 */
-	public static scriptSelect(connectionProfile: ConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
+	public static scriptSelect(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			TaskUtilities.connectIfNotAlreadyConnected(connectionProfile, connectionService).then(connectionResult => {
 				scriptingService.scriptAsSelect(ownerUri, metadata).then(result => {
@@ -105,7 +103,7 @@ export class TaskUtilities {
 	/**
 	 * Script the object as a CREATE statement
 	 */
-	public static scriptCreate(connectionProfile: ConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
+	public static scriptCreate(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			TaskUtilities.connectIfNotAlreadyConnected(connectionProfile, connectionService).then(connectionResult => {
 				scriptingService.scriptAsCreate(ownerUri, metadata).then(result => {
@@ -160,7 +158,7 @@ export class TaskUtilities {
 			let container = withElementById(partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 			errorMessageService.showDialog(container, Severity.Info,
 				'Coming Soon',
-				'This feature is not yet implement.  It will be available in an upcoming release.');
+				'This feature is not yet implemented.  It will be available in an upcoming release.');
 
 			// adminService.showCreateDatabaseWizard(uri, connection);
 		});

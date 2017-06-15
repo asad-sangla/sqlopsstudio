@@ -578,7 +578,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return false;
 	}
 
-	public getConnectionId(connectionProfile: ConnectionProfile): string {
+	public getConnectionId(connectionProfile: IConnectionProfile): string {
 		return this._connectionStatusManager.getConnectionManagementId(connectionProfile);
 	}
 

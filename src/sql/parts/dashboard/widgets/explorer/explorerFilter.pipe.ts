@@ -22,19 +22,20 @@ export class ExplorerFilter implements PipeTransform {
 			return [];
 		}
 
+
+		// format filter string for clean filter, no white space and lower case
+		let filterString = filter.trim().toLowerCase();
+
 		// handle case when passed a string array
 		if (typeof items[0] === 'string') {
 			let _items = <string[]> items;
 			return _items.filter(item => {
-				return item.includes(filter);
+				return item.toLowerCase().includes(filterString);
 			});
 		}
 
 		// make typescript compiler happy
 		items = <ObjectMetadataWrapper[]> items;
-
-		// save a local version of the string for comparison
-		let filterString = filter;
 
 		// determine is a filter is applied
 		let metadataType: MetadataType;
@@ -69,14 +70,11 @@ export class ExplorerFilter implements PipeTransform {
 			}
 		}
 
-		// format filter string for clean filter, no white space and lower case
-		filterString = filterString.trim().toLowerCase();
-
 		return items.filter(item => {
 			if (metadataType !== undefined) {
 				return item.metadata.metadataType === metadataType && item.metadata.name.toLowerCase().includes(filterString);
 			} else {
-				return item.metadata.name.includes(filterString);
+				return item.metadata.name.toLowerCase().includes(filterString);
 			}
 		});
 	}
