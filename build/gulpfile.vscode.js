@@ -460,10 +460,19 @@ function installCredentialsService(platform) {
 	return credentials.installService(platform, true);
 }
 
+function installPgSqlService(platform) {
+	var pgsql = require('../extensions/pgsql/client/out/languageservice/serviceInstallerUtil');
+	return pgsql.installService(platform, true);
+}
+
 gulp.task('install-sqltoolsservice', () => {
     return installSqlToolsService();
 });
 
 gulp.task('install-credentialservice', () => {
 	return installCredentialsService();
+})
+
+gulp.task('install-pgsqlservice', () => {
+	return installPgSqlService();
 })

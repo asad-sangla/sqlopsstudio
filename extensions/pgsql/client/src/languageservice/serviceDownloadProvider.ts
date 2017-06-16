@@ -109,13 +109,13 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Downloads the PostgreSQL tools service and decompress it in the install folder.
 	 */
-	public installPgSQLToolsService(platform: Runtime): Promise<boolean> {
+	public installPgSQLToolsService(platform: Runtime, packaging?: boolean): Promise<boolean> {
 		const proxy = <string>this._config.getWorkspaceConfig('http.proxy');
 		const strictSSL = this._config.getWorkspaceConfig('http.proxyStrictSSL', true);
 
 		return new Promise<boolean>((resolve, reject) => {
 			const fileName = this.getDownloadFileName(platform);
-			const installDirectory = this.getInstallDirectory(platform);
+			const installDirectory = this.getInstallDirectory(platform, packaging);
 
 			this._logger.appendLine(`${Constants.serviceInstallingTo} ${installDirectory}.`);
 			const urlString = this.getGetDownloadUrl(fileName);
