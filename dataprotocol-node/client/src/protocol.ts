@@ -1400,7 +1400,7 @@ export namespace ObjectExplorerCloseSessionRequest {
 
 
 export namespace ObjectExplorerCreateSessionCompleteNotification {
-	export const type: NotificationType<SessionCreatedParameters> = { get method(): string { return 'objectexplorer/sessionCreated'; } };
+	export const type: NotificationType<SessionCreatedParameters> = { get method(): string { return 'objectexplorer/sessioncreated'; } };
 }
 
 
