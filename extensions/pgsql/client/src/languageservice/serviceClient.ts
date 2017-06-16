@@ -20,11 +20,12 @@ import ServiceDownloadProvider from './serviceDownloadProvider';
 import DecompressProvider from './decompressProvider';
 import HttpClient from './httpClient';
 import ExtConfig from  '../configurations/extConfig';
-import {PlatformInformation} from '../models/platform';
+import {PlatformInformation, Runtime} from '../models/platform';
 import {ServerInitializationResult, ServerStatusView} from './serverStatus';
 import StatusView from '../views/statusView';
 import * as LanguageServiceContracts from '../models/contracts/languageService';
 
+const path = require('path');
 let opener = require('opener');
 let _channel: OutputChannel = undefined;
 const fs = require('fs-extra');
@@ -170,7 +171,7 @@ export default class PgSqlToolsServiceClient {
             fs.copy(srcPath, destPath, err => {
                 if (err) reject(err);
                 this._server.getServerPath(platformInfo.runtimeId).then(destServerPath => {
-                    this.initializeLanguageClient(destServerPath, context);
+                    this.initializeLanguageClient(destServerPath, context, platformInfo.runtimeId);
                 })
             });
         });
@@ -203,14 +204,14 @@ export default class PgSqlToolsServiceClient {
                                     _channel.show();
                                 }
                                 this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
-                                    this.initializeLanguageClient(installedServerPath, context);
+                                    this.initializeLanguageClient(installedServerPath, context, platformInfo.runtimeId);
                                     resolve(new ServerInitializationResult(true, true, installedServerPath));
                                 }).catch(downloadErr => {
                                     reject(downloadErr);
                                 });
                             } else {
                                 console.log(serverPath);
-                                this.initializeLanguageClient(serverPath, context);
+                                this.initializeLanguageClient(serverPath, context, platformInfo.runtimeId);
                                 resolve(new ServerInitializationResult(false, true, serverPath));
                             }
                         }).catch(err => {
@@ -260,14 +261,14 @@ export default class PgSqlToolsServiceClient {
         });
     }
 
-    private initializeLanguageClient(serverPath: string, context: ExtensionContext): void {
+    private initializeLanguageClient(serverPath: string, context: ExtensionContext, runtimeId: Runtime): void {
          if (serverPath === undefined) {
                 Utils.logDebug(Constants.invalidServiceFilePath);
                 throw new Error(Constants.invalidServiceFilePath);
          } else {
             let self = this;
             self.initializeLanguageConfiguration();
-            let serverOptions: ServerOptions = this.createServerOptions(serverPath);
+            let serverOptions: ServerOptions = this.createServerOptions(serverPath, runtimeId);
             this.client = this.createLanguageClient(serverOptions);
 
             if (context !== undefined) {
@@ -320,13 +321,29 @@ export default class PgSqlToolsServiceClient {
         };
     }
 
-    private createServerOptions(servicePath: string): ServerOptions {
+    private createServerOptions(servicePath: string, runtimeId: Runtime): ServerOptions {
         let serverArgs = [];
         let serverCommand: string = servicePath;
 
-        // Enable diagnostic logging in the service if it is configured
         let config = workspace.getConfiguration(Constants.extensionConfigSectionName);
         if (config) {
+            // Override the server path with the local debug path if enabled
+            let useLocalSource = config[Constants.configUseDebugSource];
+            if (useLocalSource) {
+                let localSourcePath = config[Constants.configDebugSourcePath];
+                let filePath = path.join(localSourcePath, Constants.localSourceFilename);
+
+                process.env.PYTHONPATH = localSourcePath;
+                serverCommand = runtimeId === Runtime.Windows_64 || runtimeId === Runtime.Windows_86 ? 'python' : 'python3';
+
+                let enableStartupDebugging = config[Constants.configStartupDebugging];
+                let debuggingArg = enableStartupDebugging ? '--enable-remote-debugging-wait' : '--enable-remote-debugging';
+                let debugPort = config[Constants.configDebugServerPort];
+                debuggingArg += '=' + debugPort;
+                serverArgs = [filePath, debuggingArg];
+            }
+
+            // Enable diagnostic logging in the service if it is configured
             let logDebugInfo = config[Constants.configLogDebugInfo];
             if (logDebugInfo) {
                 serverArgs.push('--enable-logging');

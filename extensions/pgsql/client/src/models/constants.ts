@@ -58,6 +58,12 @@ export const configCopyRemoveNewLine = 'copyRemoveNewLine';
 export const configSplitPaneSelection = 'splitPaneSelection';
 export const configEnablePgSql = 'enabled';
 
+export const configDebugSourcePath = 'debugSourcePath';
+export const configUseDebugSource = 'useDebugSource';
+export const configStartupDebugging = 'enableStartupDebugging';
+export const configDebugServerPort = 'debugServerPort';
+export const localSourceFilename = 'pgsqltoolsservice/pgtoolsservice_main.py';
+
 
 // localizable strings
 export const configMyConnectionsNoServerName = 'Missing server name in user preferences connection: ';
