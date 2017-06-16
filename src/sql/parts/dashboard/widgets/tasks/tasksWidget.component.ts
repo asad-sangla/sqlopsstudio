@@ -16,6 +16,8 @@ import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboar
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
 
+import { PathUtilities } from 'sql/common/pathUtilities';
+
 export interface Task {
 	name: string;
 	action: () => void;
@@ -40,22 +42,23 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	private _themeDispose: IDisposable;
 	private _tileBackground: string;
 	//tslint:disable-next-line
+
 	private tasks: Task[] = [
 		{
 			name: 'New Query',
 			action: () => {
 				this.newQuery();
 			},
-			icon: require.toUrl('sql/media/icons/file.svg'),
-			inverse_icon: require.toUrl('sql/media/icons/file_inverse.svg')
+			icon: PathUtilities.toUrl('sql/media/icons/file.svg'),
+			inverse_icon: PathUtilities.toUrl('sql/media/icons/file_inverse.svg')
 		},
 		{
 			name: 'Create Database',
 			action: () => {
 				this.createDatabase();
 			},
-			icon: require.toUrl('sql/media/icons/new_database.svg'),
-			inverse_icon: require.toUrl('sql/media/icons/new_database_inverse.svg')
+			icon: PathUtilities.toUrl('sql/media/icons/new_database.svg'),
+			inverse_icon: PathUtilities.toUrl('sql/media/icons/new_database_inverse.svg')
 		},
 		{
 			name: 'Backup',
@@ -66,8 +69,8 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 			show_condition: (): boolean => {
 				return !this._isAzure;
 			},
-			icon: require.toUrl('sql/media/icons/backup.svg'),
-			inverse_icon: require.toUrl('sql/media/icons/backup_inverse.svg')
+			icon: PathUtilities.toUrl('sql/media/icons/backup.svg'),
+			inverse_icon: PathUtilities.toUrl('sql/media/icons/backup_inverse.svg')
 		}
 	];
 
