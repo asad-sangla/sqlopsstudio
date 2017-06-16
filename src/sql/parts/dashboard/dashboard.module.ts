@@ -6,11 +6,12 @@
 import { Inject, NgModule, forwardRef, ApplicationRef, ComponentFactoryResolver } from '@angular/core';
 import { CommonModule, APP_BASE_HREF } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes, UrlSerializer } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgGridModule } from 'angular4-grid';
 import { BreadcrumbModule } from 'primeng/primeng';
 
+import CustomUrlSerializer from 'sql/common/urlSerializer';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 /* Services */
 import { BreadcrumbService } from 'sql/parts/dashboard/services/breadcrumb.service';
@@ -75,7 +76,8 @@ const appRoutes: Routes = [
 	providers: [
 		{ provide: APP_BASE_HREF, useValue: '/' },
 		BreadcrumbService,
-		DashboardServiceInterface
+		DashboardServiceInterface,
+		{ provide: UrlSerializer, useClass: CustomUrlSerializer }
 	]
 })
 export class DashboardModule {
