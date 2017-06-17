@@ -22,6 +22,7 @@ import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/work
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IEditorInput } from 'vs/platform/editor/common/editor';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 
 export const BOOTSTRAP_SERVICE_ID: string = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -50,6 +51,7 @@ export interface IBootstrapService {
 	errorMessageService: IErrorMessageService;
 	partService: IPartService;
 	instantiationService: IInstantiationService;
+	angularEventingService: IAngularEventingService;
 
 	/*
 	* Bootstraps the Angular module described. Components that need singleton services should inject the

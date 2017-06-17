@@ -105,6 +105,7 @@ import { ErrorMessageService } from 'sql/workbench/errorMessageDialog/errorMessa
 import { ServerGroupController } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupController';
 
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { IAngularEventingService, AngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { BootstrapService } from 'sql/services/bootstrap/bootstrapServiceImpl';
 import { ICapabilitiesService, CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/services/credentials/credentialsService';
@@ -607,6 +608,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IAdminService, this.instantiationService.createInstance(AdminService));
 		serviceCollection.set(IDisasterRecoveryService, this.instantiationService.createInstance(DisasterRecoveryService));
 		serviceCollection.set(IDisasterRecoveryUiService, this.instantiationService.createInstance(DisasterRecoveryUiService));
+		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 
 		this.toDispose.push(connectionManagementService);

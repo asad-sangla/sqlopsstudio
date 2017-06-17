@@ -4,96 +4,56 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
-import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IConnectionManagementService, MetadataType } from 'sql/parts/connection/common/connectionManagement';
-import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction,
-	BackupAction, BaseActionContext } from 'sql/common/baseActions';
+	BackupAction, BaseActionContext, ManageAction } from 'sql/common/baseActions';
 import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IAction } from 'vs/base/common/actions';
-
-export interface DashboardActionContext extends BaseActionContext {
-	databasename?: string;
-}
 
 export function GetExplorerActions(type: MetadataType, isCloud: boolean, dashboardService: DashboardServiceInterface): TPromise<IAction[]> {
 	let actions: IAction[] = [];
 
 	// When context menu on database
 	if (type === undefined) {
-		actions.push(dashboardService.instantiationService.createInstance(DashboardNewQueryAction));
+		actions.push(dashboardService.instantiationService.createInstance(DashboardNewQueryAction, DashboardNewQueryAction.ID, NewQueryAction.LABEL));
 		if (!isCloud) {
-			actions.push(dashboardService.instantiationService.createInstance(DashboardBackupAction));
+			actions.push(dashboardService.instantiationService.createInstance(DashboardBackupAction, DashboardBackupAction.ID, DashboardBackupAction.LABEL));
 		}
+		actions.push(dashboardService.instantiationService.createInstance(ManageAction, ManageAction.ID, ManageAction.LABEL));
 		return TPromise.as(actions);
 	}
 
-	actions.push(dashboardService.instantiationService.createInstance(DashboardScriptCreateAction));
+	actions.push(dashboardService.instantiationService.createInstance(ScriptCreateAction, ScriptCreateAction.ID, ScriptCreateAction.LABEL));
 
 	if (type === MetadataType.View || type === MetadataType.Table) {
-		actions.push(dashboardService.instantiationService.createInstance(DashboardScriptSelectAction));
+		actions.push(dashboardService.instantiationService.createInstance(ScriptSelectAction, ScriptSelectAction.ID, ScriptSelectAction.LABEL));
 	}
 
 	if (type === MetadataType.Table) {
-		actions.push(dashboardService.instantiationService.createInstance(DashboardEditDataAction));
+		actions.push(dashboardService.instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL));
 	}
 
 	return TPromise.as(actions);
 }
 
-export class DashboardScriptSelectAction extends ScriptSelectAction {
-	protected static ID = 'dashboard.' + ScriptSelectAction.ID;
-
-	constructor(
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		@IScriptingService protected scriptingService: IScriptingService
-	) {
-		super(queryEditorService, connectionManagementService, scriptingService, DashboardScriptSelectAction.ID);
-	}
-}
-
-export class DashboardEditDataAction extends EditDataAction {
-	protected static ID = 'dashboard.' + EditDataAction.ID;
-
-	constructor(
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
-	) {
-		super(queryEditorService, connectionManagementService, DashboardEditDataAction.ID);
-	}
-}
-
-export class DashboardScriptCreateAction extends ScriptCreateAction {
-	protected static ID = 'dashboard.' + ScriptCreateAction.ID;
-
-	constructor(
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		@IScriptingService protected scriptingService: IScriptingService
-	) {
-		super(queryEditorService, connectionManagementService, scriptingService, DashboardScriptCreateAction.ID);
-	}
-}
-
 export class DashboardBackupAction extends BackupAction {
-	protected static ID = 'dashboard.' + BackupAction.ID;
+	public static ID = 'dashboard.' + BackupAction.ID;
 
 	constructor(
-		@IDisasterRecoveryUiService protected disasterRecoveryService: IDisasterRecoveryUiService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
+		id: string, label: string,
+		@IDisasterRecoveryUiService disasterRecoveryService: IDisasterRecoveryUiService,
+		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
 	) {
-		super(disasterRecoveryService, DashboardBackupAction.ID);
+		super(id, label, disasterRecoveryService);
 	}
 
-	run(actionContext: DashboardActionContext): TPromise<boolean> {
+	run(actionContext: BaseActionContext): TPromise<boolean> {
 		let self = this;
 		// change database before performing action
 		return new TPromise<boolean>((resolve, reject) => {
-			self.connectionManagementService.changeDatabase(actionContext.uri, actionContext.databasename).then(() => {
+			self.connectionManagementService.changeDatabase(actionContext.uri, actionContext.profile.databaseName).then(() => {
 				actionContext.connInfo = self.connectionManagementService.getConnectionInfo(actionContext.uri);
 				super.run(actionContext).then((result) => {
 					resolve(result);
@@ -106,22 +66,14 @@ export class DashboardBackupAction extends BackupAction {
 	}
 }
 
-
 export class DashboardNewQueryAction extends NewQueryAction {
-	protected static ID = 'dashboard.' + NewQueryAction.ID;
+	public static ID = 'dashboard.' + NewQueryAction.ID;
 
-	constructor(
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
-	) {
-		super(queryEditorService, connectionManagementService, DashboardNewQueryAction.ID);
-	}
-
-	run(actionContext: DashboardActionContext): TPromise<boolean> {
+	run(actionContext: BaseActionContext): TPromise<boolean> {
 		let self = this;
 		// change database before performing action
 		return new TPromise<boolean>((resolve, reject) => {
-			self.connectionManagementService.changeDatabase(actionContext.uri, actionContext.databasename).then(() => {
+			self.connectionManagementService.changeDatabase(actionContext.uri, actionContext.profile.databaseName).then(() => {
 				actionContext.profile = self.connectionManagementService.getConnectionProfile(actionContext.uri);
 				super.run(actionContext).then((result) => {
 					resolve(result);

@@ -25,6 +25,7 @@ import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/work
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IEditorInput } from 'vs/platform/editor/common/editor';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from './bootstrapService';
+import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 
 
 export class BootstrapService implements IBootstrapService {
@@ -57,7 +58,8 @@ export class BootstrapService implements IBootstrapService {
 		@IContextMenuService public contextMenuService: IContextMenuService,
 		@IErrorMessageService public errorMessageService: IErrorMessageService,
 		@IPartService public partService: IPartService,
-		@IInstantiationService public instantiationService: IInstantiationService
+		@IInstantiationService public instantiationService: IInstantiationService,
+		@IAngularEventingService public angularEventingService: IAngularEventingService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();

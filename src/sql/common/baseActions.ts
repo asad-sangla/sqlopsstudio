@@ -14,6 +14,8 @@ import { TaskUtilities } from 'sql/common/taskUtilities';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 
 import { ObjectMetadata } from 'data';
 
@@ -25,15 +27,15 @@ export interface BaseActionContext {
 }
 
 export class NewQueryAction extends Action {
-	protected static ID = 'newQuery';
-	protected static LABEL = localize('newQuery', 'New Query');
+	public static ID = 'newQuery';
+	public static LABEL = localize('newQuery', 'New Query');
 
 	constructor(
+		id: string, label: string,
 		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		private ID?: string
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
 	) {
-		super(ID || NewQueryAction.LABEL, NewQueryAction.LABEL);
+		super(id, label);
 	}
 
 	public run(actionContext: BaseActionContext): TPromise<boolean> {
@@ -55,16 +57,16 @@ export class NewQueryAction extends Action {
 }
 
 export class ScriptSelectAction extends Action {
-	protected static ID = 'selectTop';
-	protected static LABEL = localize('scriptSelect', 'Select Top 1000');
+	public static ID = 'selectTop';
+	public static LABEL = localize('scriptSelect', 'Select Top 1000');
 
 	constructor(
+		id: string, label: string,
 		@IQueryEditorService protected queryEditorService: IQueryEditorService,
 		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		@IScriptingService protected scriptingService: IScriptingService,
-		private ID?: string
+		@IScriptingService protected scriptingService: IScriptingService
 	) {
-		super(ID || ScriptSelectAction.ID, ScriptSelectAction.LABEL);
+		super(id, label);
 	}
 
 	public run (actionContext: BaseActionContext): TPromise<boolean> {
@@ -88,15 +90,15 @@ export class ScriptSelectAction extends Action {
 }
 
 export class EditDataAction extends Action {
-	protected static ID = 'editData';
-	protected static LABEL = localize('editData', 'Edit Data');
+	public static ID = 'editData';
+	public static LABEL = localize('editData', 'Edit Data');
 
 	constructor(
+		id: string, label: string,
 		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		protected ID?: string
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
 	) {
-		super(ID || EditDataAction.ID, EditDataAction.LABEL);
+		super(id, label);
 	}
 
 	public run (actionContext: BaseActionContext): TPromise<boolean> {
@@ -120,16 +122,16 @@ export class EditDataAction extends Action {
 }
 
 export class ScriptCreateAction extends Action {
-	protected static ID = 'scriptCreate';
-	protected static LABEL = localize('scriptCreate', 'Script Create');
+	public static ID = 'scriptCreate';
+	public static LABEL = localize('scriptCreate', 'Script Create');
 
 	constructor(
+		id: string, label: string,
 		@IQueryEditorService protected queryEditorService: IQueryEditorService,
 		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		@IScriptingService protected scriptingService: IScriptingService,
-		protected ID?: string
+		@IScriptingService protected scriptingService: IScriptingService
 	) {
-		super(ID || ScriptCreateAction.ID, ScriptCreateAction.LABEL);
+		super(id, label);
 	}
 
 	public run (actionContext: BaseActionContext): TPromise<boolean> {
@@ -154,14 +156,14 @@ export class ScriptCreateAction extends Action {
 }
 
 export class BackupAction extends Action {
-	protected static ID = 'backup';
-	protected static LABEL = localize('backup', 'Backup');
+	public static ID = 'backup';
+	public static LABEL = localize('backup', 'Backup');
 
 	constructor(
-		@IDisasterRecoveryUiService protected disasterRecoveryService: IDisasterRecoveryUiService,
-		protected ID?: string
+		id: string, label: string,
+		@IDisasterRecoveryUiService protected disasterRecoveryService: IDisasterRecoveryUiService
 	) {
-		super(ID || BackupAction.ID, BackupAction.LABEL);
+		super(id, label);
 	}
 
 	run(actionContext: BaseActionContext): TPromise<boolean> {
@@ -178,6 +180,33 @@ export class BackupAction extends Action {
 					resolve(false);
 				}
 			);
+		});
+	}
+}
+
+export class ManageAction extends Action {
+	public static ID = 'manage';
+	public static LABEL = localize('manage', 'Manage');
+
+	constructor(
+		id: string, label: string,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
+		@IBootstrapService protected bootstrapService: IBootstrapService,
+		@IAngularEventingService protected angularEventingService: IAngularEventingService
+	) {
+		super(id, label);
+	}
+
+	run(actionContext: BaseActionContext): TPromise<boolean> {
+		let self = this;
+		return new TPromise<boolean>((resolve, reject) => {
+			self.connectionManagementService.connect(actionContext.profile, actionContext.uri, {showDashboard: true, saveTheConnection: false, params: undefined, showConnectionDialogOnError: false}).then(() => {
+				self.angularEventingService.sendAngularEvent(actionContext.uri, 'database');
+				resolve(true);
+			},
+			() => {
+				resolve(false);
+			});
 		});
 	}
 }

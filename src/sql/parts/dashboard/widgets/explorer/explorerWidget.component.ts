@@ -11,8 +11,9 @@ import { Router } from '@angular/router';
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { BaseActionContext } from 'sql/common/baseActions';
-import { GetExplorerActions, DashboardActionContext } from './explorerActions';
+import { GetExplorerActions } from './explorerActions';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
@@ -179,7 +180,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	private handleItemDoubleClick(val: string | ObjectMetadataWrapper): void {
 		let self = this;
 		self._bootstrap.connectionManagementService.changeDatabase(val as string).then(result => {
-			self._router.navigate(['/database']);
+			self._router.navigate(['database-dashboard']);
 		});
 	}
 
@@ -198,19 +199,20 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		if (event) {
 			if (self._config.context === 'server') {
 				let anchor = { x: event.pageX + 1, y: event.pageY };
+				let newProfile = <IConnectionProfile> Object.create(self._bootstrap.connectionManagementService.connectionInfo.connectionProfile);
+				newProfile.databaseName = val as string;
 				self._bootstrap.contextMenuService.showContextMenu({
 					getAnchor: () => anchor,
 					getActions: () => GetExplorerActions(undefined, self.isCloud, self._bootstrap),
 					getActionsContext: () => {
-						return <DashboardActionContext> {
+						return <BaseActionContext> {
 							uri: self._bootstrap.getUnderlyingUri(),
-							profile: self._bootstrap.connectionManagementService.connectionInfo.connectionProfile,
+							profile: newProfile,
 							connInfo: self._bootstrap.connectionManagementService.connectionInfo,
 							databasename: val as string
 						};
 					}
 				});
-
 			} else if (self._config.context === 'database') {
 				let object = val as ObjectMetadataWrapper;
 				let anchor = { x: event.pageX + 1, y: event.pageY };

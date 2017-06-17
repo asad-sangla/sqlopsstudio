@@ -37,7 +37,7 @@ const appRoutes: Routes = [
 	{ path: 'server-dashboard', component: ServerDashboardPage },
 	{
 		path: '',
-		redirectTo: '/database-dashboard',
+		redirectTo: 'database-dashboard',
 		pathMatch: 'full'
 	},
 	{ path: '**', component: DatabaseDashboardPage }

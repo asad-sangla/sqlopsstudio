@@ -3,7 +3,8 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, Inject, forwardRef, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -14,10 +15,12 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 import { ProviderMetadata, DatabaseInfo } from 'data';
 
@@ -95,12 +98,12 @@ class Deferred<T> {
 /*
 	Providers a interface between a dashboard interface and the rest of carbon.
 	Stores the uri and unique selector of a dashboard instance and uses that
-	whenever a call to a carbon service needs this information, so that the widget
+	whenever a call to a carbon service needs this information, so that the widgets
 	don't need to be aware of the uri or selector. Simplifies the initialization and
 	usage of a widget.
 */
 @Injectable()
-export class DashboardServiceInterface {
+export class DashboardServiceInterface implements OnDestroy {
 	private _uniqueSelector: string;
 	private _uri: string;
 	/* Bootstrap params*/
@@ -112,13 +115,19 @@ export class DashboardServiceInterface {
 	public instantiationService: IInstantiationService;
 	/* Disaster Recovery */
 	public adminService: SingleAdminService;
+	private _disposables: IDisposable[] = [];
 
 	constructor(
-		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
+		@Inject(forwardRef(() => Router)) private _router: Router,
 	) {
 		this.themeService = this._bootstrapService.themeService;
 		this.contextMenuService = this._bootstrapService.contextMenuService;
 		this.instantiationService = this._bootstrapService.instantiationService;
+	 }
+
+	 ngOnDestroy() {
+		 this._disposables.forEach((item) => item.dispose());
 	 }
 
 	 /**
@@ -143,6 +152,7 @@ export class DashboardServiceInterface {
 		this.metadataService = new SingleConnectionMetadataService(this._bootstrapService.metadataService, this._uri);
 		this.connectionManagementService = new SingleConnectionManagementService(this._bootstrapService.connectionManagementService, this._uri);
 		this.adminService = new SingleAdminService(this._bootstrapService.adminService, this._uri);
+		this._disposables.push(toDisposableSubscription(this._bootstrapService.angularEventingService.onAngularEvent(this._uri, this.handleDashboardEvent)));
 	}
 
 	/**
@@ -183,5 +193,16 @@ export class DashboardServiceInterface {
 	 */
 	public getUnderlyingUri(): string {
 		return this._uri;
+	}
+
+	private get handleDashboardEvent(): (event: string) => void {
+		let self = this;
+		return function (event: string): void {
+			if (event === 'database') {
+				self._router.navigate(['database-dashboard']);
+			} else if (event === 'server') {
+				self._router.navigate(['server-dashboard']);
+			}
+		};
 	}
 }

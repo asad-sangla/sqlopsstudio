@@ -8,10 +8,7 @@ import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
-import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
-import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction } from 'sql/common/baseActions';
 
@@ -22,16 +19,9 @@ export class ObjectExplorerActionsContext {
 }
 
 export class OENewQueryAction extends NewQueryAction {
-	protected static ID = 'objectExplorer.' + NewQueryAction.ID;
+	public static ID = 'objectExplorer.' + NewQueryAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
-
-	constructor(
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
-	) {
-		super(queryEditorService, connectionManagementService, OENewQueryAction.ID);
-	}
 
 	public run(actionContext: any): TPromise<boolean> {
 		if (actionContext instanceof ObjectExplorerActionsContext) {
@@ -50,17 +40,9 @@ export class OENewQueryAction extends NewQueryAction {
 }
 
 export class OEScriptSelectAction extends ScriptSelectAction {
-	protected static ID = 'objectExplorer.' + ScriptSelectAction.ID;
+	public static ID = 'objectExplorer.' + ScriptSelectAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
-
-	constructor(
-		@IScriptingService protected scriptingService: IScriptingService,
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
-	) {
-		super(queryEditorService, connectionManagementService, scriptingService, OEScriptSelectAction.ID);
-	}
 
 	public run(actionContext: any): TPromise<boolean> {
 		if (actionContext instanceof ObjectExplorerActionsContext) {
@@ -81,16 +63,9 @@ export class OEScriptSelectAction extends ScriptSelectAction {
 }
 
 export class OEEditDataAction extends EditDataAction {
-	protected static ID = 'objectExplorer.' + EditDataAction.ID;
+	public static ID = 'objectExplorer.' + EditDataAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
-
-	constructor(
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
-	) {
-		super(queryEditorService, connectionManagementService, OEEditDataAction.ID);
-	}
 
 	public run(actionContext: any): TPromise<boolean> {
 		if (actionContext instanceof ObjectExplorerActionsContext) {
@@ -110,17 +85,9 @@ export class OEEditDataAction extends EditDataAction {
 }
 
 export class OEScriptCreateAction extends ScriptCreateAction {
-	protected static ID = 'objectExplorer.' + ScriptCreateAction.ID;
+	public static ID = 'objectExplorer.' + ScriptCreateAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
 	private _container: HTMLElement;
-
-	constructor(
-		@IScriptingService protected scriptingService: IScriptingService,
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
-	) {
-		super(queryEditorService, connectionManagementService, scriptingService, OEScriptCreateAction.ID);
-	}
 
 	public run(actionContext: any): TPromise<boolean> {
 		if (actionContext instanceof ObjectExplorerActionsContext) {

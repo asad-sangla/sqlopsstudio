@@ -18,7 +18,7 @@ export class ExplorerFilter implements PipeTransform {
 			return items;
 		}
 
-		if (!filter) {
+		if (!filter && typeof items[0] !== 'string') {
 			return [];
 		}
 

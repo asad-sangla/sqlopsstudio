@@ -23,7 +23,6 @@ export class BreadcrumbService {
 
     constructor(@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) {
         let self = this;
-        self._connection = self._bootstrap.connectionManagementService.connectionInfo;
         self._bootstrap.connectionManagementService.onDidChangeConnection((e: ConnectionManagementInfo) => {
             self._connection = e;
         });
@@ -32,6 +31,7 @@ export class BreadcrumbService {
 
     public setBreadcrumbs(page: BreadcrumbClass) {
         let self = this;
+        self._connection = self._bootstrap.connectionManagementService.connectionInfo;
         self._setBreadcrumbs(page);
     }
 
