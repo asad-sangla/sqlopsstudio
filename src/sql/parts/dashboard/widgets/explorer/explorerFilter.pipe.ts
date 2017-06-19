@@ -28,14 +28,14 @@ export class ExplorerFilter implements PipeTransform {
 
 		// handle case when passed a string array
 		if (typeof items[0] === 'string') {
-			let _items = <string[]> items;
+			let _items = <string[]>items;
 			return _items.filter(item => {
 				return item.toLowerCase().includes(filterString);
 			});
 		}
 
 		// make typescript compiler happy
-		items = <ObjectMetadataWrapper[]> items;
+		items = <ObjectMetadataWrapper[]>items;
 
 		// determine is a filter is applied
 		let metadataType: MetadataType;
@@ -49,7 +49,7 @@ export class ExplorerFilter implements PipeTransform {
 				filterString = filterArray[1];
 			}
 
-			switch(filterArray[0].toLowerCase()) {
+			switch (filterArray[0].toLowerCase()) {
 				case 'view':
 					metadataType = MetadataType.View;
 					break;

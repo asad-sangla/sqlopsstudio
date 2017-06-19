@@ -59,9 +59,9 @@ export class DashboardBackupAction extends BackupAction {
 					resolve(result);
 				});
 			},
-			() => {
-				resolve(false);
-			});
+				() => {
+					resolve(false);
+				});
 		});
 	}
 }
@@ -79,9 +79,9 @@ export class DashboardNewQueryAction extends NewQueryAction {
 					resolve(result);
 				});
 			},
-			() => {
-				resolve(false);
-			});
+				() => {
+					resolve(false);
+				});
 		});
 	}
 }

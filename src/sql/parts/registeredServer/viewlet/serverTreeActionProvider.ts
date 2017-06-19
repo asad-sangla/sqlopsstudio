@@ -9,7 +9,11 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ContributableActionProvider } from 'vs/workbench/browser/actions';
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ChangeConnectionAction, AddServerAction, NewQueryAction, RenameGroupAction, DeleteConnectionAction, RefreshAction, EditServerGroupAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import {
+	DisconnectConnectionAction, AddServerAction, NewQueryAction, ManageConnectionAction,
+	RenameGroupAction, DeleteConnectionAction, RefreshAction, EditServerGroupAction
+}
+	from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { OENewQueryAction, DisconnectAction, OEScriptSelectAction, OEEditDataAction, OEScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
@@ -62,7 +66,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	 */
 	public getConnectionActions(tree: ITree, element: ConnectionProfile): IAction[] {
 		return [
-			this._instantiationService.createInstance(ChangeConnectionAction, ChangeConnectionAction.ID, ChangeConnectionAction.LABEL),
+			this._instantiationService.createInstance(DisconnectConnectionAction, DisconnectConnectionAction.ID, DisconnectConnectionAction.LABEL),
+			this._instantiationService.createInstance(ManageConnectionAction, ManageConnectionAction.ID, ManageConnectionAction.LABEL),
 			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
 			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL, element),
 			this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, element)

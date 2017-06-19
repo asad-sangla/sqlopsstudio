@@ -106,10 +106,6 @@ export class ServerTreeView extends CollapsibleViewletView {
 			self.refreshTree();
 		})
 		);
-		this.toDispose.push(this._connectionManagementService.onConnect((connectionParams) => {
-			self.addObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
-		})
-		);
 		this.toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
 			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
 		})
@@ -332,7 +328,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 	}
 
 	private onSelected(event: any): void {
-		this.treeSelectionHandler.onTreeSelect(event, this.tree, this._connectionManagementService);
+		this.treeSelectionHandler.onTreeSelect(event, this.tree, this._connectionManagementService, this._objectExplorerService);
 	}
 
 	private onError(err: any): void {

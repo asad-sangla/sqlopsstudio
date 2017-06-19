@@ -3,13 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import data = require('data');
-import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
 // Test stubs for commonly used objects
 
 export class ObjectExplorerProviderTestService implements data.ObjectExplorerProvider {
 
-	public createNewSession(connInfo: ConnectionProfile): Thenable<data.ObjectExplorerCloseSessionResponse> {
+	public createNewSession(connInfo: data.ConnectionInfo): Thenable<data.ObjectExplorerCloseSessionResponse> {
 		return Promise.resolve(undefined);
 	}
 

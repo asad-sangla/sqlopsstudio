@@ -26,6 +26,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	public groupId: string;
 	public saveProfile: boolean;
 
+	public isDisconnecting: boolean = false;
 	public constructor(serverCapabilities?: data.DataProtocolServerCapabilities, model?: interfaces.IConnectionProfile) {
 		super(serverCapabilities, model);
 		if (model) {

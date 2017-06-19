@@ -171,7 +171,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return undefined;
 	}
 
-	showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
+	showDashboard(connection: ConnectionProfile): Promise<boolean> {
 		return new Promise(() => true);
 	}
 

@@ -32,7 +32,7 @@ export class OENewQueryAction extends NewQueryAction {
 		ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 
-		return super.run({profile: connectionProfile}).then(() => {
+		return super.run({ profile: connectionProfile }).then(() => {
 			ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 			return true;
 		});
@@ -95,7 +95,7 @@ export class OEScriptCreateAction extends ScriptCreateAction {
 			this._objectExplorerTreeNode = actionContext.treeNode;
 			this._container = actionContext.container;
 		}
-		ObjectExplorerActionUtilities.showLoadingIcon(this._container,  ObjectExplorerActionUtilities.objectExplorerElementClass);
+		ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 		var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);

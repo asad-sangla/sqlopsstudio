@@ -85,12 +85,12 @@ class Deferred<T> {
 
 	promise: Promise<T>;
 	resolve: (value?: T | PromiseLike<T>) => void;
-	reject:  (reason?: any) => void;
+	reject: (reason?: any) => void;
 
 	constructor() {
 		this.promise = new Promise<T>((resolve, reject) => {
 			this.resolve = resolve;
-			this.reject  = reject;
+			this.reject = reject;
 		});
 	}
 }
@@ -124,7 +124,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this.themeService = this._bootstrapService.themeService;
 		this.contextMenuService = this._bootstrapService.contextMenuService;
 		this.instantiationService = this._bootstrapService.instantiationService;
-	 }
+	}
 
 	 ngOnDestroy() {
 		 this._disposables.forEach((item) => item.dispose());

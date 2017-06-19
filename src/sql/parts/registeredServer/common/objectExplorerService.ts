@@ -193,7 +193,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 		return new Promise<data.ObjectExplorerSessionResponse>((resolve, reject) => {
 			let provider = this._providers[providerId];
 			if (provider) {
-				provider.createNewSession(connection).then(result => {
+				provider.createNewSession(connection.toConnectionInfo()).then(result => {
 					self._sessions[result.sessionId] = {
 						connection: connection,
 						nodes: {}

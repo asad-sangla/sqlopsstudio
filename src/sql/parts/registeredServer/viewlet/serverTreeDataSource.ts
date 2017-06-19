@@ -47,7 +47,7 @@ export class ServerTreeDataSource implements IDataSource {
 	 */
 	public hasChildren(tree: ITree, element: any): boolean {
 		if (element instanceof ConnectionProfile) {
-			return TreeUpdateUtils.hasObjectExplorerNode(<ConnectionProfile>element, this._connectionManagementService);
+			return true;
 		} else if (element instanceof ConnectionProfileGroup) {
 			return (<ConnectionProfileGroup>element).hasChildren();
 		} else if (element instanceof TreeNode) {

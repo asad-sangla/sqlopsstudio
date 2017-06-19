@@ -21,6 +21,7 @@ import { IObjectExplorerService } from 'sql/parts/registeredServer/common/object
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import Severity from 'vs/base/common/severity';
 import { ObjectExplorerActionsContext, ObjectExplorerActionUtilities } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
+import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 
 export class RefreshAction extends Action {
 
@@ -76,9 +77,9 @@ export class RefreshAction extends Action {
 	}
 }
 
-export class ChangeConnectionAction extends Action {
-	public static ID = 'objectExplorer.connect';
-	public static LABEL = localize('ConnectAction', 'Connect/Disconnect');
+export class DisconnectConnectionAction extends Action {
+	public static ID = 'objectExplorer.disconnect';
+	public static LABEL = localize('DisconnectAction', 'Disconnect');
 
 	private _disposables: IDisposable[] = [];
 	private _connectionProfile: ConnectionProfile;
@@ -99,6 +100,7 @@ export class ChangeConnectionAction extends Action {
 		})
 		);
 		this._disposables.push(this._connectionManagementService.onDisconnect((disconnectParams) => {
+			this._connectionProfile.isDisconnecting = false;
 			self.setLabel();
 			self._connectionManagementService.closeDashboard(disconnectParams.connectionUri);
 		})
@@ -137,42 +139,88 @@ export class ChangeConnectionAction extends Action {
 	}
 
 	run(actionContext: ObjectExplorerActionsContext): TPromise<any> {
+		return new TPromise<boolean>((resolve, reject) => {
+			if (actionContext instanceof ObjectExplorerActionsContext) {
+				//set objectExplorerTreeNode for context menu clicks
+				this._connectionProfile = actionContext.connectionProfile;
+				this._container = actionContext.container;
+				resolve(true);
+			}
 
-		if (actionContext instanceof ObjectExplorerActionsContext) {
-			//set objectExplorerTreeNode for context menu clicks
-			this._connectionProfile = actionContext.connectionProfile;
-			this._container = actionContext.container;
-		}
-
-		if (!this._connectionProfile) {
-			return TPromise.as(true);
-		}
-		if (this._connectionManagementService.isProfileConnected(this._connectionProfile)) {
-			return new TPromise<boolean>((resolve, reject) => {
-				this._connectionManagementService.disconnectProfile(this._connectionProfile).then((value) => resolve(true));
-			});
-		} else {
-			let options: IConnectionCompletionOptions = {
-				params: undefined,
-				saveTheConnection: false,
-				showDashboard: true,
-				showConnectionDialogOnError: true
-			};
-
-			this.enabled = false;
-			ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.connectionElementClass);
-
-			return new TPromise<boolean>((resolve, reject) => {
-				this._connectionManagementService.connect(this._connectionProfile, undefined, options).then((connectionResult) => {
-					if (connectionResult && connectionResult.connected) {
-						this.setLabel();
-					}
-					ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.connectionElementClass);
+			if (!this._connectionProfile) {
+				resolve(true);
+			}
+			if (this._connectionManagementService.isProfileConnected(this._connectionProfile)) {
+				this._connectionProfile.isDisconnecting = true;
+				this._connectionManagementService.disconnectProfile(this._connectionProfile).then((value) => {
 					resolve(true);
+				}
+				).catch(disconnectError => {
+					reject(disconnectError);
 				});
-			});
-		}
+			} else {
+				resolve(true);
+			}
+		});
+	}
 
+	dispose(): void {
+		super.dispose();
+		this._disposables = dispose(this._disposables);
+	}
+}
+
+export class ManageConnectionAction extends Action {
+	public static ID = 'objectExplorer.manage';
+	public static LABEL = localize('ManageAction', 'Manage');
+
+	private _disposables: IDisposable[] = [];
+	private _connectionProfile: ConnectionProfile;
+
+	private _container: HTMLElement;
+
+	constructor(
+		id: string,
+		label: string,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+	) {
+		super(id, label);
+	}
+
+	run(actionContext: ObjectExplorerActionsContext): TPromise<any> {
+		return new TPromise<boolean>((resolve, reject) => {
+			if (actionContext instanceof ObjectExplorerActionsContext) {
+				//set objectExplorerTreeNode for context menu clicks
+				this._connectionProfile = actionContext.connectionProfile;
+				this._container = actionContext.container;
+				resolve(true);
+			}
+
+			if (!this._connectionProfile) {
+				resolve(true);
+			}
+
+			if (this._connectionManagementService.isProfileConnected(this._connectionProfile)) {
+				this._connectionManagementService.showDashboard(this._connectionProfile).then((value) => {
+					resolve(true);
+				}).catch(disconnectError => {
+					reject(disconnectError);
+				});
+			} else {
+				let options: IConnectionCompletionOptions = {
+					params: undefined,
+					saveTheConnection: false,
+					showConnectionDialogOnError: true,
+					showDashboard: true
+				};
+				TreeUpdateUtils.createSessionIfNotCreated(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService).then(() => {
+					resolve(true);
+				}, error => {
+					reject(error);
+				});
+			}
+		});
 	}
 
 	dispose(): void {

@@ -51,7 +51,7 @@ export class NewQueryAction extends Action {
 				error => {
 					resolve(false);
 				}
-			);
+				);
 		});
 	}
 }
@@ -69,7 +69,7 @@ export class ScriptSelectAction extends Action {
 		super(id, label);
 	}
 
-	public run (actionContext: BaseActionContext): TPromise<boolean> {
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.scriptSelect(
 				actionContext.profile,
@@ -101,7 +101,7 @@ export class EditDataAction extends Action {
 		super(id, label);
 	}
 
-	public run (actionContext: BaseActionContext): TPromise<boolean> {
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.editData(
 				actionContext.profile,
@@ -116,7 +116,7 @@ export class EditDataAction extends Action {
 				error => {
 					resolve(false);
 				}
-			);
+				);
 		});
 	}
 }
@@ -134,7 +134,7 @@ export class ScriptCreateAction extends Action {
 		super(id, label);
 	}
 
-	public run (actionContext: BaseActionContext): TPromise<boolean> {
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.scriptCreate(
 				actionContext.profile,
@@ -150,7 +150,7 @@ export class ScriptCreateAction extends Action {
 				error => {
 					resolve(false);
 				}
-			);
+				);
 		});
 	}
 }
@@ -179,7 +179,7 @@ export class BackupAction extends Action {
 				error => {
 					resolve(false);
 				}
-			);
+				);
 		});
 	}
 }

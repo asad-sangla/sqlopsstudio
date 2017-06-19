@@ -116,8 +116,8 @@ export class BootstrapService implements IBootstrapService {
 	private _getUniqueSelectorString(selectorString: string): string {
 		let count: number = this._selectorCountMap.get(selectorString);
 		if (!count) {
-			 this._selectorCountMap.set(selectorString, 1);
-			 count = 0;
+			this._selectorCountMap.set(selectorString, 1);
+			count = 0;
 		} else {
 			this._selectorCountMap.set(selectorString, count + 1);
 		}

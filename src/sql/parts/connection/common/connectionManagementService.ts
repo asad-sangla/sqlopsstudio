@@ -425,7 +425,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private doActionsAfterConnectionComplete(uri: string, options: IConnectionCompletionOptions, ) {
 		let connectionManagementInfo = this._connectionStatusManager.findConnection(uri);
 		if (options.showDashboard) {
-			this.showDashboard(uri, connectionManagementInfo);
+			this.showDashboardForConnectionManagementInfo(uri, connectionManagementInfo);
 		}
 		this._onConnect.fire(<IConnectionParams>{
 			connectionUri: uri,
@@ -433,7 +433,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	public showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
+	public showDashboard(connection: ConnectionProfile): Promise<boolean> {
+		let uri = this._connectionStatusManager.getConnectionManagementId(connection);
+		let connectionManagementInfo = this._connectionStatusManager.findConnection(uri);
+		return this.showDashboardForConnectionManagementInfo(uri, connectionManagementInfo);
+	}
+
+	private showDashboardForConnectionManagementInfo(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
 			let dashboardInput: DashboardInput = self._instantiationService ? self._instantiationService.createInstance(DashboardInput, uri, connection) : undefined;
@@ -594,10 +600,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 */
 	public doChangeLanguageFlavor(uri: string, language: string, flavor: string) {
 		this._onLanguageFlavorChanged.fire({
-				uri: uri,
-				language: language,
-				flavor: flavor
-			});
+			uri: uri,
+			language: language,
+			flavor: flavor
+		});
 	}
 
 	// Request Senders

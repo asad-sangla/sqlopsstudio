@@ -10,7 +10,11 @@ import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { RefreshAction, AddServerAction, DeleteConnectionAction, ChangeConnectionAction, ActiveConnectionsFilterAction, RecentConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import {
+	RefreshAction, AddServerAction, DeleteConnectionAction, DisconnectConnectionAction,
+	ActiveConnectionsFilterAction, RecentConnectionsFilterAction, ManageConnectionAction
+}
+	from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { TestConnectionManagementService } from 'sqltest/stubs/connectionManagementService.test';
 import { ErrorMessageServiceStub } from 'sqltest/stubs/errorMessageServiceStub';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
@@ -35,19 +39,17 @@ suite('SQL Connection Tree Action tests', () => {
 		errorMessageService.setup(x => x.showDialog(undefined, Severity.Error, TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString())).returns(() => nothing);
 	});
 
-	test('ChangeConnectionAction - test if connect is called when disconnected', (done) => {
+	test('ManageConnectionAction - test if connect is called when disconnected', (done) => {
 		let isConnectedReturnValue: boolean = false;
 		let connectionManagementService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Loose);
 		connectionManagementService.callBase = true;
 		connectionManagementService.setup(x => x.isProfileConnected(TypeMoq.It.isAny())).returns(() => isConnectedReturnValue);
 
-
-
 		let objectExplorerService = TypeMoq.Mock.ofType(ObjectExplorerService, TypeMoq.MockBehavior.Loose, connectionManagementService.object);
 		objectExplorerService.callBase = true;
 
 		objectExplorerService.setup(x => x.onUpdateObjectExplorerNodes).returns(() => new Emitter<ObjectExplorerNodeEventArgs>().event);
-		let changeConnectionAction: ChangeConnectionAction = new ChangeConnectionAction(ChangeConnectionAction.ID, ChangeConnectionAction.LABEL, connectionManagementService.object, objectExplorerService.object, errorMessageService.object);
+		let manageConnectionAction: ManageConnectionAction = new ManageConnectionAction(ManageConnectionAction.ID, ManageConnectionAction.LABEL, connectionManagementService.object, objectExplorerService.object);
 		let connection: ConnectionProfile = new ConnectionProfile(undefined, {
 			savePassword: false,
 			groupFullName: 'testGroup',
@@ -65,7 +67,7 @@ suite('SQL Connection Tree Action tests', () => {
 		});
 		var actionContext = new ObjectExplorerActionsContext();
 		actionContext.connectionProfile = connection;
-		changeConnectionAction.run(actionContext).then((value) => {
+		manageConnectionAction.run(actionContext).then((value) => {
 			connectionManagementService.verify(x => x.isProfileConnected(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 			connectionManagementService.verify(x => x.connect(TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny()), TypeMoq.Times.once());
 		}).then(() => done(), (err) => done(err));
@@ -73,7 +75,7 @@ suite('SQL Connection Tree Action tests', () => {
 	});
 
 
-	test('ChangeConnectionAction - test if disconnect is called when profile is connected', (done) => {
+	test('DisconnectConnectionAction - test if disconnect is called when profile is connected', (done) => {
 		let isConnectedReturnValue: boolean = true;
 		let connectionManagementService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Loose);
 		connectionManagementService.callBase = true;
@@ -81,7 +83,7 @@ suite('SQL Connection Tree Action tests', () => {
 		let objectExplorerService = TypeMoq.Mock.ofType(ObjectExplorerService, TypeMoq.MockBehavior.Loose, connectionManagementService.object);
 		objectExplorerService.callBase = true;
 		objectExplorerService.setup(x => x.onUpdateObjectExplorerNodes).returns(() => new Emitter<ObjectExplorerNodeEventArgs>().event);
-		let changeConnectionAction: ChangeConnectionAction = new ChangeConnectionAction(ChangeConnectionAction.ID, ChangeConnectionAction.LABEL, connectionManagementService.object, objectExplorerService.object, errorMessageService.object);
+		let changeConnectionAction: DisconnectConnectionAction = new DisconnectConnectionAction(DisconnectConnectionAction.ID, DisconnectConnectionAction.LABEL, connectionManagementService.object, objectExplorerService.object, errorMessageService.object);
 		let connection: ConnectionProfile = new ConnectionProfile(undefined, {
 			savePassword: false,
 			groupFullName: 'testGroup',

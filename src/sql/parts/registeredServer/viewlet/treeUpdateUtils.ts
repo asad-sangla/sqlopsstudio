@@ -7,10 +7,6 @@ import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionPr
 import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import * as Constants from 'sql/parts/connection/common/constants';
-import * as Utils from 'sql/parts/connection/common/utils';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 
 import { IProgressService, IProgressRunner } from 'vs/platform/progress/common/progress';
@@ -40,39 +36,31 @@ export class TreeSelectionHandler {
 	/**
 	 * Handle selection of tree element
 	 */
-	public onTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService) {
+	public onTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService) {
 		let selection = tree.getSelection();
 
 		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
 			let connectionProfile = <ConnectionProfile>selection[0];
 			let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
 			let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
-			if (isDoubleClick) {
-				let callback: Promise<any>;
+			let options: IConnectionCompletionOptions = {
+				params: undefined,
+				saveTheConnection: false,
+				showConnectionDialogOnError: true,
+				showDashboard: isDoubleClick
+			};
+			if (!isDoubleClick) {
 				this.onTreeActionStateChange(true);
-				if (!connectionManagementService.isProfileConnected(connectionProfile)) {
-					let options: IConnectionCompletionOptions = {
-						params: undefined,
-						saveTheConnection: false,
-						showDashboard: true,
-						showConnectionDialogOnError: true
-					};
-					callback = connectionManagementService.connect(connectionProfile, undefined, options);
-				}
-				else {
-					let uri = ConnectionStatusManager.DefaultUriPrefix + connectionProfile.getOptionsKey();
-					var connectionInfo = new ConnectionManagementInfo();
-					connectionInfo.extensionTimer = new Utils.Timer();
-					connectionInfo.intelliSenseTimer = new Utils.Timer();
-					connectionInfo.connecting = true;
-					connectionInfo.serviceTimer = new Utils.Timer();
-					connectionInfo.connectionProfile = connectionProfile;
-					if (connectionManagementService.getConnectionInfo(uri)) {
-						connectionInfo.serverInfo = connectionManagementService.getConnectionInfo(uri).serverInfo;
-					}
-					callback = connectionManagementService.showDashboard(uri, connectionInfo);
-				}
-				callback.then(() => this.onTreeActionStateChange(false));
+
+				TreeUpdateUtils.createSessionIfNotCreated(connectionProfile, options, connectionManagementService, objectExplorerService).then(() => {
+					this.onTreeActionStateChange(false);
+				}, error => {
+					this.onTreeActionStateChange(false);
+				});
+			} else {
+				connectionManagementService.showDashboard(connectionProfile).then(() => {
+					this.onTreeActionStateChange(false);
+				});
 			}
 		}
 	}
@@ -164,23 +152,64 @@ export class TreeUpdateUtils {
 		return isConnected;
 	}
 
+	public static connectIfNotConnected(connection: ConnectionProfile, options: IConnectionCompletionOptions, connectionManagementService: IConnectionManagementService): TPromise<void> {
+		return new TPromise<void>((resolve, reject) => {
+			if (!connectionManagementService.isConnected(undefined, connection)) {
+
+				connectionManagementService.connect(connection, undefined, options).then(result => {
+					if (result.connected) {
+						resolve(undefined);
+					} else {
+						reject('connection failed');
+					}
+				}, connectionError => {
+					reject(connectionError);
+				});
+			} else {
+				resolve(undefined);
+			}
+		});
+	}
+
+	public static createSessionIfNotCreated(connection: ConnectionProfile, options: IConnectionCompletionOptions, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<TreeNode> {
+		return new TPromise<TreeNode>((resolve, reject) => {
+			TreeUpdateUtils.connectIfNotConnected(connection, options, connectionManagementService).then(() => {
+				var rootNode: TreeNode = objectExplorerService.getObjectExplorerNode(connection);
+				if (!rootNode) {
+					objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
+						rootNode = objectExplorerService.getObjectExplorerNode(connection);
+						resolve(rootNode);
+						// The oe request is sent. an event will be raised when the session is created
+					}, error => {
+						reject('session failed');
+					});
+				} else {
+					resolve(rootNode);
+				}
+			}, connectionError => {
+				reject(connectionError);
+			});
+		});
+	}
+
 	public static getObjectExplorerNode(connection: ConnectionProfile, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<TreeNode[]> {
-		if (connectionManagementService.isConnected(undefined, connection)) {
-			var rootNode = objectExplorerService.getObjectExplorerNode(connection);
-			if (rootNode) {
-				return new TPromise<TreeNode[]>((resolve) => {
+		return new TPromise<TreeNode[]>((resolve, reject) => {
+			if (connection.isDisconnecting) {
+				resolve([]);
+			} else {
+				var rootNode = objectExplorerService.getObjectExplorerNode(connection);
+				if (rootNode) {
 					objectExplorerService.expandTreeNode(rootNode.getSession(), rootNode).then(() => {
 						resolve(rootNode.children);
 					}, expandError => {
 						resolve([]);
 					});
-				});
-			} else {
-				return TPromise.as(null);
+
+				} else {
+					resolve([]);
+				}
 			}
-		} else {
-			return TPromise.as(null);
-		}
+		});
 	}
 
 	public static getObjectExplorerParent(objectExplorerNode: TreeNode, connectionManagementService: IConnectionManagementService): any {

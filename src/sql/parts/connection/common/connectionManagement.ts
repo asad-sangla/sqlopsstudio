@@ -176,7 +176,7 @@ export interface IConnectionManagementService {
 	 */
 	cancelEditorConnection(owner: IConnectableInput): Thenable<boolean>;
 
-	showDashboard(uri: string, connection: ConnectionManagementInfo): Promise<boolean>;
+	showDashboard(connection: ConnectionProfile): Promise<boolean>;
 
 	closeDashboard(uri: string): void;
 

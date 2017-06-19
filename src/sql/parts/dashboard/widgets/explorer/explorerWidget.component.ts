@@ -220,7 +220,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 					getAnchor: () => anchor,
 					getActions: () => GetExplorerActions(object.metadata.metadataType, self.isCloud, self._bootstrap),
 					getActionsContext: () => {
-						return <BaseActionContext> {
+						return <BaseActionContext>{
 							object: object.metadata,
 							uri: self._bootstrap.getUnderlyingUri(),
 							profile: self._bootstrap.connectionManagementService.connectionInfo.connectionProfile
@@ -231,6 +231,6 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 				console.log('Unknown dashboard context: ', self._config.context);
 			}
 		}
-	self._changeRef.detectChanges();
+		self._changeRef.detectChanges();
 	}
 }

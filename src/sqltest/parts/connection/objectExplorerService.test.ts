@@ -123,7 +123,81 @@ suite('SQL Object Explorer Service tests', () => {
 			protocolVersion: '1',
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
-			connectionProvider: { options: [] },
+			connectionProvider: {
+				options: [
+					{
+						name: 'serverName',
+						displayName: undefined,
+						description: undefined,
+						groupName: undefined,
+						categoryValues: undefined,
+						defaultValue: undefined,
+						isIdentity: true,
+						isRequired: true,
+						specialValueType: 0,
+						valueType: 0
+					},
+					{
+						name: 'databaseName',
+						displayName: undefined,
+						description: undefined,
+						groupName: undefined,
+						categoryValues: undefined,
+						defaultValue: undefined,
+						isIdentity: true,
+						isRequired: true,
+						specialValueType: 1,
+						valueType: 0
+					},
+					{
+						name: 'userName',
+						displayName: undefined,
+						description: undefined,
+						groupName: undefined,
+						categoryValues: undefined,
+						defaultValue: undefined,
+						isIdentity: true,
+						isRequired: true,
+						specialValueType: 3,
+						valueType: 0
+					},
+					{
+						name: 'authenticationType',
+						displayName: undefined,
+						description: undefined,
+						groupName: undefined,
+						categoryValues: undefined,
+						defaultValue: undefined,
+						isIdentity: true,
+						isRequired: true,
+						specialValueType: 2,
+						valueType: 0
+					},
+					{
+						name: 'password',
+						displayName: undefined,
+						description: undefined,
+						groupName: undefined,
+						categoryValues: undefined,
+						defaultValue: undefined,
+						isIdentity: true,
+						isRequired: true,
+						specialValueType: 4,
+						valueType: 0
+					},
+					{
+						name: 'encrypt',
+						displayName: undefined,
+						description: undefined,
+						groupName: undefined,
+						categoryValues: undefined,
+						defaultValue: undefined,
+						isIdentity: false,
+						isRequired: false,
+						specialValueType: undefined,
+						valueType: 0
+					}]
+			},
 			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
 		};
 
@@ -173,8 +247,8 @@ suite('SQL Object Explorer Service tests', () => {
 		objectExplorerService = new ObjectExplorerService(connectionManagementService.object);
 		objectExplorerService.registerProvider('MSSQL', sqlOEProvider.object);
 
-		sqlOEProvider.setup(x => x.createNewSession(TypeMoq.It.is<ConnectionProfile>(x => x.id === connection.id))).returns(() => TPromise.as(response));
-		sqlOEProvider.setup(x => x.createNewSession(TypeMoq.It.is<ConnectionProfile>(x => x.id === connectionToFail.id))).returns(() => TPromise.as(failedResponse));
+		sqlOEProvider.setup(x => x.createNewSession(TypeMoq.It.is<data.ConnectionInfo>(x => x.options['serverName'] === connection.serverName))).returns(() => TPromise.as(response));
+		sqlOEProvider.setup(x => x.createNewSession(TypeMoq.It.is<data.ConnectionInfo>(x => x.options['serverName'] === connectionToFail.serverName))).returns(() => TPromise.as(failedResponse));
 		sqlOEProvider.setup(x => x.expandNode(TypeMoq.It.isAny())).callback(() => {
 			objectExplorerService.onNodeExpanded(1, objectExplorerExpandInfo);
 		}).returns(() => TPromise.as(true));
