@@ -1254,6 +1254,23 @@ export namespace SaveResultsAsExcelRequest {
 }
 // --------------------------------- </ Save Results as Excel Request > ------------------------------------------
 
+// ------------------------------- < Execute and Return > -----------------------------------
+
+export interface SimpleExecuteParams {
+	queryString: string;
+	ownerUri: string;
+}
+
+export interface SimpleExecuteResult {
+	rowCount: number;
+	columnInfo: ColumnMetadata[];
+	rows: DbCellValue[][];
+}
+
+export namespace SimpleExecuteRequest {
+	export const type: RequestType<SimpleExecuteParams, SimpleExecuteResult, void> = { get method(): string { return 'query/simpleexecute'; } };
+}
+
 
 // ------------------------------- < Metadata Events > ------------------------------------
 

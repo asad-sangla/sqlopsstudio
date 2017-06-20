@@ -15,9 +15,11 @@ import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
+import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
@@ -25,8 +27,6 @@ import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/work
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IEditorInput } from 'vs/platform/editor/common/editor';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from './bootstrapService';
-import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
-
 
 export class BootstrapService implements IBootstrapService {
 
@@ -58,6 +58,7 @@ export class BootstrapService implements IBootstrapService {
 		@IContextMenuService public contextMenuService: IContextMenuService,
 		@IErrorMessageService public errorMessageService: IErrorMessageService,
 		@IPartService public partService: IPartService,
+		@IQueryManagementService public queryManagementService: IQueryManagementService,
 		@IInstantiationService public instantiationService: IInstantiationService,
 		@IAngularEventingService public angularEventingService: IAngularEventingService
 	) {

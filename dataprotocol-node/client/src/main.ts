@@ -96,6 +96,7 @@ import {
 	TableMetadataRequest, ViewMetadataRequest, MetadataQueryRequest, ScriptingScriptAsRequest,
 	QueryCancelRequest, QueryCancelResult, QueryCancelParams,
 	QueryExecuteRequest, QueryExecuteSubsetResult, QueryExecuteSubsetParams,
+	SimpleExecuteRequest, SimpleExecuteResult, SimpleExecuteParams,
 	QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
 	QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
 	QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
@@ -1443,6 +1444,19 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(QueryExecuteRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			runQueryAndReturn(ownerUri: string, queryString: string): Thenable<SimpleExecuteResult> {
+				let params: SimpleExecuteParams = { ownerUri: ownerUri, queryString: queryString };
+				return self.doSendRequest(connection, SimpleExecuteRequest.type, params, undefined).then(
+					result => {
+						return result;
+					},
+					error => {
+						self.logFailedRequest(SimpleExecuteRequest.type, error);
 						return Promise.reject(error);
 					}
 				);

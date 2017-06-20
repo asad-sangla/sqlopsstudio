@@ -140,4 +140,10 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		let posy = (this._size * (index % this._rows)) + marginy;
 		return 'translate(' + posx + 'px, ' + posy  + 'px)';
 	}
+
+	private executeQuery() {
+		this._bootstrap.queryManagementService.runQueryAndReturn('select * from sys.objects').then((result) => {
+			console.log(result);
+		});
+	}
 }

@@ -15,6 +15,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { TaskUtilities } from 'sql/common/taskUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
+import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
@@ -22,7 +23,7 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IDisposable } from 'vs/base/common/lifecycle';
 
-import { ProviderMetadata, DatabaseInfo } from 'data';
+import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
 /* Wrapper for a metadata service that contains the uri string to use on each request */
 export class SingleConnectionMetadataService {
@@ -80,6 +81,17 @@ export class SingleAdminService {
 	}
 }
 
+export class SingleQueryManagementService {
+	constructor(
+		private _queryManagementService: IQueryManagementService,
+		private _uri: string
+	) { }
+
+	public runQueryAndReturn(queryString: string): Thenable<SimpleExecuteResult> {
+		return this._queryManagementService.runQueryAndReturn(this._uri, queryString);
+	}
+}
+
 /* Deferred implementation is make code look nicer */
 class Deferred<T> {
 
@@ -115,6 +127,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	public instantiationService: IInstantiationService;
 	/* Disaster Recovery */
 	public adminService: SingleAdminService;
+	public queryManagementService: SingleQueryManagementService;
 	private _disposables: IDisposable[] = [];
 
 	constructor(
@@ -152,6 +165,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this.metadataService = new SingleConnectionMetadataService(this._bootstrapService.metadataService, this._uri);
 		this.connectionManagementService = new SingleConnectionManagementService(this._bootstrapService.connectionManagementService, this._uri);
 		this.adminService = new SingleAdminService(this._bootstrapService.adminService, this._uri);
+		this.queryManagementService = new SingleQueryManagementService(this._bootstrapService.queryManagementService, this._uri);
 		this._disposables.push(toDisposableSubscription(this._bootstrapService.angularEventingService.onAngularEvent(this._uri, this.handleDashboardEvent)));
 	}
 

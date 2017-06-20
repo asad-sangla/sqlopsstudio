@@ -34,7 +34,7 @@ export class TaskUtilities {
 					showConnectionDialogOnError: false
 				};
 				connectionService.connect(connectionProfile, uri, options).then(() => {
-					setTimeout(function () {
+					setTimeout(function(){
 						resolve();
 					}, 2000);
 				}).catch(connectionError => {

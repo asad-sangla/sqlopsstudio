@@ -124,6 +124,12 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		});
 	}
 
+	$runQueryAndReturn(handle: number, ownerUri: string, queryString: string): Thenable<data.SimpleExecuteResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.runQueryAndReturn(ownerUri, queryString);
+		});
+	}
+
 	$getQueryRows(handle: number, rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult> {
 		return this._runWithProvider(handle, (provider) => {
 			return provider.queryProvider.getQueryRows(rowData);

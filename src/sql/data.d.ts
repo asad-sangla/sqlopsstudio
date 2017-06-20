@@ -443,6 +443,7 @@ declare module 'data' {
 		queryType: string;
 		cancelQuery(ownerUri: string): Thenable<QueryCancelResult>;
 		runQuery(ownerUri: string, selection: ISelectionData): Thenable<void>;
+		runQueryAndReturn(ownerUri: string, queryString: string): Thenable<SimpleExecuteResult>;
 		getQueryRows(rowData: QueryExecuteSubsetParams): Thenable<QueryExecuteSubsetResult>;
 		disposeQuery(ownerUri: string): Thenable<void>;
 		saveResults(requestParams: SaveResultsRequestParams): Thenable<SaveResultRequestResult>;
@@ -560,6 +561,17 @@ declare module 'data' {
 	export interface QueryExecuteCompleteNotificationResult {
 		ownerUri: string;
 		batchSummaries: BatchSummary[];
+	}
+
+	export interface SimpleExecuteParams {
+		queryString: string;
+		ownerUri: string;
+	}
+
+	export interface SimpleExecuteResult {
+		rowCount: number;
+		columnInfo: ColumnMetadata[];
+		rows: DbCellValue[][];
 	}
 
 	// Query Batch Notification -----------------------------------------------------------------------

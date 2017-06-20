@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 import { BootstrapParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService }
@@ -13,6 +13,7 @@ import { IObjectExplorerService } from 'sql/parts/registeredServer/common/object
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
@@ -21,10 +22,9 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IEditorInput } from 'vs/platform/editor/common/editor';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 
-export const BOOTSTRAP_SERVICE_ID: string = 'bootstrapService';
+export const BOOTSTRAP_SERVICE_ID = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
 
 /*
@@ -50,6 +50,7 @@ export interface IBootstrapService {
 	themeService: IWorkbenchThemeService;
 	errorMessageService: IErrorMessageService;
 	partService: IPartService;
+	queryManagementService: IQueryManagementService;
 	instantiationService: IInstantiationService;
 	angularEventingService: IAngularEventingService;
 
