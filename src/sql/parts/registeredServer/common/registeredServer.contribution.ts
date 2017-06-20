@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/registeredServer/viewlet/media/connectionViewlet';
+import 'vs/css!sql/media/actionBarLabel';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';

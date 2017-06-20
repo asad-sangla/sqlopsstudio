@@ -9,12 +9,6 @@
 	line-height: 15px;
 }
 
-/* viewlet icon*/
-.monaco-workbench > .activitybar .monaco-action-bar .action-label.taskHistoryViewlet {
-	-webkit-mask: url('run_history_inverse.svg') no-repeat 50% 50%;
-	-webkit-mask-size: 22px 22px;
-}
-
 .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group {
 	padding: 5px;
 	overflow: hidden;

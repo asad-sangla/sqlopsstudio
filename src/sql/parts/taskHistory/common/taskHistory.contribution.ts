@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import nls = require('vs/nls');
-import 'vs/css!sql/parts/taskHistory/viewlet/media/taskHistoryViewlet';
+import 'vs/css!sql/media/actionBarLabel';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
