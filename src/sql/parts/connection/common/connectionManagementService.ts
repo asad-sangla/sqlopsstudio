@@ -691,6 +691,28 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 	}
 
+	private addTelemetryForConnection(connection: ConnectionManagementInfo): void {
+		if (this._telemetryService) {
+			this._telemetryService.publicLog('DatabaseConnected', {
+				connectionType: connection.serverInfo ? (connection.serverInfo.isCloud ? 'Azure' : 'Standalone') : '',
+				provider: connection.connectionProfile.providerName,
+				serverVersion: connection.serverInfo ? connection.serverInfo.serverVersion : '',
+				serverEdition: connection.serverInfo ? connection.serverInfo.serverEdition : '',
+
+				extensionConnectionTime: connection.extensionTimer.getDuration() - connection.serviceTimer.getDuration(),
+				serviceConnectionTime: connection.serviceTimer.getDuration()
+			});
+		}
+	}
+
+	private addTelemetryForConnectionDisconnected(connection: ConnectionProfile): void {
+		if (this._telemetryService) {
+			this._telemetryService.publicLog('DatabaseDisconnected', {
+				provider: connection.providerName
+			});
+		}
+	}
+
 	public onConnectionComplete(handle: number, info: data.ConnectionInfoSummary): void {
 		const self = this;
 		let connection = this._connectionStatusManager.onConnectionComplete(info);
@@ -700,10 +722,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 				connection.connectionProfile.databaseName = info.connectionSummary.databaseName;
 			}
 			connection.serverInfo = info.serverInfo;
+			connection.extensionTimer.end();
 
 			connection.connectHandler(true);
 			let activeConnection = connection.connectionProfile;
 			self.tryAddActiveConnection(connection, activeConnection);
+			self.addTelemetryForConnection(connection);
 		} else {
 			connection.connectHandler(false, info.messages);
 		}
@@ -877,6 +901,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 			this.doDisconnect(connection, uri).then(result => {
 				if (result) {
+					this.addTelemetryForConnectionDisconnected(connection);
 					this._connectionStore.removeActiveConnection(connection);
 					resolve(true);
 				} else {
