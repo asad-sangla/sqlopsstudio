@@ -100,7 +100,9 @@ export class DisconnectConnectionAction extends Action {
 		})
 		);
 		this._disposables.push(this._connectionManagementService.onDisconnect((disconnectParams) => {
-			this._connectionProfile.isDisconnecting = false;
+			if (this._connectionProfile) {
+				this._connectionProfile.isDisconnecting = false;
+			}
 			self.setLabel();
 			self._connectionManagementService.closeDashboard(disconnectParams.connectionUri);
 		})
@@ -201,25 +203,17 @@ export class ManageConnectionAction extends Action {
 				resolve(true);
 			}
 
-			if (this._connectionManagementService.isProfileConnected(this._connectionProfile)) {
-				this._connectionManagementService.showDashboard(this._connectionProfile).then((value) => {
-					resolve(true);
-				}).catch(disconnectError => {
-					reject(disconnectError);
-				});
-			} else {
-				let options: IConnectionCompletionOptions = {
-					params: undefined,
-					saveTheConnection: false,
-					showConnectionDialogOnError: true,
-					showDashboard: true
-				};
-				TreeUpdateUtils.createSessionIfNotCreated(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService).then(() => {
-					resolve(true);
-				}, error => {
-					reject(error);
-				});
-			}
+			let options: IConnectionCompletionOptions = {
+				params: undefined,
+				saveTheConnection: false,
+				showConnectionDialogOnError: true,
+				showDashboard: true
+			};
+			TreeUpdateUtils.connectAndCreateOeSession(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService).then(() => {
+				resolve(true);
+			}, error => {
+				reject(error);
+			});
 		});
 	}
 

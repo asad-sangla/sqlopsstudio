@@ -150,6 +150,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 			this.tree.refresh(conn).then(() => {
 				return this.tree.expand(conn).then(() => {
 					return this.tree.reveal(conn, 0.5).then(() => {
+						this.treeSelectionHandler.onTreeActionStateChange(false);
 					});
 				});
 			}).done(null, errors.onUnexpectedError);

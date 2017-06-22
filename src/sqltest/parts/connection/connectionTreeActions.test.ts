@@ -68,7 +68,6 @@ suite('SQL Connection Tree Action tests', () => {
 		var actionContext = new ObjectExplorerActionsContext();
 		actionContext.connectionProfile = connection;
 		manageConnectionAction.run(actionContext).then((value) => {
-			connectionManagementService.verify(x => x.isProfileConnected(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
 			connectionManagementService.verify(x => x.connect(TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny()), TypeMoq.Times.once());
 		}).then(() => done(), (err) => done(err));
 
