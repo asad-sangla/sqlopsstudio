@@ -8,12 +8,10 @@
     <div [style.margin-right.px]="_clipped ? 20 : 0" [style.width]="_clipped ? 96 + '%' : '100%'" style="overflow: hidden">
         <span id="child" style="white-space : nowrap; width: fit-content">
             <ng-template ngFor let-item [ngForOf]="properties">
-                <ng-template [ngIf]="item.show()">
-                    <span style="margin-left: 10px; display: inline-block;">
-                        <div style="font-style: italic">{{item.title}}</div>
-                        <div style="font-weight: bold">{{item.value()}}</div>
-                    </span>
-                </ng-template>
+                <span style="margin-left: 10px; display: inline-block;">
+                    <div style="font-style: italic">{{item.name}}</div>
+                    <div style="font-weight: bold">{{item.value}}</div>
+                </span>
             </ng-template>
         </span>
     </div>

@@ -9,15 +9,41 @@ import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from '
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
-import { DatabaseInfo } from 'data';
+import { properties } from './propertiesJson';
 
-interface Property {
-	title: string;
-	value: () => string;
-	show?: () => boolean;
+import { DatabaseInfo, ServerInfo } from 'data';
+
+export interface PropertiesConfig {
+	properties: Array<ProviderProperties>;
 }
 
-const NEVER_BACKED_UP = '1/1/0001 12:00:00 AM';
+export interface FlavorProperties {
+	flavor: string;
+	condition?: {
+		field: string;
+		operator: '==' | '<=' | '>=' | '!=';
+		value: string;
+	};
+	databaseProperties: Array<Property>;
+	serverProperties: Array<Property>;
+}
+
+export interface ProviderProperties {
+	provider: string;
+	flavors: Array<FlavorProperties>;
+}
+
+export interface Property {
+	name: string;
+	value: Array<string>;
+	ignore?: Array<string>;
+	default?: Array<string>;
+}
+
+export interface DisplayProperty {
+	name: string;
+	value: string;
+}
 
 @Component({
 	selector: 'properties-widget',
@@ -31,117 +57,32 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	private _eventHandler: () => any;
 	private _parent;
 	private _child;
-	private properties: Property[] = [
-		{
-			title: 'Version',
-			value: () => {
-				return this._connection.serverInfo.serverVersion || '--';
-			},
-			show: () => {
-				return this._connection !== undefined && this._config.context === 'server';
-			}
-		},
-		{
-			title: 'Edition',
-			value: () => {
-				return this._connection.serverInfo.serverEdition || '--';
-			},
-			show: () => {
-				return this._connection !== undefined && this._config.context === 'server';
-			}
-		},
-		{
-			title: 'Computer Name',
-			value: () => {
-				return this._connection.serverInfo['machineName'] || '--';
-			},
-			show: () => {
-				return this._connection !== undefined && this._config.context === 'server';
-			}
-		},
-		{
-			title: 'OS Version',
-			value: () => {
-				return this._connection.serverInfo.osVersion || '--';
-			},
-			show: () => {
-				return this._connection !== undefined && this._config.context === 'server';
-			}
-		},
-		{
-			title: 'Status',
-			value: () => {
-				return this._databaseInfo.options['databaseState'] || '--';
-			},
-			show: () => {
-				return this._databaseInfo !== undefined && this._config.context === 'database';
-			}
-		},
-		{
-			title: 'Recovery Model',
-			value: () => {
-				return this._databaseInfo.options['recoveryModel'] || '--';
-			},
-			show: () => {
-				return this._databaseInfo !== undefined && this._config.context === 'database';
-			}
-		},
-		{
-			title: 'Last Database Backup',
-			value: () => {
-				return (this._databaseInfo.options['lastBackupDate'] === NEVER_BACKED_UP ? '' : this._databaseInfo.options['lastBackupDate']) || '--';
-			},
-			show: () => {
-				return this._databaseInfo !== undefined && this._config.context === 'database';
-			}
-		},
-		{
-			title: 'Last Log Backup',
-			value: () => {
-				return (this._databaseInfo.options['lastLogBackupDate'] === NEVER_BACKED_UP ? '' : this._databaseInfo.options['lastBackupDate']) || '--';
-			},
-			show: () => {
-				return this._databaseInfo !== undefined && this._config.context === 'database';
-			}
-		},
-		{
-			title: 'Compatibility Level',
-			value: () => {
-				return this._databaseInfo.options['compatibilityLevel'] || '--';
-			},
-			show: () => {
-				return this._databaseInfo !== undefined && this._config.context === 'database';
-			}
-		},
-		{
-			title: 'Owner',
-			value: () => {
-				return this._databaseInfo.options['owner'] || '--';
-			},
-			show: () => {
-				return this._databaseInfo !== undefined && this._config.context === 'database';
-			}
-		}
-	];
+	private properties: Array<DisplayProperty>;
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
 		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
-		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig
+		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig,
+		consoleError?: ((message?: any, ...optionalParams: any[]) => void)
 	) {
 		super();
+		if (consoleError) {
+			this.consoleError = consoleError;
+		}
 		let self = this;
 		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
 		if (!self._connection.serverInfo.isCloud) {
 			self._bootstrap.adminService.databaseInfo.then((data) => {
 				self._databaseInfo = data;
 				_changeRef.detectChanges();
+				self.parseProperties();
 			});
 		} else {
 			self._databaseInfo = {
 				options: {}
 			};
+			self.parseProperties();
 		}
 	}
 
@@ -156,7 +97,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		$( window ).off('resize', this._eventHandler);
 	}
 
-	public handleClipping(): () => any {
+	private handleClipping(): () => any {
 		let self = this;
 		return () => {
 			if (self._child.offsetWidth > self._parent.offsetWidth) {
@@ -167,5 +108,137 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 				self._changeRef.detectChanges();
 			}
 		};
+	}
+
+	private parseProperties() {
+		let provider = this._connection.connectionProfile.providerName;
+
+		let propertiesConfig: Array<ProviderProperties>;
+
+		// if config exists use that, otherwise use default
+		if (this._config.config) {
+			let config = <PropertiesConfig> this._config.config;
+			propertiesConfig = config.properties;
+		} else {
+			propertiesConfig = properties;
+		}
+
+		// ensure we have a properties file
+		if (!Array.isArray(propertiesConfig)) {
+			this.consoleError('Could not load properties JSON');
+			return;
+		}
+
+		// filter the properties provided based on provider name
+		let providerPropertiesArray = propertiesConfig.filter((item) => {
+			return item.provider === provider;
+		});
+
+		// Error handling on provider
+		if (providerPropertiesArray.length === 0) {
+			this.consoleError('Could not locate properties for provider: ', provider);
+			return;
+		} else if (providerPropertiesArray.length > 1) {
+			this.consoleError('Found multiple property definitions for provider ', provider);
+			return;
+		}
+
+		let providerProperties = providerPropertiesArray[0];
+
+		let flavor: FlavorProperties;
+
+		// find correct flavor
+		if (providerProperties.flavors.length === 1) {
+			flavor = providerProperties.flavors[0];
+		} else if (providerProperties.flavors.length === 0) {
+			this.consoleError('No flavor definitions found for "', provider,
+				'. If there are not multiple flavors of this provider, add one flavor without a condition');
+				return;
+		} else {
+			let flavorArray = providerProperties.flavors.filter((item) => {
+				let condition = this._connection.serverInfo[item.condition.field];
+				switch (item.condition.operator) {
+					case '==':
+						return condition === item.condition.value;
+					case '!=':
+						return condition !== item.condition.value;
+					case '>=':
+						return condition >= item.condition.value;
+					case '<=':
+						return condition <= item.condition.value;
+					default:
+						this.consoleError('Could not parse operator: "', item.condition.operator,
+										'" on item "', item, '"');
+						return false;
+				}
+			});
+
+			if (flavorArray.length === 0) {
+				this.consoleError('Could not determine flavor');
+				return;
+			} else if (flavorArray.length > 1) {
+				this.consoleError('Multiple flavors matched correctly for this provider', provider);
+				return;
+			}
+
+			flavor = flavorArray[0];
+		}
+
+		let infoObject: ServerInfo | {};
+		let propertyArray: Array<Property>;
+
+		// determine what context we should be pulling from
+		if (this._config.context === 'database') {
+			if (!Array.isArray(flavor.databaseProperties)) {
+				this.consoleError('flavor', flavor.flavor, ' does not have a definition for database properties');
+			}
+
+			infoObject = this._databaseInfo.options;
+			propertyArray = flavor.databaseProperties;
+		} else {
+			if (!Array.isArray(flavor.serverProperties)) {
+				this.consoleError('flavor', flavor.flavor, ' does not have a definition for server properties');
+			}
+
+			infoObject = this._connection.serverInfo;
+			propertyArray = flavor.serverProperties;
+		}
+
+		// iterate over properties and display them
+		this.properties = [];
+		for (let i = 0; i < propertyArray.length; i++) {
+			let property = propertyArray[i];
+			let assignProperty = {};
+			let propertyObject = infoObject;
+			for (let j = 0; j < property.value.length; j++) {
+				propertyObject = propertyObject[property.value[j]];
+			}
+
+			// if couldn't find, set as default value
+			if (propertyObject === undefined) {
+				propertyObject = property.default || '--';
+			}
+
+			// make sure the value we got shouldn't be ignored
+			if (property.ignore !== undefined && propertyObject !== '--') {
+				for (let j = 0; j < property.ignore.length; j++) {
+					// set to default value if we should be ignoring it's value
+					if (propertyObject === property.ignore[0]) {
+						propertyObject = property.default || '--';
+						break;
+					}
+				}
+			}
+			assignProperty['name'] = property.name;
+			assignProperty['value'] = propertyObject;
+			this.properties.push(<DisplayProperty> assignProperty);
+		}
+
+		this._changeRef.detectChanges();
+	}
+
+	// overwrittable console.error for testing
+	private consoleError(message?: any, ...optionalParams: any[]): void {
+		console.error(message, optionalParams);
 	}
 }

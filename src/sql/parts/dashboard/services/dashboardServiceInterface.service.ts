@@ -120,28 +120,56 @@ export class DashboardServiceInterface implements OnDestroy {
 	private _uri: string;
 	/* Bootstrap params*/
 	private _bootstrapParams: DashboardComponentParams;
-	public metadataService: SingleConnectionMetadataService;
-	public connectionManagementService: SingleConnectionManagementService;
-	public themeService: IWorkbenchThemeService;
-	public contextMenuService: IContextMenuService;
-	public instantiationService: IInstantiationService;
+	private _metadataService: SingleConnectionMetadataService;
+	private _connectionManagementService: SingleConnectionManagementService;
+	private _themeService: IWorkbenchThemeService;
+	private _contextMenuService: IContextMenuService;
+	private _instantiationService: IInstantiationService;
 	/* Disaster Recovery */
-	public adminService: SingleAdminService;
-	public queryManagementService: SingleQueryManagementService;
+	private _adminService: SingleAdminService;
+	private _queryManagementService: SingleQueryManagementService;
 	private _disposables: IDisposable[] = [];
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
 		@Inject(forwardRef(() => Router)) private _router: Router,
 	) {
-		this.themeService = this._bootstrapService.themeService;
-		this.contextMenuService = this._bootstrapService.contextMenuService;
-		this.instantiationService = this._bootstrapService.instantiationService;
+		this._themeService = this._bootstrapService.themeService;
+		this._contextMenuService = this._bootstrapService.contextMenuService;
+		this._instantiationService = this._bootstrapService.instantiationService;
 	}
 
-	 ngOnDestroy() {
-		 this._disposables.forEach((item) => item.dispose());
-	 }
+	ngOnDestroy() {
+		this._disposables.forEach((item) => item.dispose());
+	}
+
+	public get metadataService(): SingleConnectionMetadataService {
+		return this._metadataService;
+	}
+
+	public get connectionManagementService(): SingleConnectionManagementService {
+		return this._connectionManagementService;
+	}
+
+	public get themeService(): IWorkbenchThemeService {
+		return this._themeService;
+	}
+
+	public get contextMenuService(): IContextMenuService {
+		return this._contextMenuService;
+	}
+
+	public get instantiationService(): IInstantiationService {
+		return this._instantiationService;
+	}
+
+	public get adminService(): SingleAdminService {
+		return this._adminService;
+	}
+
+	public get queryManagementService(): SingleQueryManagementService {
+		return this._queryManagementService;
+	}
 
 	 /**
 	  * Set the selector for this dashboard instance, should only be set once
@@ -162,10 +190,10 @@ export class DashboardServiceInterface implements OnDestroy {
 	 */
 	private set uri(uri: string) {
 		this._uri = uri;
-		this.metadataService = new SingleConnectionMetadataService(this._bootstrapService.metadataService, this._uri);
-		this.connectionManagementService = new SingleConnectionManagementService(this._bootstrapService.connectionManagementService, this._uri);
-		this.adminService = new SingleAdminService(this._bootstrapService.adminService, this._uri);
-		this.queryManagementService = new SingleQueryManagementService(this._bootstrapService.queryManagementService, this._uri);
+		this._metadataService = new SingleConnectionMetadataService(this._bootstrapService.metadataService, this._uri);
+		this._connectionManagementService = new SingleConnectionManagementService(this._bootstrapService.connectionManagementService, this._uri);
+		this._adminService = new SingleAdminService(this._bootstrapService.adminService, this._uri);
+		this._queryManagementService = new SingleQueryManagementService(this._bootstrapService.queryManagementService, this._uri);
 		this._disposables.push(toDisposableSubscription(this._bootstrapService.angularEventingService.onAngularEvent(this._uri, this.handleDashboardEvent)));
 	}
 
