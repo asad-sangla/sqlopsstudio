@@ -1,6 +1,14 @@
 # Guidelines for Flyout Dialog
 
-All flyout dialogs in Carbon should consist of 3 parts: header, body, and footer. The body part should have a vertical scroll bar if the content overflows. The common flyout code is in src\sql\parts\common\flyoutDialog folder. The common styling for flyout and controllers is in src\sql\parts\common\flyoutDialog\media\flyoutDialog.css. Please use the class names that are in flyoutDialog.css.
+All flyout dialogs in Carbon should consist of 3 parts: header, body, and footer.
+
+Except Add Server Group and Connectin dialog, Dialog Header should contain the server and database context. Otherwise, it is not clear against what target the Task is being executed once the fly out pops out.
+
+For example: Backup Database dialog should contain Backup Database on [server name] | [database name].
+
+The body part should contain the common controls and have a vertical scroll bar if the content overflows. It should be implemented by either injecting angular or using dom manipulation.
+
+The common flyout code is in src\sql\parts\common\flyoutDialog folder. The common styling for flyout and controllers is in src\sql\parts\common\flyoutDialog\media\flyoutDialog.css. Please use the class names that are in flyoutDialog.css.
 
 <img src='../images/addGroupDialog.png' width='400px' />
 
@@ -11,7 +19,7 @@ All flyout dialogs in Carbon should consist of 3 parts: header, body, and footer
 - Enter key should submit and close the dialog
 
 # Error handling
-The dialog should check for the required and valid inputs. If it is in the error stage, the input box will have a red border and contain the error message. The error message consists of error icon and error message. It will show below the form. For synchronized task, if there is an error from the engine after the form is submited, the error dialog should be shown.
+The dialog should check for the required and valid inputs. If it is in the error stage, the input box will have a red border and contain the error message. The error message consists of error icon and error message. It will show below the form. For synchronized task, if there is an error from the engine after the form is submited, an error dialog should be shown. In the error dialog case, IErrorMessageService should be used.
 
 - Error from input validation
 
