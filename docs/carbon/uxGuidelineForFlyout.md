@@ -27,14 +27,18 @@ Most flyout body contains the common controls. The styling for common controls s
 
  ### OK/Cancel buttons
  All footer's buttons is blue color and white text. The selected stage should have white border.
+
 <img src='../images/FooterButtons.png' width='250px' />
 
  ### dropdown inputs
  When it is selected, it should have blue border.
+
 <img src='../images/dropdown.png' width='500px' />
 
  ### Input box
  When it is selected, it should have blue border.
+
+
 <img src='../images/inputBox.png' width='500px' />
 
  ### Checkbox
