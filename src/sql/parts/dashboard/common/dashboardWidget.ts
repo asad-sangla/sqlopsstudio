@@ -12,9 +12,7 @@ export const WIDGET_CONFIG = new InjectionToken<WidgetConfig>('widget_config');
 
 export interface WidgetConfig {
 	name?: string;
-	icon?: string;
-	inverse_icon?: string;
-	loadedIcon?: string;
+	iconClass?: string;
 	selector: string;
 	context: string;
 	gridItemConfig?: NgGridItemConfig;

@@ -2,16 +2,15 @@
 *  Copyright (c) Microsoft Corporation. All rights reserved.
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
+import 'vs/css!sql/media/icons/common-icons';
+
 import { Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
-	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, InjectionToken, Injector } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, Injector } from '@angular/core';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
-import { ThemeUtilities } from 'sql/common/themeUtilities';
 
 import { WidgetDirective } from './widget.directive';
-import { IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from './dashboardWidget';
-import { PathUtilities } from 'sql/common/pathUtilities';
+import { WidgetConfig, WIDGET_CONFIG } from './dashboardWidget';
 
 /* Widgets */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
@@ -92,14 +91,6 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 		if (this._config.border === 'none') {
 			borderColor = undefined;
-		}
-
-		if (ThemeUtilities.isLightTheme(theme) && this._config.icon) {
-			this._config.loadedIcon = PathUtilities.toUrl(this._config.inverse_icon);
-			this._changeref.detectChanges();
-		} else if (ThemeUtilities.isDarkTheme(theme) && this._config.inverse_icon) {
-			this._config.loadedIcon = PathUtilities.toUrl(this._config.inverse_icon);
-			this._changeref.detectChanges();
 		}
 
 		if (backgroundColor) {

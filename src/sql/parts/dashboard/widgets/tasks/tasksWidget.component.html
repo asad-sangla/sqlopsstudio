@@ -13,7 +13,7 @@
 		[style.transform]="calculateTransform(i)"
 		[style.background]="_tileBackground">
 		<div style="flex: 1 1 auto; display: flex; flex-flow: column; align-items: center">
-				<img class="task-icon" [style.height.px]="24" [src]="task.internal_icon">
+				<span *ngIf="task.iconClass" [ngClass]="['icon', task.iconClass]" style="padding: 15px"></span>
 			<div>{{task.name}}</div>
 		</div>
 	</div>

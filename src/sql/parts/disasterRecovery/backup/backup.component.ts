@@ -36,7 +36,6 @@ export class RestoreItemSource {
 	styleUrls: [require.toUrl('sql/parts/disasterRecovery/backup/media/backupDialog.css'),
                 require.toUrl('sql/media/primeng.css')]
 })
-
 export class BackupComponent{
     @ViewChild('pathContainer', {read: ElementRef}) pathElement;
     @ViewChild('backupTypeContainer', {read: ElementRef}) backupTypeElement;

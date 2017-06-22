@@ -32,8 +32,7 @@ const widgets: Array<WidgetConfig> = [
 export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 	private propertiesConfig: WidgetConfig = {
 		name: 'Database Properties',
-		icon: 'sql/media/icons/database.svg',
-		inverse_icon: 'sql/media/icons/database_inverse.svg',
+		iconClass: 'database',
 		selector: 'properties-widget',
 		context: 'database',
 		background_color: 'editor.background'
