@@ -7,19 +7,19 @@
 import { RequestType, NotificationType, ResponseError } from 'dataprotocol-jsonrpc';
 
 import {
-		TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent,
-		Range, Position, Location, Diagnostic, DiagnosticSeverity, Command,
-		TextEdit, WorkspaceEdit, WorkspaceChange, TextEditChange,
-		TextDocumentIdentifier, VersionedTextDocumentIdentifier, TextDocumentItem,
-		CompletionItemKind, CompletionItem, CompletionList,
-		Hover, MarkedString,
-		SignatureHelp, SignatureInformation, ParameterInformation,
-		Definition, ReferenceContext,
-		DocumentHighlight, DocumentHighlightKind,
-		SymbolInformation, SymbolKind,
-		CodeLens, CodeActionContext,
-		FormattingOptions, DocumentLink
-	} from 'dataprotocol-languageserver-types';
+	TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent,
+	Range, Position, Location, Diagnostic, DiagnosticSeverity, Command,
+	TextEdit, WorkspaceEdit, WorkspaceChange, TextEditChange,
+	TextDocumentIdentifier, VersionedTextDocumentIdentifier, TextDocumentItem,
+	CompletionItemKind, CompletionItem, CompletionList,
+	Hover, MarkedString,
+	SignatureHelp, SignatureInformation, ParameterInformation,
+	Definition, ReferenceContext,
+	DocumentHighlight, DocumentHighlightKind,
+	SymbolInformation, SymbolKind,
+	CodeLens, CodeActionContext,
+	FormattingOptions, DocumentLink
+} from 'dataprotocol-languageserver-types';
 
 /**
  * A parameter literal used in requests to pass a text document and a position inside that
@@ -730,7 +730,7 @@ export interface WorkspaceSymbolParams {
  * of type [SymbolInformation[]](#SymbolInformation) or a Thenable that
  * resolves to such.
  */
-export namespace  WorkspaceSymbolRequest {
+export namespace WorkspaceSymbolRequest {
 	export const type: RequestType<WorkspaceSymbolParams, SymbolInformation[], void> = { get method() { return 'workspace/symbol'; } };
 }
 

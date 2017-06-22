@@ -6,10 +6,11 @@
 
 import * as is from './is';
 
-import { Message,
+import {
+	Message,
 	RequestMessage, RequestType, isRequestMessage,
 	ResponseMessage, isReponseMessage, ResponseError, ErrorCodes,
-	NotificationMessage,  NotificationType, isNotificationMessage
+	NotificationMessage, NotificationType, isNotificationMessage
 } from './messages';
 
 import { MessageReader, DataCallback, StreamMessageReader, IPCMessageReader } from './messageReader';
@@ -84,7 +85,7 @@ export namespace Trace {
 			default:
 				return 'off';
 		}
- 	}
+	}
 }
 
 export interface SetTraceParams {
@@ -109,7 +110,7 @@ export interface Tracer {
 }
 
 export interface MessageConnection {
-	sendRequest<P, R, E>(type: RequestType<P, R, E>, params: P, token?: CancellationToken) : Thenable<R>;
+	sendRequest<P, R, E>(type: RequestType<P, R, E>, params: P, token?: CancellationToken): Thenable<R>;
 	onRequest<P, R, E>(type: RequestType<P, R, E>, handler: RequestHandler<P, R, E>): void;
 	sendNotification<P>(type: NotificationType<P>, params?: P): void;
 	onNotification<P>(type: NotificationType<P>, handler: NotificationHandler<P>): void;
@@ -146,11 +147,11 @@ function createMessageConnection<T extends MessageConnection>(messageReader: Mes
 	let sequenceNumber = 0;
 	const version: string = '2.0';
 
-	let requestHandlers : { [name: string]: RequestHandler<any, any, any> } = Object.create(null);
-	let eventHandlers : { [name: string]: NotificationHandler<any> } = Object.create(null);
+	let requestHandlers: { [name: string]: RequestHandler<any, any, any> } = Object.create(null);
+	let eventHandlers: { [name: string]: NotificationHandler<any> } = Object.create(null);
 
-	let responsePromises : { [name: string]: ResponsePromise } = Object.create(null);
-	let requestTokens: { [id: string] : CancellationTokenSource } = Object.create(null);
+	let responsePromises: { [name: string]: ResponsePromise } = Object.create(null);
+	let requestTokens: { [id: string]: CancellationTokenSource } = Object.create(null);
 
 	let trace: Trace = Trace.Off;
 	let tracer: Tracer;
@@ -248,7 +249,7 @@ function createMessageConnection<T extends MessageConnection>(messageReader: Mes
 					delete requestTokens[tokenKey];
 					replySuccess(handlerResult);
 				} else if (promise.then) {
-					promise.then((resultOrError): any | ResponseError<any>  => {
+					promise.then((resultOrError): any | ResponseError<any> => {
 						delete requestTokens[tokenKey];
 						reply(resultOrError);
 					}, error => {
@@ -304,7 +305,7 @@ function createMessageConnection<T extends MessageConnection>(messageReader: Mes
 				}
 			} catch (error) {
 				if (error.message) {
-					 logger.error(`Response handler '${responsePromise.method}' failed with message: ${error.message}`);
+					logger.error(`Response handler '${responsePromise.method}' failed with message: ${error.message}`);
 				} else {
 					logger.error(`Response handler '${responsePromise.method}' failed unexpectedly.`);
 				}
@@ -337,7 +338,7 @@ function createMessageConnection<T extends MessageConnection>(messageReader: Mes
 				eventHandler(message.params);
 			} catch (error) {
 				if (error.message) {
-					 logger.error(`Notification handler '${message.method}' failed with message: ${error.message}`);
+					logger.error(`Notification handler '${message.method}' failed with message: ${error.message}`);
 				} else {
 					logger.error(`Notification handler '${message.method}' failed unexpectedly.`);
 				}
@@ -448,10 +449,10 @@ function createMessageConnection<T extends MessageConnection>(messageReader: Mes
 	}
 
 	let connection: MessageConnection = {
-		sendNotification: <P>(type: NotificationType<P>, params): void  => {
+		sendNotification: <P>(type: NotificationType<P>, params): void => {
 			throwIfClosedOrDisposed();
 
-			let notificatioMessage : NotificationMessage = {
+			let notificatioMessage: NotificationMessage = {
 				jsonrpc: version,
 				method: type.method,
 				params: params
@@ -466,12 +467,12 @@ function createMessageConnection<T extends MessageConnection>(messageReader: Mes
 
 			eventHandlers[type.method] = handler;
 		},
-		sendRequest: <P, R, E>(type: RequestType<P, R, E>, params: P, token?:CancellationToken) => {
+		sendRequest: <P, R, E>(type: RequestType<P, R, E>, params: P, token?: CancellationToken) => {
 			throwIfClosedOrDisposed();
 
 			let id = sequenceNumber++;
 			let result = new Promise<R | ResponseError<E>>((resolve, reject) => {
-				let requestMessage : RequestMessage = {
+				let requestMessage: RequestMessage = {
 					jsonrpc: version,
 					id: id,
 					method: type.method,
