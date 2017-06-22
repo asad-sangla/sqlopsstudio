@@ -33,6 +33,8 @@
 	padding-left: 25px;
 	opacity: .6;
 	font-size: 80%;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 /* task icon status */
@@ -53,4 +55,17 @@
 
 .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.in-progress-status {
 	content: url('progress_36x_animation.gif');
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started-status {
+	content: url('status_queuedtask.svg');
+}
+
+.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started-status,
+.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started-status {
+	content: url('status_queuedtask_inverse.svg');
+}
+
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.canceled-status {
+	content: url('status_cancelled.svg');
 }

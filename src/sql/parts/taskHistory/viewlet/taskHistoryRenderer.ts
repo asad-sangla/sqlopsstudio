@@ -9,6 +9,8 @@ import { ITree, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { ITaskHistoryTemplateData } from 'sql/parts/taskHistory/viewlet/templateData';
 import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
 import dom = require('vs/base/browser/dom');
+import { localize } from 'vs/nls';
+import * as Utils from 'sql/parts/connection/common/utils';
 
 /**
  * Renders the tree items.
@@ -17,10 +19,13 @@ import dom = require('vs/base/browser/dom');
 export class TaskHistoryRenderer implements IRenderer {
 
 	public static readonly TASKOBJECT_HEIGHT = 65;
+	private static readonly ICON_CLASS = 'task-icon';
 	private static readonly TASKOBJECT_TEMPLATE_ID = 'carbonTask';
 	private static readonly FAIL_CLASS = 'fail-status';
 	private static readonly SUCCESS_CLASS = 'success-status';
 	private static readonly INPROGRESS_CLASS = 'in-progress-status';
+	private static readonly NOTSTARTED_CLASS = 'not-started-status';
+	private static readonly CANCELED_CLASS = 'canceled-status';
 
 	/**
 	 * Returns the element's height in the tree, in pixels.
@@ -58,24 +63,32 @@ export class TaskHistoryRenderer implements IRenderer {
 	}
 
 	private renderTask(tree: ITree, taskNode: TaskNode, templateData: ITaskHistoryTemplateData): void {
+		let taskStatus;
 		if (taskNode) {
+			templateData.icon.className = TaskHistoryRenderer.ICON_CLASS;
 			switch (taskNode.status) {
 				case TaskStatus.succeeded:
-					templateData.icon.classList.remove(TaskHistoryRenderer.FAIL_CLASS);
-					templateData.icon.classList.remove(TaskHistoryRenderer.INPROGRESS_CLASS);
 					templateData.icon.classList.add(TaskHistoryRenderer.SUCCESS_CLASS);
+					taskStatus = localize('succeeded', "succeeded");
 					break;
 				case TaskStatus.failed:
-					templateData.icon.classList.remove(TaskHistoryRenderer.SUCCESS_CLASS);
-					templateData.icon.classList.remove(TaskHistoryRenderer.INPROGRESS_CLASS);
 					templateData.icon.classList.add(TaskHistoryRenderer.FAIL_CLASS);
+					taskStatus = localize('failed', "failed");
 					break;
 				case TaskStatus.inProgress:
-					templateData.icon.classList.remove(TaskHistoryRenderer.FAIL_CLASS);
-					templateData.icon.classList.remove(TaskHistoryRenderer.SUCCESS_CLASS);
 					templateData.icon.classList.add(TaskHistoryRenderer.INPROGRESS_CLASS);
+					taskStatus = localize('inProgress', "in progress");
+					break;
+				case TaskStatus.notStarted:
+					templateData.icon.classList.add(TaskHistoryRenderer.NOTSTARTED_CLASS);
+					taskStatus = localize('notStarted', "not started");
+					break;
+				case TaskStatus.canceled:
+					templateData.icon.classList.add(TaskHistoryRenderer.CANCELED_CLASS);
+					taskStatus = localize('canceled', "canceled");
+					break;
 			}
-			templateData.title.textContent = taskNode.taskName;
+			templateData.title.textContent = taskNode.taskName + ' ' + taskStatus;
 			let description = taskNode.serverName;
 			if (taskNode.databaseName) {
 				description += ' | ' + taskNode.databaseName;
@@ -92,7 +105,7 @@ export class TaskHistoryRenderer implements IRenderer {
 	public timer(taskNode: TaskNode, templateData: ITaskHistoryTemplateData) {
 		let timeLabel = '';
 		if (taskNode.status === TaskStatus.failed) {
-			timeLabel += 'Error: ' + taskNode.message;
+			timeLabel += taskNode.startTime + ' Error: ' + taskNode.message;
 		} else {
 			if (taskNode.startTime) {
 				timeLabel = taskNode.startTime;
@@ -102,8 +115,9 @@ export class TaskHistoryRenderer implements IRenderer {
 			}
 
 			if (taskNode.timer) {
-				var timeDuration = new Date(taskNode.timer.getDuration());
-				timeLabel += ' (' + timeDuration.getMinutes() + ':' + timeDuration.getSeconds() + ')';
+				// Round task duration to seconds and then convert back to milliseconds
+				let duration = Math.floor(taskNode.timer.getDuration() / 1000) * 1000;
+				timeLabel += ' (' + Utils.parseNumAsTimeString(duration) + ')';
 			}
 		}
 		templateData.time.textContent = timeLabel;

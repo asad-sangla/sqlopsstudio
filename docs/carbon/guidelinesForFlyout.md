@@ -1,4 +1,4 @@
-# UX Guidelines for Flyout Dialog
+# Guidelines for Flyout Dialog
 
 All flyout dialogs in Carbon should consist of 3 parts: header, body, and footer. The body part should have a vertical scroll bar if the content overflows. The common flyout code is in src\sql\parts\common\flyoutDialog folder. The common styling for flyout and controllers is in src\sql\parts\common\flyoutDialog\media\flyoutDialog.css. Please use the class names that are in flyoutDialog.css.
 
