@@ -62,25 +62,25 @@ export class ServerGroupDialog {
 		this._builder = this._dialog.create(true);
 		this._dialog.addModalTitle();
 
-		this._dialog.bodyContainer.div({ class: 'add-server-group-body' }, (addServerGroupContent) => {
+		this._dialog.bodyContainer.div({ class: 'modal-body-content' }, (addServerGroupContent) => {
 			// Connection Group Name
-			addServerGroupContent.div({ class: 'serverGroup-label' }, (labelContainer) => {
+			addServerGroupContent.div({ class: 'dialog-label' }, (labelContainer) => {
 				labelContainer.innerHtml('Connection Group Name');
 			});
-			addServerGroupContent.div({ class: 'serverGroup-input' }, (inputCellContainer) => {
+			addServerGroupContent.div({ class: 'input-divider' }, (inputCellContainer) => {
 				this._groupNameInputBox = DialogHelper.appendInputBox(inputCellContainer);
 			});
 
 			// Connection Group Description
-			addServerGroupContent.div({ class: 'serverGroup-label' }, (labelContainer) => {
+			addServerGroupContent.div({ class: 'dialog-label' }, (labelContainer) => {
 				labelContainer.innerHtml('Group Description');
 			});
-			addServerGroupContent.div({ class: 'serverGroup-input' }, (inputCellContainer) => {
+			addServerGroupContent.div({ class: 'input-divider' }, (inputCellContainer) => {
 				this._groupDescriptionInputBox = DialogHelper.appendInputBox(inputCellContainer);
 			});
 
 			// Connection Group Color
-			addServerGroupContent.div({ class: 'serverGroup-label' }, (labelContainer) => {
+			addServerGroupContent.div({ class: 'dialog-label' }, (labelContainer) => {
 				labelContainer.innerHtml('Group Color');
 			});
 

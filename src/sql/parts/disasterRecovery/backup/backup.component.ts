@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
+import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!sql/media/primeng';
 import data = require('data');
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
-import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { BackupInfo } from 'data';
 import { SelectItem } from 'primeng/primeng';
 import { NgForm } from '@angular/forms';
@@ -34,6 +35,7 @@ export class RestoreItemSource {
 	selector: BACKUP_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/disasterRecovery/backup/backup.component.html'),
 	styleUrls: [require.toUrl('sql/parts/disasterRecovery/backup/media/backupDialog.css'),
+                require.toUrl('sql/parts/common/flyoutDialog/media/flyoutDialog.css'),
                 require.toUrl('sql/media/primeng.css')]
 })
 export class BackupComponent{
@@ -41,12 +43,12 @@ export class BackupComponent{
     @ViewChild('backupTypeContainer', {read: ElementRef}) backupTypeElement;
 
     private _disasterRecoveryService: IDisasterRecoveryService;
+    private _disasterRecoveryUiService: IDisasterRecoveryUiService;
     private _uri: string;
 
     public connection: ConnectionManagementInfo;
 	public databaseName: string;
     public defaultNewBackupFolder: string;
-    public backupName: string;
     public lastBackupLocations;
     public recoveryModel: string;
 
@@ -56,11 +58,14 @@ export class BackupComponent{
     public disableAdd: boolean;
     public disableRemove: boolean;
     public disableOk: boolean;
+    public disableCopyOnly: boolean;
 
 	// User input values
 	public selectedBackupComponent: string;
     public selectedFilesText: string;
     public backupPathInput: string;
+    public backupName: string;
+    public isCopyOnly: boolean;
 
     // Dropdown list
 	public listOfBackupTypes: SelectItem[];
@@ -76,6 +81,7 @@ export class BackupComponent{
         this.connection = dashboardParameters.connection;
         this._uri = dashboardParameters.ownerUri;
         this._disasterRecoveryService = _bootstrapService.disasterRecoveryService;
+        this._disasterRecoveryUiService = _bootstrapService.disasterRecoveryUiService;
 	}
 
     ngOnInit() {
@@ -97,7 +103,6 @@ export class BackupComponent{
         });
     }
 
-
     private initialize(): void {
         this.databaseName = this.connection.connectionProfile.databaseName;
         this.selectedBackupComponent = BackupConstants.labelDatabase;
@@ -116,23 +121,24 @@ export class BackupComponent{
             ownerUri: this._uri,
             databaseName: this.databaseName,
             backupType: this.getBackupTypeNumber(),
-            backupComponent: 0, //TODO: change later when we have filegroup options
+            backupComponent: 0,
             backupDeviceType: 2, //Disk
             backupPathList: backupPathArray,
             selectedFiles: this.selectedFilesText,
             backupsetName: this.backupName,
             selectedFileGroup: undefined,
-            backupPathDevices: this.dictOfBackupPathDevice
+            backupPathDevices: this.dictOfBackupPathDevice,
+            isCopyOnly: this.isCopyOnly
         });
+
+        this._disasterRecoveryUiService.closeBackup();
     }
 
 	public onGenerateScript(): void {
     }
 
 	public onCancel(): void {
-    }
-
-    public onSubmit(form: NgForm): void {
+        this._disasterRecoveryUiService.closeBackup();
     }
 
     private setControlsForRecoveryModel(): void {
@@ -160,8 +166,9 @@ export class BackupComponent{
     }
 
     private setDefaultBackupName(): void {
+        let utc = new Date().toJSON().slice(0, 19);
         let self = this;
-        self.backupName = self.databaseName + '-' + self.getSelectedBackupType();
+        self.backupName = self.databaseName + '-' + self.getSelectedBackupType() + '-' + utc;
     }
 
     private setDefaultBackupPaths(): void {
@@ -239,28 +246,21 @@ export class BackupComponent{
 
 // #region UI event handlers
 
+    public onChangeCopyOnly(): void {
+        this.isCopyOnly = !this.isCopyOnly;
+        this._changeDetectorRef.detectChanges();
+    }
+
 	public onBackupTypeChanged(): void {
-        if (this.getSelectedBackupType() === BackupConstants.labelLog) {
-            this.selectedBackupComponent = BackupConstants.labelDatabase;
-            this.disableDatabaseComponent = true;
-            this.disableFileComponent = true;
-		} else {
-            this.disableDatabaseComponent = false;
-
-			if (this.recoveryModel !== BackupConstants.recoveryModelSimple) {
-                this.disableFileComponent = false;
-			}
-		}
-		this.setDefaultBackupName();
-        //this.enableActionButtons();
-	}
-
-	public onBackupComponentChanged(): void {
-        if (this.selectedBackupComponent === BackupConstants.labelFilegroup) {
-            //TODO: launch the filegroup browse dialog
-            //this.GetSelectedFileGroupsFiles();
+        if (this.getSelectedBackupType() === BackupConstants.labelDifferential) {
+            this.isCopyOnly = false;
+            this.disableCopyOnly = true;
+        } else {
+            this.disableCopyOnly = false;
         }
-        this.enableActionButtons();
+
+        this.setDefaultBackupName();
+        this._changeDetectorRef.detectChanges();
 	}
 
     private getBackupTypeNumber(): number {
@@ -334,6 +334,7 @@ export class BackupComponent{
 
             // Reset the path text input
             this.backupPathInput = '';
+            this._changeDetectorRef.detectChanges();
         }
 
         this.enableActionButtons();
@@ -354,7 +355,8 @@ export class BackupComponent{
             this.disableRemove = true;
         }
 
-        this.enableActionButtons(); // enable only if destination is there
+        // enable only if destination is set
+        this.enableActionButtons();
     }
 
     private addNonUrlBackupDestination(bakLocation: string, bakDeviceType: number): void {

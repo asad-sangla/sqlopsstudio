@@ -36,12 +36,45 @@
 	font-size: 11px;
 }
 
-.monaco-shell .modal.flyout-dialog .modal-body{
+.modal.flyout-dialog .modal-title {
+	font-size: 15px;
+}
+
+.monaco-shell .modal.flyout-dialog .modal-body {
 	height: calc(100% - 108px);
 }
 
-.monaco-shell .modal.flyout-dialog .modal-task-body{
+/* Style for the body content excluding error message */
+.monaco-shell .modal.flyout-dialog .modal-body-content {
+	padding: 30px;
+	overflow-y: auto;
+}
+
+/* Style for body and footer in modal dialog. This should be applied to dialog created with angular component. */
+.monaco-shell .modal.flyout-dialog .modal-body-and-footer {
 	height: 100%;
+}
+
+.modal.flyout-dialog .angular-form {
+	height: 100%;
+}
+
+.modal.flyout-dialog .dialog-label {
+	width: 100%;
+	padding-bottom: 5px;
+}
+
+/* Add space in the bottom to separate each input elements */
+.modal.flyout-dialog .input-divider {
+	width: 100%;
+	padding-bottom: 20px;
+}
+
+.modal.flyout-dialog .input {
+	width: 100%;
+	border: none;
+	height: 25px;
+	padding-left: 4px;
 }
 
 .vs-dark.monaco-shell .modal.flyout-dialog .input {
@@ -50,6 +83,7 @@
 
 .vs-dark.monaco-shell .modal.flyout-dialog input:disabled {
 	background-color: #E1E1E1;
+	color:  #3C3C3C;
 }
 
 .modal.flyout-dialog .select-box {
@@ -63,10 +97,6 @@
 .vs-dark.monaco-shell .modal.flyout-dialog .select-box {
 	background: #3C3C3C;
 	color: #BBB;
-}
-
-.modal.flyout-dialog .modal-title {
-	font-size: 15px;
 }
 
 .modal.flyout-dialog .dialogErrorMessage {
@@ -92,6 +122,12 @@
 
 .modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button:focus {
 	outline-width: 1px;
+}
+
+/* The following style is defined at the Button class. If you're creating the buttons using html template, apply this to get consistent style. */
+.modal.flyout-dialog .angular-button {
+	background: #0E639C;
+	color: #FFFFFF;
 }
 
 .modal.flyout-dialog .footer-spinner {

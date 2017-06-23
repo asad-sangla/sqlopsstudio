@@ -2,20 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-.server-group-dialog .add-server-group-body {
-	padding: 30px;
-	overflow-y: auto;
-}
-
-.serverGroup-label {
-	width: 100%;
-	padding-bottom: 5px;
-}
-
-.serverGroup-input {
-	width: 100%;
-	padding-bottom: 20px;
-}
 
 .Group-color-options {
 	float: left;

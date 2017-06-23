@@ -4,85 +4,59 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<form class="backup-form" #myForm="ngForm" (ngSubmit)="onSubmit(f)">
-
-<div class="backup-content">
-	<table class="backup-table-content">
-		<tr>
-			<td class="backup-label">
-				Database
-			</td>
-			<td class="backup-input">
-				<div>{{connection?.connectionProfile?.databaseName}}</div>
-			</td>
-		</tr>
-		<tr>
-			<td class="backup-label">
+<form class="angular-form" #myForm="ngForm" (ngSubmit)="onSubmit(f)">
+	<div class="modal-body">
+		<div class="modal-body-content">
+			<div class="dialog-label">
+				Backup name
+			</div>
+			<div class="input-divider">
+				<input class="input" name="backup-name-input" type="text" [(ngModel)]="backupName" />
+			</div>
+			<div class="dialog-label">
 				Recovery model
-			</td>
-			<td class="backup-input">
-				<div>{{recoveryModel}}</div>
-			</td>
-		</tr>
-		<tr>
-			<td class="backup-label">
-				Backup component
-			</td>
-			<td class="backup-input">
-				<div style="display:block">Database</div>
-			</td>
-		</tr>
-		<tr>
-			<td class="backup-label">
+			</div>
+			<div class="input-divider">
+				<input class="input" disabled type="text" value={{recoveryModel}}/>
+			</div>
+			<div class="dialog-label">
 				Backup type
-			</td>
-			<td class="backup-input-box">
-				<select class="select-box" name="backup-type-list" id="backup-type-list" #backupTypeContainer></select>
-			</td>
-		</tr>
-	</table>
+			</div>
+			<div class="input-divider">
+				<select class="select-box" name="backup-type-list" id="backup-type-list" #backupTypeContainer (change)="onBackupTypeChanged()"></select>
+			</div>
+			<div class="input-divider">
+				<input class="custom-checkbox sql-checkbox" type="checkbox" name="is-copy-only-check" [checked]="isCopyOnly" (change)="onChangeCopyOnly()" [disabled]="disableCopyOnly"/>Copy-only backup<br>
+			</div>
+			<div class="dialog-label">
+				Backup device
+			</div>
+			<div>
+				<select class="backup-path-list" name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" ></select>
+			</div>
 
-
-<!-- TODO: Show component selection when we have filegroup browser
-	<div class = "backup-component-radio">
-		<p>Backup Component</p>
-		<input type="radio" name="selectedBackupComponent" class="form-check-input" (ngModelChange)="onBackupComponentChanged($event)" [disabled]="disableDatabaseComponent" [ngModel]="selectedBackupComponent" value="Database">Database <br />
-		<input type="radio" name="selectedBackupComponent" class="form-check-input" (ngModelChange)="onBackupComponentChanged($event)" [disabled]="disableFileComponent" [ngModel]="selectedBackupComponent" value="Files and Filegroups">Files and Filegroups
-		<input type="text" name="selectedFilesText" [ngModel]="selectedFilesText" [disabled]="disableFileComponent">
-		<button class="Browse" [disabled]="disableFileComponent">Browse</button>
-	</div> -->
-
-	<table class="backup-path-content">
-		<tr>
-			<td class="backup-label" colspan="3">
-				Backup Device
-			</td>
-		</tr>
-		<tr>
-			<td colspan="3">
-				<select name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" style="border-style:none; width:100%; background-color:#3C3C3C; color:#ffffff"></select>
-			</td>
-		</tr>
-		<tr>
-			<td style="width:100%">
-				<input class="backup-path-input" name="backup-path-input" type="text" [(ngModel)]="backupPathInput" />
-			</td>
-			<td>
-				<button class="backup-path-button" [disabled]="disableAdd" (click)="onAddClick()">+</button>
-			</td>
-			<td>
-				<button class="backup-path-button" [disabled]="disableRemove" (click)="onRemoveClick()">-</button>
-			</td>
-		</tr>
-	</table>
-  </div>
-
-  <div class="modal-footer">
-	<div class="footer-button">
-		<a class="monaco-button monaco-text-button" type="submit" role="button" (click)="onOk()">OK</a>
+			<table class="backup-path-table">
+				<tr>
+					<td style="padding-left:0px; width:100%">
+						<input class="backup-path-input" name="backup-path-input" type="text" [(ngModel)]="backupPathInput" />
+					</td>
+					<td>
+						<button class="backup-path-button angular-button" [disabled]="disableAdd" (click)="onAddClick()">+</button>
+					</td>
+					<td style="padding-right:0px">
+						<button class="backup-path-button angular-button" [disabled]="disableRemove" (click)="onRemoveClick()">-</button>
+					</td>
+				</tr>
+			</table>
+		</div>
 	</div>
-	<div class="footer-button">
-		<a class="monaco-button monaco-text-button" tabindex="0" role="button">Cancel</a>
+
+	<div class="modal-footer">
+		<div class="footer-button">
+			<a class="monaco-button monaco-text-button angular-button" type="submit" role="button" (click)="onOk()">OK</a>
+		</div>
+		<div class="footer-button">
+			<a class="monaco-button monaco-text-button angular-button" tabindex="0" role="button" (click)="onCancel()">Cancel</a>
+		</div>
 	</div>
-  </div>
 </form>

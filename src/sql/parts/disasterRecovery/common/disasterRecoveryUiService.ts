@@ -16,6 +16,7 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	public _serviceBrand: any;
 	private _container: HTMLElement;
+	private _backupDialog: BackupDialog;
 
 	constructor(@IInstantiationService private _instantiationService: IInstantiationService,
 				@IPartService private _partService: IPartService) {
@@ -34,12 +35,22 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 
 	public showBackupDialog(uri: string, connection: ConnectionManagementInfo): TPromise<void> {
 		let self = this;
-		self._container = withElementById(self._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-		let backupDialog: BackupDialog = self._instantiationService ? self._instantiationService.createInstance(BackupDialog, self._container) : undefined;
-		backupDialog.create(uri, connection);
+		if (!self._backupDialog) {
+			self._container = withElementById(self._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
+			self._backupDialog  = self._instantiationService ? self._instantiationService.createInstance(BackupDialog, self._container) : undefined;
+			self._backupDialog.create(connection);
+		}
 
 		return new TPromise<void>(() => {
-			backupDialog.open();
+			self._backupDialog.open(uri, connection);
 		});
 	}
+
+	public closeBackup() {
+		let self = this;
+		if (self._backupDialog) {
+			self._backupDialog.close();
+		}
+	}
+
 }

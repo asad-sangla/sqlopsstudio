@@ -396,6 +396,8 @@ export interface BackupInfo {
 	backupPathDevices: { [path: string]: number };
 
 	backupPathList: [string];
+
+	isCopyOnly: boolean;
 }
 
 export interface BackupParams {

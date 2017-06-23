@@ -7,6 +7,7 @@
 
 import { Builder, $ } from 'vs/base/browser/builder';
 import { IconLabel } from 'vs/base/browser/ui/iconLabel/iconLabel';
+import { Button } from 'vs/base/browser/ui/button/button';
 
 export class ModalDialogBuilder {
 
@@ -29,10 +30,10 @@ export class ModalDialogBuilder {
 	/*
 	* Create modal dialog
 	* flyout: indicates whether the dialog should be flyout or not
-	* addfooter: true if the dialog is created using DOM manipulation, false if created through angular component template
+	* isAngularComponent: false if the dialog is created using DOM manipulation, true if created through angular component template
 	*/
-	public create(flyout: boolean, addfooter: boolean = true): Builder {
-		let modalBodyClass = (addfooter === true ? 'modal-body' : 'modal-task-body');
+	public create(flyout: boolean, isAngularComponent: boolean = false): Builder {
+		let modalBodyClass = (isAngularComponent === false ? 'modal-body' : 'modal-body-and-footer');
 		this._builder = $().div({}, (div: Builder) => {
 			div.div({ class: 'modal fade', id: this._id, 'role': 'dialog' }, (dialogContainer) => {
 				if (flyout) {
@@ -46,13 +47,14 @@ export class ModalDialogBuilder {
 								(menuCloseButton) => {
 									menuCloseButton.innerHtml('&times;');
 								});
+
 							this._modalHeader = modalHeader;
 						});
 						modelContent.div({ class: modalBodyClass, id: this._bodyId }, (modelBody) => {
 							this._modelBody = modelBody;
 						});
 
-						if (addfooter) {
+						if (isAngularComponent === false) {
 							modelContent.div({ class: 'modal-footer' }, (modelFooter) => {
 								modelFooter.div({ 'class': 'footer-spinner' }, (spinnerContainer) => {
 									spinnerContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {

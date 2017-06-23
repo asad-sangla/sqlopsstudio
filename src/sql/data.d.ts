@@ -894,6 +894,8 @@ declare module 'data' {
 		backupPathDevices: { [path: string]: number };
 
 		backupPathList: [string];
+
+		isCopyOnly: boolean;
 	}
 
 	export interface BackupResponse {

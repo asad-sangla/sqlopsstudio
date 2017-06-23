@@ -22,6 +22,11 @@ export interface IDisasterRecoveryUiService {
 	 * Show backup wizard
 	 */
 	showBackup(uri: string, connection: ConnectionManagementInfo): Promise<any>;
+
+	/**
+	 * Close backup wizard
+	 */
+	closeBackup();
 }
 
 export const IDisasterRecoveryService = createDecorator<IDisasterRecoveryService>(SERVICE_ID);

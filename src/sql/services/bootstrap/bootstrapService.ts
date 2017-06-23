@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-
+import { NgModuleRef } from '@angular/core';
 import { BootstrapParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IConnectionManagementService, IConnectionDialogService, IErrorMessageService }
 	from 'sql/parts/connection/common/connectionManagement';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
+import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
@@ -19,10 +19,10 @@ import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IEditorInput } from 'vs/platform/editor/common/editor';
+import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
-import { IEditorInput } from 'vs/platform/editor/common/editor';
-import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 
 export const BOOTSTRAP_SERVICE_ID = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -64,10 +64,10 @@ export interface IBootstrapService {
 	* selectorString: 	The tag name and class used to create the element, e.g. 'tagName.cssClassName'
 	* params: 			The parameters to be associated with the given id
 	* input:            Optional editor input. If specified, will listen to its onDispose event and destroy the module when this happens
-	*
+	* callbackSetModule:Optional. If specified, will be used to set the moduleRef
 	* Returns the unique selector string that this module will bootstrap with.
 	*/
-	bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams, input?: IEditorInput): string;
+	bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams, input?: IEditorInput, callbackSetModule?: (value: NgModuleRef<{}>) => void): string;
 
 	/*
 	* Gets the "params" entry associated with the given id and unassociates the id/entry pair.
