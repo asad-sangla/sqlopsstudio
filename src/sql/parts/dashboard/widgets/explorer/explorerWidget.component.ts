@@ -16,8 +16,9 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { BaseActionContext } from 'sql/common/baseActions';
 import { GetExplorerActions } from './explorerActions';
 
-import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
+import * as colors from 'vs/platform/theme/common/colorRegistry';
+import { registerThemingParticipant, ICssStyleCollector, ITheme } from 'vs/platform/theme/common/themeService';
 
 import { ObjectMetadata } from 'data';
 
@@ -53,6 +54,7 @@ interface Colors {
 	selectionColor: string;
 	hoverColor: string;
 	backgroundColor: string;
+	border: string;
 }
 
 @Component({
@@ -67,7 +69,8 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	private _colors: Colors = {
 		selectionColor: '',
 		hoverColor: '',
-		backgroundColor: ''
+		backgroundColor: '',
+		border: 'none'
 	};
 	private isCloud: boolean;
 	//tslint:disable-next-line
@@ -96,22 +99,37 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	}
 
 	ngOnInit() {
-		let self = this;
-		self.themeSub = self._bootstrap.themeService.onDidColorThemeChange((theme: IColorTheme) => {
-			self.updateColorTheme(theme);
-		});
-		self.updateColorTheme(self._bootstrap.themeService.getColorTheme());
+		this.themeSub = registerThemingParticipant(this.registerThemeing);
 	}
 
 	ngOnDestroy() {
 		this.themeSub.dispose();
 	}
 
-	private updateColorTheme(theme: IColorTheme): void {
-		this._colors.selectionColor = theme.getColor('list.activeSelectionBackground').toString();
-		this._colors.hoverColor = theme.getColor('list.hoverBackground').toString();
-		this._colors.backgroundColor = theme.getColor('editor.background').toString();
-		this._changeRef.detectChanges();
+	private registerThemeing(theme: ITheme, collector: ICssStyleCollector) {
+		let selectionBackground = theme.getColor(colors.listActiveSelectionBackground);
+		let hoverColor = theme.getColor(colors.listHoverBackground);
+		let backgroundColor = theme.getColor(colors.editorBackground);
+		let contrastBorder = theme.getColor(colors.contrastBorder);
+		let activeContrastBorder = theme.getColor(colors.activeContrastBorder);
+		if (backgroundColor) {
+			let backgroundString = backgroundColor.toString();
+			collector.addRule(`.explorer-widget .explorer-table .explorer-row { background-color: ${backgroundString} }`);
+		}
+		if (hoverColor) {
+			let hoverString = hoverColor.toString();
+			collector.addRule(`.explorer-widget .explorer-table .explorer-row.hover { background-color: ${hoverString} }`);
+		}
+		if (selectionBackground) {
+			let selectionString = selectionBackground.toString();
+			collector.addRule(`.explorer-widget .explorer-table .explorer-row.selected { background-color: ${selectionString} }`);
+		}
+		if (contrastBorder) {
+			let contrastBorderString = activeContrastBorder.toString();
+			collector.addRule(`.explorer-widget .explorer-table .explorer-row { border: 1px solid transparent}`);
+			collector.addRule(`.explorer-widget .explorer-table .explorer-row.hover { border: 1px dotted ${contrastBorderString} }`);
+			collector.addRule(`.explorer-widget .explorer-table .explorer-row.selected { border: 1px solid ${contrastBorderString} }`);
+		}
 	}
 
 	private init(): void {

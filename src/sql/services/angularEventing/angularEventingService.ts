@@ -33,15 +33,15 @@ export class AngularEventingService implements IAngularEventingService {
 	private _angularMap = new Map<string, Subject<string>>();
 
 	public onAngularEvent(uri: string, cb: (event: string) => void): Subscription {
-		if (this._angularMap.has(uri)) {
-			console.error('Got multiple requests to listen on the same Dashboard URI');
-			return undefined;
-		} else {
-			let subject = new Subject<string>();
-			let sub = subject.subscribe(cb);
+		let subject: Subject<string>;
+		if (!this._angularMap.has(uri)) {
+			subject = new Subject<string>();
 			this._angularMap.set(uri, subject);
-			return sub;
+		} else {
+			subject = this._angularMap.get(uri);
 		}
+		let sub = subject.subscribe(cb);
+		return sub;
 	}
 
 	public sendAngularEvent(uri: string, event: string): void {

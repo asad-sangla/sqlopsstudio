@@ -4,9 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div id="header" style="border-bottom: 2px solid; margin-bottom: 5px">
-	<p-breadcrumb [model]="breadcrumbItems"></p-breadcrumb>
+<div style="overflow: scroll; width: 100%; height: 100%">
+	<p-breadcrumb id="header" [model]="breadcrumbItems"></p-breadcrumb>
+	<router-outlet></router-outlet>
 </div>
-
-<router-outlet style="height: 100%; width: 100%"></router-outlet>
-

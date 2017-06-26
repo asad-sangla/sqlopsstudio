@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, ElementRef, OnDestroy } from '@angular/core';
 
@@ -77,12 +77,18 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 				self._databaseInfo = data;
 				_changeRef.detectChanges();
 				self.parseProperties();
+				if (this._eventHandler) {
+					setTimeout(this._eventHandler);
+				}
 			});
 		} else {
 			self._databaseInfo = {
 				options: {}
 			};
 			self.parseProperties();
+			if (this._eventHandler) {
+				setTimeout(this._eventHandler);
+			}
 		}
 	}
 
@@ -90,11 +96,11 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		this._parent = $(this._el.nativeElement).find('#parent')[0];
 		this._child = $(this._el.nativeElement).find('#child')[0];
 		this._eventHandler = this.handleClipping();
-		$( window ).on('resize', this._eventHandler);
+		$(window).on('resize', this._eventHandler);
 	}
 
 	ngOnDestroy() {
-		$( window ).off('resize', this._eventHandler);
+		$(window).off('resize', this._eventHandler);
 	}
 
 	private handleClipping(): () => any {
@@ -111,13 +117,13 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	}
 
 	private parseProperties() {
-		let provider = this._connection.connectionProfile.providerName;
+		let provider = this._config.provider;
 
 		let propertiesConfig: Array<ProviderProperties>;
 
 		// if config exists use that, otherwise use default
 		if (this._config.config) {
-			let config = <PropertiesConfig> this._config.config;
+			let config = <PropertiesConfig>this._config.config;
 			propertiesConfig = config.properties;
 		} else {
 			propertiesConfig = properties;
@@ -153,7 +159,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		} else if (providerProperties.flavors.length === 0) {
 			this.consoleError('No flavor definitions found for "', provider,
 				'. If there are not multiple flavors of this provider, add one flavor without a condition');
-				return;
+			return;
 		} else {
 			let flavorArray = providerProperties.flavors.filter((item) => {
 				let condition = this._connection.serverInfo[item.condition.field];
@@ -168,7 +174,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 						return condition <= item.condition.value;
 					default:
 						this.consoleError('Could not parse operator: "', item.condition.operator,
-										'" on item "', item, '"');
+							'" on item "', item, '"');
 						return false;
 				}
 			});
@@ -193,8 +199,12 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 				this.consoleError('flavor', flavor.flavor, ' does not have a definition for database properties');
 			}
 
-			infoObject = this._databaseInfo.options;
-			propertyArray = flavor.databaseProperties;
+			if (!Array.isArray(flavor.serverProperties)) {
+				this.consoleError('flavor', flavor.flavor, ' does not have a definition for server properties');
+			}
+
+			infoObject = this._connection.serverInfo;
+			propertyArray = flavor.serverProperties;
 		} else {
 			if (!Array.isArray(flavor.serverProperties)) {
 				this.consoleError('flavor', flavor.flavor, ' does not have a definition for server properties');
@@ -231,7 +241,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 			}
 			assignProperty['name'] = property.name;
 			assignProperty['value'] = propertyObject;
-			this.properties.push(<DisplayProperty> assignProperty);
+			this.properties.push(<DisplayProperty>assignProperty);
 		}
 
 		this._changeRef.detectChanges();

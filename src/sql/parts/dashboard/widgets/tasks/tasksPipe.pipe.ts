@@ -7,9 +7,9 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Task } from './tasksWidget.component';
 
 @Pipe({
-	name: 'taskPipe'
+	name: 'tasksPipe'
 })
-export class TaskPipe implements PipeTransform {
+export class TasksPipe implements PipeTransform {
 	transform(items: Task[], context: string): Task[] {
 		return items.filter(item => {
 			if (item.show_condition) {

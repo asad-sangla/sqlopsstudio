@@ -187,6 +187,7 @@ function main() {
 	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.dragrowselector.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.autosizecolumn.js', undefined);
+	createScript(appRoot + '/node_modules/chart.js/dist/Chart.js', undefined);
 
 	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
 	// loads as soon as the loader loads. To be able to have pseudo translation
@@ -198,7 +199,7 @@ function main() {
 		window.MonacoEnvironment = {};
 
 		const onNodeCachedData = window.MonacoEnvironment.onNodeCachedData = [];
-    
+
     // {{SQL CARBON EDIT}}
 		require.config({
 			baseUrl: rootUrl,
@@ -215,6 +216,7 @@ function main() {
 				'@angular/router',
 				'angular4-grid',
 				'primeng/primeng',
+				'ng2-charts/ng2-charts',
 				'rxjs/Observable',
 				'rxjs/Subject',
 				'rxjs/Observer'

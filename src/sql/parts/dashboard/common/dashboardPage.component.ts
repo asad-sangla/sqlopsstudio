@@ -3,15 +3,19 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { Component } from '@angular/core';
+import { Component, Inject, forwardRef } from '@angular/core';
 import { NgGridConfig } from 'angular4-grid';
+import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 
 @Component({
 	selector: 'dashboard-page',
 	templateUrl: require.toUrl('sql/parts/dashboard/common/dashboardPage.component.html'),
-	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
+	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')],
+	host: {
+		class: 'dashboard-page'
+	}
 })
 export class DashboardPage {
 
@@ -37,6 +41,15 @@ export class DashboardPage {
 		'auto_resize': false,       //  Automatically set col_width/row_height so that max_cols/max_rows fills the screen. Only has effect is max_cols or max_rows is set
 		'maintain_ratio': false,    //  Attempts to maintain aspect ratio based on the colWidth/rowHeight values set in the config
 		'prefer_new': false,        //  When adding new items, will use that items position ahead of existing items
-		'limit_to_screen': false,   //  When resizing the screen, with this true and auto_resize false, the grid will re-arrange to fit the screen size. Please note, at present this only works with cascade direction up.
+		'limit_to_screen': true,   //  When resizing the screen, with this true and auto_resize false, the grid will re-arrange to fit the screen size. Please note, at present this only works with cascade direction up.
 	};
+
+	constructor(
+		@Inject(forwardRef(() => DashboardServiceInterface)) protected dashboardService: DashboardServiceInterface
+	) {
+		let provider = dashboardService.connectionManagementService.connectionInfo.providerId;
+		this.widgets.forEach((widget) => {
+			widget.provider = provider;
+		});
+	}
 }

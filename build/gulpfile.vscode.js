@@ -35,7 +35,7 @@ const productDependencies = Object.keys(product.dependencies || {});
 const dependencies = Object.keys(shrinkwrap.dependencies)
 	.concat(productDependencies); // additional dependencies from our product configuration
 const baseModules = Object.keys(process.binding('natives')).filter(n => !/^_|\//.test(n));
-const nodeModules = ['electron', 'original-fs', 'rxjs/Observable', 'rxjs/Subject', 'rxjs/Observer', 'primeng/primeng']
+const nodeModules = ['electron', 'original-fs', 'rxjs/Observable', 'rxjs/Subject', 'rxjs/Observer', 'primeng/primeng', 'ng2-charts/ng2-charts']
 	.concat(dependencies)
 	.concat(baseModules);
 

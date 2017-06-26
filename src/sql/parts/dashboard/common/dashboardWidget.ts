@@ -15,6 +15,7 @@ export interface WidgetConfig {
 	iconClass?: string;
 	selector: string;
 	context: string;
+	provider: string;
 	gridItemConfig?: NgGridItemConfig;
 	config?: any;
 	background_color?: string;

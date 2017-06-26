@@ -95,7 +95,8 @@ export class DashboardEditor extends BaseEditor {
 			DashboardModule,
 			this.getContainer().getHTMLElement(),
 			DASHBOARD_SELECTOR,
-			params);
+			params,
+			input);
 		input.setUniqueSelector(uniqueSelector);
 	}
 

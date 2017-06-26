@@ -8,7 +8,6 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface, SingleAdminService, SingleConnectionManagementService } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
@@ -90,6 +89,7 @@ suite('Dashboard Properties Widget Tests', () => {
 		let widgetConfig: WidgetConfig = {
 			selector: 'properties-widget',
 			context: 'server',
+			provider: 'MSSQL',
 			config: propertiesConfig
 		};
 
@@ -100,12 +100,8 @@ suite('Dashboard Properties Widget Tests', () => {
 
 		dashboardService.setup(x => x.adminService).returns(() => singleAdminService.object);
 
-		let connectionprofile = TypeMoq.Mock.ofType(ConnectionProfile);
-		connectionprofile.object.providerName = 'MSSQL';
-
 		let connectionManagementinfo = TypeMoq.Mock.ofType(ConnectionManagementInfo);
 		connectionManagementinfo.object.serverInfo = serverInfo;
-		connectionManagementinfo.object.connectionProfile = connectionprofile.object;
 
 		let singleConnectionService = TypeMoq.Mock.ofType(SingleConnectionManagementService);
 		singleConnectionService.setup(x => x.connectionInfo).returns(() => connectionManagementinfo.object);
@@ -121,10 +117,11 @@ suite('Dashboard Properties Widget Tests', () => {
 		// because config parsing is done async we need to put our asserts on the thread stack
 		setTimeout(() => {
 			// because properties is private we need to do some work arounds to access it.
-			assert.equal((<any> testComponent).properties.length, 1);
-			assert.equal((<any> testComponent).properties[0].name, 'Test');
-			assert.equal((<any> testComponent).properties[0].value, 'Test Property');
+			assert.equal((<any>testComponent).properties.length, 1);
+			assert.equal((<any>testComponent).properties[0].name, 'Test');
+			assert.equal((<any>testComponent).properties[0].value, 'Test Property');
 			done();
 		});
-	});
+		// for some reason mocha thinks this test takes 26 seconds even though it doesn't, so it says this failed because it took longer than 2 seconds
+	}).timeout(30000);
 });

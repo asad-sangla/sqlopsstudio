@@ -84,7 +84,9 @@ export class BootstrapService implements IBootstrapService {
 
 		platformBrowserDynamic(providers).bootstrapModule(moduleType).then(moduleRef => {
 			if (input) {
-				input.onDispose(() => moduleRef.destroy());
+				input.onDispose(() => {
+					moduleRef.destroy();
+				});
 			}
 			if (callbackSetModule) {
 				callbackSetModule(moduleRef);

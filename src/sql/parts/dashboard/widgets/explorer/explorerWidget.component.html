@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div style="display: flex; flex-flow: column; position: absolute; height:100%; width:100%; padding: 10px; box-sizing: border-box">
+<div class="explorer-widget" style="display: flex; flex-flow: column; position: absolute; height:100%; width:100%; padding: 10px; box-sizing: border-box">
     <div  height="28px" class="input" style="border-bottom: 0 none; flex: 0 0 auto; display: flex">
         <input *ngIf="_config.context === 'database'" class="dashboard-search-box"
                 [(ngModel)]="filterString"
@@ -27,13 +27,13 @@
             </div>
         </span>
     </div>
-    <div class="database-table" style="overflow: scroll; flex: 1 1 auto">
+    <div class="explorer-table" style="overflow: scroll; flex: 1 1 auto">
         <div *ngFor="let row of tableData | metadataFilter:filterString; let i = index"
-            [ngStyle]="{ 'background-color': selected === i ? _colors.selectionColor : hovered === i ? _colors.hoverColor : _colors.backgroundColor }"
+            [ngClass]="{'selected': selected === i, 'hover': hovered === i }"
             (mouseover)="handleHover(i, true)"
             (mouseleave)="handleHover(i, false)"
             style="display: flex; flex-flow: row"
-            class="database-row">
+            class="explorer-row">
             <span style="flex: 0 0 auto; margin-right: 3px">
                 <div *ngIf="row.metadata?.metadataType === dataType.Table">
                     <div class="icon table" style="padding: 8px"></div>

@@ -3,7 +3,8 @@
 	background-repeat: no-repeat;
 }
 
-.vs-dark .icon.backup {
+.vs-dark .icon.backup,
+.hc-black .icon.backup {
 	background-image: url("backup_inverse.svg");
 	background-repeat: no-repeat;
 }
@@ -13,7 +14,8 @@
 	background-repeat: no-repeat;
 }
 
-.vs-dark .icon.database {
+.vs-dark .icon.database,
+.hc-black .icon.database {
 	background-image: url("database_inverse.svg");
 	background-repeat: no-repeat;
 }
@@ -23,17 +25,19 @@
 	background-repeat: no-repeat;
 }
 
-.vs-dark .icon.file {
+.vs-dark .icon.file,
+.hc-black .icon.file {
 	background-image: url("file_inverse.svg");
 	background-repeat: no-repeat;
 }
 
-.vs .icon.new-database {
+.vs .icon.new-database, {
 	background-image: url("new_database.svg");
 	background-repeat: no-repeat;
 }
 
-.vs-dark .icon.new-database {
+.vs-dark .icon.new-database,
+.hc-black .icon.new-database {
 	background-image: url("new_database_inverse.svg");
 	background-repeat: no-repeat;
 }
@@ -43,7 +47,8 @@
 	background-repeat: no-repeat;
 }
 
-.vs-dark .icon.server-page {
+.vs-dark .icon.server-page,
+.hc-black .icon.server-page {
 	background-image: url("server_page_inverse.svg");
 	background-repeat: no-repeat;
 }

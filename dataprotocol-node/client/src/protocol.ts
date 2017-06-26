@@ -21,7 +21,7 @@ import {
 	FormattingOptions, DocumentLink,
 	ConnectionDetails, ServerInfo,
 	ConnectionSummary, ConnectionCompleteParams, IntelliSenseReadyParams,
-	ColumnMetadata,
+	ColumnMetadata, IDbColumn,
 	ConnectionProviderOptions, DataProtocolServerCapabilities,
 	CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
 	ScriptingScriptAsParams, ScriptingScriptAsResult,
@@ -1263,7 +1263,7 @@ export interface SimpleExecuteParams {
 
 export interface SimpleExecuteResult {
 	rowCount: number;
-	columnInfo: ColumnMetadata[];
+	columnInfo: IDbColumn[];
 	rows: DbCellValue[][];
 }
 

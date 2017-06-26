@@ -4,12 +4,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div style="display: flex; flex-flow: column; position: absolute; height: 100%; width: 100%">
-	<dashboard-widget-wrapper [_config]="propertiesConfig" style="flex: 0 0 100px"></dashboard-widget-wrapper>
-	<div style="flex: 1 1 auto" class="dashboard-page">
-		<div [ngGrid]="gridConfig">
-			<dashboard-widget-wrapper *ngFor="let widget of widgets" [(ngGridItem)]="widget.gridItemConfig" [_config]="widget">
-			</dashboard-widget-wrapper>
-		</div>
+<dashboard-widget-wrapper [_config]="propertiesConfig" style="height: 100px; display: block"></dashboard-widget-wrapper>
+<div>
+	<div [ngGrid]="gridConfig">
+		<dashboard-widget-wrapper *ngFor="let widget of widgets" [(ngGridItem)]="widget.gridItemConfig" [_config]="widget">
+		</dashboard-widget-wrapper>
 	</div>
 </div>

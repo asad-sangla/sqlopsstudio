@@ -4,17 +4,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<ng-template ngFor let-task [ngForOf]="tasks | taskPipe:_config?.context" let-i="index">
-	<div (click)="task.action()"
-		style="position: absolute; cursor: pointer; display: flex; flex-flow: row; align-items: center"
-		class="task-tile"
-		[style.height.px]="_size"
-		[style.width.px]="_size"
-		[style.transform]="calculateTransform(i)"
-		[style.background]="_tileBackground">
-		<div style="flex: 1 1 auto; display: flex; flex-flow: column; align-items: center">
-				<span *ngIf="task.iconClass" [ngClass]="['icon', task.iconClass]" style="padding: 15px"></span>
-			<div>{{task.name}}</div>
+<div class="task-widget">
+	<ng-template ngFor let-task [ngForOf]="tasks | tasksPipe:_config?.context" let-i="index">
+		<div (click)="task.action()"
+			style="position: absolute; cursor: pointer; display: flex; flex-flow: row; align-items: center"
+			class="task-tile"
+			[style.height.px]="_size"
+			[style.width.px]="_size"
+			[style.transform]="calculateTransform(i)">
+			<div style="flex: 1 1 auto; display: flex; flex-flow: column; align-items: center">
+					<span *ngIf="task.iconClass" [ngClass]="['icon', task.iconClass]" style="padding: 15px"></span>
+				<div>{{task.name}}</div>
+			</div>
 		</div>
-	</div>
-</ng-template>
+	</ng-template>
+</div>

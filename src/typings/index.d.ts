@@ -13,5 +13,6 @@
 /// <reference path="modules/@angular/router/index.d.ts" />
 /// <reference path="modules/angular2-slickgrid/index.d.ts" />
 /// <reference path="modules/angular4-grid/index.d.ts" />
+/// <reference path="modules/ng2-charts/index.d.ts" />
 /// <reference path="modules/primeng/index.d.ts" />
 /// <reference path="modules/rxjs/index.d.ts" />

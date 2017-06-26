@@ -5,19 +5,18 @@
 
 import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
-import 'vs/css!sql/media/font-awesome-4.7.0/css/font-awesome';
-
 
 import { MenuItem } from 'primeng/primeng';
 import { OnInit, Component, Inject, forwardRef, ElementRef, ChangeDetectorRef, OnDestroy } from '@angular/core';
+
+import { BreadcrumbService } from './services/breadcrumb.service';
+import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
 
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
-
-import { BreadcrumbService } from './services/breadcrumb.service';
-import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
+import * as themeColors from 'vs/workbench/common/theme';
 
 export const DASHBOARD_SELECTOR: string = 'dashboard-component';
 
@@ -61,7 +60,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 	private updateTheme(theme: IColorTheme): void {
 		let el = <HTMLElement> this._el.nativeElement;
-		$(el).find('#header')[0].style.borderBottomColor = theme.getColor('sideBar.background', true).toString();
+		$(el).find('#header')[0].style.borderBottomColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true).toString();
 	}
 
 }

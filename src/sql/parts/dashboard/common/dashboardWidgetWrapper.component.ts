@@ -7,8 +7,6 @@ import 'vs/css!sql/media/icons/common-icons';
 import { Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
 	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, Injector } from '@angular/core';
 
-import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
-
 import { WidgetDirective } from './widget.directive';
 import { WidgetConfig, WIDGET_CONFIG } from './dashboardWidget';
 
@@ -16,14 +14,20 @@ import { WidgetConfig, WIDGET_CONFIG } from './dashboardWidget';
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
 import { ExplorerWidget } from 'sql/parts/dashboard/widgets/explorer/explorerWidget.component';
 import { TasksWidget } from 'sql/parts/dashboard/widgets/tasks/tasksWidget.component';
+import { InsightsWidget } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
+import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import * as colors from 'vs/platform/theme/common/colorRegistry';
+import * as themeColors from 'vs/workbench/common/theme';
 
 const componentMap = {
 	'properties-widget': PropertiesWidgetComponent,
 	'explorer-widget': ExplorerWidget,
-	'tasks-widget': TasksWidget
+	'tasks-widget': TasksWidget,
+	'insights-widget': InsightsWidget
 };
 
 @Component({
@@ -79,11 +83,11 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 	private updateTheme(theme: IColorTheme): void {
 		let el = <HTMLElement> this._ref.nativeElement;
-		let borderColor = theme.getColor('sideBar.background', true);
-		let backgroundColor = theme.getColor('editor.background', true);
-		let foregroundColor = theme.getColor('sideBar.foreground', true);
+		let borderColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true);
+		let backgroundColor = theme.getColor(colors.editorBackground, true);
+		let foregroundColor = theme.getColor(themeColors.SIDE_BAR_FOREGROUND, true);
 		// TODO: highContrastBorder does not exist, how to handle?
-		let border = theme.getColor('highContrastBorder', true);
+		let border = theme.getColor(colors.contrastBorder, true);
 
 		if (this._config.background_color) {
 			backgroundColor = theme.getColor(this._config.background_color);

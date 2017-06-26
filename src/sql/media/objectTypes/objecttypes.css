@@ -1,17 +1,20 @@
 .vs .icon.table,
-.vs-dark .icon.table {
+.vs-dark .icon.table,
+.hc-black .icon.table {
 	background-image: url("Table.svg");
 	background-repeat: no-repeat;
 }
 
 .vs .icon.stored-procedure,
-.vs-dark .icon.stored-procedure {
+.vs-dark .icon.stored-procedure,
+.hc-black .icon.stored-procedure {
 	background-image: url("StoredProcedure.svg");
 	background-repeat: no-repeat;
 }
 
 .vs .icon.view,
-.vs-dark .icon.view {
+.vs-dark .icon.view,
+.hc-black .icon.view {
 	background-image: url("View.svg");
 	background-repeat: no-repeat;
 }

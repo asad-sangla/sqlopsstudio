@@ -14,6 +14,7 @@
     "angular2-slickgrid": "npm:angular2-slickgrid/index.d.ts",
     "angular4-grid": "npm:angular4-grid/main.d.ts",
     "primeng": "npm:primeng/primeng.d.ts",
+    "ng2-chart2": "npm:ng2-charts/ng2-charts.d.ts",
     "reflect-metadata": "npm:reflect-metadata/index.d.ts",
     "rxjs": "npm:rxjs/Rx.d.ts"
   },

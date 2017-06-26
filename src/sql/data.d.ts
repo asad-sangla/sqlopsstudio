@@ -570,7 +570,7 @@ declare module 'data' {
 
 	export interface SimpleExecuteResult {
 		rowCount: number;
-		columnInfo: ColumnMetadata[];
+		columnInfo: IDbColumn[];
 		rows: DbCellValue[][];
 	}
 

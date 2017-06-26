@@ -13,8 +13,10 @@ import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from '
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
 /* VS imports */
-import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
+import * as themeColors from 'vs/workbench/common/theme';
+import * as colors from 'vs/platform/theme/common/colorRegistry';
+import { registerThemingParticipant, ICssStyleCollector, ITheme } from 'vs/platform/theme/common/themeService';
 
 export interface Task {
 	name: string;
@@ -79,21 +81,23 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	}
 
 	ngOnInit() {
-		let self = this;
-		self._themeDispose = self._bootstrap.themeService.onDidColorThemeChange((e: IColorTheme) => {
-			self.updateTheme(e);
-		});
-		let theme = this._bootstrap.themeService.getColorTheme();
-		self.updateTheme(theme);
+		this._themeDispose = registerThemingParticipant(this.registerThemeing);
+	}
+
+	private registerThemeing(theme: ITheme, collector: ICssStyleCollector) {
+		let contrastBorder = theme.getColor(colors.contrastBorder);
+		let sideBarColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND);
+		if (contrastBorder) {
+			let contrastBorderString = contrastBorder.toString();
+			collector.addRule(`.task-widget .task-tile { border: 1px solid ${contrastBorderString} }`);
+		} else {
+			let sideBarColorString = sideBarColor.toString();
+			collector.addRule(`.task-widget .task-tile { background-color: ${sideBarColorString} }`);
+		}
 	}
 
 	ngOnDestroy() {
 		this._themeDispose.dispose();
-	}
-
-	private updateTheme(e: IColorTheme): void {
-		this._tileBackground = e.getColor('sideBar.background', true).toString();
-		this._changeref.detectChanges();
 	}
 
 	private newQuery(): void {
