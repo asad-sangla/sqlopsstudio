@@ -15,7 +15,7 @@ import { CollapsibleViewletView } from 'vs/workbench/browser/viewlet';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { AddServerAction, AddServerGroupAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
@@ -44,7 +44,8 @@ export class ServerTreeView extends CollapsibleViewletView {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService messageService: IMessageService,
-		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 		super(actionRunner, false, nls.localize({ key: 'registeredServersSection', comment: ['Servers Tree'] }, "Servers Section"), messageService, keybindingService, contextMenuService);
 		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
@@ -113,12 +114,21 @@ export class ServerTreeView extends CollapsibleViewletView {
 
 		if (this._objectExplorerService && this._objectExplorerService.onUpdateObjectExplorerNodes) {
 			this.toDispose.push(this._objectExplorerService.onUpdateObjectExplorerNodes(args => {
+				if (args.errorMessage) {
+					this.showError(args.errorMessage);
+				}
 				if (args.connection) {
 					self.onObjectExplorerSessionCreated(args.connection);
 				}
 			}));
 		}
 		self.refreshTree();
+	}
+
+	private showError(errorMessage: string) {
+		if (this._errorMessageService) {
+			this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
+		}
 	}
 
 	/**

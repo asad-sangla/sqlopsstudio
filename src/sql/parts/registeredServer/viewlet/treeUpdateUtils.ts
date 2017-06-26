@@ -69,7 +69,10 @@ export class TreeSelectionHandler {
 			if (!isInDoubleClickBlock) {
 				this.onTreeActionStateChange(true);
 
-				TreeUpdateUtils.connectAndCreateOeSession(connectionProfile, options, connectionManagementService, objectExplorerService).then(() => {
+				TreeUpdateUtils.connectAndCreateOeSession(connectionProfile, options, connectionManagementService, objectExplorerService).then(sessionCreated => {
+					if (!sessionCreated) {
+						this.onTreeActionStateChange(false);
+					}
 				}, error => {
 					this.onTreeActionStateChange(false);
 				});
@@ -189,21 +192,30 @@ export class TreeUpdateUtils {
 		});
 	}
 
+	/**
+	 * Makes a connection if the not already connected and try to create new object explorer session
+	 * I the profile is already connected, tries to do the action requested in the options (e.g. open dashboard)
+	 * Returns true if new object explorer session created for the connection, otherwise returns false
+	 * @param connection Connection  Profile
+	 * @param options Includes the actions to happened after connection is made
+	 * @param connectionManagementService Connection management service instance
+	 * @param objectExplorerService Object explorer service instance
+	 */
 	public static connectAndCreateOeSession(connection: ConnectionProfile, options: IConnectionCompletionOptions,
-		connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<TreeNode> {
-		return new TPromise<TreeNode>((resolve, reject) => {
+		connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
 			TreeUpdateUtils.connectIfNotConnected(connection, options, connectionManagementService).then(() => {
 				var rootNode: TreeNode = objectExplorerService.getObjectExplorerNode(connection);
 				if (!rootNode) {
 					objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
 						rootNode = objectExplorerService.getObjectExplorerNode(connection);
-						resolve(rootNode);
+						resolve(true);
 						// The oe request is sent. an event will be raised when the session is created
 					}, error => {
 						reject('session failed');
 					});
 				} else {
-					resolve(rootNode);
+					resolve(false);
 				}
 			}, connectionError => {
 				reject(connectionError);
