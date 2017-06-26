@@ -53,32 +53,13 @@ export class DashboardEditor extends BaseEditor {
 			return TPromise.as(undefined);
 		}
 
-		if (!input.hasInitialized) {
+		super.setInput(input, options);
+
+		if (!input.hasBootstrapped) {
 			this.bootstrapAngular(input);
 		}
-		this.revealElementWithTagName(input.uniqueSelector, this.getContainer().getHTMLElement());
 
-		return super.setInput(input, options);
-	}
-
-	/**
-	 * Reveal the child element with the given tagName and hide all other elements.
-	 */
-	private revealElementWithTagName(tagName: string, parent: HTMLElement): void {
-		let elementToReveal: HTMLElement;
-
-		for(let i = 0; i < parent.children.length; i++) {
-			let child: HTMLElement = <HTMLElement>parent.children[i];
-			if (child.tagName && child.tagName.toLowerCase() === tagName && !elementToReveal) {
-				elementToReveal = child;
-			} else {
-				child.style.display = 'none';
-			}
-		}
-
-		if (elementToReveal) {
-			elementToReveal.style.display = '';
-		}
+		return TPromise.as<void>(null);
 	}
 
 	/**
@@ -91,6 +72,9 @@ export class DashboardEditor extends BaseEditor {
 			connection: input.getConnectionInfo(),
 			ownerUri: input.getUri()
 		};
+
+		input.hasBootstrapped = true;
+
 		let uniqueSelector = this._bootstrapService.bootstrap(
 			DashboardModule,
 			this.getContainer().getHTMLElement(),

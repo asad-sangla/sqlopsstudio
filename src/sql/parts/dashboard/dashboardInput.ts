@@ -16,6 +16,10 @@ export class DashboardInput extends EditorInput {
 
 	private _uniqueSelector: string;
 
+	private _hasbootStrapped = false;
+	// Holds the HTML content for the editor when the editor discards this input and loads another
+	private _parentContainer: HTMLElement;
+
 	constructor(private _uri: string, private _connection: ConnectionManagementInfo) {
 		super();
 	}
@@ -36,6 +40,32 @@ export class DashboardInput extends EditorInput {
 		return this._uri;
 	}
 
+	public dispose(): void {
+		this._disposeContainer();
+		super.dispose();
+	}
+
+	private _disposeContainer() {
+		if (!this._parentContainer) {
+			return;
+		}
+
+		let parentNode = this._parentContainer.parentNode;
+		if (parentNode) {
+			parentNode.removeChild(this._parentContainer);
+			this._parentContainer = null;
+		}
+	}
+
+	set container(container: HTMLElement) {
+		this._disposeContainer();
+		this._parentContainer = container;
+	}
+
+	set hasBootstrapped(val: boolean) {
+		this._hasbootStrapped = val;
+	}
+
 	public supportsSplitEditor(): boolean {
 		return false;
 	}
@@ -50,7 +80,7 @@ export class DashboardInput extends EditorInput {
 
 	public get hasInitialized(): boolean {
 		return !!this._uniqueSelector;
-    }
+	}
 
 	public get uniqueSelector(): string {
 		return this._uniqueSelector;
