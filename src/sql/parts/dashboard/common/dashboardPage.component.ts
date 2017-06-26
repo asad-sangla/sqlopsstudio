@@ -46,10 +46,29 @@ export class DashboardPage {
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) protected dashboardService: DashboardServiceInterface
-	) {
-		let provider = dashboardService.connectionManagementService.connectionInfo.providerId;
-		this.widgets.forEach((widget) => {
-			widget.provider = provider;
+	) { }
+
+	/**
+	 * Adds the provider to current widgets and any passed widgets (for locally defined widget)
+	 * @param widgets Array of widgets to add provider onto other than this.widgets
+	 */
+	protected addProvider(addWidgets?: Array<WidgetConfig>): void {
+		let provider = this.dashboardService.connectionManagementService.connectionInfo.providerId;
+		let totalWidgets = addWidgets ? this.widgets.concat(addWidgets) : this.widgets;
+		totalWidgets.forEach((item) => {
+			item.provider = provider;
+		});
+	}
+
+	/**
+	 * Adds passed context to this.widgets and passed widgets
+	 * @param context Context to add ('database' or 'server' atm)
+	 * @param widgets Additional widgets to add context to
+	 */
+	protected addContext(context: string, addWidgets?: Array<WidgetConfig>): void {
+		let totalWidgets = addWidgets ? this.widgets.concat(addWidgets) : this.widgets;
+		totalWidgets.forEach((item) => {
+			item.context = context;
 		});
 	}
 }

@@ -587,7 +587,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IQuickOpenService, this.quickOpen);
 
 		// {{SQL CARBON EDIT}}
-	    // SQL Tools services
+		// SQL Tools services
 		this.splashScreenService = this.instantiationService.createInstance(SplashScreenService);
 		serviceCollection.set(ISplashScreenService, this.splashScreenService);
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));

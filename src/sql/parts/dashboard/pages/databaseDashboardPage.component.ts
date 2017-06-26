@@ -22,34 +22,15 @@ export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 		provider: undefined
 	};
 
-	protected widgets: Array<WidgetConfig> = [
-		{
-			name: 'Tasks',
-			selector: 'tasks-widget',
-			gridItemConfig: {
-				sizex: 2,
-				sizey: 1
-			},
-			context: 'database',
-			provider: undefined
-		},
-		{
-			selector: 'explorer-widget',
-			gridItemConfig: {
-				sizex: 2,
-				sizey: 2
-			},
-			context: 'database',
-			provider: undefined
-		}
-	];
-
+	protected widgets: Array<WidgetConfig>;
 	constructor(
 		@Inject(forwardRef(() => BreadcrumbService)) private breadcrumbService: BreadcrumbService,
 		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface
 	) {
 		super(dashboardService);
-		this.propertiesConfig.provider = dashboardService.connectionManagementService.connectionInfo.providerId;
+		this.widgets = dashboardService.databasePageSettings;
+		this.addProvider([this.propertiesConfig]);
+		this.addContext('database');
 	}
 
 	ngOnInit() {

@@ -3,11 +3,13 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
+/* Node Modules */
 import { Injectable, Inject, forwardRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
 
+/* SQL imports */
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
@@ -17,13 +19,20 @@ import { ConnectionManagementInfo } from 'sql/parts/connection/common/connection
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
+import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 
+import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
+
+/* VS imports */
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IDisposable } from 'vs/base/common/lifecycle';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 
-import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
+const DASHBOARD_SETTINGS = 'dashboard';
+const DATABASEPAGE_SETTINGS = 'databasePage';
+const SERVERPAGE_SETTINGS = 'serverPage';
 
 /* Wrapper for a metadata service that contains the uri string to use on each request */
 export class SingleConnectionMetadataService {
@@ -118,17 +127,18 @@ class Deferred<T> {
 export class DashboardServiceInterface implements OnDestroy {
 	private _uniqueSelector: string;
 	private _uri: string;
-	/* Bootstrap params*/
 	private _bootstrapParams: DashboardComponentParams;
+	private _disposables: IDisposable[] = [];
+
+	/* Services */
 	private _metadataService: SingleConnectionMetadataService;
 	private _connectionManagementService: SingleConnectionManagementService;
 	private _themeService: IWorkbenchThemeService;
 	private _contextMenuService: IContextMenuService;
 	private _instantiationService: IInstantiationService;
-	/* Disaster Recovery */
 	private _adminService: SingleAdminService;
 	private _queryManagementService: SingleQueryManagementService;
-	private _disposables: IDisposable[] = [];
+	private _configService: IConfigurationService;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
@@ -137,6 +147,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._themeService = this._bootstrapService.themeService;
 		this._contextMenuService = this._bootstrapService.contextMenuService;
 		this._instantiationService = this._bootstrapService.instantiationService;
+		this._configService = this._bootstrapService.configurationService;
 	}
 
 	ngOnDestroy() {
@@ -171,9 +182,9 @@ export class DashboardServiceInterface implements OnDestroy {
 		return this._queryManagementService;
 	}
 
-	 /**
-	  * Set the selector for this dashboard instance, should only be set once
-	  */
+	/**
+	 * Set the selector for this dashboard instance, should only be set once
+	 */
 	public set selector(selector: string) {
 		this._uniqueSelector = selector;
 		this._getbootstrapParams();
@@ -235,6 +246,24 @@ export class DashboardServiceInterface implements OnDestroy {
 	 */
 	public getUnderlyingUri(): string {
 		return this._uri;
+	}
+
+	/**
+	 * Get databasePageSettings
+	 * @returns JSON for the database page settings
+	 */
+	public get databasePageSettings(): Array<WidgetConfig> {
+		let config = this._configService.getConfiguration(DASHBOARD_SETTINGS);
+		return config[DATABASEPAGE_SETTINGS] || [];
+	}
+
+	/**
+	 * Get serverPageSettings
+	 * @returns JSON for server page settings
+	 */
+	public get serverPageSettings(): Array<WidgetConfig> {
+		let config = this._configService.getConfiguration(DASHBOARD_SETTINGS);
+		return config[SERVERPAGE_SETTINGS] || [];
 	}
 
 	private get handleDashboardEvent(): (event: string) => void {

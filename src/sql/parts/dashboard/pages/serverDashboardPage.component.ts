@@ -22,71 +22,16 @@ export class ServerDashboardPage extends DashboardPage implements OnInit {
 		provider: undefined
 	};
 
-	protected widgets: Array<WidgetConfig> = [
-		{
-			name: 'Tasks',
-			selector: 'tasks-widget',
-			gridItemConfig: {
-				sizex: 2,
-				sizey: 1
-			},
-			context: 'server',
-			provider: undefined
-		},
-		{
-			selector: 'explorer-widget',
-			gridItemConfig: {
-				sizex: 2,
-				sizey: 2
-			},
-			context: 'server',
-			provider: undefined
-		},
-		{
-			selector: 'insights-widget',
-			context: 'server',
-			provider: undefined,
-			gridItemConfig: {},
-			config: {
-				type: 'count',
-				query: `
-						declare @condition tinyint;
-						SET @condition = 24;
-
-						with backupInsight_cte (database_id, last_backup, health_check)
-						as
-						(
-							select
-								d.database_id,
-								max(b.backup_start_date) AS last_backup,
-								case
-									when (datediff( hh , max(b.backup_start_date) , getdate()) < @condition) then 1 else 0
-								end as health_check
-							from sys.databases as d
-							left join msdb..backupset as b on d.name = b.database_name
-							group by d.database_id
-						)
-						select
-							sum(health_check) Healthy,
-							sum(case when health_check = 0 AND last_backup IS NOT NULL then 1 else 0 end) Attention,
-							sum(case when health_check = 0 then 1 else 0 end) Unheathly
-						from backupInsight_cte
-						`,
-				colorMap: {
-					'Healthy': 'green',
-					'Attention': 'yellow',
-					'Unheathly': 'red'
-				}
-			}
-		}
-	];
+	protected widgets: Array<WidgetConfig>;
 
 	constructor(
 		@Inject(forwardRef(() => BreadcrumbService)) private breadcrumbService: BreadcrumbService,
 		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface
 	) {
 		super(dashboardService);
-		this.propertiesConfig.provider = dashboardService.connectionManagementService.connectionInfo.providerId;
+		this.widgets = dashboardService.serverPageSettings;
+		this.addProvider([this.propertiesConfig]);
+		this.addContext('server');
 	}
 
 	ngOnInit() {

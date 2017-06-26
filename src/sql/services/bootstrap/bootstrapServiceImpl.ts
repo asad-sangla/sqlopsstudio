@@ -27,6 +27,7 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IEditorInput } from 'vs/platform/editor/common/editor';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from './bootstrapService';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 
 export class BootstrapService implements IBootstrapService {
 
@@ -60,7 +61,8 @@ export class BootstrapService implements IBootstrapService {
 		@IPartService public partService: IPartService,
 		@IQueryManagementService public queryManagementService: IQueryManagementService,
 		@IInstantiationService public instantiationService: IInstantiationService,
-		@IAngularEventingService public angularEventingService: IAngularEventingService
+		@IAngularEventingService public angularEventingService: IAngularEventingService,
+		@IConfigurationService public configurationService: IConfigurationService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();
