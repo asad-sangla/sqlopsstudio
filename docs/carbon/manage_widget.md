@@ -55,8 +55,6 @@ Numerical Chart|Any chart (Pie / Bar etc.)|2 or more column input: X axis is col
 ## Engineering approach
 The Dashboard has already been designed in an extensible, widgetized fashion. Additional work to support this spec is:
 
-> table
-
 |Task|Subtask|Priority|
 |:-------|:-----------------|:-----|
 |Implement insights|Support multiple parallel queries for tabular data and display an Insight based on their results|0||
@@ -147,6 +145,21 @@ export interface CountInsight extends Insight {
     detailsQuery: string;
 }
 ```
+
+## FAQ
+- **How to define insight**: In the initial version, customers can add insights to a file in their workspace / on their machine
+- **How to share widgets among team**: Initially supported locations:
+  - Workspace file (e.g. file under a .carbon folder). Can be shared via Github checkin
+  - User settings file (not shared)
+  - To collaborate via Gist etc., simple copy & paste the file into your workspace
+  Future: should be packageable into an extension / extension pack in the future. Register the .json file in there and it “just works”.
+- **How to specify on-click behavior**: Each command has a command ID – you can see these in by choosing “Open Keyboard Shortcuts”. Initial idea is let them use this. We will pass in a context object and if an action supports this, it could use to get profile & Server/DB. Lets get feedback and see if we need better support, but initially something light like this may work well.
+- **Are widgets dynamically resizable**: Not in scope at present
+- **Will we support .rdl and other report formats**: Not in scope at present
+- **Will there be server group dashboards with insights in the future**: this is a goal, but will be assessed when group-level management is spec'd and implemented
+- **Will we support non-TSQL inputs (e.g. ARM API, Powershell)**: Out of scope for now, can be assessed in the future
+- **Is auto-update supported**: Initial version caches data on a per-session basis, will have a "Refresh" button. Auto-update is out of scope for now
+- **How are query/connection errors handled**: TBD
 
 ## Timelines
 
