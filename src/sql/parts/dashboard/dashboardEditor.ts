@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/query/editor/media/queryEditor';
+import * as DOM from 'vs/base/browser/dom';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Dimension, Builder } from 'vs/base/browser/builder';
 import { EditorOptions } from 'vs/workbench/common/editor';
@@ -20,6 +21,8 @@ import { DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dashboard.component';
 export class DashboardEditor extends BaseEditor {
 
 	public static ID: string = 'workbench.editor.connectiondashboard';
+	private _dashboardContainer: HTMLElement;
+	protected _input: DashboardInput;
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -28,6 +31,10 @@ export class DashboardEditor extends BaseEditor {
 		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
 		super(DashboardEditor.ID, telemetryService, themeService);
+	}
+
+	public get input(): DashboardInput {
+		return this._input;
 	}
 
 	/**
@@ -53,13 +60,31 @@ export class DashboardEditor extends BaseEditor {
 			return TPromise.as(undefined);
 		}
 
+		const parentElement = this.getContainer().getHTMLElement();
+
+		let oldInput = this.input;
+
 		super.setInput(input, options);
 
 		if (!input.hasBootstrapped) {
+			if (oldInput) {
+				this._disposeEditors();
+			}
+			this._dashboardContainer = DOM.append(parentElement, DOM.$('.dashboardEditor'));
+			this.input.container = this._dashboardContainer;
 			this.bootstrapAngular(input);
+		} else {
+			this._dashboardContainer = DOM.append(parentElement, this.input.container);
 		}
 
 		return TPromise.as<void>(null);
+	}
+
+	private _disposeEditors(): void {
+		if (this._dashboardContainer) {
+			this._dashboardContainer.remove();
+			this._dashboardContainer = null;
+		}
 	}
 
 	/**
@@ -77,7 +102,7 @@ export class DashboardEditor extends BaseEditor {
 
 		let uniqueSelector = this._bootstrapService.bootstrap(
 			DashboardModule,
-			this.getContainer().getHTMLElement(),
+			this._dashboardContainer,
 			DASHBOARD_SELECTOR,
 			params,
 			input);
