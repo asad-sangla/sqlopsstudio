@@ -20,18 +20,18 @@ import { BreadcrumbService } from 'sql/parts/dashboard/services/breadcrumb.servi
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
 /* Directives */
-import { WidgetDirective } from 'sql/parts/dashboard/common/widget.directive';
+import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 
 /* Base Components */
 import { DashboardComponent, DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dashboard.component';
 import { DashboardPage } from 'sql/parts/dashboard/common/dashboardPage.component';
 import { DashboardWidgetWrapper } from 'sql/parts/dashboard/common/dashboardWidgetWrapper.component';
-let baseComponents = [ DashboardComponent, DashboardWidgetWrapper, WidgetDirective, DashboardPage ];
+let baseComponents = [DashboardComponent, DashboardWidgetWrapper, ComponentHostDirective, DashboardPage];
 
 /* Pages */
 import { ServerDashboardPage } from 'sql/parts/dashboard/pages/serverDashboardPage.component';
 import { DatabaseDashboardPage } from 'sql/parts/dashboard/pages/databaseDashboardPage.component';
-let pageComponents = [ ServerDashboardPage, DatabaseDashboardPage ];
+let pageComponents = [ServerDashboardPage, DatabaseDashboardPage];
 
 /* Widget Components */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
@@ -39,13 +39,14 @@ import { ExplorerWidget } from 'sql/parts/dashboard/widgets/explorer/explorerWid
 import { ExplorerFilter } from 'sql/parts/dashboard/widgets/explorer/explorerFilter.pipe';
 import { TasksWidget } from 'sql/parts/dashboard/widgets/tasks/tasksWidget.component';
 import { TasksPipe } from 'sql/parts/dashboard/widgets/tasks/tasksPipe.pipe';
-let widgetComponents = [ PropertiesWidgetComponent, ExplorerWidget, TasksWidget ];
-let widgetFilters = [ TasksPipe, ExplorerFilter ];
+let widgetComponents = [PropertiesWidgetComponent, ExplorerWidget, TasksWidget];
+let widgetFilters = [TasksPipe, ExplorerFilter];
 
 /* Insights */
 import { InsightsWidget } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 import { CountInsight } from 'sql/parts/dashboard/widgets/insights/viewInsights/countInsight.component';
-let insightComponents = [ InsightsWidget, CountInsight ];
+import { ChartInsight } from 'sql/parts/dashboard/widgets/insights/viewInsights/chartInsight.component';
+let insightComponents = [InsightsWidget, CountInsight, ChartInsight];
 
 // Setup routes for various child components
 const appRoutes: Routes = [

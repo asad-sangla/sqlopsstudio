@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import 'vs/css!sql/media/icons/common-icons';
 
-import { Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
-	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, Injector } from '@angular/core';
+import {
+	Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
+	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, Injector
+} from '@angular/core';
 
-import { WidgetDirective } from './widget.directive';
+import { ComponentHostDirective } from './componentHost.directive';
 import { WidgetConfig, WIDGET_CONFIG } from './dashboardWidget';
 
 /* Widgets */
@@ -39,7 +41,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 	@Input() private _config: WidgetConfig;
 	private _themeDispose: IDisposable;
 
-	@ViewChild(WidgetDirective) widgetHost: WidgetDirective;
+	@ViewChild(ComponentHostDirective) componentHost: ComponentHostDirective;
 
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
@@ -68,12 +70,12 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 	private loadWidget(): void {
 		let componentFactory = this._componentFactoryResolver.resolveComponentFactory(componentMap[this._config.selector]);
 
-		let viewContainerRef = this.widgetHost.viewContainerRef;
+		let viewContainerRef = this.componentHost.viewContainerRef;
 		viewContainerRef.clear();
 
-		let injector = ReflectiveInjector.resolveAndCreate([{ provide: WIDGET_CONFIG, useValue: this._config}], this._injector);
+		let injector = ReflectiveInjector.resolveAndCreate([{ provide: WIDGET_CONFIG, useValue: this._config }], this._injector);
 		let componentRef = viewContainerRef.createComponent(componentFactory, 0, injector);
-		let el = <HTMLElement> componentRef.location.nativeElement;
+		let el = <HTMLElement>componentRef.location.nativeElement;
 
 		// set widget styles to conform to its box
 		el.style.overflow = 'hidden';
@@ -82,7 +84,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 	}
 
 	private updateTheme(theme: IColorTheme): void {
-		let el = <HTMLElement> this._ref.nativeElement;
+		let el = <HTMLElement>this._ref.nativeElement;
 		let borderColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true);
 		let backgroundColor = theme.getColor(colors.editorBackground, true);
 		let foregroundColor = theme.getColor(themeColors.SIDE_BAR_FOREGROUND, true);
@@ -98,7 +100,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 		}
 
 		if (backgroundColor) {
-			el.style.backgroundColor =  backgroundColor.toString();
+			el.style.backgroundColor = backgroundColor.toString();
 		}
 
 		if (foregroundColor) {

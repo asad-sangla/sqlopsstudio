@@ -6,8 +6,8 @@
 import { Directive, ViewContainerRef, Inject, forwardRef } from '@angular/core';
 
 @Directive({
-	selector: '[widget-host]',
+	selector: '[component-host]',
 })
-export class WidgetDirective {
-	constructor(@Inject(forwardRef(() => ViewContainerRef)) public viewContainerRef: ViewContainerRef) {}
+export class ComponentHostDirective {
+	constructor( @Inject(forwardRef(() => ViewContainerRef)) public viewContainerRef: ViewContainerRef) { }
 }
