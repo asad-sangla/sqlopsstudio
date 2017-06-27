@@ -14,6 +14,7 @@ import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { addStandardDisposableListener, toggleClass } from 'vs/base/browser/dom';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { isPromiseCanceledError } from 'vs/base/common/errors';
@@ -42,13 +43,13 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IThemeService themeService: IThemeService,
+		@IThemeService private _themeService: IThemeService,
 		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IViewletService private viewletService: IViewletService,
 		@IMessageService private messageService: IMessageService
 	) {
-		super(VIEWLET_ID, telemetryService, themeService);
+		super(VIEWLET_ID, telemetryService, _themeService);
 		this.searchDelayer = new ThrottledDelayer(500);
 		this.views = [];
 
@@ -90,6 +91,9 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 						}
 					}
 				}));
+
+				// Theme styler
+				this.toDispose.push(attachInputBoxStyler(this.searchBox, this._themeService));
 
 			});
 			viewletContainer.div({}, (splitviewContainer) => {

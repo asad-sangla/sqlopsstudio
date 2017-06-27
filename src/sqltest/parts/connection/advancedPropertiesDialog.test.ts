@@ -16,69 +16,69 @@ suite('Advanced properties dialog tests', () => {
 	var providerOptions: data.ConnectionOption[];
 
 	setup(() => {
-		advancedController = new AdvancedPropertiesController(()=> {});
+		advancedController = new AdvancedPropertiesController(() => { }, null);
 		providerOptions = [
-				{
-					name: 'a1',
-					displayName: undefined,
-					description: undefined,
-					groupName: 'a',
-					categoryValues: undefined,
-					defaultValue: undefined,
-					isIdentity: true,
-					isRequired: true,
-					specialValueType: null,
-					valueType: 0
-				},
-				{
-					name: 'b1',
-					displayName: undefined,
-					description: undefined,
-					groupName: 'b',
-					categoryValues: undefined,
-					defaultValue: undefined,
-					isIdentity: true,
-					isRequired: true,
-					specialValueType: null,
-					valueType: 0
-				},
-				{
-					name: 'noType',
-					displayName: undefined,
-					description: undefined,
-					groupName: undefined,
-					categoryValues: undefined,
-					defaultValue: undefined,
-					isIdentity: true,
-					isRequired: true,
-					specialValueType: null,
-					valueType: 0
-				},
-				{
-					name: 'a2',
-					displayName: undefined,
-					description: undefined,
-					groupName: 'a',
-					categoryValues: undefined,
-					defaultValue: undefined,
-					isIdentity: true,
-					isRequired: true,
-					specialValueType: null,
-					valueType: 0
-				},
-				{
-					name: 'b2',
-					displayName: undefined,
-					description: undefined,
-					groupName: 'b',
-					categoryValues: undefined,
-					defaultValue: undefined,
-					isIdentity: true,
-					isRequired: true,
-					specialValueType: null,
-					valueType: 0
-				}
-			];
+			{
+				name: 'a1',
+				displayName: undefined,
+				description: undefined,
+				groupName: 'a',
+				categoryValues: undefined,
+				defaultValue: undefined,
+				isIdentity: true,
+				isRequired: true,
+				specialValueType: null,
+				valueType: 0
+			},
+			{
+				name: 'b1',
+				displayName: undefined,
+				description: undefined,
+				groupName: 'b',
+				categoryValues: undefined,
+				defaultValue: undefined,
+				isIdentity: true,
+				isRequired: true,
+				specialValueType: null,
+				valueType: 0
+			},
+			{
+				name: 'noType',
+				displayName: undefined,
+				description: undefined,
+				groupName: undefined,
+				categoryValues: undefined,
+				defaultValue: undefined,
+				isIdentity: true,
+				isRequired: true,
+				specialValueType: null,
+				valueType: 0
+			},
+			{
+				name: 'a2',
+				displayName: undefined,
+				description: undefined,
+				groupName: 'a',
+				categoryValues: undefined,
+				defaultValue: undefined,
+				isIdentity: true,
+				isRequired: true,
+				specialValueType: null,
+				valueType: 0
+			},
+			{
+				name: 'b2',
+				displayName: undefined,
+				description: undefined,
+				groupName: 'b',
+				categoryValues: undefined,
+				defaultValue: undefined,
+				isIdentity: true,
+				isRequired: true,
+				specialValueType: null,
+				valueType: 0
+			}
+		];
 	});
 
 	test('group connection properties by category should set group and order properties correctly', () => {

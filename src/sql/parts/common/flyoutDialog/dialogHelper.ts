@@ -6,8 +6,9 @@
 'use strict';
 
 import { Builder } from 'vs/base/browser/builder';
-import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
+import { IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
+import { DialogInputBox } from 'sql/parts/common/flyoutDialog/dialogInputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 
 export class DialogHelper {
@@ -46,8 +47,8 @@ export class DialogHelper {
 		return new Builder(rowButton.getElement());
 	}
 
-	static appendInputBox(container: Builder, options?: IInputOptions): InputBox {
-		return new InputBox(container.getHTMLElement(), null, options);
+	static appendInputBox(container: Builder, options?: IInputOptions): DialogInputBox {
+		return new DialogInputBox(container.getHTMLElement(), null, options);
 	}
 
 	static appendInputSelectBox(container: Builder, selectBox: DialogSelectBox): DialogSelectBox {

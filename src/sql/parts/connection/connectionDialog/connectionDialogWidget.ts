@@ -23,6 +23,8 @@ import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import * as styler from 'vs/platform/theme/common/styler';
 import data = require('data');
 
 export interface IConnectionDialogCallbacks {
@@ -43,15 +45,18 @@ export class ConnectionDialogWidget {
 	private _dialog: ModalDialogBuilder;
 	private _providerTypeSelectBox: DialogSelectBox;
 	private _toDispose: lifecycle.IDisposable[];
+	private _toDisposeStyle: lifecycle.IDisposable[];
 	private _newConnectionParams: INewConnectionParams;
 
 	constructor(container: HTMLElement,
 		callbacks: IConnectionDialogCallbacks,
 		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService) {
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IThemeService private _themeService: IThemeService) {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
+		this._toDisposeStyle = [];
 	}
 
 	public create(providerTypeOptions: string[], selectedProviderType: string): HTMLElement {
@@ -85,6 +90,11 @@ export class ConnectionDialogWidget {
 
 
 	private registerListeners(): void {
+		// Theme styler
+		this._toDispose.push(styler.attachSelectBoxStyler(this._providerTypeSelectBox, this._themeService));
+		this._toDispose.push(styler.attachButtonStyler(this._connectButton, this._themeService));
+		this._toDispose.push(styler.attachButtonStyler(this._closeButton, this._themeService));
+
 		this._toDispose.push(this._providerTypeSelectBox.onDidSelect(selectedProviderType => {
 			this.onProviderTypeSelected(selectedProviderType);
 		}));
@@ -140,6 +150,11 @@ export class ConnectionDialogWidget {
 			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
 				divContainer.element('div', { class: 'explorer-servers' }, (treeContainer: Builder) => {
 					let recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true);
+
+					// Theme styler
+					this._toDisposeStyle.push(styler.attachListStyler(recentConnectionTree, this._themeService));
+					this._toDisposeStyle.push(recentConnectionTree.addListener('selection', (event: any) => this.OnRecentConnectionClick(event)));
+
 					recentConnectionTree.addListener('selection', (event: any) => this.OnRecentConnectionClick(event));
 					recentConnectionTree.addListener('selection',
 						(event: any) => {
@@ -149,6 +164,7 @@ export class ConnectionDialogWidget {
 					// call layout with view height
 					recentConnectionTree.layout(300);
 					divContainer.append(recentConnectionTree.getHTMLElement());
+
 				});
 			});
 		});
@@ -173,6 +189,7 @@ export class ConnectionDialogWidget {
 	private clearRecentConnection() {
 		this._builder.off(DOM.EventType.KEY_DOWN);
 		jQuery('#recentConnection').empty();
+		this._toDisposeStyle = lifecycle.dispose(this._toDisposeStyle);
 	}
 
 	public open(recentConnections: data.ConnectionInfo[]) {

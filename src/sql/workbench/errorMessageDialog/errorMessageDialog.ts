@@ -15,6 +15,9 @@ import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { clipboard } from 'electron';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { attachButtonStyler } from 'vs/platform/theme/common/styler';
+import * as colorRegistry from 'vs/platform/theme/common/colorRegistry';
 
 export interface IErrorMessageCallbacks {
 	onOk: () => void;
@@ -30,10 +33,12 @@ export class ErrorMessageDialog {
 	private _modalTitle: Builder;
 	private _modalBody: Builder;
 	private _message: string;
+	private _themeService: IThemeService;
 
-	constructor(container: HTMLElement, callbacks: IErrorMessageCallbacks) {
+	constructor(container: HTMLElement, callbacks: IErrorMessageCallbacks, themeService: IThemeService) {
 		this._container = container;
 		this._callbacks = callbacks;
+		this._themeService = themeService;
 		this._message = '';
 	}
 
@@ -49,7 +54,7 @@ export class ErrorMessageDialog {
 									menuCloseButton.innerHtml('&times;');
 								});
 							modalHeader.div({ class: 'modal-title' }, (modalTitle) => {
-								this._modalTitle = modalTitle
+								this._modalTitle = modalTitle;
 							});
 						});
 						modelContent.div({ class: 'modal-body', id: 'errorContent' }, (modelBody) => {
@@ -67,7 +72,7 @@ export class ErrorMessageDialog {
 				});
 			});
 		})
-		.addClass('error-dialog');
+			.addClass('error-dialog');
 		this._builder.build(this._container);
 		this._modelElement = this._builder.getHTMLElement();
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
@@ -103,14 +108,18 @@ export class ErrorMessageDialog {
 	}
 
 	private createCopyButton(container: Builder): void {
+		let button: Button;
 		container.div({ class: 'modal-copy' }, (cellContainer) => {
-			let button = new Button(cellContainer);
+			button = new Button(cellContainer);
 			button.icon = 'copyButtonIcon';
 			button.addListener('click', () => {
 				clipboard.writeText(this._message);
 			});
 			cellContainer.child(0).title('Copy to Clipboard');
 		});
+
+		// Theme styler
+		attachButtonStyler(button, this._themeService, { buttonBackground: colorRegistry.selectionBackground, buttonHoverBackground: colorRegistry.selectionBackground });
 	}
 
 	private createFooterButton(container: Builder, title: string): Button {
@@ -124,6 +133,8 @@ export class ErrorMessageDialog {
 				}
 			});
 		});
+		// Theme styler
+		attachButtonStyler(button, this._themeService);
 
 		return button;
 	}

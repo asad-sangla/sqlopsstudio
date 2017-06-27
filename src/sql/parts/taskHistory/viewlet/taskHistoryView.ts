@@ -23,6 +23,8 @@ import { DefaultFilter, DefaultDragAndDrop, DefaultAccessibilityProvider } from 
 import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
 import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { attachListStyler } from 'vs/platform/theme/common/styler';
 
 const $ = builder.$;
 
@@ -39,7 +41,8 @@ export class TaskHistoryView extends CollapsibleViewletView {
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService messageService: IMessageService,
 		@ITaskService private _taskService: ITaskService,
-		@IErrorMessageService private _errorMessageService: IErrorMessageService
+		@IErrorMessageService private _errorMessageService: IErrorMessageService,
+		@IThemeService private _themeService: IThemeService
 	) {
 		super(actionRunner, false, nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'), messageService, keybindingService, contextMenuService);
 	}
@@ -67,6 +70,9 @@ export class TaskHistoryView extends CollapsibleViewletView {
 
 		this.tree = this.createTaskHistoryTree(this.treeContainer, this.instantiationService);
 		this.toDispose.push(this.tree.addListener('selection', (event) => this.onSelected(event)));
+
+		// Theme styler
+		this.toDispose.push(attachListStyler(this.tree, this._themeService));
 
 		const self = this;
 		this.toDispose.push(this._taskService.onAddNewTask(args => {

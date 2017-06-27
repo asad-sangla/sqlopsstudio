@@ -95,9 +95,10 @@ export class InputBox extends Widget {
 	private state = 'idle';
 	private cachedHeight: number;
 
-	private inputBackground: Color;
-	private inputForeground: Color;
-	private inputBorder: Color;
+ 	// {{ SQL EDIT }}
+	protected inputBackground: Color;
+	protected inputForeground: Color;
+	protected inputBorder: Color;
 
 	private inputValidationInfoBorder: Color;
 	private inputValidationInfoBackground: Color;

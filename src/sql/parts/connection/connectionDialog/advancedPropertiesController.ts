@@ -6,6 +6,7 @@
 'use strict';
 
 import { AdvancedPropertiesDialog } from 'sql/parts/connection/connectionDialog/advancedPropertiesDialog';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import data = require('data');
 
 export class AdvancedPropertiesController {
@@ -14,7 +15,9 @@ export class AdvancedPropertiesController {
 	private _advancedDialog: AdvancedPropertiesDialog;
 	private _options: { [name: string]: any };
 
-	constructor(private _onCloseAdvancedProperties: () => void) {
+	constructor(private _onCloseAdvancedProperties: () => void,
+		@IInstantiationService private _instantiationService: IInstantiationService
+	) {
 	}
 
 
@@ -49,9 +52,9 @@ export class AdvancedPropertiesController {
 
 	public get advancedDialog() {
 		if (!this._advancedDialog) {
-			this._advancedDialog = new AdvancedPropertiesDialog(this._container, {
+			this._advancedDialog = this._instantiationService.createInstance(AdvancedPropertiesDialog, this._container, {
 				onOk: () => this.handleOnOk(),
-				onClose: () => this._onCloseAdvancedProperties()
+				onClose: () => this._onCloseAdvancedProperties(),
 			});
 			this._advancedDialog.create();
 		}

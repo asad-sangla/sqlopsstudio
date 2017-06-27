@@ -11,8 +11,9 @@ import 'vs/css!./media/sqlConnection';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
-import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
+import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
+import { DialogInputBox } from 'sql/parts/common/flyoutDialog/dialogInputBox';
 import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
 import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import * as lifecycle from 'vs/base/common/lifecycle';
@@ -20,16 +21,18 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionOptionSpecialType } from 'sql/parts/connection/common/connectionManagement';
 import * as Constants from 'sql/parts/connection/common/constants';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import * as styler from 'vs/platform/theme/common/styler';
 import data = require('data');
 
 export class ConnectionWidget {
 	private _builder: Builder;
 	private _serverGroupSelectBox: DialogSelectBox;
 	private _serverGroupOptions: IConnectionProfileGroup[];
-	private _serverNameInputBox: InputBox;
-	private _databaseNameInputBox: InputBox;
-	private _userNameInputBox: InputBox;
-	private _passwordInputBox: InputBox;
+	private _serverNameInputBox: DialogInputBox;
+	private _databaseNameInputBox: DialogInputBox;
+	private _userNameInputBox: DialogInputBox;
+	private _passwordInputBox: DialogInputBox;
 	private _rememberPasswordCheckBox: Checkbox;
 	private _advancedButton: Button;
 	private _callbacks: IConnectionComponentCallbacks;
@@ -38,7 +41,7 @@ export class ConnectionWidget {
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
 	private _tableContainer: Builder;
 	private _providerName: string;
-	private _authTypeMap: { [providerName: string]: AuthenticationType[]} = {
+	private _authTypeMap: { [providerName: string]: AuthenticationType[] } = {
 		[Constants.mssqlProviderName]: [new AuthenticationType('Integrated', false), new AuthenticationType('SqlLogin', true)],
 		[Constants.pgsqlProviderName]: []
 	};
@@ -58,14 +61,17 @@ export class ConnectionWidget {
 		color: undefined,
 		description: undefined,
 	};
-	public NoneServerGroup : IConnectionProfileGroup = {
+	public NoneServerGroup: IConnectionProfileGroup = {
 		id: '',
 		name: '<None>',
 		parentId: undefined,
 		color: undefined,
 		description: undefined,
 	};
-	constructor(options: data.ConnectionOption[], callbacks: IConnectionComponentCallbacks, providerName: string) {
+	constructor(options: data.ConnectionOption[],
+		callbacks: IConnectionComponentCallbacks,
+		providerName: string,
+		@IThemeService private _themeService: IThemeService) {
 		this._callbacks = callbacks;
 		this._toDispose = [];
 		this._optionsMaps = {};
@@ -158,6 +164,16 @@ export class ConnectionWidget {
 	}
 
 	private registerListeners(): void {
+		// Theme styler
+		this._toDispose.push(styler.attachInputBoxStyler(this._serverNameInputBox, this._themeService));
+		this._toDispose.push(styler.attachInputBoxStyler(this._databaseNameInputBox, this._themeService));
+		this._toDispose.push(styler.attachInputBoxStyler(this._userNameInputBox, this._themeService));
+		this._toDispose.push(styler.attachInputBoxStyler(this._passwordInputBox, this._themeService));
+		this._toDispose.push(styler.attachSelectBoxStyler(this._serverGroupSelectBox, this._themeService));
+		this._toDispose.push(styler.attachSelectBoxStyler(this._authTypeSelectBox, this._themeService));
+		this._toDispose.push(styler.attachButtonStyler(this._advancedButton, this._themeService));
+		this._toDispose.push(styler.attachCheckboxStyler(this._rememberPasswordCheckBox, this._themeService));
+
 		if (this._authTypeSelectBox) {
 			this._toDispose.push(this._authTypeSelectBox.onDidSelect(selectedAuthType => {
 				this.onAuthTypeSelected(selectedAuthType);
@@ -248,6 +264,9 @@ export class ConnectionWidget {
 
 	public initDialog(connectionInfo: IConnectionProfile): void {
 		this.fillInConnectionInputs(connectionInfo);
+	}
+
+	public focusOnOpen(): void {
 		this._serverNameInputBox.focus();
 	}
 
@@ -386,7 +405,7 @@ export class ConnectionWidget {
 		let group: IConnectionProfileGroup;
 		if (ConnectionProfileGroup.isRoot(groupFullName)) {
 			group = this._serverGroupOptions.find(g => ConnectionProfileGroup.isRoot(g.name));
-			if(group === undefined) {
+			if (group === undefined) {
 				group = this._serverGroupOptions.find(g => g.name === this.DefaultServerGroup.name);
 			}
 		} else {

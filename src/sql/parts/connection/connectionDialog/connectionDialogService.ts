@@ -19,6 +19,7 @@ import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesServ
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Severity from 'vs/base/common/severity';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 import data = require('data');
 
 export interface IConnectionResult {
@@ -40,6 +41,7 @@ export interface IConnectionComponentController {
 	fillInConnectionInputs(connectionInfo: IConnectionProfile): void;
 	handleOnConnecting(): void;
 	handleResetConnection(): void;
+	focusOnOpen(): void;
 }
 
 export class ConnectionDialogService implements IConnectionDialogService {
@@ -63,7 +65,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		@IPartService private _partService: IPartService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
-		@IErrorMessageService private _errorMessageService: IErrorMessageService
+		@IErrorMessageService private _errorMessageService: IErrorMessageService,
+		@IThemeService private _themeService: IThemeService
 	) {
 		this._capabilitiesMaps = {};
 		this._providerNameToDisplayNameMap = {};
@@ -130,7 +133,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		// Set the model name, initialize the controller if needed, and return the controller
 		this._model.providerName = providerName;
 		if (!this._connectionControllerMap[providerName]) {
-			this._connectionControllerMap[providerName] = new ConnectionController(this._container, this._connectionManagementService, this._capabilitiesMaps[providerName], {
+			this._connectionControllerMap[providerName] = this._instantiationService.createInstance(ConnectionController, this._container, this._connectionManagementService, this._capabilitiesMaps[providerName], {
 				onSetConnectButton: (enable: boolean) => this.handleSetConnectButtonEnable(enable)
 			}, providerName);
 		}
@@ -258,6 +261,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 		return new TPromise<void>(() => {
 			this._connectionDialog.open(this._connectionManagementService.getRecentConnections());
+			this.uiController.focusOnOpen();
 		});
 	}
 

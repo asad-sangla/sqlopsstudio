@@ -7,23 +7,8 @@
 	float: left;
 }
 
-.Group-color-options a.monaco-button.monaco-text-button {
+.Group-color-options .server-group-color {
     width: 42px;
 	height: 20px;
     margin: 5px;
-	outline-width: 0px;
-	outline-style: solid;
-	outline-color: #6fc3df;
-}
-
-.vs-dark.monaco-shell .Group-color-options a.monaco-button.monaco-text-button {
-	outline-color: #8e8c8c;
-}
-
-.Group-color-options a.monaco-button.monaco-text-button.selected {
-	outline-width: 3px;
-}
-
-.Group-color-options a.monaco-button.monaco-text-button:focus {
-	outline-width: 2px;
 }

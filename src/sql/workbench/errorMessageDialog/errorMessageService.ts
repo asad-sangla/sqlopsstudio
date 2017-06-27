@@ -10,6 +10,7 @@ import { ErrorMessageDialog } from 'sql/workbench/errorMessageDialog/errorMessag
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Severity from 'vs/base/common/severity';
 import { withElementById } from 'vs/base/browser/builder';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 
 export class ErrorMessageService implements IErrorMessageService {
 
@@ -22,7 +23,9 @@ export class ErrorMessageService implements IErrorMessageService {
 	}
 
 	constructor(
-		@IPartService private _partService: IPartService) {
+		@IPartService private _partService: IPartService,
+		@IThemeService private _themeService: IThemeService
+	) {
 
 	}
 
@@ -40,7 +43,7 @@ export class ErrorMessageService implements IErrorMessageService {
 		if (!this._errorDialog) {
 			this._errorDialog = new ErrorMessageDialog(this._container, {
 				onOk: () => this.handleOnOk(),
-			});
+			}, this._themeService);
 			this._errorDialog.create();
 		}
 

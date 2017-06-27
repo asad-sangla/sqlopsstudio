@@ -24,6 +24,9 @@ import { TreeUpdateUtils, TreeSelectionHandler } from 'sql/parts/registeredServe
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Button } from 'vs/base/browser/ui/button/button';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { attachListStyler } from 'vs/platform/theme/common/styler';
+
 const $ = builder.$;
 
 /**
@@ -45,6 +48,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IMessageService messageService: IMessageService,
 		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+		@IThemeService private _themeService: IThemeService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 		super(actionRunner, false, nls.localize({ key: 'registeredServersSection', comment: ['Servers Tree'] }, "Servers Section"), messageService, keybindingService, contextMenuService);
@@ -94,6 +98,10 @@ export class ServerTreeView extends CollapsibleViewletView {
 
 		this.tree = TreeCreationUtils.createRegisteredServersTree(this.treeContainer, this.instantiationService);
 		this.toDispose.push(this.tree.addListener('selection', (event) => this.onSelected(event)));
+
+		// Theme styler
+		this.toDispose.push(attachListStyler(this.tree, this._themeService));
+
 		const self = this;
 		// Refresh Tree when these events are emitted
 		this.toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {

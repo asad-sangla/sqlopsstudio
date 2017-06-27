@@ -14,6 +14,7 @@ import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import Severity from 'vs/base/common/severity';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class ServerGroupController implements IServerGroupController {
 	_serviceBrand: any;
@@ -27,7 +28,8 @@ export class ServerGroupController implements IServerGroupController {
 
 	constructor(
 		@IPartService private _partService: IPartService,
-		@IErrorMessageService private _errorMessageService: IErrorMessageService
+		@IErrorMessageService private _errorMessageService: IErrorMessageService,
+		@IInstantiationService private _instantiationService: IInstantiationService
 	) {
 	}
 
@@ -86,7 +88,7 @@ export class ServerGroupController implements IServerGroupController {
 		if (!this._serverGroupDialog) {
 			let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 			this._container = container;
-			this._serverGroupDialog = new ServerGroupDialog(container, {
+			this._serverGroupDialog = this._instantiationService.createInstance(ServerGroupDialog, container, {
 				onCancel: () => { },
 				onAddServerGroup: () => this.handleOnAddServerGroup(),
 				onClose: () => this.handleOnClose()

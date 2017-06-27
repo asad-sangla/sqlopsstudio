@@ -28,7 +28,7 @@
 .advanced-dialog .backButtonIcon {
 	content: url('back.svg');
 	width: 20px;
-	padding-right: 10px;
+	margin-right: 10px;
 	float: left;
 	cursor: pointer;
 }

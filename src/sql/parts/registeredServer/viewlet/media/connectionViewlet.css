@@ -7,7 +7,8 @@
 .server-explorer-viewlet .monaco-tree .monaco-tree-row .content .server-group {
 	cursor: default;
 	width: 100%;
-	vertical-align: middle;
+	display: flex;
+	align-items: center;
 }
 
 /* Bold font style does not go well with CJK fonts */

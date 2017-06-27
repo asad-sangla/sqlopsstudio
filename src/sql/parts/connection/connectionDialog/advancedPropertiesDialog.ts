@@ -15,12 +15,18 @@ import { Widget } from 'vs/base/browser/ui/widget';
 import { SplitView, FixedCollapsibleView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
+import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
+import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import { AdvancedPropertiesHelper, IAdvancedPropertyElement } from 'sql/parts/connection/connectionDialog/advancedPropertiesHelper';
+import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
 import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import * as colorRegistry from 'vs/platform/theme/common/colorRegistry';
+import * as styler from 'vs/platform/theme/common/styler';
 
 export interface IAdvancedDialogCallbacks {
 	onOk: () => void;
@@ -61,6 +67,7 @@ export class AdvancedPropertiesDialog {
 	private _callbacks: IAdvancedDialogCallbacks;
 	private _okButton: Button;
 	private _closeButton: Button;
+	private _backButton: Button;
 	private _toDispose: lifecycle.IDisposable[];
 	private _advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement };
 	private _propertyTitle: Builder;
@@ -71,7 +78,9 @@ export class AdvancedPropertiesDialog {
 	private _propertyCategoryPadding = 30;
 	private _categoryHeaderSize = 22;
 
-	constructor(container: HTMLElement, callbacks: IAdvancedDialogCallbacks) {
+	constructor(container: HTMLElement,
+		callbacks: IAdvancedDialogCallbacks,
+		@IThemeService private _themeService: IThemeService) {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
@@ -91,13 +100,18 @@ export class AdvancedPropertiesDialog {
 				this._propertyDescription = propertyDescription;
 			});
 		});
-		this.createBackButton(this._dialog.headerContainer);
+		this._backButton = this.createBackButton(this._dialog.headerContainer);
 		this._dialog.addModalTitle();
 		this._okButton = this.createFooterButton(this._dialog.footerContainer, 'OK');
 		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Go Back');
 
 		this._builder.build(this._container);
 		this._modelElement = this._builder.getHTMLElement();
+
+		// Theme styler
+		styler.attachButtonStyler(this._okButton, this._themeService);
+		styler.attachButtonStyler(this._closeButton, this._themeService);
+		styler.attachButtonStyler(this._backButton, this._themeService, { buttonBackground: colorRegistry.selectionBackground, buttonHoverBackground: colorRegistry.selectionBackground });
 
 		return this._modelElement;
 	}
@@ -116,14 +130,35 @@ export class AdvancedPropertiesDialog {
 		}
 	}
 
-	private createBackButton(container: Builder): void {
+	private registerStyling(): void {
+		// Theme styler
+		for (var key in this._advancedPropertiesMap) {
+			var widget: Widget = this._advancedPropertiesMap[key].advancedPropertyWidget;
+			var property = this._advancedPropertiesMap[key].advancedProperty;
+			switch (property.valueType) {
+				case ServiceOptionType.category:
+				case ServiceOptionType.boolean:
+					this._toDispose.push(styler.attachSelectBoxStyler(<DialogSelectBox>widget, this._themeService));
+					break;
+				case ServiceOptionType.string:
+				case ServiceOptionType.password:
+				case ServiceOptionType.number:
+					this._toDispose.push(styler.attachInputBoxStyler(<InputBox>widget, this._themeService));
+			}
+		}
+	}
+
+	private createBackButton(container: Builder): Button {
+		let button;
 		container.div({ class: 'modal-go-back' }, (cellContainer) => {
-			let button = new Button(cellContainer);
+			button = new Button(cellContainer);
 			button.icon = 'backButtonIcon';
 			button.addListener('click', () => {
 				this.cancel();
 			});
 		});
+
+		return button;
 	}
 
 	private createFooterButton(container: Builder, title: string): Button {
@@ -208,6 +243,7 @@ export class AdvancedPropertiesDialog {
 		var firstPropertyWidget = this._advancedPropertiesMap[firstProperty].advancedPropertyWidget;
 		firstPropertyWidget.focus();
 
+		this.registerStyling();
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter)) {

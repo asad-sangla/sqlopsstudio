@@ -14,6 +14,7 @@ import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/conne
 import * as Constants from 'sql/parts/connection/common/constants';
 import data = require('data');
 import * as Utils from 'sql/parts/connection/common/utils';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class ConnectionController implements IConnectionComponentController {
 	private _container: HTMLElement;
@@ -25,14 +26,19 @@ export class ConnectionController implements IConnectionComponentController {
 	private _providerOptions: data.ConnectionOption[];
 	private _providerName: string;
 
-	constructor(container: HTMLElement, connectionManagementService: IConnectionManagementService, sqlCapabilities: data.DataProtocolServerCapabilities, callback: IConnectionComponentCallbacks, providerName: string) {
+	constructor(container: HTMLElement,
+		connectionManagementService: IConnectionManagementService,
+		sqlCapabilities: data.DataProtocolServerCapabilities,
+		callback: IConnectionComponentCallbacks,
+		providerName: string,
+		@IInstantiationService private _instantiationService: IInstantiationService, ) {
 		this._container = container;
 		this._connectionManagementService = connectionManagementService;
 		this._callback = callback;
 		this._providerOptions = sqlCapabilities.connectionProvider.options;
 		var specialOptions = this._providerOptions.filter(
 			(property) => (property.specialValueType !== null && property.specialValueType !== undefined));
-		this._connectionWidget = new ConnectionWidget(specialOptions, {
+		this._connectionWidget = this._instantiationService.createInstance(ConnectionWidget, specialOptions, {
 			onSetConnectButton: (enable: boolean) => this._callback.onSetConnectButton(enable),
 			onCreateNewServerGroup: () => this.onCreateNewServerGroup(),
 			onAdvancedProperties: () => this.handleOnAdvancedProperties(),
@@ -58,7 +64,7 @@ export class ConnectionController implements IConnectionComponentController {
 
 	private handleOnAdvancedProperties(): void {
 		if (!this._advancedController) {
-			this._advancedController = new AdvancedPropertiesController(() => this._connectionWidget.focusOnAdvancedButton());
+			this._advancedController = this._instantiationService.createInstance(AdvancedPropertiesController, () => this._connectionWidget.focusOnAdvancedButton());
 		}
 		var advancedOption = this._providerOptions.filter(
 			(property) => (property.specialValueType === undefined || property.specialValueType === null));
@@ -92,7 +98,7 @@ export class ConnectionController implements IConnectionComponentController {
 		} else {
 			defaultGroupId = Utils.defaultGroupId();
 		}
-		connectionGroupNames.push(Object.assign({},  this._connectionWidget.DefaultServerGroup, {id: defaultGroupId}));
+		connectionGroupNames.push(Object.assign({}, this._connectionWidget.DefaultServerGroup, { id: defaultGroupId }));
 		connectionGroupNames.push(this._connectionWidget.NoneServerGroup);
 		return connectionGroupNames;
 	}
@@ -107,6 +113,10 @@ export class ConnectionController implements IConnectionComponentController {
 			this._model.options[appNameKey] = Constants.applicationName;
 		}
 		this._connectionWidget.initDialog(this._model);
+	}
+
+	public focusOnOpen(): void {
+		this._connectionWidget.focusOnOpen();
 	}
 
 	public validateConnection(): IConnectionResult {
