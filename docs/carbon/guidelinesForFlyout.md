@@ -2,15 +2,25 @@
 
 All flyout dialogs in Carbon should consist of 3 parts: header, body, and footer.
 
-Except Add Server Group and Connectin dialog, Dialog Header should contain the server and database context. Otherwise, it is not clear against what target the Task is being executed once the fly out pops out.
+Except Add Server Group and Connectin dialog, Dialog Header should contain the server and database context. Otherwise, it is not clear against what target the Task is being executed once the fly out pops out. The format should be \<Task name\> \<Server name\> or \<Task name\> \<Server name\> | \<database name\>.
 
-For example: Backup Database dialog should contain Backup Database on [server name] | [database name].
+For example: Backup Database dialog should contain "Backup Database on \<Server name\> | \<database name\>".
 
 The body part should contain the common controls and have a vertical scroll bar if the content overflows. It should be implemented by either injecting angular or using dom manipulation.
 
-The common flyout code is in src\sql\parts\common\flyoutDialog folder. The common styling for flyout and controllers is in src\sql\parts\common\flyoutDialog\media\flyoutDialog.css. Please use the class names that are in flyoutDialog.css.
+The common flyout code is in src\sql\parts\common\flyoutDialog folder. The common styling for flyout and controllers is in src\sql\parts\common\flyoutDialog\media\flyoutDialog.css. Please use the class names that are in flyoutDialog.css. The diagram below show CSS for dialogs that are created through DOM manipulation and angular component.
+
+Left: CSS for DOM manipulated dialog, Right: CSS for angular component dialog
+
+<img src='../images/flyoutStructure.png' width='800px' />
+
+
+Connection flyout dialog:
 
 <img src='../images/addGroupDialog.png' width='400px' />
+
+# Theming
+- The dialog and controls should work with all theming. It should use IThemeService from 'vs/platform/theme/common/themeService'. If you use dom manipulation, all controls should apply styling from 'vs/platform/theme/common/styler'. Please verify with 3 themes: light, dark, and high contrast.
 
 # Accessibility
 - User should be able to complete the task using only keyboard
