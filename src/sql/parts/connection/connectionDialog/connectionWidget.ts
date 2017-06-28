@@ -170,11 +170,12 @@ export class ConnectionWidget {
 		this._toDispose.push(styler.attachInputBoxStyler(this._userNameInputBox, this._themeService));
 		this._toDispose.push(styler.attachInputBoxStyler(this._passwordInputBox, this._themeService));
 		this._toDispose.push(styler.attachSelectBoxStyler(this._serverGroupSelectBox, this._themeService));
-		this._toDispose.push(styler.attachSelectBoxStyler(this._authTypeSelectBox, this._themeService));
 		this._toDispose.push(styler.attachButtonStyler(this._advancedButton, this._themeService));
 		this._toDispose.push(styler.attachCheckboxStyler(this._rememberPasswordCheckBox, this._themeService));
 
 		if (this._authTypeSelectBox) {
+			// Theme styler
+			this._toDispose.push(styler.attachSelectBoxStyler(this._authTypeSelectBox, this._themeService));
 			this._toDispose.push(this._authTypeSelectBox.onDidSelect(selectedAuthType => {
 				this.onAuthTypeSelected(selectedAuthType);
 			}));
