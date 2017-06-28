@@ -44,7 +44,7 @@ suite('Telemetry - common properties', function () {
 			assert.ok('version' in props);
 
 			// {{SQL CARBON EDIT}}
-			assert.ok('common.application.name');
+			assert.ok('common.application.name' in props);
 
 			assert.ok('common.firstSessionDate' in props, 'firstSessionDate');
 			assert.ok('common.lastSessionDate' in props, 'lastSessionDate'); // conditional, see below, 'lastSessionDate'ow

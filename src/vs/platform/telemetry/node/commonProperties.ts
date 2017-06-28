@@ -10,11 +10,13 @@ import * as uuid from 'vs/base/common/uuid';
 
 // {{SQL CARBON EDIT}}
 import product from 'vs/platform/node/product';
+import * as Utils from 'sql/common/telemetryUtilities';
+import { IStorageService } from 'vs/code/electron-main/storage';
 
 export const machineIdStorageKey = 'telemetry.machineId';
 export const machineIdIpcChannel = 'vscode:machineId';
 
-export function resolveCommonProperties(commit: string, version: string): TPromise<{ [name: string]: string; }> {
+export function resolveCommonProperties(commit: string, version: string, storageService?: IStorageService): TPromise<{ [name: string]: string; }> {
 	const result: { [name: string]: string; } = Object.create(null);
 
 	result['sessionID'] = uuid.generateUuid() + Date.now();
@@ -24,9 +26,12 @@ export function resolveCommonProperties(commit: string, version: string): TPromi
 	result['common.platform'] = Platform.Platform[Platform.platform];
 	result['common.nodePlatform'] = process.platform;
 	result['common.nodeArch'] = process.arch;
-	
+
 	// {{SQL CARBON EDIT}}
-	result['common.application.name'] = product.nameLong;	
+	result['common.application.name'] = product.nameLong;
+	if (storageService) {
+		getUserId(storageService).then(value => result['common.userid'] = value);
+	}
 
 	// dynamic properties which value differs on each call
 	let seq = 0;
@@ -47,4 +52,25 @@ export function resolveCommonProperties(commit: string, version: string): TPromi
 	});
 
 	return TPromise.as(result);
+}
+
+// {{SQL CARBON EDIT}}
+
+// Get the unique ID for the current user
+function getUserId(storageService: IStorageService): Promise<string> {
+	var userId = storageService.getItem<string>('common.userId');
+	return new Promise<string>(resolve => {
+		// Generate the user id if it has not been created already
+		if (typeof userId === 'undefined') {
+			let id = Utils.generateUserId();
+			id.then( newId => {
+				userId = newId;
+				resolve(userId);
+				//store the user Id in the storage service
+				storageService.setItem('common.userId', userId);
+			});
+		} else {
+			resolve(userId);
+		}
+	});
 }
