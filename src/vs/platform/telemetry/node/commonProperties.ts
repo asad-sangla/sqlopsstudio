@@ -30,7 +30,7 @@ export function resolveCommonProperties(commit: string, version: string, storage
 	// {{SQL CARBON EDIT}}
 	result['common.application.name'] = product.nameLong;
 	if (storageService) {
-		getUserId(storageService).then(value => result['common.userid'] = value);
+		getUserId(storageService).then(value => result['common.userId'] = value);
 	}
 
 	// dynamic properties which value differs on each call
