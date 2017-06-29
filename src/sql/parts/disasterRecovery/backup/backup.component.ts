@@ -8,10 +8,11 @@ import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!sql/media/primeng';
 import data = require('data');
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { PathUtilities } from 'sql/common/pathUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { BackupInfo } from 'data';
 import { SelectItem } from 'primeng/primeng';
 import { NgForm } from '@angular/forms';
@@ -41,6 +42,8 @@ export class RestoreItemSource {
 export class BackupComponent{
     @ViewChild('pathContainer', {read: ElementRef}) pathElement;
     @ViewChild('backupTypeContainer', {read: ElementRef}) backupTypeElement;
+    @ViewChild('backupsetName', {read: ElementRef}) backupNameElement;
+    @ViewChild('errorIcon', {read: ElementRef}) errorIconElement;
 
     private _disasterRecoveryService: IDisasterRecoveryService;
     private _disasterRecoveryUiService: IDisasterRecoveryUiService;
@@ -51,13 +54,17 @@ export class BackupComponent{
     public defaultNewBackupFolder: string;
     public lastBackupLocations;
     public recoveryModel: string;
+    public errorMessage: string = '';
+    public labelOk = 'OK';
+    public labelCancel = 'Cancel';
+
+    // TODO: remove the style after theming is fixed
+    public errorBorderStyle: string = '1px solid #BE1100';
 
     // UI element disable flag
-    public disableDatabaseComponent: boolean;
     public disableFileComponent: boolean;
     public disableAdd: boolean;
     public disableRemove: boolean;
-    public disableOk: boolean;
     public disableCopyOnly: boolean;
 
 	// User input values
@@ -71,6 +78,7 @@ export class BackupComponent{
 	public listOfBackupTypes: SelectItem[];
     // Key: backup path, Value: device type
     public dictOfBackupPathDevice: {[path: string]: number};
+    public urlBackupPaths: string[];
 
 	constructor(
         @Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
@@ -107,31 +115,60 @@ export class BackupComponent{
         this.databaseName = this.connection.connectionProfile.databaseName;
         this.selectedBackupComponent = BackupConstants.labelDatabase;
         this.dictOfBackupPathDevice = {};
+        this.urlBackupPaths = [];
+
+        // Set focus on backup name
+        this.backupNameElement.nativeElement.focus();
+    }
+
+    private validateInput(): boolean {
+        if (this.getBackupPathCount() === 0) {
+            this.errorMessage = 'Missing required fields';
+        } else if (this.urlBackupPaths.length > 0) {
+            this.errorMessage = 'Only disk backup is supported';
+        }
+
+        if (this.errorMessage !== '') {
+            let iconFilePath = PathUtilities.toUrl('sql/parts/common/flyoutDialog/media/status-error.svg');
+			this.errorIconElement.nativeElement.style.content = 'url(' + iconFilePath + ')';
+            this.errorIconElement.nativeElement.style.visibility = 'visible'
+
+            // highlight the backup path box
+            this.pathElement.nativeElement.style.border = this.errorBorderStyle;
+
+            this._changeDetectorRef.detectChanges();
+            return false;
+        } else {
+            return true;
+        }
+
     }
 
     public onOk(): void {
-        this.disableOk = true;
-        let backupPathArray = [];
-        for (var i = 0; i < this.pathElement.nativeElement.childElementCount; i++) {
-            backupPathArray.push(this.pathElement.nativeElement.children[i].innerHTML);
+        // Verify input values
+        if (this.validateInput()) {
+            let backupPathArray = [];
+            for (var i = 0; i < this.pathElement.nativeElement.childElementCount; i++) {
+                backupPathArray.push(this.pathElement.nativeElement.children[i].innerHTML);
+            }
+
+            this._disasterRecoveryService.backup(this._uri,
+            <data.BackupInfo>{
+                ownerUri: this._uri,
+                databaseName: this.databaseName,
+                backupType: this.getBackupTypeNumber(),
+                backupComponent: 0,
+                backupDeviceType: 2, //Disk
+                backupPathList: backupPathArray,
+                selectedFiles: this.selectedFilesText,
+                backupsetName: this.backupName,
+                selectedFileGroup: undefined,
+                backupPathDevices: this.dictOfBackupPathDevice,
+                isCopyOnly: this.isCopyOnly
+            });
+
+            this._disasterRecoveryUiService.closeBackup();
         }
-
-        this._disasterRecoveryService.backup(this._uri,
-        <data.BackupInfo>{
-            ownerUri: this._uri,
-            databaseName: this.databaseName,
-            backupType: this.getBackupTypeNumber(),
-            backupComponent: 0,
-            backupDeviceType: 2, //Disk
-            backupPathList: backupPathArray,
-            selectedFiles: this.selectedFilesText,
-            backupsetName: this.backupName,
-            selectedFileGroup: undefined,
-            backupPathDevices: this.dictOfBackupPathDevice,
-            isCopyOnly: this.isCopyOnly
-        });
-
-        this._disasterRecoveryUiService.closeBackup();
     }
 
 	public onGenerateScript(): void {
@@ -139,6 +176,17 @@ export class BackupComponent{
 
 	public onCancel(): void {
         this._disasterRecoveryUiService.closeBackup();
+    }
+
+    public onFooterPressed(event: any): void {
+        if (event.keyCode === 13) {
+            if (event.currentTarget.innerHTML === this.labelOk) {
+                this.onOk();
+            }
+            else if (event.currentTarget.innerHTML === this.labelCancel) {
+                this.onCancel();
+            }
+        }
     }
 
     private setControlsForRecoveryModel(): void {
@@ -174,8 +222,6 @@ export class BackupComponent{
     private setDefaultBackupPaths(): void {
         let self = this;
         let previousBackupsCount = self.lastBackupLocations ? self.lastBackupLocations.length: 0;
-        let previousNonUrlBackupsCount = 0;
-        let urlSelected = false;
         if (previousBackupsCount > 0) {
             for (var i = 0; i < previousBackupsCount; i++)  {
                 let source = new RestoreItemSource(self.lastBackupLocations[i]);
@@ -183,17 +229,11 @@ export class BackupComponent{
 
                 if (source.restoreItemDeviceType == BackupConstants.backupDeviceTypeURL) {
                     if (i == 0) {
-                        // TODO: show URL backup
-                        //Uri azureUri;
-                        //Uri.TryCreate(source.RestoreItemLocation, UriKind.Absolute, out azureUri);
-                        //urlSelected = true;
-
+                        self.urlBackupPaths.push(source.restoreItemLocation);
+                        self.addToBackupPathList(source.restoreItemLocation);
                         break;
                     }
-                    continue;
                 }
-
-                previousNonUrlBackupsCount++;
 
                 let lastBackupLocation = source.restoreItemLocation;
                 let destinationType = BackupConstants.deviceTypeLogicalDevice;
@@ -336,16 +376,18 @@ export class BackupComponent{
             this.backupPathInput = '';
             this._changeDetectorRef.detectChanges();
         }
-
-        this.enableActionButtons();
     }
 
     public onRemoveClick(): void {
         let selectedCount = this.pathElement.nativeElement.selectedOptions.length;
         for (var i = 0; i < selectedCount; i++) {
-            // Remove the first element from the list
+            // Remove the first element from the selected list
             let backupPathElement = this.pathElement.nativeElement.selectedOptions[0];
-            delete this.dictOfBackupPathDevice[backupPathElement.innerHTML];
+            if (this.dictOfBackupPathDevice[backupPathElement.innerHTML]) {
+                delete this.dictOfBackupPathDevice[backupPathElement.innerHTML];
+            } else if (this.urlBackupPaths.indexOf(backupPathElement.innerHTML) !== -1) {
+                delete this.urlBackupPaths[this.urlBackupPaths.indexOf(backupPathElement.innerHTML)];
+            }
             this.pathElement.nativeElement.removeChild(backupPathElement);
         }
 
@@ -355,8 +397,7 @@ export class BackupComponent{
             this.disableRemove = true;
         }
 
-        // enable only if destination is set
-        this.enableActionButtons();
+        this._changeDetectorRef.detectChanges();
     }
 
     private addNonUrlBackupDestination(bakLocation: string, bakDeviceType: number): void {
@@ -367,31 +408,4 @@ export class BackupComponent{
             }
         }
     }
-
-    // Enable/disable action buttons
-	private enableActionButtons(): void {
-		if (this.HaveSource() && this.HaveDestination()) {
-            this.disableOk = false;
-		} else {
-            this.disableOk = true;
-		}
-	}
-
-	private HaveSource(): boolean {
-		// We have a database or files or transaction log to backup
-		if ((this.selectedBackupComponent === BackupConstants.labelDatabase)
-			|| (this.getSelectedBackupType() === BackupConstants.labelLog)
-            || (this.selectedFilesText.length > 0)) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	private HaveDestination(): boolean {
-        if (this.getBackupPathCount() > 0) {
-            return true;
-        }
-        return false;
-	}
 }

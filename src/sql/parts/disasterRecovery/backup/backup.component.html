@@ -11,7 +11,7 @@
 				Backup name
 			</div>
 			<div class="input-divider">
-				<input class="input" name="backup-name-input" type="text" [(ngModel)]="backupName" />
+				<input class="input" name="backup-name-input" type="text" [(ngModel)]="backupName" #backupsetName />
 			</div>
 			<div class="dialog-label">
 				Recovery model
@@ -49,14 +49,22 @@
 				</tr>
 			</table>
 		</div>
+		<div class="dialogErrorMessage">
+			<div class="errorIcon">
+				<img class="error-icon" #errorIcon>
+			</div>
+			<div>
+				{{errorMessage}}
+			</div>
+		</div>
 	</div>
 
 	<div class="modal-footer">
 		<div class="footer-button">
-			<a class="monaco-button monaco-text-button angular-button" type="submit" role="button" (click)="onOk()">OK</a>
+			<a class="monaco-button monaco-text-button angular-button" tabindex="0" type="submit" role="button" (click)="onOk()" (keypress)="onFooterPressed($event)">{{labelOk}}</a>
 		</div>
 		<div class="footer-button">
-			<a class="monaco-button monaco-text-button angular-button" tabindex="0" role="button" (click)="onCancel()">Cancel</a>
+			<a class="monaco-button monaco-text-button angular-button" tabindex="0" role="button" (click)="onCancel()" (keypress)="onFooterPressed($event)">{{labelCancel}}</a>
 		</div>
 	</div>
 </form>

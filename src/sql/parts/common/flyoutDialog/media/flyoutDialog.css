@@ -124,10 +124,15 @@
 	outline-width: 1px;
 }
 
+/* TODO: remove the color style after theming is fixed for angular components */
 /* The following style is defined at the Button class. If you're creating the buttons using html template, apply this to get consistent style. */
 .modal.flyout-dialog .angular-button {
 	background: #0E639C;
 	color: #FFFFFF;
+}
+
+.modal.flyout-dialog .angular-button:focus {
+	outline: 1px solid #8e8c8c;
 }
 
 .modal.flyout-dialog .footer-spinner {
