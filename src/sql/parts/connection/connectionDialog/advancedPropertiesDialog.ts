@@ -24,9 +24,11 @@ import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBui
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import * as colorRegistry from 'vs/platform/theme/common/colorRegistry';
+import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import * as styler from 'vs/platform/theme/common/styler';
+import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 
 export interface IAdvancedDialogCallbacks {
 	onOk: () => void;
@@ -62,6 +64,7 @@ class OptionPropertiesView extends FixedCollapsibleView {
 
 export class AdvancedPropertiesDialog {
 	private _builder: Builder;
+	private _dividerBuilder: Builder;
 	private _container: HTMLElement;
 	private _modelElement: HTMLElement;
 	private _callbacks: IAdvancedDialogCallbacks;
@@ -69,6 +72,7 @@ export class AdvancedPropertiesDialog {
 	private _closeButton: Button;
 	private _backButton: Button;
 	private _toDispose: lifecycle.IDisposable[];
+	private _toDisposeTheming: lifecycle.IDisposable[];
 	private _advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement };
 	private _propertyTitle: Builder;
 	private _propertyDescription: Builder;
@@ -80,18 +84,25 @@ export class AdvancedPropertiesDialog {
 
 	constructor(container: HTMLElement,
 		callbacks: IAdvancedDialogCallbacks,
-		@IThemeService private _themeService: IThemeService) {
+		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService) {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
+		this._toDisposeTheming = [];
 		this._advancedPropertiesMap = {};
 	}
 
 	public create(): HTMLElement {
 		this._dialog = new ModalDialogBuilder('advancedDialogModal', 'Advanced Properties', 'advanced-dialog', 'advancedBody');
 		this._builder = this._dialog.create(true);
+		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.bodyContainer.div({ class: 'advancedDialog-properties', id: 'propertiesContent' });
 		this._dialog.addErrorMessage();
+
+		this._dialog.bodyContainer.div({ class: 'Connection-divider' }, (dividerContainer) => {
+			this._dividerBuilder = dividerContainer;
+		});
+
 		this._dialog.bodyContainer.div({ class: 'advancedDialog-description' }, (descriptionContainer) => {
 			descriptionContainer.div({ class: 'modal-title' }, (propertyTitle) => {
 				this._propertyTitle = propertyTitle;
@@ -111,9 +122,26 @@ export class AdvancedPropertiesDialog {
 		// Theme styler
 		styler.attachButtonStyler(this._okButton, this._themeService);
 		styler.attachButtonStyler(this._closeButton, this._themeService);
-		styler.attachButtonStyler(this._backButton, this._themeService, { buttonBackground: colorRegistry.selectionBackground, buttonHoverBackground: colorRegistry.selectionBackground });
+		styler.attachButtonStyler(this._backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
+
+		let self = this;
+		this._toDisposeTheming.push(self._themeService.onDidColorThemeChange((e) => {
+			self.updateTheme(e);
+		}));
+		self.updateTheme(self._themeService.getColorTheme());
 
 		return this._modelElement;
+	}
+
+	// Update theming that is specific to advanced properties flyout body
+	private updateTheme(theme: IColorTheme): void {
+		let borderColor = theme.getColor(contrastBorder);
+		let border = borderColor ? borderColor.toString() : null;
+		if (this._dividerBuilder) {
+			this._dividerBuilder.style('border-top-width', border ? '1px' : null);
+			this._dividerBuilder.style('border-top-style', border ? 'solid' : null);
+			this._dividerBuilder.style('border-top-color', border);
+		}
 	}
 
 	private onAdvancedPropertyLinkClicked(propertyName: string): void {

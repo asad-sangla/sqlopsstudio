@@ -95,7 +95,7 @@ export class InputBox extends Widget {
 	private state = 'idle';
 	private cachedHeight: number;
 
- 	// {{ SQL EDIT }}
+	// {{SQL CARBON EDIT}}
 	protected inputBackground: Color;
 	protected inputForeground: Color;
 	protected inputBorder: Color;

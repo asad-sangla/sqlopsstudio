@@ -8,6 +8,7 @@
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/errorMessageDialog';
+import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import Severity from 'vs/base/common/severity';
@@ -17,7 +18,8 @@ import { KeyCode } from 'vs/base/common/keyCodes';
 import { clipboard } from 'electron';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachButtonStyler } from 'vs/platform/theme/common/styler';
-import * as colorRegistry from 'vs/platform/theme/common/colorRegistry';
+import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
+import { attachModalDialogStyler } from 'sql/common/theme/styler';
 
 export interface IErrorMessageCallbacks {
 	onOk: () => void;
@@ -30,10 +32,10 @@ export class ErrorMessageDialog {
 	private _modelElement: HTMLElement;
 	private _callbacks: IErrorMessageCallbacks;
 	private _okButton: Button;
-	private _modalTitle: Builder;
 	private _modalBody: Builder;
 	private _message: string;
 	private _themeService: IThemeService;
+	private _dialog: ModalDialogBuilder;
 
 	constructor(container: HTMLElement, callbacks: IErrorMessageCallbacks, themeService: IThemeService) {
 		this._container = container;
@@ -43,36 +45,14 @@ export class ErrorMessageDialog {
 	}
 
 	public create(): HTMLElement {
-		this._builder = $().div({}, (div: Builder) => {
-			div.div({ class: 'modal', id: 'errorMessageModal', 'role': 'dialog', 'tabindex': -1 }, (dialogContainer) => {
-				dialogContainer.div({ class: 'modal-dialog ', role: 'document' }, (modalDialog) => {
-					modalDialog.div({ class: 'modal-content' }, (modelContent) => {
-						modelContent.div({ class: 'modal-header' }, (modalHeader) => {
-							modalHeader.element('button',
-								{ type: 'button', class: 'close', 'data-dismiss': 'modal', 'aria-label': 'close', 'aria-hidden': 'true' },
-								(menuCloseButton) => {
-									menuCloseButton.innerHtml('&times;');
-								});
-							modalHeader.div({ class: 'modal-title' }, (modalTitle) => {
-								this._modalTitle = modalTitle;
-							});
-						});
-						modelContent.div({ class: 'modal-body', id: 'errorContent' }, (modelBody) => {
-							this._modalBody = modelBody;
-						});
-						modelContent.div({ class: 'modal-footer' }, (modelFooter) => {
-							this.createCopyButton(modelFooter);
-							modelFooter.element('table', { class: 'footer-buttons', align: 'right' }, (tableContainer) => {
-								tableContainer.element('tr', {}, (rowContainer) => {
-									this._okButton = this.createFooterButton(rowContainer, 'OK');
-								});
-							});
-						});
-					});
-				});
-			});
-		})
-			.addClass('error-dialog');
+		this._dialog = new ModalDialogBuilder('errorMessageModal', '', 'error-dialog', 'errorDialogBody');
+		this._builder = this._dialog.create(false);
+		attachModalDialogStyler(this._dialog, this._themeService);
+		this._dialog.addModalTitle();
+		this._modalBody = this._dialog.bodyContainer;
+		this.createCopyButton(this._dialog.footerContainer);
+		this._okButton = this.createFooterButton(this._dialog.footerContainer, 'OK');
+
 		this._builder.build(this._container);
 		this._modelElement = this._builder.getHTMLElement();
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
@@ -83,10 +63,6 @@ export class ErrorMessageDialog {
 		});
 
 		return this._modelElement;
-	}
-
-	private updateDialogHeader(dialogTitle: string): void {
-		this._modalTitle.innerHtml(dialogTitle);
 	}
 
 	private updateDialogBody(): void {
@@ -119,7 +95,7 @@ export class ErrorMessageDialog {
 		});
 
 		// Theme styler
-		attachButtonStyler(button, this._themeService, { buttonBackground: colorRegistry.selectionBackground, buttonHoverBackground: colorRegistry.selectionBackground });
+		attachButtonStyler(button, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
 	}
 
 	private createFooterButton(container: Builder, title: string): Button {
@@ -151,7 +127,7 @@ export class ErrorMessageDialog {
 	public open(severity: Severity, headerTitle: string, message: string) {
 		this._severity = severity;
 		this._message = message;
-		this.updateDialogHeader(headerTitle);
+		this._dialog.setDialogTitle(headerTitle);
 		this.updateDialogBody();
 		jQuery('#errorMessageModal').modal({ backdrop: false, keyboard: true });
 	}

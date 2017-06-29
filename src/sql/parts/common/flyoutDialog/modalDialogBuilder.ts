@@ -7,18 +7,36 @@
 
 import { Builder, $ } from 'vs/base/browser/builder';
 import { IconLabel } from 'vs/base/browser/ui/iconLabel/iconLabel';
-import { Button } from 'vs/base/browser/ui/button/button';
+import { IThemable } from 'vs/platform/theme/common/styler';
+import { Color } from 'vs/base/common/color';
 
-export class ModalDialogBuilder {
+export interface IModalDialogStyles {
+	dialogForeground?: Color;
+	dialogBorder?: Color;
+	dialogHeaderAndFooterBackground?: Color;
+	dialogBodyBackground?: Color;
+}
+
+export class ModalDialogBuilder implements IThemable {
 
 	private _builder: Builder;
 	private _footerBuilder: Builder;
-	private _modelBody: Builder;
+	private _modalBody: Builder;
 	private _modalHeader: Builder;
 	private _modalTitle: Builder;
 	private _errorMessageLabel: IconLabel;
 	private _spinnerElement: HTMLElement;
 	private _errorIconElement: HTMLElement;
+	private _dialogForeground: Color;
+	private _dialogBorder: Color;
+	private _dialogHeaderAndFooterBackground: Color;
+	private _dialogBodyBackground: Color;
+
+	private _modalDialog: Builder;
+	private _modalHeaderSection: Builder;
+	private _modalBodySection: Builder;
+	private _modalFooterSection: Builder;
+	private _closeButtonInHeader: Builder;
 
 	constructor(private _id: string,
 		private _title: string,
@@ -34,37 +52,50 @@ export class ModalDialogBuilder {
 	*/
 	public create(flyout: boolean, isAngularComponent: boolean = false): Builder {
 		let modalBodyClass = (isAngularComponent === false ? 'modal-body' : 'modal-body-and-footer');
-		this._builder = $().div({}, (div: Builder) => {
-			div.div({ class: 'modal fade', id: this._id, 'role': 'dialog' }, (dialogContainer) => {
-				if (flyout) {
-					dialogContainer.getHTMLElement().classList.add('flyout-dialog');
-				}
-				dialogContainer.div({ class: 'modal-dialog ', role: 'document' }, (modalDialog) => {
-					modalDialog.div({ class: 'modal-content' }, (modelContent) => {
-						modelContent.div({ class: 'modal-header' }, (modalHeader) => {
-							modalHeader.element('button',
-								{ type: 'button', class: 'close', 'data-dismiss': 'modal', 'aria-label': 'close', 'aria-hidden': 'true' },
-								(menuCloseButton) => {
-									menuCloseButton.innerHtml('&times;');
-								});
 
-							this._modalHeader = modalHeader;
-						});
-						modelContent.div({ class: modalBodyClass, id: this._bodyId }, (modelBody) => {
-							this._modelBody = modelBody;
-						});
+		// This modal header section refers to the header of of the dialog
+		this._modalHeaderSection = $().div({ class: 'modal-header' }, (modalHeader) => {
+			modalHeader.element('button',
+				{ type: 'button', class: 'close', 'data-dismiss': 'modal', 'aria-label': 'close', 'aria-hidden': 'true' },
+				(menuCloseButton) => {
+					this._closeButtonInHeader = menuCloseButton;
+					menuCloseButton.innerHtml('&times;');
+				});
 
-						if (isAngularComponent === false) {
-							modelContent.div({ class: 'modal-footer' }, (modelFooter) => {
-								modelFooter.div({ 'class': 'footer-spinner' }, (spinnerContainer) => {
-									spinnerContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {
-										this._spinnerElement = spinnerElement.getHTMLElement();
-									});
-								});
-								this._footerBuilder = modelFooter;
-							});
-						}
+			this._modalHeader = modalHeader;
+		});
+
+		// This modal body section refers to the body of of the dialog
+		this._modalBodySection = $().div({ class: modalBodyClass, id: this._bodyId }, (modelBody) => {
+			this._modalBody = modelBody;
+		});
+
+		// This modal footer section refers to the footer of of the dialog
+		if (isAngularComponent === false) {
+			this._modalFooterSection = $().div({ class: 'modal-footer' }, (modelFooter) => {
+				modelFooter.div({ 'class': 'footer-spinner' }, (spinnerContainer) => {
+					spinnerContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {
+						this._spinnerElement = spinnerElement.getHTMLElement();
 					});
+				});
+				this._footerBuilder = modelFooter;
+			});
+		}
+
+		let builderClass = 'modal fade';
+		if (flyout) {
+			builderClass += ' flyout-dialog';
+		}
+
+		// The builder builds the dialog. It append header, body and footer sections.
+		this._builder = $().div({ class: builderClass, id: this._id, 'role': 'dialog' }, (dialogContainer) => {
+			this._modalDialog = dialogContainer.div({ class: 'modal-dialog ', role: 'document' }, (modalDialog) => {
+				modalDialog.div({ class: 'modal-content' }, (modelContent) => {
+					modelContent.append(this._modalHeaderSection);
+					modelContent.append(this._modalBodySection);
+					if (isAngularComponent === false) {
+						modelContent.append(this._modalFooterSection);
+					}
 				});
 			});
 		})
@@ -73,7 +104,7 @@ export class ModalDialogBuilder {
 	}
 
 	public get bodyContainer(): Builder {
-		return this._modelBody;
+		return this._modalBody;
 	}
 
 	public get headerContainer(): Builder {
@@ -112,7 +143,7 @@ export class ModalDialogBuilder {
 	}
 
 	public addErrorMessage(): void {
-		this._modelBody.div({ class: 'dialogErrorMessage', id: 'dialogErrorMessage' }, (errorMessageContainer) => {
+		this._modalBody.div({ class: 'dialogErrorMessage', id: 'dialogErrorMessage' }, (errorMessageContainer) => {
 			errorMessageContainer.div({ class: 'errorIcon' }, (iconContainer) => {
 				iconContainer.element('img', { 'class': 'error-icon' });
 				this._errorIconElement = iconContainer.getHTMLElement();
@@ -128,5 +159,47 @@ export class ModalDialogBuilder {
 
 	public hideSpinner(): void {
 		this._spinnerElement.setAttribute('class', 'hiddenSpinner');
+	}
+
+	public style(styles: IModalDialogStyles): void {
+		this._dialogForeground = styles.dialogForeground;
+		this._dialogBorder = styles.dialogBorder;
+		this._dialogHeaderAndFooterBackground = styles.dialogHeaderAndFooterBackground;
+		this._dialogBodyBackground = styles.dialogBodyBackground;
+		this.applyStyles();
+	}
+
+	private applyStyles(): void {
+		const foreground = this._dialogForeground ? this._dialogForeground.toString() : null;
+		const border = this._dialogBorder ? this._dialogBorder.toString() : null;
+		const headerAndFooterBackground = this._dialogHeaderAndFooterBackground ? this._dialogHeaderAndFooterBackground.toString() : null;
+		const bodyBackground = this._dialogBodyBackground ? this._dialogBodyBackground.toString() : null;
+
+		if (this._closeButtonInHeader) {
+			this._closeButtonInHeader.style('color', foreground);
+		}
+		if (this._modalDialog) {
+			this._modalDialog.style('color', foreground);
+			this._modalDialog.style('border-width', border ? '1px' : null);
+			this._modalDialog.style('border-style', border ? 'solid' : null);
+			this._modalDialog.style('border-color', border);
+		}
+		if (this._modalHeaderSection) {
+			this._modalHeaderSection.style('background-color', headerAndFooterBackground);
+			this._modalHeaderSection.style('border-bottom-width', border ? '1px' : null);
+			this._modalHeaderSection.style('border-bottom-style', border ? 'solid' : null);
+			this._modalHeaderSection.style('border-bottom-color', border);
+		}
+
+		if (this._modalBodySection) {
+			this._modalBodySection.style('background-color', bodyBackground);
+		}
+
+		if (this._modalFooterSection) {
+			this._modalFooterSection.style('background-color', headerAndFooterBackground);
+			this._modalFooterSection.style('border-top-width', border ? '1px' : null);
+			this._modalFooterSection.style('border-top-style', border ? 'solid' : null);
+			this._modalFooterSection.style('border-top-color', border);
+		}
 	}
 }

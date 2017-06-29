@@ -22,6 +22,7 @@ import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachInputBoxStyler, attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { attachModalDialogStyler } from 'sql/common/theme/styler';
 
 export interface IServerGroupCallbacks {
 	onAddServerGroup: () => void;
@@ -65,6 +66,7 @@ export class ServerGroupDialog {
 	public create(): HTMLElement {
 		this._dialog = new ModalDialogBuilder('serverGroupDialogModal', this._addServerGroupTitle, 'server-group-dialog', 'serverGroupDialogBody');
 		this._builder = this._dialog.create(true);
+		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.addModalTitle();
 
 		this._dialog.bodyContainer.div({ class: 'modal-body-content' }, (addServerGroupContent) => {

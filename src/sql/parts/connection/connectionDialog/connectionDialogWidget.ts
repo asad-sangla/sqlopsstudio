@@ -23,8 +23,10 @@ import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import * as styler from 'vs/platform/theme/common/styler';
+import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import data = require('data');
 
 export interface IConnectionDialogCallbacks {
@@ -38,6 +40,7 @@ export interface IConnectionDialogCallbacks {
 
 export class ConnectionDialogWidget {
 	private _builder: Builder;
+	private _dividerBuilder: Builder;
 	private _container: HTMLElement;
 	private _callbacks: IConnectionDialogCallbacks;
 	private _connectButton: Button;
@@ -52,7 +55,8 @@ export class ConnectionDialogWidget {
 		callbacks: IConnectionDialogCallbacks,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IThemeService private _themeService: IThemeService) {
+		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService
+	) {
 		this._container = container;
 		this._callbacks = callbacks;
 		this._toDispose = [];
@@ -64,10 +68,16 @@ export class ConnectionDialogWidget {
 
 		this._dialog = new ModalDialogBuilder('connectionDialogModal', 'New Connection', 'connection-dialog-widget', 'connectionDialogBody');
 		this._builder = this._dialog.create(true);
+		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.addModalTitle();
 
 		this._dialog.bodyContainer.div({ class: 'connection-recent', id: 'recentConnection' });
 		this._dialog.addErrorMessage();
+
+		this._dialog.bodyContainer.div({ class: 'Connection-divider' }, (dividerContainer) => {
+			this._dividerBuilder = dividerContainer;
+		});
+
 		this._dialog.bodyContainer.div({ class: 'Connection-type' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				DialogHelper.appendInputSelectBox(
@@ -85,9 +95,26 @@ export class ConnectionDialogWidget {
 		this.registerListeners();
 		this.onProviderTypeSelected(this._providerTypeSelectBox.value);
 
+		let self = this;
+		this._toDispose.push(self._themeService.onDidColorThemeChange((e) => {
+			self.updateTheme(e);
+		}));
+		self.updateTheme(self._themeService.getColorTheme());
+
 		return this._builder.getHTMLElement();
 	}
 
+
+	// Update theming that is specific to connection flyout body
+	private updateTheme(theme: IColorTheme): void {
+		let borderColor = theme.getColor(contrastBorder);
+		let border = borderColor ? borderColor.toString() : null;
+		if (this._dividerBuilder) {
+			this._dividerBuilder.style('border-top-width', border ? '1px' : null);
+			this._dividerBuilder.style('border-top-style', border ? 'solid' : null);
+			this._dividerBuilder.style('border-top-color', border);
+		}
+	}
 
 	private registerListeners(): void {
 		// Theme styler
