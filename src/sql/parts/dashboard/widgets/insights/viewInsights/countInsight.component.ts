@@ -12,9 +12,9 @@ import { SimpleExecuteResult } from 'data';
 
 @Component({
 	template: `
-		<div style="margin-left: 5px" *ngFor="let label of labels; let i = index">
-			<span style="font-size: 20px">{{values[i]}}  </span>
-			<span>{{labels[i]}}</span>
+		<div style="margin-left: 5px" *ngFor="let label of _labels; let i = index">
+			<span style="font-size: 20px">{{_values[i]}}  </span>
+			<span>{{_labels[i]}}</span>
 		</div>
 	`
 })

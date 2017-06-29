@@ -16,11 +16,11 @@ import * as colors from 'vs/platform/theme/common/colorRegistry';
 @Component({
 	template: `	<div style="display: block">
 				<canvas baseChart
-						[data]="chartData"
-						[labels]="labels"
+						[data]="_chartData"
+						[labels]="_labels"
 						chartType="pie"
-						[colors]="colors"
-						[options]="options"></canvas>
+						[colors]="_colors"
+						[options]="_options"></canvas>
 				</div>`
 })
 export class ChartInsight implements InsightsView {
