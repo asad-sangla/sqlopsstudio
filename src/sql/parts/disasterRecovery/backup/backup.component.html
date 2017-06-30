@@ -31,14 +31,14 @@
 			<div class="dialog-label">
 				Backup device
 			</div>
-			<div>
+			<div class="backup-path-list-div">
 				<select class="backup-path-list" name="backup-path-list" id="backup-path-list" #pathContainer multiple="multiple" ></select>
 			</div>
 
 			<table class="backup-path-table">
 				<tr>
 					<td style="padding-left:0px; width:100%">
-						<input class="backup-path-input" name="backup-path-input" type="text" [(ngModel)]="backupPathInput" />
+						<input class="backup-path-input" name="backup-path-input" type="text" (keyup)="detectChange()" [(ngModel)]="backupPathInput" />
 					</td>
 					<td>
 						<button class="backup-path-button angular-button" [disabled]="disableAdd" (click)="onAddClick()">+</button>

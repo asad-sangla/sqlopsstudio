@@ -288,6 +288,10 @@ export class BackupComponent{
 
     public onChangeCopyOnly(): void {
         this.isCopyOnly = !this.isCopyOnly;
+        this.detectChange();
+    }
+
+    public detectChange(): void {
         this._changeDetectorRef.detectChanges();
     }
 
