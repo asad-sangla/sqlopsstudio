@@ -20,7 +20,7 @@ Connection flyout dialog:
 <img src='../images/addGroupDialog.png' width='400px' />
 
 # Theming
-The dialog and controls should work with all theming. It should use IThemeService from 'vs/platform/theme/common/themeService'. If you use dom manipulation, all controls should apply styling from 'vs/platform/theme/common/styler'. Please verify with 3 themes: light, dark, and high contrast.
+The dialog and controls should work with all theming. It should use IThemeService from 'vs/platform/theme/common/themeService'. If you use dom manipulation, all controls should apply styling from 'vs/platform/theme/common/styler'. To apply theming in flyout dialog, use attachModalDialogStyler from 'sql/common/theme/styler'. Please verify with 3 themes: light, dark, and high contrast.
 
 For the full details about theming, please refer to theming guidelines.
 

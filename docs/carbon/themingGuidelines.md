@@ -1,5 +1,5 @@
 # Theming Guidelines
-All UI in carbon should work with all themes. Background colors, foreground colors and boarder color should be controlled by IThemeService, the theming service.
+All UI in carbon should work with all themes. Background, foreground, and boarder colors should be controlled by IThemeService, the theming service. The specific stylers for Carbon is in 'sql/common/theme/styler'. If you need to add more stylers for Carbon, please add to this file. All carbon theme related code should be in 'sql/common/theme' folder.
 
 # VS controls
 All VS controls are themable. If you create controls using VS controls, you can simply apply styling using styler in 'vs/platform/theme/common/styler' and IThemeService from 'vs/platform/theme/common/themeService'.
@@ -31,3 +31,22 @@ Here is how it works:
 Styler in 'vs/platform/theme/common/styler' have an option to pass in style which can overwrite the default colors. It accepts ColorIdentifier. ColorIdentifier is in 'vs/platform/theme/common/colorRegistry'. It is the ID of registered color. You can see the list of registered color and default colors in colorRegistry.ts.
 
 You should avoid overwriting styling as much as you can. In theory, all controls use the default behaviors. If you have to overwrite styling, please consult with our UX designer.
+
+
+# How to make your UI component themable
+
+There are 2 ways to make your UI component themable.
+
+## 1. Implements IThemable.
+This is ideal when you want to reuse the UI components in different places. The examples of these common UI components are drop down, input box, and flyout dialog. In the UI component, you have to implements IThemable. It needs to have style() function. modalDialogBuilder.ts in 'sql/parts/common/flyoutDialog/modalDialogBuilder' is a good example.
+
+## 2. Call onDidColorThemeChange event
+Another way to make the UI component themable is to listen to onDidColorThemeChange event.
+
+```javascript
+let self = this;
+this._toDisposeTheming.push(self._themeService.onDidColorThemeChange((e) => {
+	self.updateTheme(e);
+}));
+self.updateTheme(self._themeService.getColorTheme());
+```
