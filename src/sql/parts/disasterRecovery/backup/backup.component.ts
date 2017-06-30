@@ -6,17 +6,18 @@
 import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
 import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!sql/media/primeng';
-import data = require('data');
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import data = require('data');
+import { BackupInfo } from 'data';
+import { SelectItem } from 'primeng/primeng';
 import { PathUtilities } from 'sql/common/pathUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
-import { BackupInfo } from 'data';
-import { SelectItem } from 'primeng/primeng';
-import { NgForm } from '@angular/forms';
-import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 export const BACKUP_SELECTOR: string = 'backup-component';
 
@@ -80,6 +81,9 @@ export class BackupComponent{
     public dictOfBackupPathDevice: {[path: string]: number};
     public urlBackupPaths: string[];
 
+    public keyEnter = 13;
+    public keyC = 67;
+
 	constructor(
         @Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
         @Inject(forwardRef(() => ChangeDetectorRef)) private _changeDetectorRef: ChangeDetectorRef,
@@ -120,6 +124,8 @@ export class BackupComponent{
         // Set focus on backup name
         this.backupNameElement.nativeElement.focus();
     }
+
+
 
     private validateInput(): boolean {
         if (this.getBackupPathCount() === 0) {
@@ -179,7 +185,7 @@ export class BackupComponent{
     }
 
     public onFooterPressed(event: any): void {
-        if (event.keyCode === 13) {
+        if (event.keyCode === this.keyEnter) {
             if (event.currentTarget.innerHTML === this.labelOk) {
                 this.onOk();
             }
@@ -306,6 +312,26 @@ export class BackupComponent{
         this.setDefaultBackupName();
         this._changeDetectorRef.detectChanges();
 	}
+
+    public onBackupPathKeyEvent(event: KeyboardEvent): void {
+        let selectedCount = this.pathElement.nativeElement.selectedOptions.length;
+        if (selectedCount > 0)
+        {
+            var key = event.keyCode;
+            var ctrlOrCmd = event.ctrlKey || event.metaKey;
+
+            if (ctrlOrCmd && key === this.keyC) {
+                var textToCopy = this.pathElement.nativeElement.selectedOptions[0].innerHTML;
+                for (var i = 1; i < selectedCount; i++) {
+                    textToCopy = textToCopy + ', ' + this.pathElement.nativeElement.selectedOptions[i].innerHTML;
+                }
+
+                // Copy to clipboard
+                WorkbenchUtils.executeCopy(textToCopy);
+		        event.stopPropagation();
+            }
+        }
+    }
 
     private getBackupTypeNumber(): number {
         let backupType;
