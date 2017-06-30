@@ -19,6 +19,8 @@ import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { attachModalDialogStyler } from 'sql/common/theme/styler';
 
 export class BackupDialog {
 	private _builder: Builder;
@@ -30,7 +32,8 @@ export class BackupDialog {
 	private _moduleRef: any;
 
 	constructor(container: HTMLElement,
-				@IBootstrapService private _bootstrapService: IBootstrapService) {
+				@IBootstrapService private _bootstrapService: IBootstrapService,
+				@IThemeService private _themeService: IThemeService) {
 		this._container = container;
 		this._toDispose = [];
 	}
@@ -38,6 +41,7 @@ export class BackupDialog {
 	public create(connection: ConnectionManagementInfo): HTMLElement {
 		this._dialog = new ModalDialogBuilder('backupDialogModal', '', 'backup-dialog', 'backupBody');
 		this._builder = this._dialog.create(true, true);
+		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.addModalTitle();
 		this._builder.build(this._container);
 
