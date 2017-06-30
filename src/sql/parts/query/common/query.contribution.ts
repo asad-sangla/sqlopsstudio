@@ -10,6 +10,7 @@ import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/common/editor';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
+import { IConfigurationRegistry, Extensions as ConfigExtensions } from 'vs/platform/configuration/common/configurationRegistry';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
 import { KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry';
@@ -161,3 +162,62 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KEY_Y,
 	handler: gridCommands.toggleMessagePane
 });
+
+// Intellisense and other configuration options
+
+let configurationRegistry = <IConfigurationRegistry>Registry.as(ConfigExtensions.Configuration);
+configurationRegistry.registerConfiguration({
+	'id': 'sqlEditor',
+	'title': 'SQL Editor',
+	'type': 'object',
+	'properties': {
+		'sql.messagesDefaultOpen': {
+			'type': 'boolean',
+			'description': 'True for the messages pane to be open by default; false for closed',
+			'default': true
+		},
+		'sql.saveAsCsv.includeHeaders': {
+			'type': 'boolean',
+			'description': '[Optional] When true, column headers are included when saving results as CSV',
+			'default': true
+		},
+		'sql.copyIncludeHeaders': {
+			'type': 'boolean',
+			'description': '[Optional] Configuration options for copying results from the Results View',
+			'default': false
+		},
+		'sql.copyRemoveNewLine': {
+			'type': 'boolean',
+			'description': '[Optional] Configuration options for copying multi-line results from the Results View',
+			'default': true
+		},
+		'sql.intelliSense.enableIntelliSense': {
+			'type': 'boolean',
+			'default': true,
+			'description': 'Should IntelliSense be enabled'
+		},
+		'sql.intelliSense.enableErrorChecking': {
+			'type': 'boolean',
+			'default': true,
+			'description': 'Should IntelliSense error checking be enabled'
+		},
+		'sql.intelliSense.enableSuggestions': {
+			'type': 'boolean',
+			'default': true,
+			'description': 'Should IntelliSense suggestions be enabled'
+		},
+		'sql.intelliSense.enableQuickInfo': {
+			'type': 'boolean',
+			'default': true,
+			'description': 'Should IntelliSense quick info be enabled'
+		},
+		'sql.intelliSense.lowerCaseSuggestions': {
+			'type': 'boolean',
+			'default': false,
+			'description': 'Should IntelliSense suggestions be lowercase'
+		}
+	}
+});
+
+
+

@@ -83,7 +83,7 @@ suite('SQL ConnectionStore tests', () => {
 		configResult[Constants.configMaxRecentConnections] = maxRecent;
 
 		workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
-		workspaceConfigurationServiceMock.setup(x => x.getConfiguration(Constants.extensionConfigSectionName))
+		workspaceConfigurationServiceMock.setup(x => x.getConfiguration(Constants.sqlConfigSectionName))
 			.returns(() => configResult);
 
 		storageServiceMock = TypeMoq.Mock.ofType(StorageTestService);

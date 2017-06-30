@@ -110,7 +110,12 @@ export abstract class GridParentComponent {
 	protected baseInit(): void {
 		const self = this;
 		this.initShortcutsBase();
-
+		if (this._bootstrapService.configurationService) {
+			let sqlConfig = this._bootstrapService.configurationService.getConfiguration('sql');
+			if (sqlConfig) {
+				this._messageActive = sqlConfig['messagesDefaultOpen'];
+			}
+		}
 		this.subscribeWithDispose(this.dataService.gridContentObserver, (type) => {
 			switch (type) {
 				case GridContentEvents.RefreshContents:

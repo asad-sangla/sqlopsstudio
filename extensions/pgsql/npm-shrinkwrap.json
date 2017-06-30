@@ -330,11 +330,6 @@
       "from": "cookie-signature@1.0.6",
       "resolved": "https://registry.npmjs.org/cookie-signature/-/cookie-signature-1.0.6.tgz"
     },
-    "copy-paste": {
-      "version": "1.3.0",
-      "from": "copy-paste@>=1.3.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/copy-paste/-/copy-paste-1.3.0.tgz"
-    },
     "core-util-is": {
       "version": "1.0.2",
       "from": "core-util-is@>=1.0.0 <1.1.0",
@@ -2074,11 +2069,6 @@
       "from": "preserve@>=0.2.0 <0.3.0",
       "resolved": "https://registry.npmjs.org/preserve/-/preserve-0.2.0.tgz",
       "dev": true
-    },
-    "pretty-data": {
-      "version": "0.40.0",
-      "from": "pretty-data@>=0.40.0 <0.41.0",
-      "resolved": "https://registry.npmjs.org/pretty-data/-/pretty-data-0.40.0.tgz"
     },
     "process-nextick-args": {
       "version": "1.0.7",

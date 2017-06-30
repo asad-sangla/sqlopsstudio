@@ -138,7 +138,7 @@ export class DbListComponent implements OnInit, OnDestroy {
 		this.toDispose.push(this.connectionService.onConnectionChanged((connChanged) => {
 			let uri = self._getConnectedUri();
 			if (uri && uri === connChanged.connectionUri) {
-				self.onConnectionChanged(connChanged.connectionInfo);
+				self.onConnectionChanged(connChanged.connectionProfile);
 			}
 		}));
 

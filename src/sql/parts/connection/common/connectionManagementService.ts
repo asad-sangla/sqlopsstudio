@@ -12,7 +12,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import {
 	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
-	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks, IConnectionChangedParams,
+	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks,
 	IConnectionParams, IConnectionResult, IServerGroupController, IServerGroupDialogCallbacks
 } from 'sql/parts/connection/common/connectionManagement';
 import platform = require('vs/platform/platform');
@@ -62,7 +62,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private _onConnect: Emitter<IConnectionParams>;
 	private _onDisconnect: Emitter<IConnectionParams>;
 	private _onConnectRequestSent: Emitter<void>;
-	private _onConnectionChanged: Emitter<IConnectionChangedParams>;
+	private _onConnectionChanged: Emitter<IConnectionParams>;
 	private _onLanguageFlavorChanged: Emitter<data.DidChangeLanguageFlavorParams>;
 
 	private _connectionGlobalStatus: ConnectionGlobalStatus;
@@ -104,7 +104,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onDeleteConnectionProfile = new Emitter<void>();
 		this._onConnect = new Emitter<IConnectionParams>();
 		this._onDisconnect = new Emitter<IConnectionParams>();
-		this._onConnectionChanged = new Emitter<IConnectionChangedParams>();
+		this._onConnectionChanged = new Emitter<IConnectionParams>();
 		this._onConnectRequestSent = new Emitter<void>();
 		this._onLanguageFlavorChanged = new Emitter<data.DidChangeLanguageFlavorParams>();
 
@@ -147,7 +147,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._onDisconnect.event;
 	}
 
-	public get onConnectionChanged(): Event<IConnectionChangedParams> {
+	public get onConnectionChanged(): Event<IConnectionParams> {
 		return this._onConnectionChanged.event;
 	}
 
@@ -739,10 +739,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	public onConnectionChangedNotification(handle: number, changedConnInfo: data.ChangedConnectionInfo): void {
 		let profile: IConnectionProfile = this._connectionStatusManager.onConnectionChanged(changedConnInfo);
+		this._notifyConnectionChanged(profile, changedConnInfo.connectionUri);
+	}
+
+	private _notifyConnectionChanged(profile: IConnectionProfile, connectionUri: string): void {
 		if (profile) {
-			this._onConnectionChanged.fire(<IConnectionChangedParams>{
-				connectionInfo: profile,
-				connectionUri: changedConnInfo.connectionUri
+			this._onConnectionChanged.fire(<IConnectionParams>{
+				connectionProfile: profile,
+				connectionUri: connectionUri
 			});
 		}
 	}
@@ -990,6 +994,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					self._notifyDisconnected(profile, connectionUri);
 					return false;
 				}
+				self._notifyConnectionChanged(profile, connectionUri);
 				return true;
 			}, err => {
 				self._notifyDisconnected(profile, connectionUri);

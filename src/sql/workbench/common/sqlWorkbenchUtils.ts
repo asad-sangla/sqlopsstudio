@@ -8,13 +8,22 @@ import ConnectionConstants = require('sql/parts/connection/common/constants');
 
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 
+/**
+ * Gets the 'sql' configuration section for use in looking up settings. Note that configs under
+ * 'mssql' or other sections are not available from this.
+ *
+ * @export
+ * @param {IWorkspaceConfigurationService} workspaceConfigService
+ * @param {string} sectionName
+ * @returns {*}
+ */
 export function getSqlConfigSection(workspaceConfigService: IWorkspaceConfigurationService, sectionName: string): any {
-	let config = workspaceConfigService.getConfiguration(ConnectionConstants.extensionConfigSectionName);
+	let config = workspaceConfigService.getConfiguration(ConnectionConstants.sqlConfigSectionName);
 	return config ? config[sectionName] : {};
 }
 
 export function getSqlConfigValue<T>(workspaceConfigService: IWorkspaceConfigurationService, configName: string): T {
-	let config = workspaceConfigService.getConfiguration(ConnectionConstants.extensionConfigSectionName);
+	let config = workspaceConfigService.getConfiguration(ConnectionConstants.sqlConfigSectionName);
 	return config[configName];
 }
 

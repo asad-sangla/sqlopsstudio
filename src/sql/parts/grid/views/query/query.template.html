@@ -40,7 +40,7 @@
             </span>
         </div>
     </div>
-    <div id="messagepane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!messageActive" (click)="togglePane('messages')" style="position: relative">
+    <div id="messagepane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!messageActive && dataSets.length !== 0" (click)="togglePane('messages')" style="position: relative">
         <div id="messageResizeHandle" class="resizableHandle"></div>
         <span> {{Constants.messagePaneLabel}} </span>
         <span class="queryResultsShortCut"> {{messageShortcut}} </span>

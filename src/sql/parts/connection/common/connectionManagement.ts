@@ -72,7 +72,7 @@ export interface IConnectionManagementService {
 	onDeleteConnectionProfile: Event<void>;
 	onConnect: Event<IConnectionParams>;
 	onDisconnect: Event<IConnectionParams>;
-	onConnectionChanged: Event<IConnectionChangedParams>;
+	onConnectionChanged: Event<IConnectionParams>;
 	onLanguageFlavorChanged: Event<data.DidChangeLanguageFlavorParams>;
 
 	/**
@@ -269,8 +269,4 @@ export enum TaskStatus {
 export interface IConnectionParams {
 	connectionUri: string;
 	connectionProfile: IConnectionProfile;
-}
-
-export interface IConnectionChangedParams extends IConnectionParams {
-	connectionInfo: IConnectionProfile;
 }

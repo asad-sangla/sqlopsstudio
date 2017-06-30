@@ -58,6 +58,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 		this._toDispose = [];
 		this._toDispose.push(
 			this._connectionManagementService.onConnect((connectionUri: IConnectionParams) => this._onConnect(connectionUri)),
+			this._connectionManagementService.onConnectionChanged((connectionUri: IConnectionParams) => this._onConnect(connectionUri)),
 			this._connectionManagementService.onDisconnect((connectionUri: IConnectionParams) => this._onDisconnect(connectionUri)),
 			this._editorGroupService.onEditorsChanged(() => this._onEditorsChanged()),
 			this._editorGroupService.getStacksModel().onEditorClosed(event => this._onEditorClosed(event))

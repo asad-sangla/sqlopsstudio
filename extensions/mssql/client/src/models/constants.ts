@@ -47,16 +47,7 @@ export const outputServiceLocalhost = 'http://localhost:';
 export const msgContentProviderSqlOutputHtml = 'dist/html/sqlOutput.ejs';
 export const contentProviderMinFile = 'dist/js/app.min.js';
 
-export const copyIncludeHeaders = 'copyIncludeHeaders';
 export const configLogDebugInfo = 'logDebugInfo';
-export const configMyConnections = 'connections';
-export const configSaveAsCsv = 'saveAsCsv';
-export const configSaveAsJson = 'saveAsJson';
-export const configRecentConnections = 'recentConnections';
-export const configMaxRecentConnections = 'maxRecentConnections';
-export const configCopyRemoveNewLine = 'copyRemoveNewLine';
-export const configSplitPaneSelection = 'splitPaneSelection';
-
 
 // localizable strings
 export const configMyConnectionsNoServerName = 'Missing server name in user preferences connection: ';

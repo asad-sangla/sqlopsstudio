@@ -6,6 +6,7 @@
 import { IExtensionGalleryService, IExtensionTipsService } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/common/editor';
 import { IExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/common/extensions';
+import { IConfigurationRegistry, Extensions as ConfigExtensions } from 'vs/platform/configuration/common/configurationRegistry';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { Registry } from 'vs/platform/platform';
@@ -47,3 +48,17 @@ actionRegistry.registerWorkbenchAction(
 	),
 	ClearRecentConnectionsAction.LABEL
 );
+
+let configurationRegistry = <IConfigurationRegistry>Registry.as(ConfigExtensions.Configuration);
+configurationRegistry.registerConfiguration({
+	'id': 'connection',
+	'title': 'Connection',
+	'type': 'object',
+	'properties': {
+		'sql.maxRecentConnections': {
+			'type': 'number',
+			'default': 5,
+			'description': 'The maximum number of recently used connections to store in the connection list.'
+		},
+	}
+});
