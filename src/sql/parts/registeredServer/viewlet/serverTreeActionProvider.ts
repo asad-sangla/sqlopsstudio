@@ -66,9 +66,9 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	 */
 	public getConnectionActions(tree: ITree, element: ConnectionProfile): IAction[] {
 		return [
-			this._instantiationService.createInstance(DisconnectConnectionAction, DisconnectConnectionAction.ID, DisconnectConnectionAction.LABEL),
 			this._instantiationService.createInstance(ManageConnectionAction, ManageConnectionAction.ID, ManageConnectionAction.LABEL),
 			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
+			this._instantiationService.createInstance(DisconnectConnectionAction, DisconnectConnectionAction.ID, DisconnectConnectionAction.LABEL),
 			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL, element),
 			this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, element)
 		];
@@ -92,9 +92,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	public getObjectExplorerNodeActions(tree: ITree, treeNode: TreeNode): IAction[] {
 		var actions: IAction[] = [];
 
-		if (treeNode.isTopLevel()) {
-			actions.push(this._instantiationService.createInstance(DisconnectAction, DisconnectAction.ID, DisconnectAction.LABEL));
-		}
+		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL));
+
 		if (treeNode.nodeTypeId === NodeType.Table) {
 			actions.push(this._instantiationService.createInstance(OEScriptSelectAction, OEScriptSelectAction.ID, OEScriptSelectAction.LABEL));
 			actions.push(this._instantiationService.createInstance(OEEditDataAction, OEEditDataAction.ID, OEEditDataAction.LABEL));
@@ -104,8 +103,13 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 			actions.push(this._instantiationService.createInstance(OEScriptSelectAction, OEScriptSelectAction.ID, OEScriptSelectAction.LABEL));
 			actions.push(this._instantiationService.createInstance(OEScriptCreateAction, OEScriptCreateAction.ID, OEScriptCreateAction.LABEL));
 		}
-		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL));
+
 		actions.push(this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, treeNode));
+
+		if (treeNode.isTopLevel()) {
+			actions.push(this._instantiationService.createInstance(DisconnectAction, DisconnectAction.ID, DisconnectAction.LABEL));
+		}
+
 		return actions;
 	}
 }
