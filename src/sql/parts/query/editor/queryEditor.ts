@@ -574,6 +574,8 @@ export class QueryEditor extends BaseEditor {
 
 			this._register(this._sash.onPositionChange(position => this._doLayout()));
 		}
+
+		this.sash.show();
 	}
 
 	private _setSashDimension(): void {
