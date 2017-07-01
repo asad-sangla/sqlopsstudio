@@ -189,11 +189,11 @@ export const serviceInstallingTo = 'Installing PgSQL tools service to';
 export const serviceInitializing = 'Initializing PgSQL tools service for the pgsql extension.';
 export const commandsNotAvailableWhileInstallingTheService = 'Note: pgsql commands will be available after installing the service.';
 export const serviceDownloading = 'Downloading';
-export const serviceInstalled = 'PgSql Tools Service installed';
-export const serviceInstallationFailed = 'Failed to install Sql Tools Service';
-export const serviceLoadingFailed = 'Failed to load PgSql Tools Service';
+export const serviceInstalled = 'PgSQL Tools Service installed';
+export const serviceInstallationFailed = 'Failed to install PgSQL Tools Service';
+export const serviceLoadingFailed = 'Failed to load PgSQL Tools Service';
 export const unsupportedPlatformErrorMessage = 'The platform is not supported';
-export const invalidServiceFilePath = 'Invalid file path for Sql Tools Service';
+export const invalidServiceFilePath = 'Invalid file path for PgSQL Tools Service';
 export const extensionNotInitializedError = 'Unable to execute the command while the extension is initializing. Please try again later.';
 
 export const untitledScheme = 'untitled';
