@@ -14,16 +14,16 @@ Clicking on a particular action will open that task flyout.
 The lower section shows rest of the details for that object.
 
 
-<img src='../images/insightsFlyout_1.png' width='800px' />
+<img src='../images/InsightsFlyout_1.png' width='400px' />
 
 
-<img src='../images/insightsFlyout_2.png' width='800px' />
+<img src='../images/InsightsFlyout_2.png' width='400px' />
 
 By default the top section is about 2/3 size of the content area and the bottom section is about 1/3rd size of the content area.
 
 By default when the flyout opens, the first object needs to be selected.
 
 
-ACCESSBILITY:
+## ACCESSIBILITY:
 
-Tab order : Name, Status, Details section and last context menu.
+Tab order : Name, Status, Details section and Context menu.
