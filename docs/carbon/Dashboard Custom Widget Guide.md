@@ -1,4 +1,4 @@
-# Create A Custom Insight Widget
+# Custommize the Management Dashboard with Your Widgets
 In this build of Carbon along with the dashboard, we have included our first insight – database health. Wish you could have more insights? Want to customize your insights? Well you’re in luck because the insights portion of the management dashboard is extensible, meaning you can create your own insights! We’re excited to share this with everyone as it’s super simple and we can’t wait to see the insights you add to Carbon. All it takes is a T-SQL query and a simple edit to the settings.json file. Here are the steps on how to add an extension:
 
 -	Open Carbon and go to File --> Preferences --> Settings which will open up the settings.json file in two panes:
