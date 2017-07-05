@@ -13,6 +13,9 @@ import { getMachineId } from 'vs/base/node/id';
 import { resolveCommonProperties, machineIdStorageKey } from '../node/commonProperties';
 import product from 'vs/platform/node/product';
 
+// {{ SQL CARBON EDIT }}
+import * as Utils from 'sql/common/telemetryUtilities';
+
 const SQM_KEY: string = '\\Software\\Microsoft\\SQMClient';
 
 export function resolveWorkbenchCommonProperties(storageService: IStorageService, commit: string, version: string): TPromise<{ [name: string]: string }> {
@@ -20,9 +23,10 @@ export function resolveWorkbenchCommonProperties(storageService: IStorageService
 		result['common.version.shell'] = process.versions && (<any>process).versions['electron'];
 		result['common.version.renderer'] = process.versions && (<any>process).versions['chrome'];
 		result['common.osVersion'] = os.release();
-				
+
 		// {{SQL CARBON EDIT}}
 		result['common.application.name'] = product.nameLong;
+		getUserId(storageService).then(value => result['common.userId'] = value);
 
 		const lastSessionDate = storageService.get('telemetry.lastSessionDate');
 		const firstSessionDate = storageService.get('telemetry.firstSessionDate') || new Date().toUTCString();
@@ -115,5 +119,27 @@ function getWinRegKeyData(key: string, name: string, hive: string): TPromise<str
 	}).then(undefined, err => {
 		// we only want success
 		return undefined;
+	});
+}
+
+
+// {{SQL CARBON EDIT}}
+
+// Get the unique ID for the current user
+function getUserId(storageService: IStorageService): Promise<string> {
+	var userId = storageService.get('common.userId');
+	return new Promise<string>(resolve => {
+		// Generate the user id if it has not been created already
+		if (typeof userId === 'undefined') {
+			let id = Utils.generateUserId();
+			id.then( newId => {
+				userId = newId;
+				resolve(userId);
+				//store the user Id in the storage service
+				storageService.store('common.userId', userId);
+			});
+		} else {
+			resolve(userId);
+		}
 	});
 }

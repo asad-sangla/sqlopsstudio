@@ -167,12 +167,12 @@ export class VSCodeApplication {
 		services.set(IWindowsService, new SyncDescriptor(WindowsService, this.sharedProcess));
 		services.set(ILaunchService, new SyncDescriptor(LaunchService));
 
-		// Telemtry
+		// Telemetry
 		if (this.environmentService.isBuilt && !this.environmentService.isExtensionDevelopment && !!product.enableTelemetry) {
 			const channel = getDelayedChannel<ITelemetryAppenderChannel>(this.sharedProcessClient.then(c => c.getChannel('telemetryAppender')));
 			const appender = new TelemetryAppenderClient(channel);
 			// {{ SQL CARBON EDIT}}
-			const commonProperties = resolveCommonProperties(product.commit, pkg.version, this.storageService)
+			const commonProperties = resolveCommonProperties(product.commit, pkg.version)
 				.then(result => Object.defineProperty(result, 'common.machineId', {
 					get: () => this.storageService.getItem(machineIdStorageKey),
 					enumerable: true
