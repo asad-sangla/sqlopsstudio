@@ -66,7 +66,7 @@ export namespace Telemetry {
             }
 
             let packageInfo = Utils.getPackageInfo(context);
-            reporter = new TelemetryReporter('vscode-mssql', packageInfo.version, packageInfo.aiKey);
+            reporter = new TelemetryReporter('ext-credentials', packageInfo.version, packageInfo.aiKey);
         }
     }
 
