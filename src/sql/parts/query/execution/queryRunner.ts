@@ -9,12 +9,12 @@ import {
 	BatchSummary,
 	QueryCancelResult,
 	QueryExecuteBatchNotificationParams,
-    QueryExecuteCompleteNotificationResult,
+	QueryExecuteCompleteNotificationResult,
 	QueryExecuteResultSetCompleteNotificationParams,
 	QueryExecuteMessageParams,
 	QueryExecuteSubsetParams, QueryExecuteSubsetResult,
 	EditSubsetParams, EditSubsetResult, EditUpdateCellResult, EditCreateRowResult,
-    EditRevertCellResult, ISelectionData
+	EditRevertCellResult, ISelectionData
 } from 'data';
 
 import { EventEmitter } from 'events';
@@ -47,11 +47,11 @@ export default class QueryRunner {
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 
-	constructor (private _ownerUri: string,
-			private _editorTitle: string,
-			@IQueryManagementService private _queryManagementService: IQueryManagementService,
-			@IMessageService private _messageService: IMessageService,
-			@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService
+	constructor(private _ownerUri: string,
+		private _editorTitle: string,
+		@IQueryManagementService private _queryManagementService: IQueryManagementService,
+		@IMessageService private _messageService: IMessageService,
+		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService
 	) {
 
 		// Store the state
@@ -106,24 +106,49 @@ export default class QueryRunner {
 	}
 
 	/**
-	 * Pulls the query text from the current document/selection and initiates the query
+	 * Runs the query with the provoded query
+	 * @param input Query string to execute
 	 */
-	public runQuery(selection: ISelectionData): Thenable<void> {
-		const self = this;
-
-		// Update internal state to show that we're executing the query
-		this._resultLineOffset = selection ? selection.startLine : 0;
-		this._isExecuting = true;
-		this._totalElapsedMilliseconds = 0;
-		// TODO issue #228 add statusview callbacks here
-
-		// Send the request to execute the query
+	public runQuery(input: string): Thenable<void>;
+	/**
+	 * Runs the query by pulling the query from the document using the provided selection data
+	 * @param input selection data
+	 */
+	public runQuery(input: ISelectionData): Thenable<void>;
+	public runQuery(input): Thenable<void> {
 		let ownerUri = this._uri;
-		return this._queryManagementService.runQuery(ownerUri, selection).then(result => {
+		this.batchSets = [];
+		this._hasCompleted = false;
+		if (typeof input === 'object') {
+			// Update internal state to show that we're executing the query
+			this._resultLineOffset = input ? input.startLine : 0;
+			this._isExecuting = true;
+			this._totalElapsedMilliseconds = 0;
+			// TODO issue #228 add statusview callbacks here
+
+			// Send the request to execute the query
+			return this._queryManagementService.runQuery(ownerUri, input).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult());
+		} else {
+			// Update internal state to show that we're executing the query
+			this._isExecuting = true;
+			this._totalElapsedMilliseconds = 0;
+
+			return this._queryManagementService.runQueryString(ownerUri, input).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult());
+		}
+	}
+
+	private handleSuccessRunQueryResult() {
+		let self = this;
+		return () => {
 			// The query has started, so lets fire up the result pane
 			self.eventEmitter.emit('start');
-			self._queryManagementService.registerRunner(self, ownerUri);
-		}, error => {
+			self._queryManagementService.registerRunner(self, self._uri);
+		};
+	}
+
+	private handleFailureRunQueryResult() {
+		let self = this;
+		return (error: any) => {
 			// Attempting to launch the query failed, show the error message
 
 			// TODO issue #228 add statusview callbacks here
@@ -131,7 +156,7 @@ export default class QueryRunner {
 
 			// TODO localize
 			self._messageService.show(Severity.Error, 'Execution failed: ' + error);
-		});
+		};
 	}
 
 	/**
@@ -200,7 +225,7 @@ export default class QueryRunner {
 				if (this._batchSets.length > 0) {
 					batchSet = this._batchSets[0];
 				} else {
-					batchSet = <BatchSummary> {
+					batchSet = <BatchSummary>{
 						id: 0,
 						selection: undefined,
 						hasError: false
@@ -234,7 +259,7 @@ export default class QueryRunner {
 	 */
 	public getQueryRows(rowStart: number, numberOfRows: number, batchIndex: number, resultSetIndex: number): Thenable<QueryExecuteSubsetResult> {
 		const self = this;
-		let rowData: QueryExecuteSubsetParams = <QueryExecuteSubsetParams> {
+		let rowData: QueryExecuteSubsetParams = <QueryExecuteSubsetParams>{
 			ownerUri: this.uri,
 			resultSetIndex: resultSetIndex,
 			rowsCount: numberOfRows,
@@ -412,44 +437,44 @@ export default class QueryRunner {
 		});
 	}
 
-    private shouldIncludeHeaders(includeHeaders: boolean): boolean {
-        if (includeHeaders !== undefined) {
-            // Respect the value explicity passed into the method
-            return includeHeaders;
-        }
-        // else get config option from vscode config
-        includeHeaders = WorkbenchUtils.getSqlConfigValue<boolean>(this._workspaceConfigurationService, Constants.copyIncludeHeaders);
-        return !!includeHeaders;
-    }
+	private shouldIncludeHeaders(includeHeaders: boolean): boolean {
+		if (includeHeaders !== undefined) {
+			// Respect the value explicity passed into the method
+			return includeHeaders;
+		}
+		// else get config option from vscode config
+		includeHeaders = WorkbenchUtils.getSqlConfigValue<boolean>(this._workspaceConfigurationService, Constants.copyIncludeHeaders);
+		return !!includeHeaders;
+	}
 
-    private shouldRemoveNewLines(): boolean {
-        // get config copyRemoveNewLine option from vscode config
-        let removeNewLines: boolean = WorkbenchUtils.getSqlConfigValue<boolean>(this._workspaceConfigurationService, Constants.configCopyRemoveNewLine);
-        return !!removeNewLines;
-    }
+	private shouldRemoveNewLines(): boolean {
+		// get config copyRemoveNewLine option from vscode config
+		let removeNewLines: boolean = WorkbenchUtils.getSqlConfigValue<boolean>(this._workspaceConfigurationService, Constants.configCopyRemoveNewLine);
+		return !!removeNewLines;
+	}
 
-    private getColumnHeaders(batchId: number, resultId: number, range: ISlickRange): string[] {
-        let headers: string[] = undefined;
-        let batchSummary: BatchSummary = this.batchSets[batchId];
-        if (batchSummary !== undefined) {
-            let resultSetSummary = batchSummary.resultSetSummaries[resultId];
-            headers = resultSetSummary.columnInfo.slice(range.fromCell, range.toCell + 1).map((info, i) => {
-                return info.columnName;
-            });
-        }
-        return headers;
-    }
+	private getColumnHeaders(batchId: number, resultId: number, range: ISlickRange): string[] {
+		let headers: string[] = undefined;
+		let batchSummary: BatchSummary = this.batchSets[batchId];
+		if (batchSummary !== undefined) {
+			let resultSetSummary = batchSummary.resultSetSummaries[resultId];
+			headers = resultSetSummary.columnInfo.slice(range.fromCell, range.toCell + 1).map((info, i) => {
+				return info.columnName;
+			});
+		}
+		return headers;
+	}
 
-    private removeNewLines(inputString: string): string {
-        // This regex removes all newlines in all OS types
-        // Windows(CRLF): \r\n
-        // Linux(LF)/Modern MacOS: \n
-        // Old MacOs: \r
-        if (!inputString) {
-            return 'null';
-        }
+	private removeNewLines(inputString: string): string {
+		// This regex removes all newlines in all OS types
+		// Windows(CRLF): \r\n
+		// Linux(LF)/Modern MacOS: \n
+		// Old MacOs: \r
+		if (!inputString) {
+			return 'null';
+		}
 
-        let outputString: string = inputString.replace(/(\r\n|\n|\r)/gm, '');
-        return outputString;
-    }
+		let outputString: string = inputString.replace(/(\r\n|\n|\r)/gm, '');
+		return outputString;
+	}
 }

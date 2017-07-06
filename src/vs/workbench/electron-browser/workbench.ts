@@ -124,6 +124,7 @@ import { IAdminService, AdminService } from 'sql/parts/admin/common/adminService
 import { DisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { DisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/disasterRecoveryUiService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IInsightsDialogService, InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 
 
 
@@ -609,6 +610,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IDisasterRecoveryService, this.instantiationService.createInstance(DisasterRecoveryService));
 		serviceCollection.set(IDisasterRecoveryUiService, this.instantiationService.createInstance(DisasterRecoveryUiService));
 		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
+		serviceCollection.set(IInsightsDialogService, this.instantiationService.createInstance(InsightsDialogService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 
 		this.toDispose.push(connectionManagementService);

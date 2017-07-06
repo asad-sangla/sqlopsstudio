@@ -14,8 +14,6 @@ import * as data from 'data';
 export class ConnectionStatusManager {
 
 	private _connections: { [id: string]: ConnectionManagementInfo };
-	public static readonly DefaultUriPrefix: string = 'connection://';
-	public static readonly DashboardUriPrefix: string = 'dashboard://';
 	private _providerCapabilitiesMap: { [providerName: string]: data.DataProtocolServerCapabilities };
 
 	constructor( @ICapabilitiesService private _capabilitiesService: ICapabilitiesService) {
@@ -51,7 +49,7 @@ export class ConnectionStatusManager {
 	}
 
 	public findConnectionProfile(connectionProfile: IConnectionProfile): ConnectionManagementInfo {
-		let id = this.getConnectionManagementId(connectionProfile);
+		let id = Utils.generateUri(connectionProfile);
 		return this.findConnection(id);
 	}
 
@@ -98,7 +96,7 @@ export class ConnectionStatusManager {
 		let newId: string = id;
 		if (connectionInfo && this.isDefaultTypeUri(id)) {
 			connectionInfo.connectionProfile.groupId = connection.groupId;
-			newId = this.getConnectionManagementId(connection);
+			newId = Utils.generateUri(connection);
 			if (newId !== id) {
 				this._connections[newId] = connectionInfo;
 				this.deleteConnection(id);
@@ -138,15 +136,8 @@ export class ConnectionStatusManager {
 		return (id in this._connections && this._connections[id].connecting);
 	}
 
-	public getConnectionManagementId(connection: IConnectionProfile): string {
-
-		let id = connection.getOptionsKey();
-		let uri = ConnectionStatusManager.DefaultUriPrefix + (id ? id : connection.serverName + ':' + connection.databaseName);
-
-		return uri;
-	}
 	public isDefaultTypeUri(uri: string): boolean {
-		return uri && uri.startsWith(ConnectionStatusManager.DefaultUriPrefix);
+		return uri && uri.startsWith(Utils.uriPrefixes.default);
 	}
 
 	public getProviderIdFromUri(ownerUri: string) {
@@ -156,7 +147,7 @@ export class ConnectionStatusManager {
 			providerId = connection.connectionProfile.providerName;
 		}
 		if (Utils.isEmpty(providerId) && this.isDefaultTypeUri(ownerUri)) {
-			let optionsKey = ownerUri.replace(ConnectionStatusManager.DefaultUriPrefix, '');
+			let optionsKey = ownerUri.replace(Utils.uriPrefixes.default, '');
 			providerId = ConnectionProfile.getProviderFromOptionsKey(optionsKey);
 		}
 		return providerId;

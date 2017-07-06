@@ -66,7 +66,7 @@ export class ConnectionDialogWidget {
 	public create(providerTypeOptions: string[], selectedProviderType: string): HTMLElement {
 		this._providerTypeSelectBox = new DialogSelectBox(providerTypeOptions, selectedProviderType);
 
-		this._dialog = new ModalDialogBuilder('connectionDialogModal', 'New Connection', 'connection-dialog-widget', 'connectionDialogBody');
+		this._dialog = new ModalDialogBuilder('New Connection', 'connection-dialog-widget', 'connectionDialogBody');
 		this._builder = this._dialog.create(true);
 		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.addModalTitle();
@@ -92,6 +92,9 @@ export class ConnectionDialogWidget {
 		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
 
 		this._builder.build(this._container);
+
+		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
+		this._builder.hide();
 		this.registerListeners();
 		this.onProviderTypeSelected(this._providerTypeSelectBox.value);
 
@@ -165,7 +168,8 @@ export class ConnectionDialogWidget {
 	public close() {
 		this.resetConnection();
 		this.clearRecentConnection();
-		jQuery('#connectionDialogModal').modal('hide');
+		this._builder.hide();
+		this._builder.off(DOM.EventType.KEY_DOWN);
 	}
 
 	private createRecentConnectionsBuilder(): Builder {
@@ -214,7 +218,6 @@ export class ConnectionDialogWidget {
 	}
 
 	private clearRecentConnection() {
-		this._builder.off(DOM.EventType.KEY_DOWN);
 		jQuery('#recentConnection').empty();
 		this._toDisposeStyle = lifecycle.dispose(this._toDisposeStyle);
 	}
@@ -226,7 +229,7 @@ export class ConnectionDialogWidget {
 			jQuery('#recentConnection').append(recentConnectionBuilder.getHTMLElement());
 		}
 
-		jQuery('#connectionDialogModal').modal({ backdrop: false, keyboard: true });
+		this._builder.show();
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter)) {

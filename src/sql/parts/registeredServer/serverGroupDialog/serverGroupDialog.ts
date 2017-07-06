@@ -64,7 +64,7 @@ export class ServerGroupDialog {
 	}
 
 	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder('serverGroupDialogModal', this._addServerGroupTitle, 'server-group-dialog', 'serverGroupDialogBody');
+		this._dialog = new ModalDialogBuilder(this._addServerGroupTitle, 'server-group-dialog', 'serverGroupDialogBody');
 		this._builder = this._dialog.create(true);
 		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.addModalTitle();
@@ -120,6 +120,8 @@ export class ServerGroupDialog {
 		this.onSelectGroupColor(this._defaultColor);
 
 		this._builder.build(this._container);
+		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
+		this._builder.hide();
 
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
@@ -284,7 +286,7 @@ export class ServerGroupDialog {
 	}
 
 	public close() {
-		jQuery('#serverGroupDialogModal').modal('hide');
+		this._builder.hide();
 		this._callbacks.onClose();
 	}
 
@@ -314,7 +316,7 @@ export class ServerGroupDialog {
 			this._dialog.setDialogTitle(this._addServerGroupTitle);
 		}
 
-		jQuery('#serverGroupDialogModal').modal({ backdrop: false, keyboard: true });
+		this._builder.show();
 		this._groupNameInputBox.focus();
 	}
 

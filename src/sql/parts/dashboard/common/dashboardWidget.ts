@@ -4,8 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { InjectionToken } from '@angular/core';
 import { NgGridItemConfig } from 'angular4-grid';
+import { Action } from 'vs/base/common/actions';
 
 export interface IDashboardWidget {
+	actions: Array<Action>;
+	actionsContext?: any;
 }
 
 export const WIDGET_CONFIG = new InjectionToken<WidgetConfig>('widget_config');
@@ -24,4 +27,8 @@ export interface WidgetConfig {
 
 export abstract class DashboardWidget {
 	protected _config: WidgetConfig;
+
+	get actions(): Array<Action> {
+		return [];
+	}
 }

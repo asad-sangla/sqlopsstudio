@@ -5,9 +5,10 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 <div style="display: flex; flex-flow: column; overflow: hidden; height: 100%; width: 100%">
-	<div *ngIf="_config.name || _config.loadedIcon" style="flex: 0 0">
+	<div *ngIf="_config.name || _config.loadedIcon || _actions" style="flex: 0 0">
 		<span *ngIf="_config.iconClass" [ngClass]="['icon', _config.iconClass]" style="display: inline-block; padding: 5px; margin-left: 5px"></span>
 		<span *ngIf="_config.name" style="margin-left: 5px">{{_config.name}}</span>
+		<span *ngIf="_actions" (click)="onActionsClick($event)" style="float: right; margin-right: 5px"> ... </span>
 	</div>
 	<ng-template component-host>
 	</ng-template>

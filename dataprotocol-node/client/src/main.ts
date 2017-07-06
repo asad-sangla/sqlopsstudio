@@ -100,6 +100,7 @@ import {
 	QueryExecuteBatchStartNotification, QueryExecuteBatchCompleteNotification, QueryExecuteCompleteNotification,
 	QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
 	QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
+	QueryExecuteStringParams, QueryExecuteStringRequest,
 	QueryExecuteSubsetRequest, SaveResultRequestResult, SaveResultsRequestParams, SaveResultsAsCsvRequest, SaveResultsAsJsonRequest, SaveResultsAsExcelRequest,
 	EditCommitRequest, EditCommitParams,
 	EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
@@ -1444,6 +1445,19 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(QueryExecuteRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			runQueryString(ownerUri: string, queryString: string): Thenable<void> {
+				let params: QueryExecuteStringParams = {ownerUri: ownerUri, query: queryString };
+				return self.doSendRequest(connection, QueryExecuteStringRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(QueryExecuteStringRequest.type, error);
 						return Promise.reject(error);
 					}
 				);

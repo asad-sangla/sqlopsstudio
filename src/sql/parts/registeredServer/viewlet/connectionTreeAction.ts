@@ -154,7 +154,7 @@ export class DisconnectConnectionAction extends Action {
 			}
 			if (this._connectionManagementService.isProfileConnected(this._connectionProfile)) {
 				this._connectionProfile.isDisconnecting = true;
-				this._connectionManagementService.disconnectProfile(this._connectionProfile).then((value) => {
+				this._connectionManagementService.disconnect(this._connectionProfile).then((value) => {
 					resolve(true);
 				}
 				).catch(disconnectError => {

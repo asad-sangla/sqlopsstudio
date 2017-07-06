@@ -141,7 +141,9 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return new Promise<boolean>(() => true);
 	}
 
-	disconnectProfile(connection: ConnectionProfile): Promise<boolean> {
+	disconnect(connection: IConnectionProfile);
+	disconnect(uri: string);
+	disconnect(input: any): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
 			resolve(true);
 		});

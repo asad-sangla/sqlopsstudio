@@ -32,25 +32,21 @@ export class BackupDialog {
 	private _moduleRef: any;
 
 	constructor(container: HTMLElement,
-				@IBootstrapService private _bootstrapService: IBootstrapService,
-				@IThemeService private _themeService: IThemeService) {
+		@IBootstrapService private _bootstrapService: IBootstrapService,
+		@IThemeService private _themeService: IThemeService) {
 		this._container = container;
 		this._toDispose = [];
 	}
 
 	public create(connection: ConnectionManagementInfo): HTMLElement {
-		this._dialog = new ModalDialogBuilder('backupDialogModal', '', 'backup-dialog', 'backupBody');
+		this._dialog = new ModalDialogBuilder('', 'backup-dialog', 'backupBody');
 		this._builder = this._dialog.create(true, true);
 		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.addModalTitle();
 		this._builder.build(this._container);
 
-		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Escape)) {
-				this.close();
-			}
-		});
+		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
+		this._builder.hide();
 
 		return this._builder.getHTMLElement();
 	}
@@ -58,7 +54,7 @@ export class BackupDialog {
 	/**
 	 * Get the bootstrap params and perform the bootstrap
 	 */
-	private bootstrapAngular(uri: string, connection: ConnectionManagementInfo, bodyContainer: HTMLElement){
+	private bootstrapAngular(uri: string, connection: ConnectionManagementInfo, bodyContainer: HTMLElement) {
 		let params: DashboardComponentParams = {
 			connection: connection,
 			ownerUri: uri
@@ -91,7 +87,7 @@ export class BackupDialog {
 	public close() {
 		this._moduleRef.destroy();
 		$(this._uniqueSelector).remove();
-		jQuery('#backupDialogModal').modal('hide');
+		this._builder.hide();
 	}
 
 	/**
@@ -102,7 +98,14 @@ export class BackupDialog {
 		this.bootstrapAngular(uri, connection, this._dialog.bodyContainer.getHTMLElement());
 		this._backupTitle = 'Backup Database - ' + connection.connectionProfile.serverName + ':' + connection.connectionProfile.databaseName;
 		this._dialog.setDialogTitle(this._backupTitle);
-		jQuery('#backupDialogModal').modal({ backdrop: false, keyboard: true });
+		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Escape)) {
+				this.close();
+				this.preventDefaultKeyboardEvent(e);
+			}
+		});
+		this._builder.show();
 	}
 
 	public dispose(): void {

@@ -18,6 +18,8 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
+import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+
 import { $ } from 'vs/base/browser/dom';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
@@ -62,14 +64,15 @@ export class BootstrapService implements IBootstrapService {
 		@IQueryManagementService public queryManagementService: IQueryManagementService,
 		@IInstantiationService public instantiationService: IInstantiationService,
 		@IAngularEventingService public angularEventingService: IAngularEventingService,
-		@IConfigurationService public configurationService: IConfigurationService
+		@IConfigurationService public configurationService: IConfigurationService,
+		@IInsightsDialogService public insightsDialogService: IInsightsDialogService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();
 		this._selectorCountMap = new Map<string, number>();
 	}
 
-	public bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams, input?: IEditorInput, callbackSetModule?: (value: NgModuleRef<{}>) => void): string {
+	public bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams, input?: IEditorInput, callbackSetModule?: (value: NgModuleRef<{}>) => void): string {
 		// Create the uniqueSelectorString
 		let uniqueSelectorString: string = this._getUniqueSelectorString(selectorString);
 		let selector: HTMLElement = $(uniqueSelectorString);

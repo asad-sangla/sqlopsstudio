@@ -93,7 +93,7 @@ export class AdvancedPropertiesDialog {
 	}
 
 	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder('advancedDialogModal', 'Advanced Properties', 'advanced-dialog', 'advancedBody');
+		this._dialog = new ModalDialogBuilder('Advanced Properties', 'advanced-dialog', 'advancedBody');
 		this._builder = this._dialog.create(true);
 		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.bodyContainer.div({ class: 'advancedDialog-properties', id: 'propertiesContent' });
@@ -117,6 +117,9 @@ export class AdvancedPropertiesDialog {
 		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Go Back');
 
 		this._builder.build(this._container);
+
+		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
+		this._builder.hide();
 		this._modelElement = this._builder.getHTMLElement();
 
 		// Theme styler
@@ -237,7 +240,7 @@ export class AdvancedPropertiesDialog {
 	public close() {
 		jQuery('#propertiesContent').empty();
 		this.dispose();
-		jQuery('#advancedDialogModal').modal('hide');
+		this._builder.hide();
 		this._callbacks.onClose();
 	}
 
@@ -267,7 +270,7 @@ export class AdvancedPropertiesDialog {
 		}
 		splitview.layout(layoutSize);
 		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());
-		jQuery('#advancedDialogModal').modal({ backdrop: false, keyboard: true });
+		this._builder.show();
 		var firstPropertyWidget = this._advancedPropertiesMap[firstProperty].advancedPropertyWidget;
 		firstPropertyWidget.focus();
 

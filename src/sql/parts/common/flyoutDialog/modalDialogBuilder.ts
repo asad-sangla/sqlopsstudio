@@ -38,7 +38,7 @@ export class ModalDialogBuilder implements IThemable {
 	private _modalFooterSection: Builder;
 	private _closeButtonInHeader: Builder;
 
-	constructor(private _id: string,
+	constructor(
 		private _title: string,
 		private _class: string,
 		private _bodyId: string
@@ -88,7 +88,7 @@ export class ModalDialogBuilder implements IThemable {
 		}
 
 		// The builder builds the dialog. It append header, body and footer sections.
-		this._builder = $().div({ class: builderClass, id: this._id, 'role': 'dialog' }, (dialogContainer) => {
+		this._builder = $().div({ class: builderClass, 'role': 'dialog' }, (dialogContainer) => {
 			this._modalDialog = dialogContainer.div({ class: 'modal-dialog ', role: 'document' }, (modalDialog) => {
 				modalDialog.div({ class: 'modal-content' }, (modelContent) => {
 					modelContent.append(this._modalHeaderSection);

@@ -144,7 +144,9 @@ export interface IConnectionManagementService {
 
 	disconnectEditor(owner: IConnectableInput, force?: boolean): Promise<boolean>;
 
-	disconnectProfile(connection: ConnectionProfile): Promise<boolean>;
+	disconnect(connection: ConnectionProfile): Promise<boolean>;
+
+	disconnect(ownerUri: string): Promise<boolean>;
 
 	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile>;
 

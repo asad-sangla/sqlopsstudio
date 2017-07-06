@@ -132,7 +132,7 @@ export class DisconnectAction extends Action {
 		if (this.connectionManagementService.isProfileConnected(connectionProfile)) {
 			ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 
-			this.connectionManagementService.disconnectProfile(connectionProfile).then(() => {
+			this.connectionManagementService.disconnect(connectionProfile).then(() => {
 				ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 			});
 		}

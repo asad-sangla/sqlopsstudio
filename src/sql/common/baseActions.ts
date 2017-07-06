@@ -16,6 +16,8 @@ import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/in
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
+import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 
 import { ObjectMetadata } from 'data';
 
@@ -24,6 +26,10 @@ export interface BaseActionContext {
 	uri?: string;
 	object?: ObjectMetadata;
 	connInfo?: ConnectionManagementInfo;
+}
+
+export interface InsightActionContext extends BaseActionContext {
+	insight: InsightsConfig;
 }
 
 export class NewQueryAction extends Action {
@@ -207,6 +213,26 @@ export class ManageAction extends Action {
 			() => {
 				resolve(false);
 			});
+		});
+	}
+}
+
+export class InsightAction extends Action {
+	public static ID = 'showInsight';
+	public static LABEL = localize('showInsight', 'Show Insight');
+
+	constructor(
+		id: string, label: string,
+		@IInsightsDialogService protected insightsDialogService: IInsightsDialogService
+	) {
+		super(id, label);
+	}
+
+	run(actionContext: InsightActionContext): TPromise<boolean> {
+		let self = this;
+		return new TPromise<boolean>((resolve, reject) => {
+			self.insightsDialogService.show(actionContext.insight, actionContext.profile);
+			resolve(true);
 		});
 	}
 }

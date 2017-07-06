@@ -20,6 +20,8 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
+import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 
 import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
@@ -139,6 +141,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	private _adminService: SingleAdminService;
 	private _queryManagementService: SingleQueryManagementService;
 	private _configService: IConfigurationService;
+	private _insightsDialogService: IInsightsDialogService;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
@@ -148,6 +151,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._contextMenuService = this._bootstrapService.contextMenuService;
 		this._instantiationService = this._bootstrapService.instantiationService;
 		this._configService = this._bootstrapService.configurationService;
+		this._insightsDialogService = this._bootstrapService.insightsDialogService;
 	}
 
 	ngOnDestroy() {
@@ -238,6 +242,13 @@ export class DashboardServiceInterface implements OnDestroy {
 			this._uri,
 			this._bootstrapParams.connection,
 			this._bootstrapService.disasterRecoveryUiService);
+	}
+
+	/**
+	 * Opens the insight widget
+	 */
+	public openInsight(query: InsightsConfig): void {
+		TaskUtilities.openInsight(query, this.connectionManagementService.connectionInfo.connectionProfile, this._insightsDialogService);
 	}
 
 	/**

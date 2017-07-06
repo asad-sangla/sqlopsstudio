@@ -6,11 +6,11 @@ import 'vs/css!sql/media/icons/common-icons';
 
 import {
 	Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
-	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, Injector
+	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, Injector, Type
 } from '@angular/core';
 
 import { ComponentHostDirective } from './componentHost.directive';
-import { WidgetConfig, WIDGET_CONFIG } from './dashboardWidget';
+import { WidgetConfig, WIDGET_CONFIG, IDashboardWidget } from './dashboardWidget';
 
 /* Widgets */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
@@ -24,8 +24,10 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 import * as themeColors from 'vs/workbench/common/theme';
+import { Action } from 'vs/base/common/actions';
+import { TPromise } from 'vs/base/common/winjs.base';
 
-const componentMap = {
+const componentMap: { [x: string]: Type<IDashboardWidget> } = {
 	'properties-widget': PropertiesWidgetComponent,
 	'explorer-widget': ExplorerWidget,
 	'tasks-widget': TasksWidget,
@@ -40,6 +42,8 @@ const componentMap = {
 export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestroy {
 	@Input() private _config: WidgetConfig;
 	private _themeDispose: IDisposable;
+	private _actions: Array<Action>;
+	private _component: IDashboardWidget;
 
 	@ViewChild(ComponentHostDirective) componentHost: ComponentHostDirective;
 
@@ -75,12 +79,28 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 		let injector = ReflectiveInjector.resolveAndCreate([{ provide: WIDGET_CONFIG, useValue: this._config }], this._injector);
 		let componentRef = viewContainerRef.createComponent(componentFactory, 0, injector);
+		this._component = componentRef.instance;
+		let actions = componentRef.instance.actions;
+		if (actions !== undefined && actions.length > 0) {
+			this._actions = actions;
+			this._changeref.detectChanges();
+		}
 		let el = <HTMLElement>componentRef.location.nativeElement;
 
 		// set widget styles to conform to its box
 		el.style.overflow = 'hidden';
 		el.style.flex = '1 1 auto';
 		el.style.position = 'relative';
+	}
+
+	//tslint:disable-next-line
+	private onActionsClick(e: any) {
+		let anchor = { x: e.pageX + 1, y: e.pageY };
+		this._bootstrap.contextMenuService.showContextMenu({
+			getAnchor: () => anchor,
+			getActions: () => TPromise.as(this._actions),
+			getActionsContext: () => this._component.actionsContext
+		});
 	}
 
 	private updateTheme(theme: IColorTheme): void {

@@ -30,6 +30,7 @@ import WinJS = require('vs/base/common/winjs.base');
 import { Emitter } from 'vs/base/common/event';
 import Severity from 'vs/base/common/severity';
 import { ObjectExplorerActionsContext } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 suite('SQL Connection Tree Action tests', () => {
 	let errorMessageService: TypeMoq.Mock<ErrorMessageServiceStub>;
@@ -102,7 +103,7 @@ suite('SQL Connection Tree Action tests', () => {
 		actionContext.connectionProfile = connection;
 		changeConnectionAction.run(actionContext).then((value) => {
 			connectionManagementService.verify(x => x.isProfileConnected(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
-			connectionManagementService.verify(x => x.disconnectProfile(TypeMoq.It.isAny()), TypeMoq.Times.once());
+			connectionManagementService.verify(x => x.disconnect(TypeMoq.It.isAny()), TypeMoq.Times.once());
 		}).then(() => done(), (err) => done(err));
 	});
 

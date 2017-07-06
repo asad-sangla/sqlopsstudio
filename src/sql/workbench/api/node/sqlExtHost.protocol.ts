@@ -107,7 +107,11 @@ export abstract class ExtHostDataProtocolShape {
 	 */
 	$runQuery(handle: number, ownerUri: string, selection: data.ISelectionData): Thenable<void> { throw ni(); }
 	/**
-	 * Runs a query for a text selection inside a document
+	 * Runs a query for a provided query
+	 */
+	$runQueryString(handle: number, ownerUri: string, queryString: string): Thenable<void> { throw ni(); }
+	/**
+	 * Runs a query for a provided query and returns result
 	 */
 	$runQueryAndReturn(handle: number, ownerUri: string, queryString: string): Thenable<data.SimpleExecuteResult> { throw ni(); }
 	/**

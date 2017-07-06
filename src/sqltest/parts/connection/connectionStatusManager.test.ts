@@ -8,6 +8,7 @@
 import * as assert from 'assert';
 import data = require('data');
 import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
+import * as Utils from 'sql/parts/connection/common/utils';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { CapabilitiesTestService } from 'sqltest/stubs/capabilitiesTestService';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
@@ -55,7 +56,7 @@ suite('SQL ConnectionStatusManager tests', () => {
 		connectionProfileObject = new ConnectionProfile(capabilitiesService.getCapabilities().find(x => x.providerName === 'MSSQL')
 			, connectionProfile);
 		connections = new ConnectionStatusManager(capabilitiesService);
-		connection1Id = connections.getConnectionManagementId(connectionProfile);
+		connection1Id = Utils.generateUri(connectionProfile);
 		connection2Id = 'connection2Id';
 		connections.addConnection(connectionProfile, connection1Id);
 		connections.addConnection(editorConnectionProfile, connection2Id);
@@ -144,7 +145,7 @@ suite('SQL ConnectionStatusManager tests', () => {
 		let updatedConnection = Object.assign({}, connectionProfile, { groupId: expected, getOptionsKey: () => connectionProfile.getOptionsKey() + expected, id: expectedConnectionId });
 		let actualId = connections.updateConnectionProfile(updatedConnection, connection1Id);
 
-		let newId = connections.getConnectionManagementId(updatedConnection);
+		let newId = Utils.generateUri(updatedConnection);
 		let actual = connections.getConnectionProfile(newId).groupId;
 		let actualConnectionId = connections.getConnectionProfile(newId).id;
 		assert.equal(actual, expected);

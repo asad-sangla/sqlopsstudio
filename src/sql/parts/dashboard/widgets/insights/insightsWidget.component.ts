@@ -10,12 +10,15 @@ import {
 import { DashboardWidget, IDashboardWidget, WIDGET_CONFIG, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
+import { InsightAction, InsightActionContext } from 'sql/common/baseActions';
 
 /* Insights */
 import { ChartInsight } from './viewInsights/chartInsight.component';
 import { CountInsight } from './viewInsights/countInsight.component';
 
 import { SimpleExecuteResult } from 'data';
+
+import { Action } from 'vs/base/common/actions';
 
 export interface InsightsView {
 	data: SimpleExecuteResult;
@@ -24,9 +27,11 @@ export interface InsightsView {
 
 export interface InsightsConfig {
 	type: 'count' | 'chart';
-	detailsQuery?: string;
 	query: string;
 	colorMap?: { [column: string]: string };
+	detailsQuery?: string;
+	label?: string;
+	value?: string;
 }
 
 const insightMap: { [x: string]: Type<InsightsView> } = {
@@ -45,7 +50,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
-		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface,
+		@Inject(forwardRef(() => DashboardServiceInterface)) private dashboardService: DashboardServiceInterface,
 		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig,
 		@Inject(forwardRef(() => ViewContainerRef)) private viewContainerRef: ViewContainerRef
 	) {
@@ -86,5 +91,24 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	private showError(error: string): void {
 		let element = <HTMLElement>this.viewContainerRef.element.nativeElement;
 		element.innerText = error;
+	}
+
+	private onClick(event: any) {
+		this.dashboardService.openInsight(this.insightConfig);
+	}
+
+	get actions(): Array<Action> {
+		if (this.insightConfig.detailsQuery) {
+			return [this.dashboardService.instantiationService.createInstance(InsightAction, InsightAction.ID, InsightAction.LABEL)];
+		} else {
+			return [];
+		}
+	}
+
+	get actionsContext(): InsightActionContext {
+		return <InsightActionContext>{
+			profile: this.dashboardService.connectionManagementService.connectionInfo.connectionProfile,
+			insight: this.insightConfig
+		};
 	}
 }

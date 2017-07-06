@@ -1271,6 +1271,15 @@ export namespace SimpleExecuteRequest {
 	export const type: RequestType<SimpleExecuteParams, SimpleExecuteResult, void> = { get method(): string { return 'query/simpleexecute'; } };
 }
 
+// ------------------------------- < Execute String > ------------------------------------
+export interface QueryExecuteStringParams {
+	query: string;
+	ownerUri: string;
+}
+
+export namespace QueryExecuteStringRequest {
+	export const type: RequestType<QueryExecuteStringParams, QueryExecuteResult, void> = { get method(): string { return 'query/executeString'; } };
+}
 
 // ------------------------------- < Metadata Events > ------------------------------------
 

@@ -12,6 +12,12 @@ import { IConnectionProfile, IConnectionProfileStore } from './interfaces';
 const msInH = 3.6e6;
 const msInM = 60000;
 const msInS = 1000;
+export const uriPrefixes = {
+	default: 'connection://',
+	connection: 'connection://',
+	dashboard: 'dashboard://',
+	insights: 'insights://'
+};
 
 
 // FUNCTIONS //////////////////////////////////////////////////////////////////////////////////////
@@ -198,4 +204,13 @@ export function htmlEntities(str: string): string {
 
 export function isNumber(val: any): boolean {
 	return typeof (val) === 'number';
+}
+
+export function generateUri(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): string {
+
+	let id = connection.getOptionsKey();
+	let prefix = purpose ? uriPrefixes[purpose] : uriPrefixes.default;
+	let uri = prefix + (id ? id : connection.serverName + ':' + connection.databaseName);
+
+	return uri;
 }

@@ -124,6 +124,12 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		});
 	}
 
+	$runQueryString(handle: number, ownerUri: string, queryString: string): Thenable<void> {
+		return this._runWithProvider(handle, provider => {
+			return provider.queryProvider.runQueryString(ownerUri, queryString);
+		});
+	}
+
 	$runQueryAndReturn(handle: number, ownerUri: string, queryString: string): Thenable<data.SimpleExecuteResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.queryProvider.runQueryAndReturn(ownerUri, queryString);

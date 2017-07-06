@@ -45,7 +45,7 @@ export class ErrorMessageDialog {
 	}
 
 	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder('errorMessageModal', '', 'error-dialog', 'errorDialogBody');
+		this._dialog = new ModalDialogBuilder('', 'error-dialog', 'errorDialogBody');
 		this._builder = this._dialog.create(false);
 		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.addModalTitle();
@@ -54,6 +54,8 @@ export class ErrorMessageDialog {
 		this._okButton = this.createFooterButton(this._dialog.footerContainer, 'OK');
 
 		this._builder.build(this._container);
+		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: true });
+		this._builder.hide();
 		this._modelElement = this._builder.getHTMLElement();
 		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
@@ -121,7 +123,7 @@ export class ErrorMessageDialog {
 	}
 
 	public close() {
-		jQuery('#errorMessageModal').modal('hide');
+		this._builder.hide();
 	}
 
 	public open(severity: Severity, headerTitle: string, message: string) {
@@ -129,7 +131,7 @@ export class ErrorMessageDialog {
 		this._message = message;
 		this._dialog.setDialogTitle(headerTitle);
 		this.updateDialogBody();
-		jQuery('#errorMessageModal').modal({ backdrop: false, keyboard: true });
+		this._builder.show();
 	}
 
 	public dispose(): void {

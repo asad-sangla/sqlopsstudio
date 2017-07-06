@@ -267,7 +267,7 @@ export class ListView<T> implements IDisposable {
 	}
 
 	private onScroll(e: ScrollEvent): void {
-		this.render(e.scrollTop, e.height);
+		this.render(e.scrollTop, e.height || e.scrollHeight);
 	}
 
 	private onTouchChange(event: GestureEvent): void {

@@ -22,6 +22,7 @@ export interface IQueryManagementService {
 
 	cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult>;
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
+	runQueryString(ownerUri: string, queryString: string): Thenable<void>;
 	runQueryAndReturn(ownerUri: string, queryString: string): Thenable<data.SimpleExecuteResult>;
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
@@ -31,7 +32,7 @@ export interface IQueryManagementService {
 	onQueryComplete(result: data.QueryExecuteCompleteNotificationResult): void;
 	onBatchStart(batchInfo: data.QueryExecuteBatchNotificationParams): void;
 	onBatchComplete(batchInfo: data.QueryExecuteBatchNotificationParams): void;
-	onResultSetComplete( resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void;
+	onResultSetComplete(resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void;
 	onMessage(message: data.QueryExecuteMessageParams): void;
 
 	// Edit Data Callbacks
@@ -55,6 +56,7 @@ export interface IQueryManagementService {
 export interface QueryRequestHandler {
 	cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult>;
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
+	runQueryString(ownerUri: string, queryString: string): Thenable<void>;
 	runQueryAndReturn(ownerUri: string, queryString: string): Thenable<data.SimpleExecuteResult>;
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
 	disposeQuery(ownerUri: string): Thenable<void>;
@@ -77,49 +79,49 @@ export class QueryManagementService implements IQueryManagementService {
 	public _serviceBrand: any;
 
 	private _requestHandlers = new Map<string, QueryRequestHandler>();
-    // public for testing only
-    public _queryRunners = new Map<string, QueryRunner>();
+	// public for testing only
+	public _queryRunners = new Map<string, QueryRunner>();
 
-    // public for testing only
-    public _handlerCallbackQueue: ((run: QueryRunner) => void)[] = [];
+	// public for testing only
+	public _handlerCallbackQueue: ((run: QueryRunner) => void)[] = [];
 
-	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) {
+	constructor( @IConnectionManagementService private _connectionService: IConnectionManagementService) {
 	}
 
-    // Registers queryRunners with their uris to distribute notifications.
-    // Ensures that notifications are handled in the correct order by handling
-    // enqueued handlers first.
-    // public for testing only
-    public registerRunner(runner: QueryRunner, uri: string): void {
-        // If enqueueOrRun was called before registerRunner for the current query,
-        // _handlerCallbackQueue will be non-empty. Run all handlers in the queue first
-        // so that notifications are handled in order they arrived
-        while (this._handlerCallbackQueue.length > 0) {
-            let handler = this._handlerCallbackQueue.shift();
-            handler(runner);
-        }
+	// Registers queryRunners with their uris to distribute notifications.
+	// Ensures that notifications are handled in the correct order by handling
+	// enqueued handlers first.
+	// public for testing only
+	public registerRunner(runner: QueryRunner, uri: string): void {
+		// If enqueueOrRun was called before registerRunner for the current query,
+		// _handlerCallbackQueue will be non-empty. Run all handlers in the queue first
+		// so that notifications are handled in order they arrived
+		while (this._handlerCallbackQueue.length > 0) {
+			let handler = this._handlerCallbackQueue.shift();
+			handler(runner);
+		}
 
-        // Set the runner for any other handlers if the runner is in use by the
-        // current query or a subsequent query
-        if (!runner.hasCompleted) {
-            this._queryRunners.set(uri, runner);
-        }
-    }
+		// Set the runner for any other handlers if the runner is in use by the
+		// current query or a subsequent query
+		if (!runner.hasCompleted) {
+			this._queryRunners.set(uri, runner);
+		}
+	}
 
-    // Handles logic to run the given handlerCallback at the appropriate time. If the given runner is
-    // undefined, the handlerCallback is put on the _handlerCallbackQueue to be run once the runner is set
-    // public for testing only
-    private enqueueOrRun(handlerCallback: (runnerParam: QueryRunner) => void, runner: QueryRunner): void {
-        if (runner === undefined) {
-            this._handlerCallbackQueue.push(handlerCallback);
-        } else {
-            handlerCallback(runner);
-        }
-    }
+	// Handles logic to run the given handlerCallback at the appropriate time. If the given runner is
+	// undefined, the handlerCallback is put on the _handlerCallbackQueue to be run once the runner is set
+	// public for testing only
+	private enqueueOrRun(handlerCallback: (runnerParam: QueryRunner) => void, runner: QueryRunner): void {
+		if (runner === undefined) {
+			this._handlerCallbackQueue.push(handlerCallback);
+		} else {
+			handlerCallback(runner);
+		}
+	}
 
 	private _notify(ownerUri: string, sendNotification: (runner: QueryRunner) => void): void {
 		let runner = this._queryRunners.get(ownerUri);
-		this.enqueueOrRun(sendNotification,runner);
+		this.enqueueOrRun(sendNotification, runner);
 	}
 
 	public addQueryRequestHandler(queryType: string, handler: QueryRequestHandler): IDisposable {
@@ -153,6 +155,11 @@ export class QueryManagementService implements IQueryManagementService {
 	public runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void> {
 		return this._runAction(ownerUri, (runner) => {
 			return runner.runQuery(ownerUri, selection);
+		});
+	}
+	public runQueryString(ownerUri: string, queryString: string): Thenable<void> {
+		return this._runAction(ownerUri, (runner) => {
+			return runner.runQueryString(ownerUri, queryString);
 		});
 	}
 	public runQueryAndReturn(ownerUri: string, queryString: string): Thenable<data.SimpleExecuteResult> {
@@ -194,7 +201,7 @@ export class QueryManagementService implements IQueryManagementService {
 		});
 	}
 
-	public onResultSetComplete( resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void {
+	public onResultSetComplete(resultSetInfo: data.QueryExecuteResultSetCompleteNotificationParams): void {
 		this._notify(resultSetInfo.ownerUri, (runner: QueryRunner) => {
 			runner.handleResultSetComplete(resultSetInfo);
 		});

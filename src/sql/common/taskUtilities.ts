@@ -15,7 +15,10 @@ import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+
 import { withElementById } from 'vs/base/browser/builder';
+import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Severity from 'vs/base/common/severity';
 
@@ -34,7 +37,7 @@ export class TaskUtilities {
 					showConnectionDialogOnError: false
 				};
 				connectionService.connect(connectionProfile, uri, options).then(() => {
-					setTimeout(function(){
+					setTimeout(function () {
 						resolve();
 					}, 2000);
 				}).catch(connectionError => {
@@ -174,5 +177,10 @@ export class TaskUtilities {
 		return new Promise<void>((resolve) => {
 			disasterRecoveryUiService.showBackup(uri, connection);
 		});
+	}
+
+	//tslint:disable-next-line
+	public static async openInsight(query: InsightsConfig, profile: IConnectionProfile, insightDialogService: IInsightsDialogService) {
+		return insightDialogService.show(query, profile);
 	}
 }

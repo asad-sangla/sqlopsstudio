@@ -62,7 +62,23 @@ configurationRegistry.registerConfiguration({
 							'Healthy': 'green',
 							'Attention': 'yellow',
 							'Unheathly': 'red'
-						}
+						},
+						'detailsQuery': `
+							declare @condition tinyint;
+							SET @condition = 24;
+
+							select
+									d.name,
+									max(b.backup_start_date) AS last_backup,
+									case
+										when (datediff( hh , max(b.backup_start_date) , getdate()) < @condition) then 1 else 0
+									end as health_check
+								from sys.databases as d
+								left join msdb..backupset as b on d.name = b.database_name
+								group by d.name
+						`,
+						'label': 'name',
+						'value': 'health_check'
 					}
 				}
 			]

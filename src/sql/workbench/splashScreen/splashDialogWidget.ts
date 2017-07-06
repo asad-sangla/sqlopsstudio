@@ -32,18 +32,20 @@ export class SplashDialogWidget {
 	}
 
 	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder('splashDialogModal', '', 'splash-dialog-widget', 'splashDialogBody');
+		this._dialog = new ModalDialogBuilder('', 'splash-dialog-widget', 'splashDialogBody');
 		this._builder = this._dialog.create(false);
 		this._dialog.addModalTitle();
 		this._builder.build(this._container);
+		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
+		this._builder.hide();
 		return this._builder.getHTMLElement();
 	}
 
 	public close() {
-		jQuery('#splashDialogModal').modal('hide');
+		this._builder.hide();
 	}
 
 	public open() {
-		jQuery('#splashDialogModal').modal({ backdrop: false, keyboard: true });
+		this._builder.show();
 	}
 }
