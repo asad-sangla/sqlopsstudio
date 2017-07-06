@@ -168,7 +168,7 @@ Users should be able to complete forms quickly and without confusion.
   * Clear label text tells the user the purpose of the field.
   * Labels are not help texts. You should use succinct, short and descriptive labels ( a word or two) so users can quickly scan.
   * Use Title case - e.g. 'First name '
-  * Label placement - Top aligned labels make it easier for different sized labels and localized versions to fir easier within the UI. This is especially good for flyout as the size is of a mobile screen with limited estate. The other advantage is quick eye-scan compared to left aligned labels.
+  * Label placement - Top aligned labels make it easier for different sized labels and localized versions to fir easier within the UI. This is especially good for flyout as the size is of a mobile screen with limited estate. The other advantage is quick eye-scan compared to left aligned labels. Exception is when we use toggle button. Just for toggle button I use left aligned with label max size set to 22 characters with ellipsis for overflow. 
 * <b> Action buttons </b>
   * Covered in the 'Button' section.
 * <b> Feedback </b>
@@ -245,6 +245,99 @@ Context menu
 ======
 
 Context menus display a list of commands or options when the user requests them by left or right click on the ellipsis icon.
+
+
+
+##### Ellipsis icon
+
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Context%20Menu_1.png?raw=true' width='200px' />
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Context%20Menu_2.png?raw=true' width='200px' />
+
+The ellipsis icon has two states
+
+* It is visible by default on objects which are not hidden like 
+	* Server group
+	* Insight widgets
+	* The row items in the insight flyout.
+	* task in task history
+* It will appear on hover on objects which are hidden in a tree like
+	* Server and its objects
+
+##### Context menu 
+
+
+<br/>
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/group%20context%20menu.png?raw=true' width='200px' />
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/group%20context%20menu%20copy.png?raw=true' width='200px' />
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Server%20context%20menu.png?raw=true' width='200px' />
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Server%20context%20menu%20Copy.png?raw=true' width='200px' />
+
+
+
+
+The context menu can be of following:
+
+* Menu items must have text.
+* Menu items can have icons provided the icon well illustrates what the comman does.
+* Menu items are grouped logically with primary action one on the top and all secondary actions below the line.
+* Menu item text needs to be concise with one or two words. It needs to be mostly verbs.
+
+ ----------------------
+ 
+Insights visualization
+======
+
+The Manage dashboard is our home for actionable insights about a user's servers and databases. 
+
+#### Insights categories
+
+Count <br/> <img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Count%20Chart.png?raw=true' width='200px' /> <br/>
+Numerical chart <br/> <img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Numerical%20chart.png?raw=true' width='200px' /> <br/>
+Historical Chart <br/>
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Historical%20timeline.png?raw=true' width='200px' />
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Historical%20timeline%20OnHover.png?raw=true' width='200px' /><br/>
+Pie chart <br/><img src='https://github.com/Microsoft/carbon/blob/master/docs/images/Pie%20chart.png?raw=true' width='200px' />
+
+#### Insights flyout
+
+When a user clicks 'Show insight' on the insight widget, a flyout slides in on the right.
+
+The top section shows a key value pair.
+
+The key-value pair are represented in a grid with column name.
+The rows will have the object, an icon that represents the object in different state and the status in text.
+
+Each row will have a context menu which will list the actions that can be taken on that object.
+
+Clicking on a particular action will open that task flyout.
+
+The lower section shows rest of the details for that object.
+
+
+<img src='../images/InsightsFlyout_1.png' width='200px' />
+
+
+<img src='../images/InsightsFlyout_2.png' width='200px' />
+
+By default the top section is about 2/3 size of the content area and the bottom section is about 1/3rd size of the content area.
+
+By default when the flyout opens, the first object needs to be selected.
+
+More generic insight flyout design<br/>
+<img src='https://github.com/Microsoft/carbon/blob/master/docs/images/InsightsFlyout_1%20Copy.png?raw=true' width='200px' />
+
+* If the objects have no icons, then drop the icon and just have text.
+* If the text is really long, truncate it at 15 characters and add tool tip.
+
+
+#### ACCESSIBILITY:
+
+Tab order : Name, Status, Details section and Context menu.
+
+
+
+
+
 
 
  
