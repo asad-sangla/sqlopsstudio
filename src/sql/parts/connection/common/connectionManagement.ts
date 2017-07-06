@@ -187,6 +187,33 @@ export interface IConnectionManagementService {
 	getCapabilities(providerName: string): data.DataProtocolServerCapabilities;
 
 	canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean;
+
+	/**
+	 * Sends a notification that the language flavor for a given URI has changed.
+	 * For SQL, this would be the specific SQL implementation being used.
+	 *
+	 * @param {string} uri the URI of the resource whose language has changed
+	 * @param {string} language the base language
+	 * @param {string} flavor the specific language flavor that's been set
+	 *
+	 * @memberof IConnectionManagementService
+	 */
+	doChangeLanguageFlavor(uri: string, language: string, flavor: string): void;
+
+	/**
+	 * Ensures that a default language flavor is set for a URI, if none has already been defined.
+	 * @param {string} uri document identifier
+	 * @memberof ConnectionManagementService
+	 */
+	ensureDefaultLanguageFlavor(uri: string): void;
+
+	/**
+	 * Gets an array of all known providers.
+	 *
+	 * @returns {string[]} An array of provider names
+	 * @memberof IConnectionManagementService
+	 */
+	getProviderNames(): string[];
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

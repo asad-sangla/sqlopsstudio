@@ -5,8 +5,11 @@
 'use strict';
 
 import ConnectionConstants = require('sql/parts/connection/common/constants');
+import { QueryInput } from 'sql/parts/query/common/queryInput';
 
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
+import { IEditorInput } from 'vs/platform/editor/common/editor';
+import URI from 'vs/base/common/uri';
 
 /**
  * Gets the 'sql' configuration section for use in looking up settings. Note that configs under
@@ -46,4 +49,19 @@ export function executeCopy(text: string): void {
 	input.select();
 	document.execCommand('copy');
 	input.remove();
+}
+
+export function getEditorUri(input: IEditorInput): string{
+	let uri: URI;
+	if (input instanceof QueryInput) {
+		let queryCast: QueryInput = <QueryInput> input;
+		if (queryCast) {
+			uri = queryCast.getResource();
+		}
+	}
+
+	if (uri) {
+		return uri.toString();
+	}
+	return undefined;
 }

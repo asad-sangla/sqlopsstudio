@@ -200,4 +200,15 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	canChangeConnectionConfig(profile: ConnectionProfile, newGroupID: string): boolean {
 		return true;
 	}
+
+	doChangeLanguageFlavor(uri: string, language: string, flavor: string): void {
+
+	}
+	ensureDefaultLanguageFlavor(uri: string): void {
+
+	}
+
+	public getProviderNames(): string[] {
+		return [];
+	}
 }

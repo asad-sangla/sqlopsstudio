@@ -4,45 +4,49 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import nls = require('vs/nls');
-import * as errors from 'vs/base/common/errors';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import {
 	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
 	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks,
 	IConnectionParams, IConnectionResult, IServerGroupController, IServerGroupDialogCallbacks
 } from 'sql/parts/connection/common/connectionManagement';
+import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import Utils = require('sql/parts/connection/common/utils');
+import Constants = require('sql/parts/connection/common/constants');
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
+import { ICredentialsService } from 'sql/services/credentials/credentialsService';
+import * as ConnectionContracts from 'sql/parts/connection/common/connection';
+import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
+import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
+import { ConnectionGlobalStatus } from 'sql/parts/connection/common/connectionGlobalStatus';
+import { ConnectionStatusbarItem } from 'sql/parts/connection/common/connectionStatus';
+
+import * as data from 'data';
+
+import nls = require('vs/nls');
+import * as errors from 'vs/base/common/errors';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import platform = require('vs/platform/platform');
 import { Memento } from 'vs/workbench/common/memento';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IStorageService } from 'vs/platform/storage/common/storage';
-import { ConnectionStore } from './connectionStore';
-import { IConnectionProfile } from './interfaces';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
-import { ConnectionManagementInfo } from './connectionManagementInfo';
-import Utils = require('./utils');
-import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
-import { ICredentialsService } from 'sql/services/credentials/credentialsService';
-import * as data from 'data';
-import * as ConnectionContracts from 'sql/parts/connection/common/connection';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
-import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ISplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
-import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
 import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
-import { ConnectionGlobalStatus } from 'sql/parts/connection/common/connectionGlobalStatus';
-import { ConnectionStatusbarItem } from 'sql/parts/connection/common/connectionStatus';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 
 export class ConnectionManagementService implements IConnectionManagementService {
@@ -532,6 +536,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
+	public getProviderNames(): string[] {
+		return Object.keys(this._providers);
+	}
+
 	public getCapabilities(providerName: string): data.DataProtocolServerCapabilities {
 		let capabilities = this._capabilitiesService.getCapabilities();
 		if (capabilities !== undefined && capabilities.length > 0) {
@@ -595,15 +603,35 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * @param {string} uri the URI of the resource whose language has changed
 	 * @param {string} language the base language
 	 * @param {string} flavor the specific language flavor that's been set
-	 *
+	 * @throws {Error} if the provider is not in the list of registered providers
 	 * @memberof ConnectionManagementService
 	 */
-	public doChangeLanguageFlavor(uri: string, language: string, flavor: string) {
-		this._onLanguageFlavorChanged.fire({
-			uri: uri,
-			language: language,
-			flavor: flavor
-		});
+	public doChangeLanguageFlavor(uri: string, language: string, provider: string): void {
+		if (provider in this._providers) {
+			this._onLanguageFlavorChanged.fire({
+				uri: uri,
+				language: language,
+				flavor: provider
+			});
+		} else {
+			throw new Error(`provider "${provider}" is not registered`);
+		}
+	}
+
+	/**
+	 * Ensures that a default language flavor is set for a URI, if none has already been defined.
+	 * @param {string} uri document identifier
+	 * @memberof ConnectionManagementService
+	 */
+	public ensureDefaultLanguageFlavor(uri: string): void {
+		if (!this.getProviderIdFromUri(uri)) {
+			// Lookup the default settings and use this
+			let defaultProvider = WorkbenchUtils.getSqlConfigValue<string>(this._workspaceConfigurationService, Constants.defaultEngine);
+			if (defaultProvider && defaultProvider in this._providers) {
+				// Only set a default if it's in the list of registered providers
+				this.doChangeLanguageFlavor(uri, 'sql', defaultProvider);
+			}
+		}
 	}
 
 	// Request Senders

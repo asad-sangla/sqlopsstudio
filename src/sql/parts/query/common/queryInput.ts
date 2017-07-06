@@ -86,6 +86,9 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 					self.onDisconnect();
 				}
 			}));
+			if (self.uri) {
+				this._connectionManagementService.ensureDefaultLanguageFlavor(self.uri);
+			}
 		}
 
 		this.onDisconnect();

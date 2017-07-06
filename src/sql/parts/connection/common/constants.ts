@@ -67,3 +67,5 @@ export const mssqlProviderName = 'MSSQL';
 export const pgsqlProviderName = 'PGSQL';
 
 export const applicationName = 'carbon';
+
+export const defaultEngine = 'defaultEngine';

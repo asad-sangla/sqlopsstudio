@@ -15,6 +15,7 @@ import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionS
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 enum ConnectionActivityStatus {
 	Connected,
@@ -68,7 +69,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	}
 
 	private _onEditorClosed(event: IEditorCloseEvent): void {
-		let uri = this._getEditorUri(event.editor);
+		let uri = WorkbenchUtils.getEditorUri(event.editor);
 		if (uri && uri in this._connectionStatusEditors) {
 			this._updateStatus(uri, ConnectionActivityStatus.Disconnected, undefined);
 			delete this._connectionStatusEditors[uri];
@@ -78,7 +79,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	private _onEditorsChanged(): void {
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor) {
-			let uri = this._getEditorUri(activeEditor.input);
+			let uri = WorkbenchUtils.getEditorUri(activeEditor.input);
 
 			// Show active editor's query status
 			if (uri && uri in this._connectionStatusEditors) {
@@ -119,7 +120,7 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 	private _showStatus(uri: string): void {
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor) {
-			let currentUri = this._getEditorUri(activeEditor.input);
+			let currentUri = WorkbenchUtils.getEditorUri(activeEditor.input);
 			if (uri === currentUri) {
 				switch (this._connectionStatusEditors[uri].connectionActivityStatus) {
 					case ConnectionActivityStatus.Connected:
@@ -155,21 +156,5 @@ export class ConnectionStatusbarItem implements IStatusbarItem {
 
 		this._connectionElement.textContent = text;
 		this._connectionElement.title = tooltip;
-	}
-
-	private _getEditorUri(input: IEditorInput): string {
-		let uri: URI;
-		if (input instanceof QueryInput) {
-			let queryCast: QueryInput = <QueryInput>input;
-			if (queryCast) {
-				uri = queryCast.getResource();
-			}
-		}
-
-		if (uri) {
-			return uri.toString();
-		} else {
-			return undefined;
-		}
 	}
 }

@@ -9,18 +9,22 @@ import {
 	IConnectionDialogService, IConnectionManagementService, IErrorMessageService,
 	ConnectionType, INewConnectionParams, IConnectionCompletionOptions
 } from 'sql/parts/connection/common/connectionManagement';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
-import { withElementById } from 'vs/base/browser/builder';
 import { ConnectionController } from 'sql/parts/connection/connectionDialog/connectionController';
-import { TPromise } from 'vs/base/common/winjs.base';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import * as Constants from 'sql/parts/connection/common/constants';
+import data = require('data');
+
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import { withElementById } from 'vs/base/browser/builder';
+import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Severity from 'vs/base/common/severity';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
-import data = require('data');
+import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 
 export interface IConnectionResult {
 	isValid: boolean;
@@ -58,7 +62,6 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _capabilitiesMaps: { [providerDisplayName: string]: data.DataProtocolServerCapabilities };
 	private _providerNameToDisplayNameMap: { [providerDisplayName: string]: string };
 	private _providerTypes: string[];
-	private _defaultProviderName: string = 'MSSQL';
 	private _currentProviderType: string = 'Microsoft SQL Server';
 
 	constructor(
@@ -66,7 +69,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
-		@IThemeService private _themeService: IThemeService
+		@IThemeService private _themeService: IThemeService,
+		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
 	) {
 		this._capabilitiesMaps = {};
 		this._providerNameToDisplayNameMap = {};
@@ -74,11 +78,25 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		this._providerTypes = [];
 		if (_capabilitiesService) {
 			_capabilitiesService.onProviderRegisteredEvent((capabilities => {
-				if (capabilities.providerName === this._defaultProviderName) {
+				let defaultProvider = this.getDefaultProviderName();
+				if (capabilities.providerName === defaultProvider) {
 					this.showDialogWithModel();
 				}
 			}));
 		}
+	}
+
+	private getDefaultProviderName() {
+		if (this._workspaceConfigurationService) {
+			let defaultProvider = WorkbenchUtils.getSqlConfigValue<string>(this._workspaceConfigurationService, Constants.defaultEngine);
+			if (defaultProvider
+				&& this._capabilitiesMaps
+				&& defaultProvider in this._capabilitiesMaps) {
+				return defaultProvider;
+			}
+		}
+		// as a fallback, default to MSSQL if the value from settings is not available
+		return Constants.mssqlProviderName;
 	}
 
 	private handleOnConnect(params: INewConnectionParams): void {
@@ -179,8 +197,9 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private createModel(model: IConnectionProfile): ConnectionProfile {
-		let providerName = model ? model.providerName : this._defaultProviderName;
-		providerName = providerName ? providerName : this._defaultProviderName;
+		let defaultProvider =  this.getDefaultProviderName();
+		let providerName = model ? model.providerName : defaultProvider;
+		providerName = providerName ? providerName : defaultProvider;
 		let serverCapabilities = this._capabilitiesMaps[providerName];
 		let newProfile = new ConnectionProfile(serverCapabilities, model);
 		newProfile.saveProfile = true;
@@ -202,7 +221,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 	private showDialogWithModel(): TPromise<void> {
 		return new TPromise<void>((resolve, reject) => {
-			if (this._defaultProviderName in this._capabilitiesMaps) {
+			if (this.getDefaultProviderName() in this._capabilitiesMaps) {
 				this.updateModelServerCapabilities(this._inputModel);
 
 				this.doShowDialog(this._params);

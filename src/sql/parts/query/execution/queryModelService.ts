@@ -10,20 +10,22 @@ import Constants = require('sql/parts/query/common/constants');
 import Utils = require('sql/parts/connection/common/utils');
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { QueryStatusbarItem } from  'sql/parts/query/execution/queryStatus';
+import { SqlFlavorStatusbarItem } from  'sql/parts/query/common/flavorStatus';
+
 import { ISelectionData, ResultSetSubset, EditSubsetResult,
 		EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult } from 'data';
 import { ISlickRange } from 'angular2-slickgrid';
+
 import nls = require('vs/nls');
-import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
+import platform = require('vs/platform/platform');
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import Event, { Emitter } from 'vs/base/common/event';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
-
-import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
-import platform = require('vs/platform/platform');
-import { QueryStatusbarItem } from  'sql/parts/query/execution/queryStatus';
 
 interface QueryEvent {
 	type: string;
@@ -77,11 +79,16 @@ export class QueryModelService implements IQueryModelService {
 		this._onRunQueryComplete = new Emitter<string>();
 		this._onEditSessionReady = new Emitter<EditSessionReadyParams>();
 
-		// Register Statusbar item
+		// Register Statusbar items
 		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
 			QueryStatusbarItem,
 			statusbar.StatusbarAlignment.RIGHT,
 			100 /* High Priority */
+		));
+		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
+			SqlFlavorStatusbarItem,
+			statusbar.StatusbarAlignment.RIGHT,
+			90 /* Should appear to the right of the SQL editor status */
 		));
 
 	}

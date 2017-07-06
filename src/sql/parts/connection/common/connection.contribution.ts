@@ -60,5 +60,10 @@ configurationRegistry.registerConfiguration({
 			'default': 5,
 			'description': 'The maximum number of recently used connections to store in the connection list.'
 		},
+		'sql.defaultEngine': {
+			'type': 'string',
+			'description': 'Default SQL Engine to use. This drives default language provider in .sql files and the default to use when creating a new connection. Valid options are currently MSSQL or PGSQL',
+			'default': 'MSSQL'
+		},
 	}
 });

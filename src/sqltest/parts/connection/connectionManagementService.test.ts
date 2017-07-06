@@ -5,21 +5,26 @@
 
 'use strict';
 
-import * as assert from 'assert';
-import data = require('data');
-import * as TypeMoq from 'typemoq';
 import { ConnectionDialogTestService } from 'sqltest/stubs/connectionDialogTestService';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
-import { WorkbenchEditorTestService } from 'sqltest/stubs/workbenchEditorTestService';
-import { TPromise } from 'vs/base/common/winjs.base';
 import { INewConnectionParams, ConnectionType, IConnectionCompletionOptions, IConnectionResult } from 'sql/parts/connection/common/connectionManagement';
+import * as Constants from 'sql/parts/connection/common/constants';
+
+import { WorkbenchEditorTestService } from 'sqltest/stubs/workbenchEditorTestService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { EditorGroupTestService } from 'sqltest/stubs/editorGroupService';
 import { CapabilitiesTestService } from 'sqltest/stubs/capabilitiesTestService';
 import { ConnectionProviderStub } from 'sqltest/stubs/connectionProviderStub';
 
+import data = require('data');
+
+import { TPromise } from 'vs/base/common/winjs.base';
+import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
+
+import * as assert from 'assert';
+import * as TypeMoq from 'typemoq';
 
 suite('SQL ConnectionManagementService tests', () => {
 
@@ -29,7 +34,9 @@ suite('SQL ConnectionManagementService tests', () => {
 	let workbenchEditorService: TypeMoq.Mock<WorkbenchEditorTestService>;
 	let editorGroupService: TypeMoq.Mock<EditorGroupTestService>;
 	let connectionStatusManager: ConnectionStatusManager;
-	let connectionProvider: TypeMoq.Mock<ConnectionProviderStub>;
+	let mssqlConnectionProvider: TypeMoq.Mock<ConnectionProviderStub>;
+	let pgConnectionProvider: TypeMoq.Mock<ConnectionProviderStub>;
+	let workspaceConfigurationServiceMock: TypeMoq.Mock<WorkspaceConfigurationTestService>;
 
 	let none: void;
 
@@ -52,6 +59,8 @@ suite('SQL ConnectionManagementService tests', () => {
 		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
 
 	let connectionManagementService: ConnectionManagementService;
+	let configResult: { [key: string]: any } = {};
+
 	setup(() => {
 
 		capabilitiesService = new CapabilitiesTestService();
@@ -60,7 +69,8 @@ suite('SQL ConnectionManagementService tests', () => {
 		workbenchEditorService = TypeMoq.Mock.ofType(WorkbenchEditorTestService);
 		editorGroupService = TypeMoq.Mock.ofType(EditorGroupTestService);
 		connectionStatusManager = new ConnectionStatusManager(capabilitiesService);
-		connectionProvider = TypeMoq.Mock.ofType(ConnectionProviderStub);
+		mssqlConnectionProvider = TypeMoq.Mock.ofType(ConnectionProviderStub);
+		pgConnectionProvider = TypeMoq.Mock.ofType(ConnectionProviderStub);
 
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined)).returns(() => TPromise.as(none));
 		connectionDialogService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), undefined, undefined)).returns(() => TPromise.as(none));
@@ -77,7 +87,14 @@ suite('SQL ConnectionManagementService tests', () => {
 			c => c.serverName === connectionProfileWithoutPassword.serverName))).returns(() => Promise.resolve(connectionProfileWithoutPassword));
 		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
 
-		connectionProvider.setup(x => x.connect(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => undefined);
+		mssqlConnectionProvider.setup(x => x.connect(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => undefined);
+		pgConnectionProvider.setup(x => x.connect(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => undefined);
+
+		// setup configuration to return a config that can be modified later.
+
+		workspaceConfigurationServiceMock = TypeMoq.Mock.ofType(WorkspaceConfigurationTestService);
+		workspaceConfigurationServiceMock.setup(x => x.getConfiguration(Constants.sqlConfigSectionName))
+			.returns(() => configResult);
 
 		connectionManagementService = new ConnectionManagementService(
 			undefined,
@@ -92,14 +109,15 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined,
 			undefined,
 			undefined,
-			undefined,
+			workspaceConfigurationServiceMock.object,
 			undefined,
 			capabilitiesService,
 			undefined,
 			editorGroupService.object,
 			undefined);
 
-		connectionManagementService.registerProvider('MSSQL', connectionProvider.object);
+		connectionManagementService.registerProvider('MSSQL', mssqlConnectionProvider.object);
+		connectionManagementService.registerProvider('PGSQL', pgConnectionProvider.object);
 	});
 
 	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string): void {
@@ -421,4 +439,81 @@ suite('SQL ConnectionManagementService tests', () => {
 			done();
 		});
 	});
+
+	test('doChangeLanguageFlavor should throw on unknown provider', done => {
+		// given a provider that will never exist
+		let invalidProvider = 'notaprovider';
+		// when I call doChangeLanguageFlavor
+		// Then I expect it to throw
+		assert.throws(() => connectionManagementService.doChangeLanguageFlavor('file://my.sql', 'sql', invalidProvider));
+		done();
+	});
+
+	test('doChangeLanguageFlavor should send event for known provider', done => {
+		// given a provider that is registered
+		let uri = 'file://my.sql';
+		let language = 'sql';
+		let flavor = 'MSSQL';
+		// when I call doChangeLanguageFlavor
+		try {
+			let called = false;
+			connectionManagementService.onLanguageFlavorChanged((changeParams: data.DidChangeLanguageFlavorParams) => {
+				called = true;
+				assert.equal(changeParams.uri, uri);
+				assert.equal(changeParams.language, language);
+				assert.equal(changeParams.flavor, flavor);
+			});
+			connectionManagementService.doChangeLanguageFlavor(uri, language, flavor);
+			assert.ok(called, 'expected onLanguageFlavorChanged event to be sent');
+		} catch (error) {
+			assert.fail(error);
+		}
+		done();
+	});
+
+	test('ensureDefaultLanguageFlavor should not send event if uri is connected', done => {
+		let uri: string = 'Editor Uri';
+		let options: IConnectionCompletionOptions = {
+			params: undefined,
+			saveTheConnection: false,
+			showDashboard: true,
+			showConnectionDialogOnError: false
+		};
+
+		let called = false;
+		connectionManagementService.onLanguageFlavorChanged((changeParams: data.DidChangeLanguageFlavorParams) => {
+			called = true;
+		});
+		connect(uri, options).then(() => {
+			connectionManagementService.ensureDefaultLanguageFlavor(uri);
+			assert.equal(called, false, 'do not expect flavor change to be called');
+		}).catch(err => {
+			assert.fail(err);
+		});
+		done();
+	});
+
+	test('ensureDefaultLanguageFlavor should change to default provider if not connected ', done => {
+		// Given pgsql is the default provider
+		let pgsqlProvider = 'PGSQL';
+		configResult[Constants.defaultEngine] = pgsqlProvider;
+		let uri: string = 'Editor Uri';
+		let language = 'sql';
+		let called = false;
+		connectionManagementService.onLanguageFlavorChanged((changeParams: data.DidChangeLanguageFlavorParams) => {
+			called = true;
+			assert.equal(changeParams.uri, uri);
+			assert.equal(changeParams.language, language);
+			assert.equal(changeParams.flavor, pgsqlProvider);
+		});
+
+		try {
+			connectionManagementService.ensureDefaultLanguageFlavor(uri);
+			assert.ok(called, 'expected onLanguageFlavorChanged event to be sent');
+		} catch(err) {
+			assert.fail(err);
+		}
+		done();
+	});
+
 });

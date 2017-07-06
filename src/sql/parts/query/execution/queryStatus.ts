@@ -14,6 +14,7 @@ import { IEditorGroupService } from 'vs/workbench/services/group/common/groupSer
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Constants = require('sql/parts/query/common/constants');
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 // Query execution status
 enum QueryExecutionStatus{
@@ -54,12 +55,12 @@ export class QueryStatusbarItem implements IStatusbarItem {
 	}
 
 	private _onEditorClosed(event: IEditorCloseEvent): void{
-		let uri = this._getEditorUri(event.editor);
+		let uri = WorkbenchUtils.getEditorUri(event.editor);
 		if (uri && uri in this._queryStatusEditors) {
 			// If active editor is being closed, hide the query status.
 			let activeEditor = this._editorService.getActiveEditor();
 			if (activeEditor) {
-				let currentUri = this._getEditorUri(activeEditor.input);
+				let currentUri = WorkbenchUtils.getEditorUri(activeEditor.input);
 				if (uri === currentUri) {
 					hide(this._queryElement);
 				}
@@ -71,7 +72,7 @@ export class QueryStatusbarItem implements IStatusbarItem {
 	private _onEditorsChanged(): void{
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor) {
-			let uri = this._getEditorUri(activeEditor.input);
+			let uri = WorkbenchUtils.getEditorUri(activeEditor.input);
 
 			// Show active editor's query status
 			if (uri && uri in this._queryStatusEditors){
@@ -92,22 +93,6 @@ export class QueryStatusbarItem implements IStatusbarItem {
 		this._updateStatus(uri, QueryExecutionStatus.Completed);
 	}
 
-	private _getEditorUri(input: IEditorInput): string{
-		let uri: URI;
-		if (input instanceof QueryInput) {
-			let queryCast: QueryInput = <QueryInput> input;
-			if (queryCast) {
-				uri = queryCast.getResource();
-			}
-		}
-
-		if (uri){
-			return uri.toString();
-		}else{
-			return undefined;
-		}
-	}
-
 	// Update query status for the editor
 	private _updateStatus(uri: string, newStatus: QueryExecutionStatus){
 		if (uri) {
@@ -120,7 +105,7 @@ export class QueryStatusbarItem implements IStatusbarItem {
 	private _showStatus(uri: string): void{
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor) {
-			let currentUri = this._getEditorUri(activeEditor.input);
+			let currentUri = WorkbenchUtils.getEditorUri(activeEditor.input);
 			if (uri === currentUri) {
 				switch(this._queryStatusEditors[uri]){
 					case QueryExecutionStatus.Executing:
