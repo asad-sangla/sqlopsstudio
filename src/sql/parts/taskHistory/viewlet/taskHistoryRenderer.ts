@@ -87,6 +87,10 @@ export class TaskHistoryRenderer implements IRenderer {
 					templateData.icon.classList.add(TaskHistoryRenderer.CANCELED_CLASS);
 					taskStatus = localize('canceled', "canceled");
 					break;
+				case TaskStatus.canceling:
+					templateData.icon.classList.add(TaskHistoryRenderer.INPROGRESS_CLASS);
+					taskStatus = localize('canceling', "canceling");
+					break;
 			}
 			templateData.title.textContent = taskNode.taskName + ' ' + taskStatus;
 			let description = taskNode.serverName;

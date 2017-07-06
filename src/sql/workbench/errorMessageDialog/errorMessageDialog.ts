@@ -49,7 +49,9 @@ export class ErrorMessageDialog {
 		this._builder = this._dialog.create(false);
 		attachModalDialogStyler(this._dialog, this._themeService);
 		this._dialog.addModalTitle();
-		this._modalBody = this._dialog.bodyContainer;
+		this._dialog.bodyContainer.div({ class: 'modal-body', id: 'errorContent' }, (modelBody) => {
+			this._modalBody = modelBody;
+		});
 		this.createCopyButton(this._dialog.footerContainer);
 		this._okButton = this.createFooterButton(this._dialog.footerContainer, 'OK');
 

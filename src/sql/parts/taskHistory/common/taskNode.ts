@@ -11,7 +11,8 @@ export enum TaskStatus {
 	succeeded = 2,
 	succeededWithWarning = 3,
 	failed = 4,
-	canceled = 5
+	canceled = 5,
+	canceling = 6
 }
 
 export class TaskNode {

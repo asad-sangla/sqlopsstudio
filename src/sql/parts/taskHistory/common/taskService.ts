@@ -27,6 +27,7 @@ export interface ITaskService {
 	getNumberOfInProgressTasks(): number;
 	onNewTaskCreated(handle: number, taskInfo: data.TaskInfo);
 	onTaskStatusChanged(handle: number, taskProgressInfo: data.TaskProgressInfo);
+	cancelTask(providerId: string, taskId: string): Thenable<boolean>;
 	/**
 	 * Register a ObjectExplorer provider
 	 */
@@ -80,6 +81,9 @@ export class TaskService implements ITaskService {
 	}
 
 	public cancelTask(providerId: string, taskId: string): Thenable<boolean> {
+		let task = this.getTaskInQueue(taskId);
+		task.status = TaskStatus.canceling;
+		this._onTaskComplete.fire(task);
 		let provider = this._providers[providerId];
 		if (provider) {
 			return provider.cancelTask({
@@ -129,11 +133,24 @@ export class TaskService implements ITaskService {
 				this.choiceService.choose(Severity.Warning, message, options, 0, false).done(choice => {
 					switch (choice) {
 						case 0:
+							let timeoutId: number;
+							let isTimeout = false;
 							this.cancelAllTasks().then(() => {
-								resolve(false);
+								clearTimeout(timeoutId);
+								if (!isTimeout) {
+									resolve(false);
+								}
 							}, error => {
-								reject(error);
+								clearTimeout(timeoutId);
+								if (!isTimeout) {
+									resolve(false);
+								};
 							});
+							timeoutId = setTimeout(function () {
+								isTimeout = true;
+								resolve(false);
+							}, 2000);
+							break;
 						case 1:
 							resolve(true);
 					}
