@@ -119,7 +119,7 @@ export default class QueryRunner {
 		let ownerUri = this._uri;
 		this.batchSets = [];
 		this._hasCompleted = false;
-		if (typeof input === 'object') {
+		if (typeof input === 'object' || input === undefined) {
 			// Update internal state to show that we're executing the query
 			this._resultLineOffset = input ? input.startLine : 0;
 			this._isExecuting = true;
@@ -128,12 +128,14 @@ export default class QueryRunner {
 
 			// Send the request to execute the query
 			return this._queryManagementService.runQuery(ownerUri, input).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult());
-		} else {
+		} else if (typeof input === 'string') {
 			// Update internal state to show that we're executing the query
 			this._isExecuting = true;
 			this._totalElapsedMilliseconds = 0;
 
 			return this._queryManagementService.runQueryString(ownerUri, input).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult());
+		} else {
+			return Promise.reject('Unknown input');
 		}
 	}
 
