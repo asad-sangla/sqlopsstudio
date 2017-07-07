@@ -228,7 +228,8 @@ export default class QueryRunner {
 					batchSet = <BatchSummary>{
 						id: 0,
 						selection: undefined,
-						hasError: false
+						hasError: false,
+						resultSetSummaries: []
 					};
 					this._batchSets[0] = batchSet;
 				}

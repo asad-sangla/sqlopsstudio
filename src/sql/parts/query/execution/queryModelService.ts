@@ -274,6 +274,15 @@ export class QueryModelService implements IQueryModelService {
 
 	}
 
+	public disposeQuery(ownerUri: string): Thenable<void> {
+		// Get existing query runner
+		let queryRunner = this._getQueryRunner(ownerUri);
+		if (queryRunner) {
+			return queryRunner.dispose();
+		}
+		return TPromise.as(null);
+	}
+
 	// EDIT DATA METHODS /////////////////////////////////////////////////////
 	initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): void {
 		// Reuse existing query runner if it exists

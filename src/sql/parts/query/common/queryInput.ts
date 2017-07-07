@@ -200,6 +200,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 
 	// Clean up functions
 	public dispose(): void {
+		this._queryModelService.disposeQuery(this.uri)
 		this._sql.dispose();
 		this._results.dispose();
 		this._toDispose = dispose(this._toDispose);
