@@ -234,7 +234,8 @@ export class WorkbenchEditorService implements IWorkbenchEditorService {
 		// Untitled file support
 		const untitledInput = <IUntitledResourceInput>input;
 		if (!untitledInput.resource || typeof untitledInput.filePath === 'string' || (untitledInput.resource instanceof URI && untitledInput.resource.scheme === UntitledEditorInput.SCHEMA)) {
-			return this.untitledEditorService.createOrGet(untitledInput.filePath ? URI.file(untitledInput.filePath) : untitledInput.resource, untitledInput.language, untitledInput.contents);
+			// {{SQL CARBON EDIT}}
+			return this.untitledEditorService.createOrGet(untitledInput.filePath ? URI.file(untitledInput.filePath) : untitledInput.resource, 'sql', untitledInput.contents);
 		}
 
 		const resourceInput = <IResourceInput>input;

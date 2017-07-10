@@ -114,6 +114,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public getTypeId(): string { return UntitledEditorInput.ID; }
 	public getDescription(): string { return this._description; }
 	public supportsSplitEditor(): boolean { return false; }
+	public getModeId(): string { return QueryInput.SCHEMA; }
 
 	public matches(otherInput: any): boolean {
 		if (otherInput instanceof QueryInput) {
@@ -200,7 +201,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 
 	// Clean up functions
 	public dispose(): void {
-		this._queryModelService.disposeQuery(this.uri)
+		this._queryModelService.disposeQuery(this.uri);
 		this._sql.dispose();
 		this._results.dispose();
 		this._toDispose = dispose(this._toDispose);

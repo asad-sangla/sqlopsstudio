@@ -20,6 +20,8 @@ import { ITextFileService } from 'vs/workbench/services/textfile/common/textfile
 
 export class BackupRestorer implements IWorkbenchContribution {
 
+	// {{SQL CARBON EDIT}}
+	private static readonly SQLQUERY_REGEX = /SQLQuery\d+/;
 	private static readonly UNTITLED_REGEX = /Untitled-\d+/;
 
 	constructor(
@@ -92,7 +94,10 @@ export class BackupRestorer implements IWorkbenchContribution {
 	private resolveInput(resource: URI, index: number, hasOpenedEditors: boolean): IResourceInput | IUntitledResourceInput {
 		const options = { pinned: true, preserveFocus: true, inactive: index > 0 || hasOpenedEditors };
 
-		if (resource.scheme === 'untitled' && !BackupRestorer.UNTITLED_REGEX.test(resource.fsPath)) {
+		// {{SQL CARBON EDIT}}
+		if (resource.scheme === 'untitled'
+			&& !BackupRestorer.UNTITLED_REGEX.test(resource.fsPath)
+			&& !BackupRestorer.SQLQUERY_REGEX.test(resource.fsPath)) {
 			// TODO@Ben debt: instead of guessing if an untitled file has an associated file path or not
 			// this information should be provided by the backup service and stored as meta data within
 			return { filePath: resource.fsPath, options };

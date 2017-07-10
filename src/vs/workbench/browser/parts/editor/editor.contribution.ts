@@ -110,6 +110,11 @@ class UntitledEditorInputFactory implements IEditorInputFactory {
 
 		const untitledEditorInput = <UntitledEditorInput>editorInput;
 
+		// {{SQL CARBON EDIT}}
+		if (!untitledEditorInput.getResource) {
+			return null;
+		}
+
 		let resource = untitledEditorInput.getResource();
 		if (untitledEditorInput.hasAssociatedFilePath) {
 			resource = URI.file(resource.fsPath); // untitled with associated file path use the file schema

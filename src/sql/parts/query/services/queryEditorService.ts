@@ -221,10 +221,10 @@ export class QueryEditorService implements IQueryEditorService {
 	 * inside a QueryInput.
 	 */
 	public static queryEditorCheck(input: EditorInput, options: IQueryEditorOptions): EditorInput {
-		if (!!input && !!options && !options.denyQueryEditor) {
-
+		let denyQueryEditor = options && options.denyQueryEditor;
+		if (input && !denyQueryEditor) {
 			let uri: string = this.getQueryEditorFileUri(input);
-			if (!!uri) {
+			if (uri) {
 				const queryResultsInput: QueryResultsInput = QueryEditorService.instantiationService.createInstance(QueryResultsInput, uri);
 				let queryInput: QueryInput = QueryEditorService.instantiationService.createInstance(QueryInput, input.getName(), '', input, queryResultsInput);
 				return queryInput;
