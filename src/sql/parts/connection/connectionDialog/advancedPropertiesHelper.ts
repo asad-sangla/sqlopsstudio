@@ -5,10 +5,10 @@
 
 'use strict';
 
-import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
+import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
 import { Builder } from 'vs/base/browser/builder';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
-import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
+import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import data = require('data');
 

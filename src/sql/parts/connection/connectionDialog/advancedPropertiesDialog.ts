@@ -7,33 +7,27 @@
 
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
-import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!./media/advancedProperties';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { SplitView, FixedCollapsibleView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
-import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
+import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
+import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import { AdvancedPropertiesHelper, IAdvancedPropertyElement } from 'sql/parts/connection/connectionDialog/advancedPropertiesHelper';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
-import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
+import { Modal } from 'sql/parts/common/modal/modal';
 import DOM = require('vs/base/browser/dom');
-import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { KeyCode } from 'vs/base/common/keyCodes';
 import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import * as styler from 'vs/platform/theme/common/styler';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import Event, { Emitter } from 'vs/base/common/event';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
-
-export interface IAdvancedDialogCallbacks {
-	onOk: () => void;
-	onClose: () => void;
-}
 
 class OptionPropertiesView extends FixedCollapsibleView {
 	private _treecontainer: HTMLElement;
@@ -62,48 +56,63 @@ class OptionPropertiesView extends FixedCollapsibleView {
 	}
 }
 
-export class AdvancedPropertiesDialog {
-	private _builder: Builder;
+export class AdvancedPropertiesDialog extends Modal {
+	private _body: HTMLElement;
+	private _propertyGroups: HTMLElement;
 	private _dividerBuilder: Builder;
-	private _container: HTMLElement;
-	private _modelElement: HTMLElement;
-	private _callbacks: IAdvancedDialogCallbacks;
 	private _okButton: Button;
 	private _closeButton: Button;
-	private _backButton: Button;
-	private _toDispose: lifecycle.IDisposable[];
-	private _toDisposeTheming: lifecycle.IDisposable[];
-	private _advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement };
+	private _toDispose: lifecycle.IDisposable[] = [];
+	private _toDisposeTheming: lifecycle.IDisposable[] = [];
+	private _advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement } = {};
 	private _propertyTitle: Builder;
 	private _propertyDescription: Builder;
-	private _dialog: ModalDialogBuilder;
 	private _options: { [name: string]: any };
 	private _propertyRowSize = 31;
 	private _propertyCategoryPadding = 30;
 	private _categoryHeaderSize = 22;
 
-	constructor(container: HTMLElement,
-		callbacks: IAdvancedDialogCallbacks,
+	private _onOk = new Emitter<void>();
+	public onOk: Event<void> = this._onOk.event;
+
+	private _onCloseEvent = new Emitter<void>();
+	public onCloseEvent: Event<void> = this._onCloseEvent.event;
+
+	constructor(
+		@IPartService partService: IPartService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService) {
-		this._container = container;
-		this._callbacks = callbacks;
-		this._toDispose = [];
-		this._toDisposeTheming = [];
-		this._advancedPropertiesMap = {};
+		super('Advanced Properties', partService, {hasErrors: true, hasBackButton: true});
 	}
 
-	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder('Advanced Properties', 'advanced-dialog', 'advancedBody');
-		this._builder = this._dialog.create(true);
-		attachModalDialogStyler(this._dialog, this._themeService);
-		this._dialog.bodyContainer.div({ class: 'advancedDialog-properties', id: 'propertiesContent' });
-		this._dialog.addErrorMessage();
+	public render() {
+		super.render();
+		this.backButton.addListener('click', () => this.cancel());
+		attachModalDialogStyler(this, this._themeService);
+		styler.attachButtonStyler(this.backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
+		this._okButton = this.addFooterButton('OK', () => this.ok());
+		this._closeButton = this.addFooterButton('Go Back', () => this.cancel());
+		// Theme styler
+		styler.attachButtonStyler(this._okButton, this._themeService);
+		styler.attachButtonStyler(this._closeButton, this._themeService);
+		let self = this;
+		this._toDisposeTheming.push(self._themeService.onDidColorThemeChange((e) => {
+			self.updateTheme(e);
+		}));
+		self.updateTheme(self._themeService.getColorTheme());
 
-		this._dialog.bodyContainer.div({ class: 'Connection-divider' }, (dividerContainer) => {
+	}
+
+	protected renderBody(container: HTMLElement) {
+		new Builder(container).div({ class: 'advancedDialog-properties' }, (bodyBuilder) => {
+			this._body = bodyBuilder.getHTMLElement();
+		});
+
+		let builder = new Builder(this._body);
+		builder.div({ class: 'Connection-divider' }, (dividerContainer) => {
 			this._dividerBuilder = dividerContainer;
 		});
 
-		this._dialog.bodyContainer.div({ class: 'advancedDialog-description' }, (descriptionContainer) => {
+		builder.div({ class: 'advancedDialog-description' }, (descriptionContainer) => {
 			descriptionContainer.div({ class: 'modal-title' }, (propertyTitle) => {
 				this._propertyTitle = propertyTitle;
 			});
@@ -111,29 +120,6 @@ export class AdvancedPropertiesDialog {
 				this._propertyDescription = propertyDescription;
 			});
 		});
-		this._backButton = this.createBackButton(this._dialog.headerContainer);
-		this._dialog.addModalTitle();
-		this._okButton = this.createFooterButton(this._dialog.footerContainer, 'OK');
-		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Go Back');
-
-		this._builder.build(this._container);
-
-		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
-		this._builder.hide();
-		this._modelElement = this._builder.getHTMLElement();
-
-		// Theme styler
-		styler.attachButtonStyler(this._okButton, this._themeService);
-		styler.attachButtonStyler(this._closeButton, this._themeService);
-		styler.attachButtonStyler(this._backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
-
-		let self = this;
-		this._toDisposeTheming.push(self._themeService.onDidColorThemeChange((e) => {
-			self.updateTheme(e);
-		}));
-		self.updateTheme(self._themeService.getColorTheme());
-
-		return this._modelElement;
 	}
 
 	// Update theming that is specific to advanced properties flyout body
@@ -179,53 +165,33 @@ export class AdvancedPropertiesDialog {
 		}
 	}
 
-	private createBackButton(container: Builder): Button {
-		let button;
-		container.div({ class: 'modal-go-back' }, (cellContainer) => {
-			button = new Button(cellContainer);
-			button.icon = 'backButtonIcon';
-			button.addListener('click', () => {
-				this.cancel();
-			});
-		});
-
-		return button;
-	}
-
-	private createFooterButton(container: Builder, title: string): Button {
-		let button;
-		container.div({ class: 'footer-button' }, (cellContainer) => {
-			button = new Button(cellContainer);
-			button.label = title;
-			button.addListener('click', () => {
-				if (title === 'OK') {
-					this.ok();
-				} else {
-					this.cancel();
-				}
-			});
-		});
-
-		return button;
-	}
-
 	public get options(): { [name: string]: string } {
 		return this._options;
 	}
 
 	public hideError() {
-		this._dialog.showError('');
+		this.setError('');
 	}
 
 	public showError(err: string) {
-		this._dialog.showError(err);
+		this.setError(err);
+	}
+
+	/* Overwrite escape key behavior */
+	protected onClose() {
+		this.close();
+	}
+
+	/* Overwrite enter key behavior */
+	protected onAccept() {
+		this.ok();
 	}
 
 	public ok(): void {
 		var errorMsg = AdvancedPropertiesHelper.validateInputs(this._advancedPropertiesMap);
 		if (DialogHelper.isEmptyString(errorMsg)) {
 			AdvancedPropertiesHelper.updateProperties(this._options, this._advancedPropertiesMap);
-			this._callbacks.onOk();
+			this._onOk.fire();
 			this.close();
 		} else {
 			this.showError(errorMsg);
@@ -238,10 +204,10 @@ export class AdvancedPropertiesDialog {
 	}
 
 	public close() {
-		jQuery('#propertiesContent').empty();
+		this._propertyGroups.remove();
 		this.dispose();
-		this._builder.hide();
-		this._callbacks.onClose();
+		this.hide();
+		this._onCloseEvent.fire();
 	}
 
 	public open(connectionPropertiesMaps: { [category: string]: data.ConnectionOption[] }, options: { [name: string]: any }) {
@@ -251,6 +217,7 @@ export class AdvancedPropertiesDialog {
 		var layoutSize = 0;
 		var propertiesContentbuilder: Builder = $().div({ class: 'advancedDialog-properties-groups' }, (container) => {
 			containerGroup = container;
+			this._propertyGroups = container.getHTMLElement();
 		});
 		var splitview = new SplitView(containerGroup.getHTMLElement());
 		for (var category in connectionPropertiesMaps) {
@@ -269,24 +236,16 @@ export class AdvancedPropertiesDialog {
 			}
 		}
 		splitview.layout(layoutSize);
-		jQuery('#propertiesContent').append(propertiesContentbuilder.getHTMLElement());
-		this._builder.show();
+		let body = new Builder(this._body);
+		body.append(propertiesContentbuilder.getHTMLElement(), 0);
+		this.show();
 		var firstPropertyWidget = this._advancedPropertiesMap[firstProperty].advancedPropertyWidget;
 		firstPropertyWidget.focus();
 
 		this.registerStyling();
-		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter)) {
-				this.ok();
-			} else if (event.equals(KeyCode.Escape)) {
-				this.cancel();
-			}
-		});
 	}
 
 	public dispose(): void {
-		this._builder.off(DOM.EventType.KEY_DOWN);
 		this._toDispose = lifecycle.dispose(this._toDispose);
 		for (var key in this._advancedPropertiesMap) {
 			var widget: Widget = this._advancedPropertiesMap[key].advancedPropertyWidget;

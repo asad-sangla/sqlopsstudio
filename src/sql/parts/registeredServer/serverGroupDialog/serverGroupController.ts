@@ -10,7 +10,6 @@ import {
 } from 'sql/parts/connection/common/connectionManagement';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ServerGroupDialog } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupDialog';
-import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import Severity from 'vs/base/common/severity';
@@ -86,14 +85,11 @@ export class ServerGroupController implements IServerGroupController {
 
 	private openServerGroupDialog(): TPromise<void> {
 		if (!this._serverGroupDialog) {
-			let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-			this._container = container;
-			this._serverGroupDialog = this._instantiationService.createInstance(ServerGroupDialog, container, {
-				onCancel: () => { },
-				onAddServerGroup: () => this.handleOnAddServerGroup(),
-				onClose: () => this.handleOnClose()
-			});
-			this._serverGroupDialog.create();
+			this._serverGroupDialog = this._instantiationService.createInstance(ServerGroupDialog);
+			this._serverGroupDialog.onCancel(() => { });
+			this._serverGroupDialog.onAddServerGroup(() => this.handleOnAddServerGroup());
+			this._serverGroupDialog.onCloseEvent(() => this.handleOnClose());
+			this._serverGroupDialog.render();
 		}
 
 		return new TPromise<void>(() => {

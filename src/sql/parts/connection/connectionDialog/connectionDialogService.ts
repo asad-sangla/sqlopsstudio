@@ -9,21 +9,21 @@ import {
 	IConnectionDialogService, IConnectionManagementService, IErrorMessageService,
 	ConnectionType, INewConnectionParams, IConnectionCompletionOptions
 } from 'sql/parts/connection/common/connectionManagement';
-import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
-import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
+import { ConnectionDialogWidget, OnShowUIResponse } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { ConnectionController } from 'sql/parts/connection/connectionDialog/connectionController';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
+import * as Constants from 'sql/parts/connection/common/constants';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import * as Constants from 'sql/parts/connection/common/constants';
-import data = require('data');
+
+import * as data from 'data';
 
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Severity from 'vs/base/common/severity';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 
 export interface IConnectionResult {
@@ -39,7 +39,7 @@ export interface IConnectionComponentCallbacks {
 }
 
 export interface IConnectionComponentController {
-	showUiComponent(): HTMLElement;
+	showUiComponent(container: HTMLElement): void;
 	initDialog(model: IConnectionProfile): void;
 	validateConnection(): IConnectionResult;
 	fillInConnectionInputs(connectionInfo: IConnectionProfile): void;
@@ -63,14 +63,14 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _providerNameToDisplayNameMap: { [providerDisplayName: string]: string };
 	private _providerTypes: string[];
 	private _currentProviderType: string = 'Microsoft SQL Server';
+	private _connecting: boolean = false;
 
 	constructor(
 		@IPartService private _partService: IPartService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
-		@IThemeService private _themeService: IThemeService,
-		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
+		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService
 	) {
 		this._capabilitiesMaps = {};
 		this._providerNameToDisplayNameMap = {};
@@ -99,13 +99,25 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		return Constants.mssqlProviderName;
 	}
 
-	private handleOnConnect(params: INewConnectionParams): void {
-		this.handleProviderOnConnecting();
-		var result = this.uiController.validateConnection();
-		if (result.isValid) {
-			this.handleDefaultOnConnect(params, result.connection);
-		} else {
-			this._connectionDialog.showError('Missing required fields');
+	private handleOnConnect(params: INewConnectionParams, profile?: IConnectionProfile): void {
+		if (!this._connecting) {
+			this._connecting = true;
+			this.handleProviderOnConnecting();
+			if (!profile) {
+				let result = this.uiController.validateConnection();
+				if (!result.isValid) {
+					this._connectionDialog.showError('Missing required fields');
+					return;
+				}
+
+				profile = result.connection;
+
+				this.handleDefaultOnConnect(params, profile);
+			} else {
+				this._connectionManagementService.addSavedPassword(profile).then(connectionWithPassword => {
+					this.handleDefaultOnConnect(params, connectionWithPassword);
+				});
+			}
 		}
 	}
 
@@ -129,6 +141,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			showConnectionDialogOnError: false
 		};
 		this._connectionManagementService.connectAndSaveProfile(connection, uri, options, params.input).then(connectionResult => {
+			this._connecting = false;
 			if (connectionResult && connectionResult.connected) {
 				this._connectionDialog.close();
 			} else {
@@ -136,6 +149,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				this._connectionDialog.resetConnection();
 			}
 		}).catch(err => {
+			this._connecting = false;
 			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
 			this._connectionDialog.resetConnection();
 		});
@@ -159,16 +173,16 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleSetConnectButtonEnable(enable: boolean): void {
-		this._connectionDialog.connectButtonEnabled = enable;
+		this._connectionDialog.connectButtonState = enable;
 	}
 
-	private handleShowUiComponent(selectedProviderType: string): HTMLElement {
-		this._currentProviderType = selectedProviderType;
+	private handleShowUiComponent(input: OnShowUIResponse) {
+		this._currentProviderType = input.selectedProviderType;
 		this._model = new ConnectionProfile(this._capabilitiesMaps[this.getCurrentProviderName()], this._model);
-		return this.uiController.showUiComponent();
+		this.uiController.showUiComponent(input.container);
 	}
 
-	private handleInitDialog(): void {
+	private handleInitDialog() {
 		this.uiController.initDialog(this._model);
 	}
 
@@ -266,20 +280,19 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		if (!this._connectionDialog) {
 			let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 			this._container = container;
-			this._connectionDialog = this._instantiationService.createInstance(ConnectionDialogWidget, container, {
-				onCancel: () => this.handleOnCancel(this._connectionDialog.newConnectionParams),
-				onConnect: () => this.handleOnConnect(this._connectionDialog.newConnectionParams),
-				onShowUiComponent: (selectedProviderType: string) => this.handleShowUiComponent(selectedProviderType),
-				onInitDialog: () => this.handleInitDialog(),
-				onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => this.handleFillInConnectionInputs(connectionInfo),
-				onResetConnection: () => this.handleProviderOnResetConnection()
-			});
-			this._connectionDialog.create(this._providerTypes, this._providerNameToDisplayNameMap[this._model.providerName]);
+			this._connectionDialog = this._instantiationService.createInstance(ConnectionDialogWidget, this._providerTypes, this._providerNameToDisplayNameMap[this._model.providerName]);
+			this._connectionDialog.onCancel(() => this.handleOnCancel(this._connectionDialog.newConnectionParams));
+			this._connectionDialog.onConnect((profile) => this.handleOnConnect(this._connectionDialog.newConnectionParams, profile));
+			this._connectionDialog.onShowUiComponent((input) => this.handleShowUiComponent(input));
+			this._connectionDialog.onInitDialog(() => this.handleInitDialog());
+			this._connectionDialog.onFillinConnectionInputs((input) => this.handleFillInConnectionInputs(input));
+			this._connectionDialog.onResetConnection(() => this.handleProviderOnResetConnection());
+			this._connectionDialog.render();
 		}
 		this._connectionDialog.newConnectionParams = params;
 
 		return new TPromise<void>(() => {
-			this._connectionDialog.open(this._connectionManagementService.getRecentConnections());
+			this._connectionDialog.open(this._connectionManagementService.getRecentConnections().length > 0);
 			this.uiController.focusOnOpen();
 		});
 	}

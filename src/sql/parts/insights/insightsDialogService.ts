@@ -32,9 +32,10 @@ export class InsightsDialogService implements IInsightsDialogService {
 	public show(input?: any, connectionProfile?: IConnectionProfile): void {
 		if (!this._insightsDialog) {
 			this._insightsDialog = this._instantiationService.createInstance(InsightsDialog);
+			this._insightsDialog.render();
 		}
 
-		this._insightsDialog.show(input, connectionProfile);
+		this._insightsDialog.open(input, connectionProfile);
 	}
 
 	public close(): void {

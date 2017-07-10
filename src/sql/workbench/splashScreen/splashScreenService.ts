@@ -2,12 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-'use strict';
-
 import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { SplashDialogWidget } from './splashDialogWidget';
-import { withElementById } from 'vs/base/browser/builder';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 export const SERVICE_ID = 'splashScreenService';
@@ -22,20 +18,16 @@ export interface ISplashScreenService {
 	hideSplashScreen(): void;
 }
 
-export class SplashScreenService implements ISplashScreenService  {
+export class SplashScreenService implements ISplashScreenService {
 
-	_serviceBrand: any;
-
+	public _serviceBrand: any;
 	private _dialog: SplashDialogWidget;
-	private _container: HTMLElement;
 
 	constructor(
-		@IPartService private _partService: IPartService,
 		@IInstantiationService private _instantiationService: IInstantiationService
-	) {
-	}
+	) { }
 
-	public showSplashScreen(): TPromise<void>  {
+	public showSplashScreen(): TPromise<void> {
 		return new TPromise<void>(() => {
 			this.doShowDialog();
 		});
@@ -47,10 +39,8 @@ export class SplashScreenService implements ISplashScreenService  {
 
 	private doShowDialog(): TPromise<void> {
 		if (!this._dialog) {
-			let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-			this._container = container;
-			this._dialog = this._instantiationService.createInstance(SplashDialogWidget, container);
-			this._dialog.create();
+			this._dialog = this._instantiationService.createInstance(SplashDialogWidget);
+			this._dialog.render();
 		}
 
 		return new TPromise<void>(() => {

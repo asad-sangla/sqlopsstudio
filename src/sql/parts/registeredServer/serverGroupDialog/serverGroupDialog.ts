@@ -6,130 +6,119 @@
 'use strict';
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
-import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!./media/serverGroupDialog';
 import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
-import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
-import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
+import { Modal } from 'sql/parts/common/modal/modal';
+import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import { DialogInputBox } from 'sql/parts/common/flyoutDialog/dialogInputBox';
-import * as lifecycle from 'vs/base/common/lifecycle';
+import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
+import * as lifecycle from 'vs/base/common/lifecycle';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachInputBoxStyler, attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
-
-export interface IServerGroupCallbacks {
-	onAddServerGroup: () => void;
-	onCancel: () => void;
-	onClose: () => void;
-}
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import Event, { Emitter } from 'vs/base/common/event';
 
 export interface IColorCheckboxInfo {
 	checkbox: Checkbox;
 	color: string;
 }
 
-export class ServerGroupDialog {
-	private _builder: Builder;
-	private _container: HTMLElement;
-	private _callbacks: IServerGroupCallbacks;
+export class ServerGroupDialog extends Modal {
+	private _bodyBuilder: Builder;
 	private _addServerButton: Button;
 	private _closeButton: Button;
-	private _dialog: ModalDialogBuilder;
-	private _colorCheckBoxesMap: { [colorOption: number]: IColorCheckboxInfo };
+	private _colorCheckBoxesMap: { [colorOption: number]: IColorCheckboxInfo } = {};
 	private _selectedColorOption: number;
 	private _groupNameInputBox: DialogInputBox;
 	private _groupDescriptionInputBox: DialogInputBox;
-	private _toDispose: lifecycle.IDisposable[];
-	private _defaultColor: number;
-	private _colors: string[];
+	private _toDispose: lifecycle.IDisposable[] = [];
+	private _defaultColor: number = 1;
+	private _colors: string[] = ['#515151', '#004760', '#771b00', '#700060', '#a17d01', '#006749', '#654502', '#3A0293'];
 	private readonly _addServerGroupTitle = 'Add Server Group';
 	private readonly _editServerGroupTitle = 'Edit Server Group';
 
-	constructor(container: HTMLElement,
-		callbacks: IServerGroupCallbacks,
-		@IThemeService private _themeService: IThemeService) {
-		this._container = container;
-		this._callbacks = callbacks;
-		this._colorCheckBoxesMap = {};
-		this._toDispose = [];
-		this._defaultColor = 1;
-		this._colors = ['#515151', '#004760', '#771b00', '#700060', '#a17d01', '#006749', '#654502', '#3A0293'];
+
+	private _onAddServerGroup = new Emitter<void>();
+	public onAddServerGroup: Event<void> = this._onAddServerGroup.event;
+
+	private _onCancel = new Emitter<void>();
+	public onCancel: Event<void> = this._onCancel.event;
+
+	private _onCloseEvent = new Emitter<void>();
+	public onCloseEvent: Event<void> = this._onCloseEvent.event;
+
+	constructor(
+		@IPartService partService: IPartService,
+		@IThemeService private _themeService: IThemeService
+	) {
+		super('Server Groups', partService, {hasErrors: true});
 	}
 
-	public create(): HTMLElement {
-		this._dialog = new ModalDialogBuilder(this._addServerGroupTitle, 'server-group-dialog', 'serverGroupDialogBody');
-		this._builder = this._dialog.create(true);
-		attachModalDialogStyler(this._dialog, this._themeService);
-		this._dialog.addModalTitle();
+	public render() {
+		super.render();
+		attachModalDialogStyler(this, this._themeService);
+		this._addServerButton = this.addFooterButton('OK', () => this.addGroup());
+		this._closeButton = this.addFooterButton('Cancel', () => this.cancel());
+		this.registerListeners();
+	}
 
-		this._dialog.bodyContainer.div({ class: 'modal-body-content' }, (addServerGroupContent) => {
-			// Connection Group Name
-			addServerGroupContent.div({ class: 'dialog-label' }, (labelContainer) => {
-				labelContainer.innerHtml('Connection Group Name');
-			});
-			addServerGroupContent.div({ class: 'input-divider' }, (inputCellContainer) => {
-				this._groupNameInputBox = DialogHelper.appendInputBox(inputCellContainer);
-			});
-
-			// Connection Group Description
-			addServerGroupContent.div({ class: 'dialog-label' }, (labelContainer) => {
-				labelContainer.innerHtml('Group Description');
-			});
-			addServerGroupContent.div({ class: 'input-divider' }, (inputCellContainer) => {
-				this._groupDescriptionInputBox = DialogHelper.appendInputBox(inputCellContainer);
-			});
-
-			// Connection Group Color
-			addServerGroupContent.div({ class: 'dialog-label' }, (labelContainer) => {
-				labelContainer.innerHtml('Group Color');
-			});
-
-			addServerGroupContent.div({ class: 'Group-color-options' }, (groupColorContainer) => {
-				for (let i = 0; i < this._colors.length; i++) {
-					let color = this._colors[i];
-
-					let colorCheckBox = new Checkbox({
-						actionClassName: 'server-group-color',
-						title: color,
-						isChecked: false,
-						onChange: (viaKeyboard) => {
-							this.onSelectGroupColor(i + 1);
-						}
-					});
-					colorCheckBox.domNode.style.backgroundColor = color;
-					groupColorContainer.getHTMLElement().appendChild(colorCheckBox.domNode);
-
-					// Theme styler
-					this._toDispose.push(attachCheckboxStyler(colorCheckBox, this._themeService));
-
-					this._colorCheckBoxesMap[i + 1] = { checkbox: colorCheckBox, color: color };
-				}
-			});
+	protected renderBody(container: HTMLElement) {
+		new Builder(container).div({ class: 'server-group-dialog' }, (builder) => {
+			this._bodyBuilder = builder;
 		});
-		this._dialog.addErrorMessage();
-		this._addServerButton = this.createFooterButton(this._dialog.footerContainer, 'OK');
-		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
+		// Connection Group Name
+		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
+			labelContainer.innerHtml('Connection Group Name');
+		});
+		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
+			this._groupNameInputBox = DialogHelper.appendInputBox(inputCellContainer);
+		});
 
-		this.onSelectGroupColor(this._defaultColor);
+		// Connection Group Description
+		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
+			labelContainer.innerHtml('Group Description');
+		});
+		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
+			this._groupDescriptionInputBox = DialogHelper.appendInputBox(inputCellContainer);
+		});
 
-		this._builder.build(this._container);
-		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
-		this._builder.hide();
+		// Connection Group Color
+		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
+			labelContainer.innerHtml('Group Color');
+		});
 
-		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+		this._bodyBuilder.div({ class: 'group-color-options' }, (groupColorContainer) => {
+			for (let i = 0; i < this._colors.length; i++) {
+				let color = this._colors[i];
+
+				let colorCheckBox = new Checkbox({
+					actionClassName: 'server-group-color',
+					title: color,
+					isChecked: false,
+					onChange: (viaKeyboard) => {
+						this.onSelectGroupColor(i + 1);
+					}
+				});
+				colorCheckBox.domNode.style.backgroundColor = color;
+				groupColorContainer.getHTMLElement().appendChild(colorCheckBox.domNode);
+
+				// Theme styler
+				this._toDispose.push(attachCheckboxStyler(colorCheckBox, this._themeService));
+
+				this._colorCheckBoxesMap[i + 1] = { checkbox: colorCheckBox, color: color };
+			}
+		});
+
+		this._bodyBuilder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter)) {
-				this.addGroup();
-			} else if (event.equals(KeyCode.Escape)) {
-				this.cancel();
-			} else if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
+			if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
 				this.preventDefaultKeyboardEvent(e);
 				this.focusPrevious();
 			} else if (event.equals(KeyCode.Tab)) {
@@ -140,9 +129,6 @@ export class ServerGroupDialog {
 				this.focusNextColor(event.equals(KeyCode.RightArrow));
 			}
 		});
-
-		this.registerListeners();
-		return this._builder.getHTMLElement();
 	}
 
 	private preventDefaultKeyboardEvent(e: KeyboardEvent) {
@@ -210,23 +196,6 @@ export class ServerGroupDialog {
 		}
 	}
 
-	private createFooterButton(container: Builder, title: string): Button {
-		let button;
-		container.div({ class: 'footer-button' }, (buttonContainer) => {
-			button = new Button(buttonContainer);
-			button.label = title;
-			button.addListener('click', () => {
-				if (title === 'OK') {
-					this.addGroup();
-				} else {
-					this.cancel();
-				}
-			});
-		});
-
-		return button;
-	}
-
 	private registerListeners(): void {
 		// Theme styler
 		this._toDispose.push(attachInputBoxStyler(this._groupNameInputBox, this._themeService));
@@ -258,36 +227,42 @@ export class ServerGroupDialog {
 
 	public addGroup(): void {
 		if (this.validateInputs()) {
-			this._callbacks.onAddServerGroup();
+			this._onAddServerGroup.fire();
 		}
 	}
 
 	public hideError() {
-		this._dialog.showError('');
-	}
-
-	public showError(err: string) {
-		this._dialog.showError(err);
+		this.setError('');
 	}
 
 	private validateInputs(): boolean {
 		if (DialogHelper.isEmptyString(this.groupName)) {
 			var errorMsg = 'Group name is required.';
-			this.showError(errorMsg);
+			this.setError(errorMsg);
 			this._groupNameInputBox.showMessage({ type: MessageType.ERROR, content: errorMsg });
 			return false;
 		}
 		return true;
 	}
 
+	/* Overwrite esapce key behavior */
+	protected onClose() {
+		this.cancel();
+	}
+
+	/* Overwrite enter key behavior */
+	protected onAccept() {
+		this.addGroup();
+	}
+
 	public cancel() {
-		this._callbacks.onCancel();
+		this._onCancel.fire();
 		this.close();
 	}
 
 	public close() {
-		this._builder.hide();
-		this._callbacks.onClose();
+		this.hide();
+		this._onCloseEvent.fire();
 	}
 
 	public open(editGroup: boolean, group?: ConnectionProfileGroup) {
@@ -299,7 +274,7 @@ export class ServerGroupDialog {
 		this.onSelectGroupColor(this._defaultColor);
 
 		if (editGroup && group) {
-			this._dialog.setDialogTitle(this._editServerGroupTitle);
+			this.title = this._editServerGroupTitle;
 			this._groupNameInputBox.value = group.name;
 			this._groupDescriptionInputBox.value = group.description;
 			let colorId: number;
@@ -313,10 +288,10 @@ export class ServerGroupDialog {
 				this.onSelectGroupColor(colorId);
 			}
 		} else {
-			this._dialog.setDialogTitle(this._addServerGroupTitle);
+			this.title = this._addServerGroupTitle;
 		}
 
-		this._builder.show();
+		this.show();
 		this._groupNameInputBox.focus();
 	}
 

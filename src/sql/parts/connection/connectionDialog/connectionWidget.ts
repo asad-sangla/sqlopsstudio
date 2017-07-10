@@ -12,9 +12,9 @@ import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
-import { DialogInputBox } from 'sql/parts/common/flyoutDialog/dialogInputBox';
-import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
+import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
+import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
 import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -23,6 +23,7 @@ import * as Constants from 'sql/parts/connection/common/constants';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import * as styler from 'vs/platform/theme/common/styler';
+import * as DOM from 'vs/base/browser/dom';
 import data = require('data');
 
 export class ConnectionWidget {
@@ -85,7 +86,7 @@ export class ConnectionWidget {
 		this._providerName = providerName;
 	}
 
-	public createConnectionWidget(): HTMLElement {
+	public createConnectionWidget(container: HTMLElement): void {
 		this._serverGroupOptions = [this.DefaultServerGroup];
 		this._serverGroupSelectBox = new DialogSelectBox(this._serverGroupOptions.map(g => g.name), this.DefaultServerGroup.name);
 		this._builder = $().div({ class: 'connection-table' }, (modelTableContent) => {
@@ -98,7 +99,7 @@ export class ConnectionWidget {
 		if (this._authTypeSelectBox) {
 			this.onAuthTypeSelected(this._authTypeSelectBox.value);
 		}
-		return this._builder.getHTMLElement();
+		DOM.append(container, this._builder.getHTMLElement());
 	}
 
 	private fillInConnectionForm(): void {

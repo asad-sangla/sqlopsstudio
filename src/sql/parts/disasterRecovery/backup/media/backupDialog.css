@@ -41,3 +41,11 @@
 	background-color: #3C3C3C;
 	color: #BBB;
 }
+
+.backup-dialog {
+	padding: 15px;
+}
+
+.modal-body-content {
+	width: calc(100% - 15px);
+}

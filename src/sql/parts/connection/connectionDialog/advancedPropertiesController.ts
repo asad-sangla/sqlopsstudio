@@ -52,11 +52,10 @@ export class AdvancedPropertiesController {
 
 	public get advancedDialog() {
 		if (!this._advancedDialog) {
-			this._advancedDialog = this._instantiationService.createInstance(AdvancedPropertiesDialog, this._container, {
-				onOk: () => this.handleOnOk(),
-				onClose: () => this._onCloseAdvancedProperties(),
-			});
-			this._advancedDialog.create();
+			this._advancedDialog = this._instantiationService.createInstance(AdvancedPropertiesDialog);
+			this._advancedDialog.onCloseEvent(() => this._onCloseAdvancedProperties());
+			this._advancedDialog.onOk(() => this.handleOnOk());
+			this._advancedDialog.render();
 		}
 		return this._advancedDialog;
 	}

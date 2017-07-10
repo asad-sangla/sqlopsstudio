@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-.monaco-shell .modal.flyout-dialog .modal-dialog  {
+.monaco-shell .modal.flyout-dialog .modal-dialog {
 	margin: auto auto auto auto;
 	height: calc(100% - 23px);
 	width: 500px;
@@ -11,7 +11,7 @@
 	overflow-y: hidden;
 }
 
-.monaco-shell .modal.flyout-dialog .modal-content{
+.monaco-shell .modal.flyout-dialog .modal-content {
 	background-color: #F3F3F3;
 	height: 100%;
 	width: calc(100% - 20px);
@@ -28,12 +28,6 @@
 
 .monaco-shell .modal.flyout-dialog .modal-body {
 	height: calc(100% - 105px);
-}
-
-/* Style for the body content excluding error message */
-.monaco-shell .modal.flyout-dialog .modal-body-content {
-	padding: 30px;
-	overflow-y: auto;
 }
 
 /* Style for body and footer in modal dialog. This should be applied to dialog created with angular component. */
@@ -61,6 +55,10 @@
 	border: none;
 	height: 25px;
 	padding-left: 4px;
+}
+
+.modal.flyout-dialog .modal-body {
+	overflow-y: auto;
 }
 
 .vs-dark.monaco-shell .modal.flyout-dialog .input {
@@ -92,13 +90,23 @@
 	max-height: 50px;
 }
 
-.modal.flyout-dialog .modal-footer {
+.modal .modal-footer {
 	display: flex;
+}
+
+.modal .modal-footer .left-footer {
+	display: flex;
+	flex: 1 1 auto;
+	justify-content: flex-start;
+}
+
+.modal .modal-footer .right-footer {
+	display: flex;
+	flex: 1 1 auto;
 	justify-content: flex-end;
 }
 
-.modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button {
-	padding-right:8px;
+.modal .footer-button a.monaco-button.monaco-text-button {
 	width: 100px;
 }
 
@@ -108,6 +116,14 @@
 
 .modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button:focus {
 	outline-width: 1px;
+}
+
+.modal .footer-button {
+	margin-right: 5px;
+}
+
+.modal .right-footer .footer-button:last-of-type {
+	margin-right: none;
 }
 
 /* TODO: remove the color style after theming is fixed for angular components */

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
-import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!sql/media/primeng';
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { NgForm } from '@angular/forms';
@@ -37,7 +36,6 @@ export class RestoreItemSource {
 	selector: BACKUP_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/disasterRecovery/backup/backup.component.html'),
 	styleUrls: [require.toUrl('sql/parts/disasterRecovery/backup/media/backupDialog.css'),
-                require.toUrl('sql/parts/common/flyoutDialog/media/flyoutDialog.css'),
                 require.toUrl('sql/media/primeng.css')]
 })
 export class BackupComponent{

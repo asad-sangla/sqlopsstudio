@@ -7,8 +7,8 @@
 
 import { Builder } from 'vs/base/browser/builder';
 import { IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
-import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
-import { DialogInputBox } from 'sql/parts/common/flyoutDialog/dialogInputBox';
+import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 
 export class DialogHelper {

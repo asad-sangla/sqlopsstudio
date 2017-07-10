@@ -7,19 +7,16 @@ import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
-import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
+import { Modal } from 'sql/parts/common/modal/modal';
 import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { $ } from 'vs/base/browser/builder';
 
 import { DbCellValue, IDbColumn, IResultMessage } from 'data';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
-import { Builder, withElementById, $ } from 'vs/base/browser/builder';
-import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import * as DOM from 'vs/base/browser/dom';
-import { KeyCode } from 'vs/base/common/keyCodes';
-import { Button } from 'vs/base/browser/ui/button/button';
 import { SplitView, CollapsibleState, CollapsibleView } from 'vs/base/browser/ui/splitview/splitview';
 import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IDelegate, IRenderer, IListEvent } from 'vs/base/browser/ui/list/list';
@@ -124,13 +121,10 @@ class BottomRender implements IRenderer<BottomListResource, TableTemplate> {
 	}
 }
 
-export default class InsightsDialog {
+export default class InsightsDialog extends Modal {
 	private _queryRunner: QueryRunner;
 	private _connectionProfile: IConnectionProfile;
 	private _connectionUri: string;
-	private _container: HTMLElement;
-	private _dialog: ModalDialogBuilder;
-	private _builder: Builder;
 	private _rows: DbCellValue[][];
 	private _columns: IDbColumn[];
 	private _insight: InsightsConfig;
@@ -138,31 +132,30 @@ export default class InsightsDialog {
 	private _topList: List<any>;
 	private _bottomList: List<any>;
 	private _topRenderer: TopRenderer;
+	private _splitView: SplitView;
+	private _container: HTMLElement;
 
 	constructor(
 		@IQueryManagementService private queryManagementService: IQueryManagementService,
 		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IPartService private _partService: IPartService,
 		@IThemeService private _themeService: IThemeService,
+		@IListService private _listService: IListService,
+		@IPartService _partService: IPartService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
-		@IListService private _listService: IListService
 	) {
-		this._container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-		this._dialog = new ModalDialogBuilder('', 'insights-dialog', 'insightsBody');
-		this._builder = this._dialog.create(true);
-		this._dialog.addModalTitle();
-		this.createFooterButton(this._dialog.footerContainer, 'Close');
-		this._builder.build(this._container);
-		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
-		let self = this;
+		super('Insights', _partService);
+	}
+
+	protected renderBody(container: HTMLElement) {
+		this._container = container;
 		const delegate = new Delegate();
 		this._topRenderer = new TopRenderer();
 		let bottomRenderer = new BottomRender();
 		let topViewBody = $().div();
 		let bottomViewBody = $().div();
 
-		let splitview = new SplitView(this._dialog.bodyContainer.getHTMLElement());
+		this._splitView = new SplitView(container);
 
 		this._bottomList = new List<BottomListResource>(bottomViewBody.getHTMLElement(), delegate, [bottomRenderer]);
 
@@ -171,8 +164,8 @@ export default class InsightsDialog {
 		this._disposables.push(this._topList.onSelectionChange((e: IListEvent<any>) => {
 			if (e.elements.length === 1) {
 				let resourceArray: BottomListResource[] = [];
-				for (let i = 0; i < self._columns.length; i++) {
-					resourceArray.push({ label: self._columns[i].columnName, value: e.elements[0][i] });
+				for (let i = 0; i < this._columns.length; i++) {
+					resourceArray.push({ label: this._columns[i].columnName, value: e.elements[0][i] });
 				}
 				this._bottomList.splice(0, this._bottomList.length, resourceArray);
 			}
@@ -180,11 +173,10 @@ export default class InsightsDialog {
 
 		let topview = new BasicView('Data', this._topList, topViewBody.getHTMLElement(), false, 22);
 		let bottomview = new BasicView('Data', this._bottomList, bottomViewBody.getHTMLElement(), false, 22);
-		splitview.addView(topview);
-		splitview.addView(bottomview);
+		this._splitView.addView(topview);
+		this._splitView.addView(bottomview);
 
 
-		this._disposables.push(attachModalDialogStyler(this._dialog, this._themeService));
 		this._disposables.push(attachListStyler(this._topList, this._themeService));
 		this._disposables.push(this._listService.register(this._topList));
 		this._disposables.push(attachListStyler(this._bottomList, this._themeService));
@@ -192,37 +184,28 @@ export default class InsightsDialog {
 
 		this._topList.splice(0, this._topList.length);
 		this._bottomList.splice(0, this._bottomList.length);
-		splitview.layout(DOM.getTotalHeight(this._dialog.bodyContainer.getHTMLElement()));
-		this._builder.hide();
+	}
+
+	public render() {
+		super.render();
+		this.addFooterButton('Close', () => this.close());
+		this._disposables.push(attachModalDialogStyler(this, this._themeService));
 	}
 
 	// query string
-	public show(input: InsightsConfig, connectionProfile: IConnectionProfile): void;
+	public open(input: InsightsConfig, connectionProfile: IConnectionProfile): void;
 	// query results
 	// public show(input: SimpleExecuteResult);
 	// insight object
-	public show(input?: any, connectionProfile?: IConnectionProfile): void {
+	public open(input?: any, connectionProfile?: IConnectionProfile): void {
 		// execute string
 		if (typeof input === 'object') {
 			this._insight = input;
 			this.createQuery(this._insight.detailsQuery, connectionProfile);
 			this._topList.splice(0, this._topList.length);
 			this._bottomList.splice(0, this._bottomList.length);
-			this._builder.show();
-			this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-				let event = new StandardKeyboardEvent(e);
-				if (event.equals(KeyCode.Escape)) {
-					this.close();
-					this.preventDefaultKeyboardEvent(e);
-				}
-			});
+			this.show();
 		}
-	}
-
-
-	private preventDefaultKeyboardEvent(e: KeyboardEvent): void {
-		e.preventDefault();
-		e.stopPropagation();
 	}
 
 	//tslint:disable-next-line
@@ -241,19 +224,6 @@ export default class InsightsDialog {
 		}
 
 		this._queryRunner.runQuery(queryString);
-	}
-
-	private createFooterButton(container: Builder, title: string): Button {
-		let button;
-		container.div({ class: 'footer-button' }, (cellContainer) => {
-			button = new Button(cellContainer);
-			button.label = title;
-			button.addListener('click', () => {
-				this.close();
-			});
-		});
-
-		return button;
 	}
 
 	private addQueryEventListeners(queryRunner: QueryRunner): void {
@@ -302,6 +272,7 @@ export default class InsightsDialog {
 			});
 		});
 		this._topList.splice(0, this._topList.length, inputArray);
+		this._splitView.layout(DOM.getContentHeight(this._container));
 	}
 
 	private findIndex(val: string, row: DbCellValue[]): number;
@@ -339,7 +310,6 @@ export default class InsightsDialog {
 	}
 
 	public close() {
-		this._builder.hide();
-		this._builder.off(DOM.EventType.KEY_DOWN);
+		this.hide();
 	}
 }

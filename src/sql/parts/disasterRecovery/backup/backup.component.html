@@ -60,11 +60,13 @@
 	</div>
 
 	<div class="modal-footer">
-		<div class="footer-button">
-			<a class="monaco-button monaco-text-button angular-button" tabindex="0" type="submit" role="button" (click)="onOk()" (keypress)="onFooterPressed($event)">{{labelOk}}</a>
-		</div>
-		<div class="footer-button">
-			<a class="monaco-button monaco-text-button angular-button" tabindex="0" role="button" (click)="onCancel()" (keypress)="onFooterPressed($event)">{{labelCancel}}</a>
+		<div class="right-footer" style="width: 100%">
+			<div class="footer-button">
+				<a class="monaco-button monaco-text-button angular-button" tabindex="0" type="submit" role="button" (click)="onOk()" (keypress)="onFooterPressed($event)">{{labelOk}}</a>
+			</div>
+			<div class="footer-button">
+				<a class="monaco-button monaco-text-button angular-button" tabindex="0" role="button" (click)="onCancel()" (keypress)="onFooterPressed($event)">{{labelCancel}}</a>
+			</div>
 		</div>
 	</div>
 </form>

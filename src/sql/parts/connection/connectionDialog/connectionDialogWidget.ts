@@ -2,111 +2,138 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
-'use strict';
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
-import 'vs/css!sql/parts/common/flyoutDialog/media/flyoutDialog';
 import 'vs/css!./media/connectionDialog';
-import { Builder, $ } from 'vs/base/browser/builder';
-import { Button } from 'vs/base/browser/ui/button/button';
-import { DialogSelectBox } from 'sql/parts/common/flyoutDialog/dialogSelectBox';
-import * as lifecycle from 'vs/base/common/lifecycle';
+
+import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ModalDialogBuilder } from 'sql/parts/common/flyoutDialog/modalDialogBuilder';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import DOM = require('vs/base/browser/dom');
-import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { KeyCode } from 'vs/base/common/keyCodes';
+import { Modal } from 'sql/parts/common/modal/modal';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
-import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
-import { DialogHelper } from 'sql/parts/common/flyoutDialog/dialogHelper';
+import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import * as styler from 'vs/platform/theme/common/styler';
-import { attachModalDialogStyler } from 'sql/common/theme/styler';
-import data = require('data');
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import { ITree } from 'vs/base/parts/tree/browser/tree';
+import Event, { Emitter } from 'vs/base/common/event';
+import { Builder } from 'vs/base/browser/builder';
+import { Button } from 'vs/base/browser/ui/button/button';
+import * as lifecycle from 'vs/base/common/lifecycle';
+import { DefaultController, ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
+import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 
-export interface IConnectionDialogCallbacks {
-	onConnect: () => void;
-	onCancel: () => void;
-	onShowUiComponent: (selectedProviderType: string) => HTMLElement;
-	onInitDialog: () => void;
-	onFillinConnectionInputs: (connectionInfo: IConnectionProfile) => void;
-	onResetConnection: () => void;
+export interface OnShowUIResponse {
+	selectedProviderType: string;
+	container: HTMLElement;
 }
 
-export class ConnectionDialogWidget {
-	private _builder: Builder;
-	private _dividerBuilder: Builder;
-	private _container: HTMLElement;
-	private _callbacks: IConnectionDialogCallbacks;
-	private _connectButton: Button;
-	private _closeButton: Button;
-	private _dialog: ModalDialogBuilder;
-	private _providerTypeSelectBox: DialogSelectBox;
-	private _toDispose: lifecycle.IDisposable[];
-	private _toDisposeStyle: lifecycle.IDisposable[];
-	private _newConnectionParams: INewConnectionParams;
-
-	constructor(container: HTMLElement,
-		callbacks: IConnectionDialogCallbacks,
-		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService
-	) {
-		this._container = container;
-		this._callbacks = callbacks;
-		this._toDispose = [];
-		this._toDisposeStyle = [];
+class TreeController extends DefaultController {
+	constructor(private clickcb: (element: any, eventish: ICancelableEvent, origin: string) => void) {
+		super();
 	}
 
-	public create(providerTypeOptions: string[], selectedProviderType: string): HTMLElement {
-		this._providerTypeSelectBox = new DialogSelectBox(providerTypeOptions, selectedProviderType);
+	protected onLeftClick(tree: ITree, element: any, eventish: ICancelableEvent, origin: string = 'mouse'): boolean {
+		this.clickcb(element, eventish, origin);
+		return super.onLeftClick(tree, element, eventish, origin);
+	}
 
-		this._dialog = new ModalDialogBuilder('New Connection', 'connection-dialog-widget', 'connectionDialogBody');
-		this._builder = this._dialog.create(true);
-		attachModalDialogStyler(this._dialog, this._themeService);
-		this._dialog.addModalTitle();
+	protected onEnter(tree: ITree, event: IKeyboardEvent): boolean {
+		super.onEnter(tree, event);
+		this.clickcb(tree.getSelection()[0], event, 'keyboard');
+		return true;
+	}
+}
 
-		this._dialog.bodyContainer.div({ class: 'connection-recent', id: 'recentConnection' });
-		this._dialog.addErrorMessage();
+export class ConnectionDialogWidget extends Modal {
+	private _bodyBuilder: Builder;
+	private _recentConnectionBuilder: Builder;
+	private _dividerBuilder: Builder;
+	private _connectButton: Button;
+	private _closeButton: Button;
+	private _providerTypeSelectBox: DialogSelectBox;
+	private _toDispose: lifecycle.IDisposable[] = [];
+	private _toDisposeStyle: lifecycle.IDisposable[] = [];
+	private _newConnectionParams: INewConnectionParams;
+	private _recentConnectionTree: ITree;
 
-		this._dialog.bodyContainer.div({ class: 'Connection-divider' }, (dividerContainer) => {
+	private _onInitDialog = new Emitter<void>();
+	public onInitDialog: Event<void> = this._onInitDialog.event;
+
+	private _onCancel = new Emitter<void>();
+	public onCancel: Event<void> = this._onCancel.event;
+
+	private _onConnect = new Emitter<IConnectionProfile>();
+	public onConnect: Event<IConnectionProfile> = this._onConnect.event;
+
+	private _onShowUiComponent = new Emitter<OnShowUIResponse>();
+	public onShowUiComponent: Event<OnShowUIResponse> = this._onShowUiComponent.event;
+
+	private _onFillinConnectionInputs = new Emitter<IConnectionProfile>();
+	public onFillinConnectionInputs: Event<IConnectionProfile> = this._onFillinConnectionInputs.event;
+
+	private _onResetConnection = new Emitter<void>();
+	public onResetConnection: Event<void> = this._onResetConnection.event;
+
+	constructor(
+		private providerTypeOptions: string[],
+		private selectedProviderType: string,
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
+		@IPartService _partService: IPartService
+	) {
+		super('Connection', _partService, { hasSpinner: true, hasErrors: true });
+	}
+
+	protected renderBody(container: HTMLElement): void {
+		this._bodyBuilder = new Builder(container);
+		this._providerTypeSelectBox = new DialogSelectBox(this.providerTypeOptions, this.selectedProviderType);
+
+		this._bodyBuilder.div({ class: 'connection-recent', id: 'recentConnection' }, (builder) => {
+			this._recentConnectionBuilder = new Builder(builder.getHTMLElement());
+			this.createRecentConnections();
+			this._recentConnectionBuilder.hide();
+		});
+
+		this._bodyBuilder.div({ class: 'Connection-divider' }, (dividerContainer) => {
 			this._dividerBuilder = dividerContainer;
 		});
 
-		this._dialog.bodyContainer.div({ class: 'Connection-type' }, (modelTableContent) => {
+		this._bodyBuilder.div({ class: 'connection-type' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				DialogHelper.appendInputSelectBox(
 					DialogHelper.appendRow(tableContainer, 'Connection Type', 'connection-label', 'connection-input'), this._providerTypeSelectBox);
 			});
 		});
 
-		this._dialog.bodyContainer.div({ class: 'connection-provider-info', id: 'connectionProviderInfo' });
-
-		this._connectButton = this.createFooterButton(this._dialog.footerContainer, 'Connect');
-		this._connectButton.enabled = false;
-		this._closeButton = this.createFooterButton(this._dialog.footerContainer, 'Cancel');
-
-		this._builder.build(this._container);
-
-		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
-		this._builder.hide();
-		this.registerListeners();
-		this.onProviderTypeSelected(this._providerTypeSelectBox.value);
+		this._bodyBuilder.div({ class: 'connection-provider-info', id: 'connectionProviderInfo' });
 
 		let self = this;
 		this._toDispose.push(self._themeService.onDidColorThemeChange((e) => {
 			self.updateTheme(e);
 		}));
 		self.updateTheme(self._themeService.getColorTheme());
-
-		return this._builder.getHTMLElement();
 	}
 
+	/**
+	 * Render the connection flyout
+	 */
+	public render() {
+		super.render();
+		attachModalDialogStyler(this, this._themeService);
+		this._connectButton = this.addFooterButton('Connect', () => this.connect());
+		this._connectButton.enabled = false;
+		this._closeButton = this.addFooterButton('Cancel', () => this.cancel());
+		this.registerListeners();
+		this.onProviderTypeSelected(this._providerTypeSelectBox.value);
+	}
 
 	// Update theming that is specific to connection flyout body
 	private updateTheme(theme: IColorTheme): void {
@@ -133,139 +160,124 @@ export class ConnectionDialogWidget {
 	private onProviderTypeSelected(selectedProviderType: string) {
 		// Show connection form based on server type
 		jQuery('#connectionProviderInfo').empty();
-		jQuery('#connectionProviderInfo').append(this._callbacks.onShowUiComponent(selectedProviderType));
+		this._onShowUiComponent.fire({ selectedProviderType: selectedProviderType, container: jQuery('#connectionProviderInfo').get(0) });
 		this.initDialog();
 	}
 
-	private createFooterButton(container: Builder, title: string): Button {
-		let button;
-		container.div({ class: 'footer-button' }, (buttonContainer) => {
-			button = new Button(buttonContainer);
-			button.label = title;
-			button.addListener('click', () => {
-				if (title === 'Connect') {
-					this.connect();
-				} else {
-					this.cancel();
-				}
-			});
-		});
-
-		return button;
-	}
-
-	public connect(): void {
+	private connect(element?: IConnectionProfile): void {
 		this._connectButton.enabled = false;
-		this._dialog.showSpinner();
-		this._callbacks.onConnect();
+		this.showSpinner();
+		this._onConnect.fire(element);
 	}
 
-	public cancel() {
-		this._callbacks.onCancel();
+	/* Overwrite espace key behavior */
+	protected onClose(e: StandardKeyboardEvent) {
+		this.cancel();
+	}
+
+	/* Overwrite enter key behavior */
+	protected onAccept(e: StandardKeyboardEvent) {
+		if (!e.target.classList.contains('monaco-tree')) {
+			this.connect();
+		}
+	}
+
+	private cancel() {
+		this._onCancel.fire();
 		this.close();
 	}
 
 	public close() {
 		this.resetConnection();
-		this.clearRecentConnection();
-		this._builder.hide();
-		this._builder.off(DOM.EventType.KEY_DOWN);
+		this.hide();
 	}
 
-	private createRecentConnectionsBuilder(): Builder {
-		var recentConnectionBuilder = $().div({ class: 'connection-recent-content' }, (recentConnectionContainer) => {
+	private createRecentConnections() {
+		this._recentConnectionBuilder.div({ class: 'connection-recent-content' }, (recentConnectionContainer) => {
 			recentConnectionContainer.div({ class: 'connection-history-label' }, (recentTitle) => {
 				recentTitle.innerHtml('Recent History');
 			});
 
-			recentConnectionContainer.element('div', { class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
-				divContainer.element('div', { class: 'explorer-servers' }, (treeContainer: Builder) => {
-					let recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true);
+			recentConnectionContainer.div({ class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
+				divContainer.div({ class: 'explorer-servers' }, (treeContainer: Builder) => {
+					let leftClick = (element: any, eventish: ICancelableEvent, origin: string) => {
+						// element will be a server group if the tree is clicked rather than a item
+						if (element instanceof ConnectionProfile) {
+							this.onRecentConnectionClick({ payload: { origin: origin, originalEvent: eventish } }, element);
+						}
+
+					};
+					let controller = new TreeController(leftClick);
+					this._recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true, controller);
 
 					// Theme styler
-					this._toDisposeStyle.push(styler.attachListStyler(recentConnectionTree, this._themeService));
-					this._toDisposeStyle.push(recentConnectionTree.addListener('selection', (event: any) => this.OnRecentConnectionClick(event)));
-
-					recentConnectionTree.addListener('selection', (event: any) => this.OnRecentConnectionClick(event));
-					recentConnectionTree.addListener('selection',
-						(event: any) => {
-							this.onRecentConnectionDoubleClick(event, recentConnectionTree);
-						});
-					TreeUpdateUtils.structuralTreeUpdate(recentConnectionTree, 'recent', this._connectionManagementService);
-					// call layout with view height
-					recentConnectionTree.layout(300);
-					divContainer.append(recentConnectionTree.getHTMLElement());
-
+					this._toDisposeStyle.push(styler.attachListStyler(this._recentConnectionTree, this._themeService));
+					divContainer.append(this._recentConnectionTree.getHTMLElement());
 				});
 			});
 		});
-		return recentConnectionBuilder;
 	}
 
-	private onRecentConnectionDoubleClick(event: any, recentConnectionTree: Tree) {
+	private onRecentConnectionClick(event: any, element: IConnectionProfile) {
 		let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
 		let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
 		if (isDoubleClick) {
-			this.connect();
-		}
-	}
-
-	private OnRecentConnectionClick(event: any) {
-		let connectionInfo: IConnectionProfile = event.selection[0];
-		if (connectionInfo) {
-			this._callbacks.onFillinConnectionInputs(connectionInfo);
-		}
-	}
-
-	private clearRecentConnection() {
-		jQuery('#recentConnection').empty();
-		this._toDisposeStyle = lifecycle.dispose(this._toDisposeStyle);
-	}
-
-	public open(recentConnections: data.ConnectionInfo[]) {
-		this.clearRecentConnection();
-		if (recentConnections.length > 0) {
-			var recentConnectionBuilder = this.createRecentConnectionsBuilder();
-			jQuery('#recentConnection').append(recentConnectionBuilder.getHTMLElement());
-		}
-
-		this._builder.show();
-		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter)) {
-				if (this._connectButton.enabled) {
-					this.connect();
-				}
-			} else if (event.equals(KeyCode.Escape)) {
-				this.cancel();
+			this.connect(element);
+		} else {
+			if (element) {
+				this._onFillinConnectionInputs.fire(element);
 			}
-		});
+		}
+	}
+
+	/**
+	 * Open the flyout dialog
+	 * @param recentConnections Are there recent connections that should be shown
+	 */
+	public open(recentConnections: boolean) {
+		if (recentConnections) {
+			this._recentConnectionBuilder.show();
+			TreeUpdateUtils.structuralTreeUpdate(this._recentConnectionTree, 'recent', this._connectionManagementService);
+			// call layout with view height
+			this._recentConnectionTree.layout(300);
+		} else {
+			this._recentConnectionBuilder.hide();
+		}
+
+		this.show();
 		this.initDialog();
 	}
 
-	public set connectButtonEnabled(enable: boolean) {
-		this._connectButton.enabled = enable;
+	/**
+	 * Set the state of the connect button
+	 * @param enabled The state to set the the button
+	 */
+	public set connectButtonState(enabled: boolean) {
+		this._connectButton.enabled = enabled;
 	}
 
-	public get connectButtonEnabled(): boolean {
+	/**
+	 * Get the connect button state
+	 */
+	public get connectButtonState(): boolean {
 		return this._connectButton.enabled;
 	}
 
 	private initDialog(): void {
-		this._dialog.showError('');
-		this._dialog.hideSpinner();
-		this._callbacks.onInitDialog();
+		super.setError('');
+		this.hideSpinner();
+		this._onInitDialog.fire();
 	}
 
 	public showError(err: string) {
-		this._dialog.showError(err);
+		super.setError(err);
 		this.resetConnection();
 	}
 
 	public resetConnection() {
-		this._dialog.hideSpinner();
+		this.hideSpinner();
 		this._connectButton.enabled = true;
-		this._callbacks.onResetConnection();
+		this._onResetConnection.fire();
 	}
 
 	public get newConnectionParams(): INewConnectionParams {

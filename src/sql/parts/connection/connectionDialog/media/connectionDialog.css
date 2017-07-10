@@ -14,34 +14,31 @@
 	padding-bottom: 5px;
 }
 
-.connection-dialog-widget .connection-recent {
-	height: calc(100% - 380px);
-	padding: 15px;
+.connection-recent {
+	margin: 15px;
+	height: calc(100% - 400px);
 	overflow-y: auto;
 }
 
-.connection-dialog-widget .connection-history-label {
+.connection-history-label {
 	font-size: 15px;
 }
 
-.connection-dialog-widget .connection-provider-info {
-	padding-right: 15px;
-	padding-left: 15px;
+.connection-provider-info {
 	overflow-y: hidden;
+	margin: 15px;
 }
 
 .connection-recent-content {
-	height: 100%;
+	height: calc(100% - 20px);
 }
 
-.connection-dialog-widget .connection-table-content {
+.connection-table-content {
 	width:100%;
 	table-layout: fixed;
 }
 
-.connection-dialog-widget .Connection-type {
-	padding-right: 15px;
-	padding-left: 15px;
-	padding-top: 15px;
+.connection-type {
+	margin: 15px;
 	overflow-y: hidden;
 }

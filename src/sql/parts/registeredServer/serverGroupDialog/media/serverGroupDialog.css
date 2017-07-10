@@ -3,12 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.Group-color-options {
-	float: left;
+.group-color-options {
+	display: flex;
+	width: 100%;
 }
 
-.Group-color-options .server-group-color {
-    width: 42px;
+.group-color-options .server-group-color {
+    flex: 1 1 auto;
 	height: 20px;
     margin: 5px;
+}
+
+.server-group-dialog {
+	padding: 15px
 }

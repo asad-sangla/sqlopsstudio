@@ -7,44 +7,31 @@
 
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { ErrorMessageDialog } from 'sql/workbench/errorMessageDialog/errorMessageDialog';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
-import Severity from 'vs/base/common/severity';
-import { withElementById } from 'vs/base/browser/builder';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
+import Severity from 'vs/base/common/severity';;
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class ErrorMessageService implements IErrorMessageService {
 
 	_serviceBrand: any;
 
-	private _container: HTMLElement;
 	private _errorDialog: ErrorMessageDialog;
 
 	private handleOnOk(): void {
 	}
 
 	constructor(
-		@IPartService private _partService: IPartService,
-		@IThemeService private _themeService: IThemeService
-	) {
-
-	}
+		@IInstantiationService private _instantiationService: IInstantiationService
+	) { }
 
 	public showDialog(container: HTMLElement, severity: Severity, headerTitle: string, message: string): void {
-		if (container === undefined) {
-			this._container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-		} else {
-			this._container = container;
-		}
-
 		this.doShowDialog(severity, headerTitle, message);
 	}
 
 	private doShowDialog(severity: Severity, headerTitle: string, message: string): void {
 		if (!this._errorDialog) {
-			this._errorDialog = new ErrorMessageDialog(this._container, {
-				onOk: () => this.handleOnOk(),
-			}, this._themeService);
-			this._errorDialog.create();
+			this._errorDialog = this._instantiationService.createInstance(ErrorMessageDialog);
+			this._errorDialog.onOk(() => this.handleOnOk());
+			this._errorDialog.render();
 		}
 
 		return this._errorDialog.open(severity, headerTitle, message);

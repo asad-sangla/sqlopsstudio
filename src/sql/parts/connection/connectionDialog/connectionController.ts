@@ -71,8 +71,8 @@ export class ConnectionController implements IConnectionComponentController {
 		this._advancedController.showDialog(advancedOption, this._container, this._model.options);
 	}
 
-	public showUiComponent(): HTMLElement {
-		return this._connectionWidget.createConnectionWidget();
+	public showUiComponent(container: HTMLElement): void {
+		this._connectionWidget.createConnectionWidget(container);
 	}
 
 	private getServerGroupHelper(group: ConnectionProfileGroup, groupNames: IConnectionProfileGroup[]): void {

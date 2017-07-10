@@ -19,13 +19,13 @@
 	margin-left: 1px;
 }
 
-#propertiesContent {
+.advancedDialog-properties-groups {
 	padding: 15px;
 	height: calc(100% - 150px);
 	overflow-y: auto;
 }
 
-.advanced-dialog .backButtonIcon {
+.backButtonIcon {
 	content: url('back.svg');
 	width: 20px;
 	margin-right: 10px;
@@ -33,16 +33,20 @@
 	cursor: pointer;
 }
 
-.advanced-dialog .advancedDialog-description {
+.advancedDialog-description {
 	padding: 15px;
 	overflow-y: auto;
 }
 
-.advanced-dialog .advancedDialog-description-content {
+.advancedDialog-properties {
+	height: calc(100% - 30px);
+}
+
+.advancedDialog-description-content {
 	padding: 10px;
 }
 
-.advanced-dialog .advancedDialog-table{
+.advancedDialog-table{
 	width:100%;
 	padding: 10px;
 }

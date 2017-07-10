@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.error-dialog .error-icon, .error-dialog .warning-icon , .error-dialog .info-icon{
+.error-dialog .error-icon, .error-dialog .warning-icon , .error-dialog .info-icon {
 	width: 30px;
 	height: 30px;
 	float: left;
@@ -22,29 +22,14 @@
 	content: url(status-info.svg);
 }
 
-.error-dialog .modal-title {
-	font-size: 15px;
-}
-
-.error-dialog .modal-body {
+.error-dialog {
 	padding: 15px;
 	overflow: auto;
 	height: 200px;
 }
 
-.error-dialog .copyButtonIcon {
+.copyButtonIcon {
 	content: url('scriptToClipboard.svg');
-	width: 20px;
-	float: left;
-	cursor: pointer;
-}
-
-.error-dialog .modal-footer {
-	display: flex;
-	justify-content: flex-end;
-}
-
-.error-dialog .modal-copy {
-	display: flex;
-	flex: 1;
+	width: auto !important;
+	height: 25px;
 }

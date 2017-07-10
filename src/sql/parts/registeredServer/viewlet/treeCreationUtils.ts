@@ -12,6 +12,7 @@ import { ServerTreeDataSource } from 'sql/parts/registeredServer/viewlet/serverT
 import { ServerTreeController } from 'sql/parts/registeredServer/viewlet/serverTreeController';
 import { ServerTreeActionProvider } from 'sql/parts/registeredServer/viewlet/serverTreeActionProvider';
 import { DefaultFilter, DefaultAccessibilityProvider, DefaultController } from 'vs/base/parts/tree/browser/treeDefaults';
+import { IController } from 'vs/base/parts/tree/browser/tree';
 import { ServerTreeDragAndDrop, RecentConnectionsDragAndDrop } from 'sql/parts/registeredServer/viewlet/dragAndDropController';
 import { RecentConnectionDataSource } from 'sql/parts/registeredServer/viewlet/recentConnectionDataSource';
 
@@ -19,10 +20,10 @@ export class TreeCreationUtils {
 	/**
 	 * Create a recent connections tree
 	 */
-	public static createConnectionTree(treeContainer: HTMLElement, instantiationService: IInstantiationService, isCompact: boolean): Tree {
+	public static createConnectionTree(treeContainer: HTMLElement, instantiationService: IInstantiationService, isCompact: boolean, useController?: IController): Tree {
 		const dataSource = instantiationService.createInstance(RecentConnectionDataSource);
 		const renderer = instantiationService.createInstance(ServerTreeRenderer, isCompact);
-		const controller = new DefaultController();
+		const controller = useController ? useController : new DefaultController();
 		const dnd = instantiationService.createInstance(RecentConnectionsDragAndDrop);
 		const filter = new DefaultFilter();
 		const sorter = null;
