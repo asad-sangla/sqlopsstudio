@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 import { Registry } from 'vs/platform/platform';
 import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
 
@@ -77,7 +77,26 @@ configurationRegistry.registerConfiguration({
 								left join msdb..backupset as b on d.name = b.database_name
 								group by d.name
 						`,
-						'label': 'name',
+						'label': {
+							'column': 'name',
+							'icon': 'database',
+							'state': [
+								{
+									'condition': {
+										'if': 'equals',
+										'equals': '1'
+									},
+									'color': 'green'
+								},
+								{
+									'condition': {
+										'if': 'equals',
+										'equals': '0'
+									},
+									'color': 'red'
+								}
+							]
+						},
 						'value': 'health_check'
 					}
 				}

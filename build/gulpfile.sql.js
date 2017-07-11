@@ -59,7 +59,8 @@ const formatStagedFiles = () => {
 
 			const some = out
 				.split(/\r?\n/)
-				.filter(l => !!l);
+				.filter(l => !!l)
+				.filter(l => l.match(/.*.ts$/i));
 
 			formatFiles(some).on('error', err => {
 				console.error();

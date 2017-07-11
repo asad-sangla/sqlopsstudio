@@ -41,7 +41,7 @@ suite('SQL QueryEditor Tests', () => {
 	let parentBuilder: Builder;
 	let mockEditor: any;
 
-	let getQueryEditor = function(): QueryEditor {
+	let getQueryEditor = function (): QueryEditor {
 		return new QueryEditor(
 			undefined,
 			themeService,
@@ -120,7 +120,7 @@ suite('SQL QueryEditor Tests', () => {
 
 		// Mock ConnectionManagementService
 		memento = TypeMoq.Mock.ofType(Memento, TypeMoq.MockBehavior.Loose, '');
-		memento.setup(x => x.getMemento(TypeMoq.It.isAny())).returns(() => {});
+		memento.setup(x => x.getMemento(TypeMoq.It.isAny())).returns(() => { });
 		connectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, memento.object, undefined);
 		connectionManagementService.callBase = true;
 		connectionManagementService.setup(x => x.isConnected(TypeMoq.It.isAny())).returns(() => false);
@@ -304,7 +304,7 @@ suite('SQL QueryEditor Tests', () => {
 
 			// Mock ConnectionManagementService but don't set connected state
 			memento = TypeMoq.Mock.ofType(Memento, TypeMoq.MockBehavior.Loose, '');
-			memento.setup(x => x.getMemento(TypeMoq.It.isAny())).returns(() => {});
+			memento.setup(x => x.getMemento(TypeMoq.It.isAny())).returns(() => { });
 			queryConnectionService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, memento.object, undefined);
 			queryConnectionService.callBase = true;
 
@@ -322,16 +322,16 @@ suite('SQL QueryEditor Tests', () => {
 
 			// Setup hook to capture calls to create the listDatabase action
 			queryActionInstantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
-			.returns((definition, editor, action, selectBox) => {
-				if (definition.ID) {
-					if (definition.ID === 'listDatabaseQueryActionItem') {
-						let item = new ListDatabasesActionItem(editor, action, queryConnectionService.object, undefined, undefined);
-						return item;
+				.returns((definition, editor, action, selectBox) => {
+					if (definition.ID) {
+						if (definition.ID === 'listDatabaseQueryActionItem') {
+							let item = new ListDatabasesActionItem(editor, action, queryConnectionService.object, undefined, undefined);
+							return item;
+						}
 					}
-				}
-				// Default
-				return new RunQueryAction(undefined, undefined, undefined);
-			});
+					// Default
+					return new RunQueryAction(undefined, undefined, undefined);
+				});
 
 			let fileInput = new UntitledEditorInput(URI.parse('testUri'), false, '', '', instantiationService.object, undefined, undefined, undefined);
 			queryModelService = TypeMoq.Mock.ofType(QueryModelService, TypeMoq.MockBehavior.Loose, undefined, undefined);

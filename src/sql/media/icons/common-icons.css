@@ -1,12 +1,15 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 .vs .icon.backup {
-	background-image: url("backup.svg");
-	background-repeat: no-repeat;
+	background: url("backup.svg") center center no-repeat;
 }
 
 .vs-dark .icon.backup,
 .hc-black .icon.backup {
-	background-image: url("backup_inverse.svg");
-	background-repeat: no-repeat;
+	background: url("backup_inverse.svg") center center no-repeat;
 }
 
 .vs .icon.restore {
@@ -21,45 +24,46 @@
 }
 
 .vs .icon.database {
-	background-image: url("database.svg");
-	background-repeat: no-repeat;
+	background: url("database.svg") center center no-repeat;
 }
 
 .vs-dark .icon.database,
 .hc-black .icon.database {
-	background-image: url("database_inverse.svg");
-	background-repeat: no-repeat;
+	background: url("database_inverse.svg") center center no-repeat;
 }
 
 .vs .icon.file {
-	background-image: url("file.svg");
-	background-repeat: no-repeat;
+	background: url("file.svg") center center no-repeat;
 }
 
 .vs-dark .icon.file,
 .hc-black .icon.file {
-	background-image: url("file_inverse.svg");
-	background-repeat: no-repeat;
+	background: url("file_inverse.svg") center center no-repeat;
 }
 
 .vs .icon.new-database, {
-	background-image: url("new_database.svg");
-	background-repeat: no-repeat;
+	background: url("new_database.svg") center center no-repeat;
 }
 
 .vs-dark .icon.new-database,
 .hc-black .icon.new-database {
-	background-image: url("new_database_inverse.svg");
-	background-repeat: no-repeat;
+	background: url("new_database_inverse.svg") center center no-repeat;
 }
 
 .vs .icon.server-page {
-	background-image: url("server_page.svg");
-	background-repeat: no-repeat;
+	background: url("server_page.svg") center center no-repeat;
 }
 
 .vs-dark .icon.server-page,
 .hc-black .icon.server-page {
-	background-image: url("server_page_inverse.svg");
-	background-repeat: no-repeat;
+	background: url("server_page_inverse.svg") center center no-repeat;
+}
+
+.vs .icon.error {
+	background: url("status-error.svg") center center no-repeat;
+}
+
+.vs-dark .icon.error,
+.hc-black .icon.error {
+	background: url("status-error.svg") center center no-repeat;
 }

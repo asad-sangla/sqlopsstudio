@@ -6,7 +6,7 @@ import { Component, Input, Inject, ChangeDetectorRef, forwardRef } from '@angula
 
 /* SQL Imports */
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
-import { InsightsView } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { IInsightsView } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 
 import { SimpleExecuteResult } from 'data';
 
@@ -23,7 +23,7 @@ import * as colors from 'vs/platform/theme/common/colorRegistry';
 						[options]="_options"></canvas>
 				</div>`
 })
-export class ChartInsight implements InsightsView {
+export class ChartInsight implements IInsightsView {
 	public readonly customFields = ['colorMap'];
 	private _data: SimpleExecuteResult;
 	private _labels: string[] = [];

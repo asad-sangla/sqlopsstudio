@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TPromise } from 'vs/base/common/winjs.base';
-import { EditorInput,  EditorModel, ConfirmResult, EncodingMode, IEncodingSupport } from 'vs/workbench/common/editor';
+import { EditorInput, EditorModel, ConfirmResult, EncodingMode, IEncodingSupport } from 'vs/workbench/common/editor';
 import { IConnectionManagementService, IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
@@ -57,14 +57,14 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._currentEventCallbacks = [];
 		// re-emit sql editor events through this editor if it exists
 		if (this._sql) {
-			this._toDispose.push( this._sql.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
+			this._toDispose.push(this._sql.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
 		}
 
 		// Attach to event callbacks
 		if (this._queryModelService) {
 			// Register callbacks for the Actions
 			this._toDispose.push(
-					this._queryModelService.onRunQueryStart(uri => {
+				this._queryModelService.onRunQueryStart(uri => {
 					if (self.uri === uri) {
 						self.onRunQuery();
 					}
@@ -102,12 +102,12 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public get updateTaskbarEvent(): Event<void> { return this._updateTaskbar.event; }
 	public get showQueryResultsEditorEvent(): Event<void> { return this._showQueryResultsEditor.event; }
 	public get updateSelectionEvent(): Event<ISelectionData> { return this._updateSelection.event; }
-	public get runQueryEnabled(): boolean{ return this._runQueryEnabled; }
-	public get cancelQueryEnabled(): boolean{ return this._cancelQueryEnabled; }
-	public get connectEnabled(): boolean{ return this._connectEnabled; }
-	public get disconnectEnabled(): boolean{ return this._disconnectEnabled; }
-	public get changeConnectionEnabled(): boolean{ return this._changeConnectionEnabled; }
-	public get listDatabasesConnected(): boolean{ return this._listDatabasesConnected; }
+	public get runQueryEnabled(): boolean { return this._runQueryEnabled; }
+	public get cancelQueryEnabled(): boolean { return this._cancelQueryEnabled; }
+	public get connectEnabled(): boolean { return this._connectEnabled; }
+	public get disconnectEnabled(): boolean { return this._disconnectEnabled; }
+	public get changeConnectionEnabled(): boolean { return this._changeConnectionEnabled; }
+	public get listDatabasesConnected(): boolean { return this._listDatabasesConnected; }
 	public getQueryResultsInputResource(): string { return this._results.uri; }
 	public showQueryResultsEditor(): void { this._showQueryResultsEditor.fire(); }
 	public updateSelection(selection: ISelectionData): void { this._updateSelection.fire(selection); }
@@ -134,7 +134,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public getResource(): URI { return this._sql.getResource(); }
 	public getEncoding(): string { return this._sql.getEncoding(); }
 	public suggestFileName(): string { return this._sql.suggestFileName(); }
-	public getName(): string { return this._sql.getName();}
+	public getName(): string { return this._sql.getName(); }
 	public hasAssociatedFilePath(): boolean { return this._sql.hasAssociatedFilePath; }
 
 	public setEncoding(encoding: string, mode: EncodingMode /* ignored, we only have Encode */): void {

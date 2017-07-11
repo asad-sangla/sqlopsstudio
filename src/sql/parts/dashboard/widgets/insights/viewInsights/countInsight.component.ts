@@ -6,7 +6,7 @@ import { Component, Input, Inject, ChangeDetectorRef, forwardRef } from '@angula
 
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
-import { InsightsView } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { IInsightsView } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 
 import { SimpleExecuteResult } from 'data';
 
@@ -18,7 +18,7 @@ import { SimpleExecuteResult } from 'data';
 		</div>
 	`
 })
-export class CountInsight implements InsightsView {
+export class CountInsight implements IInsightsView {
 	public readonly customFields = [];
 	private _labels: Array<string>;
 	private _values: Array<string>;

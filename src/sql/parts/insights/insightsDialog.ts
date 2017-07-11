@@ -2,15 +2,17 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import 'vs/css!sql/parts/insights/media/insightsDialog';
+
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { Modal } from 'sql/parts/common/modal/modal';
-import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { InsightsConfig, IInsightLabel } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
-import { $ } from 'vs/base/browser/builder';
+import { Conditional } from 'sql/parts/dashboard/common/interfaces';
 
 import { DbCellValue, IDbColumn, IResultMessage } from 'data';
 
@@ -26,6 +28,7 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IListService } from 'vs/platform/list/browser/listService';
 import Severity from 'vs/base/common/severity';
 import * as nls from 'vs/nls';
+import { $ } from 'vs/base/browser/builder';
 
 class BasicView extends CollapsibleView {
 	constructor(private viewTitle: string, private list: List<any>, private _bodyContainer: HTMLElement, collapsed: boolean, headerSize: number) {
@@ -51,10 +54,10 @@ class BasicView extends CollapsibleView {
 	}
 }
 
-class Delegate implements IDelegate<string[] | BottomListResource> {
-	getHeight() { return 22; };
+class Delegate implements IDelegate<ListResource> {
+	getHeight = () => 22;
 
-	getTemplateId(element: string[] | BottomListResource) {
+	getTemplateId(element: ListResource) {
 		return 'string';
 	}
 }
@@ -62,28 +65,54 @@ class Delegate implements IDelegate<string[] | BottomListResource> {
 interface TableTemplate {
 	label: HTMLElement;
 	value: HTMLElement;
+	icon: HTMLElement;
+	badgeContent: HTMLElement;
 }
 
-class TopRenderer implements IRenderer<string[], TableTemplate> {
+class TopRenderer implements IRenderer<ListResource, TableTemplate> {
 	static TEMPLATE_ID = 'string';
 	get templateId(): string { return TopRenderer.TEMPLATE_ID; }
-	public labelIndex: number;
-	public valueIndex: number;
 
 	renderTemplate(container: HTMLElement): TableTemplate {
+		const row = DOM.$('div.list-row');
+		DOM.append(container, row);
+		const icon = DOM.$('span.icon-span');
 		const label = DOM.$('span.label');
-		label.style.fontWeight = 'bold';
-		label.style.paddingRight = '20px';
 		const value = DOM.$('span.value');
-		DOM.append(container, label);
-		DOM.append(container, value);
+		const badge = DOM.$('div.badge');
+		const badgeContent = DOM.$('div.badge-content');
+		DOM.append(badge, badgeContent);
+		DOM.append(icon, badge);
+		DOM.append(row, icon);
+		DOM.append(row, label);
+		DOM.append(row, value);
 
-		return { label, value };
+		return { label, value, icon, badgeContent };
 	}
 
-	renderElement(resource: string[], index: number, template: TableTemplate): void {
-		template.label.innerHTML = resource[this.labelIndex];
-		template.value.innerHTML = resource[this.valueIndex];
+	renderElement(resource: ListResource, index: number, template: TableTemplate): void {
+		template.label.innerHTML = resource.label;
+		template.value.innerHTML = resource.value;
+		// render icon if passed
+		if (resource.icon) {
+			template.icon.classList.add('icon');
+			template.icon.classList.add(resource.icon);
+		} else {
+			template.icon.classList.remove('icon');
+		}
+
+		//render state badge if present
+		if (resource.stateColor) {
+			template.badgeContent.style.backgroundColor = resource.stateColor;
+			template.badgeContent.classList.remove('icon');
+		} else if (resource.stateIcon) {
+			template.badgeContent.style.backgroundColor = '';
+			template.badgeContent.classList.add('icon');
+			template.badgeContent.classList.add(resource.stateIcon);
+		} else {
+			template.badgeContent.classList.remove('icon');
+			template.badgeContent.style.backgroundColor = '';
+		}
 	}
 
 	disposeTemplate(template: TableTemplate): void {
@@ -91,27 +120,38 @@ class TopRenderer implements IRenderer<string[], TableTemplate> {
 	}
 }
 
-interface BottomListResource {
+interface ListResource {
+	title: boolean;
 	value: string;
 	label: string;
+	icon?: string;
+	data?: string[];
+	stateColor?: string;
+	stateIcon?: string;
 }
 
-class BottomRender implements IRenderer<BottomListResource, TableTemplate> {
+class BottomRender implements IRenderer<ListResource, TableTemplate> {
 	static TEMPLATE_ID = 'string';
 	get templateId(): string { return BottomRender.TEMPLATE_ID; }
 
 	renderTemplate(container: HTMLElement): TableTemplate {
+		const row = DOM.$('div.list-row');
+		DOM.append(container, row);
+		const icon = DOM.$('span.icon-span');
 		const label = DOM.$('span.label');
-		label.style.fontWeight = 'bold';
-		label.style.paddingRight = '20px';
 		const value = DOM.$('span.value');
-		DOM.append(container, label);
-		DOM.append(container, value);
+		const badge = DOM.$('div.badge');
+		const badgeContent = DOM.$('div.badge-content');
+		DOM.append(badge, badgeContent);
+		DOM.append(icon, badge);
+		DOM.append(row, icon);
+		DOM.append(row, label);
+		DOM.append(row, value);
 
-		return { label, value };
+		return { label, value, icon, badgeContent };
 	}
 
-	renderElement(resource: BottomListResource, index: number, template: TableTemplate): void {
+	renderElement(resource: ListResource, index: number, template: TableTemplate): void {
 		template.label.innerHTML = resource.label;
 		template.value.innerHTML = resource.value;
 	}
@@ -152,21 +192,22 @@ export default class InsightsDialog extends Modal {
 		const delegate = new Delegate();
 		this._topRenderer = new TopRenderer();
 		let bottomRenderer = new BottomRender();
-		let topViewBody = $().div();
-		let bottomViewBody = $().div();
+		let topViewBody = $().div({ 'class': 'insights' });
+		let bottomViewBody = $().div({ 'class': 'insights' });
 
 		this._splitView = new SplitView(container);
 
-		this._bottomList = new List<BottomListResource>(bottomViewBody.getHTMLElement(), delegate, [bottomRenderer]);
+		this._bottomList = new List<ListResource>(bottomViewBody.getHTMLElement(), delegate, [bottomRenderer]);
 
-		this._topList = new List<string[]>(topViewBody.getHTMLElement(), delegate, [this._topRenderer]);
+		this._topList = new List<ListResource>(topViewBody.getHTMLElement(), delegate, [this._topRenderer]);
 
-		this._disposables.push(this._topList.onSelectionChange((e: IListEvent<any>) => {
-			if (e.elements.length === 1) {
-				let resourceArray: BottomListResource[] = [];
+		this._disposables.push(this._topList.onSelectionChange((e: IListEvent<ListResource>) => {
+			if (e.elements.length === 1 && !e.elements[0].title) {
+				let resourceArray: ListResource[] = [];
 				for (let i = 0; i < this._columns.length; i++) {
-					resourceArray.push({ label: this._columns[i].columnName, value: e.elements[0][i] });
+					resourceArray.push({ title: false, label: this._columns[i].columnName, value: e.elements[0].data[i] });
 				}
+				resourceArray.unshift({ title: true, value: nls.localize('value', 'Value').toUpperCase(), label: nls.localize('property', 'Property').toUpperCase() });
 				this._bottomList.splice(0, this._bottomList.length, resourceArray);
 			}
 		}));
@@ -257,22 +298,97 @@ export default class InsightsDialog extends Modal {
 		let elements = this._rows;
 		let labelIndex: number;
 		let valueIndex: number;
-		if (this._insight.label === undefined || (labelIndex = this.findIndex(this._insight.label, this._columns)) === -1) {
+		let columnName = typeof this._insight.label === 'object' ? this._insight.label.column : this._insight.label;
+		if (this._insight.label === undefined || (labelIndex = this.findIndex(columnName, this._columns)) === -1) {
 			labelIndex = 0;
 		}
 		if (this._insight.value === undefined || (valueIndex = this.findIndex(this._insight.value, this._columns)) === -1) {
 			valueIndex = 1;
 		}
-		this._topRenderer.labelIndex = labelIndex;
-		this._topRenderer.valueIndex = valueIndex;
 		// convert
-		let inputArray = elements.map((item) => {
-			return item.map((item2) => {
-				return item2.displayValue;
+		let inputArray: ListResource[] = elements.map((item) => {
+			let label = item[labelIndex].displayValue;
+			let value = item[valueIndex].displayValue;
+			let state = this.calcInsightState(value);
+			let data: string[] = item.map((val) => {
+				return val.displayValue;
 			});
+			let icon = typeof this._insight.label === 'object' ? this._insight.label.icon : undefined;
+			let rval = { title: false, label, value, icon, data, state };
+			if (state) {
+				rval[state.type] = state.val;
+			}
+			return rval;
 		});
+		// add the header onto the front of the array
+		inputArray.unshift({ title: true, label: this._columns[labelIndex].columnName.toUpperCase(), value: this._columns[valueIndex].columnName.toUpperCase() });
 		this._topList.splice(0, this._topList.length, inputArray);
 		this._splitView.layout(DOM.getContentHeight(this._container));
+	}
+
+	/**
+	 * Calculates the state of the item value passed based on the insight conditions
+	 * @param item item to determine state for
+	 * @returns json that specifies whether the state is an icon or color and the val of that state
+	 */
+	private calcInsightState(item: string): { type: 'stateColor' | 'stateIcon', val: string } {
+		if (typeof this._insight.label === 'string') {
+			return undefined;
+		} else {
+			let label = <IInsightLabel>this._insight.label;
+			for (let cond of label.state) {
+				switch (Conditional[cond.condition.if]) {
+					case Conditional.always:
+						return cond.color
+							? { type: 'stateColor', val: cond.color }
+							: { type: 'stateIcon', val: cond.icon };
+					case Conditional.equals:
+						if (item === cond.condition.equals) {
+							return cond.color
+								? { type: 'stateColor', val: cond.color }
+								: { type: 'stateIcon', val: cond.icon };
+						}
+						break;
+					case Conditional.notEquals:
+						if (item !== cond.condition.equals) {
+							return cond.color
+								? { type: 'stateColor', val: cond.color }
+								: { type: 'stateIcon', val: cond.icon };
+						}
+						break;
+					case Conditional.greaterThanOrEquals:
+						if (parseInt(item) >= parseInt(cond.condition.equals)) {
+							return cond.color
+								? { type: 'stateColor', val: cond.color }
+								: { type: 'stateIcon', val: cond.icon };
+						}
+						break;
+					case Conditional.greaterThan:
+						if (parseInt(item) > parseInt(cond.condition.equals)) {
+							return cond.color
+								? { type: 'stateColor', val: cond.color }
+								: { type: 'stateIcon', val: cond.icon };
+						}
+						break;
+					case Conditional.lessThanOrEquals:
+						if (parseInt(item) <= parseInt(cond.condition.equals)) {
+							return cond.color
+								? { type: 'stateColor', val: cond.color }
+								: { type: 'stateIcon', val: cond.icon };
+						}
+						break;
+					case Conditional.lessThan:
+						if (parseInt(item) < parseInt(cond.condition.equals)) {
+							return cond.color
+								? { type: 'stateColor', val: cond.color }
+								: { type: 'stateIcon', val: cond.icon };
+						}
+						break;
+				}
+			}
+		}
+		// if we got to this point, there was no matching conditionals therefore no valid state
+		return undefined;
 	}
 
 	private findIndex(val: string, row: DbCellValue[]): number;

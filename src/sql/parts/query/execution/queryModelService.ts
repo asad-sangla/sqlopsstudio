@@ -12,11 +12,13 @@ import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
-import { QueryStatusbarItem } from  'sql/parts/query/execution/queryStatus';
-import { SqlFlavorStatusbarItem } from  'sql/parts/query/common/flavorStatus';
+import { QueryStatusbarItem } from 'sql/parts/query/execution/queryStatus';
+import { SqlFlavorStatusbarItem } from 'sql/parts/query/common/flavorStatus';
 
-import { ISelectionData, ResultSetSubset, EditSubsetResult,
-		EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult } from 'data';
+import {
+	ISelectionData, ResultSetSubset, EditSubsetResult,
+	EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult
+} from 'data';
 import { ISlickRange } from 'angular2-slickgrid';
 
 import nls = require('vs/nls');
@@ -143,7 +145,7 @@ export class QueryModelService implements IQueryModelService {
 		});
 	}
 
-	public getEditRows(uri: string, rowStart: number, numberOfRows: number) {
+	public getEditRows(uri: string, rowStart: number, numberOfRows: number): Thenable<EditSubsetResult> {
 		return this._queryInfoMap.get(uri).queryRunner.getEditRows(rowStart, numberOfRows).then(results => {
 			return results;
 		});
@@ -335,7 +337,7 @@ export class QueryModelService implements IQueryModelService {
 				this._fireQueryEvent(ownerUri, 'start');
 			});
 			queryRunner.eventEmitter.on('editSessionReady', (ownerUri, success, message) => {
-				this._onEditSessionReady.fire({ownerUri: ownerUri, success: success, message: message});
+				this._onEditSessionReady.fire({ ownerUri: ownerUri, success: success, message: message });
 				this._fireQueryEvent(ownerUri, 'editSessionReady');
 			});
 
@@ -377,7 +379,7 @@ export class QueryModelService implements IQueryModelService {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
-			return queryRunner.commitEdit(ownerUri).then(() => {}, error => {
+			return queryRunner.commitEdit(ownerUri).then(() => { }, error => {
 				this._messageService.show(Severity.Error, nls.localize('commitEditFailed', 'Commit row failed: ') + error.message);
 				return Promise.reject(error);
 			});
@@ -485,7 +487,7 @@ export class QueryModelService implements IQueryModelService {
 		selection.endColumn = selection ? Math.max(0, selection.endColumn) : 0;
 		selection.endLine = selection ? Math.max(0, selection.endLine) : 0;
 		selection.startColumn = selection ? Math.max(0, selection.startColumn) : 0;
-		selection.startLine = selection ?  Math.max(0, selection.startLine) : 0;
+		selection.startLine = selection ? Math.max(0, selection.startLine) : 0;
 		return selection;
 	}
 }

@@ -1,20 +1,22 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 .vs .icon.table,
 .vs-dark .icon.table,
 .hc-black .icon.table {
-	background-image: url("Table.svg");
-	background-repeat: no-repeat;
+	background: url("Table.svg") center center no-repeat;
 }
 
 .vs .icon.stored-procedure,
 .vs-dark .icon.stored-procedure,
 .hc-black .icon.stored-procedure {
-	background-image: url("StoredProcedure.svg");
-	background-repeat: no-repeat;
+	background: url("StoredProcedure.svg") center center no-repeat;
 }
 
 .vs .icon.view,
 .vs-dark .icon.view,
 .hc-black .icon.view {
-	background-image: url("View.svg");
-	background-repeat: no-repeat;
+	background: url("View.svg") center center no-repeat;
 }

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 import {
 	Component, Inject, ViewContainerRef, forwardRef, AfterContentInit,
 	ComponentFactoryResolver, ViewChild, Type
@@ -20,9 +20,24 @@ import { SimpleExecuteResult } from 'data';
 
 import { Action } from 'vs/base/common/actions';
 
-export interface InsightsView {
+export interface IInsightsView {
 	data: SimpleExecuteResult;
 	customFields: Array<string>;
+}
+
+export interface IStateCondition {
+	condition: {
+		if: string,
+		equals?: string
+	};
+	color?: string;
+	icon?: string;
+}
+
+export interface IInsightLabel {
+	column: string;
+	icon?: string;
+	state?: Array<IStateCondition>;
 }
 
 export interface InsightsConfig {
@@ -30,11 +45,11 @@ export interface InsightsConfig {
 	query: string;
 	colorMap?: { [column: string]: string };
 	detailsQuery?: string;
-	label?: string;
+	label?: IInsightLabel | string;
 	value?: string;
 }
 
-const insightMap: { [x: string]: Type<InsightsView> } = {
+const insightMap: { [x: string]: Type<IInsightsView> } = {
 	'chart': ChartInsight,
 	'count': CountInsight
 };
@@ -72,11 +87,11 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 					return;
 				}
 
-				let componentFactory = self._componentFactoryResolver.resolveComponentFactory<InsightsView>(insightMap[self.insightConfig.type]);
+				let componentFactory = self._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightMap[self.insightConfig.type]);
 				self.viewContainerRef.clear();
 
 				let componentRef = self.componentHost.viewContainerRef.createComponent(componentFactory);
-				let componentInstance = <InsightsView>componentRef.instance;
+				let componentInstance = <IInsightsView>componentRef.instance;
 				componentInstance.data = result;
 				componentInstance.customFields.forEach((field) => {
 					componentInstance[field] = self.insightConfig[field];
@@ -93,6 +108,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		element.innerText = error;
 	}
 
+	//tslint:disable-next-line
 	private onClick(event: any) {
 		this.dashboardService.openInsight(this.insightConfig);
 	}
