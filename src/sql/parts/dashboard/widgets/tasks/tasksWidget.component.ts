@@ -65,6 +65,13 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 				return !this._isAzure;
 			},
 			iconClass: 'backup'
+		},
+		{
+			name: 'Restore',
+			action: () => {
+				this.restore();
+			},
+			iconClass: 'restore',
 		}
 	];
 
@@ -112,13 +119,17 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		this._bootstrap.backup();
 	}
 
+	private restore(): void {
+		this._bootstrap.restore();
+	}
+
 	//tslint:disable-next-line
 	private calculateTransform(index: number): string {
 		let marginy = (1 + (index % this._rows)) * this._margins;
 		let marginx = (1 + (Math.floor(index / 2))) * this._margins;
 		let posx = (this._size * (Math.floor(index / 2))) + marginx;
 		let posy = (this._size * (index % this._rows)) + marginy;
-		return 'translate(' + posx + 'px, ' + posy  + 'px)';
+		return 'translate(' + posx + 'px, ' + posy + 'px)';
 	}
 
 	private executeQuery() {

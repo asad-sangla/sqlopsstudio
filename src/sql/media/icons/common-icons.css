@@ -9,6 +9,17 @@
 	background-repeat: no-repeat;
 }
 
+.vs .icon.restore {
+	background-image: url("restore.svg");
+	background-repeat: no-repeat;
+}
+
+.vs-dark .icon.restore,
+.hc-black .icon.restore {
+	background-image: url("restore_inverse.svg");
+	background-repeat: no-repeat;
+}
+
 .vs .icon.database {
 	background-image: url("database.svg");
 	background-repeat: no-repeat;

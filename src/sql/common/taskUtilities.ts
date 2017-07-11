@@ -13,7 +13,7 @@ import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
-import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 
@@ -176,6 +176,12 @@ export class TaskUtilities {
 	public static showBackup(uri: string, connection: ConnectionManagementInfo, disasterRecoveryUiService: IDisasterRecoveryUiService): Promise<void> {
 		return new Promise<void>((resolve) => {
 			disasterRecoveryUiService.showBackup(uri, connection);
+		});
+	}
+
+	public static showRestore(uri: string, connection: ConnectionManagementInfo, restoreDialogService: IRestoreDialogService): Promise<void> {
+		return new Promise<void>((resolve) => {
+			restoreDialogService.showDialog(uri, connection);
 		});
 	}
 

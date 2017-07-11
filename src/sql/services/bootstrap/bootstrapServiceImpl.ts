@@ -16,7 +16,7 @@ import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
-import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 
@@ -54,6 +54,7 @@ export class BootstrapService implements IBootstrapService {
 		@IWorkbenchThemeService public themeService: IWorkbenchThemeService,
 		@IDisasterRecoveryService public disasterRecoveryService: IDisasterRecoveryService,
 		@IDisasterRecoveryUiService public disasterRecoveryUiService: IDisasterRecoveryUiService,
+		@IRestoreDialogService public restoreDialogService: IRestoreDialogService,
 		@IConnectionDialogService public connectionDialogService: IConnectionDialogService,
 		@IQueryModelService public queryModelService: IQueryModelService,
 		@IKeybindingService public keybindingService: IKeybindingService,

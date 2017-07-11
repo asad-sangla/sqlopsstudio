@@ -15,7 +15,7 @@ import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
-import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
@@ -58,6 +58,7 @@ export interface IBootstrapService {
 	angularEventingService: IAngularEventingService;
 	configurationService: IConfigurationService;
 	insightsDialogService: IInsightsDialogService;
+	restoreDialogService: IRestoreDialogService;
 
 	/*
 	* Bootstraps the Angular module described. Components that need singleton services should inject the
@@ -72,7 +73,7 @@ export interface IBootstrapService {
 	* callbackSetModule:Optional. If specified, will be used to set the moduleRef
 	* Returns the unique selector string that this module will bootstrap with.
 	*/
-	bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams, input?: IEditorInput, callbackSetModule?: (value:  NgModuleRef<{}>)  =>  void): string;
+	bootstrap(moduleType: any, container: HTMLElement, selectorString: string, params: BootstrapParams, input?: IEditorInput, callbackSetModule?: (value: NgModuleRef<{}>) => void): string;
 
 	/*
 	* Gets the "params" entry associated with the given id and unassociates the id/entry pair.

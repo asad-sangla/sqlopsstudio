@@ -123,7 +123,8 @@ import { ISplashScreenService, SplashScreenService } from 'sql/workbench/splashS
 import { IAdminService, AdminService } from 'sql/parts/admin/common/adminService';
 import { DisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disasterRecoveryService';
 import { DisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/disasterRecoveryUiService';
-import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { RestoreDialogService } from 'sql/parts/disasterRecovery/restore/restoreDialogService';
+import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService, InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 
 
@@ -609,6 +610,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IAdminService, this.instantiationService.createInstance(AdminService));
 		serviceCollection.set(IDisasterRecoveryService, this.instantiationService.createInstance(DisasterRecoveryService));
 		serviceCollection.set(IDisasterRecoveryUiService, this.instantiationService.createInstance(DisasterRecoveryUiService));
+		serviceCollection.set(IRestoreDialogService, this.instantiationService.createInstance(RestoreDialogService));
 		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
 		serviceCollection.set(IInsightsDialogService, this.instantiationService.createInstance(InsightsDialogService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));

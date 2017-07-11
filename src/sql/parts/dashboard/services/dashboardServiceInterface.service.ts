@@ -245,6 +245,16 @@ export class DashboardServiceInterface implements OnDestroy {
 	}
 
 	/**
+	 * Opens the restore dialog for the current connection
+	 */
+	public restore(): void {
+		TaskUtilities.showRestore(
+			this._uri,
+			this._bootstrapParams.connection,
+			this._bootstrapService.restoreDialogService);
+	}
+
+	/**
 	 * Opens the insight widget
 	 */
 	public openInsight(query: InsightsConfig): void {
