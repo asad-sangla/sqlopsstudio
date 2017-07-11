@@ -15,6 +15,7 @@ import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { BaseActionContext } from 'sql/common/baseActions';
 import { GetExplorerActions } from './explorerActions';
+import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
@@ -78,7 +79,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	private filterString = '';
 	private selected: number;
 	private hovered: number;
-	private themeSub: IDisposable;
+	private _disposables: Array<IDisposable> = [];
 	//tslint:disable-next-line
 	private filterArray = [
 		'view',
@@ -99,11 +100,11 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	}
 
 	ngOnInit() {
-		this.themeSub = registerThemingParticipant(this.registerThemeing);
+		this._disposables.push(registerThemingParticipant(this.registerThemeing));
 	}
 
 	ngOnDestroy() {
-		this.themeSub.dispose();
+		this._disposables.forEach(i => i.dispose());
 	}
 
 	private registerThemeing(theme: ITheme, collector: ICssStyleCollector) {
@@ -135,7 +136,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	private init(): void {
 		let self = this;
 		if (self._config.context === 'database') {
-			self._bootstrap.metadataService.metadata.then((data) => {
+			self._disposables.push(toDisposableSubscription(self._bootstrap.metadataService.metadata.subscribe((data) => {
 				if (data) {
 					self.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
 					self.tableData.sort(this.schemaSort);
@@ -144,12 +145,12 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 					}
 				}
 				self._changeRef.detectChanges();
-			});
+			})));
 		} else {
-			self._bootstrap.metadataService.databaseNames.then((data) => {
+			self._disposables.push(toDisposableSubscription(self._bootstrap.metadataService.databaseNames.subscribe((data) => {
 				self.tableData = data;
 				self._changeRef.detectChanges();
-			});
+			})));
 		}
 	}
 
@@ -218,13 +219,13 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		if (event) {
 			if (self._config.context === 'server') {
 				let anchor = { x: event.pageX + 1, y: event.pageY };
-				let newProfile = <IConnectionProfile> Object.create(self._bootstrap.connectionManagementService.connectionInfo.connectionProfile);
+				let newProfile = <IConnectionProfile>Object.create(self._bootstrap.connectionManagementService.connectionInfo.connectionProfile);
 				newProfile.databaseName = val as string;
 				self._bootstrap.contextMenuService.showContextMenu({
 					getAnchor: () => anchor,
 					getActions: () => GetExplorerActions(undefined, self.isCloud, self._bootstrap),
 					getActionsContext: () => {
-						return <BaseActionContext> {
+						return <BaseActionContext>{
 							uri: self._bootstrap.getUnderlyingUri(),
 							profile: newProfile,
 							connInfo: self._bootstrap.connectionManagementService.connectionInfo,

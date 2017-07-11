@@ -69,6 +69,7 @@ function main() {
 			'@angular/router',
 			'angular4-grid',
 			'primeng/primeng',
+			'rxjs/add/observable/of',
 			'rxjs/Observable',
 			'rxjs/Subject',
 			'rxjs/Observer'

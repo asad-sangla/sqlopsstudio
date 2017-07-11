@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 /* Node Modules */
 import { Injectable, Inject, forwardRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
+import { Observable } from 'rxjs/Observable';
 
 /* SQL imports */
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
@@ -44,12 +45,12 @@ export class SingleConnectionMetadataService {
 		private _uri: string
 	) { }
 
-	get metadata(): Thenable<ProviderMetadata> {
-		return this._metadataService.getMetadata(this._uri);
+	get metadata(): Observable<ProviderMetadata> {
+		return Observable.fromPromise(this._metadataService.getMetadata(this._uri));
 	}
 
-	get databaseNames(): Thenable<string[]> {
-		return this._metadataService.getDatabaseNames(this._uri);
+	get databaseNames(): Observable<string[]> {
+		return Observable.fromPromise(this._metadataService.getDatabaseNames(this._uri));
 	}
 }
 
@@ -87,8 +88,8 @@ export class SingleAdminService {
 		private _uri: string
 	) { }
 
-	public get databaseInfo(): Thenable<DatabaseInfo> {
-		return this._adminService.getDatabaseInfo(this._uri);
+	public get databaseInfo(): Observable<DatabaseInfo> {
+		return Observable.fromPromise(this._adminService.getDatabaseInfo(this._uri));
 	}
 }
 

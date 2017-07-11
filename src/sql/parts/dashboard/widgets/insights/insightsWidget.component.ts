@@ -4,13 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 import {
 	Component, Inject, ViewContainerRef, forwardRef, AfterContentInit,
-	ComponentFactoryResolver, ViewChild, Type
+	ComponentFactoryResolver, ViewChild, Type, OnDestroy
 } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
 
 import { DashboardWidget, IDashboardWidget, WIDGET_CONFIG, WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { InsightAction, InsightActionContext } from 'sql/common/baseActions';
+import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 /* Insights */
 import { ChartInsight } from './viewInsights/chartInsight.component';
@@ -18,6 +20,7 @@ import { CountInsight } from './viewInsights/countInsight.component';
 
 import { SimpleExecuteResult } from 'data';
 
+import { IDisposable } from 'vs/base/common/lifecycle';
 import { Action } from 'vs/base/common/actions';
 
 export interface IInsightsView {
@@ -58,9 +61,10 @@ const insightMap: { [x: string]: Type<IInsightsView> } = {
 	selector: 'insights-widget',
 	template: '<div component-host></div>'
 })
-export class InsightsWidget extends DashboardWidget implements IDashboardWidget, AfterContentInit {
+export class InsightsWidget extends DashboardWidget implements IDashboardWidget, AfterContentInit, OnDestroy {
 	private insightConfig: InsightsConfig;
-	private queryThenable: Thenable<SimpleExecuteResult>;
+	private queryObv: Observable<SimpleExecuteResult>;
+	private _disposables: Array<IDisposable> = [];
 	@ViewChild(ComponentHostDirective) private componentHost: ComponentHostDirective;
 
 	constructor(
@@ -74,13 +78,13 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		if (this.insightConfig.query === undefined || this.insightConfig.query === '') {
 			console.error('Query was undefined or empty, config: ', this._config);
 		} else {
-			this.queryThenable = dashboardService.queryManagementService.runQueryAndReturn(this.insightConfig.query);
+			this.queryObv = Observable.fromPromise(dashboardService.queryManagementService.runQueryAndReturn(this.insightConfig.query));
 		}
 	}
 
 	ngAfterContentInit() {
 		let self = this;
-		self.queryThenable.then(
+		this._disposables.push(toDisposableSubscription(self.queryObv.subscribe(
 			result => {
 				if (result.rowCount === 0) {
 					self.showError('No results to show');
@@ -100,7 +104,11 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 			error => {
 				self.showError(error);
 			}
-		);
+		)));
+	}
+
+	ngOnDestroy() {
+		this._disposables.forEach(i => i.dispose());
 	}
 
 	private showError(error: string): void {

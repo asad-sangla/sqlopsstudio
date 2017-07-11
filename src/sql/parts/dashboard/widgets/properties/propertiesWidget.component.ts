@@ -8,10 +8,13 @@ import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, ElementRef, O
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 import { properties } from './propertiesJson';
 
 import { DatabaseInfo, ServerInfo } from 'data';
+
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 export interface PropertiesConfig {
 	properties: Array<ProviderProperties>;
@@ -57,6 +60,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	private _eventHandler: () => any;
 	private _parent;
 	private _child;
+	private _disposables: Array<IDisposable> = [];
 	private properties: Array<DisplayProperty>;
 
 	constructor(
@@ -73,14 +77,14 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		let self = this;
 		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
 		if (!self._connection.serverInfo.isCloud) {
-			self._bootstrap.adminService.databaseInfo.then((data) => {
+			self._disposables.push(toDisposableSubscription(self._bootstrap.adminService.databaseInfo.subscribe((data) => {
 				self._databaseInfo = data;
 				_changeRef.detectChanges();
 				self.parseProperties();
 				if (this._eventHandler) {
 					setTimeout(this._eventHandler);
 				}
-			});
+			})));
 		} else {
 			self._databaseInfo = {
 				options: {}
@@ -101,6 +105,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 
 	ngOnDestroy() {
 		$(window).off('resize', this._eventHandler);
+		this._disposables.forEach(i => i.dispose());
 	}
 
 	private handleClipping(): () => any {

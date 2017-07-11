@@ -3,6 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { ChangeDetectorRef } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
+// of is not on Observable by default, need to import it
+import 'rxjs/add/observable/of';
 
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface, SingleAdminService, SingleConnectionManagementService } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -96,7 +99,7 @@ suite('Dashboard Properties Widget Tests', () => {
 		let dashboardService = TypeMoq.Mock.ofType(DashboardServiceInterface, TypeMoq.MockBehavior.Loose, [{}]);
 
 		let singleAdminService = TypeMoq.Mock.ofType(SingleAdminService);
-		singleAdminService.setup(x => x.databaseInfo).returns(() => Promise.resolve(databaseInfo));
+		singleAdminService.setup(x => x.databaseInfo).returns(() => Observable.of(databaseInfo));
 
 		dashboardService.setup(x => x.adminService).returns(() => singleAdminService.object);
 
