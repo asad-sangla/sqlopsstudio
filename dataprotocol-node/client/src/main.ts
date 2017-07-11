@@ -28,7 +28,7 @@ import {
 	SaveResultsRequestParams as VSaveResultsRequestParams, ObjectExplorerProvider,
 	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo,
 	TaskServicesProvider, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo, TaskInfo,
-	AdminServicesProvider, DisasterRecoveryProvider
+	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo
 } from 'data';
 
 import {
@@ -57,6 +57,7 @@ import {
 	DatabaseInfo, BackupConfigInfo, CreateDatabaseResponse, CreateDatabaseParams,
 	LoginInfo, CreateLoginResponse, CreateLoginParams,
 	BackupInfo, BackupResponse, BackupParams,
+	RestoreParams, RestoreResponse, RestorePlanResponse,
 	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams,
 	GetDatabaseInfoResponse, GetDatabaseInfoParams,
 	BackupConfigInfoResponse
@@ -115,6 +116,7 @@ import {
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
 	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
 	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, GetDatabaseInfoRequest, BackupConfigInfoRequest,
+	RestoreRequest, RestorePlanRequest,
 	ListTasksRequest, CancelTaskRequest, TaskStatusChangedNotification, TaskCreatedNotification,
 	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams
 } from './protocol';
@@ -1451,7 +1453,7 @@ export class LanguageClient {
 			},
 
 			runQueryString(ownerUri: string, queryString: string): Thenable<void> {
-				let params: QueryExecuteStringParams = {ownerUri: ownerUri, query: queryString };
+				let params: QueryExecuteStringParams = { ownerUri: ownerUri, query: queryString };
 				return self.doSendRequest(connection, QueryExecuteStringRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;
@@ -1827,6 +1829,28 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(BackupConfigInfoRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			getRestorePlan(ownerUri: string, restoreInfo: RestoreInfo): Thenable<RestorePlanResponse> {
+				return self.doSendRequest(connection, RestorePlanRequest.type, self._c2p.asRestoreParams(ownerUri, restoreInfo), undefined).then(
+					result => {
+						return result;
+					},
+					error => {
+						self.logFailedRequest(RestorePlanRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			restore(ownerUri: string, restoreInfo: RestoreInfo): Thenable<RestoreResponse> {
+				return self.doSendRequest(connection, RestoreRequest.type, self._c2p.asRestoreParams(ownerUri, restoreInfo), undefined).then(
+					result => {
+						return result;
+					},
+					error => {
+						self.logFailedRequest(RestoreRequest.type, error);
 						return Promise.resolve(undefined);
 					}
 				);

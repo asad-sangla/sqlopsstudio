@@ -34,7 +34,7 @@ export const IDisasterRecoveryService = createDecorator<IDisasterRecoveryService
 export interface IDisasterRecoveryService {
 	_serviceBrand: any;
 
-    getBackupConfigInfo(connectionUri: string): Thenable<data.BackupConfigInfo>;
+	getBackupConfigInfo(connectionUri: string): Thenable<data.BackupConfigInfo>;
 
 	/**
 	 * Backup a data source using the provided connection
@@ -46,4 +46,14 @@ export interface IDisasterRecoveryService {
 	 * Register a disaster recovery provider
 	 */
 	registerProvider(providerId: string, provider: data.DisasterRecoveryProvider): void;
+
+	/**
+	 * Restore a data source using a backup file or database
+	 */
+	restore(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestoreResponse>;
+
+	/**
+	 * Gets restore plan to do the restore operation on a database
+	 */
+	getRestorePlan(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse>;
 }

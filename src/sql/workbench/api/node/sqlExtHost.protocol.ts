@@ -225,6 +225,16 @@ export abstract class ExtHostDataProtocolShape {
 	 * Get the extended database prototype
 	 */
 	$getBackupConfigInfo(handle: number, connectionUri: string): Thenable<data.BackupConfigInfo> { throw ni(); }
+
+	/**
+	 * Restores a database
+	 */
+	$restore(handle: number, connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestoreResponse> { throw ni(); }
+
+	/**
+	 * Gets a plan for restoring a database
+	 */
+	$getRestorePlan(handle: number, connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse> { throw ni(); }
 }
 
 /**

@@ -83,6 +83,8 @@ export interface Converter {
 	asListTasksParams(params: data.ListTasksParams): ls.ListTasksParams;
 
 	asCancelTaskParams(params: data.CancelTaskParams): ls.CancelTaskParams;
+
+	asRestoreParams(ownerUri: string, params: data.RestoreInfo): ls.RestoreParams;
 }
 
 export interface URIConverter {
@@ -401,6 +403,15 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asRestoreParams(ownerUri: string, params: data.RestoreInfo): ls.RestoreParams {
+		return <ls.RestoreParams>{
+			ownerUri: ownerUri,
+			backupFilePath: params.backupFilePath,
+			databaseName: params.databaseName,
+			relocateDbFiles: params.relocateDbFiles
+		};
+	}
+
 
 	return {
 		asUri,
@@ -437,7 +448,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asExpandInfo,
 		asCloseSessionInfo,
 		asListTasksParams,
-		asCancelTaskParams
+		asCancelTaskParams,
+		asRestoreParams,
 	};
 }
 

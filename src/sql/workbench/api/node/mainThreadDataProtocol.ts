@@ -209,6 +209,12 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			getBackupConfigInfo(connectionUri: string): Thenable<data.BackupConfigInfo> {
 				return self._proxy.$getBackupConfigInfo(handle, connectionUri);
 			},
+			getRestorePlan(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse> {
+				return self._proxy.$getRestorePlan(handle, connectionUri, restoreInfo);
+			},
+			restore(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestoreResponse> {
+				return self._proxy.$restore(handle, connectionUri, restoreInfo);
+			},
 		});
 
 		return undefined;

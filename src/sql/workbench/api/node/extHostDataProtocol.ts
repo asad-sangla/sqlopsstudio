@@ -413,4 +413,24 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 				: Promise.resolve(undefined);
 		});
 	}
+
+	/**
+	 * Restores a database
+	 */
+	public $restore(handle: number, connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestoreResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.restore(connectionUri, restoreInfo)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
+	 * Gets a plan for restoring a database
+	 */
+	public $getRestorePlan(handle: number, connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.getRestorePlan(connectionUri, restoreInfo)
+				: Promise.resolve(undefined);
+		});
+	}
 }

@@ -907,7 +907,31 @@ declare module 'data' {
 	export interface DisasterRecoveryProvider {
 		backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse>;
 		getBackupConfigInfo(connectionUri: string): Thenable<BackupConfigInfo>;
+		getRestorePlan(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestorePlanResponse>;
+		restore(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestoreResponse>;
 	}
 
+	export interface RestoreInfo {
+		backupFilePath: string;
+		databaseName: string;
+		relocateDbFiles: boolean;
+	}
 
+	export interface RestoreResponse {
+		backupFilePath: boolean;
+		canRestore: string;
+		errorMessage: string;
+		dbFiles: string[];
+		serverName: string;
+		databaseName: string;
+		relocateFilesNeeded: boolean;
+		defaultDataFolder: string;
+		defaultLogFolder: string;
+	}
+
+	export interface RestorePlanResponse {
+		result: boolean;
+		taskId: string;
+		errorMessage: string;
+	}
 }

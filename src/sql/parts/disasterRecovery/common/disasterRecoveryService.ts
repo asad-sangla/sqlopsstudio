@@ -4,18 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-
-import { TPromise } from 'vs/base/common/winjs.base';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import data = require('data');
-import { withElementById } from 'vs/base/browser/builder';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
-import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
-import { BackupDialog } from 'sql/parts/disasterRecovery/backup/backupDialog';
 import { IDisasterRecoveryService } from './interfaces';
 
 export class DisasterRecoveryService implements IDisasterRecoveryService {
@@ -23,7 +13,7 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	public _serviceBrand: any;
 	private _providers: { [handle: string]: data.DisasterRecoveryProvider; } = Object.create(null);
 
-	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) {
+	constructor( @IConnectionManagementService private _connectionService: IConnectionManagementService) {
 	}
 
 	/**
@@ -44,15 +34,70 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	 * Backup a data source using the provided connection
 	 */
 	public backup(connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> {
-		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
-		if (providerId) {
-			let provider = this._providers[providerId];
-			if (provider) {
-				return provider.backup(connectionUri, backupInfo);
+		return new Promise<data.BackupResponse>((resolve, reject) => {
+			let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+			if (providerId) {
+				let provider = this._providers[providerId];
+				if (provider) {
+					provider.backup(connectionUri, backupInfo).then(result => {
+						resolve(result);
+					}, error => {
+						reject(error);
+					});
+				} else {
+					reject('provider is undefined');
+				}
+			} else {
+				reject('provider id is undefined');
 			}
-		}
+		});
+	}
 
-		return Promise.resolve(undefined);
+	/**
+	 * Restore a data source using a backup file or database
+	 */
+	restore(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestoreResponse> {
+		return new Promise<data.RestoreResponse>((resolve, reject) => {
+			let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+			if (providerId) {
+				let provider = this._providers[providerId];
+				if (provider) {
+					provider.restore(connectionUri, restoreInfo).then(result => {
+						resolve(result);
+					}, error => {
+						reject(error);
+					});
+				} else {
+					reject('provider is undefined');
+				}
+			} else {
+				reject('provider id is undefined');
+			}
+		});
+	}
+
+	/**
+	 * Gets restore plan to do the restore operation on a database
+	 */
+	getRestorePlan(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse> {
+		return new Promise<data.RestorePlanResponse>((resolve, reject) => {
+			let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+			if (providerId) {
+				let provider = this._providers[providerId];
+				if (provider) {
+					provider.getRestorePlan(connectionUri, restoreInfo).then(result => {
+						resolve(result);
+					}, error => {
+						reject(error);
+					});
+				} else {
+					reject('provider is undefined');
+
+				}
+			} else {
+				reject('provider id is undefined');
+			}
+		});
 	}
 
 	/**

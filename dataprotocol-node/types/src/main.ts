@@ -411,6 +411,30 @@ export interface BackupResponse {
 	taskId: number;
 }
 
+export interface RestoreParams {
+	ownerUri: string;
+	backupFilePath: string;
+	databaseName: string;
+	relocateDbFiles: boolean;
+}
+
+export interface RestoreResponse {
+	backupFilePath: boolean;
+	canRestore: string;
+	errorMessage: string;
+	dbFiles: string[];
+	serverName: string;
+	databaseName: string;
+	relocateFilesNeeded: boolean;
+	defaultDataFolder: string;
+	defaultLogFolder: string;
+}
+
+export interface RestorePlanResponse {
+	result: boolean;
+	taskId: string;
+	errorMessage: string;
+}
 
 // Query Execution types
 export interface ResultSetSummary {
