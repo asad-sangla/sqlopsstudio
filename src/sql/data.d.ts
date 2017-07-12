@@ -917,9 +917,9 @@ declare module 'data' {
 		relocateDbFiles: boolean;
 	}
 
-	export interface RestoreResponse {
-		backupFilePath: boolean;
-		canRestore: string;
+	export interface RestorePlanResponse {
+		backupFilePath: string;
+		canRestore: boolean;
 		errorMessage: string;
 		dbFiles: string[];
 		serverName: string;
@@ -929,7 +929,7 @@ declare module 'data' {
 		defaultLogFolder: string;
 	}
 
-	export interface RestorePlanResponse {
+	export interface RestoreResponse {
 		result: boolean;
 		taskId: string;
 		errorMessage: string;

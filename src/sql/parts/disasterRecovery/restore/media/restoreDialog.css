@@ -25,6 +25,11 @@
 	padding-top: 15px;
 }
 
+.modal .restore-dialog .file-list .file-list-title {
+	padding-top: 15px;
+	font-size: 15px;
+}
+
 .modal .restore-dialog .file-list .file-list-content {
 	padding-top: 5px;
 }

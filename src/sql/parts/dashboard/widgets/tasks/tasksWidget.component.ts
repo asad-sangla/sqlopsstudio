@@ -71,7 +71,10 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 			action: () => {
 				this.restore();
 			},
-			iconClass: 'restore',
+			show_condition: (): boolean => {
+				return this._config.provider === 'MSSQL';
+			},
+			iconClass: 'restore'
 		}
 	];
 

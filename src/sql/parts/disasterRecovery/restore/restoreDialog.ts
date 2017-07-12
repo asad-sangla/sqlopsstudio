@@ -19,6 +19,7 @@ import { attachInputBoxStyler, attachButtonStyler } from 'vs/platform/theme/comm
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { localize } from 'vs/nls';
 
 export class RestoreDialog extends Modal {
@@ -30,6 +31,7 @@ export class RestoreDialog extends Modal {
 	private _validateButton: Button;
 	private _toDispose: lifecycle.IDisposable[] = [];
 	private _spinner: HTMLElement;
+	private _restoreDatabaseNameTitle: string;
 	private _restoreDatabaseFileTitle: string;
 	private _restoreTitle: string;
 
@@ -44,11 +46,13 @@ export class RestoreDialog extends Modal {
 
 	constructor(
 		@IPartService partService: IPartService,
-		@IThemeService private _themeService: IThemeService
+		@IThemeService private _themeService: IThemeService,
+		@IContextViewService private _contextViewService: IContextViewService
 	) {
 		super('Restore database', partService, { hasErrors: true });
+		this._restoreDatabaseNameTitle = localize('databaseNameTitle', 'Database name:');
 		this._restoreDatabaseFileTitle = localize('restoreDatabaseFileTitle', 'Restore database files:');
-		this._restoreTitle = localize('restoreTitle', 'Restore Database');
+		this._restoreTitle = localize('restoreTitle', 'Restore database');
 	}
 
 	public render() {
@@ -68,11 +72,17 @@ export class RestoreDialog extends Modal {
 		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
 			labelContainer.innerHtml('Backup file path');
 		});
+
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
-			this._filePathInputBox = DialogHelper.appendInputBox(inputCellContainer);
+			var errorMessage = localize('missingBackupFilePathError', 'Backup file path is required.');
+			this._filePathInputBox = DialogHelper.appendInputBox(inputCellContainer, {
+				validationOptions: {
+					validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: errorMessage }) : null
+				}
+			}, this._contextViewService);
 		});
 
-		this._validateButton = this.createValidateButton(this._bodyBuilder, 'Validate file');
+		this._validateButton = this.createValidateButton(this._bodyBuilder, 'Validate');
 
 		this._bodyBuilder.div({ class: 'file-list' }, (fileListContainer) => {
 			this._fileListBuilder = fileListContainer;
@@ -114,21 +124,31 @@ export class RestoreDialog extends Modal {
 		}
 	}
 
-	public onValidateResponse(canRestore: boolean, errorMessage: string, files: string[]): void {
+	public onValidateResponse(canRestore: boolean, errorMessage: string, databaseName: string, files: string[]): void {
 		this.hideSpinner();
 		if (canRestore) {
 			this._restoreButton.enabled = true;
-			this.showFileList(files);
+			this.showFileContent(databaseName, files);
 		} else {
 			this.setError(errorMessage);
 		}
 	}
 
-	private showFileList(files: string[]): void {
+	public showError(errorMessage: string): void {
+		this.setError(errorMessage);
+	}
+
+	private showFileContent(databaseName: string, files: string[]): void {
 		this._fileListBuilder.empty();
 
 		let fileListContent = $().div({ class: 'file-list-container' }, (fileListContainer) => {
-			fileListContainer.div({ class: 'modal-title' }, (propertyTitle) => {
+			fileListContainer.div({ class: 'file-list-title' }, (propertyTitle) => {
+				propertyTitle.innerHtml(this._restoreDatabaseNameTitle);
+			});
+			fileListContainer.div({ class: 'file-list-content' }, (fileContent) => {
+				fileContent.innerHtml(databaseName);
+			});
+			fileListContainer.div({ class: 'file-list-title' }, (propertyTitle) => {
 				propertyTitle.innerHtml(this._restoreDatabaseFileTitle);
 			});
 			files.forEach(file => {
@@ -176,13 +196,11 @@ export class RestoreDialog extends Modal {
 	}
 
 	private validateInputs(): boolean {
-		if (DialogHelper.isEmptyString(this.filePath)) {
-			var errorMessage = localize('missingBackupFilePathError', 'Backup file path is required.');
-			this.setError(errorMessage);
-			this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
-			return false;
+		let validate = this._filePathInputBox.validate();
+		if (!validate) {
+			this._filePathInputBox.focus();
 		}
-		return true;
+		return validate;
 	}
 
 	/* Overwrite esapce key behavior */
@@ -209,8 +227,8 @@ export class RestoreDialog extends Modal {
 	public open(serverName: string) {
 		// reset the dialog
 		this.hideError();
-		this._filePathInputBox.hideMessage();
 		this._filePathInputBox.value = '';
+		this._filePathInputBox.hideMessage();
 
 		this.title = this._restoreTitle + ' - ' + serverName;
 		this._restoreButton.enabled = false;

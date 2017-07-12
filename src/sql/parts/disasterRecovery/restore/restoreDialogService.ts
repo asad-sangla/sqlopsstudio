@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import data = require('data');
 
 export class RestoreDialogService implements IRestoreDialogService {
 	_serviceBrand: any;
@@ -18,18 +18,32 @@ export class RestoreDialogService implements IRestoreDialogService {
 	private _ownerUri: string;
 
 	constructor(
-		@IPartService private _partService: IPartService,
-		@IInstantiationService private _instantiationService: IInstantiationService
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService
 	) {
 	}
 
 	private handleOnRestore(): void {
-		// todo: need to integrate with the restore service
+		let restoreInfo: data.RestoreInfo = {
+			backupFilePath: this._restoreDialog.filePath,
+			databaseName: undefined,
+			relocateDbFiles: false
+		};
+		this._disasterRecoveryService.restore(this._ownerUri, restoreInfo);
 		this._restoreDialog.close();
 	}
 
 	private handleOnValidateFile(): void {
-		// todo: need to integrate with the restore service
+		let restoreInfo: data.RestoreInfo = {
+			backupFilePath: this._restoreDialog.filePath,
+			databaseName: undefined,
+			relocateDbFiles: false
+		};
+		this._disasterRecoveryService.getRestorePlan(this._ownerUri, restoreInfo).then(restorePlanResponse => {
+			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage, restorePlanResponse.databaseName, restorePlanResponse.dbFiles);
+		}, error => {
+			this._restoreDialog.showError(error);
+		});
 	}
 
 	public showDialog(uri: string, connection: ConnectionManagementInfo): TPromise<void> {

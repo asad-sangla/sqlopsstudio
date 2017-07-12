@@ -10,6 +10,7 @@ import { IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
+import { IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
 
 export class DialogHelper {
 	static appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
@@ -47,8 +48,8 @@ export class DialogHelper {
 		return new Builder(rowButton.getElement());
 	}
 
-	static appendInputBox(container: Builder, options?: IInputOptions): DialogInputBox {
-		return new DialogInputBox(container.getHTMLElement(), null, options);
+	static appendInputBox(container: Builder, options?: IInputOptions, contextViewProvider?: IContextViewProvider): DialogInputBox {
+		return new DialogInputBox(container.getHTMLElement(), contextViewProvider, options);
 	}
 
 	static appendInputSelectBox(container: Builder, selectBox: DialogSelectBox): DialogSelectBox {

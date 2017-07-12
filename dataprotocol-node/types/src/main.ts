@@ -418,9 +418,9 @@ export interface RestoreParams {
 	relocateDbFiles: boolean;
 }
 
-export interface RestoreResponse {
-	backupFilePath: boolean;
-	canRestore: string;
+export interface RestorePlanResponse {
+	backupFilePath: string;
+	canRestore: boolean;
 	errorMessage: string;
 	dbFiles: string[];
 	serverName: string;
@@ -430,7 +430,7 @@ export interface RestoreResponse {
 	defaultLogFolder: string;
 }
 
-export interface RestorePlanResponse {
+export interface RestoreResponse {
 	result: boolean;
 	taskId: string;
 	errorMessage: string;
