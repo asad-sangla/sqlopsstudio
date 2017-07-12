@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.insights.list-row {
+.insights .list-row {
 	width: 100%;
 	line-height: 22px;
 	padding-left: 12px;
@@ -11,26 +11,26 @@
 	align-items: center;
 }
 
-.insights.list-row > span {
+.insights .list-row > span {
 	display: inline-block;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
-.insights.list-row > .icon-span {
+.insights .list-row > .icon-span {
 	padding: 6px;
 	margin-right: 5px;
 }
 
-.insights.list-row.label {
+.insights .list-row .label {
 	flex: 0 0 300px;
 }
 
-.insights.list-row.value {
+.insights .list-row .value {
 	flex: 1 1 auto;
 }
 
-.insights.badge.badge-content {
+.insights .badge .badge-content {
 	position: absolute;
 	top: 7px;
 	right: 8px;
@@ -40,7 +40,7 @@
 	text-align: center;
 }
 
-.insights.badge {
+.insights .badge {
 	position: absolute;
 	top: 5px;
 	left: 11px;
