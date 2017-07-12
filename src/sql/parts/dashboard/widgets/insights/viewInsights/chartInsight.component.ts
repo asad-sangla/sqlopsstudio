@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
-import { Component, Input, Inject, ChangeDetectorRef, forwardRef } from '@angular/core';
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+import { Component, Input, Inject, ChangeDetectorRef, forwardRef, ViewChild, OnInit, ElementRef } from '@angular/core';
 
 /* SQL Imports */
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -14,45 +14,52 @@ import { SimpleExecuteResult } from 'data';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 
 @Component({
-	template: `	<div style="display: block">
-				<canvas baseChart
-						[data]="_chartData"
-						[labels]="_labels"
-						chartType="pie"
-						[colors]="_colors"
-						[options]="_options"></canvas>
+	template: `	<div #container style="display: block">
+					<canvas #chart
+							baseChart
+							[data]="_chartData"
+							[labels]="_labels"
+							chartType="pie"
+							[colors]="_colors"
+							[options]="_options"></canvas>
 				</div>`
 })
-export class ChartInsight implements IInsightsView {
-	public readonly customFields = ['colorMap'];
+export class ChartInsight implements IInsightsView, OnInit {
+	public readonly customFields = ['colorMap', 'legendPosition'];
 	private _data: SimpleExecuteResult;
 	private _labels: string[] = [];
 	private _chartData: number[] = [];
 	private _colors: any[] = [];
 	private _options: any = {};
+	@ViewChild('chart') private chart: ElementRef;
+	@ViewChild('container') private container: ElementRef;
 
 	constructor(
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) { }
 
+	ngOnInit() {
+		let size = Math.min(this.container.nativeElement.parentElement.parentElement.offsetHeight, this.container.nativeElement.parentElement.parentElement.offsetWidth);
+		this.chart.nativeElement.style.width = size + 'px';
+		this.chart.nativeElement.style.height = size + 'px';
+	}
+
 	@Input() set data(data: SimpleExecuteResult) {
 		this._data = data;
-		this._labels = [];
-		data.columnInfo.forEach((item) => {
-			this._labels.push(item.columnName);
+		this._labels = data.columnInfo.map((item) => {
+			return item.columnName;
 		});
-		this._chartData = [];
-		data.rows[0].forEach((item) => {
-			this._chartData.push(Number(item.displayValue));
+		this._chartData = data.rows[0].map((item) => {
+			return Number(item.displayValue);
 		});
 		this._changeRef.detectChanges();
 	}
 
 	@Input() set colorMap(map: { [column: string]: string }) {
-		let colorsMap = { backgroundColor: [] };
-		this._labels.forEach((item) => {
-			colorsMap.backgroundColor.push(map[item]);
+		let backgroundColor = this._labels.map((item) => {
+			return map[item];
 		});
+		let colorsMap = { backgroundColor };
 		this._colors = [colorsMap];
 		let options = {
 			legend: {
@@ -62,6 +69,19 @@ export class ChartInsight implements IInsightsView {
 			}
 		};
 		this._options = options;
+		this._changeRef.detectChanges();
+	}
+
+	@Input() set legendPosition(position: 'top' | 'left' | 'right' | 'bottom' | 'none') {
+		if (position === 'none') {
+			let options = this._options;
+			options.legend.display = false;
+			this._options = Object.assign({}, options);
+		} else {
+			let options = this._options;
+			options.legend.position = position;
+			this._options = Object.assign({}, options);
+		}
 		this._changeRef.detectChanges();
 	}
 }

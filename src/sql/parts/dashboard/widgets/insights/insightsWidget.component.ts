@@ -22,10 +22,14 @@ import { SimpleExecuteResult } from 'data';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { Action } from 'vs/base/common/actions';
+import * as types from 'vs/base/common/types';
+import * as pfs from 'vs/base/node/pfs';
+import * as nls from 'vs/nls';
 
 export interface IInsightsView {
 	data: SimpleExecuteResult;
 	customFields: Array<string>;
+	ngOnInit?: () => void;
 }
 
 export interface IStateCondition {
@@ -45,10 +49,13 @@ export interface IInsightLabel {
 
 export interface InsightsConfig {
 	type: 'count' | 'chart';
-	query: string;
+	query: string | Array<string>;
+	queryFile?: string;
 	colorMap?: { [column: string]: string };
-	detailsQuery?: string;
-	label?: IInsightLabel | string;
+	legendPosition?: 'top' | 'bottom' | 'left' | 'right' | 'none';
+	detailsQuery?: string | Array<string>;
+	detailsQueryFile?: string;
+	label?: string | IInsightLabel;
 	value?: string;
 }
 
@@ -75,36 +82,67 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	) {
 		super();
 		this.insightConfig = <InsightsConfig>this._config.config;
-		if (this.insightConfig.query === undefined || this.insightConfig.query === '') {
+		if (!this.insightConfig.query && !this.insightConfig.queryFile) {
 			console.error('Query was undefined or empty, config: ', this._config);
-		} else {
+		} else if (types.isStringArray(this.insightConfig.query)) {
+			this.queryObv = Observable.fromPromise(dashboardService.queryManagementService.runQueryAndReturn(this.insightConfig.query.join(' ')));
+		} else if (types.isString(this.insightConfig.query)) {
 			this.queryObv = Observable.fromPromise(dashboardService.queryManagementService.runQueryAndReturn(this.insightConfig.query));
+		} else if (types.isString(this.insightConfig.queryFile)) {
+			let self = this;
+			self.queryObv =  Observable.fromPromise(new Promise((resolve, reject) => {
+				pfs.readFile(this.insightConfig.queryFile).then(
+					buffer => {
+						dashboardService.queryManagementService.runQueryAndReturn(buffer.toString()).then(
+							result => {
+								resolve(result);
+							},
+							error => {
+								reject(error);
+							}
+						);
+					},
+					error => {
+						console.error(error);
+						reject(error);
+					}
+				);
+			}));
+		} else {
+			console.error('Error occursed while parsing config file for insight. Config: ', this.insightConfig);
 		}
 	}
 
 	ngAfterContentInit() {
 		let self = this;
-		this._disposables.push(toDisposableSubscription(self.queryObv.subscribe(
-			result => {
-				if (result.rowCount === 0) {
-					self.showError('No results to show');
-					return;
+		if (self.queryObv) {
+			this._disposables.push(toDisposableSubscription(self.queryObv.subscribe(
+				result => {
+					if (result.rowCount === 0) {
+						self.showError(nls.localize('noResults', 'No results to show'));
+						return;
+					}
+
+					let componentFactory = self._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightMap[self.insightConfig.type]);
+					self.viewContainerRef.clear();
+
+					let componentRef = self.componentHost.viewContainerRef.createComponent(componentFactory);
+					let componentInstance = <IInsightsView>componentRef.instance;
+					componentInstance.data = result;
+					componentInstance.customFields.forEach((field) => {
+						componentInstance[field] = self.insightConfig[field];
+					});
+					if (componentInstance.ngOnInit) {
+						componentInstance.ngOnInit();
+					}
+				},
+				error => {
+					self.showError(error);
 				}
-
-				let componentFactory = self._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightMap[self.insightConfig.type]);
-				self.viewContainerRef.clear();
-
-				let componentRef = self.componentHost.viewContainerRef.createComponent(componentFactory);
-				let componentInstance = <IInsightsView>componentRef.instance;
-				componentInstance.data = result;
-				componentInstance.customFields.forEach((field) => {
-					componentInstance[field] = self.insightConfig[field];
-				});
-			},
-			error => {
-				self.showError(error);
-			}
-		)));
+			)));
+		} else {
+			self.showError(nls.localize('invalidConfig', 'Could not parse config correctly'));
+		}
 	}
 
 	ngOnDestroy() {
@@ -122,7 +160,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	}
 
 	get actions(): Array<Action> {
-		if (this.insightConfig.detailsQuery) {
+		if (this.insightConfig.detailsQuery || this.insightConfig.detailsQueryFile) {
 			return [this.dashboardService.instantiationService.createInstance(InsightAction, InsightAction.ID, InsightAction.LABEL)];
 		} else {
 			return [];

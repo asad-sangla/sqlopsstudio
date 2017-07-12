@@ -28,6 +28,9 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IListService } from 'vs/platform/list/browser/listService';
 import Severity from 'vs/base/common/severity';
 import * as nls from 'vs/nls';
+import * as types from 'vs/base/common/types';
+import * as pfs from 'vs/base/node/pfs';
+import { IMessageService } from 'vs/platform/message/common/message';
 import { $ } from 'vs/base/browser/builder';
 
 class BasicView extends CollapsibleView {
@@ -182,6 +185,7 @@ export default class InsightsDialog extends Modal {
 		@IThemeService private _themeService: IThemeService,
 		@IListService private _listService: IListService,
 		@IPartService _partService: IPartService,
+		@IMessageService private _messageService: IMessageService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
 	) {
 		super('Insights', _partService);
@@ -242,7 +246,28 @@ export default class InsightsDialog extends Modal {
 		// execute string
 		if (typeof input === 'object') {
 			this._insight = input;
-			this.createQuery(this._insight.detailsQuery, connectionProfile);
+			if (types.isStringArray(this._insight.detailsQuery)) {
+				this.createQuery(this._insight.detailsQuery.join(' '), connectionProfile);
+			} else if (types.isString(this._insight.detailsQuery)) {
+				this.createQuery(this._insight.detailsQuery, connectionProfile);
+			} else if (types.isString(this._insight.detailsQueryFile)) {
+				let self = this;
+				pfs.readFile(this._insight.detailsQueryFile).then(
+					buffer => {
+						self.createQuery(buffer.toString(), connectionProfile);
+						self._topList.splice(0, this._topList.length);
+						self._bottomList.splice(0, this._bottomList.length);
+						self.show();
+					},
+					error => {
+						self._messageService.show(Severity.Error, nls.localize('insightsOpenError', 'There was an error opening the insight: ') + error);
+					}
+				);
+				return;
+			} else {
+				console.error('Error reading details Query: ', this._insight);
+				return;
+			}
 			this._topList.splice(0, this._topList.length);
 			this._bottomList.splice(0, this._bottomList.length);
 			this.show();
@@ -404,7 +429,7 @@ export default class InsightsDialog extends Modal {
 		} else {
 			property = 'displayValue';
 		}
-		for (let i = 0; i <= row.length; i++) {
+		for (let i = 0; i < row.length; i++) {
 			if (row[i][property] === val) {
 				return i;
 			}
