@@ -117,6 +117,7 @@ export class ConnectionWidget {
 		this._rememberPasswordCheckBox = this.appendCheckbox(this._tableContainer, 'Remember Password', 'sql-checkbox', 'connection-input', false);
 		this._databaseNameInputBox = DialogHelper.appendInputBox(
 			DialogHelper.appendRow(this._tableContainer, this._optionsMaps[ConnectionOptionSpecialType.databaseName].displayName, 'connection-label', 'connection-input'));
+		this._databaseNameInputBox.setPlaceHolder(this._optionsMaps[ConnectionOptionSpecialType.databaseName].defaultValue || '');
 		DialogHelper.appendInputSelectBox(
 			DialogHelper.appendRow(this._tableContainer, 'Server Group', 'connection-label', 'connection-input'), this._serverGroupSelectBox);
 		this._advancedButton = this.createAdvancedButton(this._tableContainer, 'Advanced...');

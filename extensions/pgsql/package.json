@@ -82,6 +82,11 @@
           "type": "number",
           "default": 3000,
           "description": "[Optional] The port to run the PostgreSQL Tools Service remote debugger on (default 3000)"
+        },
+        "pgsql.defaultDatabase": {
+          "type": "string",
+          "default": "postgres",
+          "description": "The default database to use when creating a new PostgreSQL connection"
         }
       }
     }
