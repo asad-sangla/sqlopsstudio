@@ -68,4 +68,23 @@ const formatStagedFiles = () => {
 				process.exit(1);
 			});
 		});
+
+	cp.exec('git diff --cached --name-only', { maxBuffer: 2000 * 1024 }, (err, out) => {
+			if (err) {
+				console.error();
+				console.error(err);
+				process.exit(1);
+			}
+
+			const some = out
+				.split(/\r?\n/)
+				.filter(l => !!l)
+				.filter(l => l.match(/.*.ts$/i));
+
+			formatFiles(some).on('error', err => {
+				console.error();
+				console.error(err);
+				process.exit(1);
+			});
+		});
 }

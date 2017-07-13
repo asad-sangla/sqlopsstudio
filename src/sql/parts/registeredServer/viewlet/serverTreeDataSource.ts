@@ -60,27 +60,31 @@ export class ServerTreeDataSource implements IDataSource {
 	 * Returns the element's children as an array in a promise.
 	 */
 	public getChildren(tree: ITree, element: any): TPromise<any> {
+		return new TPromise<any>((resolve) => {
 		if (element instanceof ConnectionProfile) {
-			return TreeUpdateUtils.getObjectExplorerNode(<ConnectionProfile>element, this._connectionManagementService, this._objectExplorerService);
+			TreeUpdateUtils.getObjectExplorerNode(<ConnectionProfile>element, this._connectionManagementService, this._objectExplorerService).then(nodes => {
+				resolve(nodes);
+			}, error => {
+				resolve([]);
+			});
 		} else if (element instanceof ConnectionProfileGroup) {
-			return TPromise.as((<ConnectionProfileGroup>element).getChildren());
+			resolve((<ConnectionProfileGroup>element).getChildren());
 		} else if (element instanceof TreeNode) {
 			var node = <TreeNode>element;
 			if (node.children) {
-				return TPromise.as(node.children);
+				resolve(node.children);
 			} else {
-				return new TPromise<TreeNode[]>((resolve) => {
 					this._objectExplorerService.expandTreeNode(node.getSession(), node).then(() => {
 						resolve(node.children);
 					}, expandError => {
 						this.showError(expandError);
 						resolve([]);
 					});
-				});
 			}
 		} else {
-			return TPromise.as(null);
+			resolve([]);
 		}
+		});
 	}
 
 	/**

@@ -101,6 +101,12 @@ export interface IConnectionManagementService {
 	connectAndSaveProfile(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult>;
 
 	/**
+	 * Finds existing connection for given profile and purpose is any exists.
+	 * The purpose is connection by default
+	 */
+	findExistingConnection(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): ConnectionProfile;
+
+	/**
 	 * Adds the successful connection to MRU and send the connection error back to the connection handler for failed connections
 	 */
 	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void;

@@ -96,7 +96,14 @@ suite('SQL ConnectionManagementService tests', () => {
 		workspaceConfigurationServiceMock.setup(x => x.getConfiguration(Constants.sqlConfigSectionName))
 			.returns(() => configResult);
 
-		connectionManagementService = new ConnectionManagementService(
+		connectionManagementService = createConnectionManagementService();
+
+		connectionManagementService.registerProvider('MSSQL', mssqlConnectionProvider.object);
+		connectionManagementService.registerProvider('PGSQL', pgConnectionProvider.object);
+	});
+
+	function createConnectionManagementService(): ConnectionManagementService {
+		let connectionManagementService = new ConnectionManagementService(
 			undefined,
 			connectionStore.object,
 			undefined,
@@ -115,10 +122,8 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined,
 			editorGroupService.object,
 			undefined);
-
-		connectionManagementService.registerProvider('MSSQL', mssqlConnectionProvider.object);
-		connectionManagementService.registerProvider('PGSQL', pgConnectionProvider.object);
-	});
+		return connectionManagementService;
+	}
 
 	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string): void {
 
@@ -191,6 +196,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			done();
 		}).catch(err => {
 			assert.fail(err);
+			done();
 		});
 	});
 
@@ -211,6 +217,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			done();
 		}).catch(err => {
 			assert.fail(err);
+			done();
 		});
 	});
 
@@ -465,10 +472,11 @@ suite('SQL ConnectionManagementService tests', () => {
 			});
 			connectionManagementService.doChangeLanguageFlavor(uri, language, flavor);
 			assert.ok(called, 'expected onLanguageFlavorChanged event to be sent');
+			done();
 		} catch (error) {
 			assert.fail(error);
+			done();
 		}
-		done();
 	});
 
 	test('ensureDefaultLanguageFlavor should not send event if uri is connected', done => {
@@ -479,7 +487,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			showDashboard: true,
 			showConnectionDialogOnError: false
 		};
-
+		let connectionManagementService = createConnectionManagementService();
 		let called = false;
 		connectionManagementService.onLanguageFlavorChanged((changeParams: data.DidChangeLanguageFlavorParams) => {
 			called = true;
@@ -487,10 +495,11 @@ suite('SQL ConnectionManagementService tests', () => {
 		connect(uri, options).then(() => {
 			connectionManagementService.ensureDefaultLanguageFlavor(uri);
 			assert.equal(called, false, 'do not expect flavor change to be called');
+			done();
 		}).catch(err => {
 			assert.fail(err);
+			done();
 		});
-		done();
 	});
 
 	test('ensureDefaultLanguageFlavor should change to default provider if not connected ', done => {
@@ -510,10 +519,11 @@ suite('SQL ConnectionManagementService tests', () => {
 		try {
 			connectionManagementService.ensureDefaultLanguageFlavor(uri);
 			assert.ok(called, 'expected onLanguageFlavorChanged event to be sent');
-		} catch(err) {
+			done();
+		} catch (err) {
 			assert.fail(err);
+			done();
 		}
-		done();
 	});
 
 });

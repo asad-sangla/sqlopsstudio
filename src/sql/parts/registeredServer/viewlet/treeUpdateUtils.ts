@@ -49,17 +49,16 @@ export class TreeSelectionHandler {
 			} else {
 				isDoubleClick = true;
 			}
-			self.handleTreeItemSelected(isDoubleClick, event, tree, connectionManagementService, objectExplorerService);
+			let isInDoubleClickBlock = self._clicks > 1;
+			self.handleTreeItemSelected(isDoubleClick, event, tree, connectionManagementService, objectExplorerService, isInDoubleClickBlock);
 			self._clicks = 0;
 		}, 300);
 	}
 
-	private handleTreeItemSelected(isDoubleClick: boolean, event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): void {
+	private handleTreeItemSelected(isDoubleClick: boolean, event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isInDoubleClickBlock: boolean): void {
 		let selection = tree.getSelection();
 		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
 			let connectionProfile = <ConnectionProfile>selection[0];
-			let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
-			let isInDoubleClickBlock = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
 			let options: IConnectionCompletionOptions = {
 				params: undefined,
 				saveTheConnection: false,
@@ -168,12 +167,16 @@ export class TreeUpdateUtils {
 		return isConnected;
 	}
 
-	public static connectIfNotConnected(connection: ConnectionProfile, options: IConnectionCompletionOptions, connectionManagementService: IConnectionManagementService): TPromise<void> {
-		return new TPromise<void>((resolve, reject) => {
+	public static connectIfNotConnected(
+		connection: ConnectionProfile,
+		options: IConnectionCompletionOptions,
+		connectionManagementService: IConnectionManagementService): TPromise<ConnectionProfile> {
+		return new TPromise<ConnectionProfile>((resolve, reject) => {
 			if (!connectionManagementService.isConnected(undefined, connection)) {
 				connectionManagementService.connect(connection, undefined, options).then(result => {
 					if (result.connected) {
-						resolve(undefined);
+						let existingConnection = connectionManagementService.findExistingConnection(connection);
+						resolve(existingConnection);
 					} else {
 						reject('connection failed');
 					}
@@ -181,12 +184,13 @@ export class TreeUpdateUtils {
 					reject(connectionError);
 				});
 			} else {
+				let existingConnection = connectionManagementService.findExistingConnection(connection);
 				if (options && options.showDashboard) {
 					connectionManagementService.showDashboard(connection).then((value) => {
-						resolve(undefined);
+						resolve(existingConnection);
 					});
 				} else {
-					resolve(undefined);
+					resolve(existingConnection);
 				}
 			}
 		});
@@ -204,11 +208,11 @@ export class TreeUpdateUtils {
 	public static connectAndCreateOeSession(connection: ConnectionProfile, options: IConnectionCompletionOptions,
 		connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
-			TreeUpdateUtils.connectIfNotConnected(connection, options, connectionManagementService).then(() => {
-				var rootNode: TreeNode = objectExplorerService.getObjectExplorerNode(connection);
+			TreeUpdateUtils.connectIfNotConnected(connection, options, connectionManagementService).then(connectedConnection => {
+				var rootNode: TreeNode = objectExplorerService.getObjectExplorerNode(connectedConnection);
 				if (!rootNode) {
-					objectExplorerService.updateObjectExplorerNodes(connection).then(() => {
-						rootNode = objectExplorerService.getObjectExplorerNode(connection);
+					objectExplorerService.updateObjectExplorerNodes(connectedConnection).then(() => {
+						rootNode = objectExplorerService.getObjectExplorerNode(connectedConnection);
 						resolve(true);
 						// The oe request is sent. an event will be raised when the session is created
 					}, error => {

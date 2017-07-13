@@ -993,6 +993,20 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStatusManager.isConnected(fileUri);
 	}
 
+	/**
+	 * Finds existing connection for given profile and purpose is any exists.
+	 * The purpose is connection by default
+	 */
+	public findExistingConnection(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): ConnectionProfile {
+		let connectionUri = Utils.generateUri(connection, purpose);
+		let existingConnection = this._connectionStatusManager.findConnection(connectionUri);
+		if (existingConnection && this._connectionStatusManager.isConnected(connectionUri)) {
+			return existingConnection.connectionProfile;
+		} else {
+			return undefined;
+		}
+	}
+
 	public isProfileConnected(connectionProfile: IConnectionProfile): boolean {
 		let connectionManagement = this._connectionStatusManager.findConnectionProfile(connectionProfile);
 		return connectionManagement && !connectionManagement.connecting;

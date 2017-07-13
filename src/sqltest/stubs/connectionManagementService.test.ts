@@ -127,6 +127,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return false;
 	}
 
+	findExistingConnection(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): ConnectionProfile {
+		return undefined;
+	}
+
 	connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
 		return new Promise<IConnectionResult>((resolve, reject) => {
 			resolve({ connected: true, error: undefined });
