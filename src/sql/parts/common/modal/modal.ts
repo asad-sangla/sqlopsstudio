@@ -41,7 +41,7 @@ const defaultOptions: IModalOptions = {
 
 export abstract class Modal implements IThemable {
 
-	private _errorMessageLabel: IconLabel;
+	private _errorMessage: Builder;
 	private _spinnerElement: HTMLElement;
 	private _errorIconElement: HTMLElement;
 	private _dialogForeground: Color;
@@ -130,7 +130,7 @@ export abstract class Modal implements IThemable {
 					this._errorIconElement.style.visibility = 'hidden';
 				});
 				errorMessageContainer.div({ class: 'errorMessage' }, (messageContainer) => {
-					this._errorMessageLabel = new IconLabel(messageContainer.getHTMLElement());
+					this._errorMessage = messageContainer;
 				});
 			});
 		}
@@ -243,13 +243,13 @@ export abstract class Modal implements IThemable {
 	 * @param err Text to show in the error message
 	 */
 	protected setError(err: string) {
-		if(this._modalOptions.hasErrors) {
+		if (this._modalOptions.hasErrors) {
 			if (err === '') {
 				this._errorIconElement.style.visibility = 'hidden';
 			} else {
 				this._errorIconElement.style.visibility = 'visible';
 			}
-			this._errorMessageLabel.setValue(err);
+			this._errorMessage.innerHtml(err);
 		}
 	}
 

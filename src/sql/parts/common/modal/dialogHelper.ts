@@ -11,6 +11,7 @@ import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
+import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 
 export class DialogHelper {
 	static appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
@@ -46,6 +47,25 @@ export class DialogHelper {
 		});
 
 		return new Builder(rowButton.getElement());
+	}
+
+	static createCheckBox(container: Builder, label: string, checkboxClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
+		let checkbox = new Checkbox({
+			actionClassName: checkboxClass,
+			title: label,
+			isChecked: isChecked,
+			onChange: (viaKeyboard) => {
+				if (onCheck) {
+					onCheck(viaKeyboard);
+				}
+			}
+		});
+		container.getHTMLElement().appendChild(checkbox.domNode);
+		container.div({}, (labelContainer) => {
+			labelContainer.innerHtml(label);
+		});
+
+		return checkbox;
 	}
 
 	static appendInputBox(container: Builder, options?: IInputOptions, contextViewProvider?: IContextViewProvider): DialogInputBox {

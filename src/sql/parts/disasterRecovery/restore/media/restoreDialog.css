@@ -9,6 +9,7 @@
 
 .modal .validate-button {
 	display: flex;
+	padding-top: 20px;
 }
 
 .modal .validate-button a.monaco-button.monaco-text-button {
@@ -21,15 +22,14 @@
 	padding-left: 15px;
 }
 
-.modal .restore-dialog .file-list {
-	padding-top: 15px;
+.modal .summary .summary-container {
+	padding-top: 30px;
 }
 
-.modal .restore-dialog .file-list .file-list-title {
-	padding-top: 15px;
-	font-size: 15px;
+.modal .summary .summary-container .modal-title {
+	padding-bottom: 10px;
 }
 
-.modal .restore-dialog .file-list .file-list-content {
-	padding-top: 5px;
+.modal .summary .summary-container .file-list-content {
+	padding: 4px;
 }

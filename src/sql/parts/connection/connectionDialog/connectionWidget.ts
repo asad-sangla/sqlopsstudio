@@ -146,20 +146,7 @@ export class ConnectionWidget {
 		container.element('tr', {}, (rowContainer) => {
 			rowContainer.element('td');
 			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
-				checkbox = new Checkbox({
-					actionClassName: checkboxClass,
-					title: label,
-					isChecked: isChecked,
-					onChange: (viaKeyboard) => {
-						if (onCheck) {
-							onCheck(viaKeyboard);
-						}
-					}
-				});
-				inputCellContainer.getHTMLElement().appendChild(checkbox.domNode);
-				inputCellContainer.div({}, (labelContainer) => {
-					labelContainer.innerHtml(label);
-				});
+				checkbox = DialogHelper.createCheckBox(inputCellContainer, label, checkboxClass, isChecked, onCheck);
 			});
 		});
 		return checkbox;

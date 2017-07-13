@@ -26,8 +26,8 @@ export class RestoreDialogService implements IRestoreDialogService {
 	private handleOnRestore(): void {
 		let restoreInfo: data.RestoreInfo = {
 			backupFilePath: this._restoreDialog.filePath,
-			databaseName: undefined,
-			relocateDbFiles: false
+			databaseName: this._restoreDialog.databaseName,
+			relocateDbFiles: this._restoreDialog.relocateDbFiles
 		};
 		this._disasterRecoveryService.restore(this._ownerUri, restoreInfo);
 		this._restoreDialog.close();
@@ -36,8 +36,8 @@ export class RestoreDialogService implements IRestoreDialogService {
 	private handleOnValidateFile(): void {
 		let restoreInfo: data.RestoreInfo = {
 			backupFilePath: this._restoreDialog.filePath,
-			databaseName: undefined,
-			relocateDbFiles: false
+			databaseName: this._restoreDialog.databaseName,
+			relocateDbFiles: this._restoreDialog.relocateDbFiles
 		};
 		this._disasterRecoveryService.getRestorePlan(this._ownerUri, restoreInfo).then(restorePlanResponse => {
 			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage, restorePlanResponse.databaseName, restorePlanResponse.dbFiles);

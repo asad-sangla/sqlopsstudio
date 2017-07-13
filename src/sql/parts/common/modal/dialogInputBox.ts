@@ -34,7 +34,7 @@ export class DialogInputBox extends InputBox {
 	}
 
 	public enable(): void {
-		super.enable();
+		this.inputElement.readOnly = false;
 		this.inputBackground = this.enabledInputBackground;
 		this.inputForeground = this.enabledInputForeground;
 		this.inputBorder = this.enabledInputBorder;
@@ -42,7 +42,7 @@ export class DialogInputBox extends InputBox {
 	}
 
 	public disable(): void {
-		super.disable();
+		this.inputElement.readOnly = true;
 		this.inputBackground = this.disabledInputBackground;
 		this.inputForeground = this.disabledInputForeground;
 		this.inputBorder = this.disabledInputBorder;
