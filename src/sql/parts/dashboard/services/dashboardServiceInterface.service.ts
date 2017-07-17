@@ -35,8 +35,8 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 
 const DASHBOARD_SETTINGS = 'dashboard';
-const DATABASEPAGE_SETTINGS = 'databasePage';
-const SERVERPAGE_SETTINGS = 'serverPage';
+const DATABASEPAGE_SETTINGS = 'database';
+const SERVERPAGE_SETTINGS = 'server';
 
 /* Wrapper for a metadata service that contains the uri string to use on each request */
 export class SingleConnectionMetadataService {

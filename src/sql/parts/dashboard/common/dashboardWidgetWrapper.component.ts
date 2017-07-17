@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 import 'vs/css!sql/media/icons/common-icons';
 
 import {
@@ -72,7 +72,11 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 	}
 
 	private loadWidget(): void {
-		let componentFactory = this._componentFactoryResolver.resolveComponentFactory(componentMap[this._config.selector]);
+		if (Object.keys(this._config.widget).length !== 1) {
+			console.error('Exactly 1 widget must be defined per space');
+			return;
+		}
+		let componentFactory = this._componentFactoryResolver.resolveComponentFactory(componentMap[Object.keys(this._config.widget)[0]]);
 
 		let viewContainerRef = this.componentHost.viewContainerRef;
 		viewContainerRef.clear();

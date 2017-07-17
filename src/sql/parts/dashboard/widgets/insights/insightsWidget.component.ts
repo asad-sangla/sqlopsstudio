@@ -15,8 +15,8 @@ import { InsightAction, InsightActionContext } from 'sql/common/baseActions';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 /* Insights */
-import { ChartInsight } from './viewInsights/chartInsight.component';
-import { CountInsight } from './viewInsights/countInsight.component';
+import { ChartInsight } from './views/chartInsight.component';
+import { CountInsight } from './views/countInsight.component';
 
 import { SimpleExecuteResult } from 'data';
 
@@ -48,15 +48,15 @@ export interface IInsightLabel {
 }
 
 export interface InsightsConfig {
-	type: 'count' | 'chart';
-	query: string | Array<string>;
+	type: any;
+	query?: string | Array<string>;
 	queryFile?: string;
-	colorMap?: { [column: string]: string };
-	legendPosition?: 'top' | 'bottom' | 'left' | 'right' | 'none';
-	detailsQuery?: string | Array<string>;
-	detailsQueryFile?: string;
-	label?: string | IInsightLabel;
-	value?: string;
+	details?: {
+		query?: string | Array<string>;
+		queryFile?: string;
+		label?: string | IInsightLabel;
+		value?: string;
+	};
 }
 
 const insightMap: { [x: string]: Type<IInsightsView> } = {
@@ -81,7 +81,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		@Inject(forwardRef(() => ViewContainerRef)) private viewContainerRef: ViewContainerRef
 	) {
 		super();
-		this.insightConfig = <InsightsConfig>this._config.config;
+		this.insightConfig = <InsightsConfig>this._config.widget['insights-widget'];
 		if (!this.insightConfig.query && !this.insightConfig.queryFile) {
 			console.error('Query was undefined or empty, config: ', this._config);
 		} else if (types.isStringArray(this.insightConfig.query)) {
@@ -90,7 +90,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 			this.queryObv = Observable.fromPromise(dashboardService.queryManagementService.runQueryAndReturn(this.insightConfig.query));
 		} else if (types.isString(this.insightConfig.queryFile)) {
 			let self = this;
-			self.queryObv =  Observable.fromPromise(new Promise((resolve, reject) => {
+			self.queryObv = Observable.fromPromise(new Promise((resolve, reject) => {
 				pfs.readFile(this.insightConfig.queryFile).then(
 					buffer => {
 						dashboardService.queryManagementService.runQueryAndReturn(buffer.toString()).then(
@@ -122,15 +122,20 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 						self.showError(nls.localize('noResults', 'No results to show'));
 						return;
 					}
+					if (Object.keys(self.insightConfig.type).length !== 1) {
+						console.error('Exactly 1 insight type must be specified');
+						return;
+					}
+					let typeKey = Object.keys(self.insightConfig.type)[0];
 
-					let componentFactory = self._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightMap[self.insightConfig.type]);
+					let componentFactory = self._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightMap[typeKey]);
 					self.viewContainerRef.clear();
 
 					let componentRef = self.componentHost.viewContainerRef.createComponent(componentFactory);
 					let componentInstance = <IInsightsView>componentRef.instance;
 					componentInstance.data = result;
 					componentInstance.customFields.forEach((field) => {
-						componentInstance[field] = self.insightConfig[field];
+						componentInstance[field] = self.insightConfig.type[typeKey][field];
 					});
 					if (componentInstance.ngOnInit) {
 						componentInstance.ngOnInit();
@@ -160,7 +165,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	}
 
 	get actions(): Array<Action> {
-		if (this.insightConfig.detailsQuery || this.insightConfig.detailsQueryFile) {
+		if (this.insightConfig.details && (this.insightConfig.details.query || this.insightConfig.details.queryFile)) {
 			return [this.dashboardService.instantiationService.createInstance(InsightAction, InsightAction.ID, InsightAction.LABEL)];
 		} else {
 			return [];

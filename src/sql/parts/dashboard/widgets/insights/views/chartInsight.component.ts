@@ -13,6 +13,11 @@ import { SimpleExecuteResult } from 'data';
 /* VS Imports */
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 
+interface IChartConfig {
+	colorMap?: { [column: string]: string };
+	legendPosition?: 'top' | 'bottom' | 'left' | 'right' | 'none';
+}
+
 @Component({
 	template: `	<div #container style="display: block">
 					<canvas #chart
@@ -56,32 +61,47 @@ export class ChartInsight implements IInsightsView, OnInit {
 	}
 
 	@Input() set colorMap(map: { [column: string]: string }) {
-		let backgroundColor = this._labels.map((item) => {
-			return map[item];
-		});
-		let colorsMap = { backgroundColor };
-		this._colors = [colorsMap];
-		let options = {
-			legend: {
-				labels: {
-					fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+		if (map) {
+			let backgroundColor = this._labels.map((item) => {
+				return map[item];
+			});
+			let colorsMap = { backgroundColor };
+			this._colors = [colorsMap];
+			let options = {
+				legend: {
+					labels: {
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					}
 				}
-			}
-		};
-		this._options = options;
-		this._changeRef.detectChanges();
+			};
+			this._options = options;
+			this._changeRef.detectChanges();
+		}
 	}
 
 	@Input() set legendPosition(position: 'top' | 'left' | 'right' | 'bottom' | 'none') {
-		if (position === 'none') {
-			let options = this._options;
-			options.legend.display = false;
-			this._options = Object.assign({}, options);
-		} else {
-			let options = this._options;
-			options.legend.position = position;
-			this._options = Object.assign({}, options);
+		if (position) {
+			let options;
+
+			if (!this._options) {
+				options = {
+					legend: {}
+				};
+			} else if (!this._options.legend) {
+				options = Object.assign({}, this._options);
+				options.legend = {};
+			} else {
+				options = Object.assign({}, this._options);
+			}
+
+			if (position === 'none') {
+				options.legend.display = false;
+			} else {
+				options.legend.position = position;
+			}
+
+			this._options = options;
+			this._changeRef.detectChanges();
 		}
-		this._changeRef.detectChanges();
 	}
 }

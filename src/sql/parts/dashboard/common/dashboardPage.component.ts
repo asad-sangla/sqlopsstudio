@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 import { Component, Inject, forwardRef } from '@angular/core';
 import { NgGridConfig } from 'angular4-grid';
@@ -69,6 +69,17 @@ export class DashboardPage {
 		let totalWidgets = addWidgets ? this.widgets.concat(addWidgets) : this.widgets;
 		totalWidgets.forEach((item) => {
 			item.context = context;
+		});
+	}
+
+	/**
+	 * Validates configs to make sure nothing will error out
+	 */
+	protected validateConfig() {
+		this.widgets.forEach((widget) => {
+			if (widget.gridItemConfig === undefined) {
+				widget.gridItemConfig = {};
+			}
 		});
 	}
 }

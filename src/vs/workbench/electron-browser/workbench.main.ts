@@ -129,6 +129,11 @@ import 'sql/workbench/api/node/sqlExtHost.contribution';
 import 'sql/parts/connection/common/connection.contribution';
 import 'sql/parts/query/common/query.contribution';
 import 'sql/workbench/electron-browser/main.contribution';
-import 'sql/parts/dashboard/pages/databaseDashboardPage.contribution';
-import 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
-
+/* Insights */
+import 'sql/parts/dashboard/widgets/insights/views/chartInsight.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/countInsight.contribution';
+/* Widgets */
+import 'sql/parts/dashboard/widgets/insights/insightsWidget.contribution';
+import 'sql/parts/dashboard/widgets/explorer/explorerWidget.contribution';
+import 'sql/parts/dashboard/widgets/tasks/tasksWidget.contribution';
+import 'sql/parts/dashboard/dashboardConfig.contribution';

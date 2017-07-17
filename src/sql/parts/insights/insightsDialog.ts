@@ -246,13 +246,13 @@ export default class InsightsDialog extends Modal {
 		// execute string
 		if (typeof input === 'object') {
 			this._insight = input;
-			if (types.isStringArray(this._insight.detailsQuery)) {
-				this.createQuery(this._insight.detailsQuery.join(' '), connectionProfile);
-			} else if (types.isString(this._insight.detailsQuery)) {
-				this.createQuery(this._insight.detailsQuery, connectionProfile);
-			} else if (types.isString(this._insight.detailsQueryFile)) {
+			if (types.isStringArray(this._insight.details.query)) {
+				this.createQuery(this._insight.details.query.join(' '), connectionProfile);
+			} else if (types.isString(this._insight.details.query)) {
+				this.createQuery(this._insight.details.query, connectionProfile);
+			} else if (types.isString(this._insight.details.queryFile)) {
 				let self = this;
-				pfs.readFile(this._insight.detailsQueryFile).then(
+				pfs.readFile(this._insight.details.queryFile).then(
 					buffer => {
 						self.createQuery(buffer.toString(), connectionProfile);
 						self._topList.splice(0, this._topList.length);
@@ -323,11 +323,11 @@ export default class InsightsDialog extends Modal {
 		let elements = this._rows;
 		let labelIndex: number;
 		let valueIndex: number;
-		let columnName = typeof this._insight.label === 'object' ? this._insight.label.column : this._insight.label;
-		if (this._insight.label === undefined || (labelIndex = this.findIndex(columnName, this._columns)) === -1) {
+		let columnName = typeof this._insight.details.label === 'object' ? this._insight.details.label.column : this._insight.details.label;
+		if (this._insight.details.label === undefined || (labelIndex = this.findIndex(columnName, this._columns)) === -1) {
 			labelIndex = 0;
 		}
-		if (this._insight.value === undefined || (valueIndex = this.findIndex(this._insight.value, this._columns)) === -1) {
+		if (this._insight.details.value === undefined || (valueIndex = this.findIndex(this._insight.details.value, this._columns)) === -1) {
 			valueIndex = 1;
 		}
 		// convert
@@ -338,7 +338,7 @@ export default class InsightsDialog extends Modal {
 			let data: string[] = item.map((val) => {
 				return val.displayValue;
 			});
-			let icon = typeof this._insight.label === 'object' ? this._insight.label.icon : undefined;
+			let icon = typeof this._insight.details.label === 'object' ? this._insight.details.label.icon : undefined;
 			let rval = { title: false, label, value, icon, data };
 			if (state) {
 				rval[state.type] = state.val;
@@ -357,10 +357,10 @@ export default class InsightsDialog extends Modal {
 	 * @returns json that specifies whether the state is an icon or color and the val of that state
 	 */
 	private calcInsightState(item: string): { type: 'stateColor' | 'stateIcon', val: string } {
-		if (typeof this._insight.label === 'string') {
+		if (typeof this._insight.details.label === 'string') {
 			return undefined;
 		} else {
-			let label = <IInsightLabel>this._insight.label;
+			let label = <IInsightLabel>this._insight.details.label;
 			for (let cond of label.state) {
 				switch (Conditional[cond.condition.if]) {
 					case Conditional.always:

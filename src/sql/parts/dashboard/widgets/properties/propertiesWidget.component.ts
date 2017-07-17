@@ -127,8 +127,8 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		let propertiesConfig: Array<ProviderProperties>;
 
 		// if config exists use that, otherwise use default
-		if (this._config.config) {
-			let config = <PropertiesConfig>this._config.config;
+		if (this._config.widget['properties-widget']) {
+			let config = <PropertiesConfig>this._config.widget['properties-widget'];
 			propertiesConfig = config.properties;
 		} else {
 			propertiesConfig = properties;

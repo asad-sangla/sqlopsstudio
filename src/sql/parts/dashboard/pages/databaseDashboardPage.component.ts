@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 import { OnInit, Inject, forwardRef } from '@angular/core';
 
@@ -15,9 +15,11 @@ import * as colors from 'vs/platform/theme/common/colorRegistry';
 export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 	private propertiesConfig: WidgetConfig = {
 		name: 'Database Properties',
-		iconClass: 'database',
-		selector: 'properties-widget',
+		icon: 'database',
 		context: 'database',
+		widget: {
+			'properties-widget': {}
+		},
 		background_color: colors.editorBackground,
 		provider: undefined
 	};
@@ -31,6 +33,7 @@ export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 		this.widgets = dashboardService.databasePageSettings;
 		this.addProvider([this.propertiesConfig]);
 		this.addContext('database');
+		this.validateConfig();
 	}
 
 	ngOnInit() {
