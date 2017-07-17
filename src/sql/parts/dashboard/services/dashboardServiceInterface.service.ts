@@ -32,6 +32,7 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 
 const DASHBOARD_SETTINGS = 'dashboard';
 const DATABASEPAGE_SETTINGS = 'databasePage';
@@ -143,6 +144,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	private _queryManagementService: SingleQueryManagementService;
 	private _configService: IConfigurationService;
 	private _insightsDialogService: IInsightsDialogService;
+	private _contextViewService: IContextViewService;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
@@ -153,6 +155,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._instantiationService = this._bootstrapService.instantiationService;
 		this._configService = this._bootstrapService.configurationService;
 		this._insightsDialogService = this._bootstrapService.insightsDialogService;
+		this._contextViewService = this._bootstrapService.contextViewService;
 	}
 
 	ngOnDestroy() {
@@ -185,6 +188,10 @@ export class DashboardServiceInterface implements OnDestroy {
 
 	public get queryManagementService(): SingleQueryManagementService {
 		return this._queryManagementService;
+	}
+
+	public get contextViewService(): IContextViewService {
+		return this._contextViewService;
 	}
 
 	/**

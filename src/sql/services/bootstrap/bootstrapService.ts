@@ -26,6 +26,7 @@ import { createDecorator, IInstantiationService } from 'vs/platform/instantiatio
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 
 export const BOOTSTRAP_SERVICE_ID = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -58,6 +59,7 @@ export interface IBootstrapService {
 	angularEventingService: IAngularEventingService;
 	configurationService: IConfigurationService;
 	insightsDialogService: IInsightsDialogService;
+	contextViewService: IContextViewService;
 	restoreDialogService: IRestoreDialogService;
 
 	/*

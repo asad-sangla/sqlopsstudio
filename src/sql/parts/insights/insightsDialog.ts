@@ -339,7 +339,7 @@ export default class InsightsDialog extends Modal {
 				return val.displayValue;
 			});
 			let icon = typeof this._insight.label === 'object' ? this._insight.label.icon : undefined;
-			let rval = { title: false, label, value, icon, data, state };
+			let rval = { title: false, label, value, icon, data };
 			if (state) {
 				rval[state.type] = state.val;
 			}

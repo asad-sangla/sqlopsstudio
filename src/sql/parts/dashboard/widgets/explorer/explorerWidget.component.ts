@@ -6,7 +6,7 @@
 import 'vs/css!sql/media/objectTypes/objecttypes';
 import 'vs/css!sql/media/icons/common-icons';
 
-import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
@@ -20,6 +20,9 @@ import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 import { registerThemingParticipant, ICssStyleCollector, ITheme } from 'vs/platform/theme/common/themeService';
+import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
+import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
+import * as nls from 'vs/nls';
 
 import { ObjectMetadata } from 'data';
 
@@ -88,6 +91,9 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		'func'
 	];
 
+	@ViewChild('input') private inputContainer: ElementRef;
+	private input: InputBox;
+
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
 		@Inject(forwardRef(() => Router)) private _router: Router,
@@ -100,7 +106,19 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	}
 
 	ngOnInit() {
+		let inputOptions: IInputOptions = {
+			placeholder: this._config.context === 'database' ? nls.localize('seachObjects', 'Search database objects') : nls.localize('searchDatabases', 'Search databases')
+		};
+		this.input = new InputBox(this.inputContainer.nativeElement, this._bootstrap.contextViewService, inputOptions);
+		this._disposables.push(this.input.onDidChange(e => {
+			if (this.filterString !== e) {
+				this.filterString = e;
+				this._changeRef.detectChanges();
+			}
+		}));
 		this._disposables.push(registerThemingParticipant(this.registerThemeing));
+		this._disposables.push(this.input);
+		this._disposables.push(attachInputBoxStyler(this.input, this._bootstrap.themeService));
 	}
 
 	ngOnDestroy() {

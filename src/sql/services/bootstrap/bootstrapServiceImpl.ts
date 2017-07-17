@@ -23,7 +23,7 @@ import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService
 import { $ } from 'vs/base/browser/dom';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IContextMenuService, IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IEditorInput } from 'vs/platform/editor/common/editor';
@@ -66,7 +66,8 @@ export class BootstrapService implements IBootstrapService {
 		@IInstantiationService public instantiationService: IInstantiationService,
 		@IAngularEventingService public angularEventingService: IAngularEventingService,
 		@IConfigurationService public configurationService: IConfigurationService,
-		@IInsightsDialogService public insightsDialogService: IInsightsDialogService
+		@IInsightsDialogService public insightsDialogService: IInsightsDialogService,
+		@IContextViewService public contextViewService: IContextViewService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();

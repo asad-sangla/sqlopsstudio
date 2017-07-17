@@ -5,27 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 <div class="explorer-widget" style="display: flex; flex-flow: column; position: absolute; height:100%; width:100%; padding: 10px; box-sizing: border-box">
-    <div  height="28px" class="input" style="border-bottom: 0 none; flex: 0 0 auto; display: flex">
-        <input *ngIf="_config.context === 'database'" class="dashboard-search-box"
-                [(ngModel)]="filterString"
-                (keyup)="_changeRef.detectChanges()"
-                style="flex: 1 1 auto;"
-                type="text"
-                placeholder="&#xf002;   Search connection metadata">
-        <input *ngIf="_config.context === 'server'" class="dashboard-search-box"
-                [(ngModel)]="filterString"
-                (keyup)="_changeRef.detectChanges()"
-                style="flex: 1 1 auto;"
-                type="text"
-                placeholder="&#xf002;   Search databases">
-        <span *ngIf="_config.context === 'database'" class="dropdown">
-            <span class="dashboard-search-box dropbtn" style="flex: 0 0 auto">&#xf0b0;</span>
-            <div class="dropdown-content" style="width: 40px; background: white">
-                <div class="dropdown-item" *ngFor="let filter of filterArray" (click)="handleFilterMenu(filter)">
-                    {{filter}}
-                </div>
-            </div>
-        </span>
+    <div #input style="width: 100%">
     </div>
     <div class="explorer-table" style="overflow: scroll; flex: 1 1 auto">
         <div *ngFor="let row of tableData | metadataFilter:filterString; let i = index"
