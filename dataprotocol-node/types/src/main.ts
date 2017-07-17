@@ -325,6 +325,7 @@ export interface BackupConfigInfo {
 	recoveryModel: string;
 	latestBackups: {};
 	defaultBackupFolder: string;
+	backupEncryptors: {};
 }
 
 export interface LoginInfo {
@@ -398,6 +399,36 @@ export interface BackupInfo {
 	backupPathList: [string];
 
 	isCopyOnly: boolean;
+
+	formatMedia: boolean;
+
+    initialize: boolean;
+
+    skipTapeHeader: boolean;
+
+    mediaName: string;
+
+    mediaDescription: string;
+
+    checksum: boolean;
+
+    continueAfterError: boolean;
+
+    logTruncation: boolean;
+
+    tailLogBackup: boolean;
+
+    retainDays: number;
+
+    compressionOption: number;
+
+    verifyBackupRequired: boolean;
+
+    encryptionAlgorithm: number;
+
+    encryptorType: number;
+
+    encryptorName: string;
 }
 
 export interface BackupParams {

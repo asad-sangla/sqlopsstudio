@@ -6,8 +6,6 @@
 import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
 import 'vs/css!sql/media/primeng';
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { NgForm } from '@angular/forms';
-import data = require('data');
 import { BackupInfo } from 'data';
 import { SelectItem } from 'primeng/primeng';
 import { PathUtilities } from 'sql/common/pathUtilities';
@@ -43,6 +41,11 @@ export class BackupComponent{
     @ViewChild('backupTypeContainer', {read: ElementRef}) backupTypeElement;
     @ViewChild('backupsetName', {read: ElementRef}) backupNameElement;
     @ViewChild('errorIcon', {read: ElementRef}) errorIconElement;
+    @ViewChild('compressionContainer', {read: ElementRef}) compressionElement;
+    @ViewChild('tlogOption', {read: ElementRef}) tlogOptionElement;
+    @ViewChild('algorithmContainer', {read: ElementRef}) encryptionAlgorithmElement;
+    @ViewChild('encryptorContainer', {read: ElementRef}) encryptorElement;
+    @ViewChild('mediaName', {read: ElementRef}) mediaNameElement;
 
     private _disasterRecoveryService: IDisasterRecoveryService;
     private _disasterRecoveryUiService: IDisasterRecoveryUiService;
@@ -53,6 +56,8 @@ export class BackupComponent{
     public defaultNewBackupFolder: string;
     public lastBackupLocations;
     public recoveryModel: string;
+    public backupEncryptors;
+
     public errorMessage: string = '';
     public labelOk = 'OK';
     public labelCancel = 'Cancel';
@@ -65,6 +70,7 @@ export class BackupComponent{
     public disableAdd: boolean;
     public disableRemove: boolean;
     public disableCopyOnly: boolean;
+    public disableTlog: boolean;
 
 	// User input values
 	public selectedBackupComponent: string;
@@ -72,12 +78,30 @@ export class BackupComponent{
     public backupPathInput: string;
     public backupName: string;
     public isCopyOnly: boolean;
+    public isVerifyChecked: boolean;
+    public isPerformChecksumChecked: boolean;
+    public isContinueOnErrorChecked: boolean;
+    public expirationDays: number;
+    public isTruncateChecked: boolean;
+    public isTaillogChecked: boolean;
+    public isEncryptChecked: boolean;
+    public isFormatChecked: boolean;
+    public selectedCompression: string;
+    public selectedAlgorithm: string;
+    public selectedEncryptor: string;
+    public selectedInitOption: string;
+    public selectedMediaName: string;
+    public selectedMediaDescription: string;
 
     // Dropdown list
 	public listOfBackupTypes: SelectItem[];
     // Key: backup path, Value: device type
     public dictOfBackupPathDevice: {[path: string]: number};
     public urlBackupPaths: string[];
+
+    public compressionOptions = [BackupConstants.defaultCompression, BackupConstants.compressionOn, BackupConstants.compressionOff];
+    public encryptionAlgorithms = [BackupConstants.aes128, BackupConstants.aes192, BackupConstants.aes256, BackupConstants.tripleDES];
+    public existingMediaOptions = ["append", "overwrite"];
 
     public keyEnter = 13;
     public keyC = 67;
@@ -98,15 +122,21 @@ export class BackupComponent{
         this.initialize();
         let self = this;
 
+        // Get backup configuration info
         this._disasterRecoveryService.getBackupConfigInfo(this._uri).then(configInfo => {
             if (configInfo) {
                 self.lastBackupLocations = configInfo.latestBackups;
                 self.defaultNewBackupFolder = configInfo.defaultBackupFolder;
                 self.recoveryModel = configInfo.recoveryModel;
+                self.backupEncryptors = configInfo.backupEncryptors;
 
                 self.setControlsForRecoveryModel();
                 self.setDefaultBackupPaths();
                 self.setDefaultBackupName();
+                self.populateCompressionCombo();
+                self.populateAlgorithmCombo();
+                self.populateEncryptorCombo();
+                self.setTLogOptions();
 
                 self._changeDetectorRef.detectChanges();
             }
@@ -118,27 +148,41 @@ export class BackupComponent{
         this.selectedBackupComponent = BackupConstants.labelDatabase;
         this.dictOfBackupPathDevice = {};
         this.urlBackupPaths = [];
+        this.selectedCompression = this.compressionOptions[0];
+        this.selectedAlgorithm = this.encryptionAlgorithms[0];
+        this.expirationDays = 0;
+        this.isFormatChecked = false;
+        this.selectedInitOption = this.existingMediaOptions[0];
 
         // Set focus on backup name
         this.backupNameElement.nativeElement.focus();
     }
 
-
-
     private validateInput(): boolean {
-        if (this.getBackupPathCount() === 0) {
-            this.errorMessage = 'Missing required fields';
-        } else if (this.urlBackupPaths.length > 0) {
+        this.errorMessage = '';
+        if (this.urlBackupPaths.length > 0) {
+            this.pathElement.nativeElement.style.border = this.errorBorderStyle;
             this.errorMessage = 'Only disk backup is supported';
+        } else {
+            var isValid = true;
+            if (this.getBackupPathCount() === 0) {
+                this.pathElement.nativeElement.style.border = this.errorBorderStyle;
+                isValid = false;
+            }
+            if (this.isFormatChecked && (!this.selectedMediaName || this.selectedMediaName === ''))
+            {
+                this.mediaNameElement.nativeElement.style.border = this.errorBorderStyle;
+                isValid = false;
+            }
+            if (!isValid) {
+                this.errorMessage = 'Missing required fields';
+            }
         }
 
         if (this.errorMessage !== '') {
             let iconFilePath = PathUtilities.toUrl('sql/parts/common/flyoutDialog/media/status-error.svg');
 			this.errorIconElement.nativeElement.style.content = 'url(' + iconFilePath + ')';
-            this.errorIconElement.nativeElement.style.visibility = 'visible'
-
-            // highlight the backup path box
-            this.pathElement.nativeElement.style.border = this.errorBorderStyle;
+            this.errorIconElement.nativeElement.style.visibility = 'visible';
 
             this._changeDetectorRef.detectChanges();
             return false;
@@ -156,8 +200,17 @@ export class BackupComponent{
                 backupPathArray.push(this.pathElement.nativeElement.children[i].innerHTML);
             }
 
+            // get encryptor type and name
+            var encryptorName = '';
+            var encryptorType;
+            if (this.isEncryptChecked && this.selectedEncryptor && this.selectedEncryptor !== '') {
+                var encryptorTypeStr = this.selectedEncryptor.substring(0, this.selectedEncryptor.indexOf('-'));
+                encryptorType = (encryptorTypeStr === BackupConstants.serverCertificate ? 0: 1);
+                encryptorName = this.selectedEncryptor.substring(this.selectedEncryptor.indexOf('-') + 1, this.selectedEncryptor.length);
+            }
+
             this._disasterRecoveryService.backup(this._uri,
-            <data.BackupInfo>{
+            <BackupInfo>{
                 ownerUri: this._uri,
                 databaseName: this.databaseName,
                 backupType: this.getBackupTypeNumber(),
@@ -168,7 +221,24 @@ export class BackupComponent{
                 backupsetName: this.backupName,
                 selectedFileGroup: undefined,
                 backupPathDevices: this.dictOfBackupPathDevice,
-                isCopyOnly: this.isCopyOnly
+                isCopyOnly: this.isCopyOnly,
+
+                // Get advanced options
+                formatMedia: this.isFormatChecked,
+                initialize: (this.isFormatChecked ? true: (this.selectedInitOption === this.existingMediaOptions[1])),
+                skipTapeHeader: this.isFormatChecked,
+                mediaName: (this.isFormatChecked ? this.selectedMediaName: ''),
+                mediaDescription: (this.isFormatChecked ? this.selectedMediaDescription: ''),
+                checksum: this.isPerformChecksumChecked,
+                continueAfterError: this.isContinueOnErrorChecked,
+                logTruncation: this.isTruncateChecked,
+                tailLogBackup: this.isTaillogChecked,
+                retainDays: this.expirationDays,
+                compressionOption: this.compressionOptions.indexOf(this.selectedCompression),
+                verifyBackupRequired: this.isVerifyChecked,
+                encryptionAlgorithm: (this.isEncryptChecked ? this.encryptionAlgorithms.indexOf(this.selectedAlgorithm): 0),
+                encryptorType: encryptorType,
+                encryptorName: encryptorName
             });
 
             this._disasterRecoveryUiService.closeBackup();
@@ -217,6 +287,49 @@ export class BackupComponent{
         self.backupTypeElement.nativeElement.SelectedIndex = 0;
     }
 
+    private populateCompressionCombo(): void {
+        if (this.compressionElement) {
+            let self = this;
+            this.compressionOptions.forEach((compressionOption) => {
+                var option = document.createElement('option');
+                option.value = compressionOption;
+                option.innerHTML = compressionOption;
+                self.compressionElement.nativeElement.appendChild(option);
+            });
+        }
+
+        this.compressionElement.nativeElement.SelectedIndex = 0;
+    }
+
+    private populateAlgorithmCombo(): void {
+        if (this.encryptionAlgorithmElement) {
+            let self = this;
+            this.encryptionAlgorithms.forEach((algorithm) => {
+                var option = document.createElement('option');
+                option.value = algorithm;
+                option.innerHTML = algorithm;
+                self.encryptionAlgorithmElement.nativeElement.appendChild(option);
+            });
+        }
+
+        this.encryptionAlgorithmElement.nativeElement.SelectedIndex = 0;
+    }
+
+    private populateEncryptorCombo(): void {
+        if (this.encryptorElement) {
+            let self = this;
+            this.backupEncryptors.forEach(function(encryptor) {
+                var option = document.createElement('option');
+                var encryptorTypeStr = (encryptor.encryptorType===0 ? BackupConstants.serverCertificate: BackupConstants.asymmetricKey);
+                option.value = encryptorTypeStr + '-' + encryptor.encryptorName;
+                option.innerHTML = encryptor.encryptorName + '(' + encryptorTypeStr + ')';
+                self.encryptorElement.nativeElement.appendChild(option);
+            });
+        }
+
+        this.encryptorElement.nativeElement.SelectedIndex = 0;
+    }
+
     private setDefaultBackupName(): void {
         let utc = new Date().toJSON().slice(0, 19);
         let self = this;
@@ -231,8 +344,8 @@ export class BackupComponent{
                 let source = new RestoreItemSource(self.lastBackupLocations[i]);
                 let isFile = self.isBackupToFile(source.restoreItemDeviceType);
 
-                if (source.restoreItemDeviceType == BackupConstants.backupDeviceTypeURL) {
-                    if (i == 0) {
+                if (source.restoreItemDeviceType === BackupConstants.backupDeviceTypeURL) {
+                    if (i === 0) {
                         self.urlBackupPaths.push(source.restoreItemLocation);
                         self.addToBackupPathList(source.restoreItemLocation);
                         break;
@@ -290,8 +403,27 @@ export class BackupComponent{
 
 // #region UI event handlers
 
+    public onChangeTlog(): void {
+        this.isTruncateChecked = !this.isTruncateChecked;
+        this.isTaillogChecked = !this.isTaillogChecked;
+        this.detectChange();
+    }
+
     public onChangeCopyOnly(): void {
         this.isCopyOnly = !this.isCopyOnly;
+        this.detectChange();
+    }
+
+    public onChangeEncrypt(): void {
+        this.isEncryptChecked = !this.isEncryptChecked;
+        if (this.isEncryptChecked) {
+            this.isFormatChecked = true;
+        }
+        this.detectChange();
+    }
+
+    public onChangeMediaFormat(): void {
+        this.isFormatChecked = !this.isFormatChecked;
         this.detectChange();
     }
 
@@ -307,9 +439,25 @@ export class BackupComponent{
             this.disableCopyOnly = false;
         }
 
+        this.setTLogOptions();
         this.setDefaultBackupName();
         this._changeDetectorRef.detectChanges();
 	}
+
+    public setTLogOptions(): void {
+        if (this.getSelectedBackupType() === BackupConstants.labelLog) {
+            // Enable log options
+            this.disableTlog = false;
+            // Choose the default option
+            this.isTruncateChecked = true;
+        } else {
+            // Unselect log options
+            this.isTruncateChecked = false;
+            this.isTaillogChecked = false;
+            // Disable log options
+            this.disableTlog = true;
+        }
+    }
 
     public onBackupPathKeyEvent(event: KeyboardEvent): void {
         let selectedCount = this.pathElement.nativeElement.selectedOptions.length;

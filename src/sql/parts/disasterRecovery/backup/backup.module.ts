@@ -34,7 +34,7 @@ const BrowserAnimationsModule = (<any> require.__$__nodeRequire('@angular/platfo
 		DataListModule,
 		BreadcrumbModule,
 		MessagesModule,
-		BrowserAnimationsModule
+		BrowserAnimationsModule,
 	],
 	providers: [{ provide: APP_BASE_HREF, useValue: '/' }]
 })

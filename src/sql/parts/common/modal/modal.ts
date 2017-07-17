@@ -120,7 +120,7 @@ export abstract class Modal implements IThemable {
 
 		this.renderBody(body.getHTMLElement());
 
-		if (this._modalOptions.hasErrors) {
+		if (this._modalOptions.isAngular === false && this._modalOptions.hasErrors) {
 			body.div({ class: 'dialogErrorMessage', id: 'dialogErrorMessage' }, (errorMessageContainer) => {
 				errorMessageContainer.div({ class: 'errorIcon' }, (iconContainer) => {
 					iconContainer.element('img', { 'class': 'error-icon' });
@@ -134,7 +134,6 @@ export abstract class Modal implements IThemable {
 				});
 			});
 		}
-
 		// This modal footer section refers to the footer of of the dialog
 		if (this._modalOptions.isAngular === false) {
 			this._modalFooterSection = $().div({ class: 'modal-footer' }, (modelFooter) => {

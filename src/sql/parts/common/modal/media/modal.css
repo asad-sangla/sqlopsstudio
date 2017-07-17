@@ -2,6 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
+/* TODO: remove the color style after theming is fixed for backup component */
+
 .monaco-shell .modal.flyout-dialog .modal-dialog {
 	margin: auto auto auto auto;
 	height: calc(100% - 23px);
@@ -83,6 +86,11 @@
 	color: #BBB;
 }
 
+.vs-dark.monaco-shell .modal.flyout-dialog .select-box:disabled {
+	background-color: #E1E1E1;
+	color:  #3C3C3C;
+}
+
 .modal.flyout-dialog .dialogErrorMessage {
 	overflow: hidden;
 	padding-left: 10px;
@@ -127,7 +135,6 @@
 	margin-right: none;
 }
 
-/* TODO: remove the color style after theming is fixed for angular components */
 /* The following style is defined at the Button class. If you're creating the buttons using html template, apply this to get consistent style. */
 .modal.flyout-dialog .angular-button {
 	background: #0E639C;
