@@ -76,7 +76,7 @@ export class CreateLoginEditor extends BaseEditor {
 	private revealElementWithTagName(tagName: string, parent: HTMLElement): void {
 		let elementToReveal: HTMLElement;
 
-		for(let i = 0; i < parent.children.length; i++) {
+		for (let i = 0; i < parent.children.length; i++) {
 			let child: HTMLElement = <HTMLElement>parent.children[i];
 			if (child.tagName && child.tagName.toLowerCase() === tagName && !elementToReveal) {
 				elementToReveal = child;
@@ -97,7 +97,7 @@ export class CreateLoginEditor extends BaseEditor {
 
 		// Get the bootstrap params and perform the bootstrap
 		let params: DashboardComponentParams = {
-			connection: input.getConnectionInfo(),
+			connection: input.getConnectionProfile(),
 			ownerUri: input.getUri()
 		};
 		let uniqueSelector = this._bootstrapService.bootstrap(

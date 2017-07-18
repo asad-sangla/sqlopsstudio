@@ -11,7 +11,6 @@ import { mixin } from 'vs/base/common/objects';
 
 /* Bad Layering */
 import { Builder, $, withElementById } from 'vs/base/browser/builder';
-import { IconLabel } from 'vs/base/browser/ui/iconLabel/iconLabel';
 import { Button } from 'vs/base/browser/ui/button/button';
 import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';

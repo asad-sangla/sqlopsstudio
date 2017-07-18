@@ -61,29 +61,29 @@ export class ServerTreeDataSource implements IDataSource {
 	 */
 	public getChildren(tree: ITree, element: any): TPromise<any> {
 		return new TPromise<any>((resolve) => {
-		if (element instanceof ConnectionProfile) {
-			TreeUpdateUtils.getObjectExplorerNode(<ConnectionProfile>element, this._connectionManagementService, this._objectExplorerService).then(nodes => {
-				resolve(nodes);
-			}, error => {
-				resolve([]);
-			});
-		} else if (element instanceof ConnectionProfileGroup) {
-			resolve((<ConnectionProfileGroup>element).getChildren());
-		} else if (element instanceof TreeNode) {
-			var node = <TreeNode>element;
-			if (node.children) {
-				resolve(node.children);
-			} else {
+			if (element instanceof ConnectionProfile) {
+				TreeUpdateUtils.getObjectExplorerNode(<ConnectionProfile>element, this._connectionManagementService, this._objectExplorerService).then(nodes => {
+					resolve(nodes);
+				}, error => {
+					resolve([]);
+				});
+			} else if (element instanceof ConnectionProfileGroup) {
+				resolve((<ConnectionProfileGroup>element).getChildren());
+			} else if (element instanceof TreeNode) {
+				var node = <TreeNode>element;
+				if (node.children) {
+					resolve(node.children);
+				} else {
 					this._objectExplorerService.expandTreeNode(node.getSession(), node).then(() => {
 						resolve(node.children);
 					}, expandError => {
 						this.showError(expandError);
 						resolve([]);
 					});
+				}
+			} else {
+				resolve([]);
 			}
-		} else {
-			resolve([]);
-		}
 		});
 	}
 

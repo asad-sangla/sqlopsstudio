@@ -15,7 +15,7 @@ import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { TaskUtilities } from 'sql/common/taskUtilities';
+import * as TaskUtilities from 'sql/workbench/electron-browser/taskUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
@@ -28,11 +28,10 @@ import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
 /* VS imports */
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IContextMenuService, IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 
 const DASHBOARD_SETTINGS = 'dashboard';
 const DATABASEPAGE_SETTINGS = 'database';
@@ -225,7 +224,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	 */
 	public newQuery(): void {
 		TaskUtilities.newQuery(
-			this._bootstrapParams.connection.connectionProfile,
+			this._bootstrapParams.connection,
 			this._bootstrapService.connectionManagementService,
 			this._bootstrapService.queryEditorService);
 	}
@@ -247,7 +246,6 @@ export class DashboardServiceInterface implements OnDestroy {
 	 */
 	public backup(): void {
 		TaskUtilities.showBackup(
-			this._uri,
 			this._bootstrapParams.connection,
 			this._bootstrapService.disasterRecoveryUiService);
 	}

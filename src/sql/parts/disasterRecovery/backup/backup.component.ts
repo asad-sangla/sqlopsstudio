@@ -9,7 +9,7 @@ import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef
 import { BackupInfo } from 'data';
 import { SelectItem } from 'primeng/primeng';
 import { PathUtilities } from 'sql/common/pathUtilities';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
@@ -54,7 +54,7 @@ export class BackupComponent{
     private _disasterRecoveryUiService: IDisasterRecoveryUiService;
     private _uri: string;
 
-    public connection: ConnectionManagementInfo;
+    public connection: IConnectionProfile;
 	public databaseName: string;
     public defaultNewBackupFolder: string;
     public lastBackupLocations;
@@ -147,7 +147,7 @@ export class BackupComponent{
     }
 
     private initialize(): void {
-        this.databaseName = this.connection.connectionProfile.databaseName;
+        this.databaseName = this.connection.databaseName;
         this.selectedBackupComponent = BackupConstants.labelDatabase;
         this.dictOfBackupPathDevice = {};
         this.urlBackupPaths = [];

@@ -10,7 +10,7 @@ import { Action } from 'vs/base/common/actions';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction } from 'sql/common/baseActions';
+import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction } from 'sql/workbench/electron-browser/actions';
 
 export class ObjectExplorerActionsContext {
 	public treeNode: TreeNode;

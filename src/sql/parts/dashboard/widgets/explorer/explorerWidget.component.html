@@ -5,32 +5,32 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 <div class="explorer-widget" style="display: flex; flex-flow: column; position: absolute; height:100%; width:100%; padding: 10px; box-sizing: border-box">
-    <div #input style="width: 100%">
-    </div>
-    <div class="explorer-table" style="overflow: scroll; flex: 1 1 auto">
-        <div *ngFor="let row of tableData | metadataFilter:filterString; let i = index"
-            [ngClass]="{'selected': selected === i, 'hover': hovered === i }"
-            (mouseover)="handleHover(i, true)"
-            (mouseleave)="handleHover(i, false)"
-            style="display: flex; flex-flow: row"
-            class="explorer-row">
-            <span style="flex: 0 0 auto; margin-right: 3px">
-                <div *ngIf="row.metadata?.metadataType === dataType.Table">
-                    <div class="icon table" style="padding: 8px"></div>
-                </div>
-                <div *ngIf="row.metadata?.metadataType === dataType.SProc">
-                    <div class="icon stored-procedure" style="padding: 8px"></div>
-                </div>
-                <div *ngIf="row.metadata?.metadataType === dataType.View">
-                    <div class="icon view" style="padding: 8px"></div>
-                </div>
-                <div *ngIf="_config.context === 'server'">
-                    <div class="icon database" style="padding: 8px"></div>
-                </div>
-            </span>
-            <span *ngIf="_config.context === 'database'" style="flex: 1 1 auto" (click)="handleItemClick(undefined, i)">{{row.metadata.name}}</span>
-            <span *ngIf="_config.context === 'server'" style="flex: 1 1 auto" (dblclick)="handleItemDoubleClick(row)" (click)="handleItemClick(undefined, i)">{{row}}</span>
-            <span *ngIf="hovered === i || selected === i" style="flex: 0 0 auto; padding-right: 5px" (click)="handleItemClick(row, i, $event)">...</span>
-        </div>
-    </div>
+	<div #input style="width: 100%">
+	</div>
+	<div class="explorer-table" style="overflow: scroll; flex: 1 1 auto">
+		<div *ngFor="let row of tableData | metadataFilter:filterString; let i = index"
+			[ngClass]="{'selected': selected === i, 'hover': hovered === i }"
+			(mouseover)="handleHover(i, true)"
+			(mouseleave)="handleHover(i, false)"
+			style="display: flex; flex-flow: row"
+			class="explorer-row">
+			<span style="flex: 0 0 auto; margin-right: 3px">
+				<div *ngIf="row.metadata?.metadataType === dataType.Table">
+					<div class="icon table" style="padding: 8px"></div>
+				</div>
+				<div *ngIf="row.metadata?.metadataType === dataType.SProc">
+					<div class="icon stored-procedure" style="padding: 8px"></div>
+				</div>
+				<div *ngIf="row.metadata?.metadataType === dataType.View">
+					<div class="icon view" style="padding: 8px"></div>
+				</div>
+				<div *ngIf="_config.context === 'server'">
+					<div class="icon database" style="padding: 8px"></div>
+				</div>
+			</span>
+			<span *ngIf="_config.context === 'database'" style="flex: 1 1 auto" (click)="handleItemClick(undefined, i)">{{row.metadata.name}}</span>
+			<span *ngIf="_config.context === 'server'" style="flex: 1 1 auto" (dblclick)="handleItemDoubleClick(row)" (click)="handleItemClick(undefined, i)">{{row}}</span>
+			<span *ngIf="hovered === i || selected === i" style="flex: 0 0 auto; padding-right: 5px" (click)="handleItemClick(row, i, $event)">...</span>
+		</div>
+	</div>
 </div>

@@ -7,7 +7,6 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput, EditorModel } from 'vs/workbench/common/editor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 export class CreateLoginInput extends EditorInput {
 
@@ -16,7 +15,7 @@ export class CreateLoginInput extends EditorInput {
 
 	private _uniqueSelector: string;
 
-	constructor(private _uri: string, private _connection: ConnectionManagementInfo) {
+	constructor(private _uri: string, private _connection: IConnectionProfile) {
 		super();
 	}
 
@@ -29,7 +28,7 @@ export class CreateLoginInput extends EditorInput {
 	}
 
 	public getName(): string {
-		return this._connection.connectionProfile.serverName + ':' + this._connection.connectionProfile.databaseName;
+		return this._connection.serverName + ':' + this._connection.databaseName;
 	}
 
 	public getUri(): string {
@@ -41,7 +40,7 @@ export class CreateLoginInput extends EditorInput {
 	}
 
 	public getConnectionProfile(): IConnectionProfile {
-		return this._connection.connectionProfile;
+		return this._connection;
 	}
 
 	public resolve(refresh?: boolean): TPromise<EditorModel> {
@@ -50,13 +49,9 @@ export class CreateLoginInput extends EditorInput {
 
 	public get hasInitialized(): boolean {
 		return !!this._uniqueSelector;
-    }
+	}
 
 	public get uniqueSelector(): string {
 		return this._uniqueSelector;
-	}
-
-	public getConnectionInfo(): ConnectionManagementInfo {
-		return this._connection;
 	}
 }

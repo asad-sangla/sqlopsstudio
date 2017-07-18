@@ -5,8 +5,10 @@
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { IConnectionManagementService, MetadataType } from 'sql/parts/connection/common/connectionManagement';
-import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction,
-	BackupAction, BaseActionContext, ManageAction } from 'sql/common/baseActions';
+import {
+	NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction,
+	BackupAction, BaseActionContext, ManageAction
+} from 'sql/workbench/electron-browser/actions';
 import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 
 import { TPromise } from 'vs/base/common/winjs.base';

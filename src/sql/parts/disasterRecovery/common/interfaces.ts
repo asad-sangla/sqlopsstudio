@@ -7,8 +7,8 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import data = require('data');
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 export const SERVICE_ID = 'disasterRecoveryService';
 export const UI_SERVICE_ID = 'disasterRecoveryUiService';
@@ -21,7 +21,7 @@ export interface IDisasterRecoveryUiService {
 	/**
 	 * Show backup wizard
 	 */
-	showBackup(uri: string, connection: ConnectionManagementInfo): Promise<any>;
+	showBackup(connection: IConnectionProfile): Promise<any>;
 
 	/**
 	 * Close backup wizard
@@ -61,5 +61,5 @@ export interface IDisasterRecoveryService {
 export const IRestoreDialogService = createDecorator<IRestoreDialogService>('restoreDialogService');
 export interface IRestoreDialogService {
 	_serviceBrand: any;
-	showDialog(uri: string, connection: ConnectionManagementInfo): TPromise<void>;
+	showDialog(uri: string, connection: IConnectionProfile): TPromise<void>;
 }

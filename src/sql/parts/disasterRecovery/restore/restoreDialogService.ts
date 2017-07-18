@@ -8,7 +8,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IDisasterRecoveryService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import data = require('data');
 
 export class RestoreDialogService implements IRestoreDialogService {
@@ -47,7 +47,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 		});
 	}
 
-	public showDialog(uri: string, connection: ConnectionManagementInfo): TPromise<void> {
+	public showDialog(uri: string, connection: IConnectionProfile): TPromise<void> {
 		this._ownerUri = uri;
 		if (!this._restoreDialog) {
 			this._restoreDialog = this._instantiationService.createInstance(RestoreDialog);
@@ -58,7 +58,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 		}
 
 		return new TPromise<void>(() => {
-			this._restoreDialog.open(connection.connectionProfile.serverName);
+			this._restoreDialog.open(connection.serverName);
 		});
 	}
 }

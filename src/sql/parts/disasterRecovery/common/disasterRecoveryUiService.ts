@@ -5,7 +5,7 @@
 
 'use strict';
 
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { BackupDialog } from 'sql/parts/disasterRecovery/backup/backupDialog';
 import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { TPromise } from 'vs/base/common/winjs.base';
@@ -20,10 +20,10 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 		@IPartService private _partService: IPartService) {
 	}
 
-	public showBackup(uri: string, connection: ConnectionManagementInfo): Promise<any> {
+	public showBackup(connection: IConnectionProfile): Promise<any> {
 		let self = this;
 		return new Promise<void>((resolve, reject) => {
-			self.showBackupDialog(uri, connection).then(() => {
+			self.showBackupDialog(connection).then(() => {
 				resolve();
 			}, error => {
 				reject();
@@ -31,7 +31,7 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 		});
 	}
 
-	public showBackupDialog(uri: string, connection: ConnectionManagementInfo): TPromise<void> {
+	public showBackupDialog(connection: IConnectionProfile): TPromise<void> {
 		let self = this;
 		if (!self._backupDialog) {
 			self._backupDialog = self._instantiationService ? self._instantiationService.createInstance(BackupDialog) : undefined;
@@ -39,7 +39,7 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 		}
 
 		return new TPromise<void>(() => {
-			self._backupDialog.open(uri, connection);
+			self._backupDialog.open(connection);
 		});
 	}
 

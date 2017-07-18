@@ -3,85 +3,236 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IConnectionManagementService, IConnectionCompletionOptions, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
-import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import * as TaskUtilities from './taskUtilities';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
-import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
-import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { IScriptingService } from 'sql/services/scripting/scriptingService';
+import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
+import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+
+import { ObjectMetadata } from 'data';
+
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
-import nls = require('vs/nls');
+import * as nls from 'vs/nls';
 
+export interface BaseActionContext {
+	profile?: IConnectionProfile;
+	uri?: string;
+	object?: ObjectMetadata;
+	connInfo?: ConnectionManagementInfo;
+}
+
+export interface InsightActionContext extends BaseActionContext {
+	insight: InsightsConfig;
+}
 
 // --- actions
-
-export class EditDataAction extends Action {
-	public static ID = 'registeredServers.editData';
-	public static LABEL = nls.localize('editData', 'Edit Data');
+export class NewQueryAction extends Action {
+	public static ID = 'newQuery';
+	public static LABEL = nls.localize('newQuery', 'New Query');
 
 	constructor(
-		id: string,
-		label: string,
-		@IQuickOpenService private quickOpenService: IQuickOpenService,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService,
-		@IQueryEditorService private queryEditorService: IQueryEditorService,
-		@IQueryModelService private queryModelService: IQueryModelService
+		id: string, label: string,
+		@IQueryEditorService protected queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
 	}
 
-	public run(connectionProfile?: ConnectionProfile): TPromise<boolean> {
-		// ask for a table within the element connectionProfile
-		let tableRequest = (con: ConnectionProfile) => {
-			return this.quickOpenService.input(
-				{
-					placeHolder: nls.localize('tableName', 'table name')
-				})
-				.then((tableName) => {
-					if (tableName) {
-						// open an edit data session on that table
-						this.queryEditorService.newEditDataEditor(undefined, tableName).then((owner: EditDataInput) => {
-							// Connect our editor
-							let options: IConnectionCompletionOptions = {
-								params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
-								saveTheConnection: false,
-								showDashboard: false,
-								showConnectionDialogOnError: true
-							};
-							this.connectionManagementService.connect(connectionProfile, owner.uri, options);
-						});
-					}
-				});
-		};
-
-		if (!connectionProfile) {
-			// creating a flat map of connections (ungrouping them)
-			let connectionList: ConnectionProfile[] = [];
-			this.connectionManagementService.getConnectionGroups()
-				.map(group => group.connections
-					.map(con => connectionList.push(con)));
-
-			let conIds = connectionList.map(x => x.id);
-
-			// select a connection from the drop down
-			this.quickOpenService.pick(conIds, { placeHolder: nls.localize('connectionProfile', 'connection profile'), ignoreFocusLost: true }).then((connection) => {
-				// get connection
-				let conProfile: ConnectionProfile = connectionList.find(x => x.id === connection);
-				if (conProfile) {
-					// making sure a table name was returned, otherwise we will ask once more
-					tableRequest(conProfile).then(tableName => {
-						if (!tableName) {
-							tableRequest(conProfile);
-						}
-					});
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.newQuery(
+				actionContext.profile,
+				this.connectionManagementService,
+				this.queryEditorService
+			).then(
+				result => {
+					resolve(true);
+				},
+				error => {
+					resolve(false);
 				}
-			});
+				);
+		});
+	}
+}
 
-		} else {
-			tableRequest(connectionProfile);
-		}
+export class ScriptSelectAction extends Action {
+	public static ID = 'selectTop';
+	public static LABEL = nls.localize('scriptSelect', 'Select Top 1000');
 
-		return TPromise.as(true);
+	constructor(
+		id: string, label: string,
+		@IQueryEditorService protected queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
+		@IScriptingService protected scriptingService: IScriptingService
+	) {
+		super(id, label);
+	}
+
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.scriptSelect(
+				actionContext.profile,
+				actionContext.object,
+				actionContext.uri,
+				this.connectionManagementService,
+				this.queryEditorService,
+				this.scriptingService
+			).then(
+				result => {
+					resolve(true);
+				},
+				error => {
+					resolve(false);
+				});
+		});
+	}
+}
+
+export class EditDataAction extends Action {
+	public static ID = 'editData';
+	public static LABEL = nls.localize('editData', 'Edit Data');
+
+	constructor(
+		id: string, label: string,
+		@IQueryEditorService protected queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
+	) {
+		super(id, label);
+	}
+
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.editData(
+				actionContext.profile,
+				actionContext.object.name,
+				actionContext.object.schema,
+				this.connectionManagementService,
+				this.queryEditorService
+			).then(
+				result => {
+					resolve(true);
+				},
+				error => {
+					resolve(false);
+				}
+				);
+		});
+	}
+}
+
+export class ScriptCreateAction extends Action {
+	public static ID = 'scriptCreate';
+	public static LABEL = nls.localize('scriptCreate', 'Script Create');
+
+	constructor(
+		id: string, label: string,
+		@IQueryEditorService protected queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
+		@IScriptingService protected scriptingService: IScriptingService
+	) {
+		super(id, label);
+	}
+
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.scriptCreate(
+				actionContext.profile,
+				actionContext.object,
+				actionContext.uri,
+				this.connectionManagementService,
+				this.queryEditorService,
+				this.scriptingService
+			).then(
+				result => {
+					resolve(true);
+				},
+				error => {
+					resolve(false);
+				}
+				);
+		});
+	}
+}
+
+export class BackupAction extends Action {
+	public static ID = 'backup';
+	public static LABEL = nls.localize('backup', 'Backup');
+
+	constructor(
+		id: string, label: string,
+		@IDisasterRecoveryUiService protected disasterRecoveryService: IDisasterRecoveryUiService
+	) {
+		super(id, label);
+	}
+
+	run(actionContext: BaseActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.showBackup(
+				actionContext.profile,
+				this.disasterRecoveryService,
+			).then(
+				result => {
+					resolve(true);
+				},
+				error => {
+					resolve(false);
+				}
+				);
+		});
+	}
+}
+
+export class ManageAction extends Action {
+	public static ID = 'manage';
+	public static LABEL = nls.localize('manage', 'Manage');
+
+	constructor(
+		id: string, label: string,
+		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
+		@IAngularEventingService protected angularEventingService: IAngularEventingService
+	) {
+		super(id, label);
+	}
+
+	run(actionContext: BaseActionContext): TPromise<boolean> {
+		let self = this;
+		return new TPromise<boolean>((resolve, reject) => {
+			self.connectionManagementService.connect(actionContext.profile, actionContext.uri, { showDashboard: true, saveTheConnection: false, params: undefined, showConnectionDialogOnError: false }).then(
+				() => {
+					self.angularEventingService.sendAngularEvent(actionContext.uri, 'database');
+					resolve(true);
+				},
+				(error) => {
+					resolve(error);
+				}
+			);
+		});
+	}
+}
+
+export class InsightAction extends Action {
+	public static ID = 'showInsight';
+	public static LABEL = nls.localize('showInsight', 'Show Insight');
+
+	constructor(
+		id: string, label: string,
+		@IInsightsDialogService protected insightsDialogService: IInsightsDialogService
+	) {
+		super(id, label);
+	}
+
+	run(actionContext: InsightActionContext): TPromise<boolean> {
+		let self = this;
+		return new TPromise<boolean>((resolve, reject) => {
+			self.insightsDialogService.show(actionContext.insight, actionContext.profile);
+			resolve(true);
+		});
 	}
 }

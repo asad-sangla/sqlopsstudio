@@ -14,7 +14,7 @@ import { TaskDialogInput } from 'sql/parts/tasks/dialog/taskDialogInput';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 import data = require('data');
 
@@ -25,9 +25,9 @@ export interface IAdminService {
 
 	registerProvider(providerId: string, provider: data.AdminServicesProvider): void;
 
-	showCreateDatabaseWizard(uri: string, connection: ConnectionManagementInfo): Promise<any>;
+	showCreateDatabaseWizard(uri: string, connection: IConnectionProfile): Promise<any>;
 
-	showCreateLoginWizard(uri: string, connection: ConnectionManagementInfo): Promise<any>;
+	showCreateLoginWizard(uri: string, connection: IConnectionProfile): Promise<any>;
 
 	createDatabase(connectionUri: string, database: data.DatabaseInfo): Thenable<data.CreateDatabaseResponse>;
 
@@ -70,7 +70,7 @@ export class AdminService implements IAdminService {
 		}
 	}
 
-	public showCreateDatabaseWizard(uri: string, connection: ConnectionManagementInfo): Promise<any> {
+	public showCreateDatabaseWizard(uri: string, connection: IConnectionProfile): Promise<any> {
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
 			let input: TaskDialogInput = self._instantiationService ? self._instantiationService.createInstance(TaskDialogInput, uri, connection) : undefined;
@@ -91,10 +91,10 @@ export class AdminService implements IAdminService {
 		return Promise.resolve(undefined);
 	}
 
-	public showCreateLoginWizard(uri: string, connection: ConnectionManagementInfo): Promise<any> {
+	public showCreateLoginWizard(uri: string, connection: IConnectionProfile): Promise<any> {
 		const self = this;
 
-		self.createLogin(uri, { name: 'TEST: login name'});
+		self.createLogin(uri, { name: 'TEST: login name' });
 
 		return new Promise<boolean>((resolve, reject) => {
 			let loginInput: CreateLoginInput = self._instantiationService ? self._instantiationService.createInstance(CreateLoginInput, uri, connection) : undefined;

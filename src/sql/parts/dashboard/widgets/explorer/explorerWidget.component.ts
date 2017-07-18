@@ -13,7 +13,7 @@ import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from '
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { BaseActionContext } from 'sql/common/baseActions';
+import { BaseActionContext } from 'sql/workbench/electron-browser/actions';
 import { GetExplorerActions } from './explorerActions';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 

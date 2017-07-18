@@ -14,7 +14,7 @@ import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeVie
 import { ConnectionViewlet } from 'sql/parts/registeredServer/viewlet/connectionViewlet';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
-import { TaskUtilities } from 'sql/common/taskUtilities';
+import * as TaskUtilities from 'sql/workbench/electron-browser/taskUtilities';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import * as Constants from 'sql/parts/connection/common/constants';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';

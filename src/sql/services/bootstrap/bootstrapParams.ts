@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DataService } from 'sql/parts/grid/services/dataService';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 
 export interface BootstrapParams {
@@ -15,7 +15,7 @@ export interface QueryComponentParams extends BootstrapParams {
 }
 
 export interface DbListComponentParams extends BootstrapParams {
-	dbListInterop : IDbListInterop;
+	dbListInterop: IDbListInterop;
 }
 
 export interface EditDataComponentParams extends BootstrapParams {
@@ -23,7 +23,7 @@ export interface EditDataComponentParams extends BootstrapParams {
 }
 
 export interface DashboardComponentParams extends BootstrapParams {
-	connection: ConnectionManagementInfo;
+	connection: IConnectionProfile;
 	ownerUri: string;
 }
 

@@ -5,7 +5,7 @@
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
 import { Modal } from 'sql/parts/common/modal/modal';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { BackupModule } from 'sql/parts/disasterRecovery/backup/backup.module';
 import { BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.component';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
@@ -15,6 +15,7 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 
 export class BackupDialog extends Modal {
 	private _bodyBuilder: Builder;
@@ -26,12 +27,14 @@ export class BackupDialog extends Modal {
 	constructor(
 		@IBootstrapService private _bootstrapService: IBootstrapService,
 		@IThemeService private _themeService: IThemeService,
-		@IPartService partService: IPartService) {
-		super('', partService, {isAngular: true, hasErrors: true});
+		@IPartService partService: IPartService,
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+	) {
+		super('', partService, { isAngular: true, hasErrors: true });
 	}
 
 	protected renderBody(container: HTMLElement) {
-		new Builder(container).div({'class': 'backup-dialog'}, (builder) => {
+		new Builder(container).div({ 'class': 'backup-dialog' }, (builder) => {
 			this._bodyBuilder = builder;
 		});
 	}
@@ -44,7 +47,7 @@ export class BackupDialog extends Modal {
 	/**
 	 * Get the bootstrap params and perform the bootstrap
 	 */
-	private bootstrapAngular(uri: string, connection: ConnectionManagementInfo, bodyContainer: HTMLElement) {
+	private bootstrapAngular(uri: string, connection: IConnectionProfile, bodyContainer: HTMLElement) {
 		let params: DashboardComponentParams = {
 			connection: connection,
 			ownerUri: uri
@@ -84,10 +87,11 @@ export class BackupDialog extends Modal {
 	/**
 	 * Bootstrap angular component and open the dialog
 	 */
-	public open(uri: string, connection: ConnectionManagementInfo) {
+	public open(connection: IConnectionProfile) {
 		// Add angular component template to dialog body
+		let uri = this._connectionManagementService.getConnectionId(connection);
 		this.bootstrapAngular(uri, connection, this._bodyBuilder.getHTMLElement());
-		this._backupTitle = 'Backup Database - ' + connection.connectionProfile.serverName + ':' + connection.connectionProfile.databaseName;
+		this._backupTitle = 'Backup Database - ' + connection.serverName + ':' + connection.databaseName;
 		this.title = this._backupTitle;
 		this.show();
 	}
