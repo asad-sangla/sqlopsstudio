@@ -62,7 +62,7 @@ export class BackupComponent{
     public backupEncryptors;
 
     public errorMessage: string = '';
-    public labelOk = 'OK';
+    public labelOk = 'Backup';
     public labelCancel = 'Cancel';
 
     // TODO: remove the style after theming is fixed
