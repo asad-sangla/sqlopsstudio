@@ -948,11 +948,21 @@ declare module 'data' {
 		relocateDbFiles: boolean;
 	}
 
+	export interface RestoreDatabaseFileInfo {
+		fileType: string;
+
+		logicalFileName: string;
+
+		originalFileName:string;
+
+		restoreAsFileName:string;
+	}
+
 	export interface RestorePlanResponse {
 		backupFilePath: string;
 		canRestore: boolean;
 		errorMessage: string;
-		dbFiles: string[];
+		dbFiles: RestoreDatabaseFileInfo[];
 		serverName: string;
 		databaseName: string;
 		relocateFilesNeeded: boolean;

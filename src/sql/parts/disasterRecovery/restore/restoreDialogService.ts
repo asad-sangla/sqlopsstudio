@@ -40,7 +40,8 @@ export class RestoreDialogService implements IRestoreDialogService {
 			relocateDbFiles: this._restoreDialog.relocateDbFiles
 		};
 		this._disasterRecoveryService.getRestorePlan(this._ownerUri, restoreInfo).then(restorePlanResponse => {
-			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage, restorePlanResponse.databaseName, restorePlanResponse.dbFiles);
+			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage,
+				restorePlanResponse.databaseName, restorePlanResponse.dbFiles.map(x => x.restoreAsFileName));
 		}, error => {
 			this._restoreDialog.showError(error);
 		});
