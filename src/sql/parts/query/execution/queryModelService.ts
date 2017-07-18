@@ -185,7 +185,25 @@ export class QueryModelService implements IQueryModelService {
 	/**
 	 * Run a query for the given URI with the given text selection
 	 */
-	public runQuery(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void {
+	public runQuery(uri: string, selection: ISelectionData,
+					title: string, queryInput: QueryInput): void {
+		this.doRunQuery(uri, selection, title, queryInput, false);
+	}
+
+	/**
+	 * Run the current SQL statement for the given URI
+	 */
+	public runQueryStatement(uri: string, selection: ISelectionData,
+					title: string, queryInput: QueryInput): void {
+		this.doRunQuery(uri, selection, title, queryInput, true);
+	}
+
+	/**
+	 * Run Query implementation
+	 */
+	private doRunQuery(uri: string, selection: ISelectionData,
+					title: string, queryInput: QueryInput,
+					runCurrentStatement: boolean): void {
 		// Reuse existing query runner if it exists
 		let queryRunner: QueryRunner;
 		let info: QueryInfo;
@@ -244,7 +262,11 @@ export class QueryModelService implements IQueryModelService {
 		}
 
 		info.queryInput = queryInput;
-		queryRunner.runQuery(selection);
+		if (runCurrentStatement) {
+			queryRunner.runQueryStatement(selection);
+		} else {
+			queryRunner.runQuery(selection);
+		}
 	}
 
 	public cancelQuery(input: QueryRunner | string): void {

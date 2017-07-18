@@ -7,7 +7,8 @@
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import {
 	IConnectableInput, IConnectionManagementService,
-	IConnectionCompletionOptions, ConnectionType, IErrorMessageService
+	IConnectionCompletionOptions, ConnectionType, IErrorMessageService,
+	RunQueryOnConnectionMode
 } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
@@ -28,7 +29,7 @@ export function connectIfNotAlreadyConnected(connectionProfile: IConnectionProfi
 		let uri = connectionService.getConnectionId(connectionProfile);
 		if (!connectionService.isConnected(uri)) {
 			let options: IConnectionCompletionOptions = {
-				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: undefined },
+				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.executeQuery, input: undefined },
 				saveTheConnection: false,
 				showDashboard: false,
 				showConnectionDialogOnError: false
@@ -57,7 +58,7 @@ export function scriptSelect(connectionProfile: IConnectionProfile, metadata: da
 					queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
 						// Connect our editor to the input connection
 						let options: IConnectionCompletionOptions = {
-							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: true, input: owner },
+							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.executeQuery, input: owner },
 							saveTheConnection: false,
 							showDashboard: false,
 							showConnectionDialogOnError: true
@@ -88,7 +89,7 @@ export function editData(connectionProfile: IConnectionProfile, tableName: strin
 		queryEditorService.newEditDataEditor(schemaName, tableName).then((owner: EditDataInput) => {
 			// Connect our editor
 			let options: IConnectionCompletionOptions = {
-				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
+				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.none, input: owner },
 				saveTheConnection: false,
 				showDashboard: false,
 				showConnectionDialogOnError: true
@@ -135,7 +136,7 @@ export function newQuery(connectionProfile: IConnectionProfile, connectionServic
 		queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
 			// Connect our editor to the input connection
 			let options: IConnectionCompletionOptions = {
-				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: false, input: owner },
+				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.none, input: owner },
 				saveTheConnection: false,
 				showDashboard: false,
 				showConnectionDialogOnError: true

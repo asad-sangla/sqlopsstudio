@@ -106,7 +106,7 @@ export default class QueryRunner {
 	}
 
 	/**
-	 * Runs the query with the provoded query
+	 * Runs the query with the provided query
 	 * @param input Query string to execute
 	 */
 	public runQuery(input: string): Thenable<void>;
@@ -116,6 +116,24 @@ export default class QueryRunner {
 	 */
 	public runQuery(input: ISelectionData): Thenable<void>;
 	public runQuery(input): Thenable<void> {
+		return this.doRunQuery(input, false);
+	}
+
+	/**
+	 * Runs the current SQL statement by pulling the query from the document using the provided selection data
+	 * @param input selection data
+	 */
+	public runQueryStatement(input: ISelectionData): Thenable<void> {
+		return this.doRunQuery(input, true);
+	}
+
+	/**
+	 * Implementation that runs the query with the provided query
+	 * @param input Query string to execute
+	 */
+	private doRunQuery(input: string, runCurrentStatement: boolean): Thenable<void>;
+	private doRunQuery(input: ISelectionData, runCurrentStatement: boolean): Thenable<void>;
+	private doRunQuery(input, runCurrentStatement: boolean): Thenable<void> {
 		let ownerUri = this._uri;
 		this.batchSets = [];
 		this._hasCompleted = false;
@@ -127,7 +145,9 @@ export default class QueryRunner {
 			// TODO issue #228 add statusview callbacks here
 
 			// Send the request to execute the query
-			return this._queryManagementService.runQuery(ownerUri, input).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult());
+			return runCurrentStatement
+				? this._queryManagementService.runQueryStatement(ownerUri, input.startLine, input.startColumn).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult())
+				: this._queryManagementService.runQuery(ownerUri, input).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult());
 		} else if (typeof input === 'string') {
 			// Update internal state to show that we're executing the query
 			this._isExecuting = true;

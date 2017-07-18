@@ -292,7 +292,7 @@ export class QueryEditor extends BaseEditor {
 	 * Returns the underlying SQL editor's text selection in a 0-indexed format. Returns undefined if there
 	 * is no selected text.
 	 */
-	public getSelection(): ISelectionData {
+	public getSelection(checkIfRange: boolean = true): ISelectionData {
 		if (this._sqlEditor && this._sqlEditor.getControl()) {
 			let vscodeSelection = this._sqlEditor.getControl().getSelection();
 
@@ -300,7 +300,7 @@ export class QueryEditor extends BaseEditor {
 			let isRange: boolean =
 				!(vscodeSelection.getStartPosition().lineNumber === vscodeSelection.getEndPosition().lineNumber &&
 				vscodeSelection.getStartPosition().column === vscodeSelection.getEndPosition().column);
-			if (isRange) {
+			if (!checkIfRange || isRange) {
 				let sqlToolsServiceSelection: ISelectionData = {
 					startLine: vscodeSelection.getStartPosition().lineNumber - 1,
 					startColumn: vscodeSelection.getStartPosition().column - 1,
@@ -335,6 +335,13 @@ export class QueryEditor extends BaseEditor {
 	 */
 	public runQuery(): void {
 		this._runQueryAction.run();
+	}
+
+	/**
+	 * Calls the runCurrent method of this editor's RunQueryAction
+	 */
+	public runCurrentQuery(): void {
+		this._runQueryAction.runCurrent();
 	}
 
 	/**

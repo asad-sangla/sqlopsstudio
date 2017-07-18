@@ -5,7 +5,7 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput, EditorModel, ConfirmResult, EncodingMode, IEncodingSupport } from 'vs/workbench/common/editor';
-import { IConnectionManagementService, IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectableInput, INewConnectionParams, RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
@@ -147,6 +147,11 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this.showQueryResultsEditor();
 	}
 
+	public runQueryStatement(selection: ISelectionData): void {
+		this._queryModelService.runQueryStatement(this.uri, selection, this.uri, this);
+		this.showQueryResultsEditor();
+	}
+
 	public onConnectStart(): void {
 		this._runQueryEnabled = false;
 		this._cancelQueryEnabled = false;
@@ -170,9 +175,15 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._listDatabasesConnected = true;
 
 		let isRunningQuery = this._queryModelService.isRunningQuery(this.uri);
-		if (!isRunningQuery && params && params.runQueryOnCompletion) {
+		if (!isRunningQuery && params && params.runQueryOnCompletion
+				&& (params.runQueryOnCompletion === RunQueryOnConnectionMode.executeCurrentQuery
+				|| params.runQueryOnCompletion === RunQueryOnConnectionMode.executeQuery)) {
 			let selection: ISelectionData = params ? params.querySelection : undefined;
-			this.runQuery(selection);
+			if (params.runQueryOnCompletion === RunQueryOnConnectionMode.executeCurrentQuery) {
+				this.runQueryStatement(selection);
+			} else {
+				this.runQuery(selection);
+			}
 		}
 		this._updateTaskbar.fire();
 	}

@@ -9,7 +9,10 @@ import { ConnectionDialogTestService } from 'sqltest/stubs/connectionDialogTestS
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionStatusManager';
 import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
-import { INewConnectionParams, ConnectionType, IConnectionCompletionOptions, IConnectionResult } from 'sql/parts/connection/common/connectionManagement';
+import {
+	INewConnectionParams, ConnectionType,
+	IConnectionCompletionOptions, IConnectionResult,
+	RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import * as Constants from 'sql/parts/connection/common/constants';
 
 import { WorkbenchEditorTestService } from 'sqltest/stubs/workbenchEditorTestService';
@@ -210,7 +213,7 @@ suite('SQL ConnectionManagementService tests', () => {
 				onConnectSuccess: undefined,
 				uri: 'Editor Uri'
 			},
-			runQueryOnCompletion: true
+			runQueryOnCompletion: RunQueryOnConnectionMode.executeQuery
 		};
 		connectionManagementService.showConnectionDialog(params).then(() => {
 			verifyShowDialog(undefined, params.connectionType, params.input.uri);
@@ -231,7 +234,7 @@ suite('SQL ConnectionManagementService tests', () => {
 				onConnectSuccess: undefined,
 				uri: 'Editor Uri'
 			},
-			runQueryOnCompletion: true
+			runQueryOnCompletion: RunQueryOnConnectionMode.executeQuery
 		};
 
 		connect(params.input.uri).then(() => {
@@ -301,7 +304,7 @@ suite('SQL ConnectionManagementService tests', () => {
 					uri: uri
 				},
 				querySelection: undefined,
-				runQueryOnCompletion: false
+				runQueryOnCompletion: RunQueryOnConnectionMode.none
 			},
 			saveTheConnection: true,
 			showDashboard: false,
@@ -429,7 +432,7 @@ suite('SQL ConnectionManagementService tests', () => {
 					uri: uri
 				},
 				querySelection: undefined,
-				runQueryOnCompletion: false
+				runQueryOnCompletion: RunQueryOnConnectionMode.none
 			},
 			saveTheConnection: true,
 			showDashboard: false,

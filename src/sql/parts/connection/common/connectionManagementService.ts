@@ -9,7 +9,8 @@ import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import {
 	IConnectionManagementService, IConnectionDialogService, INewConnectionParams,
 	ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionCallbacks,
-	IConnectionParams, IConnectionResult, IServerGroupController, IServerGroupDialogCallbacks
+	IConnectionParams, IConnectionResult, IServerGroupController, IServerGroupDialogCallbacks,
+	RunQueryOnConnectionMode
 } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -305,7 +306,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				let params: INewConnectionParams = options && options.params ? options.params : {
 					connectionType: this._connectionStatusManager.isDefaultTypeUri(owner.uri) ? ConnectionType.default : ConnectionType.editor,
 					input: owner,
-					runQueryOnCompletion: false
+					runQueryOnCompletion: RunQueryOnConnectionMode.none
 				};
 				this.showConnectionDialog(params, connection, connectionResult.error).then(() => {
 					resolve(connectionResult);

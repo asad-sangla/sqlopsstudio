@@ -17,7 +17,7 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
-import { INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import { INewConnectionParams, ConnectionType, RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { Memento } from 'vs/workbench/common/memento';
 import { Builder } from 'vs/base/browser/builder';
@@ -362,7 +362,7 @@ suite('SQL QueryEditor Tests', () => {
 		});
 
 		test('Taskbar buttons are set correctly upon connect', (done) => {
-			let params: INewConnectionParams = { connectionType: ConnectionType.editor, runQueryOnCompletion: false };
+			let params: INewConnectionParams = { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.none };
 			queryInput.onConnectSuccess(params);
 			queryModelService.setup(x => x.isRunningQuery(TypeMoq.It.isAny())).returns(() => false);
 			assert.equal(queryInput.runQueryEnabled, true, 'runQueryAction button should be enabled');

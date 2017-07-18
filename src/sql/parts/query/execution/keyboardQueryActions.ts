@@ -38,6 +38,32 @@ export class RunQueryKeyboardAction extends Action {
 }
 
 /**
+ * Locates the active editor and calls runCurrentQuery() on the editor if it is a QueryEditor.
+ */
+export class RunCurrentQueryKeyboardAction extends Action {
+	public static ID = 'runCurrentQueryKeyboardAction';
+	public static LABEL = nls.localize('runCurrentQueryKeyboardAction', 'Run Current Query');
+
+	constructor(
+		id: string,
+		label: string,
+		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService
+	) {
+		super(id, label);
+		this.enabled = true;
+	}
+
+	public run(): TPromise<void> {
+		let editor = this._editorService.getActiveEditor();
+		if (editor && editor instanceof QueryEditor) {
+			let queryEditor: QueryEditor = editor;
+			queryEditor.runCurrentQuery();
+		}
+		return TPromise.as(null);
+	}
+}
+
+/**
  * Locates the active editor and calls cancelQuery() on the editor if it is a QueryEditor.
  */
 export class CancelQueryKeyboardAction extends Action {

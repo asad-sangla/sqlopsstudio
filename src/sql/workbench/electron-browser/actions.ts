@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import * as TaskUtilities from './taskUtilities';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -122,7 +122,7 @@ export class EditDataAction extends Action {
 				error => {
 					resolve(false);
 				}
-				);
+			);
 		});
 	}
 }

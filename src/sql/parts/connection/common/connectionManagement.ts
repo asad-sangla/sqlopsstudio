@@ -265,10 +265,16 @@ export enum ConnectionOptionSpecialType {
 	appName = 5
 }
 
+export enum RunQueryOnConnectionMode {
+	none = 0,
+	executeQuery = 1,
+	executeCurrentQuery = 2
+}
+
 export interface INewConnectionParams {
 	connectionType: ConnectionType;
 	input?: IConnectableInput;
-	runQueryOnCompletion?: boolean;
+	runQueryOnCompletion?: RunQueryOnConnectionMode;
 	querySelection?: ISelectionData;
 }
 

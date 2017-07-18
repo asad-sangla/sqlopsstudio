@@ -102,6 +102,7 @@ import {
 	QueryExecuteMessageNotification, QueryDisposeParams, QueryDisposeRequest, QueryExecuteCompleteNotificationResult,
 	QueryExecuteMessageParams, QueryExecuteParams, QueryExecuteResultSetCompleteNotification, QueryExecuteResultSetCompleteNotificationParams,
 	QueryExecuteStringParams, QueryExecuteStringRequest,
+	QueryExecuteStatementParams, QueryExecuteStatementRequest,
 	QueryExecuteSubsetRequest, SaveResultRequestResult, SaveResultsRequestParams, SaveResultsAsCsvRequest, SaveResultsAsJsonRequest, SaveResultsAsExcelRequest,
 	EditCommitRequest, EditCommitParams,
 	EditCreateRowRequest, EditCreateRowParams, EditCreateRowResult,
@@ -1452,6 +1453,23 @@ export class LanguageClient {
 				);
 			},
 
+			runQueryStatement(ownerUri: string, line: number, column: number): Thenable<void> {
+				let params: QueryExecuteStatementParams = {
+					ownerUri: ownerUri,
+					line: line,
+					column: column
+				};
+				return self.doSendRequest(connection, QueryExecuteStatementRequest.type, params, undefined).then(
+					(result) => {
+						return undefined;
+					},
+					(error) => {
+						self.logFailedRequest(QueryExecuteStatementRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
 			runQueryString(ownerUri: string, queryString: string): Thenable<void> {
 				let params: QueryExecuteStringParams = { ownerUri: ownerUri, query: queryString };
 				return self.doSendRequest(connection, QueryExecuteStringRequest.type, params, undefined).then(
@@ -1480,7 +1498,7 @@ export class LanguageClient {
 
 			getQueryRows(rowData: QueryExecuteSubsetParams): Thenable<QueryExecuteSubsetResult> {
 				return self.doSendRequest(connection, QueryExecuteSubsetRequest.type, rowData, undefined).then(
-					(result) => {
+	     			(result) => {
 						return result;
 					},
 					(error) => {

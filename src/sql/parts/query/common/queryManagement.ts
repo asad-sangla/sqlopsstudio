@@ -22,6 +22,7 @@ export interface IQueryManagementService {
 
 	cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult>;
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
+	runQueryStatement(ownerUri: string, line: number, column: number): Thenable<void>;
 	runQueryString(ownerUri: string, queryString: string): Thenable<void>;
 	runQueryAndReturn(ownerUri: string, queryString: string): Thenable<data.SimpleExecuteResult>;
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
@@ -56,6 +57,7 @@ export interface IQueryManagementService {
 export interface QueryRequestHandler {
 	cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult>;
 	runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void>;
+	runQueryStatement(ownerUri: string, line: number, column: number): Thenable<void>;
 	runQueryString(ownerUri: string, queryString: string): Thenable<void>;
 	runQueryAndReturn(ownerUri: string, queryString: string): Thenable<data.SimpleExecuteResult>;
 	getQueryRows(rowData: data.QueryExecuteSubsetParams): Thenable<data.QueryExecuteSubsetResult>;
@@ -155,6 +157,11 @@ export class QueryManagementService implements IQueryManagementService {
 	public runQuery(ownerUri: string, selection: data.ISelectionData): Thenable<void> {
 		return this._runAction(ownerUri, (runner) => {
 			return runner.runQuery(ownerUri, selection);
+		});
+	}
+	public runQueryStatement(ownerUri: string, line: number, column: number): Thenable<void> {
+		return this._runAction(ownerUri, (runner) => {
+			return runner.runQueryStatement(ownerUri, line, column);
 		});
 	}
 	public runQueryString(ownerUri: string, queryString: string): Thenable<void> {

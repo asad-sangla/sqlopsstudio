@@ -33,6 +33,7 @@ export interface IQueryModelService {
 	getShortcuts(): Promise<any>;
 	getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
 	runQuery(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void;
+	runQueryStatement(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void;
 	cancelQuery(input: QueryRunner | string): void;
 	disposeQuery(uri: string): Thenable<void>;
 	isRunningQuery(uri: string): boolean;

@@ -10,7 +10,9 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import Event, { Emitter } from 'vs/base/common/event';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
-import { IConnectionManagementService, INewConnectionParams, ConnectionType } from 'sql/parts/connection/common/connectionManagement';
+import {
+	IConnectionManagementService, INewConnectionParams, ConnectionType,
+	RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
@@ -20,6 +22,9 @@ import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { DbListModule } from 'sql/parts/common/dblist/dblist.module';
 import { ISelectionData } from 'data';
 import nls = require('vs/nls');
+import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
+import { IEditor } from 'vs/editor/common/editorCommon';
+import { Selection } from 'vs/editor/common/core/selection';
 
 declare let AngularPlatformBrowserDynamic;
 
@@ -83,11 +88,11 @@ export abstract class QueryTaskbarAction extends Action {
 	 * Connects the given editor to it's current URI.
 	 * Public for testing only.
 	 */
-	protected connectEditor(editor: QueryEditor, runQueryOnCompletion?: boolean, selection?: ISelectionData): void {
+	protected connectEditor(editor: QueryEditor, runQueryOnCompletion?: RunQueryOnConnectionMode, selection?: ISelectionData): void {
 		let params: INewConnectionParams = {
 			input: editor.currentQueryInput,
 			connectionType: ConnectionType.editor,
-			runQueryOnCompletion: runQueryOnCompletion ? runQueryOnCompletion : false,
+			runQueryOnCompletion: runQueryOnCompletion ? runQueryOnCompletion : RunQueryOnConnectionMode.none,
 			querySelection: selection
 		};
 		this._connectionManagementService.showConnectionDialog(params);
@@ -119,20 +124,48 @@ export class RunQueryAction extends QueryTaskbarAction {
 			} else {
 				// If we are not already connected, prompt for connection and run the query if the
 				// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
-				this.connectEditor(this.editor, true, this.editor.getSelection());
+				this.connectEditor(this.editor, RunQueryOnConnectionMode.executeQuery, this.editor.getSelection());
 			}
 		}
 		return TPromise.as(null);
 	}
 
-	public runQuery(editor: QueryEditor) {
+	public runCurrent(): TPromise<void> {
+		if (!this.editor.isSelectionEmpty()) {
+			if (this.isConnected(this.editor)) {
+				// If we are already connected, run the query
+				this.runQuery(this.editor, true);
+			} else {
+				// If we are not already connected, prompt for connection and run the query if the
+				// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
+				this.connectEditor(this.editor, RunQueryOnConnectionMode.executeCurrentQuery, this.editor.getSelection(false));
+			}
+		}
+		return TPromise.as(null);
+	}
+
+	public runQuery(editor: QueryEditor, runCurrentStatement: boolean = false) {
 		if (!editor) {
 			editor = this.editor;
 		}
 
 		if (this.isConnected(editor)) {
-			editor.currentQueryInput.runQuery(editor.getSelection());
+			// if the selection isn't empty then execute the selection
+			// otherwise, either run the statement or the script depending on parameter
+			let selection: ISelectionData = editor.getSelection(false);
+			if (runCurrentStatement && selection && this.isCursorPosition(selection)) {
+				editor.currentQueryInput.runQueryStatement(selection);
+			} else {
+				// get the selection again this time with trimming
+				selection = editor.getSelection();
+				editor.currentQueryInput.runQuery(selection);
+			}
 		}
+	}
+
+	private isCursorPosition(selection: ISelectionData) {
+		return selection.startLine === selection.endLine
+			&& selection.startColumn === selection.endColumn;
 	}
 }
 

@@ -23,7 +23,7 @@ import * as queryContext from 'sql/parts/query/common/queryContext';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
-import { RunQueryKeyboardAction, CancelQueryKeyboardAction } from 'sql/parts/query/execution/keyboardQueryActions';
+import { RunQueryKeyboardAction, RunCurrentQueryKeyboardAction, CancelQueryKeyboardAction } from 'sql/parts/query/execution/keyboardQueryActions';
 import * as gridActions from 'sql/parts/grid/views/gridActions';
 import * as gridCommands from 'sql/parts/grid/views/gridCommands';
 
@@ -77,6 +77,16 @@ actionRegistry.registerWorkbenchAction(
 			{ primary: KeyCode.F5 }
 		),
 		RunQueryKeyboardAction.LABEL
+	);
+
+actionRegistry.registerWorkbenchAction(
+		new SyncActionDescriptor(
+			RunCurrentQueryKeyboardAction,
+			RunCurrentQueryKeyboardAction.ID,
+			RunCurrentQueryKeyboardAction.LABEL,
+			{ primary:KeyMod.CtrlCmd | KeyCode.F5 }
+		),
+		RunCurrentQueryKeyboardAction.LABEL
 	);
 
 actionRegistry.registerWorkbenchAction(

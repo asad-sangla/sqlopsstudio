@@ -1218,6 +1218,16 @@ export interface QueryExecuteSubsetResult {
 	resultSubset: ResultSetSubset;
 }
 
+// ------------------------------- < Execute Statement > ------------------------------------
+export interface QueryExecuteStatementParams {
+	ownerUri: string;
+	line: number;
+	column: number;
+}
+
+export namespace QueryExecuteStatementRequest {
+	export const type: RequestType<QueryExecuteStatementParams, QueryExecuteResult, void> = { get method(): string { return 'query/executedocumentstatement'; } };
+}
 
 // --------------------------------- < Save Results as CSV Request > ------------------------------------------
 export interface SaveResultsRequestParams {
