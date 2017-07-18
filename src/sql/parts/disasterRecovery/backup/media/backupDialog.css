@@ -48,15 +48,19 @@
 }
 
 .modal-body-content {
-	width: calc(100% - 15px);
+	overflow-x: hidden;
 	overflow-y: auto;
 }
 
 .advanced-main-header {
-	font-size: 14px;
 	padding-top: 20px;
 }
 
 .advanced-header {
 	padding-top: 5px;
+}
+
+input[type="radio"] {
+  margin-top: -2px;
+  vertical-align: middle;
 }

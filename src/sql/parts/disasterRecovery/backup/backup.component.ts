@@ -46,6 +46,9 @@ export class BackupComponent{
     @ViewChild('algorithmContainer', {read: ElementRef}) encryptionAlgorithmElement;
     @ViewChild('encryptorContainer', {read: ElementRef}) encryptorElement;
     @ViewChild('mediaName', {read: ElementRef}) mediaNameElement;
+    @ViewChild('advancedBody', {read: ElementRef}) advancedBodyElement;
+    @ViewChild('advancedHeader', {read: ElementRef}) advancedHeaderElement;
+
 
     private _disasterRecoveryService: IDisasterRecoveryService;
     private _disasterRecoveryUiService: IDisasterRecoveryUiService;
@@ -429,6 +432,23 @@ export class BackupComponent{
 
     public detectChange(): void {
         this._changeDetectorRef.detectChanges();
+    }
+
+    public onAdvancedClick(): void {
+
+        if (this.advancedHeaderElement.nativeElement.style['aria-expanded']) {
+            // collapse
+            this.advancedHeaderElement.nativeElement.className = "header collapsible collapsed";
+            this.advancedBodyElement.nativeElement.style = "display: none";
+            this.advancedHeaderElement.nativeElement.style['aria-expanded'] = false;
+        } else {
+            // expand
+            this.advancedHeaderElement.nativeElement.className = "header collapsible";
+            this.advancedBodyElement.nativeElement.style = "display: inline";
+            this.advancedHeaderElement.nativeElement.style['aria-expanded'] = true;
+        }
+
+        this.detectChange();
     }
 
 	public onBackupTypeChanged(): void {

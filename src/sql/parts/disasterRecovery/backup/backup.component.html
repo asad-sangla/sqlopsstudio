@@ -50,102 +50,111 @@
 			</table>
 
 <!-- Advanced Configuration -->
-			<div class="dialog-label advanced-main-header">
-				Advanced Configuration
-			</div>
-<!-- Compression -->
-			<div class="dialog-label">
-				Backup compression
-			</div>
-			<div class="input-divider">
-				<select class="select-box" name="compression-list" #compressionContainer [(ngModel)]="selectedCompression"></select>
-			</div>
-<!-- Encryption -->
-			<div class="dialog-label">
-				<input class="custom-checkbox sql-checkbox" type="checkbox" name="encrypt-backup" [checked]="isEncryptChecked" (change)="onChangeEncrypt()"/>Encrypt backup<br>
-			</div>
-			<div>
-				<div class="dialog-label">
-					Algorithm
-				</div>
-				<div class="dialog-label">
-					<select class="select-box" name="algorithm-list" [(ngModel)]="selectedAlgorithm" [disabled]="!isEncryptChecked" #algorithmContainer></select>
-				</div>
-				<div class="dialog-label">
-					Certificate or Asymmetric key
-				</div>
-				<div class="input-divider">
-					<select class="select-box" name="encryptor-list" [(ngModel)]="selectedEncryptor" [disabled]="!isEncryptChecked" #encryptorContainer></select>
-				</div>
-			</div>
+			<div class="monaco-split-view vertical advanced-main-header">
+				<div class="split-view-view" >
+					<!-- The style property will be removed when this element is created using VSCode -->
+					<div class="header collapsible collapsed" name="advanced-header" aria-expanded="false" style="height: 22px; background-color: rgba(128, 128, 128, 0.2);" (click)="onAdvancedClick()" #advancedHeader>
+						<div class="title">Advanced Configuration
+						</div>
+					</div>
+					<div class="body collapsible" name="advanced-body" style="height: calc(100% - 22px); display: none" #advancedBody>
+						<!-- Compression -->
+						<div class="dialog-label" style="padding-top: 15px;">
+							Backup compression
+						</div>
+						<div class="input-divider">
+							<select class="select-box" name="compression-list" #compressionContainer [(ngModel)]="selectedCompression"></select>
+						</div>
+						<!-- Encryption -->
+						<div class="dialog-label">
+							<input class="custom-checkbox sql-checkbox" type="checkbox" name="encrypt-backup" [checked]="isEncryptChecked" (change)="onChangeEncrypt()"/>Encrypt backup<br>
+						</div>
+						<div>
+							<div class="dialog-label">
+								Algorithm
+							</div>
+							<div class="dialog-label">
+								<select class="select-box" name="algorithm-list" [(ngModel)]="selectedAlgorithm" [disabled]="!isEncryptChecked" #algorithmContainer></select>
+							</div>
+							<div class="dialog-label">
+								Certificate or Asymmetric key
+							</div>
+							<div class="input-divider">
+								<select class="select-box" name="encryptor-list" [(ngModel)]="selectedEncryptor" [disabled]="!isEncryptChecked" #encryptorContainer></select>
+							</div>
+						</div>
 
-<!-- Overwrite media -->
-			<div class="dialog-label advanced-header">
-				Media
-			</div>
-			<div class="dialog-label">
-				<input type="radio" name=media-option value="no_format" [checked]="!isFormatChecked" (change)="onChangeMediaFormat()">Backup to the existing media set
-			</div>
-			<div style="margin-left: 15px">
-				<div class="dialog-label">
-					<input type="radio" name=existing-media value="append" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Append to the existing backup set
-				</div>
-				<div class="dialog-label">
-					<input type="radio" name=existing-media value="overwrite" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Overwrite all existing backup sets
-				</div>
-			</div>
+						<!-- Overwrite media -->
+						<div class="dialog-label advanced-header">
+							Media
+						</div>
+						<div class="dialog-label">
+							<input type="radio" name=media-option value="no_format" [checked]="!isFormatChecked" (change)="onChangeMediaFormat()">Backup to the existing media set
+						</div>
+						<div style="margin-left: 15px">
+							<div class="dialog-label">
+								<input type="radio" name=existing-media value="append" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Append to the existing backup set
+							</div>
+							<div class="dialog-label">
+								<input type="radio" name=existing-media value="overwrite" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Overwrite all existing backup sets
+							</div>
+						</div>
 
-			<div class="dialog-label">
-				<input type="radio" name=media-option value="format" [checked]="isFormatChecked" (change)="onChangeMediaFormat()">Back up to a new media set and erase all existing backup sets
-			</div>
-			<div style="margin-left: 22px">
-				<div class="dialog-label">
-					New media set name
-				</div>
-				<div class="dialog-label">
-					<input class="input" name="new-media-name" type="text" [(ngModel)]="selectedMediaName" [disabled]="!isFormatChecked" #mediaName />
-				</div>
-				<div class="dialog-label">
-					New media set description
-				</div>
-				<div class="input-divider">
-					<input class="input" name="new-media-description" type="text" [(ngModel)]="selectedMediaDescription" [disabled]="!isFormatChecked" />
-				</div>
-			</div>
+						<div class="dialog-label">
+							<input type="radio" name=media-option value="format" [checked]="isFormatChecked" (change)="onChangeMediaFormat()">Back up to a new media set and erase all existing backup sets
+						</div>
+						<div style="margin-left: 22px">
+							<div class="dialog-label">
+								New media set name
+							</div>
+							<div class="dialog-label">
+								<input class="input" name="new-media-name" type="text" [(ngModel)]="selectedMediaName" [disabled]="!isFormatChecked" #mediaName />
+							</div>
+							<div class="dialog-label">
+								New media set description
+							</div>
+							<div class="input-divider">
+								<input class="input" name="new-media-description" type="text" [(ngModel)]="selectedMediaDescription" [disabled]="!isFormatChecked" />
+							</div>
+						</div>
 
-<!-- Transaction log -->
-			<div class="dialog-label advanced-header">
-				Transaction log
-			</div>
-			<div class="dialog-label">
-				<input type="radio" name=t-log value="truncate" [checked]="isTruncateChecked" (change)="onChangeTlog()" [disabled]="disableTlog">Truncate the transaction log
-			</div>
-			<div class="dialog-label">
-				<input type="radio" name=t-log value="taillog" [checked]="isTaillogChecked" (change)="onChangeTlog()" [disabled]="disableTlog">Back up the tail of the log
-			</div>
+						<!-- Transaction log -->
+						<div class="dialog-label advanced-header">
+							Transaction log
+						</div>
+						<div class="dialog-label">
+							<input type="radio" name=t-log value="truncate" [checked]="isTruncateChecked" (change)="onChangeTlog()" [disabled]="disableTlog">Truncate the transaction log
+						</div>
+						<div class="dialog-label">
+							<input type="radio" name=t-log value="taillog" [checked]="isTaillogChecked" (change)="onChangeTlog()" [disabled]="disableTlog">Back up the tail of the log
+						</div>
 
-<!-- Reliability -->
-			<div class="dialog-label advanced-header">
-				Reliability
-			</div>
-			<div style="margin-left: 5px">
-				<div class="dialog-label">
-					<input class="custom-checkbox sql-checkbox" type="checkbox" name="verify-backup" [(ngModel)]="isVerifyChecked" />Verify backup when finished<br>
-				</div>
-				<div class="dialog-label">
-					<input class="custom-checkbox sql-checkbox" type="checkbox" name="perform-checksum" [(ngModel)]="isPerformChecksumChecked" />Perform checksum before writing to media<br>
-				</div>
-				<div class="input-divider">
-					<input class="custom-checkbox sql-checkbox" type="checkbox" name="continue-on-error" [(ngModel)]="isContinueOnErrorChecked" />Continue on error<br>
-				</div>
-			</div>
+						<!-- Reliability -->
+						<div class="dialog-label advanced-header">
+							Reliability
+						</div>
+						<div style="margin-left: 5px">
+							<div class="dialog-label">
+								<input class="custom-checkbox sql-checkbox" type="checkbox" name="verify-backup" [(ngModel)]="isVerifyChecked" />Verify backup when finished<br>
+							</div>
+							<div class="dialog-label">
+								<input class="custom-checkbox sql-checkbox" type="checkbox" name="perform-checksum" [(ngModel)]="isPerformChecksumChecked" />Perform checksum before writing to media<br>
+							</div>
+							<div class="input-divider">
+								<input class="custom-checkbox sql-checkbox" type="checkbox" name="continue-on-error" [(ngModel)]="isContinueOnErrorChecked" />Continue on error<br>
+							</div>
+						</div>
 
-<!-- Backup expiration -->
-			<div class="dialog-label">
-				Backup retain days
-			</div>
-			<div class="dialog-label">
-				<input class="input" name="expiration-days" type="text" [(ngModel)]="expirationDays" />
+						<!-- Backup expiration -->
+						<div class="dialog-label">
+							Backup retain days
+						</div>
+						<div class="dialog-label">
+							<input class="input" name="expiration-days" type="number" [(ngModel)]="expirationDays" />
+						</div>
+
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="dialogErrorMessage">
