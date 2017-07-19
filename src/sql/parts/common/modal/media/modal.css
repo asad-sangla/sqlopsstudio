@@ -4,10 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 /* TODO: remove the color style after theming is fixed for backup component */
+.monaco-shell .modal.flyout-dialog {
+	background-color: rgba(204, 204, 204, 0.6);
+}
 
 .monaco-shell .modal.flyout-dialog .modal-dialog {
 	margin: auto auto auto auto;
-	height: calc(100% - 23px);
+	height: 100%;
 	width: 500px;
 	right: -18px;
 	position: absolute;
@@ -26,7 +29,7 @@
 }
 
 .modal .close {
-	opacity: 0.8;
+	opacity: 0.3;
 }
 
 .monaco-shell .modal.flyout-dialog .modal-body {
