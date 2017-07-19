@@ -28,6 +28,11 @@ export interface ITaskRegistry {
 	idToCtorMap: { [id: string]: ActionICtor };
 
 	/**
+	 * Returns array of registered ids
+	 */
+	ids: Array<string>;
+
+	/**
 	 * Registers an action as a task which can be ran given the schema as an input
 	 * @param id id of the task
 	 * @param description desciption of the task
@@ -47,6 +52,10 @@ class TaskRegistry implements ITaskRegistry {
 
 	get idToCtorMap(): { [id: string]: ActionICtor } {
 		return this._idCtorMap;
+	}
+
+	get ids(): Array<string> {
+		return Object.keys(this._idCtorMap);
 	}
 
 	/**

@@ -16,10 +16,10 @@ export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 	private propertiesConfig: WidgetConfig = {
 		name: 'Database Properties',
 		icon: 'database',
-		context: 'database',
 		widget: {
-			'properties-widget': {}
+			'properties-widget': undefined
 		},
+		context: 'database',
 		background_color: colors.editorBackground,
 		provider: undefined
 	};

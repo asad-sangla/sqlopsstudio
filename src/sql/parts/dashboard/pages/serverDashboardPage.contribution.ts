@@ -21,12 +21,12 @@ let defaultVal = [
 		}
 	},
 	{
-		widget: {
-			'explorer-widget': {}
-		},
 		gridItemConfig: {
 			sizex: 2,
 			sizey: 2
+		},
+		widget: {
+			'explorer-widget': {}
 		}
 	},
 	{
@@ -91,7 +91,11 @@ let defaultVal = [
 							}
 						]
 					},
-					value: 'health_check'
+					value: 'health_check',
+					actions: {
+						types: ['backup'],
+						database: '${name}'
+					}
 				}
 			}
 		}

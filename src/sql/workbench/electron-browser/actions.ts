@@ -20,11 +20,14 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import * as nls from 'vs/nls';
 
-export interface BaseActionContext {
-	profile?: IConnectionProfile;
+export interface BaseActionContext extends ITaskActionContext {
 	uri?: string;
 	object?: ObjectMetadata;
 	connInfo?: ConnectionManagementInfo;
+}
+
+export interface ITaskActionContext {
+	profile: IConnectionProfile;
 }
 
 export interface InsightActionContext extends BaseActionContext {
@@ -172,7 +175,7 @@ export class BackupAction extends Action {
 		super(id, label);
 	}
 
-	run(actionContext: BaseActionContext): TPromise<boolean> {
+	run(actionContext: ITaskActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.showBackup(
 				actionContext.profile,

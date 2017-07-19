@@ -56,6 +56,12 @@ export interface InsightsConfig {
 		queryFile?: string;
 		label?: string | IInsightLabel;
 		value?: string;
+		actions?: {
+			types: Array<string>;
+			database?: string;
+			server?: string;
+			user?: string;
+		};
 	};
 }
 

@@ -10,38 +10,6 @@ import * as nls from 'vs/nls';
 
 let widgetRegistry = <IDashboardWidgetRegistry>Registry.as(Extensions.DashboardWidgetContribution);
 
-/*
-let configurationRegistry = <IConfigurationRegistry>Registry.as(Extensions.Configuration);
-configurationRegistry.registerConfiguration({
-	'id': 'databaseDashboardPage',
-	'title': 'Database Dashboard Page',
-	'type': 'object',
-	'properties': {
-		'dashboard.databasePage': {
-			'description': 'Database Page Settings',
-			'type': 'array',
-			'default': [
-				{
-					'name': 'Tasks',
-					'selector': 'tasks-widget',
-					'gridItemConfig': {
-						'sizex': 2,
-						'sizey': 1
-					}
-				},
-				{
-					'selector': 'explorer-widget',
-					'gridItemConfig': {
-						'sizex': 2,
-						'sizey': 2
-					}
-				}
-			]
-		}
-	}
-});
-*/
-
 export const databaseDashboardSettingSchema: IJSONSchema = {
 	type: ['array'],
 	description: nls.localize('dashboardDatabase', 'Customizes the database dashboard page'),

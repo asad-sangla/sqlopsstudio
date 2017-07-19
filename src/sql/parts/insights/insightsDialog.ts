@@ -13,6 +13,9 @@ import { Modal } from 'sql/parts/common/modal/modal';
 import { InsightsConfig, IInsightLabel } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { Conditional } from 'sql/parts/dashboard/common/interfaces';
+import { ITaskRegistry, Extensions as TaskExtensions } from 'sql/platform/tasks/taskRegistry';
+import { ITaskActionContext } from 'sql/workbench/electron-browser/actions';
+import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
 import { DbCellValue, IDbColumn, IResultMessage } from 'data';
 
@@ -21,7 +24,7 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
 import { SplitView, CollapsibleState, CollapsibleView } from 'vs/base/browser/ui/splitview/splitview';
 import { List } from 'vs/base/browser/ui/list/listWidget';
-import { IDelegate, IRenderer, IListEvent } from 'vs/base/browser/ui/list/list';
+import { IDelegate, IRenderer, IListEvent, IListContextMenuEvent } from 'vs/base/browser/ui/list/list';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
@@ -32,6 +35,13 @@ import * as types from 'vs/base/common/types';
 import * as pfs from 'vs/base/node/pfs';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { $ } from 'vs/base/browser/builder';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { Registry } from 'vs/platform/platform';
+import { IAction } from 'vs/base/common/actions';
+import { TPromise } from 'vs/base/common/winjs.base';
+
+/* Regex that matches the form `${value}` */
+const insertValueRegex: RegExp = /\${(.*?)\}/;
 
 class BasicView extends CollapsibleView {
 	constructor(private viewTitle: string, private list: List<any>, private _bodyContainer: HTMLElement, collapsed: boolean, headerSize: number) {
@@ -187,6 +197,7 @@ export default class InsightsDialog extends Modal {
 		@IPartService _partService: IPartService,
 		@IMessageService private _messageService: IMessageService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
+		@IContextMenuService private _contextMenuService: IContextMenuService
 	) {
 		super('Insights', _partService);
 	}
@@ -213,6 +224,16 @@ export default class InsightsDialog extends Modal {
 				}
 				resourceArray.unshift({ title: true, value: nls.localize('value', 'Value').toUpperCase(), label: nls.localize('property', 'Property').toUpperCase() });
 				this._bottomList.splice(0, this._bottomList.length, resourceArray);
+			}
+		}));
+
+		this._disposables.push(this._topList.onContextMenu((e: IListContextMenuEvent<ListResource>) => {
+			if (e.element) {
+				this._contextMenuService.showContextMenu({
+					getAnchor: () => e.anchor,
+					getActions: () => this.insightActions,
+					getActionsContext: () => this.insightContext(e.element)
+				});
 			}
 		}));
 
@@ -416,6 +437,11 @@ export default class InsightsDialog extends Modal {
 		return undefined;
 	}
 
+	/**
+	 * Finds the index in the passed row of the valure passed; returns -1 if it cannot find it
+	 * @param val string to search for
+	 * @param row data to search through
+	 */
 	private findIndex(val: string, row: DbCellValue[]): number;
 	private findIndex(val: string, row: IDbColumn[]): number;
 	private findIndex(val: string, row: Object[]): number {
@@ -452,5 +478,56 @@ export default class InsightsDialog extends Modal {
 
 	public close() {
 		this.hide();
+	}
+
+	private get insightActions(): TPromise<IAction[]> {
+		const taskRegistry = Registry.as<ITaskRegistry>(TaskExtensions.TaskContribution);
+		let tasks = taskRegistry.idToCtorMap;
+		let actions = this._insight.details.actions.types;
+		let returnActions: IAction[] = [];
+		for (let action of actions) {
+			let ctor = tasks[action];
+			if (ctor) {
+				returnActions.push(this._instantiationService.createInstance(ctor, ctor.ID, ctor.LABEL));
+			}
+		}
+		return TPromise.as(returnActions);
+	}
+
+	/**
+	 * Creates the context that should be passed to the action passed on the selected element
+	 * @param element
+	 */
+	private insightContext(element: ListResource): ITaskActionContext {
+		let database = this._insight.details.actions.database || this._connectionProfile.databaseName;
+		let server = this._insight.details.actions.server || this._connectionProfile.serverName;
+		let user = this._insight.details.actions.user || this._connectionProfile.userName;
+		let match: Array<string>;
+		if (match = database.match(insertValueRegex)) {
+			let index = this.findIndex(match[1], this._columns);
+			if (!index) {
+				console.error('Could not find column', match[1]);
+			}
+			database = database.replace(match[0], element.data[index]);
+		}
+		if (match = server.match(insertValueRegex)) {
+			let index = this.findIndex(match[1], this._columns);
+			if (!index) {
+				console.error('Could not find column', match[1]);
+			}
+			server = server.replace(match[0], element.data[index]);
+		}
+		if (match = user.match(insertValueRegex)) {
+			let index = this.findIndex(match[1], this._columns);
+			if (!index) {
+				console.error('Could not find column', match[1]);
+			}
+			user = user.replace(match[0], element.data[index]);
+		}
+		let profile = new ConnectionProfile();
+		profile.databaseName = database;
+		profile.serverName = server;
+		profile.userName = user;
+		return { profile };
 	}
 }
