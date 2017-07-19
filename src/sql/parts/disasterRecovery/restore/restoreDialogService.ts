@@ -9,6 +9,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IDisasterRecoveryService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
 
 export class RestoreDialogService implements IRestoreDialogService {
@@ -19,7 +20,8 @@ export class RestoreDialogService implements IRestoreDialogService {
 
 	constructor(
 		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService
+		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService,
+		@IConnectionManagementService private _connectionService: IConnectionManagementService
 	) {
 	}
 
@@ -47,8 +49,8 @@ export class RestoreDialogService implements IRestoreDialogService {
 		});
 	}
 
-	public showDialog(uri: string, connection: IConnectionProfile): TPromise<void> {
-		this._ownerUri = uri;
+	public showDialog(connection: IConnectionProfile): TPromise<void> {
+		this._ownerUri = this._connectionService.getConnectionId(connection);
 		if (!this._restoreDialog) {
 			this._restoreDialog = this._instantiationService.createInstance(RestoreDialog);
 			this._restoreDialog.onCancel(() => { });

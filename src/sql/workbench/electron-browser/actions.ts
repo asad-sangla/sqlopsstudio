@@ -10,7 +10,7 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
-import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 
@@ -41,8 +41,8 @@ export class NewQueryAction extends Action {
 
 	constructor(
 		id: string, label: string,
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
+		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
 	}
@@ -51,8 +51,8 @@ export class NewQueryAction extends Action {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.newQuery(
 				actionContext.profile,
-				this.connectionManagementService,
-				this.queryEditorService
+				this._connectionManagementService,
+				this._queryEditorService
 			).then(
 				result => {
 					resolve(true);
@@ -71,9 +71,9 @@ export class ScriptSelectAction extends Action {
 
 	constructor(
 		id: string, label: string,
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		@IScriptingService protected scriptingService: IScriptingService
+		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
+		@IScriptingService protected _scriptingService: IScriptingService
 	) {
 		super(id, label);
 	}
@@ -84,9 +84,9 @@ export class ScriptSelectAction extends Action {
 				actionContext.profile,
 				actionContext.object,
 				actionContext.uri,
-				this.connectionManagementService,
-				this.queryEditorService,
-				this.scriptingService
+				this._connectionManagementService,
+				this._queryEditorService,
+				this._scriptingService
 			).then(
 				result => {
 					resolve(true);
@@ -104,8 +104,8 @@ export class EditDataAction extends Action {
 
 	constructor(
 		id: string, label: string,
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService
+		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
 	}
@@ -116,8 +116,8 @@ export class EditDataAction extends Action {
 				actionContext.profile,
 				actionContext.object.name,
 				actionContext.object.schema,
-				this.connectionManagementService,
-				this.queryEditorService
+				this._connectionManagementService,
+				this._queryEditorService
 			).then(
 				result => {
 					resolve(true);
@@ -136,9 +136,9 @@ export class ScriptCreateAction extends Action {
 
 	constructor(
 		id: string, label: string,
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		@IScriptingService protected scriptingService: IScriptingService
+		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
+		@IScriptingService protected _scriptingService: IScriptingService
 	) {
 		super(id, label);
 	}
@@ -149,9 +149,9 @@ export class ScriptCreateAction extends Action {
 				actionContext.profile,
 				actionContext.object,
 				actionContext.uri,
-				this.connectionManagementService,
-				this.queryEditorService,
-				this.scriptingService
+				this._connectionManagementService,
+				this._queryEditorService,
+				this._scriptingService
 			).then(
 				result => {
 					resolve(true);
@@ -170,7 +170,7 @@ export class BackupAction extends Action {
 
 	constructor(
 		id: string, label: string,
-		@IDisasterRecoveryUiService protected disasterRecoveryService: IDisasterRecoveryUiService
+		@IDisasterRecoveryUiService protected _disasterRecoveryService: IDisasterRecoveryUiService
 	) {
 		super(id, label);
 	}
@@ -179,7 +179,35 @@ export class BackupAction extends Action {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.showBackup(
 				actionContext.profile,
-				this.disasterRecoveryService,
+				this._disasterRecoveryService,
+			).then(
+				result => {
+					resolve(true);
+				},
+				error => {
+					resolve(false);
+				}
+				);
+		});
+	}
+}
+
+export class RestoreAction extends Action {
+	public static ID = 'restore';
+	public static LABEL = nls.localize('restore', 'Restore');
+
+	constructor(
+		id: string, label: string,
+		@IRestoreDialogService protected _restoreService: IRestoreDialogService
+	) {
+		super(id, label);
+	}
+
+	run(actionContext: ITaskActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.showRestore(
+				actionContext.profile,
+				this._restoreService
 			).then(
 				result => {
 					resolve(true);
@@ -198,8 +226,8 @@ export class ManageAction extends Action {
 
 	constructor(
 		id: string, label: string,
-		@IConnectionManagementService protected connectionManagementService: IConnectionManagementService,
-		@IAngularEventingService protected angularEventingService: IAngularEventingService
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
+		@IAngularEventingService protected _angularEventingService: IAngularEventingService
 	) {
 		super(id, label);
 	}
@@ -207,12 +235,12 @@ export class ManageAction extends Action {
 	run(actionContext: BaseActionContext): TPromise<boolean> {
 		let self = this;
 		return new TPromise<boolean>((resolve, reject) => {
-			self.connectionManagementService.connect(actionContext.profile, actionContext.uri, { showDashboard: true, saveTheConnection: false, params: undefined, showConnectionDialogOnError: false }).then(
+			self._connectionManagementService.connect(actionContext.profile, actionContext.uri, { showDashboard: true, saveTheConnection: false, params: undefined, showConnectionDialogOnError: false }).then(
 				() => {
-					self.angularEventingService.sendAngularEvent(actionContext.uri, 'database');
+					self._angularEventingService.sendAngularEvent(actionContext.uri, 'database');
 					resolve(true);
 				},
-				(error) => {
+				error => {
 					resolve(error);
 				}
 			);
@@ -226,7 +254,7 @@ export class InsightAction extends Action {
 
 	constructor(
 		id: string, label: string,
-		@IInsightsDialogService protected insightsDialogService: IInsightsDialogService
+		@IInsightsDialogService protected _insightsDialogService: IInsightsDialogService
 	) {
 		super(id, label);
 	}
@@ -234,7 +262,7 @@ export class InsightAction extends Action {
 	run(actionContext: InsightActionContext): TPromise<boolean> {
 		let self = this;
 		return new TPromise<boolean>((resolve, reject) => {
-			self.insightsDialogService.show(actionContext.insight, actionContext.profile);
+			self._insightsDialogService.show(actionContext.insight, actionContext.profile);
 			resolve(true);
 		});
 	}

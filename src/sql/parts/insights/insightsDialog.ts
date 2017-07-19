@@ -176,8 +176,8 @@ class BottomRender implements IRenderer<ListResource, TableTemplate> {
 
 export default class InsightsDialog extends Modal {
 	private _queryRunner: QueryRunner;
-	private _connectionProfile: IConnectionProfile;
 	private _connectionUri: string;
+	private _connectionProfile: IConnectionProfile;
 	private _rows: DbCellValue[][];
 	private _columns: IDbColumn[];
 	private _insight: InsightsConfig;
@@ -505,26 +505,27 @@ export default class InsightsDialog extends Modal {
 		let match: Array<string>;
 		if (match = database.match(insertValueRegex)) {
 			let index = this.findIndex(match[1], this._columns);
-			if (!index) {
+			if (index === -1) {
 				console.error('Could not find column', match[1]);
 			}
 			database = database.replace(match[0], element.data[index]);
 		}
 		if (match = server.match(insertValueRegex)) {
 			let index = this.findIndex(match[1], this._columns);
-			if (!index) {
+			if (index === -1) {
 				console.error('Could not find column', match[1]);
 			}
 			server = server.replace(match[0], element.data[index]);
 		}
 		if (match = user.match(insertValueRegex)) {
 			let index = this.findIndex(match[1], this._columns);
-			if (!index) {
+			if (index === -1) {
 				console.error('Could not find column', match[1]);
 			}
 			user = user.replace(match[0], element.data[index]);
 		}
-		let profile = new ConnectionProfile();
+		let currentProfile = this._connectionProfile as ConnectionProfile;
+		let profile = new ConnectionProfile(currentProfile.serverCapabilities, currentProfile);
 		profile.databaseName = database;
 		profile.serverName = server;
 		profile.userName = user;

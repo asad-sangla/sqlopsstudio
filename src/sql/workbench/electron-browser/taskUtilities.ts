@@ -177,9 +177,9 @@ export function showBackup(connection: IConnectionProfile, disasterRecoveryUiSer
 	});
 }
 
-export function showRestore(uri: string, connection: IConnectionProfile, restoreDialogService: IRestoreDialogService): Promise<void> {
+export function showRestore(connection: IConnectionProfile, restoreDialogService: IRestoreDialogService): Promise<void> {
 	return new Promise<void>((resolve) => {
-		restoreDialogService.showDialog(uri, connection);
+		restoreDialogService.showDialog(connection);
 	});
 }
 

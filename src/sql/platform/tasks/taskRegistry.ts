@@ -5,7 +5,6 @@
 
 import * as platform from 'vs/platform/platform';
 import { IJSONSchema } from 'vs/base/common/jsonSchema';
-import * as nls from 'vs/nls';
 import { Action } from 'vs/base/common/actions';
 import { IConstructorSignature2 } from 'vs/platform/instantiation/common/instantiation';
 
@@ -21,7 +20,6 @@ export const Extensions = {
 };
 
 export interface ITaskRegistry {
-	taskSchema: IJSONSchema;
 	/**
 	 * Returns a map of action ids to their contructors;
 	 */
@@ -43,12 +41,7 @@ export interface ITaskRegistry {
 }
 
 class TaskRegistry implements ITaskRegistry {
-	private _taskSchema: IJSONSchema = { type: 'object', description: nls.localize('schema.workbenchTask', 'Tasks used through workbench'), properties: {}, additionalProperties: false };
 	private _idCtorMap: { [id: string]: ActionICtor } = {};
-
-	get taskSchema(): IJSONSchema {
-		return this._taskSchema;
-	}
 
 	get idToCtorMap(): { [id: string]: ActionICtor } {
 		return this._idCtorMap;
@@ -65,8 +58,7 @@ class TaskRegistry implements ITaskRegistry {
 	 * @param schema schema of expected input
 	 * @param ctor contructor of the action
 	 */
-	registerTask(id: string, description: string, schema: IJSONSchema, ctor: ActionICtor): TaskIdentifier {
-		this._taskSchema.properties[id] = schema;
+	registerTask(id: string, description: string, ctor: ActionICtor): TaskIdentifier {
 		this._idCtorMap[id] = ctor;
 		return id;
 	}
@@ -75,6 +67,6 @@ class TaskRegistry implements ITaskRegistry {
 const taskRegistry = new TaskRegistry();
 platform.Registry.add(Extensions.TaskContribution, taskRegistry);
 
-export function registerTask(id: string, description: string, schema: IJSONSchema, ctor: ActionICtor): TaskIdentifier {
-	return taskRegistry.registerTask(id, description, schema, ctor);
+export function registerTask(id: string, description: string, ctor: ActionICtor): TaskIdentifier {
+	return taskRegistry.registerTask(id, description, ctor);
 }

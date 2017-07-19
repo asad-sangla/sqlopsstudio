@@ -93,7 +93,7 @@ let defaultVal = [
 					},
 					value: 'health_check',
 					actions: {
-						types: ['backup'],
+						types: ['backup', 'restore'],
 						database: '${name}'
 					}
 				}

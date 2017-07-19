@@ -255,7 +255,6 @@ export class DashboardServiceInterface implements OnDestroy {
 	 */
 	public restore(): void {
 		TaskUtilities.showRestore(
-			this._uri,
 			this._bootstrapParams.connection,
 			this._bootstrapService.restoreDialogService);
 	}

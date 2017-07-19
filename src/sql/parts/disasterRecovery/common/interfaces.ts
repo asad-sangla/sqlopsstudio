@@ -61,5 +61,5 @@ export interface IDisasterRecoveryService {
 export const IRestoreDialogService = createDecorator<IRestoreDialogService>('restoreDialogService');
 export interface IRestoreDialogService {
 	_serviceBrand: any;
-	showDialog(uri: string, connection: IConnectionProfile): TPromise<void>;
+	showDialog(connection: IConnectionProfile): TPromise<void>;
 }

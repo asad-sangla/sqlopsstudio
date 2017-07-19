@@ -4,21 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { registerTask } from 'sql/platform/tasks/taskRegistry';
 import * as Actions from './actions';
-import { IJSONSchema } from 'vs/base/common/jsonSchema';
 
-let actionSchema: IJSONSchema = {
-	type: 'object',
-	properties: {
-		databaseName: {
-			type: 'string'
-		},
-		serverName: {
-			type: 'string'
-		},
-		userName: {
-			type: 'string'
-		}
-	}
-};
-
-registerTask('backup', '', actionSchema, Actions.BackupAction);
+registerTask('backup', '', Actions.BackupAction);
+registerTask('restore', '', Actions.RestoreAction);

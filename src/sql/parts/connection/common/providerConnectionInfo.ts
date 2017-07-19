@@ -47,7 +47,7 @@ export class ProviderConnectionInfo implements data.ConnectionInfo {
 		return instance;
 	}
 
-	public get ServerCapabilities(): data.DataProtocolServerCapabilities {
+	public get serverCapabilities(): data.DataProtocolServerCapabilities {
 		return this._serverCapabilities;
 	}
 

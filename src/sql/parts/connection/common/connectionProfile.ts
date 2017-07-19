@@ -137,7 +137,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			userName: this.userName,
 			options: this.options,
 			saveProfile: this.saveProfile,
-			id: this.id,
+			id: this.id
 		};
 
 		return result;

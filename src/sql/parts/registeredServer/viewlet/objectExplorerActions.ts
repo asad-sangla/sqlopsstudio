@@ -52,7 +52,7 @@ export class OEScriptSelectAction extends ScriptSelectAction {
 		}
 		ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
-		var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
+		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
 		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
@@ -98,7 +98,7 @@ export class OEScriptCreateAction extends ScriptCreateAction {
 		ObjectExplorerActionUtilities.showLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);
 		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
-		var ownerUri = this.connectionManagementService.getConnectionId(connectionProfile);
+		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
 
 		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
 			ObjectExplorerActionUtilities.hideLoadingIcon(this._container, ObjectExplorerActionUtilities.objectExplorerElementClass);

@@ -75,8 +75,8 @@ export class DashboardNewQueryAction extends NewQueryAction {
 		let self = this;
 		// change database before performing action
 		return new TPromise<boolean>((resolve, reject) => {
-			self.connectionManagementService.changeDatabase(actionContext.uri, actionContext.profile.databaseName).then(() => {
-				actionContext.profile = self.connectionManagementService.getConnectionProfile(actionContext.uri);
+			self._connectionManagementService.changeDatabase(actionContext.uri, actionContext.profile.databaseName).then(() => {
+				actionContext.profile = self._connectionManagementService.getConnectionProfile(actionContext.uri);
 				super.run(actionContext).then((result) => {
 					resolve(result);
 				});
