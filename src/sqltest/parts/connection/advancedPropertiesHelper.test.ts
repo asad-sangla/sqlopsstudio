@@ -29,14 +29,14 @@ suite('Advanced properties helper tests', () => {
 		options = {};
 		advancedPropertiesMap = {};
 
-		categoryProperty= {
+		categoryProperty = {
 			name: 'applicationIntent',
 			displayName: 'Application Intent',
 			description: 'Declares the application workload type when connecting to a server',
 			groupName: 'Initialization',
 			categoryValues: [
-			{displayName: 'ReadWrite', name: 'ReadWrite'},
-			{displayName: 'ReadOnly', name: 'ReadOnly'}
+				{ displayName: 'ReadWrite', name: 'ReadWrite' },
+				{ displayName: 'ReadOnly', name: 'ReadOnly' }
 			],
 			defaultValue: null,
 			isIdentity: false,
@@ -88,8 +88,8 @@ suite('Advanced properties helper tests', () => {
 		let builder: Builder = $().div();
 		inputBox = TypeMoq.Mock.ofType(InputBox, TypeMoq.MockBehavior.Loose, builder.getHTMLElement(), null, null);
 		inputBox.callBase = true;
-		inputBox.setup(x => x.isInputValid()).returns(() => isValid);
-		inputBox.setup(x => x.value).returns( () => inputValue );
+		inputBox.setup(x => x.validate()).returns(() => isValid);
+		inputBox.setup(x => x.value).returns(() => inputValue);
 	});
 
 	test('create default but not required category properties should set the property value and possible inputs correctly', () => {
@@ -280,7 +280,7 @@ suite('Advanced properties helper tests', () => {
 		};
 
 		var error = AdvancedPropertiesHelper.validateInputs(advancedPropertiesMap);
-		assert.equal(error, '');
+		assert.equal(error, true);
 	});
 
 	test('validate a valid optional number input should return no error', () => {
@@ -295,7 +295,7 @@ suite('Advanced properties helper tests', () => {
 		};
 
 		var error = AdvancedPropertiesHelper.validateInputs(advancedPropertiesMap);
-		assert.equal(error, '');
+		assert.equal(error, true);
 	});
 
 	test('validate a valid required number input should return no error', () => {
@@ -309,7 +309,7 @@ suite('Advanced properties helper tests', () => {
 			propertyValue: null
 		};
 		var error = AdvancedPropertiesHelper.validateInputs(advancedPropertiesMap);
-		assert.equal(error, '');
+		assert.equal(error, true);
 	});
 
 	test('validate invalid optional number property should return an expected error', () => {
@@ -324,11 +324,11 @@ suite('Advanced properties helper tests', () => {
 		};
 
 		var error = AdvancedPropertiesHelper.validateInputs(advancedPropertiesMap);
-		assert.equal(error, 'Connect Timeout: Requires number as an input.\n');
+		assert.equal(error, false);
 	});
 
 	test('validate required optional number property should return an expected error', () => {
-		isValid = true;
+		isValid = false;
 		inputValue = '';
 		numberProperty.isRequired = true;
 		advancedPropertiesMap = {};
@@ -339,7 +339,7 @@ suite('Advanced properties helper tests', () => {
 		};
 
 		var error = AdvancedPropertiesHelper.validateInputs(advancedPropertiesMap);
-		assert.equal(error, 'Connect Timeout: Cannot be empty.\n');
+		assert.equal(error, false);
 	});
 
 	test('update properties should delete option entry if the input value is an empty string', () => {

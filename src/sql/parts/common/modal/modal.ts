@@ -124,7 +124,7 @@ export abstract class Modal implements IThemable {
 				errorMessageContainer.div({ class: 'errorIcon' }, (iconContainer) => {
 					iconContainer.element('img', { 'class': 'error-icon' });
 					this._errorIconElement = iconContainer.getHTMLElement();
-					let iconFilePath = require.toUrl('sql/parts/common/flyoutDialog/media/status-error.svg');
+					let iconFilePath = require.toUrl('sql/parts/common/modal/media/status-error.svg');
 					this._errorIconElement.style.content = 'url(' + iconFilePath + ')';
 					this._errorIconElement.style.visibility = 'hidden';
 				});

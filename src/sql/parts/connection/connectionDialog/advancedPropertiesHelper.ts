@@ -5,12 +5,15 @@
 
 'use strict';
 
-import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { Builder } from 'vs/base/browser/builder';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import data = require('data');
+import { localize } from 'vs/nls';
 
 export interface IAdvancedPropertyElement {
 	advancedPropertyWidget: any;
@@ -19,16 +22,27 @@ export interface IAdvancedPropertyElement {
 }
 
 export class AdvancedPropertiesHelper {
-	static createAdvancedProperty(property: data.ConnectionOption, rowContainer: Builder, options: { [name: string]: any }, advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement }, onFocus: (name) => void): void {
-		var possibleInputs: string[] = [];
-		var optionValue = this.getPropertyValueAndCategorieValues(property, options, possibleInputs);
-		var propertyWidget: any;
-		var inputElement: HTMLElement;
+	static createAdvancedProperty(property: data.ConnectionOption, rowContainer: Builder, options: { [name: string]: any },
+		advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement }, contextViewService: IContextViewService, onFocus: (name) => void): void {
+		let possibleInputs: string[] = [];
+		let optionValue = this.getPropertyValueAndCategorieValues(property, options, possibleInputs);
+		let propertyWidget: any;
+		let inputElement: HTMLElement;
+		let missingErrorMessage = localize('missingRequireField', ' is required.');
+		let invalidInputMessage = localize('invalidInput', 'Invalid input.  Numeric value expected.');
 		switch (property.valueType) {
 			case ServiceOptionType.number:
-				propertyWidget = DialogHelper.appendInputBox(rowContainer, {
+				propertyWidget = new DialogInputBox(rowContainer.getHTMLElement(), contextViewService, {
 					validationOptions: {
-						validation: (value: string) => !DialogHelper.isNumeric(value) ? ({ type: MessageType.ERROR, content: 'Invalid input.  Numeric value expected.' }) : null
+						validation: (value: string) => {
+							if (DialogHelper.isEmptyString(value) && property.isRequired) {
+								return { type: MessageType.ERROR, content: property.displayName + missingErrorMessage };
+							} else if (!DialogHelper.isNumeric(value)) {
+								return { type: MessageType.ERROR, content: invalidInputMessage };
+							} else {
+								return null;
+							}
+						}
 					}
 				});
 				propertyWidget.value = optionValue;
@@ -42,7 +56,11 @@ export class AdvancedPropertiesHelper {
 				break;
 			case ServiceOptionType.string:
 			case ServiceOptionType.password:
-				propertyWidget = DialogHelper.appendInputBox(rowContainer);
+				propertyWidget = new DialogInputBox(rowContainer.getHTMLElement(), contextViewService, {
+					validationOptions: {
+						validation: (value: string) => (DialogHelper.isEmptyString(value) && property.isRequired) ? ({ type: MessageType.ERROR, content: property.displayName + missingErrorMessage }) : null
+					}
+				});
 				propertyWidget.value = optionValue;
 				if (property.valueType === ServiceOptionType.password) {
 					propertyWidget.inputElement.type = 'password';
@@ -88,10 +106,9 @@ export class AdvancedPropertiesHelper {
 		return optionValue;
 	}
 
-	static validateInputs(advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement }): string {
-		let errorMsg = '';
-		let missingInputMsg = ': Cannot be empty.\n';
-		let requiredNumberInput = ': Requires number as an input.\n';
+	static validateInputs(advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement }): boolean {
+		let isValid = true;
+		let isFocused = false;
 		for (var key in advancedPropertiesMap) {
 			var propertyElement: IAdvancedPropertyElement = advancedPropertiesMap[key];
 			var widget = propertyElement.advancedPropertyWidget;
@@ -99,17 +116,17 @@ export class AdvancedPropertiesHelper {
 				propertyElement.advancedProperty.valueType === ServiceOptionType.password ||
 				propertyElement.advancedProperty.valueType === ServiceOptionType.number);
 
-			if (propertyElement.advancedProperty.valueType === ServiceOptionType.number) {
-				if (!widget.isInputValid()) {
-					errorMsg += propertyElement.advancedProperty.displayName + requiredNumberInput;
+			if (isInputBox) {
+				if (!widget.validate()) {
+					isValid = false;
+					if (!isFocused) {
+						isFocused = true;
+						widget.focus();
+					}
 				}
 			}
-			if (propertyElement.advancedProperty.isRequired && DialogHelper.isEmptyString(widget.value) && isInputBox) {
-				widget.showMessage({ type: MessageType.ERROR, content: 'Missing required input.' });
-				errorMsg += propertyElement.advancedProperty.displayName + missingInputMsg;
-			}
 		}
-		return errorMsg;
+		return isValid;
 	}
 
 	static updateProperties(options: { [name: string]: any }, advancedPropertiesMap: { [propertyName: string]: IAdvancedPropertyElement }): void {

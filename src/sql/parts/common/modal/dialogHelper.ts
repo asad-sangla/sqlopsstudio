@@ -6,83 +6,74 @@
 'use strict';
 
 import { Builder } from 'vs/base/browser/builder';
-import { IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
-import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 
-export class DialogHelper {
-	static appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
-		let cellContainer: Builder;
-		container.element('tr', {}, (rowContainer) => {
-			rowContainer.element('td', { class: labelClass }, (labelCellContainer) => {
-				labelCellContainer.div({}, (labelContainer) => {
-					labelContainer.innerHtml(label);
-				});
-			});
-			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
-				cellContainer = inputCellContainer;
+export function appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
+	let cellContainer: Builder;
+	container.element('tr', {}, (rowContainer) => {
+		rowContainer.element('td', { class: labelClass }, (labelCellContainer) => {
+			labelCellContainer.div({}, (labelContainer) => {
+				labelContainer.innerHtml(label);
 			});
 		});
+		rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
+			cellContainer = inputCellContainer;
+		});
+	});
 
-		return cellContainer;
-	}
+	return cellContainer;
+}
 
-	static appendRowLink(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
-		let rowButton: Button;
-		container.element('tr', {}, (rowContainer) => {
-			rowContainer.element('td', { class: labelClass }, (labelCellContainer) => {
-				labelCellContainer.div({}, (labelContainer) => {
-					labelContainer.innerHtml(label);
-				});
-			});
-			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
-				inputCellContainer.element('div', {}, (rowContainer) => {
-					rowButton = new Button(rowContainer);
-
-				});
+export function appendRowLink(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
+	let rowButton: Button;
+	container.element('tr', {}, (rowContainer) => {
+		rowContainer.element('td', { class: labelClass }, (labelCellContainer) => {
+			labelCellContainer.div({}, (labelContainer) => {
+				labelContainer.innerHtml(label);
 			});
 		});
+		rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
+			inputCellContainer.element('div', {}, (rowContainer) => {
+				rowButton = new Button(rowContainer);
 
-		return new Builder(rowButton.getElement());
-	}
+			});
+		});
+	});
 
-	static createCheckBox(container: Builder, label: string, checkboxClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
-		let checkbox = new Checkbox({
-			actionClassName: checkboxClass,
-			title: label,
-			isChecked: isChecked,
-			onChange: (viaKeyboard) => {
-				if (onCheck) {
-					onCheck(viaKeyboard);
-				}
+	return new Builder(rowButton.getElement());
+}
+
+export function createCheckBox(container: Builder, label: string, checkboxClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
+	let checkbox = new Checkbox({
+		actionClassName: checkboxClass,
+		title: label,
+		isChecked: isChecked,
+		onChange: (viaKeyboard) => {
+			if (onCheck) {
+				onCheck(viaKeyboard);
 			}
-		});
-		container.getHTMLElement().appendChild(checkbox.domNode);
-		container.div({}, (labelContainer) => {
-			labelContainer.innerHtml(label);
-		});
+		}
+	});
+	container.getHTMLElement().appendChild(checkbox.domNode);
+	container.div({}, (labelContainer) => {
+		labelContainer.innerHtml(label);
+	});
 
-		return checkbox;
-	}
+	return checkbox;
+}
 
-	static appendInputBox(container: Builder, options?: IInputOptions, contextViewProvider?: IContextViewProvider): DialogInputBox {
-		return new DialogInputBox(container.getHTMLElement(), contextViewProvider, options);
-	}
+export function appendInputSelectBox(container: Builder, selectBox: DialogSelectBox): DialogSelectBox {
+	selectBox.render(container.getHTMLElement());
+	return selectBox;
+}
 
-	static appendInputSelectBox(container: Builder, selectBox: DialogSelectBox): DialogSelectBox {
-		selectBox.render(container.getHTMLElement());
-		return selectBox;
-	}
+export function isNumeric(num): boolean {
+	return !isNaN(num);
+}
 
-	static isNumeric(num): boolean {
-		return !isNaN(num);
-	}
-
-	static isEmptyString(value: string): boolean {
-		//TODO find a better way to check for empty string
-		return value === undefined || value === '';
-	}
+export function isEmptyString(value: string): boolean {
+	//TODO find a better way to check for empty string
+	return value === undefined || value === '';
 }

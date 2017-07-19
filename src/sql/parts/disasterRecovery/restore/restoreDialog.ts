@@ -12,7 +12,7 @@ import { Button } from 'vs/base/browser/ui/button/button';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { Modal } from 'sql/parts/common/modal/modal';
-import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
@@ -39,8 +39,6 @@ export class RestoreDialog extends Modal {
 	private _relocateFileCheckBox: Checkbox;
 	private _toDispose: lifecycle.IDisposable[] = [];
 	private _spinner: HTMLElement;
-	private _restoreDatabaseNameTitle: string;
-	private _restoreDatabaseFileTitle: string;
 	private _restoreTitle: string;
 	private _backupFileTitle: string;
 
@@ -59,8 +57,6 @@ export class RestoreDialog extends Modal {
 		@IContextViewService private _contextViewService: IContextViewService
 	) {
 		super('Restore database', partService, { hasErrors: true });
-		this._restoreDatabaseNameTitle = localize('databaseNameTitle', 'Database name:');
-		this._restoreDatabaseFileTitle = localize('restoreDatabaseFileTitle', 'Restore database files:');
 		this._restoreTitle = localize('restoreTitle', 'Restore database');
 		this._backupFileTitle = localize('backupFile', 'Backup file');
 	}
@@ -68,8 +64,10 @@ export class RestoreDialog extends Modal {
 	public render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
-		this._restoreButton = this.addFooterButton('Restore', () => this.restore());
-		this._closeButton = this.addFooterButton('Cancel', () => this.cancel());
+		let restoreLabel = localize('restore', 'Restore');
+		let cancelLabel = localize('cancel', 'Cancel');
+		this._restoreButton = this.addFooterButton(restoreLabel, () => this.restore());
+		this._closeButton = this.addFooterButton(cancelLabel, () => this.cancel());
 		this.registerListeners();
 	}
 
@@ -80,7 +78,8 @@ export class RestoreDialog extends Modal {
 
 		// Restore from
 		this._bodyBuilder.div({ class: 'input-divider' }, (labelContainer) => {
-			labelContainer.innerHtml('Restore from');
+			let restoreFromLabel = localize('restoreFrom', 'Restore from');
+			labelContainer.innerHtml(restoreFromLabel);
 		});
 
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
@@ -90,27 +89,30 @@ export class RestoreDialog extends Modal {
 
 		// Back up file path
 		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Backup file path');
+			let backupFilePathLabel = localize('backupFilePath', 'Backup file path');
+			labelContainer.innerHtml(backupFilePathLabel);
 		});
 
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
-			var errorMessage = localize('missingBackupFilePathError', 'Backup file path is required.');
-			this._filePathInputBox = DialogHelper.appendInputBox(inputCellContainer, {
+			let errorMessage = localize('missingBackupFilePathError', 'Backup file path is required.');
+			this._filePathInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
 				validationOptions: {
 					validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: errorMessage }) : null
 				}
-			}, this._contextViewService);
+			});
 		});
 
 		// Target database name
 		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Taget database name');
+			let tagetDatabaseNameLabel = localize('tagetDatabaseName', 'Target database name');
+			labelContainer.innerHtml(tagetDatabaseNameLabel);
 		});
 
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
-			this._databaseInputBox = DialogHelper.appendInputBox(inputCellContainer, {
-				placeholder: '<Use backup file>'
-			}, this._contextViewService);
+			let useBackupFileLabel = localize('useBackupFilelabel', '<Use backup file>');
+			this._databaseInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
+				placeholder: useBackupFileLabel
+			});
 		});
 
 		let self = this;
@@ -121,23 +123,27 @@ export class RestoreDialog extends Modal {
 		});
 
 		// Relocated data files to folders
+		let useDefaultFolderlabel = localize('useDefaultFolder', '<Use default folder>');
 		let relocatedDataFileLabelBuilder = $().div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Data file folder');
+			let datafileFolderLabel = localize('datafileFolder', 'Data file folder');
+			labelContainer.innerHtml(datafileFolderLabel);
 		});
 		let relocatedDataFileInputBoxBuilder = $().div({ class: 'dialog-label' }, (inputCellContainer) => {
-			this._relocatedDataFilePathInputBox = DialogHelper.appendInputBox(inputCellContainer, {
-				placeholder: '<Use default folder>'
-			}, this._contextViewService);
+			this._relocatedDataFilePathInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
+				placeholder: useDefaultFolderlabel
+			});
 		});
 
 		// Relocated log files to folders
 		let relocatedLogFileLabelBuilder = $().div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Log file folder');
+			let logfileFolderLabel = localize('logfileFolder', 'Log file folder');
+			labelContainer.innerHtml(logfileFolderLabel);
 		});
 		let relocatedLogFileInputBoxBuilder = $().div({ class: 'dialog-label' }, (inputCellContainer) => {
-			this._relocatedLogFilePathInputBox = DialogHelper.appendInputBox(inputCellContainer, {
-				placeholder: '<Use default folder>'
-			}, this._contextViewService);
+
+			this._relocatedLogFilePathInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
+				placeholder: useDefaultFolderlabel
+			});
 		});
 
 		this._bodyBuilder.div({ class: 'relocate-files-section' }, (builder) => {
@@ -150,7 +156,7 @@ export class RestoreDialog extends Modal {
 		});
 
 		// Preview Button
-		this._validateButton = this.createValidateButton(this._bodyBuilder, 'Preview');
+		this._validateButton = this.createValidateButton(this._bodyBuilder, localize('preview', 'Preview'));
 
 		// Summary section
 		this._bodyBuilder.div({ class: 'summary' }, (summaryContainer) => {
@@ -226,23 +232,26 @@ export class RestoreDialog extends Modal {
 
 		// Summary
 		restoreToContent.div({ class: 'modal-title' }, (labelContainer) => {
-			labelContainer.innerHtml('Summary');
+			let summaryLabel = localize('summary', 'Summary');
+			labelContainer.innerHtml(summaryLabel);
 		});
 
 		// Database name
 		restoreToContent.div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Database name');
+			let databaseNameLabel = localize('databaseName', 'Database name');
+			labelContainer.innerHtml(databaseNameLabel);
 		});
 		let databaseInputBox;
 		restoreToContent.div({ class: 'input-divider' }, (inputCellContainer) => {
-			databaseInputBox = DialogHelper.appendInputBox(inputCellContainer, null, this._contextViewService);
+			databaseInputBox = new DialogInputBox(inputCellContainer.getHTMLElement, this._contextViewService);
 			databaseInputBox.value = databaseName;
 			databaseInputBox.disable();
 		});
 
 		// Restore database files
 		restoreToContent.div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Restore database files');
+			let restoreDatabaseFilesLabel = localize('restoreDatabaseFiles', 'Restore database files');
+			labelContainer.innerHtml(restoreDatabaseFilesLabel);
 		});
 
 		restoreToContent.div({ class: 'input-divider' }, (inputCellContainer) => {
@@ -273,7 +282,6 @@ export class RestoreDialog extends Modal {
 
 	private filePathChanged(filePath: string) {
 		this._summaryBuilder.empty();
-		this._filePathInputBox.hideMessage();
 		if (this._restoreButton.enabled) {
 			this._restoreButton.enabled = false;
 		}

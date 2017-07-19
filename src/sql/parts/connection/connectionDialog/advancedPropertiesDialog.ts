@@ -13,14 +13,13 @@ import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { SplitView, FixedCollapsibleView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import { AdvancedPropertiesHelper, IAdvancedPropertyElement } from 'sql/parts/connection/connectionDialog/advancedPropertiesHelper';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
 import { Modal } from 'sql/parts/common/modal/modal';
-import DOM = require('vs/base/browser/dom');
 import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import * as styler from 'vs/platform/theme/common/styler';
@@ -28,6 +27,8 @@ import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { localize } from 'vs/nls';
 
 class OptionPropertiesView extends FixedCollapsibleView {
 	private _treecontainer: HTMLElement;
@@ -80,8 +81,9 @@ export class AdvancedPropertiesDialog extends Modal {
 
 	constructor(
 		@IPartService partService: IPartService,
-		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService) {
-		super('Advanced Properties', partService, {hasErrors: true, hasBackButton: true});
+		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
+		@IContextViewService private _contextViewService: IContextViewService) {
+		super(localize('advancedProperties', 'Advanced properties'), partService, { hasBackButton: true });
 	}
 
 	public render() {
@@ -89,8 +91,10 @@ export class AdvancedPropertiesDialog extends Modal {
 		this.backButton.addListener('click', () => this.cancel());
 		attachModalDialogStyler(this, this._themeService);
 		styler.attachButtonStyler(this.backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
-		this._okButton = this.addFooterButton('OK', () => this.ok());
-		this._closeButton = this.addFooterButton('Go Back', () => this.cancel());
+		let okLabel = localize('ok', 'OK');
+		let discardLabel = localize('discard', 'Discard');
+		this._okButton = this.addFooterButton(okLabel, () => this.ok());
+		this._closeButton = this.addFooterButton(discardLabel, () => this.cancel());
 		// Theme styler
 		styler.attachButtonStyler(this._okButton, this._themeService);
 		styler.attachButtonStyler(this._closeButton, this._themeService);
@@ -143,7 +147,7 @@ export class AdvancedPropertiesDialog extends Modal {
 		for (var i = 0; i < connectionOptions.length; i++) {
 			var property: data.ConnectionOption = connectionOptions[i];
 			var rowContainer = DialogHelper.appendRow(container, property.displayName, 'advancedDialog-label', 'advancedDialog-input');
-			AdvancedPropertiesHelper.createAdvancedProperty(property, rowContainer, this._options, this._advancedPropertiesMap, (name) => this.onAdvancedPropertyLinkClicked(name));
+			AdvancedPropertiesHelper.createAdvancedProperty(property, rowContainer, this._options, this._advancedPropertiesMap, this._contextViewService, (name) => this.onAdvancedPropertyLinkClicked(name));
 		}
 	}
 
@@ -188,15 +192,11 @@ export class AdvancedPropertiesDialog extends Modal {
 	}
 
 	public ok(): void {
-		var errorMsg = AdvancedPropertiesHelper.validateInputs(this._advancedPropertiesMap);
-		if (DialogHelper.isEmptyString(errorMsg)) {
+		if (AdvancedPropertiesHelper.validateInputs(this._advancedPropertiesMap)) {
 			AdvancedPropertiesHelper.updateProperties(this._options, this._advancedPropertiesMap);
 			this._onOk.fire();
 			this.close();
-		} else {
-			this.showError(errorMsg);
 		}
-
 	}
 
 	public cancel() {

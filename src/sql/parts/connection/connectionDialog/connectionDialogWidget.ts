@@ -11,7 +11,7 @@ import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Modal } from 'sql/parts/common/modal/modal';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
-import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
@@ -28,6 +28,7 @@ import { Button } from 'vs/base/browser/ui/button/button';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { DefaultController, ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
 import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { localize } from 'vs/nls';
 
 export interface OnShowUIResponse {
 	selectedProviderType: string;
@@ -89,7 +90,7 @@ export class ConnectionDialogWidget extends Modal {
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IPartService _partService: IPartService
 	) {
-		super('Connection', _partService, { hasSpinner: true, hasErrors: true });
+		super(localize('connection', 'Connection'), _partService, { hasSpinner: true, hasErrors: true });
 	}
 
 	protected renderBody(container: HTMLElement): void {
@@ -107,9 +108,10 @@ export class ConnectionDialogWidget extends Modal {
 		});
 
 		this._bodyBuilder.div({ class: 'connection-type' }, (modelTableContent) => {
+			let connectTypeLabel = localize('connectType', 'Connection type');
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				DialogHelper.appendInputSelectBox(
-					DialogHelper.appendRow(tableContainer, 'Connection Type', 'connection-label', 'connection-input'), this._providerTypeSelectBox);
+					DialogHelper.appendRow(tableContainer, connectTypeLabel, 'connection-label', 'connection-input'), this._providerTypeSelectBox);
 			});
 		});
 
@@ -128,9 +130,11 @@ export class ConnectionDialogWidget extends Modal {
 	public render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
-		this._connectButton = this.addFooterButton('Connect', () => this.connect());
+		let connectLabel = localize('connect', 'Connect');
+		let cancelLabel = localize('cancel', 'Cancel');
+		this._connectButton = this.addFooterButton(connectLabel, () => this.connect());
 		this._connectButton.enabled = false;
-		this._closeButton = this.addFooterButton('Cancel', () => this.cancel());
+		this._closeButton = this.addFooterButton(cancelLabel, () => this.cancel());
 		this.registerListeners();
 		this.onProviderTypeSelected(this._providerTypeSelectBox.value);
 	}
@@ -165,9 +169,11 @@ export class ConnectionDialogWidget extends Modal {
 	}
 
 	private connect(element?: IConnectionProfile): void {
-		this._connectButton.enabled = false;
-		this.showSpinner();
-		this._onConnect.fire(element);
+		if (this._connectButton.enabled) {
+			this._connectButton.enabled = false;
+			this.showSpinner();
+			this._onConnect.fire(element);
+		}
 	}
 
 	/* Overwrite espace key behavior */
@@ -194,8 +200,9 @@ export class ConnectionDialogWidget extends Modal {
 
 	private createRecentConnections() {
 		this._recentConnectionBuilder.div({ class: 'connection-recent-content' }, (recentConnectionContainer) => {
+			let recentHistoryLabel = localize('recentHistory', 'Recent history');
 			recentConnectionContainer.div({ class: 'connection-history-label' }, (recentTitle) => {
-				recentTitle.innerHtml('Recent History');
+				recentTitle.innerHtml(recentHistoryLabel);
 			});
 
 			recentConnectionContainer.div({ class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
@@ -267,11 +274,6 @@ export class ConnectionDialogWidget extends Modal {
 		super.setError('');
 		this.hideSpinner();
 		this._onInitDialog.fire();
-	}
-
-	public showError(err: string) {
-		super.setError(err);
-		this.resetConnection();
 	}
 
 	public resetConnection() {

@@ -11,7 +11,7 @@ import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { Modal } from 'sql/parts/common/modal/modal';
-import { DialogHelper } from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import DOM = require('vs/base/browser/dom');
@@ -24,6 +24,8 @@ import { attachInputBoxStyler, attachButtonStyler, attachCheckboxStyler } from '
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { localize } from 'vs/nls';
 
 export interface IColorCheckboxInfo {
 	checkbox: Checkbox;
@@ -41,8 +43,8 @@ export class ServerGroupDialog extends Modal {
 	private _toDispose: lifecycle.IDisposable[] = [];
 	private _defaultColor: number = 1;
 	private _colors: string[] = ['#515151', '#004760', '#771b00', '#700060', '#a17d01', '#006749', '#654502', '#3A0293'];
-	private readonly _addServerGroupTitle = 'Add Server Group';
-	private readonly _editServerGroupTitle = 'Edit Server Group';
+	private readonly _addServerGroupTitle = localize('addServerGroup', 'Add server group');
+	private readonly _editServerGroupTitle = localize('editServerGroup', 'Edit server group');
 
 
 	private _onAddServerGroup = new Emitter<void>();
@@ -56,16 +58,19 @@ export class ServerGroupDialog extends Modal {
 
 	constructor(
 		@IPartService partService: IPartService,
-		@IThemeService private _themeService: IThemeService
+		@IThemeService private _themeService: IThemeService,
+		@IContextViewService private _contextViewService: IContextViewService
 	) {
-		super('Server Groups', partService, {hasErrors: true});
+		super('Server Groups', partService);
 	}
 
 	public render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
-		this._addServerButton = this.addFooterButton('OK', () => this.addGroup());
-		this._closeButton = this.addFooterButton('Cancel', () => this.cancel());
+		let okLabel = localize('ok', 'OK');
+		let cancelLabel = localize('cancel', 'Cancel');
+		this._addServerButton = this.addFooterButton(okLabel, () => this.addGroup());
+		this._closeButton = this.addFooterButton(cancelLabel, () => this.cancel());
 		this.registerListeners();
 	}
 
@@ -75,23 +80,31 @@ export class ServerGroupDialog extends Modal {
 		});
 		// Connection Group Name
 		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Connection Group Name');
+			let connectionGroupNameLabel = localize('connectionGroupName', 'Connection group name');
+			labelContainer.innerHtml(connectionGroupNameLabel);
 		});
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
-			this._groupNameInputBox = DialogHelper.appendInputBox(inputCellContainer);
+			let errorMessage = localize('MissingGroupNameError', 'Group name is required.');
+			this._groupNameInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
+				validationOptions: {
+					validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: errorMessage }) : null
+				}
+			});
 		});
 
 		// Connection Group Description
 		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Group Description');
+			let groupDescriptionLabel = localize('groupDescription', 'Group description');
+			labelContainer.innerHtml(groupDescriptionLabel);
 		});
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
-			this._groupDescriptionInputBox = DialogHelper.appendInputBox(inputCellContainer);
+			this._groupDescriptionInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService);
 		});
 
 		// Connection Group Color
 		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
-			labelContainer.innerHtml('Group Color');
+			let groupColorLabel = localize('groupColor', 'Group color');
+			labelContainer.innerHtml(groupColorLabel);
 		});
 
 		this._bodyBuilder.div({ class: 'group-color-options' }, (groupColorContainer) => {
@@ -209,7 +222,11 @@ export class ServerGroupDialog extends Modal {
 	}
 
 	private groupNameChanged(groupName: string) {
-		this._groupNameInputBox.hideMessage();
+		if (DialogHelper.isEmptyString(this._groupNameInputBox.value)) {
+			this._addServerButton.enabled = false;
+		} else {
+			this._addServerButton.enabled = true;
+		}
 	}
 
 
@@ -226,8 +243,10 @@ export class ServerGroupDialog extends Modal {
 	}
 
 	public addGroup(): void {
-		if (this.validateInputs()) {
-			this._onAddServerGroup.fire();
+		if (this._addServerButton.enabled) {
+			if (this.validateInputs()) {
+				this._onAddServerGroup.fire();
+			}
 		}
 	}
 
@@ -236,13 +255,11 @@ export class ServerGroupDialog extends Modal {
 	}
 
 	private validateInputs(): boolean {
-		if (DialogHelper.isEmptyString(this.groupName)) {
-			var errorMsg = 'Group name is required.';
-			this.setError(errorMsg);
-			this._groupNameInputBox.showMessage({ type: MessageType.ERROR, content: errorMsg });
-			return false;
+		let validate = this._groupNameInputBox.validate();
+		if (!validate) {
+			this._groupNameInputBox.focus();
 		}
-		return true;
+		return validate;
 	}
 
 	/* Overwrite esapce key behavior */
@@ -268,8 +285,8 @@ export class ServerGroupDialog extends Modal {
 	public open(editGroup: boolean, group?: ConnectionProfileGroup) {
 		// reset the dialog
 		this.hideError();
-		this._groupNameInputBox.hideMessage();
 		this._groupNameInputBox.value = '';
+		this._groupNameInputBox.hideMessage();
 		this._groupDescriptionInputBox.value = '';
 		this.onSelectGroupColor(this._defaultColor);
 
@@ -293,6 +310,7 @@ export class ServerGroupDialog extends Modal {
 
 		this.show();
 		this._groupNameInputBox.focus();
+		this._addServerButton.enabled = false;
 	}
 
 	public dispose(): void {

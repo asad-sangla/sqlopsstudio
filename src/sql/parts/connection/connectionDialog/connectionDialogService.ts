@@ -16,6 +16,7 @@ import * as Constants from 'sql/parts/connection/common/constants';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { localize } from 'vs/nls';
 
 import * as data from 'data';
 
@@ -64,6 +65,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _providerTypes: string[];
 	private _currentProviderType: string = 'Microsoft SQL Server';
 	private _connecting: boolean = false;
+	private _connectionErrorTitle = localize('connectionError', 'Connection Error');
 
 	constructor(
 		@IPartService private _partService: IPartService,
@@ -106,7 +108,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			if (!profile) {
 				let result = this.uiController.validateConnection();
 				if (!result.isValid) {
-					this._connectionDialog.showError('Missing required fields');
+					this._connecting = false;
+					this._connectionDialog.resetConnection();
 					return;
 				}
 
@@ -145,12 +148,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			if (connectionResult && connectionResult.connected) {
 				this._connectionDialog.close();
 			} else {
-				this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', connectionResult.error);
+				this._errorMessageService.showDialog(this._container, Severity.Error, this._connectionErrorTitle, connectionResult.error);
 				this._connectionDialog.resetConnection();
 			}
 		}).catch(err => {
 			this._connecting = false;
-			this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
+			this._errorMessageService.showDialog(this._container, Severity.Error, this._connectionErrorTitle, err);
 			this._connectionDialog.resetConnection();
 		});
 	}
@@ -211,7 +214,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private createModel(model: IConnectionProfile): ConnectionProfile {
-		let defaultProvider =  this.getDefaultProviderName();
+		let defaultProvider = this.getDefaultProviderName();
 		let providerName = model ? model.providerName : defaultProvider;
 		providerName = providerName ? providerName : defaultProvider;
 		let serverCapabilities = this._capabilitiesMaps[providerName];
@@ -271,7 +274,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 		return this.showDialogWithModel().then(() => {
 			if (error && error !== '') {
-				this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', error);
+				this._errorMessageService.showDialog(this._container, Severity.Error, this._connectionErrorTitle, error);
 			}
 		});
 	}
