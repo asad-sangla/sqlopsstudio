@@ -5,7 +5,7 @@
 
 'use strict';
 
-import { IConnectionManagementService, ConnectionType, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, ConnectionType, INewConnectionParams, RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import {
 	RunQueryAction, CancelQueryAction, ListDatabasesActionItem,
@@ -41,6 +41,7 @@ suite('SQL QueryAction Tests', () => {
 		editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict, undefined, new TestThemeService());
 		editor.setup(x => x.currentQueryInput).returns(() => testQueryInput.object);
 		editor.setup(x => x.getSelection()).returns(() => undefined);
+		editor.setup(x => x.getSelection(false)).returns(() => undefined);
 		editor.setup(x => x.isSelectionEmpty()).returns(() => false);
 	});
 
@@ -122,7 +123,7 @@ suite('SQL QueryAction Tests', () => {
 		// and the conneciton dialog should open with the correct parameter details
 		assert.equal(countCalledShowDialog, 1, 'run should call showDialog');
 		assert.equal(connectionParams.connectionType, ConnectionType.editor, 'connectionType should be queryEditor');
-		assert.equal(connectionParams.runQueryOnCompletion, true, 'runQueryOnCompletion should be true`');
+		assert.equal(connectionParams.runQueryOnCompletion, RunQueryOnConnectionMode.executeQuery, 'runQueryOnCompletion should be true`');
 		assert.equal(connectionParams.input.uri, testUri, 'URI should be set to the test URI');
 		assert.equal(connectionParams.input, editor.object.currentQueryInput, 'Editor should be set to the mock editor');
 
@@ -152,6 +153,7 @@ suite('SQL QueryAction Tests', () => {
 		let queryEditor: TypeMoq.Mock<QueryEditor> = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict, undefined, new TestThemeService());
 		queryEditor.setup(x => x.currentQueryInput).returns(() => queryInput.object);
 		queryEditor.setup(x => x.getSelection()).returns(() => undefined);
+		queryEditor.setup(x => x.getSelection(false)).returns(() => undefined);
 		queryEditor.setup(x => x.isSelectionEmpty()).returns(() => isSelectionEmpty);
 
 		// ... Mock "isConnected" in ConnectionManagementService
