@@ -2,8 +2,8 @@
 	"Create a new Database": {
 		"prefix": "pgCreateDatabase",
 		"body": [
-			"-- Create a new database called '${DatabaseName}'",
-			"CREATE DATABASE ${DatabaseName}",
+			"-- Create a new database called '${1:DatabaseName}'",
+			"CREATE DATABASE ${1:DatabaseName}"
 		],
 		"description": "Create a new PostgreSQL Database"
 	},

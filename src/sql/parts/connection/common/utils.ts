@@ -142,27 +142,33 @@ export class Timer {
  *		 the number of milliseconds in the time string is returned otherwise.
  */
 export function parseTimeString(value: string): number | boolean {
-	if (!value) {
-		return false;
-	}
-	let tempVal = value.split('.');
+    if (!value) {
+        return false;
+    }
+    let tempVal = value.split('.');
 
-	if (tempVal.length !== 2) {
-		return false;
-	}
+    if (tempVal.length === 1) {
+        // Ideally would handle more cleanly than this but for now handle case where ms not set
+        tempVal = [tempVal[0], '0'];
+    } else if (tempVal.length !== 2) {
+        return false;
+    }
 
-	let ms = parseInt(tempVal[1].substring(0, 3), 10);
-	tempVal = tempVal[0].split(':');
+    let msString = tempVal[1];
+    let msStringEnd = msString.length < 3 ? msString.length : 3;
+    let ms = parseInt(tempVal[1].substring(0, msStringEnd), 10);
 
-	if (tempVal.length !== 3) {
-		return false;
-	}
+    tempVal = tempVal[0].split(':');
 
-	let h = parseInt(tempVal[0], 10);
-	let m = parseInt(tempVal[1], 10);
-	let s = parseInt(tempVal[2], 10);
+    if (tempVal.length !== 3) {
+        return false;
+    }
 
-	return ms + (h * msInH) + (m * msInM) + (s * msInS);
+    let h = parseInt(tempVal[0], 10);
+    let m = parseInt(tempVal[1], 10);
+    let s = parseInt(tempVal[2], 10);
+
+    return ms + (h * msInH) + (m * msInM) + (s * msInS);
 }
 
 /**

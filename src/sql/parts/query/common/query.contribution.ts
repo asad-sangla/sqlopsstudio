@@ -201,6 +201,11 @@ configurationRegistry.registerConfiguration({
 			'description': '[Optional] Configuration options for copying multi-line results from the Results View',
 			'default': true
 		},
+		'sql.showBatchTime': {
+			'type': 'boolean',
+			'description': '[Optional] Should execution time be shown for individual batches',
+			'default': false
+		},
 		'sql.intelliSense.enableIntelliSense': {
 			'type': 'boolean',
 			'default': true,

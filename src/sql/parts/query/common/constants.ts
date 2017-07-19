@@ -76,4 +76,5 @@ export const configSaveAsCsv = 'saveAsCsv';
 export const configSaveAsJson = 'saveAsJson';
 export const configCopyRemoveNewLine = 'copyRemoveNewLine';
 export const configSplitPaneSelection = 'splitPaneSelection';
+export const configShowBatchTime = 'showBatchTime';
 
