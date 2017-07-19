@@ -236,7 +236,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * @param connectionProfile Connection Profile
 	 */
 	public addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile> {
-		return this._connectionStore.addSavedPassword(connectionProfile);
+		return this._connectionStore.addSavedPassword(connectionProfile).then(result => result.profile);
 	}
 
 	/**
@@ -260,16 +260,23 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private tryConnect(connection: IConnectionProfile, owner: IConnectableInput, options?: IConnectionCompletionOptions): Promise<IConnectionResult> {
 		return new Promise<IConnectionResult>((resolve, reject) => {
 			// Load the password if it's not already loaded
-
-			this._connectionStore.addSavedPassword(connection).then(newConnection => {
-				if (Utils.isEmpty(newConnection.password) && this._connectionStore.isPasswordRequired(newConnection)) {
+			this._connectionStore.addSavedPassword(connection).then(result => {
+				let newConnection = result.profile;
+				let foundPassword = result.savedCred;
+				// If the connection request came from an editor, it already has a password
+				if (options && options.params && options.params.connectionType === ConnectionType.editor) {
+					foundPassword = true;
+				}
+				// If there is no password, try to load it from an existing connection
+				if (!foundPassword && this._connectionStore.isPasswordRequired(newConnection)) {
 					let existingConnection = this._connectionStatusManager.findConnectionProfile(connection);
 					if (existingConnection && existingConnection.connectionProfile) {
 						newConnection.password = existingConnection.connectionProfile.password;
+						foundPassword = true;
 					}
 				}
 				// If the password is required and still not loaded show the dialog
-				if (Utils.isEmpty(newConnection.password) && this._connectionStore.isPasswordRequired(newConnection)) {
+				if (!foundPassword && this._connectionStore.isPasswordRequired(newConnection)) {
 					resolve(this.showConnectionDialogOnError(connection, owner, { connected: false, error: undefined }, options));
 				} else {
 					// Try to connect

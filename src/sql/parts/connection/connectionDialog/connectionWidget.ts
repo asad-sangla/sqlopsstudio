@@ -126,17 +126,13 @@ export class ConnectionWidget {
 		let userNameBuilder = DialogHelper.appendRow(this._tableContainer, userNameOption.displayName, 'connection-label', 'connection-input');
 		this._userNameInputBox = new DialogInputBox(userNameBuilder.getHTMLElement(), this._contextViewService, {
 			validationOptions: {
-				validation: (value: string) => self.validateUsernameAndPassword(value, userNameOption.isRequired) ? ({ type: MessageType.ERROR, content: userNameOption.displayName + errorMessage }) : null
+				validation: (value: string) => self.validateUsername(value, userNameOption.isRequired) ? ({ type: MessageType.ERROR, content: userNameOption.displayName + errorMessage }) : null
 			}
 		});
 
 		let passwordOption = this._optionsMaps[ConnectionOptionSpecialType.password];
 		let passwordBuilder = DialogHelper.appendRow(this._tableContainer, passwordOption.displayName, 'connection-label', 'connection-input');
-		this._passwordInputBox = new DialogInputBox(passwordBuilder.getHTMLElement(), this._contextViewService, {
-			validationOptions: {
-				validation: (value: string) => self.validateUsernameAndPassword(value, passwordOption.isRequired) ? ({ type: MessageType.ERROR, content: passwordOption.displayName + errorMessage }) : null
-			}
-		});
+		this._passwordInputBox = new DialogInputBox(passwordBuilder.getHTMLElement(), this._contextViewService);
 		this._passwordInputBox.inputElement.type = 'password';
 
 		let rememberPasswordLabel = localize('rememberPassword', 'Remember password');
@@ -159,7 +155,7 @@ export class ConnectionWidget {
 		this._advancedButton = this.createAdvancedButton(this._tableContainer, AdvancedLabel);
 	}
 
-	private validateUsernameAndPassword(value: string, isOptionRequired: boolean): boolean {
+	private validateUsername(value: string, isOptionRequired: boolean): boolean {
 		let currentAuthType = this._authTypeSelectBox ? this.getMatchingAuthType(this._authTypeSelectBox.value) : undefined;
 		if (!currentAuthType || currentAuthType.showUsernameAndPassword) {
 			if (DialogHelper.isEmptyString(value) && isOptionRequired) {

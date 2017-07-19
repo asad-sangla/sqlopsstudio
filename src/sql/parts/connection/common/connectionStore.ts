@@ -125,9 +125,9 @@ export class ConnectionStore {
 		return this.loadProfiles(getWorkspaceProfiles);
 	}
 
-	public addSavedPassword(credentialsItem: IConnectionProfile): Promise<IConnectionProfile> {
+	public addSavedPassword(credentialsItem: IConnectionProfile): Promise<{profile: IConnectionProfile, savedCred: boolean}> {
 		let self = this;
-		return new Promise<IConnectionProfile>((resolve, reject) => {
+		return new Promise<{profile: IConnectionProfile, savedCred: boolean}>((resolve, reject) => {
 			if (credentialsItem.savePassword && this.isPasswordRequired(credentialsItem)
 				&& Utils.isEmpty(credentialsItem.password)) {
 
@@ -137,14 +137,14 @@ export class ConnectionStore {
 						if (savedCred) {
 							credentialsItem.password = savedCred.password;
 						}
-						resolve(credentialsItem);
+						resolve({profile: credentialsItem, savedCred: !!savedCred});
 					},
 					reason => {
 						reject(reason);
 					});
 			} else {
-				// Already have a password, no need to look up
-				resolve(credentialsItem);
+				// No need to look up the password
+				resolve({profile: credentialsItem, savedCred: credentialsItem.savePassword});
 			}
 		});
 	}

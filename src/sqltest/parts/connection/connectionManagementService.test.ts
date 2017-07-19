@@ -58,8 +58,10 @@ suite('SQL ConnectionManagementService tests', () => {
 		saveProfile: true,
 		id: undefined
 	};
-	let connectionProfileWithoutPassword: IConnectionProfile =
+	let connectionProfileWithEmptySavedPassword: IConnectionProfile =
 		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
+	let connectionProfileWithEmptyUnsavedPassword: IConnectionProfile =
+		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 2, savePassword: false});
 
 	let connectionManagementService: ConnectionManagementService;
 	let configResult: { [key: string]: any } = {};
@@ -85,9 +87,13 @@ suite('SQL ConnectionManagementService tests', () => {
 		workbenchEditorService.setup(x => x.openEditor(undefined, TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(undefined));
 		editorGroupService.setup(x => x.getStacksModel()).returns(() => undefined);
 		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
-			c => c.serverName === connectionProfile.serverName))).returns(() => Promise.resolve(connectionProfile));
+			c => c.serverName === connectionProfile.serverName))).returns(() => Promise.resolve({profile: connectionProfile, savedCred: true}));
 		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
-			c => c.serverName === connectionProfileWithoutPassword.serverName))).returns(() => Promise.resolve(connectionProfileWithoutPassword));
+			c => c.serverName === connectionProfileWithEmptySavedPassword.serverName))).returns(
+				() => Promise.resolve({profile: connectionProfileWithEmptySavedPassword, savedCred: true}));
+		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
+			c => c.serverName === connectionProfileWithEmptyUnsavedPassword.serverName))).returns(
+				() => Promise.resolve({profile: connectionProfileWithEmptyUnsavedPassword, savedCred: false}));
 		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
 
 		mssqlConnectionProvider.setup(x => x.connect(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => undefined);
@@ -128,19 +134,20 @@ suite('SQL ConnectionManagementService tests', () => {
 		return connectionManagementService;
 	}
 
-	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string): void {
+	function verifyShowDialog(connectionProfile: IConnectionProfile, connectionType: ConnectionType, uri: string, error?: string, didShow: boolean = true): void {
 
 		if (connectionProfile) {
 			connectionDialogService.verify(x => x.showDialog(
 				TypeMoq.It.isAny(),
 				TypeMoq.It.is<INewConnectionParams>(p => p.connectionType === connectionType && (uri === undefined || p.input.uri === uri)),
-				TypeMoq.It.is<IConnectionProfile>(c => c.serverName === connectionProfile.serverName), error), TypeMoq.Times.once());
+				TypeMoq.It.is<IConnectionProfile>(c => c.serverName === connectionProfile.serverName), error),
+				didShow ? TypeMoq.Times.once() : TypeMoq.Times.never());
 
 		} else {
 			connectionDialogService.verify(x => x.showDialog(
 				TypeMoq.It.isAny(),
 				TypeMoq.It.is<INewConnectionParams>(p => p.connectionType === connectionType && ((uri === undefined && p.input === undefined) || p.input.uri === uri)),
-				undefined, error), TypeMoq.Times.once());
+				undefined, error), didShow ? TypeMoq.Times.once() : TypeMoq.Times.never());
 		}
 
 	}
@@ -198,8 +205,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			verifyShowDialog(undefined, ConnectionType.default, undefined);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -219,8 +225,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			verifyShowDialog(undefined, params.connectionType, params.input.uri);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -246,8 +251,7 @@ suite('SQL ConnectionManagementService tests', () => {
 				verifyShowDialog(connectionProfile, params.connectionType, params.input.uri);
 				done();
 			}).catch(err => {
-				assert.fail(err);
-				done();
+				done(err);
 			});
 		});
 	});
@@ -265,8 +269,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			verifyOptions(options);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -283,8 +286,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			verifyOptions(options);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -317,8 +319,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			assert.equal(paramsInOnConnectSuccess.connectionType, options.params.connectionType);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -330,8 +331,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			verifyOptions(options, true);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -343,8 +343,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			assert.equal(connectionManagementService.isProfileConnected(connectionProfile), true);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -366,8 +365,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			verifyShowDialog(connectionProfile, ConnectionType.default, uri, error);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -389,13 +387,12 @@ suite('SQL ConnectionManagementService tests', () => {
 			// TODO: not sure how to verify not called
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
 
-	test('connect when password is empty and required should open the dialog', done => {
+	test('connect when password is empty and unsaved should open the dialog', done => {
 		let uri = undefined;
 		let expectedConnection: boolean = false;
 		let expectedError: string = undefined;
@@ -406,20 +403,40 @@ suite('SQL ConnectionManagementService tests', () => {
 			showConnectionDialogOnError: true
 		};
 
-		connect(uri, options, false, connectionProfileWithoutPassword).then(result => {
+		connect(uri, options, false, connectionProfileWithEmptyUnsavedPassword).then(result => {
 			assert.equal(result.connected, expectedConnection);
 			assert.equal(result.error, expectedError);
-			verifyShowDialog(connectionProfileWithoutPassword, ConnectionType.default, uri, expectedError);
+			verifyShowDialog(connectionProfileWithEmptyUnsavedPassword, ConnectionType.default, uri, expectedError);
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
-	test('connect from editor when empty password when it is required should open the dialog', done => {
+	test('connect when password is empty and saved should not open the dialog', done => {
+		let uri = undefined;
+		let expectedConnection: boolean = true;
+		let expectedError: string = undefined;
+		let options: IConnectionCompletionOptions = {
+			params: undefined,
+			saveTheConnection: false,
+			showDashboard: false,
+			showConnectionDialogOnError: true
+		};
+
+		connect(uri, options, false, connectionProfileWithEmptySavedPassword).then(result => {
+			assert.equal(result.connected, expectedConnection);
+			assert.equal(result.error, expectedError);
+			verifyShowDialog(connectionProfileWithEmptySavedPassword, ConnectionType.default, uri, expectedError, false);
+			done();
+		}).catch(err => {
+			done(err);
+		});
+	});
+
+	test('connect from editor with empty password when it is required and unsaved should not open the dialog', done => {
 		let uri = 'editor 3';
-		let expectedConnection: boolean = false;
+		let expectedConnection: boolean = true;
 		let expectedError: string = undefined;
 		let options: IConnectionCompletionOptions = {
 			params: {
@@ -439,14 +456,45 @@ suite('SQL ConnectionManagementService tests', () => {
 			showConnectionDialogOnError: true
 		};
 
-		connect(uri, options, false, connectionProfileWithoutPassword).then(result => {
+		connect(uri, options, false, connectionProfileWithEmptyUnsavedPassword).then(result => {
 			assert.equal(result.connected, expectedConnection);
 			assert.equal(result.error, expectedError);
-			verifyShowDialog(connectionProfileWithoutPassword, ConnectionType.editor, uri, expectedError);
+			verifyShowDialog(connectionProfileWithEmptyUnsavedPassword, ConnectionType.editor, uri, expectedError, false);
 			done();
 		}).catch(err => {
-			assert.fail(err);
+			done(err);
+		});
+	});
+
+	test('connect from editor when empty password when it is required and saved should not open the dialog', done => {
+		let uri = 'editor 3';
+		let expectedConnection: boolean = true;
+		let expectedError: string = undefined;
+		let options: IConnectionCompletionOptions = {
+			params: {
+				connectionType: ConnectionType.editor,
+				input: {
+					onConnectSuccess: undefined,
+					onConnectReject: undefined,
+					onConnectStart: undefined,
+					onDisconnect: undefined,
+					uri: uri
+				},
+				querySelection: undefined,
+				runQueryOnCompletion: RunQueryOnConnectionMode.none
+			},
+			saveTheConnection: true,
+			showDashboard: false,
+			showConnectionDialogOnError: true
+		};
+
+		connect(uri, options, false, connectionProfileWithEmptySavedPassword).then(result => {
+			assert.equal(result.connected, expectedConnection);
+			assert.equal(result.error, expectedError);
+			verifyShowDialog(connectionProfileWithEmptySavedPassword, ConnectionType.editor, uri, expectedError, false);
 			done();
+		}).catch(err => {
+			done(err);
 		});
 	});
 
@@ -477,8 +525,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			assert.ok(called, 'expected onLanguageFlavorChanged event to be sent');
 			done();
 		} catch (error) {
-			assert.fail(error);
-			done();
+			done(error);
 		}
 	});
 
@@ -500,8 +547,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			assert.equal(called, false, 'do not expect flavor change to be called');
 			done();
 		}).catch(err => {
-			assert.fail(err);
-			done();
+			done(err);
 		});
 	});
 
@@ -524,8 +570,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			assert.ok(called, 'expected onLanguageFlavorChanged event to be sent');
 			done();
 		} catch (err) {
-			assert.fail(err);
-			done();
+			done(err);
 		}
 	});
 
