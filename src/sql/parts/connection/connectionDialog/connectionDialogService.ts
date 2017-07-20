@@ -148,12 +148,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			if (connectionResult && connectionResult.connected) {
 				this._connectionDialog.close();
 			} else {
-				this._errorMessageService.showDialog(this._container, Severity.Error, this._connectionErrorTitle, connectionResult.error);
+				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.error);
 				this._connectionDialog.resetConnection();
 			}
 		}).catch(err => {
 			this._connecting = false;
-			this._errorMessageService.showDialog(this._container, Severity.Error, this._connectionErrorTitle, err);
+			this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, err);
 			this._connectionDialog.resetConnection();
 		});
 	}
@@ -274,7 +274,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 		return this.showDialogWithModel().then(() => {
 			if (error && error !== '') {
-				this._errorMessageService.showDialog(this._container, Severity.Error, this._connectionErrorTitle, error);
+				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, error);
 			}
 		});
 	}

@@ -9,6 +9,6 @@ import Severity from 'vs/base/common/severity';
 
 export class ErrorMessageServiceStub implements IErrorMessageService {
 	_serviceBrand: any;
-	showDialog(container: HTMLElement, severity: Severity, headerTitle: string, message: string): void {
+	showDialog(severity: Severity, headerTitle: string, message: string): void {
 	}
 }

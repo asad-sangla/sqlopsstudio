@@ -161,17 +161,10 @@ export class TaskHistoryView extends CollapsibleViewletView {
 			if (isDoubleClick) {
 				if (task.status === TaskStatus.failed) {
 					var err = task.taskName + ': ' + task.message;
-					this._errorMessageService.showDialog(undefined, Severity.Error, 'Task Error', err);
+					this._errorMessageService.showDialog(Severity.Error, 'Task Error', err);
 				}
 			}
 		}
-	}
-
-	private onError(err: any): void {
-		if (errors.isPromiseCanceledError(err)) {
-			return;
-		}
-		this.messageService.show(Severity.Error, err);
 	}
 
 	public dispose(): void {

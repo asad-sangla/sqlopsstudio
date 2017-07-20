@@ -7,14 +7,11 @@ import InsightsDialog from './insightsDialog';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 
-import { SimpleExecuteResult } from 'data';
-
 export const IInsightsDialogService = createDecorator<IInsightsDialogService>('insightsDialogService');
 
 export interface IInsightsDialogService {
 	_serviceBrand: any;
-	show(input: InsightsConfig, connectionProfile: IConnectionProfile);
-	show(input: SimpleExecuteResult);
+	show(input: InsightsConfig, connectionProfile: IConnectionProfile): void;
 	close();
 }
 
@@ -25,11 +22,7 @@ export class InsightsDialogService implements IInsightsDialogService {
 	constructor( @IInstantiationService private _instantiationService: IInstantiationService) { }
 
 	// query string
-	public show(input: InsightsConfig, connectionProfile: IConnectionProfile): void;
-	// query results
-	public show(input: SimpleExecuteResult): void;
-	// insight object
-	public show(input?: any, connectionProfile?: IConnectionProfile): void {
+	public show(input: InsightsConfig, connectionProfile: IConnectionProfile): void {
 		if (!this._insightsDialog) {
 			this._insightsDialog = this._instantiationService.createInstance(InsightsDialog);
 			this._insightsDialog.render();

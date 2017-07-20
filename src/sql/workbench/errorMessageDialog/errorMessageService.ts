@@ -23,7 +23,7 @@ export class ErrorMessageService implements IErrorMessageService {
 		@IInstantiationService private _instantiationService: IInstantiationService
 	) { }
 
-	public showDialog(container: HTMLElement, severity: Severity, headerTitle: string, message: string): void {
+	public showDialog(severity: Severity, headerTitle: string, message: string): void {
 		this.doShowDialog(severity, headerTitle, message);
 	}
 

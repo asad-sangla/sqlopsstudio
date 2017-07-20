@@ -156,8 +156,7 @@ export function showCreateDatabase(
 
 	return new Promise<void>((resolve) => {
 		// show not implemented
-		let container = withElementById(partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-		errorMessageService.showDialog(container, Severity.Info,
+		errorMessageService.showDialog(Severity.Info,
 			'Coming Soon',
 			'This feature is not yet implemented.  It will be available in an upcoming release.');
 
@@ -183,6 +182,6 @@ export function showRestore(connection: IConnectionProfile, restoreDialogService
 	});
 }
 
-export async function openInsight(query: InsightsConfig, profile: IConnectionProfile, insightDialogService: IInsightsDialogService) {
-	return insightDialogService.show(query, profile);
+export function openInsight(query: InsightsConfig, profile: IConnectionProfile, insightDialogService: IInsightsDialogService) {
+	insightDialogService.show(query, profile);
 }

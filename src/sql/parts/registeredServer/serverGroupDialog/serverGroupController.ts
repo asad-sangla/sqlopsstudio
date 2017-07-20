@@ -18,7 +18,6 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 export class ServerGroupController implements IServerGroupController {
 	_serviceBrand: any;
 
-	private _container: HTMLElement;
 	private _serverGroupDialog: ServerGroupDialog;
 	private _connectionManagementService: IConnectionManagementService;
 	private _callbacks: IServerGroupDialogCallbacks;
@@ -40,7 +39,7 @@ export class ServerGroupController implements IServerGroupController {
 			this._connectionManagementService.editGroup(this._group).then(() => {
 				this._serverGroupDialog.close();
 			}).catch(err => {
-				this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
+				this._errorMessageService.showDialog(Severity.Error, 'Connection Error', err);
 			});
 
 		} else {
@@ -57,7 +56,7 @@ export class ServerGroupController implements IServerGroupController {
 				}
 				this._serverGroupDialog.close();
 			}).catch(err => {
-				this._errorMessageService.showDialog(this._container, Severity.Error, 'Connection Error', err);
+				this._errorMessageService.showDialog(Severity.Error, 'Connection Error', err);
 			});
 		}
 	}

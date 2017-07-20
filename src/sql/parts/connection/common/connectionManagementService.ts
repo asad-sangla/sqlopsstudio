@@ -937,10 +937,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	public disconnect(connection: IConnectionProfile): Promise<boolean>;
-	public disconnect(ownerUri: string): Promise<boolean>;
-	public disconnect(input: any): Promise<boolean> {
-		return new Promise<boolean>((resolve, reject) => {
+	public disconnect(connection: IConnectionProfile): Promise<void>;
+	public disconnect(ownerUri: string): Promise<void>;
+	public disconnect(input: any): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
 			let uri: string;
 			let profile: IConnectionProfile;
 			if (typeof input === 'object') {
@@ -954,7 +954,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (result) {
 					this.addTelemetryForConnectionDisconnected(input);
 					this._connectionStore.removeActiveConnection(input);
-					resolve(true);
+					resolve();
 				} else {
 					reject(result);
 				}

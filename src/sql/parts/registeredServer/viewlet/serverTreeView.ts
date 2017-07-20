@@ -135,7 +135,7 @@ export class ServerTreeView extends CollapsibleViewletView {
 
 	private showError(errorMessage: string) {
 		if (this._errorMessageService) {
-			this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
+			this._errorMessageService.showDialog(Severity.Error, '', errorMessage);
 		}
 	}
 
@@ -348,13 +348,6 @@ export class ServerTreeView extends CollapsibleViewletView {
 
 	private onSelected(event: any): void {
 		this.treeSelectionHandler.onTreeSelect(event, this.tree, this._connectionManagementService, this._objectExplorerService);
-	}
-
-	private onError(err: any): void {
-		if (errors.isPromiseCanceledError(err)) {
-			return;
-		}
-		this.messageService.show(Severity.Error, err);
 	}
 
 	public dispose(): void {

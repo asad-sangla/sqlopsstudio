@@ -17,7 +17,7 @@ import { ITaskRegistry, Extensions as TaskExtensions } from 'sql/platform/tasks/
 import { ITaskActionContext } from 'sql/workbench/electron-browser/actions';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 
-import { DbCellValue, IDbColumn, IResultMessage } from 'data';
+import { DbCellValue, IDbColumn, IResultMessage, QueryExecuteSubsetResult } from 'data';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
@@ -26,7 +26,7 @@ import { SplitView, CollapsibleState, CollapsibleView } from 'vs/base/browser/ui
 import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IDelegate, IRenderer, IListEvent, IListContextMenuEvent } from 'vs/base/browser/ui/list/list';
 import { IDisposable } from 'vs/base/common/lifecycle';
-import { attachListStyler } from 'vs/platform/theme/common/styler';
+import { attachListStyler, attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IListService } from 'vs/platform/list/browser/listService';
 import Severity from 'vs/base/common/severity';
@@ -254,39 +254,48 @@ export default class InsightsDialog extends Modal {
 
 	public render() {
 		super.render();
-		this.addFooterButton('Close', () => this.close());
+		let button = this.addFooterButton('Close', () => this.close());
+		this._disposables.push(attachButtonStyler(button, this._themeService));
 		this._disposables.push(attachModalDialogStyler(this, this._themeService));
 	}
 
-	// query string
-	public open(input: InsightsConfig, connectionProfile: IConnectionProfile): void;
-	// query results
-	// public show(input: SimpleExecuteResult);
 	// insight object
-	public open(input?: any, connectionProfile?: IConnectionProfile): void {
+	public open(input: InsightsConfig, connectionProfile: IConnectionProfile): void {
 		// execute string
 		if (typeof input === 'object') {
+			if (connectionProfile === undefined) {
+				this._messageService.show(Severity.Error, nls.localize('insightsInputError', 'No Connection Profile was passed to insights flyout'));
+				return;
+			}
 			this._insight = input;
+			let self = this;
 			if (types.isStringArray(this._insight.details.query)) {
-				this.createQuery(this._insight.details.query.join(' '), connectionProfile);
+				this.createQuery(this._insight.details.query.join(' '), connectionProfile).catch(e => {
+					self._errorMessageService.showDialog(Severity.Error, nls.localize('insightsError', 'Insights Error'), e);
+				});
 			} else if (types.isString(this._insight.details.query)) {
-				this.createQuery(this._insight.details.query, connectionProfile);
+				this.createQuery(this._insight.details.query, connectionProfile).catch(e => {
+					self._errorMessageService.showDialog(Severity.Error, nls.localize('insightsError', 'Insights Error'), e);
+				});
 			} else if (types.isString(this._insight.details.queryFile)) {
 				let self = this;
 				pfs.readFile(this._insight.details.queryFile).then(
 					buffer => {
-						self.createQuery(buffer.toString(), connectionProfile);
+						self.createQuery(buffer.toString(), connectionProfile).catch(e => {
+							self._errorMessageService.showDialog(Severity.Error, nls.localize('insightsError', 'Insights Error'), e);
+						});;
 						self._topList.splice(0, this._topList.length);
 						self._bottomList.splice(0, this._bottomList.length);
 						self.show();
 					},
 					error => {
-						self._messageService.show(Severity.Error, nls.localize('insightsOpenError', 'There was an error opening the insight: ') + error);
+						self._messageService.show(Severity.Error, nls.localize('insightsFileError', 'There was an error reading the query file: ') + error);
 					}
 				);
 				return;
 			} else {
 				console.error('Error reading details Query: ', this._insight);
+				this._messageService.show(Severity.Error, nls.localize('insightsConfigError', 'There was an error parsing the insight config; could not find query array/string or queryfile'));
 				return;
 			}
 			this._topList.splice(0, this._topList.length);
@@ -302,24 +311,35 @@ export default class InsightsDialog extends Modal {
 			if (!this._queryRunner.hasCompleted) {
 				await this._queryRunner.cancelQuery();
 			}
-			await this.createNewConnection(connectionProfile);
+			try {
+				await this.createNewConnection(connectionProfile);
+			} catch (e) {
+				return Promise.reject(e);
+			}
 			this._queryRunner.uri = this._connectionUri;
 		} else {
-			await this.createNewConnection(connectionProfile);
+			try {
+				await this.createNewConnection(connectionProfile);
+			} catch (e) {
+				return Promise.reject(e);
+			}
 			this._queryRunner = self._instantiationService.createInstance(QueryRunner, this._connectionUri, undefined);
 			this.addQueryEventListeners(this._queryRunner);
 		}
 
-		this._queryRunner.runQuery(queryString);
+		return this._queryRunner.runQuery(queryString);
 	}
 
 	private addQueryEventListeners(queryRunner: QueryRunner): void {
-		queryRunner.eventEmitter.on('complete', (resultSet) => {
-			this.queryComplete();
+		let self = this;
+		queryRunner.eventEmitter.on('complete', () => {
+			self.queryComplete().then(undefined, error => {
+				self._errorMessageService.showDialog(Severity.Error, nls.localize('insightsError', 'Insights Error'), error);
+			});
 		});
 		queryRunner.eventEmitter.on('message', (message: IResultMessage) => {
 			if (message.isError) {
-				this._errorMessageService.showDialog(this._container, Severity.Error, nls.localize('insightsError', 'Insights Error'), message.message);
+				this._errorMessageService.showDialog(Severity.Error, nls.localize('insightsError', 'Insights Error'), message.message);
 			}
 		});
 	}
@@ -333,7 +353,12 @@ export default class InsightsDialog extends Modal {
 			if (batch.resultSetSummaries.length > 0) {
 				let resultset = batch.resultSetSummaries[0];
 				this._columns = resultset.columnInfo;
-				let rows = await this._queryRunner.getQueryRows(0, resultset.rowCount - 1, batch.id, resultset.id);
+				let rows: QueryExecuteSubsetResult;
+				try {
+					rows = await this._queryRunner.getQueryRows(0, resultset.rowCount - 1, batch.id, resultset.id);
+				} catch (e) {
+					return Promise.reject(e);
+				}
 				this._rows = rows.resultSubset.rows;
 				this.build();
 			}
@@ -356,7 +381,7 @@ export default class InsightsDialog extends Modal {
 			let label = item[labelIndex].displayValue;
 			let value = item[valueIndex].displayValue;
 			let state = this.calcInsightState(value);
-			let data: string[] = item.map((val) => {
+			let data = item.map((val) => {
 				return val.displayValue;
 			});
 			let icon = typeof this._insight.details.label === 'object' ? this._insight.details.label.icon : undefined;
@@ -468,11 +493,15 @@ export default class InsightsDialog extends Modal {
 		// determine if we need to create a new connection
 		if (!this._connectionProfile || connectionProfile.getOptionsKey() !== this._connectionProfile.getOptionsKey()) {
 			if (this._connectionProfile) {
-				await this.connectionManagementService.disconnect(this._connectionUri);
+				try {
+					await this.connectionManagementService.disconnect(this._connectionUri);
+				} catch (e) {
+					return Promise.reject(e);
+				}
 			}
 			this._connectionProfile = connectionProfile;
 			this._connectionUri = Utils.generateUri(this._connectionProfile, 'insights');
-			await this.connectionManagementService.connect(this._connectionProfile, this._connectionUri);
+			return this.connectionManagementService.connect(this._connectionProfile, this._connectionUri).then(result => undefined);
 		}
 	}
 

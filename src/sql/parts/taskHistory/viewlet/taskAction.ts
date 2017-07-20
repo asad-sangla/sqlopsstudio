@@ -40,7 +40,7 @@ export class CancelAction extends Action {
 
 	private showError(errorMessage: string) {
 		if (this._errorMessageService) {
-			this._errorMessageService.showDialog(undefined, Severity.Error, '', errorMessage);
+			this._errorMessageService.showDialog(Severity.Error, '', errorMessage);
 		}
 	}
 }

@@ -30,27 +30,10 @@ import WinJS = require('vs/base/common/winjs.base');
 import { Emitter } from 'vs/base/common/event';
 import Severity from 'vs/base/common/severity';
 import { ObjectExplorerActionsContext } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionResult, IConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 
 suite('SQL Connection Tree Action tests', () => {
 	let errorMessageService: TypeMoq.Mock<ErrorMessageServiceStub>;
-	let conenctionProfile: IConnectionProfile = {
-		authenticationType: '',
-		databaseName: '',
-		getOptionsKey: () => '',
-		groupFullName: '',
-		groupId: '',
-		id: '',
-		options: undefined,
-		password: '',
-		providerName: '',
-		savePassword: true,
-		saveProfile: true,
-		serverName: '',
-		userName: ''
-	};
-	let objectExplorerService: TypeMoq.Mock<TestConnectionManagementService>;
 	let connectionResult: IConnectionResult = {
 		connected: true,
 		error: ''
@@ -58,7 +41,7 @@ suite('SQL Connection Tree Action tests', () => {
 	setup(() => {
 		errorMessageService = TypeMoq.Mock.ofType(ErrorMessageServiceStub, TypeMoq.MockBehavior.Loose);
 		let nothing: void;
-		errorMessageService.setup(x => x.showDialog(undefined, Severity.Error, TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString())).returns(() => nothing);
+		errorMessageService.setup(x => x.showDialog(Severity.Error, TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString())).returns(() => nothing);
 	});
 
 	function createConnectionManagementService(isConnectedReturnValue: boolean): TypeMoq.Mock<TestConnectionManagementService> {
@@ -87,7 +70,7 @@ suite('SQL Connection Tree Action tests', () => {
 		objectExplorerService.setup(x => x.onUpdateObjectExplorerNodes).returns(() => new Emitter<ObjectExplorerNodeEventArgs>().event);
 
 		objectExplorerService.setup(x => x.onUpdateObjectExplorerNodes).returns(() => new Emitter<ObjectExplorerNodeEventArgs>().event);
-		return objectExplorerService
+		return objectExplorerService;
 	}
 
 	test('ManageConnectionAction - test if connect is called when disconnected', (done) => {

@@ -150,9 +150,9 @@ export interface IConnectionManagementService {
 
 	disconnectEditor(owner: IConnectableInput, force?: boolean): Promise<boolean>;
 
-	disconnect(connection: ConnectionProfile): Promise<boolean>;
+	disconnect(connection: ConnectionProfile): Promise<void>;
 
-	disconnect(ownerUri: string): Promise<boolean>;
+	disconnect(ownerUri: string): Promise<void>;
 
 	addSavedPassword(connectionProfile: IConnectionProfile): Promise<IConnectionProfile>;
 
@@ -244,7 +244,7 @@ export interface IServerGroupController {
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');
 export interface IErrorMessageService {
 	_serviceBrand: any;
-	showDialog(container: HTMLElement, severity: Severity, headerTitle: string, message: string): void;
+	showDialog(severity: Severity, headerTitle: string, message: string): void;
 }
 
 export enum ServiceOptionType {
