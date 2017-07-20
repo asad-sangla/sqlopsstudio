@@ -70,12 +70,6 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 
 	private tableData: ObjectMetadataWrapper[] | string[];
 	private selectedRow: ObjectMetadataWrapper;
-	private _colors: Colors = {
-		selectionColor: '',
-		hoverColor: '',
-		backgroundColor: '',
-		border: 'none'
-	};
 	private isCloud: boolean;
 	//tslint:disable-next-line
 	private dataType = MetadataType;
@@ -107,7 +101,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 
 	ngOnInit() {
 		let inputOptions: IInputOptions = {
-			placeholder: this._config.context === 'database' ? nls.localize('seachObjects', 'Search database objects') : nls.localize('searchDatabases', 'Search databases')
+			placeholder: this._config.context === 'database' ? nls.localize('seachObjects', 'Search by name of type (a:, t:, v:, f:, or sp:)') : nls.localize('searchDatabases', 'Search databases')
 		};
 		this.input = new InputBox(this.inputContainer.nativeElement, this._bootstrap.contextViewService, inputOptions);
 		this._disposables.push(this.input.onDidChange(e => {

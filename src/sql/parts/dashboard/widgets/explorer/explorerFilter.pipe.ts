@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 import { Pipe, PipeTransform } from '@angular/core';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
@@ -40,7 +40,7 @@ export class ExplorerFilter implements PipeTransform {
 		// determine is a filter is applied
 		let metadataType: MetadataType;
 
-		if (filter.indexOf(':') > 0) {
+		if (filter.includes(':')) {
 			let filterArray = filterString.split(':');
 
 			if (filterArray.length > 2) {
@@ -50,20 +50,19 @@ export class ExplorerFilter implements PipeTransform {
 			}
 
 			switch (filterArray[0].toLowerCase()) {
-				case 'view':
+				case 'v':
 					metadataType = MetadataType.View;
 					break;
-				case 'table':
+				case 't':
 					metadataType = MetadataType.Table;
 					break;
-				case 'proc':
+				case 'sp':
 					metadataType = MetadataType.SProc;
 					break;
-				case 'func':
-				case 'function':
+				case 'f':
 					metadataType = MetadataType.Function;
 					break;
-				case 'all':
+				case 'a':
 					return items;
 				default:
 					break;
