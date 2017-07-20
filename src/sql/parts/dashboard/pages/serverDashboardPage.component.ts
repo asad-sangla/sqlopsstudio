@@ -31,7 +31,9 @@ export class ServerDashboardPage extends DashboardPage implements OnInit {
 		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface
 	) {
 		super(dashboardService);
-		this.widgets = dashboardService.serverPageSettings;
+		this.widgets = dashboardService.serverPageSettings.filter((item) => {
+			return item.provider === undefined || item.provider === dashboardService.connectionManagementService.connectionInfo.providerId;
+		});
 		this.addProvider([this.propertiesConfig]);
 		this.addContext('server');
 		this.validateConfig();

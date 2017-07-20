@@ -56,7 +56,9 @@ export class DashboardPage {
 		let provider = this.dashboardService.connectionManagementService.connectionInfo.providerId;
 		let totalWidgets = addWidgets ? this.widgets.concat(addWidgets) : this.widgets;
 		totalWidgets.forEach((item) => {
-			item.provider = provider;
+			if (item.provider === undefined) {
+				item.provider = provider;
+			}
 		});
 	}
 

@@ -30,7 +30,9 @@ export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface
 	) {
 		super(dashboardService);
-		this.widgets = dashboardService.databasePageSettings;
+		this.widgets = dashboardService.databasePageSettings.filter((item) => {
+			return item.provider === undefined || item.provider === dashboardService.connectionManagementService.connectionInfo.providerId;
+		});
 		this.addProvider([this.propertiesConfig]);
 		this.addContext('database');
 		this.validateConfig();
