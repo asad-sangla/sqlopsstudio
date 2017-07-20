@@ -214,7 +214,7 @@ function main() {
 				'@angular/platform-browser',
 				'@angular/platform-browser-dynamic',
 				'@angular/router',
-				'angular4-grid',
+				'angular2-grid',
 				'primeng/primeng',
 				'ng2-charts/ng2-charts',
 				'rxjs/Observable',

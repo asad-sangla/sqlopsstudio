@@ -8,7 +8,7 @@ import { CommonModule, APP_BASE_HREF } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule, Routes, UrlSerializer } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgGridModule } from 'angular4-grid';
+import { NgGridModule } from 'angular2-grid';
 import { BreadcrumbModule } from 'primeng/primeng';
 import { ChartsModule } from 'ng2-charts/ng2-charts';
 

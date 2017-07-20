@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Component, Inject, forwardRef } from '@angular/core';
-import { NgGridConfig } from 'angular4-grid';
+import { NgGridConfig } from 'angular2-grid';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';

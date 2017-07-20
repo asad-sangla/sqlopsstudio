@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { InjectionToken } from '@angular/core';
-import { NgGridItemConfig } from 'angular4-grid';
+import { NgGridItemConfig } from 'angular2-grid';
 import { Action } from 'vs/base/common/actions';
 
 export interface IDashboardWidget {

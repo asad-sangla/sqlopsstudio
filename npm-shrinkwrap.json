@@ -67,10 +67,10 @@
       "from": "git://github.com/Microsoft/angular2-slickgrid.git#1.3.2",
       "resolved": "git://github.com/Microsoft/angular2-slickgrid.git#9c56e4dac2602107c66831ce3c00a5b863620d40"
     },
-    "angular4-grid": {
-      "version": "4.0.2",
-      "from": "angular4-grid@4.0.2",
-      "resolved": "https://registry.npmjs.org/angular4-grid/-/angular4-grid-4.0.2.tgz"
+    "angular2-grid": {
+      "version": "2.0.6",
+      "from": "angular2-grid@2.0.6",
+      "resolved": "https://registry.npmjs.org/angular2-grid/-/angular2-grid-2.0.6.tgz"
     },
     "anymatch": {
       "version": "1.3.0",
@@ -147,7 +147,7 @@
       "version": "1.0.30000676",
       "from": "caniuse-db@>=1.0.30000161 <2.0.0",
       "resolved": "https://registry.npmjs.org/caniuse-db/-/caniuse-db-1.0.30000676.tgz"
-    }, 
+    },
     "chart.js": {
       "version": "2.6.0",
       "from": "chart.js@>=2.6.0 <3.0.0",
@@ -287,7 +287,7 @@
       "version": "3.0.1",
       "from": "fs-extra@>=3.0.1 <4.0.0",
       "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-3.0.1.tgz"
-    },    
+    },
     "fsevents": {
       "version": "0.3.8",
       "from": "bpasero/fsevents#vscode",
@@ -554,7 +554,7 @@
           "resolved": "https://registry.npmjs.org/nan/-/nan-2.2.1.tgz"
         }
       }
-    },    
+    },
     "node-pty": {
       "version": "0.6.6",
       "from": "node-pty@0.6.6",
