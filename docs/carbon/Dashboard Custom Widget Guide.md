@@ -1,15 +1,17 @@
 # Custommizing the Management Dashboard
 In this build of Carbon we released a customizable dashboard. The dashboard includes properties, tasks, explorer, and insights. Our first set of tasks include creating a backup and opening a new query. And the first insight is database health. Wish you could have more insights? Want to customize your dashboard? Well you’re in luck because the dashboard is fully customizable, meaning you can change the dashboard layout and create your own insights! We’re excited to share this with everyone as it’s super simple and we can’t wait to see the customizations and insights you add to Carbon. All it takes is a T-SQL query and a simple edit to the settings.json file. Below are some steps on how to customize the dashboard. If there is something you don't see that you would like to, submit an issue on the repo or email taraj@microsoft.com
 
-- [Get Started](#get-started-with-dashboard-componenents)
+
+- [Get Started](#get-started-with-dashboard-components)
 - [Server Dashboard Insights](#server-dashboard-insights)
 - [Database Dashboard Insights](#database-dashboard-insights)
-- [Task Widget](#task-widget)
+- [Task Widget](#tasks-widget)
 - [Explorer Widget](#explorer-widget)
 
 ## Get Started with Dashboard Components
 The Carbon Management Dasboard has a few different parts to it. To get to the dasboard double click on a server's name and you will see the dashboard. Alternatively, you can right click and select "Manage" to view the dashboard. The default dashboard looks like this:
-[](../images/dashboard_manage.jpg)
+
+![](../images/dashboard_manage.jpg)
 
 In this guide, we will walk you through how to customize various parts of the dashboard, starting with adding insights and followed by general visual customizations.
 
