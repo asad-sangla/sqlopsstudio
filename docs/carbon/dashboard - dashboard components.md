@@ -8,5 +8,6 @@ The Carbon Management Dasboard has a few different parts to it. To get to the da
 If you would like to customize various parts of the dashboard, visit the resources below:
 
 [Getting Started](Dashboard Custom Widget Guide.md)
-
 [Server Widget](dashboard - custom server widget.md)
+[Task Widget](dashboard - custom task widget.md)
+[Explorer Widget](dashboard - custom explorer widget.md)
