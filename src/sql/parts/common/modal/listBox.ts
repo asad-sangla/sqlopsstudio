@@ -4,15 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { Color } from 'vs/base/common/color';
 import { ISelectBoxStyles } from 'vs/base/browser/ui/selectBox/selectBox';
+import * as dom from 'vs/base/browser/dom';
+import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 
-export class DialogSelectBox extends SelectBox {
-	private _optionsDictionary;
-	private _dialogOptions: string[];
-	private _selectedOption: string;
+/*
+*  Extends SelectBox to allow multiple selection and adding/remove items dynamically
+*/
+export class ListBox extends SelectBox {
 	private _toDispose2: lifecycle.IDisposable[];
 	private enabledSelectBackground: Color;
 	private enabledSelectForeground: Color;
@@ -20,19 +23,20 @@ export class DialogSelectBox extends SelectBox {
 	private disabledSelectBackground: Color;
 	private disabledSelectForeground: Color;
 	private disabledSelectBorder: Color;
+	private keyC = 33;
 
 	constructor(options: string[], selectedOption: string) {
 		super(options, 0);
-		this._optionsDictionary = new Array();
-		for (var i = 0; i < options.length; i++) {
-			this._optionsDictionary[options[i]] = i;
-		}
-		super.select(this._optionsDictionary[selectedOption]);
-		this._selectedOption = selectedOption;
-		this._dialogOptions = options;
+		this.selectElement.multiple = true;
+		this.selectElement.style['height'] = '80px';
+
+		// Set width style for horizontal scrollbar
+		this.selectElement.style['width'] = 'inherit';
+		this.selectElement.style['min-width'] = '100%';
+
 		this._toDispose2 = [];
-		this._toDispose2.push(this.onDidSelect(newInput => {
-			this._selectedOption = newInput;
+		this._toDispose2.push(dom.addStandardDisposableListener(this.selectElement, 'keydown', (e) => {
+			this.onKeyDown(e)
 		}));
 
 		this.enabledSelectBackground = this.selectBackground;
@@ -50,30 +54,50 @@ export class DialogSelectBox extends SelectBox {
 		this.enabledSelectBorder = this.selectBorder;
 	}
 
-	public selectWithOptionName(optionName: string): void {
-		if (this._optionsDictionary[optionName] !== null || this._optionsDictionary[optionName] !== undefined) {
-			this.select(this._optionsDictionary[optionName]);
+	public get selectedOptions(): string[] {
+		var selected = [];
+		for (var i = 0; i < this.selectElement.selectedOptions.length; i++ ) {
+			selected.push(this.selectElement.selectedOptions[i].innerHTML);
+		}
+		return selected;
+	}
+
+	// Remove selected options
+	public remove(): void {
+		var indexes = [];
+		for (var i = 0; i < this.selectElement.selectedOptions.length; i++ ) {
+			indexes.push(this.selectElement.selectedOptions[i].index);
+		}
+		indexes.sort((a, b) => b-a);
+
+		for (var i = 0; i < indexes.length; i++) {
+			this.selectElement.remove(i);
+			this.options.splice(i, 1);
 		}
 	}
 
-	public select(index: number): void {
-		super.select(index);
-		if (this._dialogOptions !== undefined) {
-			this._selectedOption = this._dialogOptions[index];
-		}
+	public add(option: string): void {
+		this.selectElement.add(this.createOption(option));
 	}
 
-	public setOptions(options: string[], selected?: number, disabled?: number): void {
-		this._optionsDictionary = [];
-		for (var i = 0; i < options.length; i++) {
-			this._optionsDictionary[options[i]] = i;
-		}
-		this._dialogOptions = options;
-		super.setOptions(options, selected, disabled);
-	}
+	// Allow copy to clipboard
+	public onKeyDown(event: IKeyboardEvent): void {
+		if (this.selectedOptions.length > 0)
+        {
+            var key = event.keyCode;
+            var ctrlOrCmd = event.ctrlKey || event.metaKey;
 
-	public get value(): string {
-		return this._selectedOption;
+            if (ctrlOrCmd && key === this.keyC) {
+                var textToCopy =  this.selectedOptions[0];
+                for (var i = 1; i < this.selectedOptions.length; i++) {
+                    textToCopy = textToCopy + ', ' + this.selectedOptions[i];
+                }
+
+                // Copy to clipboard
+                WorkbenchUtils.executeCopy(textToCopy);
+		        event.stopPropagation();
+            }
+        }
 	}
 
 	public dispose(): void {

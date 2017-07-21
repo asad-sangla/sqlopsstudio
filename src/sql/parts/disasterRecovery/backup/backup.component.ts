@@ -12,9 +12,20 @@ import { PathUtilities } from 'sql/common/pathUtilities';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
+import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { ListBox } from 'sql/parts/common/modal/listBox';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
+
+import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
+import { Button } from 'vs/base/browser/ui/button/button';
+import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
+import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
+import * as lifecycle from 'vs/base/common/lifecycle';
+import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 
 export const BACKUP_SELECTOR: string = 'backup-component';
 
@@ -46,73 +57,80 @@ export class BackupComponent{
     @ViewChild('algorithmContainer', {read: ElementRef}) encryptionAlgorithmElement;
     @ViewChild('encryptorContainer', {read: ElementRef}) encryptorElement;
     @ViewChild('mediaName', {read: ElementRef}) mediaNameElement;
+    @ViewChild('mediaDescription', {read: ElementRef}) mediaDescriptionElement;
     @ViewChild('advancedBody', {read: ElementRef}) advancedBodyElement;
     @ViewChild('advancedHeader', {read: ElementRef}) advancedHeaderElement;
-
+    @ViewChild('recoveryModelContainer', {read: ElementRef}) recoveryModelElement;
+    @ViewChild('backupDaysContainer', {read: ElementRef}) backupDaysElement;
+    @ViewChild('backupButtonContainer', {read: ElementRef}) backupButtonElement;
+    @ViewChild('cancelButtonContainer', {read: ElementRef}) cancelButtonElement;
+    @ViewChild('addPathContainer', {read: ElementRef}) addPathElement;
+    @ViewChild('removePathContainer', {read: ElementRef}) removePathElement;
+    @ViewChild('pathInputContainer', {read: ElementRef}) pathInputElement;
+    @ViewChild('copyOnlyContainer', {read: ElementRef}) copyOnlyElement;
+    @ViewChild('encryptContainer', {read: ElementRef}) encryptElement;
+    @ViewChild('verifyContainer', {read: ElementRef}) verifyElement;
+    @ViewChild('checksumContainer', {read: ElementRef}) checksumElement;
+    @ViewChild('continueOnErrorContainer', {read: ElementRef}) continueOnErrorElement;
 
     private _disasterRecoveryService: IDisasterRecoveryService;
     private _disasterRecoveryUiService: IDisasterRecoveryUiService;
     private _uri: string;
+    private _toDispose: lifecycle.IDisposable[] = [];
 
-    public connection: IConnectionProfile;
-	public databaseName: string;
-    public defaultNewBackupFolder: string;
-    public lastBackupLocations;
-    public recoveryModel: string;
-    public backupEncryptors;
-
-    public errorMessage: string = '';
-    public labelOk = 'Backup';
-    public labelCancel = 'Cancel';
-
-    // TODO: remove the style after theming is fixed
-    public errorBorderStyle: string = '1px solid #BE1100';
+    private connection: IConnectionProfile;
+	private databaseName: string;
+    private defaultNewBackupFolder: string;
+    private lastBackupLocations;
+    private recoveryModel: string;
+    private backupEncryptors;
+    private errorMessage: string = '';
 
     // UI element disable flag
-    public disableFileComponent: boolean;
-    public disableAdd: boolean;
-    public disableRemove: boolean;
-    public disableCopyOnly: boolean;
-    public disableTlog: boolean;
+    private disableFileComponent: boolean;
+    private disableAdd: boolean;
+    private disableRemove: boolean;
+    private disableTlog: boolean;
 
-	// User input values
-	public selectedBackupComponent: string;
-    public selectedFilesText: string;
-    public backupPathInput: string;
-    public backupName: string;
-    public isCopyOnly: boolean;
-    public isVerifyChecked: boolean;
-    public isPerformChecksumChecked: boolean;
-    public isContinueOnErrorChecked: boolean;
-    public expirationDays: number;
-    public isTruncateChecked: boolean;
-    public isTaillogChecked: boolean;
-    public isEncryptChecked: boolean;
-    public isFormatChecked: boolean;
-    public selectedCompression: string;
-    public selectedAlgorithm: string;
-    public selectedEncryptor: string;
-    public selectedInitOption: string;
-    public selectedMediaName: string;
-    public selectedMediaDescription: string;
-
-    // Dropdown list
-	public listOfBackupTypes: SelectItem[];
+	private selectedBackupComponent: string;
+    private selectedFilesText: string;
+    private selectedInitOption: string;
+    private isTruncateChecked: boolean;
+    private isTaillogChecked: boolean;
+    private isFormatChecked: boolean;
     // Key: backup path, Value: device type
-    public dictOfBackupPathDevice: {[path: string]: number};
-    public urlBackupPaths: string[];
+    private backupPathTypePairs: {[path: string]: number};
 
-    public compressionOptions = [BackupConstants.defaultCompression, BackupConstants.compressionOn, BackupConstants.compressionOff];
-    public encryptionAlgorithms = [BackupConstants.aes128, BackupConstants.aes192, BackupConstants.aes256, BackupConstants.tripleDES];
-    public existingMediaOptions = ["append", "overwrite"];
+    private compressionOptions = [BackupConstants.defaultCompression, BackupConstants.compressionOn, BackupConstants.compressionOff];
+    private encryptionAlgorithms = [BackupConstants.aes128, BackupConstants.aes192, BackupConstants.aes256, BackupConstants.tripleDES];
+    private existingMediaOptions = ["append", "overwrite"];
+    private backupTypeOptions: string[];
 
-    public keyEnter = 13;
-    public keyC = 67;
+    private backupTypeSelectBox: DialogSelectBox;
+    private backupNameBox: DialogInputBox;
+    private recoveryBox: DialogInputBox;
+    private backupRetainDaysBox: DialogInputBox;
+    private pathInputBox: DialogInputBox;
+    private backupButton: Button;
+    private cancelButton: Button;
+    private addPathButton: Button;
+    private removePathButton: Button;
+    private pathListBox: ListBox;
+    private compressionSelectBox: DialogSelectBox;
+    private algorithmSelectBox: DialogSelectBox;
+    private encryptorSelectBox: DialogSelectBox;
+    private mediaNameBox: DialogInputBox;
+    private mediaDescriptionBox: DialogInputBox;
+    private copyOnlyCheckBox: Checkbox;
+    private encryptCheckBox: Checkbox;
+    private verifyCheckBox: Checkbox;
+    private checksumCheckBox: Checkbox;
+    private continueOnErrorCheckBox: Checkbox;
 
 	constructor(
         @Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
         @Inject(forwardRef(() => ChangeDetectorRef)) private _changeDetectorRef: ChangeDetectorRef,
-        @Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+        @Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
 	) {
         let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
         this.connection = dashboardParameters.connection;
@@ -122,9 +140,7 @@ export class BackupComponent{
 	}
 
     ngOnInit() {
-        this.initialize();
         let self = this;
-
         // Get backup configuration info
         this._disasterRecoveryService.getBackupConfigInfo(this._uri).then(configInfo => {
             if (configInfo) {
@@ -132,16 +148,7 @@ export class BackupComponent{
                 self.defaultNewBackupFolder = configInfo.defaultBackupFolder;
                 self.recoveryModel = configInfo.recoveryModel;
                 self.backupEncryptors = configInfo.backupEncryptors;
-
-                self.setControlsForRecoveryModel();
-                self.setDefaultBackupPaths();
-                self.setDefaultBackupName();
-                self.populateCompressionCombo();
-                self.populateAlgorithmCombo();
-                self.populateEncryptorCombo();
-                self.setTLogOptions();
-
-                self._changeDetectorRef.detectChanges();
+                self.initialize();
             }
         });
     }
@@ -149,208 +156,356 @@ export class BackupComponent{
     private initialize(): void {
         this.databaseName = this.connection.databaseName;
         this.selectedBackupComponent = BackupConstants.labelDatabase;
-        this.dictOfBackupPathDevice = {};
-        this.urlBackupPaths = [];
-        this.selectedCompression = this.compressionOptions[0];
-        this.selectedAlgorithm = this.encryptionAlgorithms[0];
-        this.expirationDays = 0;
+        this.backupPathTypePairs = {};
         this.isFormatChecked = false;
         this.selectedInitOption = this.existingMediaOptions[0];
+        this.backupTypeOptions = [];
 
-        // Set focus on backup name
-        this.backupNameElement.nativeElement.focus();
-    }
+        // Set recovery model
+        this.setControlsForRecoveryModel();
+        this.recoveryBox = new DialogInputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
 
-    private validateInput(): boolean {
-        this.errorMessage = '';
-        if (this.urlBackupPaths.length > 0) {
-            this.pathElement.nativeElement.style.border = this.errorBorderStyle;
-            this.errorMessage = 'Only disk backup is supported';
-        } else {
-            var isValid = true;
-            if (this.getBackupPathCount() === 0) {
-                this.pathElement.nativeElement.style.border = this.errorBorderStyle;
-                isValid = false;
-            }
-            if (this.isFormatChecked && (!this.selectedMediaName || this.selectedMediaName === ''))
+        // Set backup type
+        this.backupTypeSelectBox = new DialogSelectBox(this.backupTypeOptions, this.backupTypeOptions[0]);
+        this.backupTypeSelectBox.render(this.backupTypeElement.nativeElement);
+        this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged());
+
+        // Set copy-only check box
+        this.copyOnlyCheckBox = new Checkbox({
+			actionClassName: 'sql-checkbox',
+			title: 'Copy-only backup',
+			isChecked: false,
+			onChange: (viaKeyboard) => {}
+			});
+        this.copyOnlyElement.nativeElement.appendChild(this.copyOnlyCheckBox.domNode);
+
+        // Encryption checkbox
+        let self = this;
+        this.encryptCheckBox = new Checkbox({
+			actionClassName: 'sql-checkbox',
+			title: 'Encryption',
+			isChecked: false,
+			onChange: (viaKeyboard) => self.onChangeEncrypt()
+        });
+        this.encryptElement.nativeElement.appendChild(this.encryptCheckBox.domNode);
+
+        // Verify backup checkbox
+        this.verifyCheckBox = new Checkbox({
+			actionClassName: 'sql-checkbox',
+			title: 'Verify',
+			isChecked: false,
+			onChange: (viaKeyboard) => {}
+			});
+        this.verifyElement.nativeElement.appendChild(this.verifyCheckBox.domNode);
+
+        // Perform checksum checkbox
+        this.checksumCheckBox = new Checkbox({
+			actionClassName: 'sql-checkbox',
+			title: 'Perform checksum',
+			isChecked: false,
+			onChange: (viaKeyboard) => {}
+			});
+        this.checksumElement.nativeElement.appendChild(this.checksumCheckBox.domNode);
+
+        // Continue on error checkbox
+        this.continueOnErrorCheckBox = new Checkbox({
+			actionClassName: 'sql-checkbox',
+			title: 'Continue on error',
+			isChecked: false,
+			onChange: (viaKeyboard) => {}
+			});
+        this.continueOnErrorElement.nativeElement.appendChild(this.continueOnErrorCheckBox.domNode);
+
+        // Set backup name
+        this.backupNameBox = new DialogInputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
+        this.setDefaultBackupName();
+        this.backupNameBox.focus();
+
+        // Set backup path list
+        this.setDefaultBackupPaths();
+        var pathlist = [];
+        for (var i in this.backupPathTypePairs) {
+            pathlist.push(i);
+        }
+        this.pathListBox = new ListBox(pathlist, pathlist[0]);
+        this.pathListBox.render(this.pathElement.nativeElement);
+
+        // Set backup path input
+        this.pathInputBox = new DialogInputBox(this.pathInputElement.nativeElement, this._bootstrapService.contextViewService);
+        this.addPathButton = new Button(this.addPathElement.nativeElement);
+        this.addPathButton.label = '+';
+        this.addPathButton.addListener('click', () => this.onAddClick());
+        this.removePathButton = new Button(this.removePathElement.nativeElement);
+        this.removePathButton.label = '-';
+        this.removePathButton.addListener('click', () => this.onRemoveClick());
+
+        // Set compression
+        this.compressionSelectBox = new DialogSelectBox(this.compressionOptions, this.compressionOptions[0]);
+        this.compressionSelectBox.render(this.compressionElement.nativeElement);
+
+        // Set encryption
+        this.algorithmSelectBox = new DialogSelectBox(this.encryptionAlgorithms, this.encryptionAlgorithms[0]);
+        this.algorithmSelectBox.render(this.encryptionAlgorithmElement.nativeElement);
+        var encryptorItems = this.populateEncryptorCombo();
+        this.encryptorSelectBox = new DialogSelectBox(encryptorItems, encryptorItems[0]);
+        this.encryptorSelectBox.render(this.encryptorElement.nativeElement);
+
+        // Set media
+        this.mediaNameBox = new DialogInputBox(this.mediaNameElement.nativeElement,
+            this._bootstrapService.contextViewService,
             {
-                this.mediaNameElement.nativeElement.style.border = this.errorBorderStyle;
-                isValid = false;
-            }
-            if (!isValid) {
-                this.errorMessage = 'Missing required fields';
-            }
-        }
+				validationOptions: {
+					validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: 'Media name is required' }) : null
+				}
+            });
+        this.mediaDescriptionBox = new DialogInputBox(this.mediaDescriptionElement.nativeElement, this._bootstrapService.contextViewService);
 
-        if (this.errorMessage !== '') {
-            let iconFilePath = PathUtilities.toUrl('sql/parts/common/flyoutDialog/media/status-error.svg');
-			this.errorIconElement.nativeElement.style.content = 'url(' + iconFilePath + ')';
-            this.errorIconElement.nativeElement.style.visibility = 'visible';
-
-            this._changeDetectorRef.detectChanges();
-            return false;
-        } else {
-            return true;
-        }
-
-    }
-
-    public onOk(): void {
-        // Verify input values
-        if (this.validateInput()) {
-            let backupPathArray = [];
-            for (var i = 0; i < this.pathElement.nativeElement.childElementCount; i++) {
-                backupPathArray.push(this.pathElement.nativeElement.children[i].innerHTML);
-            }
-
-            // get encryptor type and name
-            var encryptorName = '';
-            var encryptorType;
-            if (this.isEncryptChecked && this.selectedEncryptor && this.selectedEncryptor !== '') {
-                var encryptorTypeStr = this.selectedEncryptor.substring(0, this.selectedEncryptor.indexOf('-'));
-                encryptorType = (encryptorTypeStr === BackupConstants.serverCertificate ? 0: 1);
-                encryptorName = this.selectedEncryptor.substring(this.selectedEncryptor.indexOf('-') + 1, this.selectedEncryptor.length);
-            }
-
-            this._disasterRecoveryService.backup(this._uri,
-            <BackupInfo>{
-                ownerUri: this._uri,
-                databaseName: this.databaseName,
-                backupType: this.getBackupTypeNumber(),
-                backupComponent: 0,
-                backupDeviceType: 2, //Disk
-                backupPathList: backupPathArray,
-                selectedFiles: this.selectedFilesText,
-                backupsetName: this.backupName,
-                selectedFileGroup: undefined,
-                backupPathDevices: this.dictOfBackupPathDevice,
-                isCopyOnly: this.isCopyOnly,
-
-                // Get advanced options
-                formatMedia: this.isFormatChecked,
-                initialize: (this.isFormatChecked ? true: (this.selectedInitOption === this.existingMediaOptions[1])),
-                skipTapeHeader: this.isFormatChecked,
-                mediaName: (this.isFormatChecked ? this.selectedMediaName: ''),
-                mediaDescription: (this.isFormatChecked ? this.selectedMediaDescription: ''),
-                checksum: this.isPerformChecksumChecked,
-                continueAfterError: this.isContinueOnErrorChecked,
-                logTruncation: this.isTruncateChecked,
-                tailLogBackup: this.isTaillogChecked,
-                retainDays: this.expirationDays,
-                compressionOption: this.compressionOptions.indexOf(this.selectedCompression),
-                verifyBackupRequired: this.isVerifyChecked,
-                encryptionAlgorithm: (this.isEncryptChecked ? this.encryptionAlgorithms.indexOf(this.selectedAlgorithm): 0),
-                encryptorType: encryptorType,
-                encryptorName: encryptorName
+        // Set backup retain days
+        this.backupRetainDaysBox = new DialogInputBox(this.backupDaysElement.nativeElement,
+            this._bootstrapService.contextViewService,
+            {
+                placeholder: '0',
+                type: 'number'
             });
 
-            this._disasterRecoveryUiService.closeBackup();
+        this.setTLogOptions();
+
+        // Set backup footer button
+        this.backupButton = new Button(this.backupButtonElement.nativeElement);
+        this.backupButton.label = 'Backup';
+        this._toDispose.push(this.backupButton.addListener('click', () => this.onOk()));
+
+        // Set cancel footer button
+        this.cancelButton = new Button(this.cancelButtonElement.nativeElement);
+        this.cancelButton.label = 'Cancel';
+        this._toDispose.push(this.cancelButton.addListener('click', () => this.onCancel()));
+
+        // apply theme
+        this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachSelectBoxStyler(this.pathListBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachInputBoxStyler(this.pathInputBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
+        this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
+        this._toDispose.push(attachButtonStyler(this.backupButton, this._bootstrapService.themeService));
+        this._toDispose.push(attachButtonStyler(this.cancelButton, this._bootstrapService.themeService));
+        this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
+        this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
+
+        // disable elements
+        this.recoveryBox.disable();
+        this.mediaNameBox.disable();
+        this.mediaDescriptionBox.disable();
+        this.algorithmSelectBox.disable();
+        this.encryptorSelectBox.disable();
+
+        this._changeDetectorRef.detectChanges();
+    }
+
+    /*
+    * UI event handlers
+    */
+    private onOk(): void {
+        var backupPathArray = [];
+        for (var i in this.backupPathTypePairs) {
+            backupPathArray.push(i);
         }
-    }
 
-	public onGenerateScript(): void {
-    }
+        // get encryptor type and name
+        var encryptorName = '';
+        var encryptorType;
 
-	public onCancel(): void {
+        if (this.encryptCheckBox.checked && this.encryptorSelectBox.value !== '') {
+            var selectedEncryptor = this.encryptorSelectBox.value;
+            var encryptorTypeStr = selectedEncryptor.substring(selectedEncryptor.lastIndexOf('(')+1, selectedEncryptor.lastIndexOf(')'));
+            encryptorType = (encryptorTypeStr === BackupConstants.serverCertificate ? 0: 1);
+            encryptorName = selectedEncryptor.substring(0, selectedEncryptor.lastIndexOf('('));
+        }
+
+        this._disasterRecoveryService.backup(this._uri,
+        <BackupInfo>{
+            ownerUri: this._uri,
+            databaseName: this.databaseName,
+            backupType: this.getBackupTypeNumber(),
+            backupComponent: 0,
+            backupDeviceType: BackupConstants.backupDeviceTypeDisk,
+            backupPathList: backupPathArray,
+            selectedFiles: this.selectedFilesText,
+            backupsetName: this.backupNameBox.value,
+            selectedFileGroup: undefined,
+            backupPathDevices: this.backupPathTypePairs,
+            isCopyOnly: this.copyOnlyCheckBox.checked,
+
+            // Get advanced options
+            formatMedia: this.isFormatChecked,
+            initialize: (this.isFormatChecked ? true: (this.selectedInitOption === this.existingMediaOptions[1])),
+            skipTapeHeader: this.isFormatChecked,
+            mediaName: (this.isFormatChecked ? this.mediaNameBox.value: ''),
+            mediaDescription: (this.isFormatChecked ? this.mediaDescriptionBox.value: ''),
+            checksum: this.checksumCheckBox.checked,
+            continueAfterError: this.continueOnErrorCheckBox.checked,
+            logTruncation: this.isTruncateChecked,
+            tailLogBackup: this.isTaillogChecked,
+            retainDays: DialogHelper.isEmptyString(this.backupRetainDaysBox.value) ? 0: this.backupRetainDaysBox.value,
+            compressionOption: this.compressionOptions.indexOf(this.compressionSelectBox.value),
+            verifyBackupRequired: this.verifyCheckBox.checked,
+            encryptionAlgorithm: (this.encryptCheckBox.checked ? this.encryptionAlgorithms.indexOf(this.algorithmSelectBox.value): 0),
+            encryptorType: encryptorType,
+            encryptorName: encryptorName
+        });
+
         this._disasterRecoveryUiService.closeBackup();
     }
 
-    public onFooterPressed(event: any): void {
-        if (event.keyCode === this.keyEnter) {
-            if (event.currentTarget.innerHTML === this.labelOk) {
-                this.onOk();
-            }
-            else if (event.currentTarget.innerHTML === this.labelCancel) {
-                this.onCancel();
-            }
-        }
+	private onGenerateScript(): void {
     }
 
-    private setControlsForRecoveryModel(): void {
-        let self = this;
-		if (self.recoveryModel === BackupConstants.recoveryModelSimple) {
-            self.selectedBackupComponent = BackupConstants.labelDatabase;
-            self.disableFileComponent = true;
-		} else {
-            self.disableFileComponent = false;
-		}
+	private onCancel(): void {
+        this._disasterRecoveryUiService.closeBackup();
+    }
 
-        self.populateBackupTypesCombo();
+    private onChangeTlog(): void {
+        this.isTruncateChecked = !this.isTruncateChecked;
+        this.isTaillogChecked = !this.isTaillogChecked;
+        this.detectChange();
+    }
+
+    private onChangeEncrypt(): void {
+        if (this.encryptCheckBox.checked) {
+            this.algorithmSelectBox.enable();
+            this.encryptorSelectBox.enable();
+
+            // Enable media options
+            this.isFormatChecked = true;
+            this.enableMediaInput(true);
+        } else {
+            this.algorithmSelectBox.disable();
+            this.encryptorSelectBox.disable();
+        }
+        this.detectChange();
+    }
+
+    private onChangeMediaFormat(): void {
+        this.isFormatChecked = !this.isFormatChecked;
+        this.enableMediaInput(this.isFormatChecked);
+        this.detectChange();
+    }
+
+    private onAdvancedClick(): void {
+        if (this.advancedHeaderElement.nativeElement.style['aria-expanded']) {
+            // collapse
+            this.advancedHeaderElement.nativeElement.className = "header collapsible collapsed";
+            this.advancedBodyElement.nativeElement.style = "display: none";
+            this.advancedHeaderElement.nativeElement.style['aria-expanded'] = false;
+        } else {
+            // expand
+            this.advancedHeaderElement.nativeElement.className = "header collapsible";
+            this.advancedBodyElement.nativeElement.style = "display: inline";
+            this.advancedHeaderElement.nativeElement.style['aria-expanded'] = true;
+        }
+
+        this.detectChange();
+    }
+
+	private onBackupTypeChanged(): void {
+        if (this.getSelectedBackupType() === BackupConstants.labelDifferential) {
+            this.copyOnlyCheckBox.checked = false;
+            this.copyOnlyCheckBox.disable();
+        } else {
+            this.copyOnlyCheckBox.enable();
+        }
+
+        this.setTLogOptions();
+        this.setDefaultBackupName();
+        this._changeDetectorRef.detectChanges();
 	}
 
-    private populateBackupTypesCombo(): void {
-        let self = this;
-        self.addToBackupTypeList(BackupConstants.labelFull);
-        if (self.databaseName !== 'master')  {
-            self.addToBackupTypeList(BackupConstants.labelDifferential);
-            if (self.recoveryModel !== BackupConstants.recoveryModelSimple) {
-                self.addToBackupTypeList(BackupConstants.labelLog);
+
+    private onAddClick(): void {
+        if (this.pathInputBox.value && this.pathInputBox.value.length > 0) {
+            if (!this.backupPathTypePairs[this.pathInputBox.value]) {
+                if ((this.getBackupPathCount() < BackupConstants.maxDevices - 1)) {
+                    this.backupPathTypePairs[this.pathInputBox.value] = BackupConstants.deviceTypeFile;
+                    this.pathListBox.add(this.pathInputBox.value);
+                    this.disableRemove = false;
+                }
+                else
+                {
+                    this.disableAdd = true;
+                }
+            }
+
+            // Reset the path text input
+            this.pathInputBox.value = '';
+            this._changeDetectorRef.detectChanges();
+        }
+    }
+
+    private onRemoveClick(): void {
+        for (var selected in this.pathListBox.selectedOptions) {
+            if (this.backupPathTypePairs[selected]) {
+                delete this.backupPathTypePairs[selected];
             }
         }
-        self.backupTypeElement.nativeElement.SelectedIndex = 0;
+        this.pathListBox.remove();
+        this._changeDetectorRef.detectChanges();
     }
 
-    private populateCompressionCombo(): void {
-        if (this.compressionElement) {
-            let self = this;
-            this.compressionOptions.forEach((compressionOption) => {
-                var option = document.createElement('option');
-                option.value = compressionOption;
-                option.innerHTML = compressionOption;
-                self.compressionElement.nativeElement.appendChild(option);
-            });
-        }
+    /*
+    * Helper methods
+    */
+    private setControlsForRecoveryModel(): void {
+		if (this.recoveryModel === BackupConstants.recoveryModelSimple) {
+            this.selectedBackupComponent = BackupConstants.labelDatabase;
+            this.disableFileComponent = true;
+		} else {
+            this.disableFileComponent = false;
+		}
 
-        this.compressionElement.nativeElement.SelectedIndex = 0;
+        this.populateBackupTypes();
+	}
+
+    private populateBackupTypes(): void {
+        this.backupTypeOptions.push(BackupConstants.labelFull);
+        if (this.databaseName !== 'master')  {
+            this.backupTypeOptions.push(BackupConstants.labelDifferential);
+            if (this.recoveryModel !== BackupConstants.recoveryModelSimple) {
+                this.backupTypeOptions.push(BackupConstants.labelLog);
+            }
+        }
     }
 
-    private populateAlgorithmCombo(): void {
-        if (this.encryptionAlgorithmElement) {
-            let self = this;
-            this.encryptionAlgorithms.forEach((algorithm) => {
-                var option = document.createElement('option');
-                option.value = algorithm;
-                option.innerHTML = algorithm;
-                self.encryptionAlgorithmElement.nativeElement.appendChild(option);
-            });
-        }
-
-        this.encryptionAlgorithmElement.nativeElement.SelectedIndex = 0;
-    }
-
-    private populateEncryptorCombo(): void {
-        if (this.encryptorElement) {
-            let self = this;
-            this.backupEncryptors.forEach(function(encryptor) {
-                var option = document.createElement('option');
-                var encryptorTypeStr = (encryptor.encryptorType===0 ? BackupConstants.serverCertificate: BackupConstants.asymmetricKey);
-                option.value = encryptorTypeStr + '-' + encryptor.encryptorName;
-                option.innerHTML = encryptor.encryptorName + '(' + encryptorTypeStr + ')';
-                self.encryptorElement.nativeElement.appendChild(option);
-            });
-        }
-
-        this.encryptorElement.nativeElement.SelectedIndex = 0;
+    private populateEncryptorCombo(): string[] {
+        var encryptorCombo = [];
+        this.backupEncryptors.forEach((encryptor) => {
+            var encryptorTypeStr = (encryptor.encryptorType===0 ? BackupConstants.serverCertificate: BackupConstants.asymmetricKey);
+            encryptorCombo.push(encryptor.encryptorName + '(' + encryptorTypeStr + ')');
+        });
+        return encryptorCombo;
     }
 
     private setDefaultBackupName(): void {
         let utc = new Date().toJSON().slice(0, 19);
-        let self = this;
-        self.backupName = self.databaseName + '-' + self.getSelectedBackupType() + '-' + utc;
+        if (this.backupNameBox) {
+            this.backupNameBox.value = this.databaseName + '-' + this.getSelectedBackupType() + '-' + utc;
+        }
     }
 
     private setDefaultBackupPaths(): void {
-        let self = this;
-        let previousBackupsCount = self.lastBackupLocations ? self.lastBackupLocations.length: 0;
+        let previousBackupsCount = this.lastBackupLocations ? this.lastBackupLocations.length: 0;
         if (previousBackupsCount > 0) {
             for (var i = 0; i < previousBackupsCount; i++)  {
-                let source = new RestoreItemSource(self.lastBackupLocations[i]);
-                let isFile = self.isBackupToFile(source.restoreItemDeviceType);
+                let source = new RestoreItemSource(this.lastBackupLocations[i]);
+                let isFile = this.isBackupToFile(source.restoreItemDeviceType);
 
                 if (source.restoreItemDeviceType === BackupConstants.backupDeviceTypeURL) {
                     if (i === 0) {
-                        self.urlBackupPaths.push(source.restoreItemLocation);
-                        self.addToBackupPathList(source.restoreItemLocation);
+                        this.backupPathTypePairs[source.restoreItemLocation] = BackupConstants.deviceTypeURL;
                         break;
                     }
                 }
@@ -366,27 +521,21 @@ export class BackupComponent{
                 }
 
                 if (lastBackupLocation.length > 0) {
-                    self.addNonUrlBackupDestination(lastBackupLocation, destinationType);
-                    self.addToBackupPathList(lastBackupLocation);
+                    this.backupPathTypePairs[lastBackupLocation] = destinationType;
                 }
             }
-        } else if (self.defaultNewBackupFolder && self.defaultNewBackupFolder.length > 0)  {
+        } else if (this.defaultNewBackupFolder && this.defaultNewBackupFolder.length > 0)  {
 
             // TEMPORARY WORKAROUND: karlb 5/27 - try to guess path separator on server based on first character in path
             let serverPathSeparator: string = '\\';
-            if (self.defaultNewBackupFolder[0] === '/') {
+            if (this.defaultNewBackupFolder[0] === '/') {
                 serverPathSeparator = '/';
             }
 
-            let defaultNewBackupLocation = self.defaultNewBackupFolder + serverPathSeparator + self.databaseName + '.bak';
+            let defaultNewBackupLocation = this.defaultNewBackupFolder + serverPathSeparator + this.databaseName + '.bak';
 
             // Add a default new backup location
-            self.addNonUrlBackupDestination(defaultNewBackupLocation, BackupConstants.deviceTypeFile);
-            self.addToBackupPathList(defaultNewBackupLocation);
-        }
-
-        if (self.getBackupPathCount() > 0)  {
-            self.pathElement.nativeElement.SelectedIndex = 0;
+            this.backupPathTypePairs[defaultNewBackupLocation] = BackupConstants.deviceTypeFile;
         }
     }
 
@@ -404,67 +553,21 @@ export class BackupComponent{
         return isfile;
     }
 
-// #region UI event handlers
-
-    public onChangeTlog(): void {
-        this.isTruncateChecked = !this.isTruncateChecked;
-        this.isTaillogChecked = !this.isTaillogChecked;
-        this.detectChange();
-    }
-
-    public onChangeCopyOnly(): void {
-        this.isCopyOnly = !this.isCopyOnly;
-        this.detectChange();
-    }
-
-    public onChangeEncrypt(): void {
-        this.isEncryptChecked = !this.isEncryptChecked;
-        if (this.isEncryptChecked) {
-            this.isFormatChecked = true;
+    private enableMediaInput(enable: boolean): void{
+        if (enable) {
+            this.mediaNameBox.enable();
+            this.mediaDescriptionBox.enable();
+        } else {
+            this.mediaNameBox.disable();
+            this.mediaDescriptionBox.disable();
         }
-        this.detectChange();
     }
 
-    public onChangeMediaFormat(): void {
-        this.isFormatChecked = !this.isFormatChecked;
-        this.detectChange();
-    }
-
-    public detectChange(): void {
+    private detectChange(): void {
         this._changeDetectorRef.detectChanges();
     }
 
-    public onAdvancedClick(): void {
-
-        if (this.advancedHeaderElement.nativeElement.style['aria-expanded']) {
-            // collapse
-            this.advancedHeaderElement.nativeElement.className = "header collapsible collapsed";
-            this.advancedBodyElement.nativeElement.style = "display: none";
-            this.advancedHeaderElement.nativeElement.style['aria-expanded'] = false;
-        } else {
-            // expand
-            this.advancedHeaderElement.nativeElement.className = "header collapsible";
-            this.advancedBodyElement.nativeElement.style = "display: inline";
-            this.advancedHeaderElement.nativeElement.style['aria-expanded'] = true;
-        }
-
-        this.detectChange();
-    }
-
-	public onBackupTypeChanged(): void {
-        if (this.getSelectedBackupType() === BackupConstants.labelDifferential) {
-            this.isCopyOnly = false;
-            this.disableCopyOnly = true;
-        } else {
-            this.disableCopyOnly = false;
-        }
-
-        this.setTLogOptions();
-        this.setDefaultBackupName();
-        this._changeDetectorRef.detectChanges();
-	}
-
-    public setTLogOptions(): void {
+        private setTLogOptions(): void {
         if (this.getSelectedBackupType() === BackupConstants.labelLog) {
             // Enable log options
             this.disableTlog = false;
@@ -476,26 +579,6 @@ export class BackupComponent{
             this.isTaillogChecked = false;
             // Disable log options
             this.disableTlog = true;
-        }
-    }
-
-    public onBackupPathKeyEvent(event: KeyboardEvent): void {
-        let selectedCount = this.pathElement.nativeElement.selectedOptions.length;
-        if (selectedCount > 0)
-        {
-            var key = event.keyCode;
-            var ctrlOrCmd = event.ctrlKey || event.metaKey;
-
-            if (ctrlOrCmd && key === this.keyC) {
-                var textToCopy = this.pathElement.nativeElement.selectedOptions[0].innerHTML;
-                for (var i = 1; i < selectedCount; i++) {
-                    textToCopy = textToCopy + ', ' + this.pathElement.nativeElement.selectedOptions[i].innerHTML;
-                }
-
-                // Copy to clipboard
-                WorkbenchUtils.executeCopy(textToCopy);
-		        event.stopPropagation();
-            }
         }
     }
 
@@ -515,30 +598,9 @@ export class BackupComponent{
         return backupType;
     }
 
-    private addToBackupTypeList(backupType: string): void {
-        let self = this;
-        if (self.backupTypeElement) {
-            var option = document.createElement('option');
-            option.value = backupType;
-            option.innerHTML = backupType;
-            self.backupTypeElement.nativeElement.appendChild(option);
-        }
-    }
-
-    private addToBackupPathList(backupPath: string): void {
-        let self = this;
-        if (self.pathElement) {
-            var option = document.createElement('option');
-            option.value = backupPath;
-            option.innerHTML = backupPath;
-            self.pathElement.nativeElement.appendChild(option);
-        }
-    }
-
     private getBackupPathCount(): number {
-        let self = this;
-        if (self.pathElement) {
-            return self.pathElement.nativeElement.childElementCount;
+        if (this.pathListBox.selectedOptions) {
+            return this.pathListBox.selectedOptions.length;
         } else {
             return 0;
         }
@@ -546,62 +608,10 @@ export class BackupComponent{
 
     private getSelectedBackupType(): string {
         let backupType = '';
-        let self = this;
-        if (self.backupTypeElement) {
-            backupType = self.backupTypeElement.nativeElement.selectedOptions[0].innerHTML;
+        if (this.backupTypeSelectBox) {
+            backupType = this.backupTypeSelectBox.value;
         }
         return backupType;
     }
 
-    public onAddClick(): void {
-        if (this.backupPathInput && this.backupPathInput.length > 0) {
-            // Add it only if the path was not added previously
-            if (!this.dictOfBackupPathDevice[this.backupPathInput]) {
-                if ((this.getBackupPathCount() < BackupConstants.maxDevices - 1)) {
-                    this.addToBackupPathList(this.backupPathInput);
-                    this.dictOfBackupPathDevice[this.backupPathInput] = BackupConstants.deviceTypeFile;
-                    this.disableRemove = false;
-                }
-                else
-                {
-                    this.disableAdd = true;
-                }
-            }
-
-            // Reset the path text input
-            this.backupPathInput = '';
-            this._changeDetectorRef.detectChanges();
-        }
-    }
-
-    public onRemoveClick(): void {
-        let selectedCount = this.pathElement.nativeElement.selectedOptions.length;
-        for (var i = 0; i < selectedCount; i++) {
-            // Remove the first element from the selected list
-            let backupPathElement = this.pathElement.nativeElement.selectedOptions[0];
-            if (this.dictOfBackupPathDevice[backupPathElement.innerHTML]) {
-                delete this.dictOfBackupPathDevice[backupPathElement.innerHTML];
-            } else if (this.urlBackupPaths.indexOf(backupPathElement.innerHTML) !== -1) {
-                delete this.urlBackupPaths[this.urlBackupPaths.indexOf(backupPathElement.innerHTML)];
-            }
-            this.pathElement.nativeElement.removeChild(backupPathElement);
-        }
-
-        if (this.getBackupPathCount() > 0) {
-            this.pathElement.nativeElement.SelectedIndex = 0;
-        } else {
-            this.disableRemove = true;
-        }
-
-        this._changeDetectorRef.detectChanges();
-    }
-
-    private addNonUrlBackupDestination(bakLocation: string, bakDeviceType: number): void {
-        let self = this;
-        if (bakLocation.length > 0) {
-            if (!(bakLocation in self.dictOfBackupPathDevice)) {
-                self.dictOfBackupPathDevice[bakLocation] = bakDeviceType;
-            }
-        }
-    }
 }

@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-/* TODO: remove the color style after theming is fixed for backup component */
 .monaco-shell .modal.flyout-dialog {
 	background-color: rgba(204, 204, 204, 0.6);
 }
@@ -136,16 +135,6 @@
 
 .modal .right-footer .footer-button:last-of-type {
 	margin-right: none;
-}
-
-/* The following style is defined at the Button class. If you're creating the buttons using html template, apply this to get consistent style. */
-.modal.flyout-dialog .angular-button {
-	background: #0E639C;
-	color: #FFFFFF;
-}
-
-.modal.flyout-dialog .angular-button:focus {
-	outline: 1px solid #8e8c8c;
 }
 
 .modal.flyout-dialog .footer-spinner {

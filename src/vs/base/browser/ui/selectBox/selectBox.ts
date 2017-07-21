@@ -26,16 +26,17 @@ const defaultStyles = {
 };
 
 export class SelectBox extends Widget {
-
-	private selectElement: HTMLSelectElement;
-	private options: string[];
 	private selected: number;
 	private container: HTMLElement;
 	private _onDidSelect: Emitter<string>;
 	private toDispose: IDisposable[];
-	private selectBackground: Color;
-	private selectForeground: Color;
-	private selectBorder: Color;
+
+	// {{SQL CARBON EDIT}}
+	protected selectElement: HTMLSelectElement;
+	protected options: string[];
+	protected selectBackground: Color;
+	protected selectForeground: Color;
+	protected selectBorder: Color;
 
 	constructor(options: string[], selected: number, styles: ISelectBoxStyles = clone(defaultStyles)) {
 		super();
@@ -126,7 +127,8 @@ export class SelectBox extends Widget {
 		}
 	}
 
-	private createOption(value: string, disabled?: boolean): HTMLOptionElement {
+	// {{SQL CARBON EDIT}}
+	protected createOption(value: string, disabled?: boolean): HTMLOptionElement {
 		let option = document.createElement('option');
 		option.value = value;
 		option.text = value;

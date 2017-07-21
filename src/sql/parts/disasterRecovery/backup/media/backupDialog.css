@@ -2,14 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-.backup-path-list-div {
-	overflow-x: auto;
-}
-
 .backup-path-list {
-	border-style: none;
-	min-width: 100%;
-	font-size: 11px;
+	overflow-x: auto;
 }
 
 .backup-path-table {
@@ -27,19 +21,7 @@
 }
 
 .backup-path-button {
-	width: 25px;
-	border: none;
-	padding: 3px;
-}
-
-.vs-dark.monaco-shell .backup-path-list {
-	background-color: #3C3C3C;
-	color: #BBB;
-}
-
-.vs-dark.monaco-shell .backup-path-input {
-	background-color: #3C3C3C;
-	color: #BBB;
+	width: 22px;
 }
 
 .backup-dialog {
