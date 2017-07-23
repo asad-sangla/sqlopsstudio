@@ -12,7 +12,7 @@ if (window.location.search.indexOf('prof-startup') >= 0) {
 	profiler.startProfiling('renderer', true);
 }
 
-/*global window,document,define*/
+/*global window,document,define,Monaco_Loader_Init*/
 
 const startTimer = require('../../../base/node/startupTimers').startTimer;
 const path = require('path');
@@ -41,7 +41,7 @@ const Figures = require('figures');
 process.lazyEnv = new Promise(function (resolve) {
 	const handle = setTimeout(function () {
 		resolve();
-		console.warn('renderer did not receive lazyEnv in time')
+		console.warn('renderer did not receive lazyEnv in time');
 	}, 10000);
 	ipc.once('vscode:acceptShellEnv', function (event, shellEnv) {
 		clearTimeout(handle);
@@ -132,14 +132,14 @@ function registerListeners(enableDeveloperTools) {
 		window.addEventListener('keydown', listener);
 	}
 
-	process.on('uncaughtException', function (error) { onError(error, enableDeveloperTools) });
+	process.on('uncaughtException', function (error) { onError(error, enableDeveloperTools); });
 
 	return function () {
 		if (listener) {
 			window.removeEventListener('keydown', listener);
 			listener = void 0;
 		}
-	}
+	};
 }
 
 function main() {
@@ -183,16 +183,14 @@ function main() {
 	// Load the loader and start loading the workbench
 	const appRoot = uriFromPath(configuration.appRoot);
 	const rootUrl = appRoot + '/out';
-
-	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
+  
+  // Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.dragrowselector.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.autosizecolumn.js', undefined);
 	createScript(appRoot + '/node_modules/chart.js/dist/Chart.js', undefined);
 
-	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
-	// loads as soon as the loader loads. To be able to have pseudo translation
-	const loaderTimer = startTimer('load:loader')
-	createScript(rootUrl + '/vs/loader.js', function () {
+
+	function onLoader() {
 		define('fs', ['original-fs'], function (originalFS) { return originalFS; }); // replace the patched electron fs with the original node fs for all AMD code
 		loaderTimer.stop();
 
@@ -206,7 +204,7 @@ function main() {
 			'vs/nls': nlsConfig,
 			recordStats: !!configuration.performance,
 			nodeCachedDataDir: configuration.nodeCachedDataDir,
-			onNodeCachedDataError: function (err) { nodeCachedDataErrors.push(err) },
+			onNodeCachedData: function () { onNodeCachedData.push(arguments); },
 			nodeModules: [
 				'@angular/common',
 				'@angular/core',
@@ -239,7 +237,7 @@ function main() {
 			beforeLoadWorkbenchMain: Date.now()
 		};
 
-		const workbenchMainTimer = startTimer('load:workbench.main')
+		const workbenchMainTimer = startTimer('load:workbench.main');
 		require([
 			'vs/workbench/electron-browser/workbench.main',
 			'vs/nls!vs/workbench/electron-browser/workbench.main',
@@ -258,7 +256,19 @@ function main() {
 					});
 			});
 		});
-	});
+	}
+
+	// In the bundled version the nls plugin is packaged with the loader so the NLS Plugins
+	// loads as soon as the loader loads. To be able to have pseudo translation
+	const loaderTimer = startTimer('load:loader');
+	if (typeof Monaco_Loader_Init === 'function') {
+		//eslint-disable-next-line no-global-assign
+		define = Monaco_Loader_Init();
+		onLoader();
+
+	} else {
+		createScript(rootUrl + '/vs/loader.js', onLoader);
+	}
 }
 
 main();

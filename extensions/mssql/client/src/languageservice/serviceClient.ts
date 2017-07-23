@@ -296,10 +296,9 @@ export default class SqlToolsServiceClient {
         let client = new LanguageClient(Constants.sqlToolsServiceName, serverOptions, clientOptions);
         client.onReady().then( () => {
             this.checkServiceCompatibility();
-
+            client.onNotification(LanguageServiceContracts.TelemetryNotification.type, this.handleLanguageServiceTelemetryNotification());
+            client.onNotification(LanguageServiceContracts.StatusChangedNotification.type, this.handleLanguageServiceStatusNotification());
         });
-        client.onNotification(LanguageServiceContracts.TelemetryNotification.type, this.handleLanguageServiceTelemetryNotification());
-        client.onNotification(LanguageServiceContracts.StatusChangedNotification.type, this.handleLanguageServiceStatusNotification());
 
         return client;
     }
@@ -366,16 +365,17 @@ export default class SqlToolsServiceClient {
 
     public checkServiceCompatibility(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            this._client.sendRequest(VersionRequest.type, undefined).then((result) => {
-                 Utils.logDebug('sqlserverclient version: ' + result);
+            this._client.sendRequest(VersionRequest.type, undefined).then((r) => {
+                let result: string = <string>r;
+                Utils.logDebug('sqlserverclient version: ' + result);
 
-                 if (result === undefined || !result.startsWith(Constants.serviceCompatibleVersion)) {
-                     Utils.showErrorMsg(Constants.serviceNotCompatibleError);
-                     Utils.logDebug(Constants.serviceNotCompatibleError);
-                     resolve(false);
-                 } else {
-                     resolve(true);
-                 }
+                if (result === undefined || !result.startsWith(Constants.serviceCompatibleVersion)) {
+                    Utils.showErrorMsg(Constants.serviceNotCompatibleError);
+                    Utils.logDebug(Constants.serviceNotCompatibleError);
+                    resolve(false);
+                } else {
+                    resolve(true);
+                }
             });
         });
     }

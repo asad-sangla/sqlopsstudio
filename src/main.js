@@ -19,9 +19,7 @@ if (process.argv.indexOf('--prof-startup') >= 0) {
 if (process.env.LC_ALL) {
 	process.env.LC_ALL = 'C';
 }
-if (process.env.LC_NUMERIC) {
-	process.env.LC_NUMERIC = 'C';
-}
+process.env.LC_NUMERIC = 'C';
 
 // Perf measurements
 global.perfStartTime = Date.now();
@@ -144,7 +142,7 @@ function getNodeCachedDataDir() {
 
 	var dir = path.join(app.getPath('userData'), 'CachedData', productJson.commit);
 
-	return mkdirp(dir).then(undefined, function (err) { /*ignore*/ });
+	return mkdirp(dir).then(undefined, function () { /*ignore*/ });
 }
 
 function mkdirp(dir) {

@@ -12,7 +12,7 @@ import { ViewletRegistry, Extensions as ViewletExtensions, ViewletDescriptor, To
 import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/workbench/common/actionRegistry';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
-import { Registry } from 'vs/platform/platform';
+import { Registry } from 'vs/platform/registry/common/platform';
 import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
 import { VIEWLET_ID } from 'sql/parts/taskHistory/viewlet/taskHistoryViewlet';
 import lifecycle = require('vs/base/common/lifecycle');

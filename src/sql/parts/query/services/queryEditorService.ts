@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { EditorInput, IEditorGroup } from 'vs/workbench/common/editor';
-import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
+import { IUntitledEditorService, UNTITLED_SCHEMA } from 'vs/workbench/services/untitled/common/untitledEditorService';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
@@ -80,7 +80,7 @@ export class QueryEditorService implements IQueryEditorService {
 			try {
 				// Create file path and file URI
 				let filePath = this.createUntitledSqlFilePath();
-				let docUri: URI = URI.from({ scheme: UntitledEditorInput.SCHEMA, path: filePath });
+				let docUri: URI = URI.from({ scheme: UNTITLED_SCHEMA, path: filePath });
 
 				// Create a sql document pane with accoutrements
 				const fileInput = this._untitledEditorService.createOrGet(docUri, 'sql');
@@ -118,7 +118,7 @@ export class QueryEditorService implements IQueryEditorService {
 				// Create file path and file URI
 				let objectName = schemaName ? schemaName + '.' + tableName : tableName;
 				let filePath = this.createEditDataFileName(objectName);
-				let docUri: URI = URI.from({ scheme: UntitledEditorInput.SCHEMA, path: filePath });
+				let docUri: URI = URI.from({ scheme: UNTITLED_SCHEMA, path: filePath });
 
 				// Create an EditDataInput for editing
 				let editDataInput: EditDataInput = this._instantiationService.createInstance(EditDataInput, docUri, schemaName, tableName);

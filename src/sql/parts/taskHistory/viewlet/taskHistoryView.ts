@@ -10,7 +10,7 @@ import dom = require('vs/base/browser/dom');
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { CollapsibleViewletView } from 'vs/workbench/browser/viewlet';
+import { CollapsibleView, ICollapsibleViewOptions } from 'vs/workbench/parts/views/browser/views';
 import * as builder from 'vs/base/browser/builder';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
@@ -31,7 +31,7 @@ const $ = builder.$;
 /**
  * TaskHistoryView implements the dynamic tree view.
  */
-export class TaskHistoryView extends CollapsibleViewletView {
+export class TaskHistoryView extends CollapsibleView {
 
 	public messages: builder.Builder;
 
@@ -44,7 +44,15 @@ export class TaskHistoryView extends CollapsibleViewletView {
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
 		@IThemeService private _themeService: IThemeService
 	) {
-		super(actionRunner, false, nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'), messageService, keybindingService, contextMenuService);
+		super(<ICollapsibleViewOptions>{
+			id: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
+			name: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
+			actionRunner: actionRunner,
+			collapsed: false,
+			ariaHeaderLabel: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
+			sizing: undefined,
+			initialBodySize: undefined
+		}, keybindingService, contextMenuService);
 	}
 
 	/**

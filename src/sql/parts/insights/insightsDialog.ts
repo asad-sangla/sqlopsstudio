@@ -22,7 +22,8 @@ import { DbCellValue, IDbColumn, IResultMessage, QueryExecuteSubsetResult } from
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
-import { SplitView, CollapsibleState, CollapsibleView } from 'vs/base/browser/ui/splitview/splitview';
+import { CollapsibleView, ICollapsibleViewOptions } from 'vs/workbench/parts/views/browser/views';
+import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IDelegate, IRenderer, IListEvent, IListContextMenuEvent } from 'vs/base/browser/ui/list/list';
 import { IDisposable } from 'vs/base/common/lifecycle';
@@ -36,7 +37,7 @@ import * as pfs from 'vs/base/node/pfs';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { $ } from 'vs/base/browser/builder';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { Registry } from 'vs/platform/platform';
+import { Registry } from 'vs/platform/registry/common/platform';
 import { IAction } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
 
@@ -45,11 +46,15 @@ const insertValueRegex: RegExp = /\${(.*?)\}/;
 
 class BasicView extends CollapsibleView {
 	constructor(private viewTitle: string, private list: List<any>, private _bodyContainer: HTMLElement, collapsed: boolean, headerSize: number) {
-		super({
-			headerSize: headerSize,
-			initialState: collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED,
-			ariaHeaderLabel: viewTitle
-		});
+		super(<ICollapsibleViewOptions>{
+			id: viewTitle,
+			name: viewTitle,
+			actionRunner: undefined,
+			collapsed: false,
+			ariaHeaderLabel: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
+			sizing: headerSize,
+			initialBodySize: undefined
+		}, undefined, undefined);
 	}
 
 	public renderHeader(container: HTMLElement): void {

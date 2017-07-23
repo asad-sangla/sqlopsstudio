@@ -139,13 +139,13 @@ export class QueryManagementService implements IQueryManagementService {
 		let providerId: string = this._connectionService.getProviderIdFromUri(uri);
 
 		if (!providerId) {
-			return TPromise.wrapError('Connection is required in order to interact with queries');
+			return TPromise.wrapError(new Error('Connection is required in order to interact with queries'));
 		}
 		let handler = this._requestHandlers.get(providerId);
 		if (handler) {
 			return action(handler);
 		} else {
-			return TPromise.wrapError('No Handler Registered');
+			return TPromise.wrapError(new Error('No Handler Registered'));
 		}
 	}
 

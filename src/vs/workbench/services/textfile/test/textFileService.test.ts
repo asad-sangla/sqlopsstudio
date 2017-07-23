@@ -98,6 +98,64 @@ suite('Files - TextFileService', () => {
 		}, error => onError(error, done));
 	});
 
+	test('confirm onWillShutdown - no veto and backups cleaned up if user does not want to save (hot.exit: off)', function (done) {
+		model = instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/file.txt'), 'utf8');
+		(<TextFileEditorModelManager>accessor.textFileService.models).add(model.getResource(), model);
+
+		const service = accessor.textFileService;
+		service.setConfirmResult(ConfirmResult.DONT_SAVE);
+		service.onConfigurationChange({ files: { hotExit: 'off' } });
+
+		model.load().done(() => {
+			model.textEditorModel.setValue('foo');
+
+			assert.equal(service.getDirty().length, 1);
+
+			const event = new ShutdownEventImpl();
+			accessor.lifecycleService.fireWillShutdown(event);
+
+			const veto = event.value;
+			if (typeof veto === 'boolean') {
+				assert.ok(service.cleanupBackupsBeforeShutdownCalled);
+				assert.ok(!veto);
+
+				done();
+			} else {
+				veto.then(veto => {
+					assert.ok(service.cleanupBackupsBeforeShutdownCalled);
+					assert.ok(!veto);
+
+					done();
+				});
+			}
+		}, error => onError(error, done));
+	});
+
+	test('confirm onWillShutdown - save (hot.exit: off)', function (done) {
+		model = instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/file.txt'), 'utf8');
+		(<TextFileEditorModelManager>accessor.textFileService.models).add(model.getResource(), model);
+
+		const service = accessor.textFileService;
+		service.setConfirmResult(ConfirmResult.SAVE);
+		service.onConfigurationChange({ files: { hotExit: 'off' } });
+
+		model.load().done(() => {
+			model.textEditorModel.setValue('foo');
+
+			assert.equal(service.getDirty().length, 1);
+
+			const event = new ShutdownEventImpl();
+			accessor.lifecycleService.fireWillShutdown(event);
+
+			return (<TPromise<boolean>>event.value).then(veto => {
+				assert.ok(!veto);
+				assert.ok(!model.isDirty());
+
+				done();
+			});
+		}, error => onError(error, done));
+	});
+
 	test('isDirty/getDirty - files and untitled', function (done) {
 		model = instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/file.txt'), 'utf8');
 		(<TextFileEditorModelManager>accessor.textFileService.models).add(model.getResource(), model);

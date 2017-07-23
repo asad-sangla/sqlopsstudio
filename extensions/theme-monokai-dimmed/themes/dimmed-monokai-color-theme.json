@@ -230,14 +230,6 @@
 			}
 		},
 		{
-			"name": "Function Call",
-			"scope": "meta.function-call",
-			"settings": {
-				"fontStyle": "\n    \t\t\t",
-				"foreground": "#0080FF"
-			}
-		},
-		{
 			"name": "Function Object",
 			"scope": "meta.function-call.object",
 			"settings": {
@@ -549,6 +541,20 @@
 			"scope": "token.debug-token",
 			"settings": {
 				"foreground": "#b267e6"
+			}
+		},
+		{
+			"name": "this.self",
+			"scope": "variable.language",
+			"settings": {
+				"foreground": "#c7444a"
+			}
+		},
+		{
+			"name": "this.self",
+			"scope": "variable.language",
+			"settings": {
+				"foreground": "#c7444a"
 			}
 		}
 	]

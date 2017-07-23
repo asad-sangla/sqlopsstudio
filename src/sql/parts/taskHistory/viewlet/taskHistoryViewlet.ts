@@ -8,7 +8,7 @@
 import 'vs/css!./media/taskHistoryViewlet';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Builder, Dimension } from 'vs/base/browser/builder';
-import { Viewlet, IViewletView } from 'vs/workbench/browser/viewlet';
+import { Viewlet } from 'vs/workbench/browser/viewlet';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { toggleClass } from 'vs/base/browser/dom';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -19,7 +19,7 @@ import { isPromiseCanceledError } from 'vs/base/common/errors';
 import Severity from 'vs/base/common/severity';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TaskHistoryView } from 'sql/parts/taskHistory/viewlet/taskHistoryView';
-import { SplitView } from 'vs/base/browser/ui/splitview/splitview';
+import { SplitView, IView } from 'vs/base/browser/ui/splitview/splitview';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 
 export const VIEWLET_ID = 'workbench.view.taskHistory';
@@ -28,7 +28,7 @@ export class TaskHistoryViewlet extends Viewlet {
 
 	private root: HTMLElement;
 	private toDispose: IDisposable[] = [];
-	private views: IViewletView[];
+	private views: IView[];
 	private taskHistoryView: TaskHistoryView;
 	private viewletContainer: Builder;
 	private splitView: SplitView;

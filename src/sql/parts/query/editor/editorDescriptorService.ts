@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { EditorInput, Extensions, IEditorRegistry, IEditorDescriptor } from 'vs/workbench/common/editor';
-import { Registry } from 'vs/platform/platform';
+import { Registry } from 'vs/platform/registry/common/platform';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
 export interface IEditorDescriptorService {

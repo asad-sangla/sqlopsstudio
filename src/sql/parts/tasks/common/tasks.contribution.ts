@@ -7,7 +7,7 @@ import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/common/editor';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-import { Registry } from 'vs/platform/platform';
+import { Registry } from 'vs/platform/registry/common/platform';
 import { TaskDialogEditor } from "sql/parts/tasks/dialog/taskDialogEditor";
 import { TaskDialogInput } from "sql/parts/tasks/dialog/taskDialogInput";
 import { CreateLoginEditor } from 'sql/parts/admin/security/createLoginEditor';

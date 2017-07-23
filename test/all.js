@@ -15,7 +15,7 @@ var jsdom = require('jsdom-no-contextify');
 var minimatch = require('minimatch');
 var fs = require('fs');
 var vm = require('vm');
-var TEST_GLOB = '**/*test*/**/*.test.js';
+var TEST_GLOB = '**/test/**/*.test.js';
 
 // {{SQL CARBON EDIT}}
 var SQL_TEST_GLOB = '**/sqltest/**/*.test.js';
@@ -156,6 +156,7 @@ function main() {
 			for (var entryKey in remappedCoverage) {
 				var entry = remappedCoverage[entryKey];
 				entry.path = fixPath(entry.path);
+        // {{SQL CARBON EDIT}}
 				if (!entry.path.includes('\\vs\\') && !entry.path.includes('/vs/')) {
 					finalCoverage[fixPath(entryKey)] = entry;
 				}
@@ -171,6 +172,7 @@ function main() {
 				coveragePath += '-single';
 				reportTypes = ['lcovonly'];
 			} else {
+        // {{SQL CARBON EDIT}}
 				reportTypes = ['json', 'lcov', 'html', 'cobertura'];
 			}
 			var reporter = new istanbul.Reporter(null, coveragePath);
@@ -181,7 +183,6 @@ function main() {
 
 	loader.config(loaderConfig);
 
-	require('zone.js');
 
 	global.define = loader;
 	global.document = jsdom.jsdom('<!doctype html><html><body></body></html>');
@@ -192,6 +193,8 @@ function main() {
 	global.Node = global.window.Node;
 	global.navigator = global.window.navigator;
 	global.XMLHttpRequest = global.window.XMLHttpRequest;
+
+  // {{SQL CARBON EDIT}}
 	global.Event = global.window.Event;
 
 	require('reflect-metadata');

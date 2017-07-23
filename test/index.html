@@ -12,15 +12,14 @@
 	<script src="/out/vs/loader.js"></script>
 	<script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
 
-    <!-- {{SQL CARBON EDIT}} -->
-	<script src="../src/sql/parts/grid/load/loadJquery.js"></script>
 	<script>
 		mocha.setup('tdd');
 
 		require.config({
 			baseUrl: '/out',
 			paths: {
-				assert: '/test/assert.js'
+				assert: '/test/assert.js',
+				sinon: '/node_modules/sinon/pkg/sinon-1.17.7.js'
 			}
 		});
 

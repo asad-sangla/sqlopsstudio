@@ -10,7 +10,6 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IInitData } from 'vs/workbench/api/node/extHost.protocol';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { ExtHostExtensionService } from "vs/workbench/api/node/extHostExtensionService";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 import { realpath } from 'fs';
 import * as extHostTypes from 'vs/workbench/api/node/extHostTypes';
@@ -33,8 +32,8 @@ export interface ISqlExtensionApiFactory {
  */
 export function createApiFactory(
 	initData: IInitData, threadService: IThreadService, extensionService: ExtHostExtensionService,
-	contextService: IWorkspaceContextService, telemetryService: ITelemetryService): ISqlExtensionApiFactory {
-	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService, contextService, telemetryService);
+	telemetryService: ITelemetryService): ISqlExtensionApiFactory {
+	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService, telemetryService);
 
 	// Addressable instances
 	const col = new SqlInstanceCollection();

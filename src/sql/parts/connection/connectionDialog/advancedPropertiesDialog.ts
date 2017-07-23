@@ -11,7 +11,8 @@ import 'vs/css!./media/advancedProperties';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
-import { SplitView, FixedCollapsibleView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
+import { FixedCollapsibleView } from 'sql/platform/views/fixedCollapsibleView';
+import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
@@ -35,7 +36,7 @@ class OptionPropertiesView extends FixedCollapsibleView {
 	constructor(private viewTitle: string, private _bodyContainer: HTMLElement, collapsed: boolean, initialBodySize: number, headerSize: number) {
 		super({
 			expandedBodySize: initialBodySize,
-			headerSize: headerSize,
+			sizing: headerSize,
 			initialState: collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED,
 			ariaHeaderLabel: viewTitle
 		});

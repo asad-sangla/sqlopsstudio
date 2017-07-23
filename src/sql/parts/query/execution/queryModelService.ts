@@ -23,7 +23,7 @@ import { ISlickRange } from 'angular2-slickgrid';
 
 import nls = require('vs/nls');
 import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
-import platform = require('vs/platform/platform');
+import platform = require('vs/platform/registry/common/platform');
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import Event, { Emitter } from 'vs/base/common/event';

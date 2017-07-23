@@ -20,10 +20,9 @@ import { IWorkspaceConfigurationService } from 'vs/workbench/services/configurat
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IWindowsService } from 'vs/platform/windows/common/windows';
-import { Registry } from 'vs/platform/platform';
+import { Registry } from 'vs/platform/registry/common/platform';
 import URI from 'vs/base/common/uri';
-import { IUntitledEditorService } from 'vs/workbench/services/untitled/common/untitledEditorService';
-import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
+import { IUntitledEditorService, UNTITLED_SCHEMA } from 'vs/workbench/services/untitled/common/untitledEditorService';
 
 import { ISlickRange } from 'angular2-slickgrid';
 import path = require('path');
@@ -160,11 +159,13 @@ export class ResultSerializer {
                 onAnswered: (value) => prompted = true
             }
         ];
+
+
         return this.prompter.prompt(questions).then(answers => {
             if (answers && answers[Constants.filepathPrompt]) {
                 // return filename if file does not exist or if user opted to overwrite file
                 if (!prompted || (prompted && answers[Constants.overwritePrompt])) {
-                    return answers[Constants.filepathPrompt];
+                    return <string>answers[Constants.filepathPrompt];
                 }
                 // call prompt again if user did not opt to overwrite
                 if (prompted && !answers[Constants.overwritePrompt]) {
@@ -232,7 +233,7 @@ export class ResultSerializer {
         // use current directory of the sql file if sql file is saved
         if (sqlUri.scheme === ResultSerializer.FILE_SCHEMA) {
             currentDirectory = path.dirname(sqlUri.fsPath);
-        } else if (sqlUri.scheme === UntitledEditorInput.SCHEMA) {
+        } else if (sqlUri.scheme === UNTITLED_SCHEMA) {
             // if sql file is unsaved/untitled but a workspace is open use workspace root
             let root = this.rootPath;
             if (root) {

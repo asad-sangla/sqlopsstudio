@@ -11,7 +11,7 @@ import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/common/
 import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
-import { IWorkspaceConfigurationValue } from 'vs/workbench/services/configuration/common/configuration';
+import {IConfigurationValue as TConfigurationValue } from 'vs/platform/configuration/common/configuration';
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import * as Constants from 'sql/parts/connection/common/constants';
@@ -30,7 +30,7 @@ suite('SQL ConnectionConfig tests', () => {
 	let capabilities: data.DataProtocolServerCapabilities[];
 	let onProviderRegistered = new Emitter<data.DataProtocolServerCapabilities>();
 
-	let configValueToConcat: IWorkspaceConfigurationValue<IConnectionProfileGroup[]> = {
+	let configValueToConcat: TConfigurationValue<IConnectionProfileGroup[]> = {
 		workspace: [{
 			name: 'g1',
 			id: 'g1',
@@ -82,10 +82,11 @@ suite('SQL ConnectionConfig tests', () => {
 		}
 		],
 		value: [],
-		default: []
+		default: [],
+		folder: []
 	};
 
-	let configValueToMerge: IWorkspaceConfigurationValue<IConnectionProfileGroup[]> = {
+	let configValueToMerge: TConfigurationValue<IConnectionProfileGroup[]> = {
 		workspace: [
 			{
 				name: 'g1',
@@ -132,10 +133,11 @@ suite('SQL ConnectionConfig tests', () => {
 				description: 'g1-2'
 			}],
 		value: [],
-		default: []
+		default: [],
+		folder: []
 	};
 
-	let connections: IWorkspaceConfigurationValue<IConnectionProfileStore[]> = {
+	let connections: TConfigurationValue<IConnectionProfileStore[]> = {
 		workspace: [{
 			options: {
 				serverName: 'server1',
@@ -178,10 +180,9 @@ suite('SQL ConnectionConfig tests', () => {
 			id: 'server3'
 		}
 		],
-		value: [
-
-		],
-		default: []
+		value: [],
+		default: [],
+		folder: []
 	};
 	setup(() => {
 		capabilitiesService = TypeMoq.Mock.ofType(CapabilitiesService);
@@ -512,7 +513,7 @@ suite('SQL ConnectionConfig tests', () => {
 
 	test('getConnections should return connections with a valid id', () => {
 		let getWorkspaceConnections: boolean = false;
-		let connectionsWithNoId: IWorkspaceConfigurationValue<IConnectionProfileStore[]> = {
+		let connectionsWithNoId: TConfigurationValue<IConnectionProfileStore[]> = {
 			user: connections.user.map(c => {
 				c.id = undefined;
 				return c;
@@ -522,7 +523,8 @@ suite('SQL ConnectionConfig tests', () => {
 				c.id = c.options['serverName'];
 				return c;
 			}),
-			value: connections.value
+			value: connections.value,
+			folder: []
 		};
 		workspaceConfigurationServiceMock.setup(x => x.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(
 			Constants.connectionsArrayName))

@@ -4,13 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { IWorkspaceConfigurationService, IWorkspaceConfigurationValue, IWorkspaceConfigurationKeys, IWorkspaceConfigurationValues  } from 'vs/workbench/services/configuration/common/configuration';
-import { IConfigurationServiceEvent  } from 'vs/platform/configuration/common/configuration';
+import { IWorkspaceConfigurationService  } from 'vs/workbench/services/configuration/common/configuration';
+import {
+	IConfigurationValue, IConfigurationData, IConfigurationKeys,
+	IConfigurationServiceEvent, IConfigurationValues } from 'vs/platform/configuration/common/configuration';
 import { TPromise } from 'vs/base/common/winjs.base';
 import Event from 'vs/base/common/event';
 
 export class WorkspaceConfigurationTestService implements IWorkspaceConfigurationService {
 	_serviceBrand: any;
+
+
+	getConfigurationData<T>(): IConfigurationData<T> {
+		return undefined;
+	}
 
     /**
 	 * Returns untrusted configuration keys for the current workspace.
@@ -43,7 +50,7 @@ export class WorkspaceConfigurationTestService implements IWorkspaceConfiguratio
 	/**
 	 * Override for the IConfigurationService#lookup() method that adds information about workspace settings.
 	 */
-	lookup<T>(key: string): IWorkspaceConfigurationValue<T> {
+	lookup<T>(key: string): IConfigurationValue<T> {
 		return undefined;
 	}
 
@@ -58,14 +65,14 @@ export class WorkspaceConfigurationTestService implements IWorkspaceConfiguratio
 	/**
 	 * Override for the IConfigurationService#keys() method that adds information about workspace settings.
 	 */
-	keys(): IWorkspaceConfigurationKeys {
+	keys(): IConfigurationKeys {
 		return undefined;
 	}
 
 	/**
 	 * Returns the defined values of configurations in the different scopes.
 	 */
-	values(): IWorkspaceConfigurationValues {
+	values(): IConfigurationValues {
 		return undefined;
 	}
 

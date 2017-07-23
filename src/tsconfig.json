@@ -12,9 +12,7 @@
 		"noImplicitReturns": true,
 		"baseUrl": ".",
 		"typeRoots": [
-			"typings",
-			"../node_modules/@types"
-		],
-		"alwaysStrict": true
+			"typings"
+		]
 	}
 }

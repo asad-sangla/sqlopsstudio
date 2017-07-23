@@ -11,7 +11,7 @@ import dom = require('vs/base/browser/dom');
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { CollapsibleViewletView } from 'vs/workbench/browser/viewlet';
+import { CollapsibleView, ICollapsibleViewOptions } from 'vs/workbench/parts/views/browser/views';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { AddServerAction, AddServerGroupAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
@@ -32,7 +32,7 @@ const $ = builder.$;
 /**
  * ServerTreeview implements the dynamic tree view.
  */
-export class ServerTreeView extends CollapsibleViewletView {
+export class ServerTreeView extends CollapsibleView {
 
 	public messages: builder.Builder;
 	private addServerAction: IAction;
@@ -51,7 +51,17 @@ export class ServerTreeView extends CollapsibleViewletView {
 		@IThemeService private _themeService: IThemeService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
-		super(actionRunner, false, nls.localize({ key: 'registeredServersSection', comment: ['Servers Tree'] }, "Servers Section"), messageService, keybindingService, contextMenuService);
+
+		super(<ICollapsibleViewOptions>{
+			id: nls.localize({ key: 'registeredServersSection', comment: ['Servers Tree'] }, "Servers Section"),
+			name: nls.localize({ key: 'registeredServersSection', comment: ['Servers Tree'] }, "Servers Section"),
+			actionRunner: actionRunner,
+			collapsed: false,
+			ariaHeaderLabel: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
+			sizing: undefined,
+			initialBodySize: undefined
+		}, keybindingService, contextMenuService);
+
 		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
 			AddServerAction.ID,
 			AddServerAction.LABEL);

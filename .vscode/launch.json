@@ -64,37 +64,9 @@
 			]
 		},
 		{
-			"type": "extensionHost",
-			"request": "launch",
-			"name": "Carbon API Tests",
-			"runtimeExecutable": "${execPath}",
-			"args": [
-				"${workspaceRoot}/extensions/vscode-api-tests/testWorkspace",
-				"--extensionDevelopmentPath=${workspaceRoot}/extensions/vscode-api-tests",
-				"--extensionTestsPath=${workspaceRoot}/extensions/vscode-api-tests/out"
-			],
-			"outFiles": [
-				"${workspaceRoot}/out/**/*.js"
-			]
-		},
-		{
-			"type": "extensionHost",
-			"request": "launch",
-			"name": "Carbon Tokenizer Tests",
-			"runtimeExecutable": "${execPath}",
-			"args": [
-				"${workspaceRoot}/extensions/vscode-colorize-tests/test",
-				"--extensionDevelopmentPath=${workspaceRoot}/extensions/vscode-colorize-tests",
-				"--extensionTestsPath=${workspaceRoot}/extensions/vscode-colorize-tests/out"
-			],
-			"outFiles": [
-				"${workspaceRoot}/out/**/*.js"
-			]
-		},
-		{
 			"type": "chrome",
 			"request": "attach",
-			"name": "Attach to VS Code",
+			"name": "Attach to Carbon",
 			"port": 9222
 		},
 		{
@@ -115,28 +87,6 @@
 				"--debug=5875"
 			],
 			"webRoot": "${workspaceRoot}"
-		},
-		{
-			"type": "node",
-			"request": "launch",
-			"name": "Git Unit Tests",
-			"protocol": "inspector",
-			"program": "${workspaceRoot}/extensions/git/node_modules/mocha/bin/_mocha",
-			"stopOnEntry": false,
-			"cwd": "${workspaceRoot}/extensions/git",
-			"outFiles": [
-				"${workspaceRoot}/extensions/git/out/**/*.js"
-			]
-		},
-		{
-			"name": "Attach to TS Server",
-			"type": "node",
-			"request": "attach",
-			"port": 5859,
-			"protocol": "legacy",
-			"outFiles": [
-				"${workspaceRoot}/extensions/node_modules/typescript/lib/**/*.js"
-			]
 		},
 		{
 			"type": "node",
@@ -167,9 +117,9 @@
 	],
 	"compounds": [
 		{
-			"name": "Debug VS Code Main and Renderer",
+			"name": "Debug Carbon Main and Renderer",
 			"configurations": [
-				"Launch VS Code",
+				"Launch Carbon",
 				"Attach to Main Process"
 			]
 		}

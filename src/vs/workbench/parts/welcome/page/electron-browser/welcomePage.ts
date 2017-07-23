@@ -38,10 +38,12 @@ import { IThemeService, registerThemingParticipant } from 'vs/platform/theme/com
 import { registerColor, focusBorder, textLinkForeground, textLinkActiveForeground, foreground, descriptionForeground, contrastBorder, activeContrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import { getExtraColor } from 'vs/workbench/parts/welcome/walkThrough/node/walkThroughUtils';
 import { IExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/common/extensions';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 used();
 
-const enabledKey = 'workbench.welcome.enabled';
+const configurationKey = 'workbench.startupEditor';
+const oldConfigurationKey = 'workbench.welcome.enabled';
 const telemetryFrom = 'welcomePage';
 
 export class WelcomePageContribution implements IWorkbenchContribution {
@@ -52,9 +54,10 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IWorkbenchEditorService editorService: IWorkbenchEditorService,
 		@IBackupFileService backupFileService: IBackupFileService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IStorageService storageService: IStorageService
 	) {
-		const enabled = configurationService.lookup<boolean>(enabledKey).value;
+		const enabled = isWelcomePageEnabled(configurationService);
 		if (enabled) {
 			TPromise.join([
 				backupFileService.hasBackups(),
@@ -71,6 +74,17 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 	public getId() {
 		return 'vs.welcomePage';
 	}
+}
+
+function isWelcomePageEnabled(configurationService: IConfigurationService) {
+	const startupEditor = configurationService.lookup(configurationKey);
+	if (!startupEditor.user && !startupEditor.workspace) {
+		const welcomeEnabled = configurationService.lookup(oldConfigurationKey);
+		if (welcomeEnabled.value !== undefined && welcomeEnabled.value !== null) {
+			return welcomeEnabled.value;
+		}
+	}
+	return startupEditor.value === 'welcomePage';
 }
 
 export class WelcomePageAction extends Action {
@@ -197,19 +211,19 @@ class WelcomePage {
 	}
 
 	private onReady(container: HTMLElement, recentlyOpened: TPromise<{ files: string[]; folders: string[]; }>, installedExtensions: TPromise<IExtensionStatus[]>): void {
-		const enabled = this.configurationService.lookup<boolean>(enabledKey).value;
+		const enabled = isWelcomePageEnabled(this.configurationService);
 		const showOnStartup = <HTMLInputElement>container.querySelector('#showOnStartup');
 		if (enabled) {
 			showOnStartup.setAttribute('checked', 'checked');
 		}
 		showOnStartup.addEventListener('click', e => {
-			this.configurationEditingService.writeConfiguration(ConfigurationTarget.USER, { key: enabledKey, value: showOnStartup.checked });
+			this.configurationEditingService.writeConfiguration(ConfigurationTarget.USER, { key: configurationKey, value: showOnStartup.checked ? 'welcomePage' : 'newUntitledFile' });
 		});
 
 		recentlyOpened.then(({ folders }) => {
 			if (this.contextService.hasWorkspace()) {
-				const current = this.contextService.getWorkspace().resource.fsPath;
-				folders = folders.filter(folder => !this.pathEquals(folder, current));
+				const currents = this.contextService.getWorkspace2().roots;
+				folders = folders.filter(folder => !currents.some(current => this.pathEquals(folder, current.fsPath)));
 			}
 			if (!folders.length) {
 				const recent = container.querySelector('.welcomePage') as HTMLElement;

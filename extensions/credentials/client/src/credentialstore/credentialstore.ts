@@ -35,7 +35,7 @@ export class CredentialStore implements ICredentialStore {
             self._client
             .sendRequest(Contracts.ReadCredentialRequest.type, cred)
             .then(returnedCred => {
-                resolve(returnedCred);
+                resolve(<Contracts.Credential>returnedCred);
             }, err => reject(err));
         });
     }
@@ -50,7 +50,7 @@ export class CredentialStore implements ICredentialStore {
             self._client
             .sendRequest(Contracts.SaveCredentialRequest.type, cred)
             .then(status => {
-                resolve(status);
+                resolve(<boolean>status);
             }, err => reject(err));
         });
     }
@@ -63,7 +63,7 @@ export class CredentialStore implements ICredentialStore {
             self._client
             .sendRequest(Contracts.DeleteCredentialRequest.type, cred)
             .then(status => {
-                resolve(status);
+                resolve(<boolean>status);
             }, err => reject(err));
         });
     }

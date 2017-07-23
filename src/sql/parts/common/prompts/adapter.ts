@@ -18,7 +18,7 @@ import { IQuestion, IPrompter, IPromptCallback } from './question';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IOutputService, IOutputChannel, IOutputChannelRegistry, Extensions as OutputExtensions } from 'vs/workbench/parts/output/common/output';
-import { Registry } from 'vs/platform/platform';
+import { Registry } from 'vs/platform/registry/common/platform';
 
 // Supports simple pattern for prompting for user input and acting on this
 export default class Prompt implements IPrompter {

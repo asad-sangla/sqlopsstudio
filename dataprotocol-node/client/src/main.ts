@@ -5,6 +5,7 @@
 'use strict';
 
 import * as cp from 'child_process';
+import * as stream from 'stream';
 import ChildProcess = cp.ChildProcess;
 
 import {
@@ -193,6 +194,7 @@ interface ConnectionErrorHandler {
 interface ConnectionCloseHandler {
 	(): void;
 }
+function createConnection(inputStream: stream.Readable, outputStream: NodeJS.WritableStream, errorHandler: ConnectionErrorHandler, closeHandler: ConnectionCloseHandler): IConnection;
 function createConnection(inputStream: NodeJS.ReadableStream, outputStream: NodeJS.WritableStream, errorHandler: ConnectionErrorHandler, closeHandler: ConnectionCloseHandler): IConnection;
 function createConnection(reader: MessageReader, writer: MessageWriter, errorHandler: ConnectionErrorHandler, closeHandler: ConnectionCloseHandler): IConnection;
 function createConnection(input: any, output: any, errorHandler: ConnectionErrorHandler, closeHandler: ConnectionCloseHandler): IConnection {
@@ -1089,9 +1091,9 @@ export class LanguageClient {
 					return Promise.reject(`Launching server using runtime ${node.runtime} failed.`);
 				}
 				this._childProcess = process;
-				process.stderr.on('data', data => this.outputChannel.append(data.toString(encoding)));
+				process.stderr.on('data', data => this.outputChannel.append(data.toString()));
 				if (node.transport === TransportKind.ipc) {
-					process.stdout.on('data', data => this.outputChannel.append(data.toString(encoding)));
+					process.stdout.on('data', data => this.outputChannel.append(data.toString()));
 					return Promise.resolve(createConnection(new IPCMessageReader(process), new IPCMessageWriter(process), errorHandler, closeHandler));
 				} else {
 					return Promise.resolve(createConnection(process.stdout, process.stdin, errorHandler, closeHandler));
@@ -1112,9 +1114,9 @@ export class LanguageClient {
 							reject(error);
 						} else {
 							this._childProcess = cp;
-							cp.stderr.on('data', data => this.outputChannel.append(data.toString(encoding)));
+							cp.stderr.on('data', data => this.outputChannel.append(data.toString()));
 							if (node.transport === TransportKind.ipc) {
-								cp.stdout.on('data', data => this.outputChannel.append(data.toString(encoding)));
+								cp.stdout.on('data', data => this.outputChannel.append(data.toString()));
 								resolve(createConnection(new IPCMessageReader(this._childProcess), new IPCMessageWriter(this._childProcess), errorHandler, closeHandler));
 							} else {
 								resolve(createConnection(cp.stdout, cp.stdin, errorHandler, closeHandler));
@@ -1131,7 +1133,7 @@ export class LanguageClient {
 			if (!process || !process.pid) {
 				return Promise.reject(`Launching server using command ${command.command} failed.`);
 			}
-			process.stderr.on('data', data => this.outputChannel.append(data.toString(encoding)));
+			process.stderr.on('data', data => this.outputChannel.append(data.toString()));
 			this._childProcess = process;
 			return Promise.resolve(createConnection(process.stdout, process.stdin, errorHandler, closeHandler));
 		}

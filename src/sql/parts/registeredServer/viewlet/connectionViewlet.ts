@@ -9,7 +9,7 @@ import 'vs/css!./media/connectionViewlet';
 import { ThrottledDelayer } from 'vs/base/common/async';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Builder, Dimension } from 'vs/base/browser/builder';
-import { Viewlet, IViewletView } from 'vs/workbench/browser/viewlet';
+import { Viewlet } from 'vs/workbench/browser/viewlet';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { addStandardDisposableListener, toggleClass } from 'vs/base/browser/dom';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -27,6 +27,8 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { ClearSearchAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import { IView } from 'vs/workbench/parts/views/browser/views';
+
 
 export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 
@@ -34,7 +36,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	private root: HTMLElement;
 	private searchBox: InputBox;
 	private toDispose: IDisposable[] = [];
-	private views: IViewletView[];
+	private views: IView[];
 	private serverTreeView: ServerTreeView;
 	private viewletContainer: Builder;
 	private searchBoxContainer: Builder;

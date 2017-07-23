@@ -11,9 +11,9 @@ import * as uuid from 'vs/base/common/uuid';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { getMachineId } from 'vs/base/node/id';
 import { resolveCommonProperties, machineIdStorageKey } from '../node/commonProperties';
-import product from 'vs/platform/node/product';
 
 // {{ SQL CARBON EDIT }}
+import product from 'vs/platform/node/product';
 import * as Utils from 'sql/common/telemetryUtilities';
 
 const SQM_KEY: string = '\\Software\\Microsoft\\SQMClient';
@@ -124,7 +124,6 @@ function getWinRegKeyData(key: string, name: string, hive: string): TPromise<str
 
 
 // {{SQL CARBON EDIT}}
-
 // Get the unique ID for the current user
 function getUserId(storageService: IStorageService): Promise<string> {
 	var userId = storageService.get('common.userId');
