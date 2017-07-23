@@ -8,7 +8,7 @@
 import * as vscode from 'vscode';
 import * as ts from 'typescript';
 import { PackageDocument } from './packageDocumentHelper';
-import { ExtensionLinter } from './extensionLinter';
+// import { ExtensionLinter } from './extensionLinter';
 
 export function activate(context: vscode.ExtensionContext) {
 	const registration = vscode.languages.registerDocumentLinkProvider({ language: 'typescript', pattern: '**/vscode.d.ts' }, _linkProvider);
@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
 	//package.json suggestions
 	context.subscriptions.push(registerPackageDocumentCompletions());
 
-	context.subscriptions.push(new ExtensionLinter(context));
+	//context.subscriptions.push(new ExtensionLinter(context));
 }
 
 const _linkProvider = new class implements vscode.DocumentLinkProvider {
