@@ -124,7 +124,8 @@ function getRpmPackageArch(arch) {
 }
 
 function prepareRpmPackage(arch) {
-	const binaryDir = '../VSCode-linux-' + arch;
+	// {{SQL CARBON EDIT}}
+	const binaryDir = '../carbon-linux-' + arch;
 	const rpmArch = getRpmPackageArch(arch);
 
 	return function () {
