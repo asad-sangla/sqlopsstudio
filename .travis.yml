@@ -44,7 +44,6 @@ script:
   - gulp compile --silent --max_old_space_size=4096
   - gulp optimize-vscode --silent --max_old_space_size=4096
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/test.sh --coverage --reporter dot; else ./scripts/test.sh --reporter dot; fi
-  - ./scripts/test-integration.sh
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then node_modules/.bin/coveralls < .build/coverage/lcov.info; fi
