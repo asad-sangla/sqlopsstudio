@@ -9,7 +9,7 @@ import { SERVER_DASHBOARD_SETTING, serverDashboardSettingSchema } from 'sql/part
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
 const dashboardConfig: IConfigurationNode = {
-	id: 'dashboard',
+	id: 'Dashboard',
 	type: 'object',
 	properties: {
 		[DATABASE_DASHBOARD_SETTING]: databaseDashboardSettingSchema,

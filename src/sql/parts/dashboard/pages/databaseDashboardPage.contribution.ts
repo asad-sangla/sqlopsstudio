@@ -25,6 +25,9 @@ export const databaseDashboardSettingSchema: IJSONSchema = {
 			provider: {
 				type: 'string'
 			},
+			edition: {
+				type: 'number'
+			},
 			gridItemConfig: {
 				type: 'object',
 				properties: {

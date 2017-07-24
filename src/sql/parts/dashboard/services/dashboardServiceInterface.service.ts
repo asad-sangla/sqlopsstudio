@@ -34,8 +34,6 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 
 const DASHBOARD_SETTINGS = 'dashboard';
-const DATABASEPAGE_SETTINGS = 'database';
-const SERVERPAGE_SETTINGS = 'server';
 
 /* Wrapper for a metadata service that contains the uri string to use on each request */
 export class SingleConnectionMetadataService {
@@ -275,21 +273,12 @@ export class DashboardServiceInterface implements OnDestroy {
 	}
 
 	/**
-	 * Get databasePageSettings
-	 * @returns JSON for the database page settings
+	 * Get settings for given string
+	 * @param type string of setting to get from dashboard settings; i.e dashboard.{type}
 	 */
-	public get databasePageSettings(): Array<WidgetConfig> {
+	public getSettings(type: string): Array<WidgetConfig> {
 		let config = this._configService.getConfiguration(DASHBOARD_SETTINGS);
-		return config[DATABASEPAGE_SETTINGS] || [];
-	}
-
-	/**
-	 * Get serverPageSettings
-	 * @returns JSON for server page settings
-	 */
-	public get serverPageSettings(): Array<WidgetConfig> {
-		let config = this._configService.getConfiguration(DASHBOARD_SETTINGS);
-		return config[SERVERPAGE_SETTINGS] || [];
+		return config[type] || [];
 	}
 
 	private get handleDashboardEvent(): (event: string) => void {

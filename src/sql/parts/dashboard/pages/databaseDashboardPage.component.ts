@@ -13,7 +13,7 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 
 export class DatabaseDashboardPage extends DashboardPage implements OnInit {
-	private propertiesConfig: WidgetConfig = {
+	protected propertiesWidget: WidgetConfig = {
 		name: 'Database Properties',
 		icon: 'database',
 		widget: {
@@ -21,24 +21,21 @@ export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 		},
 		context: 'database',
 		background_color: colors.editorBackground,
-		provider: undefined
+		provider: undefined,
+		edition: undefined
 	};
 
-	protected widgets: Array<WidgetConfig>;
+	protected readonly context = 'database';
+
 	constructor(
-		@Inject(forwardRef(() => BreadcrumbService)) private breadcrumbService: BreadcrumbService,
+		@Inject(forwardRef(() => BreadcrumbService)) private _breadcrumbService: BreadcrumbService,
 		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface
 	) {
 		super(dashboardService);
-		this.widgets = dashboardService.databasePageSettings.filter((item) => {
-			return item.provider === undefined || item.provider === dashboardService.connectionManagementService.connectionInfo.providerId;
-		});
-		this.addProvider([this.propertiesConfig]);
-		this.addContext('database');
-		this.validateConfig();
+		this.init();
 	}
 
 	ngOnInit() {
-		this.breadcrumbService.setBreadcrumbs(BreadcrumbClass.DatabasePage);
+		this._breadcrumbService.setBreadcrumbs(BreadcrumbClass.DatabasePage);
 	}
 }

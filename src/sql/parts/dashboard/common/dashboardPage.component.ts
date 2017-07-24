@@ -17,7 +17,7 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 		class: 'dashboard-page'
 	}
 })
-export class DashboardPage {
+export abstract class DashboardPage {
 
 	protected SKELETON_WIDTH = 5;
 	protected widgets: Array<WidgetConfig> = [];
@@ -44,44 +44,102 @@ export class DashboardPage {
 		'limit_to_screen': true,   //  When resizing the screen, with this true and auto_resize false, the grid will re-arrange to fit the screen size. Please note, at present this only works with cascade direction up.
 	};
 
+	// a set of config modifiers
+	private readonly _configModifiers: Array<(item: Array<WidgetConfig>) => Array<WidgetConfig>> = [
+		this.validateConfig,
+		this.addProvider,
+		this.addEdition,
+		this.addContext,
+		this.filterWidgets
+	];
+
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) protected dashboardService: DashboardServiceInterface
 	) { }
 
+	protected init() {
+		let tempWidgets = this.dashboardService.getSettings(this.context);
+		let properties = this.propertiesWidget;
+		this._configModifiers.forEach((cb) => {
+			tempWidgets = cb.apply(this, [tempWidgets]);
+			properties = cb.apply(this, [[properties]])[0];
+		});
+		this.widgets = tempWidgets;
+		this.propertiesWidget = properties;
+	}
+
+	protected abstract propertiesWidget: WidgetConfig;
+	protected abstract get context(): string;
+
 	/**
-	 * Adds the provider to current widgets and any passed widgets (for locally defined widget)
-	 * @param widgets Array of widgets to add provider onto other than this.widgets
+	 * Returns a filtered version of the widgets pass based on edition and provider
+	 * @param config widgets to filter
 	 */
-	protected addProvider(addWidgets?: Array<WidgetConfig>): void {
+	private filterWidgets(config: WidgetConfig[]): Array<WidgetConfig> {
+		let returnConfig = config;
+		// filter by provider
+		returnConfig = returnConfig.filter((item) => {
+			return item.provider === undefined || item.provider === this.dashboardService.connectionManagementService.connectionInfo.providerId;
+		});
+		//filter by edition
+		returnConfig = returnConfig.filter((item) => {
+			return item.edition === undefined || item.edition === this.dashboardService.connectionManagementService.connectionInfo.serverInfo.engineEditionId;
+		});
+		return returnConfig;
+	}
+
+	/**
+	 * Add provider to the passed widgets and returns the new widgets
+	 * @param widgets Array of widgets to add provider onto
+	 */
+	protected addProvider(config: WidgetConfig[]): Array<WidgetConfig> {
 		let provider = this.dashboardService.connectionManagementService.connectionInfo.providerId;
-		let totalWidgets = addWidgets ? this.widgets.concat(addWidgets) : this.widgets;
-		totalWidgets.forEach((item) => {
+		return config.map((item) => {
 			if (item.provider === undefined) {
 				item.provider = provider;
 			}
+			return item;
 		});
 	}
 
 	/**
-	 * Adds passed context to this.widgets and passed widgets
-	 * @param context Context to add ('database' or 'server' atm)
-	 * @param widgets Additional widgets to add context to
+	 * Adds the edition to the passed widgets and returns the new widgets
+	 * @param widgets Array of widgets to add edition onto
 	 */
-	protected addContext(context: string, addWidgets?: Array<WidgetConfig>): void {
-		let totalWidgets = addWidgets ? this.widgets.concat(addWidgets) : this.widgets;
-		totalWidgets.forEach((item) => {
-			item.context = context;
+	protected addEdition(config: WidgetConfig[]): Array<WidgetConfig> {
+		let edition = this.dashboardService.connectionManagementService.connectionInfo.serverInfo.engineEditionId;
+		return config.map((item) => {
+			if (item.edition === undefined) {
+				item.edition = edition;
+			}
+			return item;
 		});
 	}
 
 	/**
-	 * Validates configs to make sure nothing will error out
+	 * Adds the context to the passed widgets and returns the new widgets
+	 * @param widgets Array of widgets to add context to
 	 */
-	protected validateConfig() {
-		this.widgets.forEach((widget) => {
+	protected addContext(config: WidgetConfig[]): Array<WidgetConfig> {
+		let context = this.context;
+		return config.map((item) => {
+			if (item.context === undefined) {
+				item.context = context;
+			}
+			return item;
+		});
+	}
+
+	/**
+	 * Validates configs to make sure nothing will error out and returns the modified widgets
+	 * @param config Array of widgets to validate
+	 */
+	protected validateConfig(config: WidgetConfig[]): Array<WidgetConfig> {
+		return config.map((widget) => {
 			if (widget.gridItemConfig === undefined) {
 				widget.gridItemConfig = {};
 			}
+			return widget;
 		});
 	}
 }

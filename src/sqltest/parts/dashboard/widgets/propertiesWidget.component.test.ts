@@ -94,7 +94,8 @@ suite('Dashboard Properties Widget Tests', () => {
 				'properties-widget': propertiesConfig
 			},
 			context: 'server',
-			provider: 'MSSQL'
+			provider: 'MSSQL',
+			edition: 0
 		};
 
 		let dashboardService = TypeMoq.Mock.ofType(DashboardServiceInterface, TypeMoq.MockBehavior.Loose, [{}]);

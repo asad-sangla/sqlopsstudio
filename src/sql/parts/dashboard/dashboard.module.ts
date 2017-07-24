@@ -24,9 +24,8 @@ import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost
 
 /* Base Components */
 import { DashboardComponent, DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dashboard.component';
-import { DashboardPage } from 'sql/parts/dashboard/common/dashboardPage.component';
 import { DashboardWidgetWrapper } from 'sql/parts/dashboard/common/dashboardWidgetWrapper.component';
-let baseComponents = [DashboardComponent, DashboardWidgetWrapper, ComponentHostDirective, DashboardPage];
+let baseComponents = [DashboardComponent, DashboardWidgetWrapper, ComponentHostDirective];
 
 /* Pages */
 import { ServerDashboardPage } from 'sql/parts/dashboard/pages/serverDashboardPage.component';

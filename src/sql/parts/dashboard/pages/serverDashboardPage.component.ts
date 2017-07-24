@@ -13,7 +13,7 @@ import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboar
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 
 export class ServerDashboardPage extends DashboardPage implements OnInit {
-	private propertiesConfig: WidgetConfig = {
+	protected propertiesWidget: WidgetConfig = {
 		name: 'Server Properties',
 		icon: 'server-page',
 		widget: {
@@ -21,22 +21,18 @@ export class ServerDashboardPage extends DashboardPage implements OnInit {
 		},
 		context: 'server',
 		background_color: colors.editorBackground,
-		provider: undefined
+		provider: undefined,
+		edition: undefined
 	};
 
-	protected widgets: Array<WidgetConfig>;
+	protected readonly context = 'server';
 
 	constructor(
 		@Inject(forwardRef(() => BreadcrumbService)) private breadcrumbService: BreadcrumbService,
 		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface
 	) {
 		super(dashboardService);
-		this.widgets = dashboardService.serverPageSettings.filter((item) => {
-			return item.provider === undefined || item.provider === dashboardService.connectionManagementService.connectionInfo.providerId;
-		});
-		this.addProvider([this.propertiesConfig]);
-		this.addContext('server');
-		this.validateConfig();
+		this.init();
 	}
 
 	ngOnInit() {
