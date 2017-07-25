@@ -14,8 +14,10 @@ import 'vs/css!sql/parts/grid/media/slickGrid';
 import * as Constants from 'sql/parts/query/common/constants';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 
-import { ElementRef, QueryList, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject,
-	ViewChildren, forwardRef, EventEmitter } from '@angular/core';
+import {
+	ElementRef, QueryList, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject,
+	ViewChildren, forwardRef, EventEmitter
+} from '@angular/core';
 import { IGridDataRow, SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
 import { IGridIcon, IMessage, IRange, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
@@ -72,7 +74,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			functionality: (batchId, resultId, index) => {
 				let selection = this.slickgrids.toArray()[index].getSelectedRanges();
 				if (selection.length <= 1) {
-					this.handleContextClick({type: 'savecsv', batchId: batchId, resultId: resultId, index: index, selection: selection});
+					this.handleContextClick({ type: 'savecsv', batchId: batchId, resultId: resultId, index: index, selection: selection });
 				} else {
 					this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
 				}
@@ -85,7 +87,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			functionality: (batchId, resultId, index) => {
 				let selection = this.slickgrids.toArray()[index].getSelectedRanges();
 				if (selection.length <= 1) {
-					this.handleContextClick({type: 'savejson', batchId: batchId, resultId: resultId, index: index, selection: selection});
+					this.handleContextClick({ type: 'savejson', batchId: batchId, resultId: resultId, index: index, selection: selection });
 				} else {
 					this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
 				}
@@ -98,7 +100,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			functionality: (batchId, resultId, index) => {
 				let selection = this.slickgrids.toArray()[index].getSelectedRanges();
 				if (selection.length <= 1) {
-					this.handleContextClick({type: 'saveexcel', batchId: batchId, resultId: resultId, index: index, selection: selection});
+					this.handleContextClick({ type: 'saveexcel', batchId: batchId, resultId: resultId, index: index, selection: selection });
 				} else {
 					this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
 				}
@@ -112,6 +114,8 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	// All datasets
 	private dataSets: IGridDataSet[] = [];
 	private messages: IMessage[] = [];
+	private messageStore: IMessage[] = [];
+	private messageTimeout: number;
 	private scrollTimeOut: number;
 	private resizing = false;
 	private resizeHandleTop: string = '0';
@@ -171,7 +175,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		this.baseDestroy();
 	}
 
-	protected initShortcuts(shortcuts: {[name: string]: Function}): void {
+	protected initShortcuts(shortcuts: { [name: string]: Function }): void {
 		shortcuts['event.nextGrid'] = () => {
 			this.navigateToGrid(this.activeGrid + 1);
 		};
@@ -186,7 +190,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	handleStart(self: QueryComponent, event: any): void {
 		self.messages = [];
 		self.dataSets = [];
-		self.placeHolderDataSets =  [];
+		self.placeHolderDataSets = [];
 		self.renderedDataSets = self.placeHolderDataSets;
 		self.totalElapsedTimeSpan = undefined;
 		self.complete = false;
@@ -199,19 +203,23 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	}
 
 	handleMessage(self: QueryComponent, event: any): void {
-		self.messages.push(event.data);
-		self._cd.detectChanges();
-		this.scrollMessages();
+		self.messageStore.push(event.data);
+		clearTimeout(self.messageTimeout);
+		self.messageTimeout = setTimeout(() => {
+			self.messages = self.messages.concat(self.messageStore);
+			self.messageStore = [];
+			self._cd.detectChanges();
+			self.scrollMessages();
+		}, 10);
 	}
 
 	handleResultSet(self: QueryComponent, event: any): void {
 		let resultSet = event.data;
 
 		// No column info found, so define a column of no name by default
-		if (!resultSet.columnInfo)
-		{
+		if (!resultSet.columnInfo) {
 			resultSet.columnInfo = [];
-			resultSet.columnInfo[0] = {columnName: ''};
+			resultSet.columnInfo[0] = { columnName: '' };
 		}
 		// Setup a function for generating a promise to lookup result subsets
 		let loadDataFunction = (offset: number, count: number): Promise<IGridDataRow[]> => {
@@ -284,7 +292,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	/**
 	 * Perform copy and do other actions for context menu on the messages component
 	 */
-	handleMessagesContextClick(event: {type: string, selectedRange: IRange}): void {
+	handleMessagesContextClick(event: { type: string, selectedRange: IRange }): void {
 		switch (event.type) {
 			case 'copySelection':
 				let selectedText = event.selectedRange.text();
@@ -352,7 +360,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			self._cd.detectChanges();
 
 			if (self.firstRender) {
-				let setActive = function() {
+				let setActive = () => {
 					if (self.firstRender && self.slickgrids.toArray().length > 0) {
 						self.slickgrids.toArray()[0].setActive();
 						self.firstRender = false;
@@ -394,8 +402,8 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 				self.resizing = true;
 				self._cd.detectChanges();
 
-			// Stop the animation if the drag is out of the allowed range.
-			// The animation is resumed when the drag comes back into the allowed range.
+				// Stop the animation if the drag is out of the allowed range.
+				// The animation is resumed when the drag comes back into the allowed range.
 			} else {
 				self.resizing = false;
 			}
@@ -411,7 +419,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 				self._cd.detectChanges();
 				self.resizeGrids();
 
-			// Otherwise just update the UI to show that the drag is complete
+				// Otherwise just update the UI to show that the drag is complete
 			} else {
 				self._cd.detectChanges();
 			}
@@ -516,8 +524,8 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		const self = this;
 		setTimeout(() => {
 			for (let grid of self.renderedDataSets) {
-					grid.resized.emit();
-				}
+				grid.resized.emit();
+			}
 		});
 	}
 
