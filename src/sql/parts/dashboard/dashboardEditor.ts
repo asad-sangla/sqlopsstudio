@@ -70,7 +70,9 @@ export class DashboardEditor extends BaseEditor {
 			if (oldInput) {
 				this._disposeEditors();
 			}
-			this._dashboardContainer = DOM.append(parentElement, DOM.$('.dashboardEditor'));
+			let container = DOM.$<HTMLElement>('.dashboardEditor');
+			container.style.height = '100%';
+			this._dashboardContainer = DOM.append(parentElement, container);
 			this.input.container = this._dashboardContainer;
 			this.bootstrapAngular(input);
 		} else {
