@@ -18,6 +18,7 @@ import { IInsightsConfig } from './interfaces';
 /* Insights */
 import { ChartInsight } from './views/chartInsight.component';
 import { CountInsight } from './views/countInsight.component';
+import { ImageInsight } from './views/imageInsight.component';
 
 import { SimpleExecuteResult } from 'data';
 
@@ -35,7 +36,8 @@ export interface IInsightsView {
 
 const insightMap: { [x: string]: Type<IInsightsView> } = {
 	'chart': ChartInsight,
-	'count': CountInsight
+	'count': CountInsight,
+	'image': ImageInsight
 };
 
 @Component({
@@ -108,9 +110,11 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 					let componentRef = self.componentHost.viewContainerRef.createComponent(componentFactory);
 					let componentInstance = <IInsightsView>componentRef.instance;
 					componentInstance.data = result;
-					componentInstance.customFields.forEach((field) => {
-						componentInstance[field] = self.insightConfig.type[typeKey][field];
-					});
+					if (self.insightConfig.type && self.insightConfig.type[typeKey]) {
+						componentInstance.customFields.forEach((field) => {
+							componentInstance[field] = self.insightConfig.type[typeKey][field];
+						});
+					}
 					if (componentInstance.ngOnInit) {
 						componentInstance.ngOnInit();
 					}

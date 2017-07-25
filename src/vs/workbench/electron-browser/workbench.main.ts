@@ -131,6 +131,7 @@ import 'sql/workbench/electron-browser/main.contribution';
 /* Insights */
 import 'sql/parts/dashboard/widgets/insights/views/chartInsight.contribution';
 import 'sql/parts/dashboard/widgets/insights/views/countInsight.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/imageInsight.contribution';
 /* Widgets */
 import 'sql/parts/dashboard/widgets/insights/insightsWidget.contribution';
 import 'sql/parts/dashboard/widgets/explorer/explorerWidget.contribution';

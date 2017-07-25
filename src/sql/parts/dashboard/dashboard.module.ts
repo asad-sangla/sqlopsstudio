@@ -45,7 +45,8 @@ let widgetFilters = [TasksPipe, ExplorerFilter];
 import { InsightsWidget } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 import { CountInsight } from 'sql/parts/dashboard/widgets/insights/views/countInsight.component';
 import { ChartInsight } from 'sql/parts/dashboard/widgets/insights/views/chartInsight.component';
-let insightComponents = [InsightsWidget, CountInsight, ChartInsight];
+import { ImageInsight } from 'sql/parts/dashboard/widgets/insights/views/imageInsight.component';
+let insightComponents = [InsightsWidget, CountInsight, ChartInsight, ImageInsight];
 
 // Setup routes for various child components
 const appRoutes: Routes = [

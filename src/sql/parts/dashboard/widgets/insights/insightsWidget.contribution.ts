@@ -14,6 +14,7 @@ let taskRegistry = <ITaskRegistry>Registry.as(TaskExtensions.TaskContribution);
 
 export const insightsSchema: IJSONSchema = {
 	type: 'object',
+	description: nls.localize('insightWidgetDescription', 'Adds a widget that can query a server or database and display the results in multiple ways - as a chart, summarized count, and more'),
 	properties: {
 		type: {
 			type: 'object',
@@ -22,10 +23,12 @@ export const insightsSchema: IJSONSchema = {
 			maxItems: 1
 		},
 		query: {
-			type: ['string', 'array']
+			type: ['string', 'array'],
+			description:  nls.localize('insightQueryDescription', 'SQL query to run. This should return exactly 1 resultset.')
 		},
 		queryFile: {
-			type: 'string'
+			type: 'string',
+			description: nls.localize('insightQueryFileDescription','[Optional] path to a file that contains a query. Use if "query" is not set')
 		},
 		details: {
 			type: 'object',
