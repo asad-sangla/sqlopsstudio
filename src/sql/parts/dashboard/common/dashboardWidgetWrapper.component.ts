@@ -11,6 +11,7 @@ import {
 
 import { ComponentHostDirective } from './componentHost.directive';
 import { WidgetConfig, WIDGET_CONFIG, IDashboardWidget } from './dashboardWidget';
+import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 
 /* Widgets */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
@@ -26,6 +27,7 @@ import * as colors from 'vs/platform/theme/common/colorRegistry';
 import * as themeColors from 'vs/workbench/common/theme';
 import { Action } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
+import { Registry } from 'vs/platform/registry/common/platform';
 
 const componentMap: { [x: string]: Type<IDashboardWidget> } = {
 	'properties-widget': PropertiesWidgetComponent,
@@ -76,7 +78,21 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 			console.error('Exactly 1 widget must be defined per space');
 			return;
 		}
-		let componentFactory = this._componentFactoryResolver.resolveComponentFactory(componentMap[Object.keys(this._config.widget)[0]]);
+		let key = Object.keys(this._config.widget)[0];
+		let selector = componentMap[key];
+
+		if (selector === undefined) {
+			let widgetRegistry = <IInsightRegistry>Registry.as(Extensions.InsightContribution);
+			let config = widgetRegistry.getRegisteredExtensionInsights(key);
+			if (config === undefined) {
+				console.error('Could not find selector', key);
+				return;
+			}
+			selector = componentMap['insights-widget'];
+			this._config.widget['insights-widget'] = config;
+		}
+
+		let componentFactory = this._componentFactoryResolver.resolveComponentFactory(selector);
 
 		let viewContainerRef = this.componentHost.viewContainerRef;
 		viewContainerRef.clear();

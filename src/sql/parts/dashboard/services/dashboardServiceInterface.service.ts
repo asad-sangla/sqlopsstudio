@@ -22,7 +22,7 @@ import { IQueryManagementService } from 'sql/parts/query/common/queryManagement'
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
-import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 
 import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
@@ -260,7 +260,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	/**
 	 * Opens the insight widget
 	 */
-	public openInsight(query: InsightsConfig): void {
+	public openInsight(query: IInsightsConfig): void {
 		TaskUtilities.openInsight(query, this.connectionManagementService.connectionInfo.connectionProfile, this._insightsDialogService);
 	}
 

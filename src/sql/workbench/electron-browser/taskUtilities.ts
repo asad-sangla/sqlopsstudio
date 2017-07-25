@@ -15,7 +15,7 @@ import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
-import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 
 import { withElementById } from 'vs/base/browser/builder';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
@@ -182,6 +182,6 @@ export function showRestore(connection: IConnectionProfile, restoreDialogService
 	});
 }
 
-export function openInsight(query: InsightsConfig, profile: IConnectionProfile, insightDialogService: IInsightsDialogService) {
+export function openInsight(query: IInsightsConfig, profile: IConnectionProfile, insightDialogService: IInsightsDialogService) {
 	insightDialogService.show(query, profile);
 }

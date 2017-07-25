@@ -20,7 +20,7 @@ export interface WidgetConfig {
 	provider: string;
 	edition: number;
 	gridItemConfig?: NgGridItemConfig;
-	widget: any;
+	widget: Object;
 	background_color?: string;
 	border?: string;
 }

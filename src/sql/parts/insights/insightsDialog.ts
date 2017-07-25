@@ -10,7 +10,7 @@ import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/co
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { Modal } from 'sql/parts/common/modal/modal';
-import { InsightsConfig, IInsightLabel } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { IInsightsConfig, IInsightsLabel } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { Conditional } from 'sql/parts/dashboard/common/interfaces';
 import { ITaskRegistry, Extensions as TaskExtensions } from 'sql/platform/tasks/taskRegistry';
@@ -185,7 +185,7 @@ export default class InsightsDialog extends Modal {
 	private _connectionProfile: IConnectionProfile;
 	private _rows: DbCellValue[][];
 	private _columns: IDbColumn[];
-	private _insight: InsightsConfig;
+	private _insight: IInsightsConfig;
 	private _disposables: IDisposable[] = [];
 	private _topList: List<any>;
 	private _bottomList: List<any>;
@@ -265,7 +265,7 @@ export default class InsightsDialog extends Modal {
 	}
 
 	// insight object
-	public open(input: InsightsConfig, connectionProfile: IConnectionProfile): void {
+	public open(input: IInsightsConfig, connectionProfile: IConnectionProfile): void {
 		// execute string
 		if (typeof input === 'object') {
 			if (connectionProfile === undefined) {
@@ -411,7 +411,7 @@ export default class InsightsDialog extends Modal {
 		if (typeof this._insight.details.label === 'string') {
 			return undefined;
 		} else {
-			let label = <IInsightLabel>this._insight.details.label;
+			let label = <IInsightsLabel>this._insight.details.label;
 			for (let cond of label.state) {
 				switch (Conditional[cond.condition.if]) {
 					case Conditional.always:

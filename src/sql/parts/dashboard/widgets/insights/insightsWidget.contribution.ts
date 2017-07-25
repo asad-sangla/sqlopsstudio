@@ -12,7 +12,7 @@ import * as nls from 'vs/nls';
 let insightRegistry = <IInsightRegistry>Registry.as(InsightExtensions.InsightContribution);
 let taskRegistry = <ITaskRegistry>Registry.as(TaskExtensions.TaskContribution);
 
-let insightsSchema: IJSONSchema = {
+export const insightsSchema: IJSONSchema = {
 	type: 'object',
 	properties: {
 		type: {

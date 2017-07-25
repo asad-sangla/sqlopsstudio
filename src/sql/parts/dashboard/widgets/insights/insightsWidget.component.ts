@@ -13,6 +13,7 @@ import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboar
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { InsightAction, InsightActionContext } from 'sql/workbench/electron-browser/actions';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
+import { IInsightsConfig } from './interfaces';
 
 /* Insights */
 import { ChartInsight } from './views/chartInsight.component';
@@ -32,39 +33,6 @@ export interface IInsightsView {
 	ngOnInit?: () => void;
 }
 
-export interface IStateCondition {
-	condition: {
-		if: string,
-		equals?: string
-	};
-	color?: string;
-	icon?: string;
-}
-
-export interface IInsightLabel {
-	column: string;
-	icon?: string;
-	state?: Array<IStateCondition>;
-}
-
-export interface InsightsConfig {
-	type: any;
-	query?: string | Array<string>;
-	queryFile?: string;
-	details?: {
-		query?: string | Array<string>;
-		queryFile?: string;
-		label?: string | IInsightLabel;
-		value?: string;
-		actions?: {
-			types: Array<string>;
-			database?: string;
-			server?: string;
-			user?: string;
-		};
-	};
-}
-
 const insightMap: { [x: string]: Type<IInsightsView> } = {
 	'chart': ChartInsight,
 	'count': CountInsight
@@ -75,7 +43,7 @@ const insightMap: { [x: string]: Type<IInsightsView> } = {
 	template: '<div component-host></div>'
 })
 export class InsightsWidget extends DashboardWidget implements IDashboardWidget, AfterContentInit, OnDestroy {
-	private insightConfig: InsightsConfig;
+	private insightConfig: IInsightsConfig;
 	private queryObv: Observable<SimpleExecuteResult>;
 	private _disposables: Array<IDisposable> = [];
 	@ViewChild(ComponentHostDirective) private componentHost: ComponentHostDirective;
@@ -87,7 +55,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		@Inject(forwardRef(() => ViewContainerRef)) private viewContainerRef: ViewContainerRef
 	) {
 		super();
-		this.insightConfig = <InsightsConfig>this._config.widget['insights-widget'];
+		this.insightConfig = <IInsightsConfig>this._config.widget['insights-widget'];
 		if (!this.insightConfig.query && !this.insightConfig.queryFile) {
 			console.error('Query was undefined or empty, config: ', this._config);
 		} else if (types.isStringArray(this.insightConfig.query)) {

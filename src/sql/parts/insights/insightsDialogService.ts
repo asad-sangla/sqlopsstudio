@@ -5,13 +5,13 @@
 import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import InsightsDialog from './insightsDialog';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 
 export const IInsightsDialogService = createDecorator<IInsightsDialogService>('insightsDialogService');
 
 export interface IInsightsDialogService {
 	_serviceBrand: any;
-	show(input: InsightsConfig, connectionProfile: IConnectionProfile): void;
+	show(input: IInsightsConfig, connectionProfile: IConnectionProfile): void;
 	close();
 }
 
@@ -22,7 +22,7 @@ export class InsightsDialogService implements IInsightsDialogService {
 	constructor( @IInstantiationService private _instantiationService: IInstantiationService) { }
 
 	// query string
-	public show(input: InsightsConfig, connectionProfile: IConnectionProfile): void {
+	public show(input: IInsightsConfig, connectionProfile: IConnectionProfile): void {
 		if (!this._insightsDialog) {
 			this._insightsDialog = this._instantiationService.createInstance(InsightsDialog);
 			this._insightsDialog.render();

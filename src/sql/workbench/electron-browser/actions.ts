@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionManagementService, RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as TaskUtilities from './taskUtilities';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import { InsightsConfig } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
@@ -31,7 +31,7 @@ export interface ITaskActionContext {
 }
 
 export interface InsightActionContext extends BaseActionContext {
-	insight: InsightsConfig;
+	insight: IInsightsConfig;
 }
 
 // --- actions
@@ -125,7 +125,7 @@ export class EditDataAction extends Action {
 				error => {
 					resolve(false);
 				}
-			);
+				);
 		});
 	}
 }
