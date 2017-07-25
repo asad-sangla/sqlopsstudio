@@ -8,6 +8,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IDisasterRecoveryService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
+import { MssqlRestoreInfo } from 'sql/parts/disasterRecovery/restore/mssqlRestoreInfo';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
@@ -26,24 +27,24 @@ export class RestoreDialogService implements IRestoreDialogService {
 	}
 
 	private handleOnRestore(): void {
-		let restoreInfo: data.RestoreInfo = {
-			backupFilePath: this._restoreDialog.filePath,
-			databaseName: this._restoreDialog.databaseName,
-			relocateDbFiles: this._restoreDialog.relocateDbFiles
-		};
+		let restoreInfo = new MssqlRestoreInfo();
+		restoreInfo.backupFilePaths = this._restoreDialog.filePath;
+		restoreInfo.targetDatabaseName = this._restoreDialog.databaseName;
+		restoreInfo.relocateDbFiles = this._restoreDialog.relocateDbFiles;
+
 		this._disasterRecoveryService.restore(this._ownerUri, restoreInfo);
 		this._restoreDialog.close();
 	}
 
 	private handleOnValidateFile(): void {
-		let restoreInfo: data.RestoreInfo = {
-			backupFilePath: this._restoreDialog.filePath,
-			databaseName: this._restoreDialog.databaseName,
-			relocateDbFiles: this._restoreDialog.relocateDbFiles
-		};
+		let restoreInfo = new MssqlRestoreInfo();
+		restoreInfo.backupFilePaths = this._restoreDialog.filePath;
+		restoreInfo.targetDatabaseName = this._restoreDialog.databaseName;
+		restoreInfo.relocateDbFiles = this._restoreDialog.relocateDbFiles;
 		this._disasterRecoveryService.getRestorePlan(this._ownerUri, restoreInfo).then(restorePlanResponse => {
+			let dbFiles: string[] = restorePlanResponse.dbFiles ? restorePlanResponse.dbFiles.map(x => x.restoreAsFileName) : [];
 			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage,
-				restorePlanResponse.databaseName, restorePlanResponse.dbFiles.map(x => x.restoreAsFileName));
+				restorePlanResponse.databaseName, dbFiles);
 		}, error => {
 			this._restoreDialog.showError(error);
 		});

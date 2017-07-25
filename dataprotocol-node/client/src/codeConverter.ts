@@ -406,9 +406,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	function asRestoreParams(ownerUri: string, params: data.RestoreInfo): ls.RestoreParams {
 		return <ls.RestoreParams>{
 			ownerUri: ownerUri,
-			backupFilePath: params.backupFilePath,
-			databaseName: params.databaseName,
-			relocateDbFiles: params.relocateDbFiles
+			options: params.options
 		};
 	}
 

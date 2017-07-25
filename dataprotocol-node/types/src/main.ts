@@ -402,33 +402,33 @@ export interface BackupInfo {
 
 	formatMedia: boolean;
 
-    initialize: boolean;
+	initialize: boolean;
 
-    skipTapeHeader: boolean;
+	skipTapeHeader: boolean;
 
-    mediaName: string;
+	mediaName: string;
 
-    mediaDescription: string;
+	mediaDescription: string;
 
-    checksum: boolean;
+	checksum: boolean;
 
-    continueAfterError: boolean;
+	continueAfterError: boolean;
 
-    logTruncation: boolean;
+	logTruncation: boolean;
 
-    tailLogBackup: boolean;
+	tailLogBackup: boolean;
 
-    retainDays: number;
+	retainDays: number;
 
-    compressionOption: number;
+	compressionOption: number;
 
-    verifyBackupRequired: boolean;
+	verifyBackupRequired: boolean;
 
-    encryptionAlgorithm: number;
+	encryptionAlgorithm: number;
 
-    encryptorType: number;
+	encryptorType: number;
 
-    encryptorName: string;
+	encryptorName: string;
 }
 
 export interface BackupParams {
@@ -444,23 +444,21 @@ export interface BackupResponse {
 
 export interface RestoreParams {
 	ownerUri: string;
-	backupFilePath: string;
-	databaseName: string;
-	relocateDbFiles: boolean;
+	options: {};
 }
 
 export interface RestoreDatabaseFileInfo {
-		fileType: string;
+	fileType: string;
 
-		logicalFileName: string;
+	logicalFileName: string;
 
-		originalFileName:string;
+	originalFileName: string;
 
-		restoreAsFileName:string;
-	}
+	restoreAsFileName: string;
+}
 
 export interface RestorePlanResponse {
-	backupFilePath: string;
+	sessionId: string;
 	canRestore: boolean;
 	errorMessage: string;
 	dbFiles: RestoreDatabaseFileInfo[];

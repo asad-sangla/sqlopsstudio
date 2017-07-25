@@ -944,9 +944,7 @@ declare module 'data' {
 	}
 
 	export interface RestoreInfo {
-		backupFilePath: string;
-		databaseName: string;
-		relocateDbFiles: boolean;
+		options: {};
 	}
 
 	export interface RestoreDatabaseFileInfo {
@@ -954,13 +952,13 @@ declare module 'data' {
 
 		logicalFileName: string;
 
-		originalFileName:string;
+		originalFileName: string;
 
-		restoreAsFileName:string;
+		restoreAsFileName: string;
 	}
 
 	export interface RestorePlanResponse {
-		backupFilePath: string;
+		sessionId: string;
 		canRestore: boolean;
 		errorMessage: string;
 		dbFiles: RestoreDatabaseFileInfo[];
