@@ -20,6 +20,17 @@ let chartInsightSchema: IJSONSchema = {
 			description: nls.localize('legendDescription', 'Indicates preferred position and visibility of the chart legend. These are the column names from your query, and map to the label of each chart entry'),
 			default: 'none',
 			enum: ['top', 'bottom', 'left', 'right', 'none']
+		},
+		chartType: {
+			type: 'string',
+			description: nls.localize('chartTypeDescription', 'THe type of chart is being displayed - pie, line, etc.'),
+			default: 'pie',
+			enum: [ 'bar', 'doughnut', 'horizontalBar', 'line', 'pie']
+		},
+		labelFirstColumn: {
+			type: 'boolean',
+			description: nls.localize('labelFirstColumnDescription', 'If true, the first column will be treated as a label to describe the rest of the data in the row'),
+			default: false
 		}
 	}
 };
