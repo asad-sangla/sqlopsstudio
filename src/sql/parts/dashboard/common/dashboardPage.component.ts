@@ -58,11 +58,11 @@ export abstract class DashboardPage {
 	) { }
 
 	protected init() {
-		let tempWidgets = this.dashboardService.getSettings(this.context);
-		let properties = this.propertiesWidget;
+		let tempWidgets = this.dashboardService.getSettings(this.context).widgets;
+		let properties = this.dashboardService.getSettings(this.context).properties ? Object.assign(this.propertiesWidget, this.dashboardService.getSettings(this.context).properties) : undefined;
 		this._configModifiers.forEach((cb) => {
 			tempWidgets = cb.apply(this, [tempWidgets]);
-			properties = cb.apply(this, [[properties]])[0];
+			properties = properties ? cb.apply(this, [[properties]])[0] : undefined;
 		});
 		this.widgets = tempWidgets;
 		this.propertiesWidget = properties;

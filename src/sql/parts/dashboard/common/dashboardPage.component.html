@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<dashboard-widget-wrapper [_config]="propertiesWidget" style="height: 100px; display: block"></dashboard-widget-wrapper>
+<dashboard-widget-wrapper *ngIf="propertiesWidget" [_config]="propertiesWidget" style="height: 100px; display: block"></dashboard-widget-wrapper>
 <div>
 	<div [ngGrid]="gridConfig">
 		<dashboard-widget-wrapper *ngFor="let widget of widgets" [(ngGridItem)]="widget.gridItemConfig" [_config]="widget">

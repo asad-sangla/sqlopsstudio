@@ -9,6 +9,25 @@ import * as nls from 'vs/nls';
 
 let widgetRegistry = <IDashboardWidgetRegistry>Registry.as(Extensions.DashboardWidgetContribution);
 
+export const serverDashboardPropertiesSchema: IJSONSchema = {
+	description: nls.localize('dashboardServerProperties', 'Enable or disable the properties widget'),
+	default: true,
+	oneOf: [
+		'boolean',
+		{
+			type: 'object',
+			properties: {
+				provider: {
+					type: 'string'
+				},
+				edition: {
+					type: 'number'
+				}
+			}
+		}
+	]
+};
+
 let defaultVal = [
 	{
 		name: 'Tasks',
@@ -141,4 +160,5 @@ export const serverDashboardSettingSchema: IJSONSchema = {
 	default: defaultVal
 };
 
-export const SERVER_DASHBOARD_SETTING = 'dashboard.server';
+export const SERVER_DASHBOARD_SETTING = 'dashboard.server.widgets';
+export const SERVER_DASHBOARD_PROPERTIES = 'dashboard.server.properties';

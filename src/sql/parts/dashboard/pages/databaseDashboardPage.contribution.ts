@@ -10,6 +10,25 @@ import * as nls from 'vs/nls';
 
 let widgetRegistry = <IDashboardWidgetRegistry>Registry.as(Extensions.DashboardWidgetContribution);
 
+export const databaseDashboardPropertiesSchema: IJSONSchema = {
+	description: nls.localize('dashboardDatabaseProperties', 'Enable or disable the properties widget'),
+	default: true,
+	oneOf: [
+		'boolean',
+		{
+			type: 'object',
+			properties: {
+				provider: {
+					type: 'string'
+				},
+				edition: {
+					type: 'number'
+				}
+			}
+		}
+	]
+};
+
 export const databaseDashboardSettingSchema: IJSONSchema = {
 	type: ['array'],
 	description: nls.localize('dashboardDatabase', 'Customizes the database dashboard page'),
@@ -70,4 +89,5 @@ export const databaseDashboardSettingSchema: IJSONSchema = {
 	]
 };
 
-export const DATABASE_DASHBOARD_SETTING = 'dashboard.database';
+export const DATABASE_DASHBOARD_SETTING = 'dashboard.database.widgets';
+export const DATABASE_DASHBOARD_PROPERTIES = 'dashboard.database.properties';

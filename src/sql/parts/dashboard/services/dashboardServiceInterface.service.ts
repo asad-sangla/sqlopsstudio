@@ -276,9 +276,9 @@ export class DashboardServiceInterface implements OnDestroy {
 	 * Get settings for given string
 	 * @param type string of setting to get from dashboard settings; i.e dashboard.{type}
 	 */
-	public getSettings(type: string): Array<WidgetConfig> {
+	public getSettings(type: string): { widgets: Array<WidgetConfig>, properties: boolean } {
 		let config = this._configService.getConfiguration(DASHBOARD_SETTINGS);
-		return config[type] || [];
+		return config[type];
 	}
 
 	private get handleDashboardEvent(): (event: string) => void {
