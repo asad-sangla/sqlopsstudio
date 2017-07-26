@@ -68,7 +68,8 @@ export interface IRange {
 	end: number;
 }
 
-const defaultOpts = {
+// {{SQL CARBON EDIT}}
+export const defaultOpts = {
 	inputBackground: Color.fromHex('#3C3C3C'),
 	inputForeground: Color.fromHex('#CCCCCC'),
 	inputValidationInfoBorder: Color.fromHex('#55AAFF'),

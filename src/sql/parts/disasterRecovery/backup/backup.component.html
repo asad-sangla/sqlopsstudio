@@ -25,7 +25,7 @@
 			<div class="input-divider" #copyOnlyContainer>Copy-only backup
 			</div>
 			<div class="dialog-label">
-				Backup device *
+				Backup device
 			</div>
 			<div class="backup-path-list">
 				<div #pathContainer>
@@ -49,30 +49,49 @@
 			<div class="monaco-split-view vertical advanced-main-header">
 				<div class="split-view-view" >
 					<!-- TODO: should this be shown in a new page instead of collapsible view? -->
-					<div class="header collapsible collapsed" name="advanced-header" aria-expanded="false" style="height: 22px; background-color: rgba(128, 128, 128, 0.2);" (click)="onAdvancedClick()" #advancedHeader>
+					<div class="header collapsible collapsed" name="advanced-title" aria-expanded="false" style="height: 22px; background-color: rgba(128, 128, 128, 0.2);" (click)="onAdvancedClick()" #advancedHeader>
 						<div class="title">Advanced Configuration
 						</div>
 					</div>
 					<div class="body collapsible" name="advanced-body" style="height: calc(100% - 22px); display: none" #advancedBody>
 						<!-- Compression -->
-						<div class="dialog-label" style="padding-top: 15px;">
-							Backup compression
+						<div class="dialog-label advanced-header" style="padding-top: 15px;">
+							Compression
 						</div>
-						<div class="input-divider" #compressionContainer>
+						<div class="indent">
+							<div class="dialog-label">
+								Set backup compression
+							</div>
+							<div class="dialog-label" #compressionContainer>
+							</div>
 						</div>
 						<!-- Encryption -->
-						<div class="dialog-label" #encryptContainer>Backup encryption
+						<div class="dialog-label advanced-header">
+							Encryption
 						</div>
-						<div>
-							<div class="dialog-label">
-								Algorithm
+						<div class="indent">
+							<div class="option" #encryptCheckContainer>Encrypt backup
 							</div>
-							<div class="dialog-label" #algorithmContainer>
+							<div class="option" #encryptErrorContainer>
+								<div class="errorIcon" style="padding-right: 4px">
+									<img class="error-icon" #errorIcon>
+								</div>
+								<div>
+									{{errorMessage}}
+								</div>
 							</div>
-							<div class="dialog-label">
-								Certificate or Asymmetric key
-							</div>
-							<div class="input-divider" #encryptorContainer>
+
+							<div style="display: none" #encryptContainer>
+								<div class="dialog-label">
+									Algorithm
+								</div>
+								<div class="dialog-label" #algorithmContainer>
+								</div>
+								<div class="dialog-label">
+									Certificate or Asymmetric key
+								</div>
+								<div class="dialog-label" #encryptorContainer>
+								</div>
 							</div>
 						</div>
 
@@ -80,31 +99,33 @@
 						<div class="dialog-label advanced-header">
 							Media
 						</div>
-						<div class="dialog-label">
-							<input type="radio" name=media-option value="no_format" [checked]="!isFormatChecked" (change)="onChangeMediaFormat()">Backup to the existing media set
-						</div>
-						<div style="margin-left: 15px">
-							<div class="dialog-label">
-								<input type="radio" name=existing-media value="append" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Append to the existing backup set
+						<div class="radio-indent">
+							<div class="option">
+								<input type="radio" name=media-option value="no_format" [checked]="!isFormatChecked" (change)="onChangeMediaFormat()" [disabled]="isEncryptChecked">Backup to the existing media set
 							</div>
-							<div class="dialog-label">
-								<input type="radio" name=existing-media value="overwrite" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Overwrite all existing backup sets
+							<div style="margin-left:15px">
+								<div class="option">
+									<input type="radio" name=existing-media value="append" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Append to the existing backup set
+								</div>
+								<div class="option">
+									<input type="radio" name=existing-media value="overwrite" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Overwrite all existing backup sets
+								</div>
 							</div>
-						</div>
 
-						<div class="dialog-label">
-							<input type="radio" name=media-option value="format" [checked]="isFormatChecked" (change)="onChangeMediaFormat()">Backup to a new media set and erase all existing backup sets
-						</div>
-						<div style="margin-left: 22px">
-							<div class="dialog-label">
-								New media set name *
+							<div class="option">
+								<input type="radio" name=media-option value="format" [checked]="isFormatChecked" (change)="onChangeMediaFormat()">Backup to a new media set
 							</div>
-							<div class="dialog-label" #mediaName>
-							</div>
-							<div class="dialog-label">
-								New media set description
-							</div>
-							<div class="input-divider" #mediaDescription>
+							<div style="margin-left: 22px">
+								<div class="dialog-label">
+									New media set name
+								</div>
+								<div class="dialog-label" #mediaName>
+								</div>
+								<div class="dialog-label">
+									New media set description
+								</div>
+								<div class="dialog-label" #mediaDescription>
+								</div>
 							</div>
 						</div>
 
@@ -112,44 +133,42 @@
 						<div class="dialog-label advanced-header">
 							Transaction log
 						</div>
-						<div class="dialog-label">
-							<input type="radio" name=t-log value="truncate" [checked]="isTruncateChecked" (change)="onChangeTlog()" [disabled]="disableTlog">Truncate the transaction log
-						</div>
-						<div class="dialog-label">
-							<input type="radio" name=t-log value="taillog" [checked]="isTaillogChecked" (change)="onChangeTlog()" [disabled]="disableTlog">Backup the tail of the log
+						<div class="radio-indent">
+							<div class="option">
+								<input type="radio" name=t-log value="truncate" [checked]="isTruncateChecked" (change)="onChangeTlog()" [disabled]="disableTlog">Truncate the transaction log
+							</div>
+							<div class="option">
+								<input type="radio" name=t-log value="taillog" [checked]="isTaillogChecked" (change)="onChangeTlog()" [disabled]="disableTlog">Backup the tail of the log
+							</div>
 						</div>
 
 						<!-- Reliability -->
 						<div class="dialog-label advanced-header">
 							Reliability
 						</div>
-						<div style="margin-left: 5px">
-							<div class="dialog-label" #verifyContainer>Verify backup when finished
+						<div class="indent">
+							<div class="option" #checksumContainer>Perform checksum before writing to media
 							</div>
-							<div class="dialog-label" #checksumContainer>Perform checksum before writing to media
+							<div class="option" #verifyContainer>Verify backup when finished
 							</div>
-							<div class="input-divider" #continueOnErrorContainer>Continue on error
+							<div class="option" #continueOnErrorContainer>Continue on error
 							</div>
 						</div>
 
 						<!-- Backup expiration -->
-						<div class="dialog-label">
-							Backup retain days
+						<div class="dialog-label advanced-header">
+							Expiration
 						</div>
-						<div class="dialog-label">
-							<div #backupDaysContainer></div>
+						<div class="indent">
+							<div class="dialog-label">
+								Set backup retain days
+							</div>
+							<div class="dialog-label">
+								<div #backupDaysContainer></div>
+							</div>
 						</div>
-
 					</div>
 				</div>
-			</div>
-		</div>
-		<div class="dialogErrorMessage">
-			<div class="errorIcon">
-				<img class="error-icon" #errorIcon>
-			</div>
-			<div>
-				{{errorMessage}}
 			</div>
 		</div>
 	</div>

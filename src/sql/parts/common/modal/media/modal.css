@@ -167,6 +167,11 @@
 	height: 12px;
 }
 
+.modal.flyout-dialog .custom-checkbox.sql-checkbox.disabled {
+	pointer-events: none;
+  	opacity: 0.3
+}
+
 .modal.flyout-dialog .custom-checkbox.sql-checkbox.checked {
 	background: url('check.svg') center center no-repeat;
 	border-color:#3C3C3C;
