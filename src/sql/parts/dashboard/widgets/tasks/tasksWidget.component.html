@@ -6,7 +6,7 @@
 -->
 <div class="task-widget">
 	<ng-template ngFor let-task [ngForOf]="_actions" let-i="index">
-		<div (click)="task.run(_profile)"
+		<div (click)="task.run({profile: _profile})"
 			style="position: absolute; cursor: pointer; display: flex; flex-flow: row; align-items: center"
 			class="task-tile"
 			[style.height.px]="_size"
