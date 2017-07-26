@@ -25,12 +25,18 @@ let chartInsightSchema: IJSONSchema = {
 			type: 'string',
 			description: nls.localize('chartTypeDescription', 'THe type of chart is being displayed - pie, line, etc.'),
 			default: 'pie',
-			enum: [ 'bar', 'doughnut', 'horizontalBar', 'line', 'pie']
+			enum: ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries']
 		},
 		labelFirstColumn: {
 			type: 'boolean',
 			description: nls.localize('labelFirstColumnDescription', 'If true, the first column will be treated as a label to describe the rest of the data in the row'),
 			default: false
+		},
+		dataType: {
+			type: 'string',
+			description: nls.localize('dataTypeDescription', 'Indicate the data property of a dataset for a chart'),
+			default: 'number',
+			enum: ['number', 'point']
 		}
 	}
 };

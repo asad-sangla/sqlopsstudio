@@ -12,15 +12,26 @@ import { SimpleExecuteResult } from 'data';
 
 /* VS Imports */
 import * as colors from 'vs/platform/theme/common/colorRegistry';
+import { mixin } from 'vs/base/common/objects';
+import { Color, RGBA } from 'vs/base/common/color';
 
-export type ChartType = 'bar' | 'doughnut' | 'horizontalBar' | 'line' | 'pie';
+export type ChartType = 'bar' | 'doughnut' | 'horizontalBar' | 'line' | 'pie' | 'timeSeries';
+export type DataType = 'number' | 'point';
 export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none';
-const validChartTypes = ['bar', 'doughnut', 'horizontalBar', 'line', 'pie'];
+const validChartTypes = ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries'];
+const validDataTypes = ['number', 'point'];
 
 export interface IDataSet {
 	data: Array<number>;
 	label?: string;
 }
+
+export interface IPointDataSet {
+	data: Array<{ x: number, y: number }>;
+	label?: string;
+	fill: boolean;
+}
+
 export interface IChartConfig {
 	colorMap?: { [column: string]: string };
 	legendPosition?: LegendPosition;
@@ -41,11 +52,12 @@ export interface IChartConfig {
 				</div>`
 })
 export class ChartInsight implements IInsightsView {
-	public readonly customFields = ['chartType', 'colorMap', 'labelFirstColumn', 'legendPosition'];
+	public readonly customFields = ['chartType', 'colorMap', 'labelFirstColumn', 'legendPosition', 'dataType'];
 	public isDataAvailable: boolean = false;
 	private _data: SimpleExecuteResult;
 	private _labels: string[] = [];
 	private _labelFirstColumn: boolean;
+	private _dataType: DataType;
 	private _rawChartData: Array<any[]> = [];
 	private _chartType: ChartType = 'pie';
 	private _colors: any[] = [];
@@ -100,9 +112,31 @@ export class ChartInsight implements IInsightsView {
 
 	public get chartData() {
 		let self = this;
-		return this._rawChartData.map((row) => {
-			return self._mapRowToDataSet(row);
+		if (this._dataType === 'number') {
+			return this._rawChartData.map((row) => {
+				return self._mapRowToDataSet(row);
+			});
+		} else {
+			return self._mapToPointDataSet();
+		}
+	}
+
+	private _mapToPointDataSet(): IPointDataSet[] {
+		let dataSetMap: { [label: string]: IPointDataSet } = {};
+		this._rawChartData.map((row) => {
+			if (row && row.length >= 3) {
+				let legend = row[0];
+				if (!dataSetMap[legend]) {
+					dataSetMap[legend] = { label: legend, data: [], fill: false };
+				}
+				dataSetMap[legend].data.push({ x: row[1], y: Number(row[2]) });
+			}
 		});
+		let dataSet: IPointDataSet[] = [];
+		for (var key in dataSetMap) {
+			dataSet.push(dataSetMap[key]);
+		}
+		return dataSet;
 	}
 
 	private _mapRowToDataSet(row: Array<any>): IDataSet {
@@ -128,6 +162,53 @@ export class ChartInsight implements IInsightsView {
 		} else {
 			this._chartType = 'pie';
 		}
+
+		if (this._chartType === 'timeSeries') {
+			this._chartType = 'line';
+			this.addOptionsForTimeSeries();
+		}
+	}
+
+	private addOptionsForTimeSeries(): void {
+		let options = {
+			scales: {
+				xAxes: [{
+					type: 'time',
+					display: true,
+					scaleLabel: {
+						display: true,
+						labelString: 'Time',
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					},
+					ticks: {
+						autoSkip: false,
+						maxRotation: 45,
+						minRotation: 45,
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					},
+					gridLines: {
+						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
+					}
+				}],
+				// Todo change the labelstring to 'Value'
+				yAxes: [{
+					display: true,
+					scaleLabel: {
+						display: true,
+						labelString: 'Seconds',
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					},
+					ticks: {
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					},
+					gridLines: {
+						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
+					}
+				}]
+			}
+		};
+
+		this._options = Object.assign({}, mixin(this._options, options));
 	}
 
 	public get chartType(): ChartType {
@@ -164,6 +245,18 @@ export class ChartInsight implements IInsightsView {
 
 	@Input() set labelFirstColumn(labelFirstColumn: boolean) {
 		this._labelFirstColumn = labelFirstColumn;
+	}
+
+	@Input() public set dataType(dataType: DataType) {
+		if (dataType && validDataTypes.includes(dataType)) {
+			this._dataType = dataType;
+		} else {
+			this._dataType = 'number';
+		}
+	}
+
+	public get dataType(): DataType {
+		return this._dataType;
 	}
 
 	@Input() set legendPosition(position: LegendPosition) {
