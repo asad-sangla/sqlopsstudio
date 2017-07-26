@@ -7,3 +7,5 @@ import * as Actions from './actions';
 
 registerTask('backup', '', Actions.BackupAction);
 registerTask('restore', '', Actions.RestoreAction);
+registerTask('new-query', '', Actions.NewQueryAction);
+registerTask('new-database', '', Actions.NewDatabaseAction);

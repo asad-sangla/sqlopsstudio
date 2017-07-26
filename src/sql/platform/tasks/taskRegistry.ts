@@ -6,13 +6,14 @@
 import * as platform from 'vs/platform/registry/common/platform';
 import { IJSONSchema } from 'vs/base/common/jsonSchema';
 import { Action } from 'vs/base/common/actions';
-import { IConstructorSignature2 } from 'vs/platform/instantiation/common/instantiation';
+import { IConstructorSignature3 } from 'vs/platform/instantiation/common/instantiation';
 
 export type TaskIdentifier = string;
 
-export interface ActionICtor extends IConstructorSignature2<string, string, Action> {
+export interface ActionICtor extends IConstructorSignature3<string, string, string, Action> {
 	ID: string;
 	LABEL: string;
+	ICON: string;
 }
 
 export const Extensions = {

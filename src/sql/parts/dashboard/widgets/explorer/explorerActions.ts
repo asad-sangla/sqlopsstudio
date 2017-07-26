@@ -19,7 +19,7 @@ export function GetExplorerActions(type: MetadataType, isCloud: boolean, dashboa
 
 	// When context menu on database
 	if (type === undefined) {
-		actions.push(dashboardService.instantiationService.createInstance(DashboardNewQueryAction, DashboardNewQueryAction.ID, NewQueryAction.LABEL));
+		actions.push(dashboardService.instantiationService.createInstance(DashboardNewQueryAction, DashboardNewQueryAction.ID, NewQueryAction.LABEL, NewQueryAction.ICON));
 		if (!isCloud) {
 			actions.push(dashboardService.instantiationService.createInstance(DashboardBackupAction, DashboardBackupAction.ID, DashboardBackupAction.LABEL));
 		}
@@ -48,7 +48,7 @@ export class DashboardBackupAction extends BackupAction {
 		@IDisasterRecoveryUiService disasterRecoveryService: IDisasterRecoveryUiService,
 		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
 	) {
-		super(id, label, disasterRecoveryService);
+		super(id, label, BackupAction.ICON, disasterRecoveryService, );
 	}
 
 	run(actionContext: BaseActionContext): TPromise<boolean> {

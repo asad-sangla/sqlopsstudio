@@ -1,31 +1,26 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 import 'vs/css!sql/media/icons/common-icons';
 
 /* Node Modules */
 import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 
 /* SQL imports */
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
+import { ITaskRegistry, Extensions, ActionICtor } from 'sql/platform/tasks/taskRegistry';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 /* VS imports */
 import { IDisposable } from 'vs/base/common/lifecycle';
 import * as themeColors from 'vs/workbench/common/theme';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 import { registerThemingParticipant, ICssStyleCollector, ITheme } from 'vs/platform/theme/common/themeService';
-
-export interface Task {
-	name: string;
-	action: () => void;
-	iconClass?: string;
-	context?: string;
-	internal_icon?: SafeResourceUrl;
-	show_condition?: () => boolean;
-}
+import { Registry } from 'vs/platform/registry/common/platform';
+import { Action } from 'vs/base/common/actions';
 
 @Component({
 	selector: 'tasks-widget',
@@ -38,45 +33,8 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	private _rows: number = 2;
 	private _isAzure = false;
 	private _themeDispose: IDisposable;
-	private _tileBackground: string;
-	//tslint:disable-next-line
-	private tasks: Task[] = [
-		{
-			name: 'New Query',
-			action: () => {
-				this.newQuery();
-			},
-			iconClass: 'file',
-		},
-		{
-			name: 'Create Database',
-			action: () => {
-				this.createDatabase();
-			},
-			iconClass: 'new-database',
-		},
-		{
-			name: 'Backup',
-			action: () => {
-				this.backup();
-			},
-			context: 'database',
-			show_condition: (): boolean => {
-				return !this._isAzure;
-			},
-			iconClass: 'backup'
-		},
-		{
-			name: 'Restore',
-			action: () => {
-				this.restore();
-			},
-			show_condition: (): boolean => {
-				return this._config.provider === 'MSSQL';
-			},
-			iconClass: 'restore'
-		}
-	];
+	private _actions: Array<Action> = [];
+	private _profile: IConnectionProfile;
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
@@ -85,9 +43,11 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig
 	) {
 		super();
-		let self = this;
-		let connInfo = self._bootstrap.connectionManagementService.connectionInfo;
-		self._isAzure = connInfo.serverInfo.isCloud;
+		this._profile = this._bootstrap.connectionManagementService.connectionInfo.connectionProfile;
+		let registry = Registry.as<ITaskRegistry>(Extensions.TaskContribution);
+		this._actions = Object.values(registry.idToCtorMap).map((item: ActionICtor) => this._bootstrap.instantiationService.createInstance(item, item.ID, item.LABEL, item.ICON));
+		let connInfo = this._bootstrap.connectionManagementService.connectionInfo;
+		this._isAzure = connInfo.serverInfo.isCloud;
 	}
 
 	ngOnInit() {
@@ -110,22 +70,6 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		this._themeDispose.dispose();
 	}
 
-	private newQuery(): void {
-		this._bootstrap.newQuery();
-	}
-
-	private createDatabase(): void {
-		this._bootstrap.createDatabase();
-	}
-
-	private backup(): void {
-		this._bootstrap.backup();
-	}
-
-	private restore(): void {
-		this._bootstrap.restore();
-	}
-
 	//tslint:disable-next-line
 	private calculateTransform(index: number): string {
 		let marginy = (1 + (index % this._rows)) * this._margins;
@@ -133,11 +77,5 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		let posx = (this._size * (Math.floor(index / 2))) + marginx;
 		let posy = (this._size * (index % this._rows)) + marginy;
 		return 'translate(' + posx + 'px, ' + posy + 'px)';
-	}
-
-	private executeQuery() {
-		this._bootstrap.queryManagementService.runQueryAndReturn('select * from sys.objects').then((result) => {
-			console.log(result);
-		});
 	}
 }

@@ -92,7 +92,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	public getObjectExplorerNodeActions(tree: ITree, treeNode: TreeNode): IAction[] {
 		var actions: IAction[] = [];
 
-		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL));
+		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL, OENewQueryAction.ICON));
 
 		if (treeNode.nodeTypeId === NodeType.Table) {
 			actions.push(this._instantiationService.createInstance(OEScriptSelectAction, OEScriptSelectAction.ID, OEScriptSelectAction.LABEL));

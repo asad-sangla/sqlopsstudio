@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import * as TaskUtilities from './taskUtilities';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -13,12 +13,23 @@ import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IAdminService } from 'sql/parts/admin/common/adminService';
 
 import { ObjectMetadata } from 'data';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import * as nls from 'vs/nls';
+
+export class TaskAction extends Action {
+	constructor(id: string, label: string, private _icon: string) {
+		super(id, label);
+	}
+
+	get icon(): string {
+		return this._icon;
+	}
+}
 
 export interface BaseActionContext extends ITaskActionContext {
 	uri?: string;
@@ -35,19 +46,20 @@ export interface InsightActionContext extends BaseActionContext {
 }
 
 // --- actions
-export class NewQueryAction extends Action {
+export class NewQueryAction extends TaskAction {
 	public static ID = 'newQuery';
 	public static LABEL = nls.localize('newQuery', 'New Query');
+	public static ICON = 'file';
 
 	constructor(
-		id: string, label: string,
+		id: string, label: string, icon: string,
 		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
 		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService
 	) {
-		super(id, label);
+		super(id, label, icon);
 	}
 
-	public run(actionContext: BaseActionContext): TPromise<boolean> {
+	public run(actionContext: ITaskActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.newQuery(
 				actionContext.profile,
@@ -164,15 +176,16 @@ export class ScriptCreateAction extends Action {
 	}
 }
 
-export class BackupAction extends Action {
+export class BackupAction extends TaskAction {
 	public static ID = 'backup';
 	public static LABEL = nls.localize('backup', 'Backup');
+	public static ICON = 'backup';
 
 	constructor(
-		id: string, label: string,
+		id: string, label: string, icon: string,
 		@IDisasterRecoveryUiService protected _disasterRecoveryService: IDisasterRecoveryUiService
 	) {
-		super(id, label);
+		super(id, label, icon);
 	}
 
 	run(actionContext: ITaskActionContext): TPromise<boolean> {
@@ -192,15 +205,16 @@ export class BackupAction extends Action {
 	}
 }
 
-export class RestoreAction extends Action {
+export class RestoreAction extends TaskAction {
 	public static ID = 'restore';
 	public static LABEL = nls.localize('restore', 'Restore');
+	public static ICON = 'restore';
 
 	constructor(
-		id: string, label: string,
+		id: string, label: string, icon: string,
 		@IRestoreDialogService protected _restoreService: IRestoreDialogService
 	) {
-		super(id, label);
+		super(id, label, icon);
 	}
 
 	run(actionContext: ITaskActionContext): TPromise<boolean> {
@@ -264,6 +278,26 @@ export class InsightAction extends Action {
 		return new TPromise<boolean>((resolve, reject) => {
 			self._insightsDialogService.show(actionContext.insight, actionContext.profile);
 			resolve(true);
+		});
+	}
+}
+
+export class NewDatabaseAction extends TaskAction {
+	public static ID = 'newDatabase';
+	public static LABEL = nls.localize('newDatabase', 'New Database');
+	public static ICON = 'new-database';
+
+	constructor(
+		id: string, label: string, icon: string,
+		@IAdminService private _adminService: IAdminService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService,
+	) {
+		super(id, label, icon);
+	}
+
+	run(actionContext: ITaskActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.showCreateDatabase(actionContext.profile, this._adminService, this._errorMessageService);
 		});
 	}
 }

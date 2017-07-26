@@ -137,11 +137,6 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		element.innerText = error;
 	}
 
-	//tslint:disable-next-line
-	private onClick(event: any) {
-		this.dashboardService.openInsight(this.insightConfig);
-	}
-
 	get actions(): Array<Action> {
 		if (this.insightConfig.details && (this.insightConfig.details.query || this.insightConfig.details.queryFile)) {
 			return [this.dashboardService.instantiationService.createInstance(InsightAction, InsightAction.ID, InsightAction.LABEL)];

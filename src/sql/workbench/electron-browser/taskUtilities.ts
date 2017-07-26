@@ -17,9 +17,7 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 
-import { withElementById } from 'vs/base/browser/builder';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Severity from 'vs/base/common/severity';
 
 import data = require('data');
@@ -149,10 +147,9 @@ export function newQuery(connectionProfile: IConnectionProfile, connectionServic
 }
 
 export function showCreateDatabase(
-	uri: string, connection: IConnectionProfile,
+	connection: IConnectionProfile,
 	adminService: IAdminService,
-	errorMessageService: IErrorMessageService,
-	partService: IPartService): Promise<void> {
+	errorMessageService: IErrorMessageService): Promise<void> {
 
 	return new Promise<void>((resolve) => {
 		// show not implemented

@@ -23,7 +23,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
 import { CollapsibleView, ICollapsibleViewOptions } from 'vs/workbench/parts/views/browser/views';
-import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
+import { SplitView } from 'vs/base/browser/ui/splitview/splitview';
 import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IDelegate, IRenderer, IListEvent, IListContextMenuEvent } from 'vs/base/browser/ui/list/list';
 import { IDisposable } from 'vs/base/common/lifecycle';
@@ -522,7 +522,7 @@ export default class InsightsDialog extends Modal {
 		for (let action of actions) {
 			let ctor = tasks[action];
 			if (ctor) {
-				returnActions.push(this._instantiationService.createInstance(ctor, ctor.ID, ctor.LABEL));
+				returnActions.push(this._instantiationService.createInstance(ctor, ctor.ID, ctor.LABEL, ctor.ICON));
 			}
 		}
 		return TPromise.as(returnActions);

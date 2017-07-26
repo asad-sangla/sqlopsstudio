@@ -15,14 +15,12 @@ import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IMetadataService } from 'sql/services/metadata/metadataService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import * as TaskUtilities from 'sql/workbench/electron-browser/taskUtilities';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
-import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 
 import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
@@ -215,53 +213,6 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._adminService = new SingleAdminService(this._bootstrapService.adminService, this._uri);
 		this._queryManagementService = new SingleQueryManagementService(this._bootstrapService.queryManagementService, this._uri);
 		this._disposables.push(toDisposableSubscription(this._bootstrapService.angularEventingService.onAngularEvent(this._uri, this.handleDashboardEvent)));
-	}
-
-	/**
-	 * Creates a new query window based on the current conection
-	 */
-	public newQuery(): void {
-		TaskUtilities.newQuery(
-			this._bootstrapParams.connection,
-			this._bootstrapService.connectionManagementService,
-			this._bootstrapService.queryEditorService);
-	}
-
-	/**
-	 * Opens the Create database dialog for the current connection
-	 */
-	public createDatabase(): void {
-		TaskUtilities.showCreateDatabase(
-			this._uri,
-			this._bootstrapParams.connection,
-			this._bootstrapService.adminService,
-			this._bootstrapService.errorMessageService,
-			this._bootstrapService.partService);
-	}
-
-	/**
-	 * Opens the backup dialog for the current connection
-	 */
-	public backup(): void {
-		TaskUtilities.showBackup(
-			this._bootstrapParams.connection,
-			this._bootstrapService.disasterRecoveryUiService);
-	}
-
-	/**
-	 * Opens the restore dialog for the current connection
-	 */
-	public restore(): void {
-		TaskUtilities.showRestore(
-			this._bootstrapParams.connection,
-			this._bootstrapService.restoreDialogService);
-	}
-
-	/**
-	 * Opens the insight widget
-	 */
-	public openInsight(query: IInsightsConfig): void {
-		TaskUtilities.openInsight(query, this.connectionManagementService.connectionInfo.connectionProfile, this._insightsDialogService);
 	}
 
 	/**
