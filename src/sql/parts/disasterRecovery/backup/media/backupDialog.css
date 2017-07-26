@@ -25,13 +25,7 @@
 }
 
 .backup-dialog {
-	padding: 15px;
 	height: calc(100% - 15px)
-}
-
-.modal-body-content {
-	overflow-x: hidden;
-	overflow-y: auto;
 }
 
 .advanced-main-header {

@@ -91,31 +91,6 @@ export function attachSelectBoxStyler(widget: IThemable, themeService: IThemeSer
 	}, widget);
 }
 
-export function attachListBoxStyler(widget: IThemable, themeService: IThemeService, style?:
-	{
-		selectBackground?: ColorIdentifier,
-		selectForeground?: ColorIdentifier,
-		selectBorder?: ColorIdentifier,
-		inputValidationInfoBorder?: ColorIdentifier,
-		inputValidationInfoBackground?: ColorIdentifier,
-		inputValidationWarningBorder?: ColorIdentifier,
-		inputValidationWarningBackground?: ColorIdentifier,
-		inputValidationErrorBorder?: ColorIdentifier,
-		inputValidationErrorBackground?: ColorIdentifier
-	}): IDisposable {
-	return attachStyler(themeService, {
-		selectBackground: (style && style.selectBackground) || selectBackground,
-		selectForeground: (style && style.selectForeground) || selectForeground,
-		selectBorder: (style && style.selectBorder) || selectBorder,
-		inputValidationInfoBorder: (style && style.inputValidationInfoBorder) || inputValidationInfoBorder,
-		inputValidationInfoBackground: (style && style.inputValidationInfoBackground) || inputValidationInfoBackground,
-		inputValidationWarningBorder: (style && style.inputValidationWarningBorder) || inputValidationWarningBorder,
-		inputValidationWarningBackground: (style && style.inputValidationWarningBackground) || inputValidationWarningBackground,
-		inputValidationErrorBorder: (style && style.inputValidationErrorBorder) || inputValidationErrorBorder,
-		inputValidationErrorBackground: (style && style.inputValidationErrorBackground) || inputValidationErrorBackground
-	}, widget);
-}
-
 export function attachFindInputBoxStyler(widget: IThemable, themeService: IThemeService, style?:
 	{
 		inputBackground?: ColorIdentifier,

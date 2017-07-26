@@ -12,11 +12,13 @@ import { PathUtilities } from 'sql/common/pathUtilities';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { modalFooterStyle } from 'sql/parts/common/modal/modal';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { ListBox } from 'sql/parts/common/modal/listBox';
 import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
+import { attachListBoxStyler } from 'sql/common/theme/styler';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
@@ -26,7 +28,7 @@ import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler, attachListBoxStyler } from 'vs/platform/theme/common/styler';
+import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 
 export const BACKUP_SELECTOR: string = 'backup-component';
 
@@ -75,6 +77,7 @@ export class BackupComponent{
     @ViewChild('checksumContainer', {read: ElementRef}) checksumElement;
     @ViewChild('continueOnErrorContainer', {read: ElementRef}) continueOnErrorElement;
     @ViewChild('encryptErrorContainer', {read: ElementRef}) encryptErrorElement;
+    @ViewChild('modalFooterContainer', {read: ElementRef}) modalFooterElement;
 
     private _disasterRecoveryService: IDisasterRecoveryService;
     private _disasterRecoveryUiService: IDisasterRecoveryUiService;
@@ -330,6 +333,12 @@ export class BackupComponent{
             this.pathListBox.setValidation(false, {content: 'Only backup to file is supported', type: MessageType.WARNING});
             this.pathListBox.focus();
         }
+
+        // set modal footer style
+        this.modalFooterElement.nativeElement.style["background-color"] = modalFooterStyle.backgroundColor;
+        this.modalFooterElement.nativeElement.style["border-top-width"] = modalFooterStyle.borderTopWidth;
+        this.modalFooterElement.nativeElement.style["border-top-style"] = modalFooterStyle.borderTopStyle;
+        this.modalFooterElement.nativeElement.style["border-top-color"] = modalFooterStyle.borderTopColor;
 
         this._changeDetectorRef.detectChanges();
     }

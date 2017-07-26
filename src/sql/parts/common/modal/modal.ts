@@ -30,6 +30,14 @@ export interface IModalOptions {
 	hasSpinner?: boolean;
 }
 
+// Needed for angular component dialogs to style modal footer
+export class modalFooterStyle {
+	public static backgroundColor;
+	public static borderTopWidth;
+	public static borderTopStyle;
+	public static borderTopColor;
+}
+
 const defaultOptions: IModalOptions = {
 	isFlyout: true,
 	isAngular: false,
@@ -295,6 +303,10 @@ export abstract class Modal implements IThemable {
 		const border = this._dialogBorder ? this._dialogBorder.toString() : null;
 		const headerAndFooterBackground = this._dialogHeaderAndFooterBackground ? this._dialogHeaderAndFooterBackground.toString() : null;
 		const bodyBackground = this._dialogBodyBackground ? this._dialogBodyBackground.toString() : null;
+		modalFooterStyle.backgroundColor = headerAndFooterBackground;
+		modalFooterStyle.borderTopWidth = border ? '1px' : null;
+		modalFooterStyle.borderTopStyle = border ? 'solid' : null;
+		modalFooterStyle.borderTopColor = border;
 
 		if (this._closeButtonInHeader) {
 			this._closeButtonInHeader.style('color', foreground);
@@ -317,10 +329,10 @@ export abstract class Modal implements IThemable {
 		}
 
 		if (this._modalFooterSection) {
-			this._modalFooterSection.style('background-color', headerAndFooterBackground);
-			this._modalFooterSection.style('border-top-width', border ? '1px' : null);
-			this._modalFooterSection.style('border-top-style', border ? 'solid' : null);
-			this._modalFooterSection.style('border-top-color', border);
+			this._modalFooterSection.style('background-color', modalFooterStyle.backgroundColor);
+			this._modalFooterSection.style('border-top-width', modalFooterStyle.borderTopWidth);
+			this._modalFooterSection.style('border-top-style', modalFooterStyle.borderTopStyle);
+			this._modalFooterSection.style('border-top-color', modalFooterStyle.borderTopColor);
 		}
 	}
 }

@@ -5,8 +5,8 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 <form class="angular-form" #myForm="ngForm" (ngSubmit)="onSubmit(f)">
-	<div class="modal-body" style="display: flex; flex-direction: column;">
-		<div class="modal-body-content">
+	<div class="angular-modal-body" style="display: flex; flex-direction: column;">
+		<div class="angular-modal-body-content">
 			<div class="dialog-label">
 				Backup name
 			</div>
@@ -173,7 +173,7 @@
 		</div>
 	</div>
 
-	<div class="modal-footer">
+	<div class="modal-footer" #modalFooterContainer>
 		<div class="right-footer">
 			<div class="footer-button" #backupButtonContainer>
 			</div>

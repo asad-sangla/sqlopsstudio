@@ -35,9 +35,21 @@
 	height: calc(100% - 105px);
 }
 
+/* modal body for angular component dialog */
+.monaco-shell .modal.flyout-dialog .angular-modal-body {
+	height: calc(100% - 90px);
+}
+
 /* Style for body and footer in modal dialog. This should be applied to dialog created with angular component. */
 .monaco-shell .modal.flyout-dialog .modal-body-and-footer {
 	height: 100%;
+}
+
+/* modl body content style(excluding dialogErrorMessage section) for angulr component dialog */
+.angular-modal-body-content {
+	overflow-x: hidden;
+	overflow-y: auto;
+	padding: 15px;
 }
 
 .modal.flyout-dialog .angular-form {
