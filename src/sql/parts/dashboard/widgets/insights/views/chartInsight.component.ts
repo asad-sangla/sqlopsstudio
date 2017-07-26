@@ -2,8 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Component, Input, Inject, ChangeDetectorRef, forwardRef, ViewChild, OnInit, ElementRef } from '@angular/core';
-import { BaseChartDirective } from 'ng2-charts';
+import { Component, Input, Inject, ChangeDetectorRef, forwardRef, ViewChild, ElementRef } from '@angular/core';
 
 /* SQL Imports */
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -14,8 +13,8 @@ import { SimpleExecuteResult } from 'data';
 /* VS Imports */
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 
-export type ChartType =  'bar' | 'doughnut' | 'horizontalBar' | 'line' | 'pie';
-export type LegendPosition =  'top' | 'bottom' | 'left' | 'right' | 'none';
+export type ChartType = 'bar' | 'doughnut' | 'horizontalBar' | 'line' | 'pie';
+export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none';
 const validChartTypes = ['bar', 'doughnut', 'horizontalBar', 'line', 'pie'];
 
 export interface IDataSet {
@@ -41,7 +40,7 @@ export interface IChartConfig {
  							[style.height.px]="height"></canvas>
 				</div>`
 })
-export class ChartInsight implements IInsightsView, OnInit {
+export class ChartInsight implements IInsightsView {
 	public readonly customFields = ['chartType', 'colorMap', 'labelFirstColumn', 'legendPosition'];
 	public isDataAvailable: boolean = false;
 	private _data: SimpleExecuteResult;
@@ -59,7 +58,7 @@ export class ChartInsight implements IInsightsView, OnInit {
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) { }
 
-	ngOnInit() {
+	init() {
 		this._calcHeightWidth();
 
 		// Note: must use a boolean to not render the canvas until all properties such as the labels and chart type are set.
@@ -107,7 +106,7 @@ export class ChartInsight implements IInsightsView, OnInit {
 	}
 
 	private _mapRowToDataSet(row: Array<any>): IDataSet {
-		let dataSet: IDataSet = { data: []};
+		let dataSet: IDataSet = { data: [] };
 		if (row && row.length > 0) {
 			let colIndex = 0;
 			if (this._labelFirstColumn) {
@@ -116,7 +115,7 @@ export class ChartInsight implements IInsightsView, OnInit {
 			} else {
 				dataSet.label = 'Row ' + colIndex;
 			}
-			for(colIndex; colIndex < row.length; colIndex ++) {
+			for (colIndex; colIndex < row.length; colIndex++) {
 				dataSet.data.push(Number(row[colIndex]));
 			}
 		}

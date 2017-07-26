@@ -31,7 +31,7 @@ import * as nls from 'vs/nls';
 export interface IInsightsView {
 	data: SimpleExecuteResult;
 	customFields: Array<string>;
-	ngOnInit?: () => void;
+	init?: () => void;
 }
 
 const insightMap: { [x: string]: Type<IInsightsView> } = {
@@ -115,8 +115,8 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 							componentInstance[field] = self.insightConfig.type[typeKey][field];
 						});
 					}
-					if (componentInstance.ngOnInit) {
-						componentInstance.ngOnInit();
+					if (componentInstance.init) {
+						componentInstance.init();
 					}
 				},
 				error => {
