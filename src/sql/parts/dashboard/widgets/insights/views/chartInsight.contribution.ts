@@ -23,20 +23,28 @@ let chartInsightSchema: IJSONSchema = {
 		},
 		chartType: {
 			type: 'string',
-			description: nls.localize('chartTypeDescription', 'THe type of chart is being displayed - pie, line, etc.'),
+			description: nls.localize('chartTypeDescription', 'The type of chart is being displayed - pie, line, etc.'),
 			default: 'pie',
-			enum: ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries']
+			enum: ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries', 'scatter']
 		},
 		labelFirstColumn: {
 			type: 'boolean',
-			description: nls.localize('labelFirstColumnDescription', 'If true, the first column will be treated as a label to describe the rest of the data in the row'),
+			description: nls.localize('labelFirstColumnDescription', 'If dataDirection is horizontal, setting this to true uses the first columns value for the legend.'),
 			default: false
 		},
 		dataType: {
 			type: 'string',
-			description: nls.localize('dataTypeDescription', 'Indicate the data property of a dataset for a chart'),
+			description: nls.localize('dataTypeDescription', 'Indicates data property of a data set for a chart.'),
 			default: 'number',
-			enum: ['number', 'point']
+			enum: ['number', 'point'],
+			enumDescriptions: ['Set "number" if the data values are contained in 1 column.', 'Set "point" if the data is an {x,y} combination requiring 2 columns for each value.']
+		},
+		dataDirection: {
+			type: 'string',
+			description: nls.localize('dataDirectionDescription', 'Defines whether the data is read from a column (vertical) or a row (horizontal). For time series this is ignored as direction must be vertical.'),
+			default: 'vertical',
+			enum: ['vertical', 'horizontal'],
+			enumDescriptions: ['When vertical, the first column is used to define the x-axis labels, with other columns expected to be numerical.', 'When horizontal, the column names are used as the x-axis labels.']
 		}
 	}
 };

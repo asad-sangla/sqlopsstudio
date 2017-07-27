@@ -15,11 +15,13 @@ import * as colors from 'vs/platform/theme/common/colorRegistry';
 import { mixin } from 'vs/base/common/objects';
 import { Color, RGBA } from 'vs/base/common/color';
 
-export type ChartType = 'bar' | 'doughnut' | 'horizontalBar' | 'line' | 'pie' | 'timeSeries';
+export type ChartType = 'bar' | 'doughnut' | 'horizontalBar' | 'line' | 'pie' | 'timeSeries' | 'scatter';
 export type DataType = 'number' | 'point';
+export type DataDirection = 'vertical' | 'horizontal';
 export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none';
-const validChartTypes = ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries'];
+const validChartTypes = ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries', 'scatter'];
 const validDataTypes = ['number', 'point'];
+const validDataDirection = ['vertical', 'horizontal'];
 
 export interface IDataSet {
 	data: Array<number>;
@@ -30,6 +32,7 @@ export interface IPointDataSet {
 	data: Array<{ x: number, y: number }>;
 	label?: string;
 	fill: boolean;
+	backgroundColor?: Color;
 }
 
 export interface IChartConfig {
@@ -52,12 +55,13 @@ export interface IChartConfig {
 				</div>`
 })
 export class ChartInsight implements IInsightsView {
-	public readonly customFields = ['chartType', 'colorMap', 'labelFirstColumn', 'legendPosition', 'dataType'];
+	public readonly customFields = ['chartType', 'colorMap', 'labelFirstColumn', 'legendPosition', 'dataType', 'dataDirection'];
 	public isDataAvailable: boolean = false;
 	private _data: SimpleExecuteResult;
 	private _labels: string[] = [];
 	private _labelFirstColumn: boolean;
 	private _dataType: DataType;
+	private _dataDirection: DataDirection;
 	private _rawChartData: Array<any[]> = [];
 	private _chartType: ChartType = 'pie';
 	private _colors: any[] = [];
@@ -77,6 +81,11 @@ export class ChartInsight implements IInsightsView {
 		// This is because chart.js doesn't auto-update anything other than dataset when re-rendering so defaults are used
 		// hence it's easier to not render until ready
 		this.isDataAvailable = true;
+		if (this._dataDirection === 'vertical' && this._chartType !== 'timeSeries') {
+			this._labels = this._rawChartData.map((row) => {
+				return row[0];
+			});
+		}
 		this._changeRef.detectChanges();
 	}
 
@@ -113,12 +122,36 @@ export class ChartInsight implements IInsightsView {
 	public get chartData() {
 		let self = this;
 		if (this._dataType === 'number') {
-			return this._rawChartData.map((row) => {
-				return self._mapRowToDataSet(row);
-			});
+			if (this._dataDirection === 'vertical') {
+				return self._mapDataSetInVertical();
+			} else {
+				return this._rawChartData.map((row) => {
+					return self._mapRowToDataSet(row);
+				});
+			}
 		} else {
 			return self._mapToPointDataSet();
 		}
+	}
+
+	private _mapDataSetInVertical(): IDataSet[] {
+		let dataSetMap: { [label: string]: IDataSet } = {};
+		this._rawChartData.map((row) => {
+			if (row && row.length > 1) {
+				for (let colIndex = 1; colIndex < row.length; colIndex++) {
+					let legend = this._data.columnInfo[colIndex].columnName;
+					if (!dataSetMap[legend]) {
+						dataSetMap[legend] = { label: legend, data: [] };
+					}
+					dataSetMap[legend].data.push(Number(row[colIndex]));
+				}
+			}
+		});
+		let dataSet: IDataSet[] = [];
+		for (var key in dataSetMap) {
+			dataSet.push(dataSetMap[key]);
+		}
+		return dataSet;
 	}
 
 	private _mapToPointDataSet(): IPointDataSet[] {
@@ -130,6 +163,10 @@ export class ChartInsight implements IInsightsView {
 					dataSetMap[legend] = { label: legend, data: [], fill: false };
 				}
 				dataSetMap[legend].data.push({ x: row[1], y: Number(row[2]) });
+
+				if (this._chartType === 'scatter') {
+					dataSetMap[legend].backgroundColor = Color.cyan;
+				}
 			}
 		});
 		let dataSet: IPointDataSet[] = [];
@@ -164,12 +201,27 @@ export class ChartInsight implements IInsightsView {
 		}
 
 		if (this._chartType === 'timeSeries') {
-			this._chartType = 'line';
 			this.addOptionsForTimeSeries();
+		} else if (this._chartType === 'scatter') {
+			this.addOptionsForScatter();
 		}
 	}
 
+
+	public get chartType(): ChartType {
+		if (this._chartType === 'timeSeries') {
+			return 'line';
+		}
+		return this._chartType;
+	}
+
 	private addOptionsForTimeSeries(): void {
+		let xLabel = 'Time';
+		let yLabel = 'Value';
+		if (this._labels.length >= 3) {
+			xLabel = this._labels[1];
+			yLabel = this._labels[2];
+		}
 		let options = {
 			scales: {
 				xAxes: [{
@@ -177,7 +229,7 @@ export class ChartInsight implements IInsightsView {
 					display: true,
 					scaleLabel: {
 						display: true,
-						labelString: 'Time',
+						labelString: xLabel,
 						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					ticks: {
@@ -190,12 +242,12 @@ export class ChartInsight implements IInsightsView {
 						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
 					}
 				}],
-				// Todo change the labelstring to 'Value'
+
 				yAxes: [{
 					display: true,
 					scaleLabel: {
 						display: true,
-						labelString: 'Seconds',
+						labelString: yLabel,
 						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					ticks: {
@@ -211,8 +263,50 @@ export class ChartInsight implements IInsightsView {
 		this._options = Object.assign({}, mixin(this._options, options));
 	}
 
-	public get chartType(): ChartType {
-		return this._chartType;
+	private addOptionsForScatter(): void {
+		let xLabel = 'Time';
+		let yLabel = 'Value';
+		if (this._labels.length >= 3) {
+			xLabel = this._labels[1];
+			yLabel = this._labels[2];
+		}
+		let options = {
+			scales: {
+				xAxes: [{
+					type: 'linear',
+					position: 'bottom',
+					display: true,
+					scaleLabel: {
+						display: true,
+						labelString: xLabel,
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					},
+					ticks: {
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					},
+					gridLines: {
+						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
+					}
+				}],
+
+				yAxes: [{
+					display: true,
+					scaleLabel: {
+						display: true,
+						labelString: yLabel,
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					},
+					ticks: {
+						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+					},
+					gridLines: {
+						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
+					}
+				}]
+			}
+		};
+
+		this._options = Object.assign({}, mixin(this._options, options));
 	}
 
 	public get labels(): string[] {
@@ -255,8 +349,12 @@ export class ChartInsight implements IInsightsView {
 		}
 	}
 
-	public get dataType(): DataType {
-		return this._dataType;
+	@Input() public set dataDirection(dataDirection: DataDirection) {
+		if (dataDirection && validDataDirection.includes(dataDirection)) {
+			this._dataDirection = dataDirection;
+		} else {
+			this._dataDirection = 'vertical';
+		}
 	}
 
 	@Input() set legendPosition(position: LegendPosition) {
