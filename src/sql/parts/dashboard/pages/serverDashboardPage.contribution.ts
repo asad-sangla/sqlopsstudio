@@ -134,10 +134,22 @@ export const serverDashboardSettingSchema: IJSONSchema = {
 				type: 'string'
 			},
 			provider: {
-				type: 'string'
+				anyOf: [
+					'string',
+					{
+						type: 'array',
+						items: 'string'
+					}
+				]
 			},
 			edition: {
-				type: 'number'
+				anyOf: [
+					'number',
+					{
+						type: 'array',
+						items: 'number'
+					}
+				]
 			},
 			gridItemConfig: {
 				type: 'object',

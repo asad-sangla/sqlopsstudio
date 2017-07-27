@@ -5,9 +5,18 @@
 
 import { Component, Inject, forwardRef } from '@angular/core';
 import { NgGridConfig } from 'angular2-grid';
-import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
+import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
+
+import * as types from 'vs/base/common/types';
+
+/**
+ * @returns whether the provided parameter is a JavaScript Array and each element in the array is a number.
+ */
+function isNumberArray(value: any): value is number[] {
+	return types.isArray(value) && (<any[]>value).every(elem => types.isNumber(elem));
+}
 
 @Component({
 	selector: 'dashboard-page',
@@ -72,20 +81,40 @@ export abstract class DashboardPage {
 	protected abstract get context(): string;
 
 	/**
-	 * Returns a filtered version of the widgets pass based on edition and provider
+	 * Returns a filtered version of the widgets passed based on edition and provider
 	 * @param config widgets to filter
 	 */
 	private filterWidgets(config: WidgetConfig[]): Array<WidgetConfig> {
-		let returnConfig = config;
+		let edition = this.dashboardService.connectionManagementService.connectionInfo.serverInfo.engineEditionId;
+		let provider = this.dashboardService.connectionManagementService.connectionInfo.providerId;
 		// filter by provider
-		returnConfig = returnConfig.filter((item) => {
-			return item.provider === undefined || item.provider === this.dashboardService.connectionManagementService.connectionInfo.providerId;
+		return config.filter((item) => {
+			return this.stringCompare(item.provider, provider);
+		}).filter((item) => {
+			return this.stringCompare(isNumberArray(item.edition) ? item.edition.map(item => item.toString()) : item.edition.toString(), edition.toString());
 		});
-		//filter by edition
-		returnConfig = returnConfig.filter((item) => {
-			return item.edition === undefined || item.edition === this.dashboardService.connectionManagementService.connectionInfo.serverInfo.engineEditionId;
-		});
-		return returnConfig;
+	}
+
+	/**
+	 * Does a compare against the val passed in and the compare string
+	 * @param val string or array of strings to compare the compare value to; if array, it will compare each val in the array
+	 * @param compare value to compare to
+	 */
+	private stringCompare(val: string | Array<string>, compare: string): boolean {
+		if (types.isUndefinedOrNull(val)) {
+			return true;
+		} else if (types.isString(val)) {
+			return val === compare;
+		} else if (types.isStringArray(val)) {
+			for (let string of val) {
+				if (string === compare) {
+					return true;
+				}
+			}
+			return false;
+		} else {
+			return false;
+		}
 	}
 
 	/**

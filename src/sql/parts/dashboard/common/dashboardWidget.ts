@@ -17,8 +17,8 @@ export interface WidgetConfig {
 	name?: string;
 	icon?: string;
 	context: string;
-	provider: string;
-	edition: number;
+	provider: string | Array<string>;
+	edition: number | Array<number>;
 	gridItemConfig?: NgGridItemConfig;
 	widget: Object;
 	background_color?: string;
