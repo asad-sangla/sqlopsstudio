@@ -42,8 +42,8 @@ const insightMap: { [x: string]: Type<IInsightsView> } = {
 
 @Component({
 	selector: 'insights-widget',
-	template: '<div component-host></div>',
-	styles: [':host {margin: 10px}']
+	template: '<ng-template component-host></ng-template>',
+	styles: [':host {margin: 10px}', ':host { width: 100%; height: 100%}']
 })
 export class InsightsWidget extends DashboardWidget implements IDashboardWidget, AfterContentInit, OnDestroy {
 	private insightConfig: IInsightsConfig;

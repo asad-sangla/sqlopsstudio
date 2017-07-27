@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Component, Input, Inject, ChangeDetectorRef, forwardRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Inject, ChangeDetectorRef, forwardRef, ElementRef } from '@angular/core';
 
 /* SQL Imports */
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -39,7 +39,7 @@ export interface IChartConfig {
 }
 
 @Component({
-	template: `	<div #container style="display: block">
+	template: `	<div style="display: block">
 					<canvas *ngIf="isDataAvailable" #chart
 							baseChart
 							[datasets]="chartData"
@@ -64,11 +64,11 @@ export class ChartInsight implements IInsightsView {
 	private _options: any = {};
 	public width: number;
 	public height: number;
-	@ViewChild('container') private container: ElementRef;
 
 	constructor(
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
-		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) { }
+		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
+		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef) { }
 
 	init() {
 		this._calcHeightWidth();
@@ -82,12 +82,12 @@ export class ChartInsight implements IInsightsView {
 
 	private _calcHeightWidth(): void {
 		if (this.isSquareChart) {
-			let size = Math.min(this.container.nativeElement.parentElement.parentElement.offsetHeight, this.container.nativeElement.parentElement.parentElement.offsetWidth);
+			let size = Math.min(this._el.nativeElement.parentElement.offsetHeight, this._el.nativeElement.parentElement.offsetWidth);
 			this.width = size;
 			this.height = size;
 		} else {
-			this.width = this.container.nativeElement.parentElement.parentElement.offsetWidth;
-			this.height = this.container.nativeElement.parentElement.parentElement.offsetHeight;
+			this.width = this._el.nativeElement.parentElement.offsetWidth;
+			this.height = this._el.nativeElement.parentElement.offsetHeight;
 		}
 	}
 
