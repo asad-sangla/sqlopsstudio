@@ -233,11 +233,11 @@ const hygiene = exports.hygiene = (some, options) => {
 	const result = gulp.src(some || all, { base: '.' })
 		.pipe(filter(f => !f.stat.isDirectory()))
 		.pipe(filter(eolFilter))
-		.pipe(options.skipEOL ? es.through() : eol)
+		//.pipe(options.skipEOL ? es.through() : eol)
 		.pipe(filter(indentationFilter))
 		.pipe(indentation)
 		.pipe(filter(copyrightFilter))
-		.pipe(copyrights);
+		//.pipe(copyrights);
 
 	const typescript = result
 		.pipe(filter(tslintFilter))
