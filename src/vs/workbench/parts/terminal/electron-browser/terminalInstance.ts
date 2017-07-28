@@ -328,7 +328,8 @@ export class TerminalInstance implements ITerminalInstance {
 	}
 
 	public hasSelection(): boolean {
-		return this._xterm.hasSelection();
+		// {{SQL CARBON EDIT}}
+		return this._xterm && this._xterm.hasSelection ? this._xterm.hasSelection() : false;
 	}
 
 	public copySelection(): void {
