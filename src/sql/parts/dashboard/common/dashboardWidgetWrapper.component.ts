@@ -6,7 +6,7 @@ import 'vs/css!sql/media/icons/common-icons';
 
 import {
 	Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
-	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, Injector, Type
+	ElementRef, OnInit, ChangeDetectorRef, OnDestroy, ReflectiveInjector, Injector, Type, ComponentRef
 } from '@angular/core';
 
 import { ComponentHostDirective } from './componentHost.directive';
@@ -98,12 +98,18 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 		viewContainerRef.clear();
 
 		let injector = ReflectiveInjector.resolveAndCreate([{ provide: WIDGET_CONFIG, useValue: this._config }], this._injector);
-		let componentRef = viewContainerRef.createComponent(componentFactory, 0, injector);
-		this._component = componentRef.instance;
-		let actions = componentRef.instance.actions;
-		if (actions !== undefined && actions.length > 0) {
-			this._actions = actions;
-			this._changeref.detectChanges();
+		let componentRef: ComponentRef<IDashboardWidget>;
+		try {
+			componentRef = viewContainerRef.createComponent(componentFactory, 0, injector);
+			this._component = componentRef.instance;
+			let actions = componentRef.instance.actions;
+			if (actions !== undefined && actions.length > 0) {
+				this._actions = actions;
+				this._changeref.detectChanges();
+			}
+		} catch (e) {
+			console.error('Error rendering widget', key, e);
+			return;
 		}
 		let el = <HTMLElement>componentRef.location.nativeElement;
 
