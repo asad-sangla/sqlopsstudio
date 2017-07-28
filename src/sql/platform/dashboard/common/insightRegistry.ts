@@ -212,6 +212,10 @@ ExtensionsRegistry.registerExtensionPoint<IInsightTypeContrib | IInsightTypeCont
 			insight.contrib.queryFile = join(extension.description.extensionFolderPath, insight.contrib.queryFile);
 		}
 
+		if (insight.contrib.details && insight.contrib.details.queryFile) {
+			insight.contrib.details.queryFile = join(extension.description.extensionFolderPath, insight.contrib.details.queryFile);
+		}
+
 		registerNonCustomDashboardWidget(insight.id, '', insight.contrib);
 		insightRegistry.registerExtensionInsight(insight.id, insight.contrib);
 	}

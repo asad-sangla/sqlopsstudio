@@ -41,7 +41,7 @@
 	background: url("file_inverse.svg") center center no-repeat;
 }
 
-.vs .icon.new-database, {
+.vs .icon.new-database {
 	background: url("new_database.svg") center center no-repeat;
 }
 
