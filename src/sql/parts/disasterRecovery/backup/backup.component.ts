@@ -154,12 +154,14 @@ export class BackupComponent{
                 self.defaultNewBackupFolder = configInfo.defaultBackupFolder;
                 self.recoveryModel = configInfo.recoveryModel;
                 self.backupEncryptors = configInfo.backupEncryptors;
-                self.initialize();
+                self.initialize(true);
+            } else {
+                self.initialize(false);
             }
         });
     }
 
-    private initialize(): void {
+    private initialize(isMetadataPopulated: boolean): void {
         this.databaseName = this.connection.databaseName;
         this.selectedBackupComponent = BackupConstants.labelDatabase;
         this.backupPathTypePairs = {};
@@ -168,170 +170,174 @@ export class BackupComponent{
         this.selectedInitOption = this.existingMediaOptions[0];
         this.backupTypeOptions = [];
 
-        // Set recovery model
-        this.setControlsForRecoveryModel();
-        this.recoveryBox = new DialogInputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
-
-        // Set backup type
-        this.backupTypeSelectBox = new DialogSelectBox(this.backupTypeOptions, this.backupTypeOptions[0]);
-        this.backupTypeSelectBox.render(this.backupTypeElement.nativeElement);
-        this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged());
-
-        // Set copy-only check box
-        this.copyOnlyCheckBox = new DialogCheckbox({
-			actionClassName: 'sql-checkbox',
-			title: 'Copy-only backup',
-			isChecked: false,
-			onChange: (viaKeyboard) => {}
-			});
-        this.copyOnlyElement.nativeElement.appendChild(this.copyOnlyCheckBox.domNode);
-
-        // Encryption checkbox
-        let self = this;
-        this.encryptCheckBox = new DialogCheckbox({
-			actionClassName: 'sql-checkbox',
-			title: 'Encryption',
-			isChecked: false,
-			onChange: (viaKeyboard) => self.onChangeEncrypt()
-        });
-        this.encryptElement.nativeElement.appendChild(this.encryptCheckBox.domNode);
-
-        // Verify backup checkbox
-        this.verifyCheckBox = new DialogCheckbox({
-			actionClassName: 'sql-checkbox',
-			title: 'Verify',
-			isChecked: false,
-			onChange: (viaKeyboard) => {}
-			});
-        this.verifyElement.nativeElement.appendChild(this.verifyCheckBox.domNode);
-
-        // Perform checksum checkbox
-        this.checksumCheckBox = new DialogCheckbox({
-			actionClassName: 'sql-checkbox',
-			title: 'Perform checksum',
-			isChecked: false,
-			onChange: (viaKeyboard) => {}
-			});
-        this.checksumElement.nativeElement.appendChild(this.checksumCheckBox.domNode);
-
-        // Continue on error checkbox
-        this.continueOnErrorCheckBox = new DialogCheckbox({
-			actionClassName: 'sql-checkbox',
-			title: 'Continue on error',
-			isChecked: false,
-			onChange: (viaKeyboard) => {}
-			});
-        this.continueOnErrorElement.nativeElement.appendChild(this.continueOnErrorCheckBox.domNode);
-
-        // Set backup name
-        this.backupNameBox = new DialogInputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
-        this.setDefaultBackupName();
-        this.backupNameBox.focus();
-
-        // Set backup path list
-        this.setDefaultBackupPaths();
-        var pathlist = [];
-        for (var i in this.backupPathTypePairs) {
-            pathlist.push(i);
-        }
-        this.pathListBox = new ListBox(pathlist, pathlist[0], this._bootstrapService.contextViewService);
-        this.pathListBox.render(this.pathElement.nativeElement);
-
-        // Set backup path input
-        this.pathInputBox = new DialogInputBox(this.pathInputElement.nativeElement, this._bootstrapService.contextViewService);
-        this.addPathButton = new Button(this.addPathElement.nativeElement);
-        this.addPathButton.label = '+';
-        this.addPathButton.addListener('click', () => this.onAddClick());
-        this.removePathButton = new Button(this.removePathElement.nativeElement);
-        this.removePathButton.label = '-';
-        this.removePathButton.addListener('click', () => this.onRemoveClick());
-
-        // Set compression
-        this.compressionSelectBox = new DialogSelectBox(this.compressionOptions, this.compressionOptions[0]);
-        this.compressionSelectBox.render(this.compressionElement.nativeElement);
-
-        // Set encryption
-        this.algorithmSelectBox = new DialogSelectBox(this.encryptionAlgorithms, this.encryptionAlgorithms[0]);
-        this.algorithmSelectBox.render(this.encryptionAlgorithmElement.nativeElement);
-        var encryptorItems = this.populateEncryptorCombo();
-        this.encryptorSelectBox = new DialogSelectBox(encryptorItems, encryptorItems[0]);
-        this.encryptorSelectBox.render(this.encryptorElement.nativeElement);
-
-        // If no encryptor is provided, disable encrypt checkbox and show warning
-        if (encryptorItems.length === 0) {
-            this.encryptCheckBox.disable();
-            let iconFilePath = require.toUrl('sql/workbench/errorMessageDialog/media/status-warning.svg');
-            this.errorIconElement.nativeElement.style.content = 'url(' + iconFilePath + ')';
-            this.errorMessage = "No certificate or asymmetric key is available";
-        }
-
-        // Set media
-        this.mediaNameBox = new DialogInputBox(this.mediaNameElement.nativeElement,
-            this._bootstrapService.contextViewService,
-            {
-                validationOptions: {
-                    validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: 'Media name is required' }) : null
-                }
-            }
-        );
-
-        this._toDispose.push(this.mediaNameBox.onDidChange(mediaName => {
-			this.mediaNameChanged(mediaName);
-		}));
-
-        this.mediaDescriptionBox = new DialogInputBox(this.mediaDescriptionElement.nativeElement, this._bootstrapService.contextViewService);
-
-        // Set backup retain days
-        this.backupRetainDaysBox = new DialogInputBox(this.backupDaysElement.nativeElement,
-            this._bootstrapService.contextViewService,
-            {
-                placeholder: '0',
-                type: 'number'
-            });
-
-        this.setTLogOptions();
-
         // Set backup footer button
         this.backupButton = new Button(this.backupButtonElement.nativeElement);
         this.backupButton.label = 'Backup';
         this._toDispose.push(this.backupButton.addListener('click', () => this.onOk()));
+        this._toDispose.push(attachButtonStyler(this.backupButton, this._bootstrapService.themeService));
 
         // Set cancel footer button
         this.cancelButton = new Button(this.cancelButtonElement.nativeElement);
         this.cancelButton.label = 'Cancel';
         this._toDispose.push(this.cancelButton.addListener('click', () => this.onCancel()));
-
-        // apply theme
-        this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachListBoxStyler(this.pathListBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachInputBoxStyler(this.pathInputBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
-        this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
-        this._toDispose.push(attachButtonStyler(this.backupButton, this._bootstrapService.themeService));
         this._toDispose.push(attachButtonStyler(this.cancelButton, this._bootstrapService.themeService));
-        this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
-        this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
 
-        // disable elements
-        this.recoveryBox.disable();
-        this.mediaNameBox.disable();
-        this.mediaDescriptionBox.disable();
+        if (isMetadataPopulated) {
+            // Set recovery model
+            this.setControlsForRecoveryModel();
+            this.recoveryBox = new DialogInputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
 
-        // show warning message if latest backup file path contains url
-        if (this.containsBackupToUrl) {
-            this.pathListBox.setValidation(false, {content: 'Only backup to file is supported', type: MessageType.WARNING});
-            this.pathListBox.focus();
+            // Set backup type
+            this.backupTypeSelectBox = new DialogSelectBox(this.backupTypeOptions, this.backupTypeOptions[0]);
+            this.backupTypeSelectBox.render(this.backupTypeElement.nativeElement);
+            this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged());
+
+            // Set copy-only check box
+            this.copyOnlyCheckBox = new DialogCheckbox({
+                actionClassName: 'sql-checkbox',
+                title: 'Copy-only backup',
+                isChecked: false,
+                onChange: (viaKeyboard) => {}
+                });
+            this.copyOnlyElement.nativeElement.appendChild(this.copyOnlyCheckBox.domNode);
+
+            // Encryption checkbox
+            let self = this;
+            this.encryptCheckBox = new DialogCheckbox({
+                actionClassName: 'sql-checkbox',
+                title: 'Encryption',
+                isChecked: false,
+                onChange: (viaKeyboard) => self.onChangeEncrypt()
+            });
+            this.encryptElement.nativeElement.appendChild(this.encryptCheckBox.domNode);
+
+            // Verify backup checkbox
+            this.verifyCheckBox = new DialogCheckbox({
+                actionClassName: 'sql-checkbox',
+                title: 'Verify',
+                isChecked: false,
+                onChange: (viaKeyboard) => {}
+                });
+            this.verifyElement.nativeElement.appendChild(this.verifyCheckBox.domNode);
+
+            // Perform checksum checkbox
+            this.checksumCheckBox = new DialogCheckbox({
+                actionClassName: 'sql-checkbox',
+                title: 'Perform checksum',
+                isChecked: false,
+                onChange: (viaKeyboard) => {}
+                });
+            this.checksumElement.nativeElement.appendChild(this.checksumCheckBox.domNode);
+
+            // Continue on error checkbox
+            this.continueOnErrorCheckBox = new DialogCheckbox({
+                actionClassName: 'sql-checkbox',
+                title: 'Continue on error',
+                isChecked: false,
+                onChange: (viaKeyboard) => {}
+                });
+            this.continueOnErrorElement.nativeElement.appendChild(this.continueOnErrorCheckBox.domNode);
+
+            // Set backup name
+            this.backupNameBox = new DialogInputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
+            this.setDefaultBackupName();
+            this.backupNameBox.focus();
+
+            // Set backup path list
+            this.setDefaultBackupPaths();
+            var pathlist = [];
+            for (var i in this.backupPathTypePairs) {
+                pathlist.push(i);
+            }
+            this.pathListBox = new ListBox(pathlist, pathlist[0], this._bootstrapService.contextViewService);
+            this.pathListBox.render(this.pathElement.nativeElement);
+
+            // Set backup path input
+            this.pathInputBox = new DialogInputBox(this.pathInputElement.nativeElement, this._bootstrapService.contextViewService);
+            this.addPathButton = new Button(this.addPathElement.nativeElement);
+            this.addPathButton.label = '+';
+            this.addPathButton.addListener('click', () => this.onAddClick());
+            this.removePathButton = new Button(this.removePathElement.nativeElement);
+            this.removePathButton.label = '-';
+            this.removePathButton.addListener('click', () => this.onRemoveClick());
+
+            // Set compression
+            this.compressionSelectBox = new DialogSelectBox(this.compressionOptions, this.compressionOptions[0]);
+            this.compressionSelectBox.render(this.compressionElement.nativeElement);
+
+            // Set encryption
+            this.algorithmSelectBox = new DialogSelectBox(this.encryptionAlgorithms, this.encryptionAlgorithms[0]);
+            this.algorithmSelectBox.render(this.encryptionAlgorithmElement.nativeElement);
+            var encryptorItems = this.populateEncryptorCombo();
+            this.encryptorSelectBox = new DialogSelectBox(encryptorItems, encryptorItems[0]);
+            this.encryptorSelectBox.render(this.encryptorElement.nativeElement);
+
+            // If no encryptor is provided, disable encrypt checkbox and show warning
+            if (encryptorItems.length === 0) {
+                this.encryptCheckBox.disable();
+                let iconFilePath = require.toUrl('sql/workbench/errorMessageDialog/media/status-warning.svg');
+                this.errorIconElement.nativeElement.style.content = 'url(' + iconFilePath + ')';
+                this.errorMessage = "No certificate or asymmetric key is available";
+            }
+
+            // Set media
+            this.mediaNameBox = new DialogInputBox(this.mediaNameElement.nativeElement,
+                this._bootstrapService.contextViewService,
+                {
+                    validationOptions: {
+                        validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: 'Media name is required' }) : null
+                    }
+                }
+            );
+
+            this._toDispose.push(this.mediaNameBox.onDidChange(mediaName => {
+                this.mediaNameChanged(mediaName);
+            }));
+
+            this.mediaDescriptionBox = new DialogInputBox(this.mediaDescriptionElement.nativeElement, this._bootstrapService.contextViewService);
+
+            // Set backup retain days
+            this.backupRetainDaysBox = new DialogInputBox(this.backupDaysElement.nativeElement,
+                this._bootstrapService.contextViewService,
+                {
+                    placeholder: '0',
+                    type: 'number'
+                });
+
+            this.setTLogOptions();
+
+            // apply theme
+            this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachListBoxStyler(this.pathListBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.pathInputBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
+            this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
+            this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
+
+            // disable elements
+            this.recoveryBox.disable();
+            this.mediaNameBox.disable();
+            this.mediaDescriptionBox.disable();
+
+            // show warning message if latest backup file path contains url
+            if (this.containsBackupToUrl) {
+                this.pathListBox.setValidation(false, {content: 'Only backup to file is supported', type: MessageType.WARNING});
+                this.pathListBox.focus();
+            }
+        } else {
+            this.backupButton.enabled = false;
         }
 
         // set modal footer style

@@ -85,11 +85,21 @@ export class BackupDialog extends Modal {
 	}
 
 	/**
-	 * Bootstrap angular component and open the dialog
+	 * Open the dialog
 	 */
-	public open(connection: IConnectionProfile) {
-		// Add angular component template to dialog body
+	public async open(connection: IConnectionProfile) {
 		let uri = this._connectionManagementService.getConnectionId(connection);
+
+		// Create connection if needed
+		if (!this._connectionManagementService.isConnected(uri)) {
+			try {
+				await this._connectionManagementService.connect(connection, uri);
+			} catch (e) {
+				return Promise.reject(e);
+			}
+		}
+
+		// Add angular component template to dialog body
 		this.bootstrapAngular(uri, connection, this._bodyBuilder.getHTMLElement());
 		this._backupTitle = 'Backup database - ' + connection.serverName + ':' + connection.databaseName;
 		this.title = this._backupTitle;
