@@ -21,6 +21,12 @@ import * as colors from 'vs/platform/theme/common/colorRegistry';
 import { registerThemingParticipant, ICssStyleCollector, ITheme } from 'vs/platform/theme/common/themeService';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { Action } from 'vs/base/common/actions';
+import Severity from 'vs/base/common/severity';
+import * as nls from 'vs/nls';
+
+interface IConfig {
+	tasks: Array<string>;
+}
 
 @Component({
 	selector: 'tasks-widget',
@@ -45,7 +51,19 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		super();
 		this._profile = this._bootstrap.connectionManagementService.connectionInfo.connectionProfile;
 		let registry = Registry.as<ITaskRegistry>(Extensions.TaskContribution);
-		this._actions = Object.values(registry.idToCtorMap).map((item: ActionICtor) => this._bootstrap.instantiationService.createInstance(item, item.ID, item.LABEL, item.ICON));
+		let tasksConfig = <IConfig>Object.values(this._config.widget)[0];
+		if (tasksConfig.tasks) {
+			tasksConfig.tasks.forEach((item) => {
+				if (registry.idToCtorMap[item]) {
+					let ctor = registry.idToCtorMap[item];
+					this._actions.push(this._bootstrap.instantiationService.createInstance(ctor, ctor.ID, ctor.LABEL, ctor.ICON));
+				} else {
+					this._bootstrap.messageService.show(Severity.Warning, nls.localize('missingTask', 'Could not find task {0}; are you missing an extension?', item));
+				}
+			});
+		} else {
+			this._actions = Object.values(registry.idToCtorMap).map((item: ActionICtor) => this._bootstrap.instantiationService.createInstance(item, item.ID, item.LABEL, item.ICON));
+		}
 		let connInfo = this._bootstrap.connectionManagementService.connectionInfo;
 		this._isAzure = connInfo.serverInfo.isCloud;
 	}

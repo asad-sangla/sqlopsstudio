@@ -30,6 +30,7 @@ import { IEditorInput } from 'vs/platform/editor/common/editor';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from './bootstrapService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IMessageService } from 'vs/platform/message/common/message';
 
 export class BootstrapService implements IBootstrapService {
 
@@ -67,7 +68,8 @@ export class BootstrapService implements IBootstrapService {
 		@IAngularEventingService public angularEventingService: IAngularEventingService,
 		@IConfigurationService public configurationService: IConfigurationService,
 		@IInsightsDialogService public insightsDialogService: IInsightsDialogService,
-		@IContextViewService public contextViewService: IContextViewService
+		@IContextViewService public contextViewService: IContextViewService,
+		@IMessageService public messageService: IMessageService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();
