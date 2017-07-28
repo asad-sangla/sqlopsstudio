@@ -18,7 +18,7 @@ import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
+import { ServerGroupViewModel } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupViewModel';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachInputBoxStyler, attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
@@ -27,24 +27,16 @@ import Event, { Emitter } from 'vs/base/common/event';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { localize } from 'vs/nls';
 
-export interface IColorCheckboxInfo {
-	checkbox: Checkbox;
-	color: string;
-}
-
 export class ServerGroupDialog extends Modal {
 	private _bodyBuilder: Builder;
 	private _addServerButton: Button;
 	private _closeButton: Button;
-	private _colorCheckBoxesMap: { [colorOption: number]: IColorCheckboxInfo } = {};
+	private _colorCheckBoxesMap: Map<string, Checkbox> = new Map<string, Checkbox>();
 	private _selectedColorOption: number;
 	private _groupNameInputBox: DialogInputBox;
 	private _groupDescriptionInputBox: DialogInputBox;
 	private _toDispose: lifecycle.IDisposable[] = [];
-	private _defaultColor: number = 1;
-	private _colors: string[] = ['#515151', '#004760', '#771b00', '#700060', '#a17d01', '#006749', '#654502', '#3A0293'];
-	private readonly _addServerGroupTitle = localize('addServerGroup', 'Add server group');
-	private readonly _editServerGroupTitle = localize('editServerGroup', 'Edit server group');
+	private _viewModel: ServerGroupViewModel;
 
 
 	private _onAddServerGroup = new Emitter<void>();
@@ -62,6 +54,7 @@ export class ServerGroupDialog extends Modal {
 		@IContextViewService private _contextViewService: IContextViewService
 	) {
 		super('Server Groups', partService);
+
 	}
 
 	public render() {
@@ -108,15 +101,15 @@ export class ServerGroupDialog extends Modal {
 		});
 
 		this._bodyBuilder.div({ class: 'group-color-options' }, (groupColorContainer) => {
-			for (let i = 0; i < this._colors.length; i++) {
-				let color = this._colors[i];
+			for (let i = 0; i < this._viewModel.colors.length; i++) {
+				let color = this._viewModel.colors[i];
 
 				let colorCheckBox = new Checkbox({
 					actionClassName: 'server-group-color',
 					title: color,
 					isChecked: false,
 					onChange: (viaKeyboard) => {
-						this.onSelectGroupColor(i + 1);
+						this.onSelectGroupColor(color);
 					}
 				});
 				colorCheckBox.domNode.style.backgroundColor = color;
@@ -125,7 +118,8 @@ export class ServerGroupDialog extends Modal {
 				// Theme styler
 				this._toDispose.push(attachCheckboxStyler(colorCheckBox, this._themeService));
 
-				this._colorCheckBoxesMap[i + 1] = { checkbox: colorCheckBox, color: color };
+				// add the new checkbox to the color map
+				this._colorCheckBoxesMap.set(color, colorCheckBox);
 			}
 		});
 
@@ -149,64 +143,106 @@ export class ServerGroupDialog extends Modal {
 		e.stopPropagation();
 	}
 
+	private isFocusOnColors(): boolean {
+
+		/*
+			//
+			// intentionally leaving this code in for future work on tab and keyboard support
+			// 7/28/2017: kenvh
+			//
+		this._colorCheckBoxesMap.forEach((checkbox: Checkbox, color: string) => {
+			if (document.activeElement === checkbox.getElement === false) {
+				checkbox.checked = true;
+			}
+		});
+		*/
+
+		return false;
+	}
+
 	private focusNext(): void {
+		/*
+			//
+			// intentionally leaving this code in for future work on tab and keyboard support
+			// 7/28/2017: kenvh
+			//
 		if (this._groupNameInputBox.hasFocus()) {
 			this._groupDescriptionInputBox.focus();
 		} else if (this._groupDescriptionInputBox.hasFocus()) {
-			this._colorCheckBoxesMap[this._selectedColorOption].checkbox.focus();
-		} else if (this.getIndexOfFocusedColor()) {
+			this._colorCheckBoxesMap[this._viewModel.groupColor].checkbox.focus();
+		} else if (this.isFocusOnColors()) {
 			this._addServerButton.focus();
 		} else if (document.activeElement === this._addServerButton.getElement()) {
 			this._closeButton.focus();
 		}
+		else if (document.activeElement === this._closeButton.getElement()) {
+			this._groupNameInputBox.focus();
+		}
+		*/
 	}
 
 	private focusPrevious(): void {
+		/*
+			//
+			// intentionally leaving this code in for future work on tab and keyboard support
+			// 7/28/2017: kenvh
+			//
 		if (document.activeElement === this._closeButton.getElement()) {
 			this._addServerButton.focus();
 		} else if (document.activeElement === this._addServerButton.getElement()) {
-			this._colorCheckBoxesMap[this._selectedColorOption].checkbox.focus();
-		} else if (this.getIndexOfFocusedColor()) {
+			this._colorCheckBoxesMap[this._viewModel.groupColor].checkbox.focus();
+		} else if (this.isFocusOnColors()) {
 			this._groupDescriptionInputBox.focus();
 		} else if (this._groupDescriptionInputBox.hasFocus()) {
 			this._groupNameInputBox.focus();
+		} else if (this._groupNameInputBox.hasFocus()) {
+			this._closeButton.focus();
 		}
+		*/
 	}
 
-	private getIndexOfFocusedColor(): number {
-		let index: number;
-		for (let i = 1; i <= this._colors.length; i++) {
-			let checkbox = this._colorCheckBoxesMap[i].checkbox;
-			if (document.activeElement === checkbox.domNode) {
-				index = i;
+	private focusNextColor(moveRight: boolean): void {
+		/*
+			//
+			// intentionally leaving this code in for future work on tab and keyboard support
+			// 7/28/2017: kenvh
+			//
+		let focusIndex: number = -1;
+			this._colorCheckBoxesMap.forEach((checkbox: Checkbox, color: string) => {
+				if (document.activeElement === checkbox.domNode. === false) {
+					checkbox.checked = true;
+				}
+			});
+
+
+		for (let i = 0; i < this._colorCheckBoxesMap.size; i++) {
+			if (this._colorCheckBoxesMap.values[i].hasFocus()) {
+				focusIndex = i;
+				break;
 			}
 		}
-		return index;
+
+		if (focusIndex >= 0) {
+			if (moveRight) {
+				focusIndex++;
+			}
+			else {
+				focusIndex--;
+			}
+
+			// check for wraps
+			if (focusIndex < 0) {
+				focusIndex = this._colorCheckBoxesMap.size - 1;
+			} else if (focusIndex >= this._colorCheckBoxesMap.size) {
+				focusIndex = 0;
+			}
+		}
+		*/
 	}
 
-	private focusNextColor(isNext: boolean): void {
-		let index = this.getIndexOfFocusedColor();
-		if (index) {
-			if (isNext) {
-				index++;
-			} else {
-				index--;
-			}
-			if ((index > 0) && (index <= this._colors.length)) {
-				this._colorCheckBoxesMap[index].checkbox.focus();
-			}
-		}
-	}
-
-	private onSelectGroupColor(colorOption: number): void {
-		if (this._selectedColorOption !== colorOption) {
-			if (this._selectedColorOption) {
-				var recentSelectedCheckbox = this._colorCheckBoxesMap[this._selectedColorOption].checkbox;
-				recentSelectedCheckbox.checked = false;
-			}
-
-			this._selectedColorOption = colorOption;
-		}
+	private onSelectGroupColor(colorToSelect: string): void {
+		this._viewModel.groupColor = colorToSelect;
+		this.updateView();
 	}
 
 	private registerListeners(): void {
@@ -216,19 +252,26 @@ export class ServerGroupDialog extends Modal {
 		this._toDispose.push(attachButtonStyler(this._addServerButton, this._themeService));
 		this._toDispose.push(attachButtonStyler(this._closeButton, this._themeService));
 
+		// handler for name change events
 		this._toDispose.push(this._groupNameInputBox.onDidChange(groupName => {
 			this.groupNameChanged(groupName);
+		}));
+
+		// handler for description change events
+		this._toDispose.push(this._groupDescriptionInputBox.onDidChange(groupDescription => {
+			this.groupDescriptionChanged(groupDescription);
 		}));
 	}
 
 	private groupNameChanged(groupName: string) {
-		if (DialogHelper.isEmptyString(this._groupNameInputBox.value)) {
-			this._addServerButton.enabled = false;
-		} else {
-			this._addServerButton.enabled = true;
-		}
+		this._viewModel.groupName = groupName;
+		this.updateView();
 	}
 
+	private groupDescriptionChanged(groupDescription: string) {
+		this._viewModel.groupDescription = groupDescription;
+		this.updateView();
+	}
 
 	public get groupName(): string {
 		return this._groupNameInputBox.value;
@@ -240,6 +283,13 @@ export class ServerGroupDialog extends Modal {
 
 	public get selectedColor(): string {
 		return this._colorCheckBoxesMap[this._selectedColorOption].color;
+	}
+
+	public get viewModel(): ServerGroupViewModel {
+		return this._viewModel;
+	}
+	public set viewModel(theViewModel: ServerGroupViewModel) {
+		this._viewModel = theViewModel;
 	}
 
 	public addGroup(): void {
@@ -262,6 +312,30 @@ export class ServerGroupDialog extends Modal {
 		return validate;
 	}
 
+	// initialize the view based on the current state of the view model
+	private initializeView(): void {
+		this.title = this._viewModel.getDialogTitle();
+		this._groupNameInputBox.value = this._viewModel.groupName;
+		this._groupDescriptionInputBox.value = this._viewModel.groupDescription;
+
+		this.updateView();
+	}
+
+	// update UI elements that have derivative behaviors based on other state changes
+	private updateView(): void {
+		// check the color buttons and if their checked state does not match the view model state then correct it
+		this._colorCheckBoxesMap.forEach((checkbox: Checkbox, color: string) => {
+			if ((this._viewModel.groupColor === color) && (checkbox.checked === false)) {
+				checkbox.checked = true;
+			} else if ((this._viewModel.groupColor !== color) && (checkbox.checked === true)) {
+				checkbox.checked = false;
+			}
+		});
+
+		// OK button state - enabled if there are pending changes that can be saved
+		this._addServerButton.enabled = this._viewModel.hasPendingChanges();
+	}
+
 	/* Overwrite esapce key behavior */
 	protected onClose() {
 		this.cancel();
@@ -282,35 +356,12 @@ export class ServerGroupDialog extends Modal {
 		this._onCloseEvent.fire();
 	}
 
-	public open(editGroup: boolean, group?: ConnectionProfileGroup) {
+	public open() {
 		// reset the dialog
 		this.hideError();
-		this._groupNameInputBox.value = '';
-		this._groupNameInputBox.hideMessage();
-		this._groupDescriptionInputBox.value = '';
-		this.onSelectGroupColor(this._defaultColor);
-
-		if (editGroup && group) {
-			this.title = this._editServerGroupTitle;
-			this._groupNameInputBox.value = group.name;
-			this._groupDescriptionInputBox.value = group.description;
-			let colorId: number;
-			for (var key in this._colorCheckBoxesMap) {
-				if (this._colorCheckBoxesMap[key].color === group.color) {
-					colorId = Number(key);
-					break;
-				}
-			}
-			if (colorId) {
-				this.onSelectGroupColor(colorId);
-			}
-		} else {
-			this.title = this._addServerGroupTitle;
-		}
-
+		this.initializeView();
 		this.show();
 		this._groupNameInputBox.focus();
-		this._addServerButton.enabled = false;
 	}
 
 	public dispose(): void {

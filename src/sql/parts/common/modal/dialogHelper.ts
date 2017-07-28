@@ -77,3 +77,8 @@ export function isEmptyString(value: string): boolean {
 	//TODO find a better way to check for empty string
 	return value === undefined || value === '';
 }
+
+export function isNullOrWhiteSpace(value: string): boolean {
+	// returns true if the string is null or contains white space/tab chars only
+	return !value || value.trim().length === 0;
+}
