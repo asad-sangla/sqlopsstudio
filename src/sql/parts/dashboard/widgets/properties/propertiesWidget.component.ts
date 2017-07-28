@@ -62,6 +62,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	private _child;
 	private _disposables: Array<IDisposable> = [];
 	private properties: Array<DisplayProperty>;
+	private _hasInit = false;
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
@@ -97,10 +98,12 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	}
 
 	ngOnInit() {
+		this._hasInit = true;
 		this._parent = $(this._el.nativeElement).find('#parent')[0];
 		this._child = $(this._el.nativeElement).find('#child')[0];
 		this._eventHandler = this.handleClipping();
 		$(window).on('resize', this._eventHandler);
+		this._changeRef.detectChanges();
 	}
 
 	ngOnDestroy() {
@@ -249,7 +252,9 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 			this.properties.push(<DisplayProperty>assignProperty);
 		}
 
-		this._changeRef.detectChanges();
+		if (this._hasInit) {
+			this._changeRef.detectChanges();
+		}
 	}
 
 	// overwrittable console.error for testing
