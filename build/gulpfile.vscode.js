@@ -274,12 +274,8 @@ function packageTask(platform, arch, opts) {
 
 		const localExtensionDependencies = gulp.src('extensions/node_modules/**', { base: '.' });
 
-		const marketplaceExtensions = es.merge(...builtInExtensions.map(extension => {
-			return ext.fromMarketplace(extension.name, extension.version)
-				.pipe(rename(p => p.dirname = `extensions/${extension.name}/${p.dirname}`));
-		}));
-
-		const sources = es.merge(src, localExtensions, localExtensionDependencies, marketplaceExtensions)
+		// {{SQL CARBON EDIT}}
+		const sources = es.merge(src, localExtensions, localExtensionDependencies)
 			.pipe(util.setExecutableBit(['**/*.sh']))
 			.pipe(filter(['**', '!**/*.js.map']));
 
