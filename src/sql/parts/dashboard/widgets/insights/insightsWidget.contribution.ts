@@ -2,107 +2,49 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Registry } from 'vs/platform/registry/common/platform';
-import { IJSONSchema } from 'vs/base/common/jsonSchema';
-import { registerDashboardWidget } from 'sql/platform/dashboard/common/widgetRegistry';
+import { join } from 'path';
+
+import { registerDashboardWidget, registerNonCustomDashboardWidget } from 'sql/platform/dashboard/common/widgetRegistry';
 import { Extensions as InsightExtensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
-import { Extensions as TaskExtensions, ITaskRegistry } from 'sql/platform/tasks/taskRegistry';
-import * as nls from 'vs/nls';
+import { IInsightsConfig } from './interfaces';
+import { insightsContribution, insightsSchema } from 'sql/parts/dashboard/widgets/insights/insightsWidgetSchemas';
 
-let insightRegistry = <IInsightRegistry>Registry.as(InsightExtensions.InsightContribution);
-let taskRegistry = <ITaskRegistry>Registry.as(TaskExtensions.TaskContribution);
+import { IExtensionPointUser, ExtensionsRegistry } from 'vs/platform/extensions/common/extensionsRegistry';
+import { Registry } from 'vs/platform/registry/common/platform';
 
-export const insightsSchema: IJSONSchema = {
-	type: 'object',
-	description: nls.localize('insightWidgetDescription', 'Adds a widget that can query a server or database and display the results in multiple ways - as a chart, summarized count, and more'),
-	properties: {
-		type: {
-			type: 'object',
-			properties: insightRegistry.insightSchema.properties,
-			minItems: 1,
-			maxItems: 1
-		},
-		query: {
-			type: ['string', 'array'],
-			description:  nls.localize('insightQueryDescription', 'SQL query to run. This should return exactly 1 resultset.')
-		},
-		queryFile: {
-			type: 'string',
-			description: nls.localize('insightQueryFileDescription','[Optional] path to a file that contains a query. Use if "query" is not set')
-		},
-		details: {
-			type: 'object',
-			properties: {
-				query: {
-					type: ['string', 'array']
-				},
-				queryFile: {
-					type: 'string'
-				},
-				value: {
-					type: 'string'
-				},
-				label: {
-					type: ['string', 'object'],
-					properties: {
-						column: {
-							type: 'string'
-						},
-						icon: {
-							type: 'string'
-						},
-						state: {
-							type: 'array',
-							items: {
-								type: 'object',
-								properties: {
-									condition: {
-										type: 'object',
-										properties: {
-											if: {
-												type: 'string',
-												enum: ['equals', 'notEquals', 'greaterThanOrEquals', 'greaterThan', 'lessThanOrEquals', 'lessThan', 'always']
-											},
-											equals: {
-												type: 'string'
-											}
-										}
-									},
-									color: {
-										type: 'string'
-									},
-									icon: {
-										type: 'string'
-									}
-								}
-							}
-						}
-					}
-				},
-				actions: {
-					type: 'object',
-					properties: {
-						types: {
-							type: 'array',
-							enum: taskRegistry.ids
-						},
-						database: {
-							type: 'string',
-							description: nls.localize('actionDatabaseDescription', 'Target database for the action; can use the format "${columnName} to use a data driven column name.')
-						},
-						server: {
-							type: 'string',
-							description: nls.localize('actionServerDescription', 'Target server for the action; can use the format "${columnName} to use a data driven column name.')
-						},
-						user: {
-							type: 'string',
-							description: nls.localize('actionUserDescription', 'Target user for the action; can use the format "${columnName} to use a data driven column name.')
-						}
-					}
-				}
-			}
-		}
-	}
-};
+const insightRegistry = Registry.as<IInsightRegistry>(InsightExtensions.InsightContribution);
+
+interface IInsightTypeContrib {
+	id: string;
+	contrib: IInsightsConfig;
+}
 
 registerDashboardWidget('insights-widget', '', insightsSchema);
+
+ExtensionsRegistry.registerExtensionPoint<IInsightTypeContrib | IInsightTypeContrib[]>('insights', [], insightsContribution).setHandler(extensions => {
+
+	function handleCommand(insight: IInsightTypeContrib, extension: IExtensionPointUser<any>) {
+
+		if (insight.contrib.queryFile) {
+			insight.contrib.queryFile = join(extension.description.extensionFolderPath, insight.contrib.queryFile);
+		}
+
+		if (insight.contrib.details && insight.contrib.details.queryFile) {
+			insight.contrib.details.queryFile = join(extension.description.extensionFolderPath, insight.contrib.details.queryFile);
+		}
+
+		registerNonCustomDashboardWidget(insight.id, '', insight.contrib);
+		insightRegistry.registerExtensionInsight(insight.id, insight.contrib);
+	}
+
+	for (let extension of extensions) {
+		const { value } = extension;
+		if (Array.isArray<IInsightTypeContrib>(value)) {
+			for (let command of value) {
+				handleCommand(command, extension);
+			}
+		} else {
+			handleCommand(value, extension);
+		}
+	}
+});
