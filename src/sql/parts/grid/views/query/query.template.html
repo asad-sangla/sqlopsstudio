@@ -5,7 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 
-<div class="fullsize vertBox edgesPadding">
+<div class="fullsize vertBox">
     <div *ngIf="dataSets.length > 0" id="resultspane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!resultActive" (click)="togglePane('results')">
         <span> {{Constants.resultPaneLabel}} </span>
         <span class="queryResultsShortCut"> {{resultShortcut}} </span>

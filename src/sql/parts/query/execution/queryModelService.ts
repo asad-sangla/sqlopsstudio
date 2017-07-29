@@ -16,7 +16,7 @@ import { QueryStatusbarItem } from 'sql/parts/query/execution/queryStatus';
 import { SqlFlavorStatusbarItem } from 'sql/parts/query/common/flavorStatus';
 
 import {
-	ISelectionData, ResultSetSubset, EditSubsetResult,
+	ISelectionData, ResultSetSubset, EditSubsetResult, ExecutionPlanOptions,
 	EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult
 } from 'data';
 import { ISlickRange } from 'angular2-slickgrid';
@@ -165,7 +165,7 @@ export class QueryModelService implements IQueryModelService {
 
 	public setEditorSelection(uri: string): void {
 		let info: QueryInfo = this._queryInfoMap.get(uri);
-		if (info) {
+		if (info && info.queryInput) {
 			info.queryInput.updateSelection(info.selection);
 		}
 	}
@@ -186,8 +186,8 @@ export class QueryModelService implements IQueryModelService {
 	 * Run a query for the given URI with the given text selection
 	 */
 	public runQuery(uri: string, selection: ISelectionData,
-					title: string, queryInput: QueryInput): void {
-		this.doRunQuery(uri, selection, title, queryInput, false);
+					title: string, queryInput: QueryInput, runOptions?: ExecutionPlanOptions): void {
+		this.doRunQuery(uri, selection, title, queryInput, false, runOptions);
 	}
 
 	/**
@@ -203,7 +203,7 @@ export class QueryModelService implements IQueryModelService {
 	 */
 	private doRunQuery(uri: string, selection: ISelectionData,
 					title: string, queryInput: QueryInput,
-					runCurrentStatement: boolean): void {
+					runCurrentStatement: boolean, runOptions?: ExecutionPlanOptions): void {
 		// Reuse existing query runner if it exists
 		let queryRunner: QueryRunner;
 		let info: QueryInfo;
@@ -222,51 +222,59 @@ export class QueryModelService implements IQueryModelService {
 		} else {
 			// We do not have a query runner for this editor, so create a new one
 			// and map it to the results uri
-			queryRunner = this._instantiationService.createInstance(QueryRunner, uri, title);
-			queryRunner.eventEmitter.on('resultSet', (resultSet) => {
-				this._fireQueryEvent(uri, 'resultSet', resultSet);
-			});
-			queryRunner.eventEmitter.on('batchStart', (batch) => {
-				let link = undefined;
-				if (batch.selection) {
-					link = {
-						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1)
-					};
-				}
-				let message = {
-					message: Constants.runQueryBatchStartMessage,
-					batchId: undefined,
-					isError: false,
-					time: new Date().toLocaleTimeString(),
-					link: link
-				};
-				this._fireQueryEvent(uri, 'message', message);
-				info.selection = this._validateSelection(batch.selection);
-			});
-			queryRunner.eventEmitter.on('message', (message) => {
-				this._fireQueryEvent(uri, 'message', message);
-			});
-			queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
-				this._onRunQueryComplete.fire(uri);
-				this._fireQueryEvent(uri, 'complete', totalMilliseconds);
-			});
-			queryRunner.eventEmitter.on('start', () => {
-				this._onRunQueryStart.fire(uri);
-				this._fireQueryEvent(uri, 'start');
-			});
-
 			info = new QueryInfo();
-			info.queryRunner = queryRunner;
-			info.dataService = this._instantiationService.createInstance(DataService, uri);
-			this._queryInfoMap.set(uri, info);
+			queryRunner = this.initQueryRunner(uri, title, info);
 		}
 
-		info.queryInput = queryInput;
+		 this._getQueryInfo(uri).queryInput = queryInput;
+
 		if (runCurrentStatement) {
 			queryRunner.runQueryStatement(selection);
 		} else {
-			queryRunner.runQuery(selection);
+			queryRunner.runQuery(selection, runOptions);
 		}
+	}
+
+	private initQueryRunner(uri: string, title: string, info: QueryInfo): QueryRunner {
+		let queryRunner: QueryRunner;
+		queryRunner = this._instantiationService.createInstance(QueryRunner, uri, title);
+		queryRunner.eventEmitter.on('resultSet', (resultSet) => {
+			this._fireQueryEvent(uri, 'resultSet', resultSet);
+		});
+		queryRunner.eventEmitter.on('batchStart', (batch) => {
+			let link = undefined;
+			if (batch.selection) {
+				link = {
+					text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1)
+				};
+			}
+			let message = {
+				message: Constants.runQueryBatchStartMessage,
+				batchId: undefined,
+				isError: false,
+				time: new Date().toLocaleTimeString(),
+				link: link
+			};
+			this._fireQueryEvent(uri, 'message', message);
+			info.selection = this._validateSelection(batch.selection);
+		});
+		queryRunner.eventEmitter.on('message', (message) => {
+			this._fireQueryEvent(uri, 'message', message);
+		});
+		queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
+			this._onRunQueryComplete.fire(uri);
+			this._fireQueryEvent(uri, 'complete', totalMilliseconds);
+		});
+		queryRunner.eventEmitter.on('start', () => {
+			this._onRunQueryStart.fire(uri);
+			this._fireQueryEvent(uri, 'start');
+		});
+
+		info = new QueryInfo();
+		info.queryRunner = queryRunner;
+		info.dataService = this._instantiationService.createInstance(DataService, uri);
+		this._queryInfoMap.set(uri, info);
+		return queryRunner;
 	}
 
 	public cancelQuery(input: QueryRunner | string): void {

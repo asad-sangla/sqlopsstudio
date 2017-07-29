@@ -16,7 +16,8 @@ import {
 	EditSessionReadyParams,
 	EditSubsetResult,
 	EditCreateRowResult,
-	EditRevertCellResult
+	EditRevertCellResult,
+	ExecutionPlanOptions
 } from 'data';
 
 export const SERVICE_ID = 'queryModelService';
@@ -32,7 +33,7 @@ export interface IQueryModelService {
 	getConfig(): Promise<{ [key: string]: any }>;
 	getShortcuts(): Promise<any>;
 	getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
-	runQuery(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void;
+	runQuery(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput, runOptions?: ExecutionPlanOptions): void;
 	runQueryStatement(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void;
 	cancelQuery(input: QueryRunner | string): void;
 	disposeQuery(uri: string): Thenable<void>;

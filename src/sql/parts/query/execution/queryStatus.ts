@@ -5,14 +5,11 @@
 
 import { $, append, show, hide } from 'vs/base/browser/dom';
 import { IDisposable, combinedDisposable } from 'vs/base/common/lifecycle';
-import URI from 'vs/base/common/uri';
-import { IEditorInput } from 'vs/platform/editor/common/editor';
 import { IStatusbarItem } from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IEditorCloseEvent } from 'vs/workbench/common/editor';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
 import Constants = require('sql/parts/query/common/constants');
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 

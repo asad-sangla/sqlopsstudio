@@ -1188,9 +1188,15 @@ export namespace QueryExecuteRequest {
 	export const type: RequestType<QueryExecuteParams, QueryExecuteResult, void> = { get method(): string { return 'query/executeDocumentSelection'; } };
 }
 
+export interface ExecutionPlanOptions {
+	includeEstimatedExecutionPlanXml?: boolean;
+	includeActualExecutionPlanXml?: boolean;
+}
+
 export interface QueryExecuteParams {
 	ownerUri: string;
 	querySelection: ISelectionData;
+	executionPlanOptions?: ExecutionPlanOptions;
 }
 
 export interface QueryExecuteResult { }

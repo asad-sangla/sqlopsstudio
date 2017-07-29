@@ -196,6 +196,50 @@ export class CancelQueryAction extends QueryTaskbarAction {
 }
 
 /**
+ * Action class that runs a query in the active SQL text document.
+ */
+export class EstimatedQueryPlanAction extends QueryTaskbarAction {
+
+	public static EnabledClass = 'estimatedQueryPlan';
+	public static ID = 'estimatedQueryPlanAction';
+
+	constructor(
+		editor: QueryEditor,
+		@IQueryModelService private _queryModelService: IQueryModelService,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
+	) {
+		super(connectionManagementService, editor, EstimatedQueryPlanAction.ID, EstimatedQueryPlanAction.EnabledClass);
+		this.label = nls.localize('estimatedQueryPlan', 'Explain');
+	}
+
+	public run(): TPromise<void> {
+		if (!this.editor.isSelectionEmpty()) {
+			if (this.isConnected(this.editor)) {
+				// If we are already connected, run the query
+				this.runQuery(this.editor);
+			} else {
+				// If we are not already connected, prompt for connection and run the query if the
+				// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
+				this.connectEditor(this.editor, RunQueryOnConnectionMode.executeQuery, this.editor.getSelection());
+			}
+		}
+		return TPromise.as(null);
+	}
+
+	public runQuery(editor: QueryEditor) {
+		if (!editor) {
+			editor = this.editor;
+		}
+
+		if (this.isConnected(editor)) {
+			editor.currentQueryInput.runQuery(editor.getSelection(), {
+				displayEstimatedQueryPlan: true
+			});
+		}
+	}
+}
+
+/**
  * Action class that disconnects the connection associated with the current query file.
  */
 export class DisconnectDatabaseAction extends QueryTaskbarAction {
@@ -273,7 +317,6 @@ export class ToggleConnectDatabaseAction extends QueryTaskbarAction {
 		isConnected: boolean,
 		@IConnectionManagementService connectionManagementService: IConnectionManagementService
 	) {
-		let label: string;
 		let enabledClass: string;
 
 		super(connectionManagementService, editor, ToggleConnectDatabaseAction.ID, enabledClass);

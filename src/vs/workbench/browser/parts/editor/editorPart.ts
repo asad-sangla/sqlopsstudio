@@ -43,7 +43,7 @@ import { editorBackground } from 'vs/platform/theme/common/colorRegistry';
 import { EDITOR_GROUP_BACKGROUND } from 'vs/workbench/common/theme';
 
 // {{SQL CARBON EDIT}}
-import { QueryEditorService } from 'sql/parts/query/services/queryEditorService';
+import { convertEditorInput } from 'sql/parts/common/customInputConverter';
 
 class ProgressMonitor {
 
@@ -298,8 +298,8 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupService
 		}
 
 		// {{SQL CARBON EDIT}}
-		// SQL file check
-		input = QueryEditorService.queryEditorCheck(input, options);
+		// Convert input into custom type if it's one of the ones we support
+		input = convertEditorInput(input, options, this.instantiationService);
 
 		// We need an editor descriptor for the input
 		const descriptor = Registry.as<IEditorRegistry>(EditorExtensions.Editors).getEditor(input);

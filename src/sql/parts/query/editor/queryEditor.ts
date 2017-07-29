@@ -40,7 +40,7 @@ import * as queryContext from 'sql/parts/query/common/queryContext';
 import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
 import {
 	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
-	DisconnectDatabaseAction, ConnectDatabaseAction, ToggleConnectDatabaseAction
+	ConnectDatabaseAction, ToggleConnectDatabaseAction, EstimatedQueryPlanAction
 } from 'sql/parts/query/execution/queryActions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
@@ -85,6 +85,7 @@ export class QueryEditor extends BaseEditor {
 	private _toggleConnectDatabaseAction: ToggleConnectDatabaseAction;
 	private _changeConnectionAction: ConnectDatabaseAction;
 	private _listDatabasesAction: ListDatabasesAction;
+	private _estimatedQueryPlanAction: EstimatedQueryPlanAction;
 
 	constructor(
 		@ITelemetryService _telemetryService: ITelemetryService,
@@ -277,7 +278,6 @@ export class QueryEditor extends BaseEditor {
 		this._editorGroupService.pinEditor(this.position, this.input);
 
 		let input = <QueryInput>this.input;
-		this._createSash();
 		this._createResultsEditorContainer();
 
 		this._createEditor(<QueryResultsInput>input.results, this._resultsEditorContainer)
@@ -374,6 +374,7 @@ export class QueryEditor extends BaseEditor {
 		this._toggleConnectDatabaseAction = this._instantiationService.createInstance(ToggleConnectDatabaseAction, this, false);
 		this._changeConnectionAction = this._instantiationService.createInstance(ConnectDatabaseAction, this, true);
 		this._listDatabasesAction = this._instantiationService.createInstance(ListDatabasesAction, this);
+		this._estimatedQueryPlanAction = this._instantiationService.createInstance(EstimatedQueryPlanAction, this);
 
 		// Create HTML Elements for the taskbar
 		let separator = QueryTaskbar.createTaskbarSeparator();
@@ -384,12 +385,10 @@ export class QueryEditor extends BaseEditor {
 			{ action: this._cancelQueryAction },
 			{ element: separator },
 			{ action: this._toggleConnectDatabaseAction },
-			/*
-			{ action: this._connectDatabaseAction },
-			{ action: this._disconnectDatabaseAction },
-			*/
 			{ action: this._changeConnectionAction },
 			{ action: this._listDatabasesAction },
+			{ element: separator },
+			{ action: this._estimatedQueryPlanAction },
 		];
 		this._taskbar.setContent(content);
 	}

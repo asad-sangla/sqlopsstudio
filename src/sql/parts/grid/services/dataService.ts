@@ -16,6 +16,7 @@ import { ISaveRequest } from 'sql/parts/grid/common/interfaces';
 
 import { ISlickRange } from 'angular2-slickgrid';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 
 /**
  * DataService handles the interactions between QueryModel and app.component. Thus, it handles
@@ -30,8 +31,8 @@ export class DataService {
 	constructor(
 		private _uri: string,
 		@IInstantiationService private _instantiationService: IInstantiationService,
-        @IQueryModelService private _queryModel: IQueryModelService
-
+        @IQueryModelService private _queryModel: IQueryModelService,
+		@IQueryEditorService private _queryEditorService: IQueryEditorService
 	) {
 		this.queryEventObserver = new Subject();
 		this.gridContentObserver = new Subject();

@@ -24,6 +24,9 @@ export interface IQueryEditorService {
 	// Creates new untitled document for SQL queries and opens it in a new editor tab
 	newSqlEditor(sqlContent?: string): Promise<IConnectableInput>;
 
+	// Creates a new query plan document
+	newQueryPlanEditor(xmlShowPlan: string): Promise<any>;
+
 	// Creates new edit data session
 	newEditDataEditor(schemaName: string, tableName: string): Promise<IConnectableInput>;
 

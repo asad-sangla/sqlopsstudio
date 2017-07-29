@@ -14,7 +14,7 @@ import {
 	QueryExecuteMessageParams,
 	QueryExecuteSubsetParams, QueryExecuteSubsetResult,
 	EditSubsetParams, EditSubsetResult, EditUpdateCellResult, EditCreateRowResult,
-	EditRevertCellResult, ISelectionData, IResultMessage
+	EditRevertCellResult, ISelectionData, IResultMessage, ExecutionPlanOptions
 } from 'data';
 
 import { EventEmitter } from 'events';
@@ -110,14 +110,14 @@ export default class QueryRunner {
 	 * Runs the query with the provided query
 	 * @param input Query string to execute
 	 */
-	public runQuery(input: string): Thenable<void>;
+	public runQuery(input: string, runOptions?: ExecutionPlanOptions): Thenable<void>;
 	/**
 	 * Runs the query by pulling the query from the document using the provided selection data
 	 * @param input selection data
 	 */
-	public runQuery(input: ISelectionData): Thenable<void>;
-	public runQuery(input): Thenable<void> {
-		return this.doRunQuery(input, false);
+	public runQuery(input: ISelectionData, runOptions?: ExecutionPlanOptions): Thenable<void>;
+	public runQuery(input, runOptions?: ExecutionPlanOptions): Thenable<void> {
+		return this.doRunQuery(input, false, runOptions);
 	}
 
 	/**
@@ -132,9 +132,9 @@ export default class QueryRunner {
 	 * Implementation that runs the query with the provided query
 	 * @param input Query string to execute
 	 */
-	private doRunQuery(input: string, runCurrentStatement: boolean): Thenable<void>;
-	private doRunQuery(input: ISelectionData, runCurrentStatement: boolean): Thenable<void>;
-	private doRunQuery(input, runCurrentStatement: boolean): Thenable<void> {
+	private doRunQuery(input: string, runCurrentStatement: boolean, runOptions?: ExecutionPlanOptions): Thenable<void>;
+	private doRunQuery(input: ISelectionData, runCurrentStatement: boolean, runOptions?: ExecutionPlanOptions): Thenable<void>;
+	private doRunQuery(input, runCurrentStatement: boolean, runOptions?: ExecutionPlanOptions): Thenable<void> {
 		let ownerUri = this._uri;
 		this.batchSets = [];
 		this._hasCompleted = false;
@@ -148,7 +148,7 @@ export default class QueryRunner {
 			// Send the request to execute the query
 			return runCurrentStatement
 				? this._queryManagementService.runQueryStatement(ownerUri, input.startLine, input.startColumn).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult())
-				: this._queryManagementService.runQuery(ownerUri, input).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult());
+				: this._queryManagementService.runQuery(ownerUri, input, runOptions).then(this.handleSuccessRunQueryResult(), this.handleFailureRunQueryResult());
 		} else if (typeof input === 'string') {
 			// Update internal state to show that we're executing the query
 			this._isExecuting = true;

@@ -407,6 +407,7 @@ export abstract class GridParentComponent {
 				grid.resized.emit();
 			}
 			self.slickgrids.toArray()[0].setActive();
+			self._cd.detectChanges();
 		});
 	}
 

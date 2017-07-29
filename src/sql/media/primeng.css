@@ -3803,7 +3803,7 @@ ui-datatable-scrollable-wrapper {
      cursor: default;
 }
 .ui-tabview {
-    padding: .25em;
+    padding: 0em;
 }
 
 .ui-tabview .ui-tabview-nav {
@@ -3836,9 +3836,12 @@ ui-datatable-scrollable-wrapper {
     cursor: pointer;
 }
 
+.ui-tabview .ui-tabview-panels {
+    height: 100%;
+}
+
 .ui-tabview .ui-tabview-panel {
     border-width: 0;
-    padding: 1em;
     background: none;
 }
 
@@ -3929,6 +3932,75 @@ ui-datatable-scrollable-wrapper {
     margin: 0 0 1px 0;
     border-left:0 none;
 }
+
+
+
+
+/* Tabs Source */
+.ui-tabview {
+    background: none;
+    border: 0 none;
+    /*color: #5C666A;
+    font-weight: lighter; */
+    -moz-border-radius: 4px !important;
+    -webkit-border-radius: 4px !important;
+    border-radius: 4px !important;
+}
+.ui-tabview .ui-tabview-nav {
+   /* background: #1976D2 !important; */
+    margin-bottom: -1px;
+    padding: 3px 3px 0px 3px !important;
+    border-top-right-radius: 4px !important;
+    border-top-left-radius: 4px !important;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+.ui-tabview .ui-tabview-nav li,
+.ui-tabview .ui-tabview-nav li.ui-state-hover {
+    border: 0px none !important;
+    background: lightblue !important;
+    border-color: lightblue !important;
+    box-shadow: none !important;
+    border-top-right-radius: 4px !important;
+    border-top-left-radius: 4px !important;
+}
+.ui-tabview .ui-tabview-nav li a {
+    padding: .5em 1em !important;
+}
+.ui-tabview .ui-tabview-nav li.tab-doc {
+    margin-right: 0;
+}
+.ui-tabview .ui-tabview-nav li.ui-state-default a {
+    color: #000 !important;
+    font-weight: normal !important;
+    text-shadow: none ;
+}
+.ui-tabview .ui-tabview-nav li.ui-state-active a {
+    color: #000 !important;
+    font-weight: normal !important;
+}
+.ui-tabview .ui-tabview-nav li.ui-state-hover {
+    box-shadow: none !important;;
+}
+
+.ui-tabview .ui-tabview-nav li.ui-tabview-selected {
+    color: #000 !important;
+    background: #3F94E9 !important;
+    border-color: #3F94E9 !important;
+}
+
+
+.ui-tabview .ui-tabview-panels {
+    border-top: 1px solid #AAA !important;;
+    /*color: #5C666A !important;
+    background: #F5F6F7;*/
+}
+
+.ui-tabview.ui-tabview-top > .ui-tabview-nav li {
+    top: 0px !important;
+}
+
+
 
 .ui-terminal {
     height: 18em;

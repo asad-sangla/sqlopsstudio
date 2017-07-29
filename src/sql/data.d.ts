@@ -442,7 +442,7 @@ declare module 'data' {
 		// TODO replace this temporary queryType field to detect "MSSQL" vs "PostGre" with a standard definition for supported platform
 		queryType: string;
 		cancelQuery(ownerUri: string): Thenable<QueryCancelResult>;
-		runQuery(ownerUri: string, selection: ISelectionData): Thenable<void>;
+		runQuery(ownerUri: string, selection: ISelectionData, runOptions?: ExecutionPlanOptions): Thenable<void>;
 		runQueryStatement(ownerUri: string, line: number, column: number): Thenable<void>;
 		runQueryString(ownerUri: string, queryString: string): Thenable<void>;
 		runQueryAndReturn(ownerUri: string, queryString: string): Thenable<SimpleExecuteResult>;
@@ -565,6 +565,10 @@ declare module 'data' {
 		batchSummaries: BatchSummary[];
 	}
 
+	export interface ExecutionPlanOptions {
+		displayEstimatedQueryPlan?: boolean;
+		displayActualQueryPlan?: boolean;
+	}
 	export interface SimpleExecuteParams {
 		queryString: string;
 		ownerUri: string;

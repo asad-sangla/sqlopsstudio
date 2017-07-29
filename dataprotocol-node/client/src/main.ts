@@ -29,7 +29,7 @@ import {
 	SaveResultsRequestParams as VSaveResultsRequestParams, ObjectExplorerProvider,
 	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo,
 	TaskServicesProvider, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo, TaskInfo,
-	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo
+	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo, ExecutionPlanOptions
 } from 'data';
 
 import {
@@ -1442,8 +1442,12 @@ export class LanguageClient {
 				);
 			},
 
-			runQuery(ownerUri: string, selection: ISelectionData): Thenable<void> {
-				let params: QueryExecuteParams = { ownerUri: ownerUri, querySelection: selection };
+			runQuery(ownerUri: string, selection: ISelectionData, executionPlanOptions?: ExecutionPlanOptions): Thenable<void> {
+				let params: QueryExecuteParams = {
+					ownerUri: ownerUri,
+					querySelection: selection,
+					executionPlanOptions: self._c2p.asExecutionPlanOptions(executionPlanOptions)
+				};
 				return self.doSendRequest(connection, QueryExecuteRequest.type, params, undefined).then(
 					(result) => {
 						return undefined;

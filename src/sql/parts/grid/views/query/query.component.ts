@@ -16,7 +16,7 @@ import * as Services from 'sql/parts/grid/services/sharedServices';
 
 import {
 	ElementRef, QueryList, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject,
-	ViewChildren, forwardRef, EventEmitter
+	ViewChildren, forwardRef, EventEmitter, Input
 } from '@angular/core';
 import { IGridDataRow, SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
 import { IGridIcon, IMessage, IRange, IGridDataSet } from 'sql/parts/grid/common/interfaces';
@@ -124,6 +124,12 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	private firstRender = true;
 	private totalElapsedTimeSpan: number;
 	private complete = false;
+	private sentPlans: Map<number, string> = new Map<number, string>();
+	private hasQueryPlan: boolean = false;
+	public queryExecutionStatus: EventEmitter<string> = new EventEmitter<string>();
+	public queryPlanAvailable: EventEmitter<string> = new EventEmitter<string>();
+
+	@Input() public queryParameters: QueryComponentParams;
 
 	@ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
 
@@ -134,10 +140,6 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	) {
 		super(el, cd, bootstrapService);
 		this._el.nativeElement.className = 'slickgridContainer';
-		let queryParameters: QueryComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
-		this.dataService = queryParameters.dataService;
-
-		this.actionProvider = new GridActionProvider(this.dataService, this.onGridSelectAll());
 	}
 
 	/**
@@ -145,6 +147,10 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	 */
 	ngOnInit(): void {
 		const self = this;
+
+		this.dataService = this.queryParameters.dataService;
+		this.actionProvider = new GridActionProvider(this.dataService, this.onGridSelectAll());
+
 		this.baseInit();
 		this.setupResizeBind();
 
@@ -195,6 +201,11 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		self.totalElapsedTimeSpan = undefined;
 		self.complete = false;
 		self.activeGrid = 0;
+
+		// reset query plan info and send notification to subscribers
+		self.hasQueryPlan = false;
+		self.sentPlans = new Map<number, string>();
+		self.queryExecutionStatus.emit('start');
 	}
 
 	handleComplete(self: QueryComponent, event: any): void {
@@ -231,6 +242,12 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 						gridData.push({
 							values: rows.rows[row]
 						});
+					}
+
+					// if this is a query plan resultset we haven't processed yet then forward to subscribers
+					if (self.hasQueryPlan && !self.sentPlans[resultSet.batchId]) {
+						self.sentPlans[resultSet.batchId] = rows.rows[0][0].displayValue;
+						self.queryPlanAvailable.emit(rows.rows[0][0].displayValue);
 					}
 					resolve(gridData);
 				});
@@ -279,6 +296,15 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			})
 		};
 		self.dataSets.push(dataSet);
+
+		// check if the resultset is for a query plan
+		for (let i = 0; i < resultSet.columnInfo.length; ++i) {
+			let column = resultSet.columnInfo[i];
+			if (column.columnName === 'Microsoft SQL Server 2005 XML Showplan') {
+				this.hasQueryPlan = true;
+				break;
+			}
+		}
 
 		// Create a dataSet to render without rows to reduce DOM size
 		let undefinedDataSet = JSON.parse(JSON.stringify(dataSet));
@@ -540,5 +566,4 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		this._cd.detectChanges();
 		this.resizeGrids();
 	}
-
 }

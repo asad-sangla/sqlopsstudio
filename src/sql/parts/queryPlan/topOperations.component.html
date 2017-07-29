@@ -1,0 +1,45 @@
+<!--
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+-->
+<div>
+	<table border="1">
+		<tr>
+			<td>Operation</td>
+			<td>Object</td>
+			<td>Est Cost</td>
+			<td>Est Subtree Cost</td>
+			<td>Actual Rows</td>
+			<td>Est Rows</td>
+			<td>Actual Executions</td>
+			<td>Est CPU Cost</td>
+			<td>Est IO Cost</td>
+			<td>Parallel</td>
+			<td>Actual Rebinds</td>
+			<td>Est Rebinds</td>
+			<td>Actual Rewinds</td>
+			<td>Est Rewinds</td>
+			<td>Partitioned</td>
+		</tr>
+		<tr *ngFor="let operation of operations">
+			<td>{{operation.title}}</td>
+			<td>{{operation.indexObject.title}}</td>
+			<td>{{operation.estimatedOperatorCost}}%</td>
+			<td>{{operation.estimatedSubtreeCost}}%</td>
+			<td>{{operation.runtimeInfo.actualRows}}</td>
+			<td>{{operation.estimateRows}}</td>
+			<td>{{operation.runtimeInfo.actualExecutions}}</td>
+			<td>{{operation.estimateCpu}}</td>
+			<td>{{operation.estimateIo}}</td>
+			<td>{{operation.parallel}}</td>
+			<td></td>
+			<td>{{operation.estimateRebinds}}</td>
+			<td></td>
+			<td>{{operation.estimateRewinds}}</td>
+			<td>{{operation.partitioned}}</td>
+
+		</tr>
+	</table>
+</div>

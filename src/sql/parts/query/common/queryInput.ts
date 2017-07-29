@@ -12,7 +12,7 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import Event, { Emitter } from 'vs/base/common/event';
 import URI from 'vs/base/common/uri';
-import { ISelectionData } from 'data';
+import { ISelectionData, ExecutionPlanOptions } from 'data';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 
 /**
@@ -142,8 +142,8 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	}
 
 	// State update funtions
-	public runQuery(selection: ISelectionData): void {
-		this._queryModelService.runQuery(this.uri, selection, this.uri, this);
+	public runQuery(selection: ISelectionData, executePlanOptions?: ExecutionPlanOptions): void {
+		this._queryModelService.runQuery(this.uri, selection, this.uri, this, executePlanOptions);
 		this.showQueryResultsEditor();
 	}
 

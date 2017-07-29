@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EditorInput, IEditorGroup } from 'vs/workbench/common/editor';
+import { IEditorGroup } from 'vs/workbench/common/editor';
 import { IUntitledEditorService, UNTITLED_SCHEMA } from 'vs/workbench/services/untitled/common/untitledEditorService';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { FileEditorInput } from 'vs/workbench/parts/files/common/editors/fileEditorInput';
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
@@ -23,6 +22,8 @@ import { IQueryEditorService, IQueryEditorOptions } from 'sql/parts/query/common
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import nls = require('vs/nls');
+import { QueryPlanInput } from 'sql/parts/queryPlan/queryPlanInput';
+import { sqlModeId, untitledFilePrefix, getSupportedInputResource } from 'sql/parts/common/customInputConverter';
 
 const fs = require('fs');
 
@@ -33,22 +34,10 @@ export class QueryEditorService implements IQueryEditorService {
 
 	public _serviceBrand: any;
 
-	// file extensions that should be put into query editors
-	private static fileTypes = ['SQL'];
-
-	// prefix for untitled sql editors
-	private static untitledFilePrefix = 'SQLQuery';
-
-	// mode identifier for SQL mode
-	private static sqlModeId = 'sql';
-
 	private static CHANGE_ERROR_MESSAGE = nls.localize(
 		'queryEditorServiceChangeError',
 		'Please save or discard changes before switching to/from the SQL Language Mode'
 	);
-
-	// files that should open in SQL mode but will not do so by default
-	private static sqlModeFiles: Set<string>;
 
 	// service references for static functions
 	private static editorService: IWorkbenchEditorService;
@@ -67,7 +56,6 @@ export class QueryEditorService implements IQueryEditorService {
 		QueryEditorService.instantiationService = _instantiationService;
 		QueryEditorService.editorGroupService = _editorGroupService;
 		QueryEditorService.messageService = _messageService;
-		QueryEditorService.sqlModeFiles = new Set<string>();
 	}
 
 	////// Public functions
@@ -108,6 +96,16 @@ export class QueryEditorService implements IQueryEditorService {
 		});
 	}
 
+	// Creates a new query plan document
+	public newQueryPlanEditor(xmlShowPlan: string): Promise<any> {
+		const self = this;
+		return new Promise<any>((resolve, reject) => {
+			let queryPlanInput: QueryPlanInput = self._instantiationService.createInstance(QueryPlanInput, xmlShowPlan, 'aaa', undefined);
+ 			self._editorService.openEditor(queryPlanInput, { pinned: true }, false);
+			resolve(true);
+		});
+	}
+
 	/**
 	 * Creates new edit data session
 	 */
@@ -140,7 +138,6 @@ export class QueryEditorService implements IQueryEditorService {
 	 * Clears any QueryEditor data for the given URI held by this service
 	 */
 	public onQueryInputClosed(uri: string): void {
-		QueryEditorService.sqlModeFiles.delete(uri);
 	}
 
 	////// Public static functions
@@ -167,8 +164,8 @@ export class QueryEditorService implements IQueryEditorService {
 
 		let newLanguage: string = mode.getLanguageIdentifier().language;
 		let oldLanguage: string = model.getLanguageIdentifier().language;
-		let changingToSql = QueryEditorService.sqlModeId === newLanguage;
-		let changingFromSql = QueryEditorService.sqlModeId === oldLanguage;
+		let changingToSql = sqlModeId === newLanguage;
+		let changingFromSql = sqlModeId === oldLanguage;
 		let changingLanguage = newLanguage !== oldLanguage;
 
 		if (!changingLanguage) {
@@ -216,29 +213,11 @@ export class QueryEditorService implements IQueryEditorService {
 		});
 	}
 
-	/**
-	 * Checks if this input/options pair should actually open as a QueryInput. If so, returns same input wrapped
-	 * inside a QueryInput.
-	 */
-	public static queryEditorCheck(input: EditorInput, options: IQueryEditorOptions): EditorInput {
-		let denyQueryEditor = options && options.denyQueryEditor;
-		if (input && !denyQueryEditor) {
-			let uri: string = this.getQueryEditorFileUri(input);
-			if (uri) {
-				const queryResultsInput: QueryResultsInput = QueryEditorService.instantiationService.createInstance(QueryResultsInput, uri);
-				let queryInput: QueryInput = QueryEditorService.instantiationService.createInstance(QueryInput, input.getName(), '', input, queryResultsInput);
-				return queryInput;
-			}
-		}
-
-		return input;
-	}
-
 	////// Private functions
 
 	private createUntitledSqlFilePath(): string {
 		let sqlFileName = (counter: number): string => {
-			return `${QueryEditorService.untitledFilePrefix}${counter}`;
+			return `${untitledFilePrefix}${counter}`;
 		};
 
 		let counter = 1;
@@ -318,7 +297,7 @@ export class QueryEditorService implements IQueryEditorService {
 			let queryInput: QueryInput = <QueryInput> input;
 			uriSource = queryInput.sql;
 		}
-		return QueryEditorService._getInputResource(uriSource);
+		return getSupportedInputResource(uriSource);
 	}
 
 	/**
@@ -338,87 +317,10 @@ export class QueryEditorService implements IQueryEditorService {
 			QueryEditorService.editorGroupService.unpinEditor(group, editor.input);
 		}
 
-		// Record this URI in the QueryEditorService.sqlModeFiles map so we remember to open it with the correct editor.
-		if (editor.input instanceof QueryInput) {
-			QueryEditorService.sqlModeFiles.add(uri);
-		} else {
-			QueryEditorService.sqlModeFiles.delete(uri);
-		}
-
 		// Grab and returns the IModel that will be used to resolve the sqlLanguageModeCheck promise.
 		let control = editor.getControl();
 		let codeEditor: CodeEditor = <CodeEditor> control;
 		let newModel = codeEditor ? codeEditor.getModel() : undefined;
 		return newModel;
-	}
-
-	/**
-	 * If fileInput is a supported query editor file, return it's URI. Otherwise return undefined.
-	 */
-	private static getQueryEditorFileUri(input: EditorInput): string {
-		if (!input || !input.getName()) {
-			return undefined;
-		}
-
-		// If this editor is not already of type queryinput
-		if (!(input instanceof QueryInput)) {
-
-			// If this editor has a URI
-			let uri: URI = this._getInputResource(input);
-			if (uri) {
-				let isValidUri: boolean = !!uri && !!uri.toString;
-
-				if (isValidUri && (this._hasSqlFileExtension(input) || this._hasSqlFileMode(input) || QueryEditorService.sqlModeFiles.has(uri.toString()) )
-				) {
-					return uri.toString();
-				}
-			}
-		}
-
-		return undefined;
-	}
-
-	private static _getInputResource(input: IEditorInput): URI {
-		if (input instanceof UntitledEditorInput) {
-			let untitledCast: UntitledEditorInput = <UntitledEditorInput> input;
-			if (untitledCast) {
-				return untitledCast.getResource();
-			}
-		}
-
-		if (input instanceof FileEditorInput) {
-			let fileCast: FileEditorInput  = <FileEditorInput> input;
-			if (fileCast) {
-				return fileCast.getResource();
-			}
-		}
-
-		return undefined;
-	}
-
-	private static _hasSqlFileMode(input: EditorInput): boolean {
-		if (input instanceof UntitledEditorInput) {
-			let untitledCast: UntitledEditorInput = <UntitledEditorInput> input;
-			return untitledCast && (untitledCast.getModeId() === undefined || untitledCast.getModeId() === this.sqlModeId);
-		}
-
-		return false;
-	}
-
-	private static _hasSqlFileExtension(input: EditorInput): boolean {
-		// Check the extension type
-		let lastPeriodIndex = input.getName().lastIndexOf('.');
-		if (lastPeriodIndex > -1) {
-			let extension: string = input.getName().substr(lastPeriodIndex + 1).toUpperCase();
-			return !!this.fileTypes.find(x => x === extension);
-		}
-
-		// Check for untitled file type
-		if (input.getName().includes(this.untitledFilePrefix)) {
-			return true;
-		}
-
-		// Return false if not a queryEditor file
-		return false;
 	}
 }

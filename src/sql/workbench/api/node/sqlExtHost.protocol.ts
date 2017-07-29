@@ -105,7 +105,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Runs a query for a text selection inside a document
 	 */
-	$runQuery(handle: number, ownerUri: string, selection: data.ISelectionData): Thenable<void> { throw ni(); }
+	$runQuery(handle: number, ownerUri: string, selection: data.ISelectionData, runOptions?: data.ExecutionPlanOptions): Thenable<void> { throw ni(); }
 	/**
 	 * Runs the current SQL statement query for a text document
 	 */

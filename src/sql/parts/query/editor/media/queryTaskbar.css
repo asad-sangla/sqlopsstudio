@@ -148,3 +148,7 @@
 .refreshData {
 	background-image: url('refresh.svg');
 }
+
+.estimatedQueryPlan {
+	background-image: url('parseQuery.svg');
+}

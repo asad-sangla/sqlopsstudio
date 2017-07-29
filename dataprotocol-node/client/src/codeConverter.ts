@@ -80,6 +80,8 @@ export interface Converter {
 
 	asCloseSessionInfo(nodeInfo: data.ObjectExplorerCloseSessionInfo): ls.CloseSessionParams;
 
+ 	asExecutionPlanOptions(planOptions: data.ExecutionPlanOptions): proto.ExecutionPlanOptions;
+
 	asListTasksParams(params: data.ListTasksParams): ls.ListTasksParams;
 
 	asCancelTaskParams(params: data.CancelTaskParams): ls.CancelTaskParams;
@@ -391,6 +393,13 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asExecutionPlanOptions(planOptions: data.ExecutionPlanOptions): proto.ExecutionPlanOptions {
+		return <proto.ExecutionPlanOptions>{
+			includeEstimatedExecutionPlanXml: planOptions ? planOptions.displayEstimatedQueryPlan : undefined,
+			includeActualExecutionPlanXml: planOptions ? planOptions.displayActualQueryPlan : undefined
+		};
+	}
+
 	function asListTasksParams(params: data.ListTasksParams): ls.ListTasksParams {
 		return <ls.ListTasksParams>{
 			listActiveTasksOnly: params.listActiveTasksOnly
@@ -445,6 +454,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asConnectionDetail,
 		asExpandInfo,
 		asCloseSessionInfo,
+		asExecutionPlanOptions,
 		asListTasksParams,
 		asCancelTaskParams,
 		asRestoreParams,

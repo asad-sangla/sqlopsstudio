@@ -26,6 +26,8 @@ import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { RunQueryKeyboardAction, RunCurrentQueryKeyboardAction, CancelQueryKeyboardAction } from 'sql/parts/query/execution/keyboardQueryActions';
 import * as gridActions from 'sql/parts/grid/views/gridActions';
 import * as gridCommands from 'sql/parts/grid/views/gridCommands';
+import { QueryPlanEditor } from 'sql/parts/queryPlan/queryPlanEditor';
+import { QueryPlanInput } from 'sql/parts/queryPlan/queryPlanInput';
 
 const gridCommandsWeightBonus = 100; // give our commands a little bit more weight over other default list/tree commands
 
@@ -54,6 +56,18 @@ const queryEditorDescriptor = new EditorDescriptor(
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 	.registerEditor(queryEditorDescriptor, [new SyncDescriptor(QueryInput)]);
+
+// Query Plan editor registration
+
+const createLoginEditorDescriptor = new EditorDescriptor(
+	QueryPlanEditor.ID,
+	'QueryPlan',
+	'sql/parts/queryPlan/queryPlanEditor',
+	'QueryPlanEditor'
+);
+
+Registry.as<IEditorRegistry>(EditorExtensions.Editors)
+	.registerEditor(createLoginEditorDescriptor, [new SyncDescriptor(QueryPlanInput)]);
 
 // Editor
 const editDataEditorDescriptor = new EditorDescriptor(

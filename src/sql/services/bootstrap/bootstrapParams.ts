@@ -30,3 +30,7 @@ export interface DashboardComponentParams extends BootstrapParams {
 export interface TaskDialogComponentParams extends BootstrapParams {
 	ownerUri: string;
 }
+
+export interface QueryPlanParams extends BootstrapParams {
+	planXml: string;
+}
