@@ -354,18 +354,18 @@
     },
     "dataprotocol-client": {
       "version": "2.6.3",
-      "from": "../../dataprotocol-node/client",
-      "resolved": "file:../../dataprotocol-node/client"
+      "from": "..\\..\\dataprotocol-node\\client",
+      "resolved": "file:..\\..\\dataprotocol-node\\client"
     },
     "dataprotocol-jsonrpc": {
       "version": "2.4.0",
-      "from": "../../dataprotocol-node/jsonrpc",
-      "resolved": "file:../../dataprotocol-node/jsonrpc"
+      "from": "..\\..\\dataprotocol-node\\jsonrpc",
+      "resolved": "file:..\\..\\dataprotocol-node\\jsonrpc"
     },
     "dataprotocol-languageserver-types": {
       "version": "1.0.4",
-      "from": "../../dataprotocol-node/types",
-      "resolved": "file:../../dataprotocol-node/types"
+      "from": "..\\..\\dataprotocol-node\\types",
+      "resolved": "file:..\\..\\dataprotocol-node\\types"
     },
     "dateformat": {
       "version": "2.0.0",
@@ -586,6 +586,11 @@
       "from": "extend-shallow@>=2.0.1 <3.0.0",
       "resolved": "https://registry.npmjs.org/extend-shallow/-/extend-shallow-2.0.1.tgz",
       "dev": true
+    },
+    "extensions-modules": {
+      "version": "0.1.0",
+      "from": "..\\..\\extensions-modules",
+      "resolved": "file:..\\..\\extensions-modules"
     },
     "extglob": {
       "version": "0.3.2",
@@ -2392,12 +2397,6 @@
       "version": "2.0.0",
       "from": "supports-color@>=2.0.0 <3.0.0",
       "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-2.0.0.tgz"
-    },
-    "sync-exec": {
-      "version": "0.6.2",
-      "from": "sync-exec@>=0.6.0 <0.7.0",
-      "resolved": "https://registry.npmjs.org/sync-exec/-/sync-exec-0.6.2.tgz",
-      "optional": true
     },
     "tar": {
       "version": "0.1.20",

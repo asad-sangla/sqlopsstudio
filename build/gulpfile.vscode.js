@@ -30,6 +30,8 @@ const product = require('../product.json');
 const shrinkwrap = require('../npm-shrinkwrap.json');
 const crypto = require('crypto');
 const i18n = require('./lib/i18n');
+// {{SQL CARBON EDIT}}
+const serviceInstaller = require('extensions-modules/lib/languageservice/serviceInstallerUtil');
 const glob = require('glob');
 const os = require('os');
 const cp = require('child_process');
@@ -515,29 +517,26 @@ gulp.task('upload-vscode-sourcemaps', ['minify-vscode'], () => {
 
 // {{SQL CARBON EDIT}}
 // Install service locally before building carbon
-function installSqlToolsService(platform) {
-   var mssql = require('../extensions/mssql/client/out/languageservice/serviceInstallerUtil');
-   return mssql.installService(platform, true);
-}
 
-function installCredentialsService(platform) {
-	var credentials = require('../extensions/credentials/client/out/languageservice/serviceInstallerUtil');
-	return credentials.installService(platform, true);
-}
-
-function installPgSqlService(platform) {
-	var pgsql = require('../extensions/pgsql/client/out/languageservice/serviceInstallerUtil');
-	return pgsql.installService(platform, true);
+function installService(extObj) {
+	var installer = new serviceInstaller.ServiceInstaller(extObj);
+	return installer.installService(undefined, true);
 }
 
 gulp.task('install-sqltoolsservice', () => {
-    return installSqlToolsService();
+	const mssqlExt = require('../extensions/mssql/client/out/models/constants');
+	var extObj = new mssqlExt.Constants();
+    return installService(extObj);
 });
 
 gulp.task('install-credentialservice', () => {
-	return installCredentialsService();
+	const credentialsExt = require('../extensions/credentials/client/out/models/constants');
+	var extObj = new credentialsExt.Constants();
+	return installService(extObj);
 })
 
 gulp.task('install-pgsqlservice', () => {
-	return installPgSqlService();
+	const pgsqlExt = require('../extensions/pgsql/client/out/models/constants');
+	var extObj = new pgsqlExt.Constants();
+	return installService(extObj);
 })

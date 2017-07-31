@@ -26,6 +26,9 @@ const protocol = [
 ];
 
 protocol.forEach(item => npmInstall(`dataprotocol-node/${item}`));
+
+// {{SQL CARBON EDIT}}
+npmInstall('extensions-modules');
 npmInstall('extensions'); // node modules shared by all extensions
 
 const extensions = [

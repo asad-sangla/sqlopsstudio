@@ -6,13 +6,15 @@
 
 import vscode = require('vscode');
 import MainController from './controllers/mainController';
-import * as Constants from './models/constants';
+import Constants from './models/constants';
+import {SharedConstants} from 'extensions-modules';
 
 let controller: MainController = undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-	let config = vscode.workspace.getConfiguration(Constants.extensionConfigSectionName);
-	let extensionEnabled = config[Constants.configEnablePgSql];
+	let constants: Constants = new Constants();
+	let config = vscode.workspace.getConfiguration(constants.extensionConfigSectionName);
+	let extensionEnabled = config[SharedConstants.configEnabled];
 	if (extensionEnabled !== true) {
 		return;
 	}

@@ -5,11 +5,8 @@
 
 'use strict';
 import vscode = require('vscode');
-import Constants = require('../models/constants');
-import Utils = require('../models/utils');
-import SqlToolsServerClient from '../languageservice/serviceclient';
-import Telemetry from '../models/telemetry';
-import VscodeWrapper from './vscodeWrapper';
+import Constants from '../models/constants';
+import {IExtensionConstants, Telemetry, SharedConstants, SqlToolsServiceClient, VscodeWrapper, Utils} from 'extensions-modules';
 
 /**
  * The main controller class that initializes the extension
@@ -18,7 +15,7 @@ export default class MainController implements vscode.Disposable {
     private _context: vscode.ExtensionContext;
     private _vscodeWrapper: VscodeWrapper;
     private _initialized: boolean = false;
-
+    private static _extensionConstants: IExtensionConstants = new Constants();
     /**
      * The main controller constructor
      * @constructor
@@ -26,7 +23,9 @@ export default class MainController implements vscode.Disposable {
     constructor(context: vscode.ExtensionContext,
                 vscodeWrapper?: VscodeWrapper) {
         this._context = context;
-        this._vscodeWrapper = vscodeWrapper || new VscodeWrapper();
+        this._vscodeWrapper = vscodeWrapper || new VscodeWrapper(MainController._extensionConstants);
+        SqlToolsServiceClient.constants = MainController._extensionConstants;
+
     }
 
     /**
@@ -40,7 +39,7 @@ export default class MainController implements vscode.Disposable {
      * Deactivates the extension
      */
     public deactivate(): void {
-        Utils.logDebug(Constants.extensionDeactivated);
+        Utils.logDebug(SharedConstants.extensionDeactivated, MainController._extensionConstants.extensionConfigSectionName);
     }
 
     /**
@@ -65,21 +64,21 @@ export default class MainController implements vscode.Disposable {
 
         // initialize language service client
         return new Promise<boolean>( (resolve, reject) => {
-                SqlToolsServerClient.instance.initialize(self._context).then(serverResult => {
+                SqlToolsServiceClient.instance.initialize(self._context).then(serverResult => {
 
                 // Initialize telemetry
-                Telemetry.initialize(self._context);
+                Telemetry.initialize(self._context, new Constants());
 
                 // telemetry for activation
                 Telemetry.sendTelemetryEvent('ExtensionActivated', {},
                     { serviceInstalled: serverResult.installedBeforeInitializing ? 1 : 0 }
                 );
 
-                Utils.logDebug(Constants.extensionActivated);
+                Utils.logDebug(SharedConstants.extensionActivated, MainController._extensionConstants.extensionConfigSectionName);
                 self._initialized = true;
                 resolve(true);
             }).catch(err => {
-                Telemetry.sendTelemetryEventForException(err, 'initialize');
+                Telemetry.sendTelemetryEventForException(err, 'initialize', MainController._extensionConstants.extensionConfigSectionName);
                 reject(err);
             });
         });
