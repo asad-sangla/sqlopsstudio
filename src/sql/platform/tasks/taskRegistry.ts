@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as platform from 'vs/platform/registry/common/platform';
-import { IJSONSchema } from 'vs/base/common/jsonSchema';
+import { IJSONSchema, IJSONSchemaMap } from 'vs/base/common/jsonSchema';
 import { Action } from 'vs/base/common/actions';
 import { IConstructorSignature3 } from 'vs/platform/instantiation/common/instantiation';
+import * as nls from 'vs/nls';
 
 export type TaskIdentifier = string;
 
@@ -32,6 +33,11 @@ export interface ITaskRegistry {
 	ids: Array<string>;
 
 	/**
+	 * Schemas of the tasks registered
+	 */
+	taskSchemas: IJSONSchemaMap;
+
+	/**
 	 * Registers an action as a task which can be ran given the schema as an input
 	 * @param id id of the task
 	 * @param description desciption of the task
@@ -43,6 +49,7 @@ export interface ITaskRegistry {
 
 class TaskRegistry implements ITaskRegistry {
 	private _idCtorMap: { [id: string]: ActionICtor } = {};
+	private _taskSchema: IJSONSchema = { type: 'object', description: nls.localize('schema.taskSchema', 'Task actions specific for sql'), properties: {}, additionalProperties: false };
 
 	get idToCtorMap(): { [id: string]: ActionICtor } {
 		return this._idCtorMap;
@@ -52,6 +59,10 @@ class TaskRegistry implements ITaskRegistry {
 		return Object.keys(this._idCtorMap);
 	}
 
+	get taskSchemas(): IJSONSchemaMap {
+		return this._taskSchema.properties;
+	}
+
 	/**
 	 * Registers an action as a task which can be ran given the schema as an input
 	 * @param id id of the task
@@ -59,8 +70,9 @@ class TaskRegistry implements ITaskRegistry {
 	 * @param schema schema of expected input
 	 * @param ctor contructor of the action
 	 */
-	registerTask(id: string, description: string, ctor: ActionICtor): TaskIdentifier {
+	registerTask(id: string, description: string, schema: IJSONSchema, ctor: ActionICtor): TaskIdentifier {
 		this._idCtorMap[id] = ctor;
+		this._taskSchema.properties[id] = schema;
 		return id;
 	}
 }
@@ -68,6 +80,6 @@ class TaskRegistry implements ITaskRegistry {
 const taskRegistry = new TaskRegistry();
 platform.Registry.add(Extensions.TaskContribution, taskRegistry);
 
-export function registerTask(id: string, description: string, ctor: ActionICtor): TaskIdentifier {
-	return taskRegistry.registerTask(id, description, ctor);
+export function registerTask(id: string, description: string, schema: IJSONSchema, ctor: ActionICtor): TaskIdentifier {
+	return taskRegistry.registerTask(id, description, schema, ctor);
 }

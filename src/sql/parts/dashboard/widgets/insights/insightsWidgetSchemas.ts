@@ -83,8 +83,8 @@ export const insightsSchema: IJSONSchema = {
 					type: 'object',
 					properties: {
 						types: {
-							type: 'array',
-							enum: taskRegistry.ids
+							type: 'object',
+							properties: taskRegistry.taskSchemas
 						},
 						database: {
 							type: 'string',

@@ -25,7 +25,7 @@ import Severity from 'vs/base/common/severity';
 import * as nls from 'vs/nls';
 
 interface IConfig {
-	tasks: Array<string>;
+	tasks: Array<Object>;
 }
 
 @Component({
@@ -53,7 +53,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		let registry = Registry.as<ITaskRegistry>(Extensions.TaskContribution);
 		let tasksConfig = <IConfig>Object.values(this._config.widget)[0];
 		if (tasksConfig.tasks) {
-			tasksConfig.tasks.forEach((item) => {
+			Object.keys(tasksConfig.tasks).forEach((item) => {
 				if (registry.idToCtorMap[item]) {
 					let ctor = registry.idToCtorMap[item];
 					this._actions.push(this._bootstrap.instantiationService.createInstance(ctor, ctor.ID, ctor.LABEL, ctor.ICON));

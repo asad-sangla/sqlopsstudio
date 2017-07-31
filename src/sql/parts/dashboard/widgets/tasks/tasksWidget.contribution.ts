@@ -13,9 +13,8 @@ let tasksSchema: IJSONSchema = {
 	type: 'object',
 	properties: {
 		tasks: {
-			type: 'array',
-			uniqueItems: true,
-			items: taskRegistry.ids
+			type: 'object',
+			properties: taskRegistry.taskSchemas
 		}
 	}
 };
