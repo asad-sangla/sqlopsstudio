@@ -961,14 +961,28 @@ declare module 'data' {
 		restoreAsFileName: string;
 	}
 
+	export interface DatabaseFileInfo {
+		properties: LocalizedPropertyInfo[];
+		id: string;
+		isSelected: boolean;
+	}
+
+	export interface LocalizedPropertyInfo {
+		propertyName: string;
+		propertyValue: string;
+		propertyDisplayName: string;
+		propertyValueDisplayName: string;
+	}
+
 	export interface RestorePlanResponse {
 		sessionId: string;
+		backupSetsToRestore: DatabaseFileInfo[];
 		canRestore: boolean;
 		errorMessage: string;
 		dbFiles: RestoreDatabaseFileInfo[];
+		databaseNamesFromBackupSets: string[];
 		serverName: string;
 		databaseName: string;
-		relocateFilesNeeded: boolean;
 		defaultDataFolder: string;
 		defaultLogFolder: string;
 	}

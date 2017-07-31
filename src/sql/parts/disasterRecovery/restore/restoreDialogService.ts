@@ -11,13 +11,13 @@ import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog'
 import { MssqlRestoreInfo } from 'sql/parts/disasterRecovery/restore/mssqlRestoreInfo';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import data = require('data');
 
 export class RestoreDialogService implements IRestoreDialogService {
 	_serviceBrand: any;
 
 	private _restoreDialog: RestoreDialog;
 	private _ownerUri: string;
+	private _sessionId: string;
 
 	constructor(
 		@IInstantiationService private _instantiationService: IInstantiationService,
@@ -28,23 +28,30 @@ export class RestoreDialogService implements IRestoreDialogService {
 
 	private handleOnRestore(): void {
 		let restoreInfo = new MssqlRestoreInfo();
+		if (this._sessionId) {
+			restoreInfo.sessionId = this._sessionId;
+		}
 		restoreInfo.backupFilePaths = this._restoreDialog.filePath;
 		restoreInfo.targetDatabaseName = this._restoreDialog.databaseName;
-		restoreInfo.relocateDbFiles = this._restoreDialog.relocateDbFiles;
+		restoreInfo.relocateDbFiles = false;
 
 		this._disasterRecoveryService.restore(this._ownerUri, restoreInfo);
 		this._restoreDialog.close();
 	}
 
 	private handleOnValidateFile(): void {
+
 		let restoreInfo = new MssqlRestoreInfo();
 		restoreInfo.backupFilePaths = this._restoreDialog.filePath;
 		restoreInfo.targetDatabaseName = this._restoreDialog.databaseName;
-		restoreInfo.relocateDbFiles = this._restoreDialog.relocateDbFiles;
+		restoreInfo.relocateDbFiles = false;
+
 		this._disasterRecoveryService.getRestorePlan(this._ownerUri, restoreInfo).then(restorePlanResponse => {
-			let dbFiles: string[] = restorePlanResponse.dbFiles ? restorePlanResponse.dbFiles.map(x => x.restoreAsFileName) : [];
+			// to do: will add dbFiles back when file info is implemented
+			// let dbFiles: string[] = restorePlanResponse.dbFiles ? restorePlanResponse.dbFiles.map(x => x.restoreAsFileName) : [];
+			this._sessionId = restorePlanResponse.sessionId;
 			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage,
-				restorePlanResponse.databaseName, dbFiles);
+				restorePlanResponse.databaseNamesFromBackupSets, restorePlanResponse.backupSetsToRestore);
 		}, error => {
 			this._restoreDialog.showError(error);
 		});
@@ -52,6 +59,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 
 	public showDialog(connection: IConnectionProfile): TPromise<void> {
 		this._ownerUri = this._connectionService.getConnectionId(connection);
+		this._sessionId = null;
 		if (!this._restoreDialog) {
 			this._restoreDialog = this._instantiationService.createInstance(RestoreDialog);
 			this._restoreDialog.onCancel(() => { });

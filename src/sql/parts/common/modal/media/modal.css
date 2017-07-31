@@ -16,6 +16,10 @@
 	overflow-y: hidden;
 }
 
+.monaco-shell .modal.flyout-dialog.wide .modal-dialog {
+	width: 1200px;
+}
+
 .monaco-shell .modal.flyout-dialog .modal-content {
 	background-color: #F3F3F3;
 	height: 100%;
@@ -25,10 +29,6 @@
 
 .modal.flyout-dialog .modal-title {
 	font-size: 15px;
-}
-
-.modal .close {
-	opacity: 0.3;
 }
 
 .monaco-shell .modal.flyout-dialog .modal-body {
@@ -181,7 +181,7 @@
 
 .modal.flyout-dialog .custom-checkbox.sql-checkbox.disabled {
 	pointer-events: none;
-  	opacity: 0.3
+	opacity: 0.3;
 }
 
 .modal.flyout-dialog .custom-checkbox.sql-checkbox.checked {

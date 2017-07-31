@@ -7,29 +7,60 @@
 	padding: 15px
 }
 
-.modal .validate-button {
-	display: flex;
-	padding-top: 20px;
-}
-
-.modal .validate-button a.monaco-button.monaco-text-button {
+.modal a.monaco-button.monaco-text-button {
 	width: 100px;
 }
 
-.modal .validate-button .validate-spinner .spinner {
-	height: 20px;
-	width: 20px;
+.modal .restore-dialog .dialog-label.header {
+	font-size: 15px;
+}
+
+.modal .restore-dialog .new-section {
+	padding-top: 50px;
+}
+
+.modal .restore-dialog .dialog-input-section {
+	display: flex;
 	padding-left: 15px;
-}
-
-.modal .summary .summary-container {
-	padding-top: 30px;
-}
-
-.modal .summary .summary-container .modal-title {
+	padding-right: 15px;
+	padding-top: 10px;
 	padding-bottom: 10px;
 }
 
-.modal .summary .summary-container .file-list-content {
-	padding: 4px;
+.modal .restore-dialog .dialog-input-section .dialog-label {
+	flex: 0 0 100px;
+	align-self: center;
+}
+
+.modal .restore-dialog .dialog-input-section .dialog-input {
+	flex: 1 1 auto;
+}
+
+.modal .restore-dialog .restore-plan-section {
+	width: 100%;
+}
+
+.restore-plan-section .restore-set-list {
+	width: 100%;
+	margin-bottom: 15px;
+	overflow: scroll;
+}
+
+.restore-plan-section .backup-sets-table-content {
+	table-layout: fixed;
+	text-align: left;
+}
+
+.restore-plan-section .backup-sets-table-content .td.restore-data {
+	white-space: nowrap;
+}
+
+.modal .restore-dialog .more-options-button {
+	width: 100%;
+	display: flex;
+	flex-direction: row-reverse;
+}
+
+.modal .restore-dialog .more-options-button a.monaco-button.monaco-text-button {
+	margin-right: 15px
 }

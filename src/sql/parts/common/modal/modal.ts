@@ -24,6 +24,7 @@ export interface IModalDialogStyles {
 
 export interface IModalOptions {
 	isFlyout?: boolean;
+	isWide?: boolean;
 	isAngular?: boolean;
 	hasBackButton?: boolean;
 	hasErrors?: boolean;
@@ -40,6 +41,7 @@ export class modalFooterStyle {
 
 const defaultOptions: IModalOptions = {
 	isFlyout: true,
+	isWide: false,
 	isAngular: false,
 	hasBackButton: false,
 	hasErrors: false,
@@ -165,6 +167,9 @@ export abstract class Modal implements IThemable {
 		let builderClass = 'modal fade';
 		if (this._modalOptions.isFlyout) {
 			builderClass += ' flyout-dialog';
+		}
+		if (this._modalOptions.isWide) {
+			builderClass += ' wide';
 		}
 
 		// The builder builds the dialog. It append header, body and footer sections.

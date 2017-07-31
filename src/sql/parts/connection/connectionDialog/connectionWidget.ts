@@ -244,13 +244,9 @@ export class ConnectionWidget {
 
 	private serverNameChanged(serverName: string) {
 		this._callbacks.onSetConnectButton(!DialogHelper.isEmptyString(serverName));
-		if (this.isSubsetString(serverName.toLocaleLowerCase(), 'database.windows.net')) {
+		if (DialogHelper.isSubsetString(serverName.toLocaleLowerCase(), 'database.windows.net')) {
 			this._callbacks.onSetAzureTimeOut();
 		}
-	}
-
-	private isSubsetString(str: string, subStr: string) {
-		return str.indexOf(subStr) !== -1;
 	}
 
 	public focusOnAdvancedButton() {

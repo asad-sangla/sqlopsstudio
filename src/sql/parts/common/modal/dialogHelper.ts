@@ -78,6 +78,10 @@ export function isEmptyString(value: string): boolean {
 	return value === undefined || value === '';
 }
 
+export function isSubsetString(str: string, subStr: string) {
+	return str.indexOf(subStr) !== -1;
+}
+
 export function isNullOrWhiteSpace(value: string): boolean {
 	// returns true if the string is null or contains white space/tab chars only
 	return !value || value.trim().length === 0;
