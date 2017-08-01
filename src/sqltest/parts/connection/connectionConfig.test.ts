@@ -11,7 +11,7 @@ import { ConnectionConfig, ISaveGroupResult } from 'sql/parts/connection/common/
 import { IConnectionProfile, IConnectionProfileStore } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
-import {IConfigurationValue as TConfigurationValue } from 'vs/platform/configuration/common/configuration';
+import { IConfigurationValue as TConfigurationValue } from 'vs/platform/configuration/common/configuration';
 import { WorkspaceConfigurationTestService } from 'sqltest/stubs/workspaceConfigurationTestService';
 import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import * as Constants from 'sql/parts/connection/common/constants';
@@ -256,7 +256,8 @@ suite('SQL ConnectionConfig tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: connectionProvider,
-			adminServicesProvider: undefined
+			adminServicesProvider: undefined,
+			features: undefined
 		};
 		capabilities.push(msSQLCapabilities);
 
@@ -570,7 +571,8 @@ suite('SQL ConnectionConfig tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: connectionProvider,
-			adminServicesProvider: undefined
+			adminServicesProvider: undefined,
+			features: undefined
 		};
 		capabilitiesFromConfig.push(msSQLCapabilities2);
 		let connectionUsingOldMetadata = connections.user.map(c => {

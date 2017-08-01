@@ -436,7 +436,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 			providerName: result.capabilities.providerName,
 			providerDisplayName: result.capabilities.providerDisplayName,
 			connectionProvider: undefined,
-			adminServicesProvider: undefined
+			adminServicesProvider: undefined,
+			features: []
 		};
 
 		if (result.capabilities.adminServicesProvider) {
@@ -504,6 +505,35 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 					};
 					capabilities.adminServicesProvider.fileGroupInfoOptions.push(descOption);
 				}
+			}
+
+			if (result.capabilities.features
+				&& result.capabilities.features.length > 0) {
+				result.capabilities.features.forEach(feature => {
+					let descFeature: data.FeatureMetadataProvider = {
+						enabled: feature.enabled,
+						featureName: feature.featureName,
+						optionsMetadata: []
+					};
+					capabilities.features.push(descFeature);
+
+					feature.optionsMetadata.forEach(srcOption => {
+						let descOption: data.ServiceOption = {
+							name: srcOption.name,
+							displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
+							description: srcOption.description,
+							groupName: srcOption.groupName,
+							defaultValue: srcOption.defaultValue,
+							categoryValues: srcOption.categoryValues,
+							isRequired: srcOption.isRequired,
+							isArray: srcOption.isArray,
+							objectType: srcOption.objectType,
+							valueType: asServiceOptionType(srcOption.valueType)
+						};
+						descFeature.optionsMetadata.push(descOption);
+					});
+
+				});
 			}
 		}
 

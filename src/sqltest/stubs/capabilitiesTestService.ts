@@ -89,7 +89,8 @@ export class CapabilitiesTestService implements ICapabilitiesService {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: connectionProvider,
-			adminServicesProvider: undefined
+			adminServicesProvider: undefined,
+			features: undefined
 		};
 		this._capabilities.push(msSQLCapabilities);
 

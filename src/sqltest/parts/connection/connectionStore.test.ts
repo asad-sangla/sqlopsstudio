@@ -159,7 +159,8 @@ suite('SQL ConnectionStore tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: connectionProvider,
-			adminServicesProvider: undefined
+			adminServicesProvider: undefined,
+			features: undefined
 		};
 		capabilities.push(msSQLCapabilities);
 		capabilitiesService.setup(x => x.getCapabilities()).returns(() => capabilities);
@@ -171,7 +172,7 @@ suite('SQL ConnectionStore tests', () => {
 				name: 'root',
 				parentId: '',
 				color: '',
-				description:''
+				description: ''
 			},
 			{
 				id: 'g1',
@@ -375,7 +376,8 @@ suite('SQL ConnectionStore tests', () => {
 			providerName: providerName,
 			providerDisplayName: providerName,
 			connectionProvider: connectionProvider,
-			adminServicesProvider: undefined
+			adminServicesProvider: undefined,
+			features: undefined
 		};
 		connectionConfig.setup(x => x.getCapabilities(providerName)).returns(() => providerCapabilities);
 

@@ -230,6 +230,14 @@ declare module 'data' {
 		connection: ConnectionSummary;
 	}
 
+	export interface FeatureMetadataProvider {
+		enabled: boolean;
+
+		featureName: string;
+
+		optionsMetadata: ServiceOption[];
+	}
+
 	export interface DataProtocolServerCapabilities {
 		protocolVersion: string;
 
@@ -240,6 +248,8 @@ declare module 'data' {
 		connectionProvider: ConnectionProviderOptions;
 
 		adminServicesProvider: AdminServicesOptions;
+
+		features: FeatureMetadataProvider[];
 	}
 
 	export interface DataProtocolClientCapabilities {
@@ -249,7 +259,7 @@ declare module 'data' {
 	}
 
 	export interface CapabilitiesProvider {
-		getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<DataProtocolServerCapabilities>
+		getServerCapabilities(client: DataProtocolClientCapabilities): Thenable<DataProtocolServerCapabilities>;
 	}
 
 	export enum MetadataType {
@@ -764,12 +774,12 @@ declare module 'data' {
 	}
 
 	export interface ExpandNodeInfo {
-		sessionId: string,
-		nodePath: string,
+		sessionId: string;
+		nodePath: string;
 	}
 
 	export interface ObjectExplorerCloseSessionInfo {
-		sessionId: string
+		sessionId: string;
 	}
 
 	export interface ObjectExplorerCloseSessionResponse {
@@ -981,10 +991,7 @@ declare module 'data' {
 		errorMessage: string;
 		dbFiles: RestoreDatabaseFileInfo[];
 		databaseNamesFromBackupSets: string[];
-		serverName: string;
-		databaseName: string;
-		defaultDataFolder: string;
-		defaultLogFolder: string;
+		planDetails: {[key: string]: any};
 	}
 
 	export interface RestoreResponse {

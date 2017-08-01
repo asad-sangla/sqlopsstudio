@@ -115,7 +115,8 @@ suite('SQL ConnectionProfileInfo tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: connectionProvider,
-			adminServicesProvider: undefined
+			adminServicesProvider: undefined,
+			features: undefined
 		};
 		capabilities.push(msSQLCapabilities);
 	});

@@ -293,7 +293,8 @@ suite('SQL Connection Tree Action tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: { options: [] },
-			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
+			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] },
+			features: undefined
 		};
 
 		var connection = new ConnectionProfile(sqlProvider, {
@@ -379,7 +380,8 @@ suite('SQL Connection Tree Action tests', () => {
 			providerName: 'MSSQL',
 			providerDisplayName: 'MSSQL',
 			connectionProvider: { options: [] },
-			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
+			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] },
+			features: undefined
 		};
 
 		var connection = new ConnectionProfile(sqlProvider, {

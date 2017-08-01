@@ -114,6 +114,12 @@ export interface AdminServicesProviderOptions {
 	fileGroupInfoOptions: ServiceOption[];
 }
 
+export interface FeatureMetadataProvider {
+	enabled: boolean;
+	featureName: string;
+	optionsMetadata: ServiceOption[];
+}
+
 export interface DataProtocolServerCapabilities {
 	protocolVersion: string;
 
@@ -124,6 +130,8 @@ export interface DataProtocolServerCapabilities {
 	connectionProvider: ConnectionProviderOptions;
 
 	adminServicesProvider: AdminServicesProviderOptions;
+
+	features: FeatureMetadataProvider[];
 }
 
 /**
@@ -477,10 +485,7 @@ export interface RestorePlanResponse {
 	errorMessage: string;
 	dbFiles: RestoreDatabaseFileInfo[];
 	databaseNamesFromBackupSets: string[];
-	serverName: string;
-	databaseName: string;
-	defaultDataFolder: string;
-	defaultLogFolder: string;
+	planDetails: {[key: string]: any};
 }
 
 export interface RestoreResponse {

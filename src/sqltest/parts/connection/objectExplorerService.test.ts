@@ -198,7 +198,8 @@ suite('SQL Object Explorer Service tests', () => {
 						valueType: 0
 					}]
 			},
-			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] }
+			adminServicesProvider: { databaseInfoOptions: [], databaseFileInfoOptions: [], fileGroupInfoOptions: [] },
+			features: undefined
 		};
 
 		connection = new ConnectionProfile(sqlProvider, {
