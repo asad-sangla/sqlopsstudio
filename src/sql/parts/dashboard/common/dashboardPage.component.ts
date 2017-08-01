@@ -10,6 +10,8 @@ import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboar
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 
 import * as types from 'vs/base/common/types';
+import { Severity } from 'vs/platform/message/common/message';
+import * as nls from 'vs/nls';
 
 /**
  * @returns whether the provided parameter is a JavaScript Array and each element in the array is a number.
@@ -87,11 +89,21 @@ export abstract class DashboardPage {
 	private filterWidgets(config: WidgetConfig[]): Array<WidgetConfig> {
 		let edition = this.dashboardService.connectionManagementService.connectionInfo.serverInfo.engineEditionId;
 		let provider = this.dashboardService.connectionManagementService.connectionInfo.providerId;
+
 		// filter by provider
 		return config.filter((item) => {
 			return this.stringCompare(item.provider, provider);
 		}).filter((item) => {
-			return this.stringCompare(isNumberArray(item.edition) ? item.edition.map(item => item.toString()) : item.edition.toString(), edition.toString());
+			if (item.edition) {
+				if (edition) {
+					return this.stringCompare(isNumberArray(item.edition) ? item.edition.map(item => item.toString()) : item.edition.toString(), edition.toString());
+				} else {
+					this.dashboardService.messageService.show(Severity.Warning, nls.localize('providerMissingEdition', 'Widget filters based on edition, but the provider does not have an edition'));
+					return true;
+				}
+			} else {
+				return true;
+			}
 		});
 	}
 
@@ -106,12 +118,7 @@ export abstract class DashboardPage {
 		} else if (types.isString(val)) {
 			return val === compare;
 		} else if (types.isStringArray(val)) {
-			for (let string of val) {
-				if (string === compare) {
-					return true;
-				}
-			}
-			return false;
+			return val.some(item => item === compare);
 		} else {
 			return false;
 		}
