@@ -55,6 +55,22 @@ export class MssqlRestoreInfo implements data.RestoreInfo {
 		this.options['relocateDbFiles'] = value;
 	}
 
+	public get dataFileFolder(): string {
+		return this.options['dataFileFolder'];
+	}
+
+	public set dataFileFolder(value: string) {
+		this.options['dataFileFolder'] = value;
+	}
+
+	public get logFileFolder(): string {
+		return this.options['logFileFolder'];
+	}
+
+	public set logFileFolder(value: string) {
+		this.options['logFileFolder'] = value;
+	}
+
 	public get selectedBackupSets(): string[] {
 		return this.options['selectedBackupSets'];
 	}

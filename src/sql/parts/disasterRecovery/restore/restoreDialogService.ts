@@ -33,7 +33,9 @@ export class RestoreDialogService implements IRestoreDialogService {
 		}
 		restoreInfo.backupFilePaths = this._restoreDialog.filePath;
 		restoreInfo.targetDatabaseName = this._restoreDialog.databaseName;
-		restoreInfo.relocateDbFiles = false;
+		restoreInfo.relocateDbFiles = this._restoreDialog.relocateDbFiles;
+		restoreInfo.dataFileFolder = this._restoreDialog.relocatedDataFilePath;
+		restoreInfo.logFileFolder = this._restoreDialog.relocatedLogFilePath;
 
 		this._disasterRecoveryService.restore(this._ownerUri, restoreInfo);
 		this._restoreDialog.close();
@@ -44,14 +46,20 @@ export class RestoreDialogService implements IRestoreDialogService {
 		let restoreInfo = new MssqlRestoreInfo();
 		restoreInfo.backupFilePaths = this._restoreDialog.filePath;
 		restoreInfo.targetDatabaseName = this._restoreDialog.databaseName;
-		restoreInfo.relocateDbFiles = false;
+		restoreInfo.relocateDbFiles = this._restoreDialog.relocateDbFiles;
 
 		this._disasterRecoveryService.getRestorePlan(this._ownerUri, restoreInfo).then(restorePlanResponse => {
-			// to do: will add dbFiles back when file info is implemented
-			// let dbFiles: string[] = restorePlanResponse.dbFiles ? restorePlanResponse.dbFiles.map(x => x.restoreAsFileName) : [];
 			this._sessionId = restorePlanResponse.sessionId;
+			// Keys are defaultBackupTailLog (boolean), defaultDataFileFolder, defaultLogFileFolder, defaultStandbyFile, defaultTailLogBackupFile, lastBackupTaken
+			if (restorePlanResponse.planDetails) {
+				this._restoreDialog.lastBackupTaken = restorePlanResponse.planDetails['lastBackupTaken'];
+				this._restoreDialog.relocatedDataFilePath = restorePlanResponse.planDetails['defaultDataFileFolder'];
+				this._restoreDialog.relocatedLogFilePath = restorePlanResponse.planDetails['defaultLogFileFolder'];
+				this._restoreDialog.defaultBackupTailLog = restorePlanResponse.planDetails['defaultBackupTailLog'];
+			}
+
 			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage,
-				restorePlanResponse.databaseNamesFromBackupSets, restorePlanResponse.backupSetsToRestore);
+				restorePlanResponse.databaseNamesFromBackupSets, restorePlanResponse.backupSetsToRestore, restorePlanResponse.dbFiles);
 		}, error => {
 			this._restoreDialog.showError(error);
 		});

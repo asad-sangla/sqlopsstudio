@@ -19,6 +19,11 @@
 	padding-top: 50px;
 }
 
+.modal .restore-dialog .sub-section {
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
 .modal .restore-dialog .dialog-input-section {
 	display: flex;
 	padding-left: 15px;
@@ -40,19 +45,20 @@
 	width: 100%;
 }
 
-.restore-plan-section .restore-set-list {
+.modal .restore-dialog .restore-list {
 	width: 100%;
 	margin-bottom: 15px;
 	overflow: scroll;
 }
 
-.restore-plan-section .backup-sets-table-content {
+.modal .restore-dialog .restore-list .backup-table-content {
 	table-layout: fixed;
 	text-align: left;
 }
 
-.restore-plan-section .backup-sets-table-content .td.restore-data {
+.modal .restore-dialog .restore-list .backup-table-content .restore-data {
 	white-space: nowrap;
+	padding: 5px;
 }
 
 .modal .restore-dialog .more-options-button {
@@ -62,5 +68,67 @@
 }
 
 .modal .restore-dialog .more-options-button a.monaco-button.monaco-text-button {
-	margin-right: 15px
+	margin-right: 15px;
 }
+
+/* styling for tabs (copy from bootstrap.min.css) */
+.nav-tabs {
+	border-bottom: 1px solid #ddd;
+}
+
+.nav {
+	padding-left: 0;
+	margin-bottom: 0;
+	list-style: none;
+	margin-top: 0;
+}
+
+.nav-tabs>li {
+	float: left;
+	margin-bottom: -1px;
+}
+
+.nav>li {
+	position: relative;
+	display: block;
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+	color: #555;
+	cursor: default;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-bottom-color: transparent;
+}
+
+.nav-tabs>li>a {
+	margin-right: 2px;
+	line-height: 1.42857143;
+	border: 1px solid transparent;
+	border-radius: 4px 4px 0 0;
+}
+
+.nav>li>a {
+	position: relative;
+	display: block;
+	padding: 10px 15px;
+}
+
+.nav:after, .nav:before {
+	display: table;
+	content: " ";
+}
+
+.nav:after {
+	clear: both;
+}
+
+.tab-content>.tab-pane.active {
+	display: block;
+}
+
+.tab-content>.tab-pane {
+	display: none;
+}
+
+/* end styling for tabs */
