@@ -7,8 +7,6 @@ import ConnectionConstants = require('sql/parts/connection/common/constants');
 import Constants = require('sql/parts/query/common/constants');
 import * as Utils from 'sql/parts/connection/common/utils';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
-import Prompt from 'sql/parts/common/prompts/adapter';
-import { QuestionTypes, IQuestion, IPrompter } from 'sql/parts/common/prompts/question';
 import { SaveResultsRequestParams } from 'data';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { ISaveRequest } from 'sql/parts/grid/common/interfaces';
@@ -20,9 +18,12 @@ import { IWorkspaceConfigurationService } from 'vs/workbench/services/configurat
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IWindowsService } from 'vs/platform/windows/common/windows';
+import { IWindowIPCService } from 'vs/workbench/services/window/electron-browser/windowService';
 import { Registry } from 'vs/platform/registry/common/platform';
 import URI from 'vs/base/common/uri';
 import { IUntitledEditorService, UNTITLED_SCHEMA } from 'vs/workbench/services/untitled/common/untitledEditorService';
+import paths = require('vs/base/common/paths');
+import nls = require('vs/nls');
 
 import { ISlickRange } from 'angular2-slickgrid';
 import path = require('path');
@@ -42,7 +43,6 @@ export class ResultSerializer {
     private static EXCEL_TYPE: string = 'excel';
     private static FILE_SCHEMA: string = 'file';
 
-    private _prompter: IPrompter;
     private _uri: string;
     private _filePath: string;
     private _isTempFile: boolean;
@@ -57,19 +57,12 @@ export class ResultSerializer {
         @IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
         @IWorkspaceContextService private _contextService: IWorkspaceContextService,
         @IWindowsService private _windowsService: IWindowsService,
-		@IUntitledEditorService private _untitledEditorService: IUntitledEditorService
+        @IWindowIPCService private _windowIpcService: IWindowIPCService,
+        @IUntitledEditorService private _untitledEditorService: IUntitledEditorService
     ) {
         if (prettyData) {
             this.pd = prettyData.pd;
         }
-    }
-
-    private get prompter(): IPrompter {
-        if (!this._prompter) {
-            this.ensureOutputChannelExists();
-            this._prompter = this._instantiationService.createInstance(Prompt);
-        }
-        return this._prompter;
     }
 
     /**
@@ -80,13 +73,12 @@ export class ResultSerializer {
         this._uri = uri;
 
         // prompt for filepath
-        return self.promptForFilepath().then(function (filePath): void {
-            if (!Utils.isEmpty(filePath)) {
-                self.sendRequestToService(filePath, saveRequest.batchIndex, saveRequest.resultSetNumber, saveRequest.format, saveRequest.selection ? saveRequest.selection[0] : undefined);
-            }
-        });
+        let filePath = self.promptForFilepath(saveRequest);
+        if (!Utils.isEmpty(filePath)) {
+            return self.sendRequestToService(filePath, saveRequest.batchIndex, saveRequest.resultSetNumber, saveRequest.format, saveRequest.selection ? saveRequest.selection[0] : undefined);
+        }
+        return Promise.resolve(undefined);
     }
-
 
     /**
      * Open a xml/json link - Opens the content in a new editor pane
@@ -136,63 +128,36 @@ export class ResultSerializer {
         this.outputChannel.append(message);
     }
 
-    private promptForFilepath(): Promise<string> {
-        const self = this;
-        let prompted: boolean = false;
-        let filepathPlaceHolder = self.resolveCurrentDirectory(self._uri);
-        let questions: IQuestion[] = [
-            // prompt user to enter file path
-            {
-                type: QuestionTypes.input,
-                name: Constants.filepathPrompt,
-                message: Constants.filepathMessage,
-                placeHolder: filepathPlaceHolder,
-                validate: (value) => this.validateFilePath(Constants.filepathPrompt, value)
-            },
-            // prompt to overwrite file if file already exists
-            {
-                type: QuestionTypes.confirm,
-                name: Constants.overwritePrompt,
-                message: Constants.overwritePrompt,
-                placeHolder: Constants.overwritePlaceholder,
-                shouldPrompt: (answers) => this.fileExists(answers[Constants.filepathPrompt]),
-                onAnswered: (value) => prompted = true
-            }
-        ];
+    private promptForFilepath(saveRequest: ISaveRequest): string {
+        let filepathPlaceHolder = this.resolveCurrentDirectory(this._uri);
+        filepathPlaceHolder = path.join(filepathPlaceHolder, this.getResultsDefaultFilename(saveRequest));
 
-
-        return this.prompter.prompt(questions).then(answers => {
-            if (answers && answers[Constants.filepathPrompt]) {
-                // return filename if file does not exist or if user opted to overwrite file
-                if (!prompted || (prompted && answers[Constants.overwritePrompt])) {
-                    return <string>answers[Constants.filepathPrompt];
-                }
-                // call prompt again if user did not opt to overwrite
-                if (prompted && !answers[Constants.overwritePrompt]) {
-                    return self.promptForFilepath();
-                }
-            }
-            return undefined;
+        let filePath: string = this._windowIpcService.getWindow().showSaveDialog({
+            title: nls.localize('saveAsFileTitle', 'Choose Results File'),
+            defaultPath: paths.normalize(filepathPlaceHolder, true)
         });
+        return filePath;
     }
 
-    private fileExists(filePath: string): boolean {
-        const self = this;
-        // resolve filepath
-        if (!path.isAbsolute(filePath)) {
-            filePath = self.resolveFilePath(this._uri, filePath);
+    private getResultsDefaultFilename(saveRequest: ISaveRequest): string {
+        let fileName = 'Results';
+        switch (saveRequest.format) {
+            case ResultSerializer.CSV_TYPE:
+                fileName = fileName + '.csv';
+                break;
+            case ResultSerializer.JSON_TYPE:
+                fileName = fileName + '.json';
+                break;
+            case ResultSerializer.EXCEL_TYPE:
+                fileName = fileName + '.xlsx';
+                break;
+            case ResultSerializer.XML_TYPE:
+                fileName = fileName + '.xml';
+                break;
+            default:
+                fileName = fileName + '.txt';
         }
-        if (self._isTempFile) {
-            return false;
-        }
-        // check if file already exists on disk
-        try {
-            fs.statSync(filePath);
-            return true;
-        } catch (err) {
-            return false;
-        }
-
+        return fileName;
     }
 
     private getConfigForCsv(): SaveResultsRequestParams {
@@ -252,13 +217,6 @@ export class ResultSerializer {
     private resolveFilePath(uri: string, filePath: string): string {
         let currentDirectory = this.resolveCurrentDirectory(uri);
         return path.normalize(path.join(currentDirectory, filePath));
-    }
-
-    private validateFilePath(property: string, value: string): string {
-        if (Utils.isEmpty(value.trim())) {
-            return property + ConnectionConstants.msgIsRequired;
-        }
-        return undefined;
     }
 
     private getParameters(filePath: string, batchIndex: number, resultSetNo: number, format: string, selection: ISlickRange): SaveResultsRequestParams {
@@ -348,15 +306,15 @@ export class ResultSerializer {
      * Open the saved file in a new vscode editor pane
      */
     private openUntitledFile(fileMode: string, contents: string): void {
-		const input = this._untitledEditorService.createOrGet(undefined, fileMode, contents);
+        const input = this._untitledEditorService.createOrGet(undefined, fileMode, contents);
 
-		this._editorService.openEditor(input, { pinned: true })
+        this._editorService.openEditor(input, { pinned: true })
             .then(
-                (success) => {
-                },
-                (error: any) => {
-                    this._messageService.show(Severity.Error, error);
-                }
+            (success) => {
+            },
+            (error: any) => {
+                this._messageService.show(Severity.Error, error);
+            }
             );
     }
 }
