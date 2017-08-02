@@ -360,7 +360,7 @@ export default class InsightsDialog extends Modal {
 				this._columns = resultset.columnInfo;
 				let rows: QueryExecuteSubsetResult;
 				try {
-					rows = await this._queryRunner.getQueryRows(0, resultset.rowCount - 1, batch.id, resultset.id);
+					rows = await this._queryRunner.getQueryRows(0, resultset.rowCount, batch.id, resultset.id);
 				} catch (e) {
 					return Promise.reject(e);
 				}
