@@ -18,13 +18,31 @@ import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { QueryComponent } from 'sql/parts/grid/views/query/query.component';
 import { QueryPlanComponent,  } from 'sql/parts/queryPlan/queryPlan.component';
 import { TopOperationsComponent } from 'sql/parts/queryPlan/topOperations.component';
+import { ChartViewerComponent } from 'sql/parts/grid/views/query/chartViewer.component';
+import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
+
 import { TabPanel, TabView } from 'primeng/primeng';
+
 import * as dom from 'vs/base/browser/dom';
+import { IDisposable } from 'vs/base/common/lifecycle';
 const $ = dom.$;
 
 export const QUERY_OUTPUT_SELECTOR: string = 'query-output-component';
 
 declare type PaneType = 'messages' | 'results';
+
+interface TabInfo {
+	name: string;
+	header: string;
+	index?: number;
+	visible?: boolean;
+}
+
+const queryOutputTabName = 'queryOutputTab';
+const resultsTabName = 'queryDiv';
+const queryPlanTabName = 'queryPlanDiv';
+const topOperationsTabName = 'topOperationsDiv';
+const chartViewerTabName = 'chartViewerDiv';
 
 @Component({
 	selector: QUERY_OUTPUT_SELECTOR,
@@ -42,11 +60,15 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 
 	@ViewChild('topOperationsComponent') topOperationsComponent: TopOperationsComponent;
 
-	public hasQueryPlanTab: boolean = false;
+	@ViewChild('chartViewerComponent') chartViewerComponent: ChartViewerComponent;
+
 
 	public queryParameters: QueryComponentParams;
 
 	public activeTab: number = 0;
+
+	private _tabIndexMap = new Map<string,TabInfo>();
+	private _disposables: Array<IDisposable> = [];
 
 	constructor(
 		@Inject(forwardRef(() => ElementRef)) el: ElementRef,
@@ -54,53 +76,88 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 		@Inject(BOOTSTRAP_SERVICE_ID) bootstrapService: IBootstrapService
 	) {
 		this.queryParameters = bootstrapService.getBootstrapParams(el.nativeElement.tagName);
+		let tabInfo: TabInfo[] = [
+			{ name: resultsTabName, header: 'Results'},
+			{ name: queryPlanTabName, header: 'Query Plan'},
+			{ name: topOperationsTabName, header: 'Top Operations'},
+			{ name: chartViewerTabName, header: 'Chart View'},
+		];
+		tabInfo.forEach((info) => {
+			info.index = -1;
+			info.visible = false;
+			this._tabIndexMap.set(info.name, info);
+		});
+		// Ensure results tab is always set as it's always in the list of tabs
+		this._tabIndexMap.get(resultsTabName).index = 0;
 	}
 
 	/**
 	 * Called by Angular when the object is initialized
 	 */
 	public ngOnInit(): void {
-		this.queryComponent.queryPlanAvailable.subscribe((xml) => {
-			if (!this.hasQueryPlanTab) {
-				this.hasQueryPlanTab = true;
-
-				for (let i = 0; i < this.tabComponent.tabs.length; ++i) {
-					this.tabComponent.tabs[i].selected = false;
-				}
-
-				let tab: TabPanel = new TabPanel();
-				tab.header = 'Query Plan';
-				tab.selected = true;
-				tab.disabled = false;
-				tab.closable = false;
-				tab.closed = false;
-				this.tabComponent.tabs.push(tab);
-
-				let topOperationsTab: TabPanel = new TabPanel();
-				topOperationsTab.header = 'Top Operations';
-				topOperationsTab.selected = false;
-				topOperationsTab.disabled = false;
-				topOperationsTab.closable = false;
-				topOperationsTab.closed = false;
-				this.tabComponent.tabs.push(topOperationsTab);
+		this._disposables.push(toDisposableSubscription(this.queryComponent.queryPlanAvailable.subscribe((xml) => {
+			let queryPlanTab = this._tabIndexMap.get(queryPlanTabName);
+			if (!queryPlanTab.visible) {
+				queryPlanTab.visible = true;
+				this.deselectAllTabs();
+				this.ensureTabCreated(queryPlanTab);
+				this.ensureTabCreated(this._tabIndexMap.get(topOperationsTabName));
 			}
 
 			this.enterTabMode();
-			this.onActiveTabChanged(1);
+			this.onActiveTabChanged(this._tabIndexMap.get(queryPlanTabName).index);
 			this.queryPlanComponent.planXml = xml;
 			this.topOperationsComponent.planXml = xml;
-		});
+		})));
 
-		this.queryComponent.queryExecutionStatus.subscribe((status) => {
+		this._disposables.push(toDisposableSubscription(this.queryComponent.queryExecutionStatus.subscribe((status) => {
 			if (status === 'start') {
 				this.enterResultsOnlyMode();
 			}
+		})));
+
+		this._disposables.push(toDisposableSubscription(this.queryComponent.showChartRequested.subscribe((dataSet) => {
+			this.chartViewerComponent.dataSet = dataSet;
+
+			let chartViewerTab = this._tabIndexMap.get(chartViewerTabName);
+			if (!chartViewerTab.visible) {
+				chartViewerTab.visible = true;
+				this.deselectAllTabs();
+				this.ensureTabCreated(chartViewerTab);
+			}
+			this.enterTabMode();
+			this.onActiveTabChanged(this._tabIndexMap.get(chartViewerTabName).index);
+		})));
+	}
+
+	private deselectAllTabs(): void {
+		for (let i = 0; i < this.tabComponent.tabs.length; ++i) {
+			this.tabComponent.tabs[i].selected = false;
+		}
+	}
+
+	private setVisibleFalseForAllTabs(): void {
+		this._tabIndexMap.forEach((info) => {
+			info.visible = false;
 		});
 	}
 
+	private ensureTabCreated(info: TabInfo): void {
+		let panel = this.tabComponent.tabs.find( tab => tab.header === info.header);
+		if (!panel) {
+			let tab: TabPanel = new TabPanel();
+			tab.header = info.header;
+			tab.selected = true;
+			tab.disabled = false;
+			tab.closable = false;
+			tab.closed = false;
+			this.tabComponent.tabs.push(tab);
+			info.index = this.tabComponent.tabs.length - 1;
+		}
+	}
+
 	public ngOnDestroy(): void {
-		this.queryComponent.queryPlanAvailable.unsubscribe();
-		this.queryComponent.queryExecutionStatus.unsubscribe();
+		this._disposables.forEach(i => i.dispose());
 	}
 
 	public handleTabChange(e) {
@@ -108,55 +165,55 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 	}
 
 	private onActiveTabChanged(index: number): void {
-		this.activeTab = index;
-
-		document.getElementById('queryDiv').style.display = 'none';
-		document.getElementById('queryPlanDiv').style.display = 'none';
-		document.getElementById('topOperationsDiv').style.display = 'none';
-
-		if (this.isQuery) {
-			document.getElementById('queryDiv').style.display = 'block';
-		} else if (this.isPlan) {
-			document.getElementById('queryPlanDiv').style.display = 'block';
-		} else if (this.isTopOperations) {
-			document.getElementById('topOperationsDiv').style.display = 'block';
+		let activeTabInfo: TabInfo = this.getTabInfoForIndex(index);
+		if (activeTabInfo === undefined) {
+			throw Error('Active tab is not in known tab range');
 		}
+		this.activeTab = index;
+		let activeTabName = activeTabInfo.name;
 
+		// Disable other tabs, enable the active tab
+		this._tabIndexMap.forEach(tabInfo => {
+			let tabEl = document.getElementById(tabInfo.name);
+			if (tabEl) {
+				tabEl.style.display = (activeTabName === tabInfo.name) ? 'block' : 'none';
+			}
+		});
 		this._cd.detectChanges();
 	}
 
+	private getTabInfoForIndex(index: number): TabInfo {
+		let info: TabInfo = undefined;
+		this._tabIndexMap.forEach(value => {
+			if (value.index === index) {
+				info = value;
+			}
+		});
+		return info;
+	}
+
 	private enterTabMode(): void {
-		document.getElementById("queryOutputTab").style.display = "block";
-		let queryComp = document.getElementById("queryComp");
+		document.getElementById(queryOutputTabName).style.display = 'block';
+		let queryComp = document.getElementById('queryComp');
 		dom.addClass(queryComp, 'headersVisible');
 	}
 
 	private enterResultsOnlyMode(): void {
 		// hide the tab control
-		document.getElementById("queryOutputTab").style.display = "none";
-		let queryComp = document.getElementById("queryComp");
+		document.getElementById('queryOutputTab').style.display = 'none';
+		let queryComp = document.getElementById('queryComp');
 		dom.removeClass(queryComp, 'headersVisible');
 
 		// reset back to a single tab for the results
 		if (this.tabComponent && this.tabComponent.tabs) {
 			if (this.tabComponent.tabs.length > 1) {
-				this.hasQueryPlanTab = false;
+				this.setVisibleFalseForAllTabs();
 				this.tabComponent.tabs = [this.tabComponent.tabs[0]];
 			}
 			this.tabComponent.tabs[0].selected = true;
-			this.onActiveTabChanged(0);
+			let tabInfo: TabInfo = this._tabIndexMap.get(resultsTabName);
+			tabInfo.index = 0;
+			this.onActiveTabChanged(tabInfo.index);
 		}
-	}
-
-	public get isQuery(): boolean {
-		return this.activeTab === 0;
-	}
-
-	public get isPlan(): boolean {
-		return this.activeTab === 1;
-	}
-
-	public get isTopOperations(): boolean {
-		return this.activeTab === 2;
 	}
 }

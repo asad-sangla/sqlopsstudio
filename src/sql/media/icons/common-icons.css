@@ -67,3 +67,17 @@
 .hc-black .icon.error {
 	background: url("status-error.svg") center center no-repeat;
 }
+
+.custom-checkbox.sql-checkbox.checked {
+	background: url('check.svg') center center no-repeat;
+	border-color:#3C3C3C;
+}
+
+.vs-dark.monaco-shell .custom-checkbox.sql-checkbox.checked {
+	background: url('check.svg') center center no-repeat;
+	border-color:#3C3C3C;
+}
+
+.custom-checkbox.sql-checkbox.unchecked {
+	border-color:#3C3C3C;
+}

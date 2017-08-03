@@ -105,6 +105,14 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 					this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
 				}
 			}
+		},
+		{
+			showCondition: () => { return true; },
+			icon: () => { return 'exitFullScreen'; },
+			hoverText: () => { return Constants.viewChartLabel; },
+			functionality: (batchId, resultId, index) => {
+				this.showChartForGrid(index);
+			}
 		}
 	];
 
@@ -128,6 +136,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	private hasQueryPlan: boolean = false;
 	public queryExecutionStatus: EventEmitter<string> = new EventEmitter<string>();
 	public queryPlanAvailable: EventEmitter<string> = new EventEmitter<string>();
+	public showChartRequested: EventEmitter<IGridDataSet> = new EventEmitter<IGridDataSet>();
 
 	@Input() public queryParameters: QueryComponentParams;
 
@@ -553,6 +562,12 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 				grid.resized.emit();
 			}
 		});
+	}
+
+	private showChartForGrid(index: number) {
+		if (this.renderedDataSets.length > index) {
+			this.showChartRequested.emit(this.renderedDataSets[index]);
+		}
 	}
 
 	/* Helper function to toggle messages and results panes */

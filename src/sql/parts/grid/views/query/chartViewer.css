@@ -1,0 +1,52 @@
+
+input[type="radio"] {
+  margin-top: -2px;
+  vertical-align: middle;
+}
+
+.chart-viewer {
+	overflow-y: auto;
+}
+.chart-viewer .indent {
+	margin-left: 7px;
+}
+
+.chart-viewer .radio-indent {
+	margin-left: 5px;
+}
+
+.chart-viewer .option {
+	width: 100%;
+	padding-bottom: 7px;
+}
+
+.chart-viewer .dialog-label {
+	width: 100%;
+	padding-bottom: 5px;
+}
+
+.chart-viewer .input-divider {
+	width: 100%;
+	padding-bottom: 20px;
+}
+
+.chart-viewer .custom-checkbox.sql-checkbox {
+	margin-right: 5px;
+	margin-top: 2px;
+	width: 12px;
+	height: 12px;
+}
+
+.chart-viewer .custom-checkbox.sql-checkbox.disabled {
+	pointer-events: none;
+	opacity: 0.3;
+}
+
+.chart-viewer .custom-checkbox.sql-checkbox.unchecked {
+	border-color:#3C3C3C;
+}
+
+.vs-dark.monaco-shell .chart-viewer .custom-checkbox.sql-checkbox.unchecked {
+	background-color: #3C3C3C;
+	border-color: #E1E1E1;
+}

@@ -46,6 +46,7 @@ export const restoreLabel = 'Restore';
 export const saveCSVLabel = 'Save as CSV';
 export const saveJSONLabel = 'Save as JSON';
 export const saveExcelLabel = 'Save as Excel';
+export const viewChartLabel = 'View as Chart';
 export const resultPaneLabel = 'Results';
 export const selectAll = 'Select all';
 export const copyLabel = 'Copy';

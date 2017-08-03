@@ -177,7 +177,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 			this._splashScreen.hideSplashScreen();
 
 			// show the Registered Server viewlet
-			this._commandService.executeCommand('workbench.view.connections', {});
+
+			let startupConfig =  this._workspaceConfigurationService.getConfiguration('startup');
+			let showServerViewlet = <boolean> startupConfig['alwaysShowServersView'];
+			if (showServerViewlet) {
+				this._commandService.executeCommand('workbench.view.connections', {});
+			}
 		}
 	}
 

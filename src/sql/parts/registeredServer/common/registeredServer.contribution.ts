@@ -72,3 +72,15 @@ configurationRegistry.registerConfiguration({
 		}
 	}
 });
+configurationRegistry.registerConfiguration({
+	'id': 'startupConfig',
+	'title': 'Startup Configuration',
+	'type': 'object',
+	'properties': {
+		'startup.alwaysShowServersView': {
+			'type': 'boolean',
+			'description': 'True for the Servers view to be shown on launch of Carbon default; false if the last opened view should be shown',
+			'default': true
+		}
+	}
+});

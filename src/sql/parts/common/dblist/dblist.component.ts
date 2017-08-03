@@ -8,13 +8,16 @@ import 'vs/css!sql/media/primeng';
 
 import { OnInit, OnDestroy, Component, Inject, forwardRef, ElementRef,
 	ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { SelectItem } from 'primeng/primeng';
+
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 import { IConnectionManagementService, } from 'sql/parts/connection/common/connectionManagement';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
-import { SelectItem, Dropdown } from 'primeng/primeng';
+import dropdownFixer from 'sql/parts/common/dblist/dropdownFixer';
 
 export const DBLIST_SELECTOR: string = 'dblist-component';
 
@@ -52,25 +55,7 @@ export class DbListComponent implements OnInit, OnDestroy {
 
 		// Workaround for broken change detection: ensure detectChanges is called
 		// on hide and on unbind of the document listener
-		let dropdownPrototype: any = Dropdown.prototype;
-		dropdownPrototype.originalHide = dropdownPrototype.hide;
-		dropdownPrototype.hide = function() {
-			this.originalHide();
-			this.resetFilter();
-			this.cd.detectChanges();
-		};
-
-		dropdownPrototype.originalOnFilter = dropdownPrototype.onFilter;
-		dropdownPrototype.onFilter = function(event) {
-			this.originalOnFilter(event);
-			this.cd.detectChanges();
-		};
-
-		dropdownPrototype.originalUnbindDocumentClickListener = dropdownPrototype.unbindDocumentClickListener;
-		dropdownPrototype.unbindDocumentClickListener = function () {
-			this.originalUnbindDocumentClickListener();
-			this.cd.detectChanges();
-		};
+		dropdownFixer();
 	}
 
 	public ngOnDestroy(): void {

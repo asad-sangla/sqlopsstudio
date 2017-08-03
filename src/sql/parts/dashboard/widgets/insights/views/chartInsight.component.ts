@@ -5,7 +5,7 @@
 import { Component, Input, Inject, ChangeDetectorRef, forwardRef, ElementRef } from '@angular/core';
 
 /* SQL Imports */
-import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IInsightsView } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 
 import { SimpleExecuteResult } from 'data';
@@ -19,9 +19,10 @@ export type ChartType = 'bar' | 'doughnut' | 'horizontalBar' | 'line' | 'pie' | 
 export type DataType = 'number' | 'point';
 export type DataDirection = 'vertical' | 'horizontal';
 export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none';
-const validChartTypes = ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries', 'scatter'];
-const validDataTypes = ['number', 'point'];
-const validDataDirection = ['vertical', 'horizontal'];
+export const validChartTypes = ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries', 'scatter'];
+export const validDataTypes = ['number', 'point'];
+export const validDataDirections = ['vertical', 'horizontal'];
+export const validLegendPositions = ['top', 'bottom', 'left', 'right', 'none'];
 
 export interface IDataSet {
 	data: Array<number>;
@@ -35,10 +36,26 @@ export interface IPointDataSet {
 	backgroundColor?: Color;
 }
 
+export interface IColumn {
+	columnName: string;
+}
+
+export interface ICellValue {
+	displayValue: string;
+}
+
+export interface IExecuteResult {
+	rowCount: number;
+	columnInfo: IColumn[];
+	rows: ICellValue[][];
+}
+
 export interface IChartConfig {
-	colorMap?: { [column: string]: string };
-	legendPosition?: LegendPosition;
 	chartType?: ChartType;
+	colorMap?: { [column: string]: string };
+	labelFirstColumn?: boolean;
+	legendPosition?: LegendPosition;
+	dataDirection?: DataDirection;
 }
 
 @Component({
@@ -57,7 +74,7 @@ export interface IChartConfig {
 export class ChartInsight implements IInsightsView {
 	public readonly customFields = ['chartType', 'colorMap', 'labelFirstColumn', 'legendPosition', 'dataType', 'dataDirection'];
 	public isDataAvailable: boolean = false;
-	private _data: SimpleExecuteResult;
+	private _data: IExecuteResult;
 	private _labels: string[] = [];
 	private _labelFirstColumn: boolean;
 	private _dataType: DataType;
@@ -71,8 +88,8 @@ export class ChartInsight implements IInsightsView {
 
 	constructor(
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
-		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
-		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef) { }
+		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService) { }
 
 	init() {
 		this._calcHeightWidth();
@@ -121,8 +138,8 @@ export class ChartInsight implements IInsightsView {
 
 	public get chartData() {
 		let self = this;
-		if (this._dataType === 'number') {
-			if (this._dataDirection === 'vertical') {
+		if (this.equalsExpectedOrIsNotSet(this._dataType, 'number')) {
+			if (this.equalsExpectedOrIsNotSet(this._dataDirection, 'vertical')) {
 				return self._mapDataSetInVertical();
 			} else {
 				return this._rawChartData.map((row) => {
@@ -132,6 +149,10 @@ export class ChartInsight implements IInsightsView {
 		} else {
 			return self._mapToPointDataSet();
 		}
+	}
+
+	private equalsExpectedOrIsNotSet(value: any, expectedValue: any): boolean {
+		return (!value || value === expectedValue);
 	}
 
 	private _mapDataSetInVertical(): IDataSet[] {
@@ -230,13 +251,13 @@ export class ChartInsight implements IInsightsView {
 					scaleLabel: {
 						display: true,
 						labelString: xLabel,
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					ticks: {
 						autoSkip: false,
 						maxRotation: 45,
 						minRotation: 45,
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					gridLines: {
 						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
@@ -248,10 +269,10 @@ export class ChartInsight implements IInsightsView {
 					scaleLabel: {
 						display: true,
 						labelString: yLabel,
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					ticks: {
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					gridLines: {
 						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
@@ -279,10 +300,10 @@ export class ChartInsight implements IInsightsView {
 					scaleLabel: {
 						display: true,
 						labelString: xLabel,
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					ticks: {
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					gridLines: {
 						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
@@ -294,10 +315,10 @@ export class ChartInsight implements IInsightsView {
 					scaleLabel: {
 						display: true,
 						labelString: yLabel,
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					ticks: {
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					},
 					gridLines: {
 						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
@@ -329,7 +350,7 @@ export class ChartInsight implements IInsightsView {
 			let options = {
 				legend: {
 					labels: {
-						fontColor: this._bootstrap.themeService.getColorTheme().getColor(colors.editorForeground)
+						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 					}
 				}
 			};
@@ -350,7 +371,7 @@ export class ChartInsight implements IInsightsView {
 	}
 
 	@Input() public set dataDirection(dataDirection: DataDirection) {
-		if (dataDirection && validDataDirection.includes(dataDirection)) {
+		if (dataDirection && validDataDirections.includes(dataDirection)) {
 			this._dataDirection = dataDirection;
 		} else {
 			this._dataDirection = 'vertical';

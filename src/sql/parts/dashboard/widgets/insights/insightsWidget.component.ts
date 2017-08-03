@@ -106,7 +106,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 					let typeKey = Object.keys(self.insightConfig.type)[0];
 
 					let componentFactory = self._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightMap[typeKey]);
-					self.viewContainerRef.clear();
+					self.componentHost.viewContainerRef.clear();
 
 					let componentRef = self.componentHost.viewContainerRef.createComponent(componentFactory);
 					let componentInstance = <IInsightsView>componentRef.instance;
