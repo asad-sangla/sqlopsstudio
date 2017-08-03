@@ -109,8 +109,8 @@ class TopRenderer implements IRenderer<ListResource, TableTemplate> {
 	}
 
 	renderElement(resource: ListResource, index: number, template: TableTemplate): void {
-		template.label.innerHTML = resource.label;
-		template.value.innerHTML = resource.value;
+		template.label.innerText = resource.label;
+		template.value.innerText = resource.value;
 		// render icon if passed
 		if (resource.icon) {
 			template.icon.classList.add('icon');
@@ -170,8 +170,8 @@ class BottomRender implements IRenderer<ListResource, TableTemplate> {
 	}
 
 	renderElement(resource: ListResource, index: number, template: TableTemplate): void {
-		template.label.innerHTML = resource.label;
-		template.value.innerHTML = resource.value;
+		template.label.innerText = resource.label;
+		template.value.innerText = resource.value;
 	}
 
 	disposeTemplate(template: TableTemplate): void {
