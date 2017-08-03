@@ -6,7 +6,7 @@
 
 import vscode = require('vscode');
 import MainController from './controllers/mainController';
-import Constants from './models/constants';
+import { Constants } from './models/constants';
 import {SharedConstants} from 'extensions-modules';
 
 let controller: MainController = undefined;

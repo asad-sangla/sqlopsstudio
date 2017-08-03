@@ -154,15 +154,16 @@ export default class SqlToolsServiceClient {
     // gets or creates the singleton service client instance
     public static get instance(): SqlToolsServiceClient {
         if (this._instance === undefined) {
-            let config = new ExtConfig(this._constants.extensionConfigSectionName);
-            _channel = window.createOutputChannel(this._constants.serviceInitializingOutputChannelName);
-            let logger = new Logger(text => _channel.append(text), this._constants);
-            let serverStatusView = new ServerStatusView(this._constants);
+            let constants = this._constants;
+            let config = new ExtConfig(constants.extensionConfigSectionName);
+            _channel = window.createOutputChannel(constants.serviceInitializingOutputChannelName);
+            let logger = new Logger(text => _channel.append(text), constants);
+            let serverStatusView = new ServerStatusView(constants);
             let httpClient = new HttpClient();
             let decompressProvider = new DecompressProvider();
             let downloadProvider = new ServiceDownloadProvider(config, logger, serverStatusView, httpClient,
-            decompressProvider, this._constants);
-            let serviceProvider = new ServerProvider(downloadProvider, config, serverStatusView);
+            decompressProvider, constants, false);
+            let serviceProvider = new ServerProvider(downloadProvider, config, serverStatusView, constants.extensionConfigSectionName);
             let statusView = new StatusView();
             this._instance = new SqlToolsServiceClient(serviceProvider, logger, statusView);
         }
@@ -184,11 +185,9 @@ export default class SqlToolsServiceClient {
     private copyPackagedService(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {
 
         let serviceDownloadProvider = this._server.downloadProvider;
-        let srcPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, true);
-        let destPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, false);
-        console.info('ext: ' +SqlToolsServiceClient._constants.extensionName + 'For extension ', SqlToolsServiceClient._constants.extensionName);
-        console.info('ext: ' +SqlToolsServiceClient._constants.extensionName + 'srcPath: ', srcPath);
-        console.info('ext: ' +SqlToolsServiceClient._constants.extensionName + 'destPath: ', destPath);
+        let srcPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, SqlToolsServiceClient.constants.extensionConfigSectionName, true);
+        let destPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, SqlToolsServiceClient.constants.extensionConfigSectionName, false);
+
         const self = this;
         return new Promise<ServerInitializationResult>( (resolve, reject) => {
             fs.copy(srcPath, destPath, err => {

@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {IExtensionConstants, Runtime, LinuxDistribution} from 'extensions-modules';
+import {IExtensionConstants} from 'extensions-modules/lib/models/contracts/contracts';
+import {Runtime, LinuxDistribution} from 'extensions-modules/lib/models/platform';
 // constants
-export default class Constants implements IExtensionConstants {
+export class Constants implements IExtensionConstants {
     public readonly languageId = '';
     public readonly extensionName = 'credentials';
     public readonly extensionConfigSectionName = 'credentials';

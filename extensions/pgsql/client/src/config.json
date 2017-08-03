@@ -9,7 +9,7 @@
 			"Linux_64": "linux-x64.tar.gz"
 		},
 		"installDir": "",
-		"packageDir": "../pgsqltoolsservice/{#version#}/{#platform#}",
+		"packageDir": "pgsqltoolsservice/{#version#}/{#platform#}",
 		"executableFiles": ["pgsqltoolsservice/pgtoolsservice_main", "pgsqltoolsservice/pgtoolsservice_main.exe"]
 	}
 }

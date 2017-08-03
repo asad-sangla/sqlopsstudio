@@ -5,7 +5,7 @@
 
 'use strict';
 import vscode = require('vscode');
-import Constants from '../models/constants';
+import { Constants } from '../models/constants';
 import {IExtensionConstants, Telemetry, SharedConstants, SqlToolsServiceClient, VscodeWrapper, Utils} from 'extensions-modules';
 
 /**

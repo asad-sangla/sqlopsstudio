@@ -25,7 +25,8 @@ export default class ServiceDownloadProvider {
 		private _statusView: IStatusView,
 		private _httpClient: IHttpClient,
 		private _decompressProvider: IDecompressProvider,
-	    private _extensionConstants: IExtensionConstants) {
+		private _extensionConstants: IExtensionConstants,
+		private _fromBuild: boolean) {
 		// Ensure our temp files get cleaned up in case of error.
 		tmp.setGracefulCleanup();
 	}
@@ -35,11 +36,10 @@ export default class ServiceDownloadProvider {
 	 */
 	public getDownloadFileName(platform: Runtime): string {
 		let fileNamesJson = this._config.getConfigValue('downloadFileNames');
-		console.info("Platform : ", platform.toString());
+		console.info('Platform: ', platform.toString());
 
 		let fileName = fileNamesJson[platform.toString()];
-		console.info("fileNamesJson :\n", fileNamesJson);
-		console.info("Filename : ", fileName);
+		console.info('Filename: ', fileName);
 
 		if (fileName === undefined) {
 			if (process.platform === 'linux') {
@@ -56,8 +56,8 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Returns SQL tools service installed folder.
 	 */
-	public getInstallDirectory(platform: Runtime, packaging?: boolean): string {
-		let basePath = this.getInstallDirectoryRoot(platform, packaging);
+	public getInstallDirectory(platform: Runtime, extensionConfigSectionName: string, packaging?: boolean): string {
+		let basePath = this.getInstallDirectoryRoot(platform, extensionConfigSectionName, packaging);
 		let versionFromConfig = this._config.getPackageVersion();
 		basePath = basePath.replace('{#version#}', versionFromConfig);
 		basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
@@ -85,7 +85,7 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Returns SQL tools service installed folder root.
 	 */
-	public getInstallDirectoryRoot(platform: Runtime, packaging?: boolean): string {
+	public getInstallDirectoryRoot(platform: Runtime, extensionConfigSectionName: string, packaging?: boolean): string {
 		let installDirFromConfig : string;
 		if (packaging) {
 			installDirFromConfig = this._config.getPackageDirectory();
@@ -102,9 +102,12 @@ export default class ServiceDownloadProvider {
 		let basePath: string;
 		if (path.isAbsolute(installDirFromConfig)) {
 			basePath = installDirFromConfig;
-		} else {
+		} else if (this._fromBuild) {
+			basePath = path.join(__dirname, '../../../../../extensions/' + extensionConfigSectionName + '/' + installDirFromConfig);
+		}
+		else {
 			// The path from config is relative to the out folder
-			basePath = path.join(__dirname, '../../' + installDirFromConfig);
+			basePath = path.join(__dirname, '../../../../' + installDirFromConfig);
 		}
 		return basePath;
 	}
@@ -126,7 +129,7 @@ export default class ServiceDownloadProvider {
 
 		return new Promise<boolean>((resolve, reject) => {
 			const fileName = this.getDownloadFileName(platform);
-			const installDirectory = this.getInstallDirectory(platform, packaging);
+			const installDirectory = this.getInstallDirectory(platform, this._extensionConstants.extensionConfigSectionName, packaging);
 
 			this._logger.appendLine(`${this._extensionConstants.serviceInstallingTo} ${installDirectory}.`);
 			const urlString = this.getGetDownloadUrl(fileName);

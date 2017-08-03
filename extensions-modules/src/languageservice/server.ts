@@ -19,7 +19,8 @@ export default class ServerProvider {
 
     constructor(private _downloadProvider: ServiceDownloadProvider,
                 private _config: IConfig,
-                private _statusView: IStatusView) {
+                private _statusView: IStatusView,
+                private _extensionConfigSectionName: string) {
     }
 
     /**
@@ -85,7 +86,7 @@ export default class ServerProvider {
     * Returns the path of the installed service
     */
     public getServerPath(runtime: Runtime, packaging?: boolean): Promise<string> {
-        const installDirectory = this._downloadProvider.getInstallDirectory(runtime, packaging);
+        const installDirectory = this._downloadProvider.getInstallDirectory(runtime, this._extensionConfigSectionName, packaging);
         return this.findServerPath(installDirectory);
     }
 
@@ -94,7 +95,7 @@ export default class ServerProvider {
     */
     public downloadServerFiles(runtime: Runtime, packaging?: boolean): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            const installDirectory = this._downloadProvider.getInstallDirectory(runtime, packaging);
+            const installDirectory = this._downloadProvider.getInstallDirectory(runtime, this._extensionConfigSectionName, packaging);
             return this._downloadProvider.installService(runtime, packaging).then( _ => {
                 return this.findServerPath(installDirectory).then ( result => {
                     return resolve(result);

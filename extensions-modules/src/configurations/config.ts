@@ -7,22 +7,23 @@
 const fs = require('fs');
 import * as path from 'path';
 import {IConfig} from '../languageservice/interfaces';
-import {IExtensionConstants} from '../models/contracts/contracts';
 import * as SharedConstants from '../models/constants';
 
 /*
 * Config class handles getting values from config.json.
 */
 export default class Config implements IConfig {
-    private static _configJsonContent: any = undefined;
+    private _configJsonContent: any = undefined;
 
     private _extensionConfigSectionName: string = undefined;
+    private _fromBuild: boolean = undefined;
 
-     constructor(extensionConfigSectionName: string) {
-         this._extensionConfigSectionName = extensionConfigSectionName;
+     constructor(extensionConfigSectionName: string, fromBuild?: boolean) {
+        this._extensionConfigSectionName = extensionConfigSectionName;
+        this._fromBuild = fromBuild;
      }
 
-    public static get configJsonContent(): any {
+    public get configJsonContent(): any {
         if (this._configJsonContent === undefined) {
             this._configJsonContent = this.loadConfig();
         }
@@ -50,7 +51,7 @@ export default class Config implements IConfig {
     }
 
     public getConfigValue(configKey: string): any {
-        let json = Config.configJsonContent;
+        let json = this.configJsonContent;
         let toolsConfig = json[SharedConstants.serviceConfigKey];
         let configValue: string = undefined;
         if (toolsConfig !== undefined) {
@@ -60,7 +61,7 @@ export default class Config implements IConfig {
     }
 
     public getExtensionConfig(key: string, defaultValue?: any): any {
-       let json = Config.configJsonContent;
+       let json = this.configJsonContent;
        let extensionConfig = json[this._extensionConfigSectionName];
        let configValue = extensionConfig[key];
        if (!configValue) {
@@ -70,7 +71,7 @@ export default class Config implements IConfig {
     }
 
     public getWorkspaceConfig(key: string, defaultValue?: any): any {
-       let json = Config.configJsonContent;
+       let json = this.configJsonContent;
        let configValue = json[key];
        if (!configValue) {
            configValue = defaultValue;
@@ -78,14 +79,15 @@ export default class Config implements IConfig {
        return configValue;
     }
 
-    static loadConfig(): any {
-        let configContent = fs.readFileSync(path.join(__dirname, '../../../../client/out/config.json'));
+    public loadConfig(): any {
+        let configContent = undefined;
+        if (this._fromBuild) {
+            let remainingPath = '../../../../../extensions/' + this._extensionConfigSectionName + '/client/out/config.json';
+            configContent = fs.readFileSync(path.join(__dirname, remainingPath));
+        }
+        else {
+            configContent = fs.readFileSync(path.join(__dirname, '../../../../client/out/config.json'));
+        }
         return JSON.parse(configContent);
     }
 }
-
-
-
-
-
-

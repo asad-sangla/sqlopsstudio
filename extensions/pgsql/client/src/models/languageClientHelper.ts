@@ -1,7 +1,7 @@
 import {ILanguageClientHelper, SharedConstants, SqlToolsServiceClient, Runtime} from 'extensions-modules';
 import {ServerOptions, TransportKind} from 'dataprotocol-client';
 import {workspace} from 'vscode';
-import Constants from './constants';
+import { Constants } from './constants';
 const path = require('path');
 
 export default class LanguageClientHelper implements ILanguageClientHelper {

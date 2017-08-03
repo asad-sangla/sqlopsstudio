@@ -60,39 +60,37 @@ export class ServiceInstaller {
 	private _downloadProvider = undefined;
 	private _serverProvider = undefined;
 	private _extensionConstants = undefined;
+	private _packaging = undefined;
 
-	constructor(extensionConstants: IExtensionConstants) {
+	constructor(extensionConstants: IExtensionConstants, packaging: boolean = false) {
 		this._extensionConstants = extensionConstants;
-		this._config = new Config(extensionConstants.extensionConfigSectionName);
-		this._downloadProvider = new ServiceDownloadProvider(this._config, this._logger, this._statusView, this._httpClient, this._decompressProvider, extensionConstants);
-		this._serverProvider = new ServerProvider(this._downloadProvider, this._config, this._statusView);
+		this._packaging = packaging;
+		this._config = new Config(extensionConstants.extensionConfigSectionName, true);
+		this._downloadProvider = new ServiceDownloadProvider(this._config, this._logger, this._statusView, this._httpClient, this._decompressProvider, extensionConstants, true);
+		this._serverProvider = new ServerProvider(this._downloadProvider, this._config, this._statusView, extensionConstants.extensionConfigSectionName);
 	}
 	/*
 	* Installs the service for the given platform if it's not already installed.
 	*/
-	public installService(runtime: Runtime, packaging?: boolean): Promise<String> {
-		if (runtime === undefined) {
-			return PlatformInformation.GetCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
-				if (platformInfo.isValidRuntime()) {
-					return this._serverProvider.getOrDownloadServer(platformInfo.runtimeId, packaging);
-				} else {
-					throw new Error('unsupported runtime');
-				}
-			});
-		} else {
-			return this._serverProvider.getOrDownloadServer(runtime);
-		}
+	public installService(): Promise<String> {
+		return PlatformInformation.GetCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
+			if (platformInfo.isValidRuntime()) {
+				return this._serverProvider.getOrDownloadServer(platformInfo.runtimeId, this._packaging);
+			} else {
+				throw new Error('unsupported runtime');
+			}
+		});
 	}
 
 	/*
 	* Returns the install folder path for given platform.
 	*/
-	public getServiceInstallDirectory(runtime: Runtime, packaging?: boolean): Promise<string> {
+	public getServiceInstallDirectory(runtime: Runtime): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
 			if (runtime === undefined) {
 				PlatformInformation.GetCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
 					if (platformInfo.isValidRuntime()) {
-						resolve(this._downloadProvider.getInstallDirectory(platformInfo.runtimeId, packaging));
+						resolve(this._downloadProvider.getInstallDirectory(platformInfo.runtimeId, this._packaging));
 					} else {
 						reject('unsupported runtime');
 					}
@@ -100,7 +98,7 @@ export class ServiceInstaller {
 					reject(error);
 				});
 			} else {
-				resolve(this._downloadProvider.getInstallDirectory(runtime));
+				resolve(this._downloadProvider.getInstallDirectory(runtime, this._packaging));
 			}
 		});
 

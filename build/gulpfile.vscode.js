@@ -519,24 +519,24 @@ gulp.task('upload-vscode-sourcemaps', ['minify-vscode'], () => {
 // Install service locally before building carbon
 
 function installService(extObj) {
-	var installer = new serviceInstaller.ServiceInstaller(extObj);
-	return installer.installService(undefined, true);
+	var installer = new serviceInstaller.ServiceInstaller(extObj, true);
+	return installer.installService();
 }
 
 gulp.task('install-sqltoolsservice', () => {
-	const mssqlExt = require('../extensions/mssql/client/out/models/constants');
+	var mssqlExt = require('../extensions/mssql/client/out/models/constants');
 	var extObj = new mssqlExt.Constants();
     return installService(extObj);
 });
 
 gulp.task('install-credentialservice', () => {
-	const credentialsExt = require('../extensions/credentials/client/out/models/constants');
+	var credentialsExt = require('../extensions/credentials/client/out/models/constants');
 	var extObj = new credentialsExt.Constants();
 	return installService(extObj);
 })
 
 gulp.task('install-pgsqlservice', () => {
-	const pgsqlExt = require('../extensions/pgsql/client/out/models/constants');
+	var pgsqlExt = require('../extensions/pgsql/client/out/models/constants');
 	var extObj = new pgsqlExt.Constants();
 	return installService(extObj);
 })
