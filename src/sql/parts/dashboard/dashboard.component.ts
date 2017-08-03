@@ -6,13 +6,9 @@
 import 'vs/css!sql/parts/dashboard/media/dashboard';
 import 'vs/css!sql/media/primeng';
 
-import { MenuItem } from 'primeng/primeng';
-import { OnInit, Component, Inject, forwardRef, ElementRef, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { OnInit, Component, Inject, forwardRef, ElementRef, ChangeDetectorRef, OnDestroy, ViewChild } from '@angular/core';
 
-import { BreadcrumbService } from './services/breadcrumb.service';
 import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
-
-import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
@@ -26,29 +22,17 @@ export const DASHBOARD_SELECTOR: string = 'dashboard-component';
 	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-	private breadcrumbItems: MenuItem[];
 	private _subs: Array<IDisposable> = new Array();
+	@ViewChild('header', {read: ElementRef}) private header: ElementRef;
 
 	constructor(
-		@Inject(forwardRef(() => BreadcrumbService)) private _breadcrumbService: BreadcrumbService,
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrapService: DashboardServiceInterface,
-		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef
-		) {
-			this.breadcrumbItems = [];
-		}
+		) { }
 
 	ngOnInit() {
 		let self = this;
-		self._subs.push(toDisposableSubscription(self._breadcrumbService.breadcrumbItem.subscribe((val: MenuItem[]) => {
-			if (val) {
-				self.breadcrumbItems = val;
-				self._changeRef.detectChanges();
-			}
-		})));
-		self._subs.push(self._bootstrapService.themeService.onDidColorThemeChange((e) => {
-			self.updateTheme(e);
-		}));
+		self._subs.push(self._bootstrapService.themeService.onDidColorThemeChange(e => self.updateTheme(e)));
 		self.updateTheme(self._bootstrapService.themeService.getColorTheme());
 	}
 
@@ -59,8 +43,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 	}
 
 	private updateTheme(theme: IColorTheme): void {
-		let el = <HTMLElement> this._el.nativeElement;
-		$(el).find('#header')[0].style.borderBottomColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true).toString();
+		this.header.nativeElement.style.borderBottomColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true).toString();
 	}
 
 }

@@ -9,7 +9,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule, Routes, UrlSerializer } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgGridModule } from 'angular2-grid';
-import { BreadcrumbModule } from 'primeng/primeng';
 import { ChartsModule } from 'ng2-charts/ng2-charts';
 
 import CustomUrlSerializer from 'sql/common/urlSerializer';
@@ -25,7 +24,8 @@ import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost
 /* Base Components */
 import { DashboardComponent, DASHBOARD_SELECTOR } from 'sql/parts/dashboard/dashboard.component';
 import { DashboardWidgetWrapper } from 'sql/parts/dashboard/common/dashboardWidgetWrapper.component';
-let baseComponents = [DashboardComponent, DashboardWidgetWrapper, ComponentHostDirective];
+import { BreadcrumbComponent } from 'sql/parts/dashboard/common/breadcrumb.component';
+let baseComponents = [DashboardComponent, DashboardWidgetWrapper, ComponentHostDirective, BreadcrumbComponent];
 
 /* Pages */
 import { ServerDashboardPage } from 'sql/parts/dashboard/pages/serverDashboardPage.component';
@@ -78,7 +78,6 @@ const appRoutes: Routes = [
 		CommonModule,
 		BrowserModule,
 		FormsModule,
-		BreadcrumbModule,
 		NgGridModule,
 		ChartsModule,
 		RouterModule.forRoot(appRoutes)
