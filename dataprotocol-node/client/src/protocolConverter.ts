@@ -582,6 +582,12 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	function asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata {
 		let objectMetadata: data.ObjectMetadata[] = [];
 
+		if (!params.metadata || !params.metadata.length) {
+            return {
+                objectMetadata: objectMetadata
+            };
+        }
+
 		for (let i = 0; i < params.metadata.length; ++i) {
 			let metadata: ls.ObjectMetadata = params.metadata[i];
 

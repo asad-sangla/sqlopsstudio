@@ -89,5 +89,27 @@ export const properties: Array<ProviderProperties> = [
 				]
 			}
 		]
+	},
+	{
+		provider: 'PGSQL',
+		flavors: [
+			{
+				flavor: 'on_prem',
+				condition: {
+					field: 'isCloud',
+					operator: '!=',
+					value: 'true'
+				},
+				databaseProperties: [] ,
+				serverProperties: [
+					{
+						name: nls.localize('version', 'Version'),
+						value: [
+							'serverVersion'
+						]
+					}
+				]
+			}
+		]
 	}
 ];
