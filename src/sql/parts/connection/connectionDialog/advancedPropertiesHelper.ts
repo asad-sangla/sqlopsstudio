@@ -12,7 +12,8 @@ import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
-import data = require('data');
+import * as types from 'vs/base/common/types';
+import * as data from 'data';
 import { localize } from 'vs/nls';
 
 export interface IAdvancedPropertyElement {
@@ -35,9 +36,9 @@ export class AdvancedPropertiesHelper {
 				propertyWidget = new DialogInputBox(rowContainer.getHTMLElement(), contextViewService, {
 					validationOptions: {
 						validation: (value: string) => {
-							if (DialogHelper.isEmptyString(value) && property.isRequired) {
+							if (!value && property.isRequired) {
 								return { type: MessageType.ERROR, content: property.displayName + missingErrorMessage };
-							} else if (!DialogHelper.isNumeric(value)) {
+							} else if (!types.isNumber(value)) {
 								return { type: MessageType.ERROR, content: invalidInputMessage };
 							} else {
 								return null;
@@ -58,7 +59,7 @@ export class AdvancedPropertiesHelper {
 			case ServiceOptionType.password:
 				propertyWidget = new DialogInputBox(rowContainer.getHTMLElement(), contextViewService, {
 					validationOptions: {
-						validation: (value: string) => (DialogHelper.isEmptyString(value) && property.isRequired) ? ({ type: MessageType.ERROR, content: property.displayName + missingErrorMessage }) : null
+						validation: (value: string) => (!value && property.isRequired) ? ({ type: MessageType.ERROR, content: property.displayName + missingErrorMessage }) : null
 					}
 				});
 				propertyWidget.value = optionValue;
@@ -133,10 +134,10 @@ export class AdvancedPropertiesHelper {
 		for (var key in advancedPropertiesMap) {
 			var propertyElement: IAdvancedPropertyElement = advancedPropertiesMap[key];
 			if (propertyElement.advancedPropertyWidget.value !== propertyElement.propertyValue) {
-				if (DialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value) && options[key]) {
+				if (!propertyElement.advancedPropertyWidget.value && options[key]) {
 					delete options[key];
 				}
-				if (!DialogHelper.isEmptyString(propertyElement.advancedPropertyWidget.value)) {
+				if (propertyElement.advancedPropertyWidget.value) {
 					if (propertyElement.advancedProperty.valueType === ServiceOptionType.boolean) {
 						options[key] = (propertyElement.advancedPropertyWidget.value === this.trueInputValue) ? true : false;
 					} else {

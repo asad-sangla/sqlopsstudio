@@ -9,20 +9,20 @@ import { Checkbox, ICheckboxOpts } from 'vs/base/browser/ui/checkbox/checkbox';
 *  Extends Checkbox to support enable/disable the element
 */
 export class DialogCheckbox extends Checkbox {
-	 private _builder: Builder;
+	private _builder: Builder;
 
-	 constructor(opts: ICheckboxOpts) {
+	constructor(opts: ICheckboxOpts) {
 		super(opts);
 		this._builder = new Builder(this.domNode);
-	 }
+	}
 
-	 public enable(): void {
+	public enable(): void {
 		super.enable();
-		this._builder.removeClass("disabled");
+		this._builder.removeClass('disabled');
 	}
 
 	public disable(): void {
 		super.disable();
-		this._builder.addClass("disabled");
+		this._builder.addClass('disabled');
 	}
 }

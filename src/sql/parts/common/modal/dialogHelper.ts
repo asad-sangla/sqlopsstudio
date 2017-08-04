@@ -8,7 +8,9 @@
 import { Builder } from 'vs/base/browser/builder';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
+import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
+import * as data from 'data';
+import * as types from 'vs/base/common/types';
 
 export function appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
 	let cellContainer: Builder;
@@ -45,8 +47,8 @@ export function appendRowLink(container: Builder, label: string, labelClass: str
 	return new Builder(rowButton.getElement());
 }
 
-export function createCheckBox(container: Builder, label: string, checkboxClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
-	let checkbox = new Checkbox({
+export function createCheckBox(container: Builder, label: string, checkboxClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): DialogCheckbox {
+	let checkbox = new DialogCheckbox({
 		actionClassName: checkboxClass,
 		title: label,
 		isChecked: isChecked,
@@ -69,20 +71,36 @@ export function appendInputSelectBox(container: Builder, selectBox: DialogSelect
 	return selectBox;
 }
 
-export function isNumeric(num): boolean {
-	return !isNaN(num);
-}
-
-export function isEmptyString(value: string): boolean {
-	//TODO find a better way to check for empty string
-	return value === undefined || value === '';
-}
-
-export function isSubsetString(str: string, subStr: string) {
-	return str.indexOf(subStr) !== -1;
-}
-
 export function isNullOrWhiteSpace(value: string): boolean {
 	// returns true if the string is null or contains white space/tab chars only
 	return !value || value.trim().length === 0;
+}
+
+export function getBooleanValueFromStringOrBoolean(value: any): boolean {
+	if (types.isBoolean(value)) {
+		return value;
+	} else if (types.isString(value)) {
+		return value.toLowerCase() === 'true';
+	}
+	return false;
+}
+
+export function getCategoryDisplayName(categories: data.CategoryValue[], categoryName: string) {
+	var displayName: string;
+	categories.forEach(c => {
+		if (c.name === categoryName) {
+			displayName = c.displayName;
+		}
+	});
+	return displayName;
+}
+
+export function getCategoryName(categories: data.CategoryValue[], categoryDisplayName: string) {
+	var categoryName: string;
+	categories.forEach(c => {
+		if (c.displayName === categoryDisplayName) {
+			categoryName = c.name;
+		}
+	});
+	return categoryName;
 }

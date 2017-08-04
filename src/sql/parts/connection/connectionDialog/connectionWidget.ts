@@ -112,7 +112,7 @@ export class ConnectionWidget {
 		let serverNameBuilder = DialogHelper.appendRow(this._tableContainer, serverNameOption.displayName, 'connection-label', 'connection-input');
 		this._serverNameInputBox = new DialogInputBox(serverNameBuilder.getHTMLElement(), this._contextViewService, {
 			validationOptions: {
-				validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: serverNameOption.displayName + errorMessage }) : null
+				validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: serverNameOption.displayName + errorMessage }) : null
 			},
 		});
 
@@ -142,7 +142,7 @@ export class ConnectionWidget {
 		let databaseNameBuilder = DialogHelper.appendRow(this._tableContainer, databaseOption.displayName, 'connection-label', 'connection-input');
 		this._databaseNameInputBox = new DialogInputBox(databaseNameBuilder.getHTMLElement(), this._contextViewService, {
 			validationOptions: {
-				validation: (value: string) => (DialogHelper.isEmptyString(value) && databaseOption.isRequired) ? ({ type: MessageType.ERROR, content: databaseOption.displayName + errorMessage }) : null
+				validation: (value: string) => (!value && databaseOption.isRequired) ? ({ type: MessageType.ERROR, content: databaseOption.displayName + errorMessage }) : null
 			},
 			placeholder: (databaseOption.defaultValue || '')
 		});
@@ -158,7 +158,7 @@ export class ConnectionWidget {
 	private validateUsername(value: string, isOptionRequired: boolean): boolean {
 		let currentAuthType = this._authTypeSelectBox ? this.getMatchingAuthType(this._authTypeSelectBox.value) : undefined;
 		if (!currentAuthType || currentAuthType.showUsernameAndPassword) {
-			if (DialogHelper.isEmptyString(value) && isOptionRequired) {
+			if (!value && isOptionRequired) {
 				return true;
 			}
 		}
@@ -243,8 +243,8 @@ export class ConnectionWidget {
 	}
 
 	private serverNameChanged(serverName: string) {
-		this._callbacks.onSetConnectButton(!DialogHelper.isEmptyString(serverName));
-		if (DialogHelper.isSubsetString(serverName.toLocaleLowerCase(), 'database.windows.net')) {
+		this._callbacks.onSetConnectButton(!!serverName);
+		if (serverName.toLocaleLowerCase().includes('database.windows.net')) {
 			this._callbacks.onSetAzureTimeOut();
 		}
 	}
@@ -281,7 +281,7 @@ export class ConnectionWidget {
 	public fillInConnectionInputs(connectionInfo: IConnectionProfile) {
 		if (connectionInfo) {
 			this._serverNameInputBox.value = this.getModelValue(connectionInfo.serverName);
-			this._callbacks.onSetConnectButton(!DialogHelper.isEmptyString(connectionInfo.serverName));
+			this._callbacks.onSetConnectButton(!!connectionInfo.serverName);
 			this._databaseNameInputBox.value = this.getModelValue(connectionInfo.databaseName);
 			this._userNameInputBox.value = this.getModelValue(connectionInfo.userName);
 			this._passwordInputBox.value = this.getModelValue(connectionInfo.password);

@@ -958,7 +958,7 @@ declare module 'data' {
 	}
 
 	export interface RestoreInfo {
-		options: {};
+		options: {[key: string]: any};
 	}
 
 	export interface RestoreDatabaseFileInfo {

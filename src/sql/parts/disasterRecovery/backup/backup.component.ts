@@ -13,7 +13,6 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
 import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { modalFooterStyle } from 'sql/parts/common/modal/modal';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { ListBox } from 'sql/parts/common/modal/listBox';
@@ -285,7 +284,7 @@ export class BackupComponent{
                 this._bootstrapService.contextViewService,
                 {
                     validationOptions: {
-                        validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: 'Media name is required' }) : null
+                        validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: 'Media name is required' }) : null
                     }
                 }
             );
@@ -393,7 +392,7 @@ export class BackupComponent{
             continueAfterError: this.continueOnErrorCheckBox.checked,
             logTruncation: this.isTruncateChecked,
             tailLogBackup: this.isTaillogChecked,
-            retainDays: DialogHelper.isEmptyString(this.backupRetainDaysBox.value) ? 0: this.backupRetainDaysBox.value,
+            retainDays: !this.backupRetainDaysBox.value ? 0: this.backupRetainDaysBox.value,
             compressionOption: this.compressionOptions.indexOf(this.compressionSelectBox.value),
             verifyBackupRequired: this.verifyCheckBox.checked,
             encryptionAlgorithm: (this.encryptCheckBox.checked ? this.encryptionAlgorithms.indexOf(this.algorithmSelectBox.value): 0),
@@ -436,7 +435,7 @@ export class BackupComponent{
         this.isFormatChecked = !this.isFormatChecked;
         this.enableMediaInput(this.isFormatChecked);
         if (this.isFormatChecked) {
-            if (DialogHelper.isEmptyString(this.mediaNameBox.value)) {
+            if (!this.mediaNameBox.value) {
                 this.backupButton.enabled = false;
             }
         } else {
@@ -691,14 +690,14 @@ export class BackupComponent{
 
     private enableBackupButton(): void {
         if (!this.backupButton.enabled) {
-            if (this.pathListBox.count > 0 && (!this.isFormatChecked || !DialogHelper.isEmptyString(this.mediaNameBox.value))) {
+            if (this.pathListBox.count > 0 && (!this.isFormatChecked || this.mediaNameBox.value)) {
                 this.backupButton.enabled = true;
             }
         }
     }
 
     private mediaNameChanged(mediaName: string): void {
-        if (DialogHelper.isEmptyString(mediaName)) {
+        if (!mediaName) {
             this.backupButton.enabled = false;
         } else {
             this.enableBackupButton();

@@ -11,7 +11,6 @@ import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { Modal } from 'sql/parts/common/modal/modal';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import DOM = require('vs/base/browser/dom');
@@ -80,7 +79,7 @@ export class ServerGroupDialog extends Modal {
 			let errorMessage = localize('MissingGroupNameError', 'Group name is required.');
 			this._groupNameInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
 				validationOptions: {
-					validation: (value: string) => DialogHelper.isEmptyString(value) ? ({ type: MessageType.ERROR, content: errorMessage }) : null
+					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: errorMessage }) : null
 				}
 			});
 		});
