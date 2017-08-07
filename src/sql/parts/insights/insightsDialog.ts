@@ -42,7 +42,7 @@ import { IAction } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 /* Regex that matches the form `${value}` */
-const insertValueRegex: RegExp = /\${(.*?)\}/;
+export const insertValueRegex: RegExp = /\${(.*?)\}/;
 
 class BasicView extends CollapsibleView {
 	constructor(private viewTitle: string, private list: List<any>, private _bodyContainer: HTMLElement, collapsed: boolean, headerSize: number) {
@@ -537,21 +537,24 @@ export default class InsightsDialog extends Modal {
 		let server = this._insight.details.actions.server || this._connectionProfile.serverName;
 		let user = this._insight.details.actions.user || this._connectionProfile.userName;
 		let match: Array<string>;
-		if (match = database.match(insertValueRegex)) {
+		match = database.match(insertValueRegex);
+		if (match && match.length > 0) {
 			let index = this.findIndex(match[1], this._columns);
 			if (index === -1) {
 				console.error('Could not find column', match[1]);
 			}
 			database = database.replace(match[0], element.data[index]);
 		}
-		if (match = server.match(insertValueRegex)) {
+		match = server.match(insertValueRegex);
+		if (match && match.length > 0) {
 			let index = this.findIndex(match[1], this._columns);
 			if (index === -1) {
 				console.error('Could not find column', match[1]);
 			}
 			server = server.replace(match[0], element.data[index]);
 		}
-		if (match = user.match(insertValueRegex)) {
+		match = user.match(insertValueRegex);
+		if (match && match.length > 0) {
 			let index = this.findIndex(match[1], this._columns);
 			if (index === -1) {
 				console.error('Could not find column', match[1]);

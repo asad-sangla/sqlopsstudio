@@ -14,6 +14,7 @@ import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost
 import { InsightAction, InsightActionContext } from 'sql/workbench/electron-browser/actions';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { IInsightsConfig } from './interfaces';
+import { insertValueRegex } from 'sql/parts/insights/insightsDialog';
 
 /* Insights */
 import { ChartInsight } from './views/chartInsight.component';
@@ -66,9 +67,16 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		} else if (types.isString(this.insightConfig.query)) {
 			this.queryObv = Observable.fromPromise(dashboardService.queryManagementService.runQueryAndReturn(this.insightConfig.query));
 		} else if (types.isString(this.insightConfig.queryFile)) {
+			let filePath = this.insightConfig.queryFile;
+			// check for workspace relative path
+			let match = filePath.match(insertValueRegex);
+			if (match && match.length > 0 && match[1] === 'workspaceRoot') {
+				filePath = filePath.replace(match[0], '');
+				filePath = this.dashboardService.workspaceContextService.toResource(filePath).fsPath;
+			}
 			let self = this;
 			self.queryObv = Observable.fromPromise(new Promise((resolve, reject) => {
-				pfs.readFile(this.insightConfig.queryFile).then(
+				pfs.readFile(filePath).then(
 					buffer => {
 						dashboardService.queryManagementService.runQueryAndReturn(buffer.toString()).then(
 							result => {

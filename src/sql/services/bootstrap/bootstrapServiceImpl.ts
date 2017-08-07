@@ -32,6 +32,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from './bootstrapService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 
 export class BootstrapService implements IBootstrapService {
 
@@ -71,7 +72,8 @@ export class BootstrapService implements IBootstrapService {
 		@IConfigurationService public configurationService: IConfigurationService,
 		@IInsightsDialogService public insightsDialogService: IInsightsDialogService,
 		@IContextViewService public contextViewService: IContextViewService,
-		@IMessageService public messageService: IMessageService
+		@IMessageService public messageService: IMessageService,
+		@IWorkspaceContextService public workspaceContextService: IWorkspaceContextService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();

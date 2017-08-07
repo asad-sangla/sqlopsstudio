@@ -31,6 +31,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 
 const DASHBOARD_SETTINGS = 'dashboard';
 
@@ -142,6 +143,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	private _insightsDialogService: IInsightsDialogService;
 	private _contextViewService: IContextViewService;
 	private _messageService: IMessageService;
+	private _workspaceContextService: IWorkspaceContextService;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
@@ -154,6 +156,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._insightsDialogService = this._bootstrapService.insightsDialogService;
 		this._contextViewService = this._bootstrapService.contextViewService;
 		this._messageService = this._bootstrapService.messageService;
+		this._workspaceContextService = this._bootstrapService.workspaceContextService;
 	}
 
 	ngOnDestroy() {
@@ -194,6 +197,10 @@ export class DashboardServiceInterface implements OnDestroy {
 
 	public get contextViewService(): IContextViewService {
 		return this._contextViewService;
+	}
+
+	public get workspaceContextService(): IWorkspaceContextService {
+		return this._workspaceContextService;
 	}
 
 	/**
