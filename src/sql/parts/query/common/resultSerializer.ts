@@ -42,6 +42,7 @@ export class ResultSerializer {
     private static XML_TYPE: string = 'xml';
     private static EXCEL_TYPE: string = 'excel';
     private static FILE_SCHEMA: string = 'file';
+    private static MAX_FILENAMES = 100;
 
     private _uri: string;
     private _filePath: string;
@@ -85,6 +86,7 @@ export class ResultSerializer {
      */
     public openLink(content: string, columnName: string, linkType: string): void {
         let fileMode: string = undefined;
+        let fileUri = this.getUntitledFileUri(columnName);
 
         if (linkType === ResultSerializer.XML_TYPE && this.pd) {
             try {
@@ -107,7 +109,29 @@ export class ResultSerializer {
             }
         }
 
-        this.openUntitledFile(fileMode, content);
+        this.openUntitledFile(fileMode, content, fileUri);
+    }
+
+    private getUntitledFileUri(columnName: string): URI {
+        let fileName = columnName;
+
+        let uri: URI = URI.from({ scheme: UNTITLED_SCHEMA, path: fileName });
+
+        // If the current filename is taken, try another up to a max number
+        if (this._untitledEditorService.exists(uri)) {
+            let i = 1;
+            while (i < ResultSerializer.MAX_FILENAMES
+                && this._untitledEditorService.exists(uri)) {
+                fileName = [columnName, i.toString()].join('-');
+                uri = URI.from({ scheme: UNTITLED_SCHEMA, path: fileName });
+                i++;
+            }
+            if (this._untitledEditorService.exists(uri)) {
+                // If this fails, return undefined and let the system figure out the right name
+                uri = undefined;
+            }
+        }
+        return uri;
     }
 
     private ensureOutputChannelExists(): void {
@@ -305,8 +329,8 @@ export class ResultSerializer {
     /**
      * Open the saved file in a new vscode editor pane
      */
-    private openUntitledFile(fileMode: string, contents: string): void {
-        const input = this._untitledEditorService.createOrGet(undefined, fileMode, contents);
+    private openUntitledFile(fileMode: string, contents: string, fileUri:URI = undefined): void {
+        const input = this._untitledEditorService.createOrGet(fileUri, fileMode, contents);
 
         this._editorService.openEditor(input, { pinned: true })
             .then(

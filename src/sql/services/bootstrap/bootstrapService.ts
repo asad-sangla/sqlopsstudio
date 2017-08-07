@@ -24,6 +24,7 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IEditorInput } from 'vs/platform/editor/common/editor';
 import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
@@ -53,6 +54,7 @@ export interface IBootstrapService {
 	contextKeyService: IContextKeyService;
 	contextMenuService: IContextMenuService;
 	themeService: IWorkbenchThemeService;
+	editorService: IWorkbenchEditorService;
 	errorMessageService: IErrorMessageService;
 	partService: IPartService;
 	queryManagementService: IQueryManagementService;

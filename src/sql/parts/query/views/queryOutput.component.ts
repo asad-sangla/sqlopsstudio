@@ -136,9 +136,16 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	private setVisibleFalseForAllTabs(): void {
+	/**
+	 * Sets all tabs invisible and resets their tab index
+	 *
+	 * @private
+	 * @memberof QueryOutputComponent
+	 */
+	private resetAllTabs(): void {
 		this._tabIndexMap.forEach((info) => {
 			info.visible = false;
+			info.index = -1;
 		});
 	}
 
@@ -147,7 +154,7 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 		if (!panel) {
 			let tab: TabPanel = new TabPanel();
 			tab.header = info.header;
-			tab.selected = true;
+			tab.selected = info.visible;
 			tab.disabled = false;
 			tab.closable = false;
 			tab.closed = false;
@@ -179,6 +186,7 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 				tabEl.style.display = (activeTabName === tabInfo.name) ? 'block' : 'none';
 			}
 		});
+		this.tabComponent.tabs[index].selected = true;
 		this._cd.detectChanges();
 	}
 
@@ -207,12 +215,13 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 		// reset back to a single tab for the results
 		if (this.tabComponent && this.tabComponent.tabs) {
 			if (this.tabComponent.tabs.length > 1) {
-				this.setVisibleFalseForAllTabs();
+				this.resetAllTabs();
 				this.tabComponent.tabs = [this.tabComponent.tabs[0]];
 			}
 			this.tabComponent.tabs[0].selected = true;
 			let tabInfo: TabInfo = this._tabIndexMap.get(resultsTabName);
 			tabInfo.index = 0;
+			tabInfo.visible = true;
 			this.onActiveTabChanged(tabInfo.index);
 		}
 	}

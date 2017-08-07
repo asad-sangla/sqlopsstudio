@@ -108,7 +108,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		},
 		{
 			showCondition: () => { return true; },
-			icon: () => { return 'exitFullScreen'; },
+			icon: () => { return 'viewChart'; },
 			hoverText: () => { return Constants.viewChartLabel; },
 			functionality: (batchId, resultId, index) => {
 				this.showChartForGrid(index);

@@ -56,6 +56,7 @@ export interface IChartConfig {
 	labelFirstColumn?: boolean;
 	legendPosition?: LegendPosition;
 	dataDirection?: DataDirection;
+	dataType?: DataType;
 }
 
 @Component({
@@ -66,7 +67,7 @@ export interface IChartConfig {
 							[labels]="labels"
 							[chartType]="chartType"
 							[colors]="_colors"
-							[options]="_options"
+							[options]="displayOptions"
 							[style.width.px]="width"
  							[style.height.px]="height"></canvas>
 				</div>`
@@ -93,17 +94,21 @@ export class ChartInsight implements IInsightsView {
 
 	init() {
 		this._calcHeightWidth();
-
 		// Note: must use a boolean to not render the canvas until all properties such as the labels and chart type are set.
 		// This is because chart.js doesn't auto-update anything other than dataset when re-rendering so defaults are used
 		// hence it's easier to not render until ready
 		this.isDataAvailable = true;
-		if (this._dataDirection === 'vertical' && this._chartType !== 'timeSeries') {
+		if (this._dataDirection === 'vertical' && !this.isPointType(this._chartType)) {
 			this._labels = this._rawChartData.map((row) => {
 				return row[0];
 			});
 		}
 		this._changeRef.detectChanges();
+	}
+
+	private isPointType(chartType: ChartType) {
+		return chartType === 'timeSeries'
+			|| chartType === 'scatter';
 	}
 
 	private _calcHeightWidth(): void {
@@ -149,6 +154,16 @@ export class ChartInsight implements IInsightsView {
 		} else {
 			return self._mapToPointDataSet();
 		}
+	}
+
+	public get displayOptions() {
+		let options = Object.assign({}, this._options);
+		if (this._chartType === 'timeSeries') {
+			this.addOptionsForTimeSeries(options);
+		} else if (this._chartType === 'scatter') {
+			this.addOptionsForScatter(options);
+		}
+		return options;
 	}
 
 	private equalsExpectedOrIsNotSet(value: any, expectedValue: any): boolean {
@@ -221,11 +236,6 @@ export class ChartInsight implements IInsightsView {
 			this._chartType = 'pie';
 		}
 
-		if (this._chartType === 'timeSeries') {
-			this.addOptionsForTimeSeries();
-		} else if (this._chartType === 'scatter') {
-			this.addOptionsForScatter();
-		}
 	}
 
 
@@ -236,14 +246,14 @@ export class ChartInsight implements IInsightsView {
 		return this._chartType;
 	}
 
-	private addOptionsForTimeSeries(): void {
+	private addOptionsForTimeSeries(options: any): void {
 		let xLabel = 'Time';
 		let yLabel = 'Value';
 		if (this._labels.length >= 3) {
 			xLabel = this._labels[1];
 			yLabel = this._labels[2];
 		}
-		let options = {
+		let scaleOptions = {
 			scales: {
 				xAxes: [{
 					type: 'time',
@@ -281,17 +291,17 @@ export class ChartInsight implements IInsightsView {
 			}
 		};
 
-		this._options = Object.assign({}, mixin(this._options, options));
+		options = Object.assign({}, mixin(options, scaleOptions));
 	}
 
-	private addOptionsForScatter(): void {
+	private addOptionsForScatter(options: any): void {
 		let xLabel = 'Time';
 		let yLabel = 'Value';
 		if (this._labels.length >= 3) {
 			xLabel = this._labels[1];
 			yLabel = this._labels[2];
 		}
-		let options = {
+		let scaleOptions = {
 			scales: {
 				xAxes: [{
 					type: 'linear',
@@ -327,7 +337,7 @@ export class ChartInsight implements IInsightsView {
 			}
 		};
 
-		this._options = Object.assign({}, mixin(this._options, options));
+		mixin(options, scaleOptions);
 	}
 
 	public get labels(): string[] {
@@ -347,14 +357,10 @@ export class ChartInsight implements IInsightsView {
 			});
 			let colorsMap = { backgroundColor };
 			this._colors = [colorsMap];
-			let options = {
-				legend: {
-					labels: {
-						fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
-					}
-				}
+			this._options = this.ensurePropertyObjectExists(this._options, 'legend');
+			this._options.legend.labels = {
+				fontColor: this._bootstrapService.themeService.getColorTheme().getColor(colors.editorForeground)
 			};
-			this._options = options;
 		}
 	}
 
@@ -380,26 +386,23 @@ export class ChartInsight implements IInsightsView {
 
 	@Input() set legendPosition(position: LegendPosition) {
 		if (position) {
-			let options;
-
-			if (!this._options) {
-				options = {
-					legend: {}
-				};
-			} else if (!this._options.legend) {
-				options = Object.assign({}, this._options);
-				options.legend = {};
-			} else {
-				options = Object.assign({}, this._options);
-			}
+			this._options = this.ensurePropertyObjectExists(this._options, 'legend');
 
 			if (position === 'none') {
-				options.legend.display = false;
+				this._options.legend.display = false;
 			} else {
-				options.legend.position = position;
+				this._options.legend.position = position;
 			}
-
-			this._options = options;
 		}
+	}
+
+	private ensurePropertyObjectExists(parent: any, property: string): any {
+		if (!parent) {
+			parent = {};
+		}
+		if (!parent[property]) {
+			parent[property] = {};
+		}
+		return parent;
 	}
 }

@@ -25,6 +25,7 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService, IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IEditorInput } from 'vs/platform/editor/common/editor';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -53,6 +54,7 @@ export class BootstrapService implements IBootstrapService {
 		@IQueryEditorService public queryEditorService: IQueryEditorService,
 		@IAdminService public adminService: IAdminService,
 		@IWorkbenchThemeService public themeService: IWorkbenchThemeService,
+		@IWorkbenchEditorService public editorService: IWorkbenchEditorService,
 		@IDisasterRecoveryService public disasterRecoveryService: IDisasterRecoveryService,
 		@IDisasterRecoveryUiService public disasterRecoveryUiService: IDisasterRecoveryUiService,
 		@IRestoreDialogService public restoreDialogService: IRestoreDialogService,

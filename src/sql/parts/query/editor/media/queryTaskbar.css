@@ -150,5 +150,13 @@
 }
 
 .estimatedQueryPlan {
-	background-image: url('parseQuery.svg');
+	background-image: url('query-plan.svg');
+}
+
+.vs-dark .estimatedQueryPlan {
+	background-image: url('query-plan-inverse.svg');
+}
+
+.hc-black .estimatedQueryPlan {
+	background-image: url('query-plan-inverse.svg');
 }
