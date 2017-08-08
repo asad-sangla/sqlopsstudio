@@ -1,5 +1,5 @@
 # Execution Plan
-This document describes execution plan viewer scenarios and feature for the first public preview. 
+This document describes execution plan viewer scenarios and feature for the first public preview.
 
 ## Target user
 The first release of execution plan viewer in Carbon targets application developers who has a basic or intermediate knowledge of SQL Server query plan and how to read the showplan to tune up queries for their application use. It is non-goal to support very complex queries yet in the first release. 
@@ -31,13 +31,25 @@ The first release of execution plan viewer in Carbon targets application develop
 * Bug fix
     * Calculation of total rows with nested loop node. Estimated plan shows incorrect value in the current version in SSMS.
 
+## SAMP execution plan customer feedback
+
+* SAMP execution plan is much more productive than SSMS execution plan
+* What customers liked
+    * zoom in and out smoothly and swithc the view between node and icon views.
+    * collapsible subtree for a medium to large plan where the most help is needed.
+    * highlight node with the cost by total, cpu and io percentage.
+    * highlight nodes by an operator type. It is wonderful to quickly identify potential issues.
+    * grid view with sort by column. great for shoplan_text lovers
+
+* What customers suggested not to do
+    *  do not make 'open operator tooltip' with a click-to-open. Open the tooltip with a mouse-hover.
+    *  do not hide important operator properties in 'view more' page in the tooltip. Show the properties on the first page of the node tooltip.
 
 ## I CAN scenarios
 
 * I CAN view estimated & actual execution plan.
 * I CAN view execution plan in tree view.
-
-    * I CAN view the operation information on each node 
+    * I CAN view the operation information on each node
         * physical and logical operator information
         * cost of operation
         * row number
@@ -50,16 +62,16 @@ The first release of execution plan viewer in Carbon targets application develop
 
 * I CAN open a *.showplan file into execution plan viewer.
 
-* I CAN open showplan xml query reult from Carbon's result view into execution plan viewer. 
+* I CAN open showplan xml query reult from Carbon's result view into execution plan viewer.
 
 ## UI basic functionality
 
 ### Graphic View
 
 * Show Operator node
-    * operator name 
+    * operator name
     * operator icon
-    * Show estimated cost (%) and estimated / actual number of rows : by Adam Machanic estimated values are not useful in realworld practice - validate it. 
+    * Show estimated cost (%) and estimated / actual number of rows : by Adam Machanic estimated values are not useful in realworld practice - validate it.
         * Show by Total (default)
         * Show by CPU % (adv)
         * Show by IO % (adv)
