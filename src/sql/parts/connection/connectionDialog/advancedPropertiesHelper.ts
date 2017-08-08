@@ -38,7 +38,7 @@ export class AdvancedPropertiesHelper {
 						validation: (value: string) => {
 							if (!value && property.isRequired) {
 								return { type: MessageType.ERROR, content: property.displayName + missingErrorMessage };
-							} else if (!types.isNumber(value)) {
+							} else if (!types.isNumber(Number(value))) {
 								return { type: MessageType.ERROR, content: invalidInputMessage };
 							} else {
 								return null;
