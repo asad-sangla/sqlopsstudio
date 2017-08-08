@@ -45,6 +45,117 @@ The first release of execution plan viewer in Carbon targets application develop
     *  do not make 'open operator tooltip' with a click-to-open. Open the tooltip with a mouse-hover.
     *  do not hide important operator properties in 'view more' page in the tooltip. Show the properties on the first page of the node tooltip.
 
+## Design meeting note with Pedro Lopes
+
+Raw Notes
+
+Eric: we want to focus on 80% of devs, not 20% with complex plans
+Pedro feedback:
+Skeptical that most devs will want to enter this space
+It's an advanced scenario
+Most devs : want to know it works
+Common persona: Developer DBA / DBA
+Dev DBA: assist dev team, specialize in this area
+Eric: correction based on the feedback. It would be the 20% of the 
+
+
+DoA requirements
+Why no icons? These are an easy way to identify things
+All compile time warnings must be available
+Loves Top Operations
+Tooltip must stay on the screen (all must be visible, or be in a scrollbar)
+Actual plans are absolute DoA requirement
+
+North Star requirements
+How to make it "easier" for users?
+If I have a warning, e.g. convert implicit of something that may affect seek plan.
+Already have reference of which column & table that conversion is happening.
+If looking to simplify, make it evident
+Where it occurs
+Which Select it happens on
+So if I have a warning, make it very obvious where this is happening in the query & hence how to fix?
+Missing index will refer to which table, with which columns is an index being recommended
+Can map to where this is coming from: Table, Column names, can figure out how to match them up
+Inside the "select" node, have little yellow warnings indicating issues in the select
+
+Side notes:
+Are percentages useful? Not really. These aren't used internally
+Thickness of arrow helps indicate that this may be a "hot spot"
+
+How do dev DBAs ramp up?
+Do specific, paid courses
+Go on YouTube and learn
+
+How do you find problems?
+Look for spools. These highlight inefficiencies that the engine is compensating for
+Look for thickness of lines as they're hot spots
+Look for warnings
+
+How does user apply fixes based on plan?
+Example: ensure that data type conversion is minimized, in order to avoid compiler warnings about this in the results
+Questions: should we help alter the code? E.g. generate changes to the stored procedure to fix this?
+Are there a small common set that could help fix this?
+For the most part, yes. You need the metadata from SMO or DacFx to handle this
+
+What would you do differently to get from "there's an issue" to "we have fixed the issue with this plan"?
+Plan scenario is something we've done in this area. It helps us understand there's an index spool in the plan, this maps to lack of a proper index, suggest creating a new index
+I have a TVF somewhere in my code, that, we guesstimate in this scenario. Suggest changing to temporary tables
+This is all primarily on the actual plan.
+"C differences" in plans, e.g. cardinality estimation difference.
+
+Would having a lighter version of a query plan help?
+E.g. just show top issues like missing index?
+Pedro: sees people just creating the same index due to warnings, which starts to hurt things.
+If you can implement something around missing indexes where you analyze existing indexes & see if you can fix an existing index, do so. E.g. if you added a new column that should be in an existing index, let that be the change. Otherwise it's inefficient
+Must be aware that you need to balance out the # indexes in the table
+Often more nuanced than "add another index"
+
+What's the state of Database Tuning Advisor - do people use it? Does it help?
+It helps a little.
+In Azure, the auto tuning creates missing indexes. It analyzes if it was useful & rolls back. They're scratching this and replacing with the tuning advisor logic as it's more precise
+Plan to extend DTA to Calcium.
+Scenarios DTA covers: Missing indexes, missing statistics, horizontal partitioning, indexed views
+Looks at physical design structures
+Doesn't take on "your query is poorly written, you need to rewrite"
+Implementing a spin-off of DTA that can analyze a workload. Intend to do tuning based on things we can't handle, and add some knobs to tweak that
+E.g. joins with cardinality estimates way off what was expected. Know how this pattern can be leveraged
+Add plan guides to hint to the optimizer how to tweak the query and do things a little better
+Adds in some level of query tuning into DTA
+Very useful for upgrade / post migration movements
+
+Top Operations feedback
+Would like to click on element in Top Operations and go to the relevant part of the query plan
+Filtering? Not that important. Useful but not vital
+What are the most important operators.
+All are important. Want to look at all, do not hide them
+
+
+Are there a set of heuristics that we can write (extensible) that can be leveraged to do warnings?
+E.g. combine a set of "partitioned true plus high cost" to generate ad-hoc warnings? Extend the data?
+With actual plans, just by leveraging warnings we're adding to showplan, you get a lot you can use
+If using TVF, and ratio between estimation & actual number, will get a warning
+All the spills cause warnings. All are actionable
+E.g. doing a sort, doesn't fit into memory, have engine do "fix" that can be inefficient
+If did severe misestimation & can't fit a sort / hashmatch in memory, that'll spill to tempdb and have a warning
+Up to 2012, had same warnings since 2000
+Post-2012, added 7-8 new warnings
+In 2016 added more, 2017 will have more
+Are available warnings documented anywhere? Yes: documented in books online. It's in the XSD. Describes what each warning is
+Just leveraging the engine intelligence can make life much easier
+Again, would be good to map the warning to the operator that's relevant to it
+
+For large plans, should we show an easy way to drill into the plan and peek at plan near certain operators that are problematic? Would that be better than the large plan?
+Pedro: as you go up the tree, start to detect problems "high up" in the tree. Need to chase down where the cardinality estimation differences are happening down the tree
+If have some inefficiency in some hashmap, would be looking at a huge difference in estimations & actuals. Need to chase down the tree. Will find where the difference is & find the solution
+Cardinality issues are there in the "analyze plan" feature added to SSMS
+Right-click on plan, choose "analyze", then get the summary of areas that are problematic
+Ordered by how far off the estimate was (% difference between estimated and actual)
+Adds contextual information on reasons this might be happening
+The logic for what issues are there, and how to solve, is all in SSMS
+Can we do this for other databases?
+Broadly, yes. C-estimate issues are common.
+May need to do mappings to the specific concepts in that DB type
+
 ## I CAN scenarios
 
 * I CAN view estimated & actual execution plan.
