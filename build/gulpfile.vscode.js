@@ -533,10 +533,16 @@ gulp.task('install-credentialservice', () => {
 	var credentialsExt = require('../extensions/credentials/client/out/models/constants');
 	var extObj = new credentialsExt.Constants();
 	return installService(extObj);
-})
+});
 
 gulp.task('install-pgsqlservice', () => {
 	var pgsqlExt = require('../extensions/pgsql/client/out/models/constants');
 	var extObj = new pgsqlExt.Constants();
 	return installService(extObj);
-})
+});
+
+gulp.task('install-serializationservice', () => {
+	var serializationExt = require('../extensions/serialization/client/out/models/constants');
+	var extObj = new serializationExt.Constants();
+	return installService(extObj);
+});

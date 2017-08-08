@@ -112,6 +112,7 @@ import { IAngularEventingService, AngularEventingService } from 'sql/services/an
 import { BootstrapService } from 'sql/services/bootstrap/bootstrapServiceImpl';
 import { ICapabilitiesService, CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/services/credentials/credentialsService';
+import { ISerializationService, SerializationService} from 'sql/services/serialization/serializationService';
 import { IMetadataService, MetadataService } from 'sql/services/metadata/metadataService';
 import { IObjectExplorerService, ObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { ITaskService, TaskService } from 'sql/parts/taskHistory/common/taskService';
@@ -637,6 +638,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(IServerGroupController, this.instantiationService.createInstance(ServerGroupController));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
+		serviceCollection.set(ISerializationService, this.instantiationService.createInstance(SerializationService));
 		let connectionManagementService = this.instantiationService.createInstance(ConnectionManagementService, undefined, undefined);
 		serviceCollection.set(IConnectionManagementService, connectionManagementService);
 		serviceCollection.set(IQueryManagementService, this.instantiationService.createInstance(QueryManagementService));

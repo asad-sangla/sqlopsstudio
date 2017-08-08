@@ -20,6 +20,7 @@ import * as vscode from 'vscode';
 import { SqlExtHostContext, SqlInstanceCollection } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { ExtHostCredentialManagement } from 'sql/workbench/api/node/extHostCredentialManagement';
 import { ExtHostDataProtocol } from 'sql/workbench/api/node/extHostDataProtocol';
+import { ExtHostSerializationProvider } from 'sql/workbench/api/node/extHostSerializationProvider';
 import * as sqlExtHostTypes from 'sql/workbench/api/node/sqlExtHostTypes';
 
 export interface ISqlExtensionApiFactory {
@@ -39,6 +40,7 @@ export function createApiFactory(
 	const col = new SqlInstanceCollection();
 	const extHostCredentialManagement = col.define(SqlExtHostContext.ExtHostCredentialManagement).set<ExtHostCredentialManagement>(new ExtHostCredentialManagement(threadService));
 	const extHostDataProvider = col.define(SqlExtHostContext.ExtHostDataProtocol).set<ExtHostDataProtocol>(new ExtHostDataProtocol(threadService));
+	const extHostSerializationProvider = col.define(SqlExtHostContext.ExtHostSerializationProvider).set<ExtHostSerializationProvider>(new ExtHostSerializationProvider(threadService));
 	col.finish(false, threadService);
 
 	return {
@@ -50,6 +52,13 @@ export function createApiFactory(
 					return extHostCredentialManagement.$registerCredentialProvider(provider);
 				},
 			};
+
+			const serialization: typeof data.serialization = {
+				registerProvider(provider: data.SerializationProvider): vscode.Disposable {
+					return extHostSerializationProvider.$registerSerializationProvider(provider);
+				},
+			};
+
 
 			// namespace: dataprotocol
 			const dataprotocol: typeof data.dataprotocol = {
@@ -121,6 +130,7 @@ export function createApiFactory(
 
 			return {
 				credentials,
+				serialization,
 				dataprotocol,
 				ServiceOptionType: sqlExtHostTypes.ServiceOptionType,
 				ConnectionOptionSpecialType: sqlExtHostTypes.ConnectionOptionSpecialType,

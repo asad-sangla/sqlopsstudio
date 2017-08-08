@@ -252,6 +252,12 @@ export abstract class ExtHostCredentialManagementShape {
 	$deleteCredential(credentialId: string): Thenable<boolean> { throw ni(); }
 }
 
+/**
+ * Serialization provider extension host class.
+ */
+export abstract class ExtHostSerializationProviderShape {
+	$saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean> { throw ni();}
+}
 export abstract class MainThreadDataProtocolShape {
 	$registerProvider(providerId: string, handle: number): TPromise<any> { throw ni(); }
 	$unregisterProvider(handle: number): TPromise<any> { throw ni(); }
@@ -277,6 +283,11 @@ export abstract class MainThreadDataProtocolShape {
 export abstract class MainThreadCredentialManagementShape {
 	$registerCredentialProvider(handle: number): TPromise<any> { throw ni(); }
 	$unregisterCredentialProvider(handle: number): TPromise<any> { throw ni(); }
+}
+
+export abstract class MainThreadSerializationProviderShape {
+	$registerSerializationProvider(handle: number): TPromise<any> { throw ni(); }
+	$unregisterSerializationProvider(handle: number): TPromise<any> { throw ni(); }
 }
 
 
@@ -322,10 +333,12 @@ function ni() { return new Error('Not implemented'); }
 export const SqlMainContext = {
 	// SQL entries
 	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement', MainThreadCredentialManagementShape),
-	MainThreadDataProtocol: createMainId<MainThreadDataProtocolShape>('MainThreadDataProtocol', MainThreadDataProtocolShape)
+	MainThreadDataProtocol: createMainId<MainThreadDataProtocolShape>('MainThreadDataProtocol', MainThreadDataProtocolShape),
+	MainThreadSerializationProvider: createMainId<MainThreadSerializationProviderShape>('MainThreadSerializationProvider', MainThreadSerializationProviderShape)
 };
 
 export const SqlExtHostContext = {
 	ExtHostCredentialManagement: createExtId<ExtHostCredentialManagementShape>('ExtHostCredentialManagement', ExtHostCredentialManagementShape),
-	ExtHostDataProtocol: createExtId<ExtHostDataProtocolShape>('ExtHostDataProtocol', ExtHostDataProtocolShape)
+	ExtHostDataProtocol: createExtId<ExtHostDataProtocolShape>('ExtHostDataProtocol', ExtHostDataProtocolShape),
+	ExtHostSerializationProvider: createExtId<ExtHostSerializationProviderShape>('ExtHostSerializationProvider', ExtHostSerializationProviderShape)
 };

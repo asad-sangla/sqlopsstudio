@@ -419,6 +419,11 @@ declare module 'data' {
 		deleteCredential(credentialId: string): Thenable<boolean>;
 	}
 
+	export interface SerializationProvider {
+		handle: number;
+		saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean>;
+	}
+
 
 	export interface DidChangeLanguageFlavorParams {
 		uri: string;
@@ -445,6 +450,13 @@ declare module 'data' {
 	 */
 	export namespace credentials {
 		export function registerProvider(provider: CredentialProvider): vscode.Disposable;
+	}
+
+	/**
+	 * Namespace for serialization management global methods
+	 */
+	export namespace serialization {
+		export function registerProvider(provider: SerializationProvider): vscode.Disposable;
 	}
 
 	export interface QueryProvider {

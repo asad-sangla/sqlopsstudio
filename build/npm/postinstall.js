@@ -38,6 +38,7 @@ const extensions = [
 	'mssql',
 	'pgsql',
 	'credentials',
+	'serialization',
 	'configuration-editing',
 	'extension-editing',
 	'markdown',
