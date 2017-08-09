@@ -16,7 +16,7 @@ export class DashboardInput extends EditorInput {
 
 	private _uniqueSelector: string;
 
-	private _hasbootStrapped = false;
+	public hasBootstrapped = false;
 	// Holds the HTML content for the editor when the editor discards this input and loads another
 	private _parentContainer: HTMLElement;
 
@@ -62,8 +62,8 @@ export class DashboardInput extends EditorInput {
 		this._parentContainer = container;
 	}
 
-	set hasBootstrapped(val: boolean) {
-		this._hasbootStrapped = val;
+	get container(): HTMLElement {
+		return this._parentContainer;
 	}
 
 	public supportsSplitEditor(): boolean {

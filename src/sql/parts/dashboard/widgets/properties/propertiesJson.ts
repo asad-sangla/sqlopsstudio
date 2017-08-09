@@ -19,72 +19,52 @@ export const properties: Array<ProviderProperties> = [
 				},
 				databaseProperties: [
 					{
-						name: nls.localize('status', 'Status'),
-						value: [
-							'databaseState'
-						]
+						displayName: nls.localize('status', 'Status'),
+						value: 'databaseState'
 					},
 					{
-						name: nls.localize('recoveryModel', 'Recovery Model'),
-						value: [
-							'recoveryModel'
-						]
+						displayName: nls.localize('recoveryModel', 'Recovery Model'),
+						value: 'recoveryModel'
 					},
 					{
-						name: nls.localize('lastDatabaseBackup', 'Last Database Backup'),
-						value: [
-							'lastBackupDate'
-						],
+						displayName: nls.localize('lastDatabaseBackup', 'Last Database Backup'),
+						value: 'lastBackupDate',
 						ignore: [
 							'1/1/0001 12:00:00 AM'
 						]
 					},
 					{
-						name: nls.localize('lastLogBackup', 'Last Log Backup'),
-						value: [
-							'lastLogBackupDate'
-						],
+						displayName: nls.localize('lastLogBackup', 'Last Log Backup'),
+						value: 'lastLogBackupDate',
 						ignore: [
 							'1/1/0001 12:00:00 AM'
 						]
 					},
 					{
-						name: nls.localize('compatabilityLevel', 'Compatability Level'),
-						value: [
-							'compatibilityLevel'
-						]
+						displayName: nls.localize('compatabilityLevel', 'Compatability Level'),
+						value: 'compatibilityLevel'
 					},
 					{
-						name: nls.localize('owner', 'Owner'),
-						value: [
-							'owner'
-						]
+						displayName: nls.localize('owner', 'Owner'),
+						value: 'owner'
 					}
 				],
 				serverProperties: [
 					{
-						name: nls.localize('version', 'Version'),
-						value: [
-							'serverVersion'
-						]
+						displayName: nls.localize('version', 'Version'),
+						value: 'serverVersion'
 					},
 					{
-						name: nls.localize('edition', 'Edition'),
-						value: [
-							'serverEdition'
-						]
+						displayName: nls.localize('edition', 'Edition'),
+						value: 'serverEdition'
 					},
 					{
-						name: nls.localize('computerName', 'Computer Name'),
-						value: [
-							'machineName'
-						]
+						displayName: nls.localize('computerName', 'Computer Name'),
+						value: 'machineName'
 					},
 					{
-						name: nls.localize('osVersion', 'OS Version'),
-						value: [
-							'osVersion'
-						]
+						displayName: nls.localize('osVersion', 'OS Version'),
+						value: 'osVersion'
 					}
 				]
 			}
@@ -103,10 +83,8 @@ export const properties: Array<ProviderProperties> = [
 				databaseProperties: [] ,
 				serverProperties: [
 					{
-						name: nls.localize('version', 'Version'),
-						value: [
-							'serverVersion'
-						]
+						displayName: nls.localize('version', 'Version'),
+						value: 'serverVersion'
 					}
 				]
 			}

@@ -16,13 +16,70 @@ export const databaseDashboardPropertiesSchema: IJSONSchema = {
 	oneOf: [
 		'boolean',
 		{
-			type: 'object',
-			properties: {
-				provider: {
-					type: 'string'
-				},
-				edition: {
-					type: 'number'
+			type: 'array',
+			items: {
+				type: 'object',
+				properties: {
+					provider: {
+						type: 'string'
+					},
+					edition: {
+						type: 'number'
+					},
+					properties: {
+						description: nls.localize('dashboard.databaseproperties', 'Property values to show'),
+						type: 'array',
+						items: {
+							type: 'object',
+							properties: {
+								displayName: {
+									type: 'string',
+									description: nls.localize('dashboard.databaseproperties.displayName', 'Display name of the property')
+								},
+								value: {
+									type: 'string',
+									description: nls.localize('dashboard.databaseproperties.value', 'Value in the Database Info Object')
+								},
+								ignore: {
+									type: 'array',
+									description: nls.localize('dashboard.databaseproperties.ignore', 'Specify specific values to ignore'),
+									items: 'string'
+								}
+							}
+						},
+						default: [
+							{
+								displayName: nls.localize('status', 'Status'),
+								value: 'databaseState'
+							},
+							{
+								displayName: nls.localize('recoveryModel', 'Recovery Model'),
+								value: 'recoveryModel'
+							},
+							{
+								displayName: nls.localize('lastDatabaseBackup', 'Last Database Backup'),
+								value: 'lastBackupDate',
+								ignore: [
+									'1/1/0001 12:00:00 AM'
+								]
+							},
+							{
+								displayName: nls.localize('lastLogBackup', 'Last Log Backup'),
+								value: 'lastLogBackupDate',
+								ignore: [
+									'1/1/0001 12:00:00 AM'
+								]
+							},
+							{
+								displayName: nls.localize('compatabilityLevel', 'Compatability Level'),
+								value: 'compatibilityLevel'
+							},
+							{
+								displayName: nls.localize('owner', 'Owner'),
+								value: 'owner'
+							}
+						]
+					}
 				}
 			}
 		}

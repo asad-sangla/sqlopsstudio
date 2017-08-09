@@ -70,13 +70,13 @@ export abstract class DashboardPage {
 
 	protected init() {
 		let tempWidgets = this.dashboardService.getSettings(this.context).widgets;
-		let properties = this.dashboardService.getSettings(this.context).properties ? Object.assign(this.propertiesWidget, this.dashboardService.getSettings(this.context).properties) : undefined;
+		let properties = this.getProperties();
 		this._configModifiers.forEach((cb) => {
 			tempWidgets = cb.apply(this, [tempWidgets]);
-			properties = properties ? cb.apply(this, [[properties]])[0] : undefined;
+			properties = properties ? cb.apply(this, [properties]) : undefined;
 		});
 		this.widgets = tempWidgets;
-		this.propertiesWidget = properties;
+		this.propertiesWidget = properties ? properties[0] : undefined;
 	}
 
 	protected abstract propertiesWidget: WidgetConfig;
@@ -177,5 +177,24 @@ export abstract class DashboardPage {
 			}
 			return widget;
 		});
+	}
+
+	private getProperties(): Array<WidgetConfig> {
+		let properties = this.dashboardService.getSettings(this.context).properties;
+		if (types.isUndefinedOrNull(properties)) {
+			return [this.propertiesWidget];
+		} else if (types.isBoolean(properties)) {
+			return properties ? [this.propertiesWidget] : [];
+		} else if (types.isArray(properties)) {
+			return properties.map((item) => {
+				let retVal = Object.assign({}, this.propertiesWidget);
+				retVal.edition = item.edition;
+				retVal.provider = item.provider;
+				retVal.widget = { 'properties-widget': { properties: item.properties } };
+				return retVal;
+			});
+		} else {
+			return undefined;
+		}
 	}
 }

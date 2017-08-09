@@ -9,6 +9,15 @@ import * as nls from 'vs/nls';
 
 let widgetRegistry = <IDashboardWidgetRegistry>Registry.as(Extensions.DashboardWidgetContribution);
 
+export interface IPropertiesConfig {
+	edition: number | Array<number>;
+	provider: string | Array<string>;
+	properties: {
+		displayName: string;
+		value: string
+	}[];
+}
+
 export const serverDashboardPropertiesSchema: IJSONSchema = {
 	description: nls.localize('dashboardServerProperties', 'Enable or disable the properties widget'),
 	default: true,
@@ -22,6 +31,41 @@ export const serverDashboardPropertiesSchema: IJSONSchema = {
 				},
 				edition: {
 					type: 'number'
+				},
+				properties: {
+					description: nls.localize('dashboard.serverproperties', 'Property values to show'),
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							displayName: {
+								type: 'string',
+								description: nls.localize('dashboard.serverproperties.displayName', 'Display name of the property')
+							},
+							value: {
+								type: 'string',
+								description: nls.localize('dashboard.serverproperties.value', 'Value in the Server Info Object')
+							}
+						}
+					},
+					default: [
+						{
+							displayName: nls.localize('version', 'Version'),
+							value: 'serverVersion'
+						},
+						{
+							displayName: nls.localize('edition', 'Edition'),
+							value: 'serverEdition'
+						},
+						{
+							displayName: nls.localize('computerName', 'Computer Name'),
+							value: 'machineName'
+						},
+						{
+							displayName: nls.localize('osVersion', 'OS Version'),
+							value: 'osVersion'
+						}
+					]
 				}
 			}
 		}

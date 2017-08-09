@@ -21,6 +21,7 @@ import { IQueryManagementService } from 'sql/parts/query/common/queryManagement'
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IPropertiesConfig } from 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
 
 import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
@@ -241,7 +242,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	 * Get settings for given string
 	 * @param type string of setting to get from dashboard settings; i.e dashboard.{type}
 	 */
-	public getSettings(type: string): { widgets: Array<WidgetConfig>, properties: boolean } {
+	public getSettings(type: string): { widgets: Array<WidgetConfig>, properties: boolean | IPropertiesConfig[] } {
 		let config = this._configService.getConfiguration(DASHBOARD_SETTINGS);
 		return config[type];
 	}

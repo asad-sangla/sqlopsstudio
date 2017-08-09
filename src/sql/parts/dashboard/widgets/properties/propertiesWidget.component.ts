@@ -17,7 +17,7 @@ import { DatabaseInfo, ServerInfo } from 'data';
 import { IDisposable } from 'vs/base/common/lifecycle';
 
 export interface PropertiesConfig {
-	properties: Array<ProviderProperties>;
+	properties: Array<Property>;
 }
 
 export interface FlavorProperties {
@@ -37,14 +37,14 @@ export interface ProviderProperties {
 }
 
 export interface Property {
-	name: string;
-	value: Array<string>;
+	displayName: string;
+	value: string;
 	ignore?: Array<string>;
 	default?: Array<string>;
 }
 
 export interface DisplayProperty {
-	name: string;
+	displayName: string;
 	value: string;
 }
 
@@ -127,99 +127,101 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	private parseProperties() {
 		let provider = this._config.provider;
 
-		let propertiesConfig: Array<ProviderProperties>;
-
-		// if config exists use that, otherwise use default
-		if (this._config.widget['properties-widget']) {
-			let config = <PropertiesConfig>this._config.widget['properties-widget'];
-			propertiesConfig = config.properties;
-		} else {
-			propertiesConfig = properties;
-		}
-
-		// ensure we have a properties file
-		if (!Array.isArray(propertiesConfig)) {
-			this.consoleError('Could not load properties JSON');
-			return;
-		}
-
-		// filter the properties provided based on provider name
-		let providerPropertiesArray = propertiesConfig.filter((item) => {
-			return item.provider === provider;
-		});
-
-		// Error handling on provider
-		if (providerPropertiesArray.length === 0) {
-			this.consoleError('Could not locate properties for provider: ', provider);
-			return;
-		} else if (providerPropertiesArray.length > 1) {
-			this.consoleError('Found multiple property definitions for provider ', provider);
-			return;
-		}
-
-		let providerProperties = providerPropertiesArray[0];
-
-		let flavor: FlavorProperties;
-
-		// find correct flavor
-		if (providerProperties.flavors.length === 1) {
-			flavor = providerProperties.flavors[0];
-		} else if (providerProperties.flavors.length === 0) {
-			this.consoleError('No flavor definitions found for "', provider,
-				'. If there are not multiple flavors of this provider, add one flavor without a condition');
-			return;
-		} else {
-			let flavorArray = providerProperties.flavors.filter((item) => {
-				let condition = this._connection.serverInfo[item.condition.field];
-				switch (item.condition.operator) {
-					case '==':
-						return condition === item.condition.value;
-					case '!=':
-						return condition !== item.condition.value;
-					case '>=':
-						return condition >= item.condition.value;
-					case '<=':
-						return condition <= item.condition.value;
-					default:
-						this.consoleError('Could not parse operator: "', item.condition.operator,
-							'" on item "', item, '"');
-						return false;
-				}
-			});
-
-			if (flavorArray.length === 0) {
-				this.consoleError('Could not determine flavor');
-				return;
-			} else if (flavorArray.length > 1) {
-				this.consoleError('Multiple flavors matched correctly for this provider', provider);
-				return;
-			}
-
-			flavor = flavorArray[0];
-		}
-
-		let infoObject: ServerInfo | {};
 		let propertyArray: Array<Property>;
 
-		// determine what context we should be pulling from
-		if (this._config.context === 'database') {
-			if (!Array.isArray(flavor.databaseProperties)) {
-				this.consoleError('flavor', flavor.flavor, ' does not have a definition for database properties');
-			}
-
-			if (!Array.isArray(flavor.serverProperties)) {
-				this.consoleError('flavor', flavor.flavor, ' does not have a definition for server properties');
-			}
-
-			infoObject = this._connection.serverInfo;
-			propertyArray = flavor.serverProperties;
+		// if config exists use that, otherwise use default
+		if (this._config.widget['properties-widget'] && this._config.widget['properties-widget'].properties) {
+			let config = <PropertiesConfig>this._config.widget['properties-widget'];
+			propertyArray = config.properties;
 		} else {
-			if (!Array.isArray(flavor.serverProperties)) {
-				this.consoleError('flavor', flavor.flavor, ' does not have a definition for server properties');
+			let propertiesConfig: Array<ProviderProperties> = properties;
+			// ensure we have a properties file
+			if (!Array.isArray(propertiesConfig)) {
+				this.consoleError('Could not load properties JSON');
+				return;
 			}
 
+			// filter the properties provided based on provider name
+			let providerPropertiesArray = propertiesConfig.filter((item) => {
+				return item.provider === provider;
+			});
+
+			// Error handling on provider
+			if (providerPropertiesArray.length === 0) {
+				this.consoleError('Could not locate properties for provider: ', provider);
+				return;
+			} else if (providerPropertiesArray.length > 1) {
+				this.consoleError('Found multiple property definitions for provider ', provider);
+				return;
+			}
+
+			let providerProperties = providerPropertiesArray[0];
+
+			let flavor: FlavorProperties;
+
+			// find correct flavor
+			if (providerProperties.flavors.length === 1) {
+				flavor = providerProperties.flavors[0];
+			} else if (providerProperties.flavors.length === 0) {
+				this.consoleError('No flavor definitions found for "', provider,
+					'. If there are not multiple flavors of this provider, add one flavor without a condition');
+				return;
+			} else {
+				let flavorArray = providerProperties.flavors.filter((item) => {
+					let condition = this._connection.serverInfo[item.condition.field];
+					switch (item.condition.operator) {
+						case '==':
+							return condition === item.condition.value;
+						case '!=':
+							return condition !== item.condition.value;
+						case '>=':
+							return condition >= item.condition.value;
+						case '<=':
+							return condition <= item.condition.value;
+						default:
+							this.consoleError('Could not parse operator: "', item.condition.operator,
+								'" on item "', item, '"');
+							return false;
+					}
+				});
+
+				if (flavorArray.length === 0) {
+					this.consoleError('Could not determine flavor');
+					return;
+				} else if (flavorArray.length > 1) {
+					this.consoleError('Multiple flavors matched correctly for this provider', provider);
+					return;
+				}
+
+				flavor = flavorArray[0];
+			}
+
+			// determine what context we should be pulling from
+			if (this._config.context === 'database') {
+				if (!Array.isArray(flavor.databaseProperties)) {
+					this.consoleError('flavor', flavor.flavor, ' does not have a definition for database properties');
+				}
+
+				if (!Array.isArray(flavor.serverProperties)) {
+					this.consoleError('flavor', flavor.flavor, ' does not have a definition for server properties');
+				}
+
+				propertyArray = flavor.databaseProperties;
+			} else {
+				if (!Array.isArray(flavor.serverProperties)) {
+					this.consoleError('flavor', flavor.flavor, ' does not have a definition for server properties');
+				}
+
+				propertyArray = flavor.serverProperties;
+			}
+		}
+
+
+		let infoObject: ServerInfo | {};
+		if (this._config.context === 'database') {
+			infoObject = this._databaseInfo.options;
+		} else {
 			infoObject = this._connection.serverInfo;
-			propertyArray = flavor.serverProperties;
 		}
 
 		// iterate over properties and display them
@@ -227,10 +229,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		for (let i = 0; i < propertyArray.length; i++) {
 			let property = propertyArray[i];
 			let assignProperty = {};
-			let propertyObject = infoObject;
-			for (let j = 0; j < property.value.length; j++) {
-				propertyObject = propertyObject[property.value[j]];
-			}
+			let propertyObject = infoObject[property.value];
 
 			// if couldn't find, set as default value
 			if (propertyObject === undefined) {
@@ -247,7 +246,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 					}
 				}
 			}
-			assignProperty['name'] = property.name;
+			assignProperty['displayName'] = property.displayName;
 			assignProperty['value'] = propertyObject;
 			this.properties.push(<DisplayProperty>assignProperty);
 		}
