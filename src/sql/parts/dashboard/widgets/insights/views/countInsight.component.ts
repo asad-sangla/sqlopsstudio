@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Component, Input, Inject, ChangeDetectorRef, forwardRef } from '@angular/core';
 
-
-import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
-import { IInsightsView } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
-
-import { SimpleExecuteResult } from 'data';
+import { IInsightsView, IInsightData } from 'sql/parts/dashboard/widgets/insights/interfaces';
 
 @Component({
 	template: `
@@ -18,24 +14,17 @@ import { SimpleExecuteResult } from 'data';
 		</div>
 	`
 })
-export class CountInsight implements IInsightsView {
-	public readonly customFields = [];
+export default class CountInsight implements IInsightsView {
 	private _labels: Array<string>;
 	private _values: Array<string>;
 
 	constructor(
-		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
-		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) { }
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef) { }
 
-	@Input() set data(data: SimpleExecuteResult) {
+	@Input() set data(data: IInsightData) {
 		this._labels = [];
-		data.columnInfo.forEach((item) => {
-			this._labels.push(item.columnName);
-		});
-		this._values = [];
-		data.rows[0].forEach((item) => {
-			this._values.push(item.displayValue);
-		});
+		this._labels = data.columns;
+		this._values = data.rows[0];
 		this._changeRef.detectChanges();
 	}
 }

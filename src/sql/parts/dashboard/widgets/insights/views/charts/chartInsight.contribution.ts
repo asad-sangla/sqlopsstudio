@@ -2,12 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { registerInsight } from 'sql/platform/dashboard/common/insightRegistry';
-
 import { IJSONSchema } from 'vs/base/common/jsonSchema';
 import * as nls from 'vs/nls';
 
-let chartInsightSchema: IJSONSchema = {
+export const chartInsightSchema: IJSONSchema = {
 	type: 'object',
 	description: nls.localize('chartInsightDescription', 'Displays results of a query as a chart on the dashboard'),
 	properties: {
@@ -21,23 +19,15 @@ let chartInsightSchema: IJSONSchema = {
 			default: 'none',
 			enum: ['top', 'bottom', 'left', 'right', 'none']
 		},
-		chartType: {
-			type: 'string',
-			description: nls.localize('chartTypeDescription', 'The type of chart is being displayed - pie, line, etc.'),
-			default: 'pie',
-			enum: ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries', 'scatter']
-		},
 		labelFirstColumn: {
 			type: 'boolean',
 			description: nls.localize('labelFirstColumnDescription', 'If dataDirection is horizontal, setting this to true uses the first columns value for the legend.'),
 			default: false
 		},
-		dataType: {
-			type: 'string',
-			description: nls.localize('dataTypeDescription', 'Indicates data property of a data set for a chart.'),
-			default: 'number',
-			enum: ['number', 'point'],
-			enumDescriptions: ['Set "number" if the data values are contained in 1 column.', 'Set "point" if the data is an {x,y} combination requiring 2 columns for each value.']
+		columnsAsLabels: {
+			type: 'boolean',
+			description: nls.localize('columnsAsLabels', 'If dataDirection is vertical, setting this to true will use the columns names for the legend.'),
+			default: false
 		},
 		dataDirection: {
 			type: 'string',
@@ -48,5 +38,3 @@ let chartInsightSchema: IJSONSchema = {
 		}
 	}
 };
-
-registerInsight('chart', '', chartInsightSchema);

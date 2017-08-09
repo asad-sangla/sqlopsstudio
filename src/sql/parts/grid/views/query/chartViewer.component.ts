@@ -7,7 +7,7 @@ import 'vs/css!sql/parts/grid/views/query/chartViewer';
 
 import {
 	Component, Inject, ViewContainerRef, forwardRef, OnInit,
-	ComponentFactoryResolver, ViewChild, OnDestroy, Input, ElementRef
+	ComponentFactoryResolver, ViewChild, OnDestroy, Input, ElementRef, ChangeDetectorRef
 } from '@angular/core';
 import { NgGridItemConfig } from 'angular2-grid';
 
@@ -16,86 +16,93 @@ import { IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { IInsightData, IInsightsView, IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
+import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
-
+import { DataType, ILineConfig } from 'sql/parts/dashboard/widgets/insights/views/charts/types/lineChart.component';
 
 /* Insights */
 import {
-	ChartInsight, IChartConfig, DataDirection, ChartType, LegendPosition,
-	IExecuteResult, ICellValue, IColumn, validChartTypes, validLegendPositions
-} from 'sql/parts/dashboard/widgets/insights/views/chartInsight.component';
-import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
-import { SimpleExecuteResult } from 'data';
+	ChartInsight, DataDirection, LegendPosition,
+	validLegendPositions
+} from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { Builder } from 'vs/base/browser/builder';
 import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { Button } from 'vs/base/browser/ui/button/button';
+import { EventType } from 'vs/base/browser/dom';
 import Severity from 'vs/base/common/severity';
 import URI from 'vs/base/common/uri';
 import * as nls from 'vs/nls';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { mixin } from 'vs/base/common/objects';
 
-export interface IInsightsView {
-	data: SimpleExecuteResult;
-	customFields: Array<string>;
-	ngOnInit?: () => void;
-}
+const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribution);
 
 @Component({
 	selector: 'chart-viewer',
 	templateUrl: require.toUrl('sql/parts/grid/views/query/chartViewer.component.html')
 })
 export class ChartViewerComponent implements OnInit, OnDestroy {
-	public chartTypeLabel: string = nls.localize('chartTypeLabel', 'Chart Type');
-	public dataDirectionLabel: string = nls.localize('dataDirectionLabel', 'Data Direction');
-	public verticalLabel: string = nls.localize('verticalLabel', 'Vertical');
-	public horizontalLabel: string = nls.localize('horizontalLabel', 'Horizontal');
-	public labelFirstColumnLabel: string = nls.localize('labelFirstColumnLabel', 'Use First Column as row label?');
-	public legendLabel: string = nls.localize('legendLabel', 'Legend Position');
-	public createInsightLabel: string = nls.localize('createInsightLabel', 'Create Dashboard Insight');
-	public chartTypeOptions: string[];
 	public legendOptions: string[];
 	private chartTypesSelectBox: DialogSelectBox;
 	private legendSelectBox: DialogSelectBox;
 	private labelFirstColumnCheckBox: Checkbox;
+	private columnsAsLabelsCheckBox: Checkbox;
 	private createInsightButton: Button;
 
-	private _chartConfig: IChartConfig;
+	/* UI */
+	/* tslint:disable:no-unused-variable */
+	private chartTypeLabel: string = nls.localize('chartTypeLabel', 'Chart Type');
+	private dataDirectionLabel: string = nls.localize('dataDirectionLabel', 'Data Direction');
+	private verticalLabel: string = nls.localize('verticalLabel', 'Vertical');
+	private horizontalLabel: string = nls.localize('horizontalLabel', 'Horizontal');
+	private dataTypeLabel: string = nls.localize('dataTypeLabel', 'Data Type');
+	private numberLabel: string = nls.localize('numberLabel', 'Number');
+	private pointLabel: string = nls.localize('pointLabel', 'Point');
+	private labelFirstColumnLabel: string = nls.localize('labelFirstColumnLabel', 'Use First Column as row label?');
+	private columnsAsLabelsLabel: string = nls.localize('columnsAsLabelsLabel', 'Use Column names as labels?');
+	private legendLabel: string = nls.localize('legendLabel', 'Legend Position');
+	private createInsightLabel: string = nls.localize('createInsightLabel', 'Create Dashboard Insight');
+	/* tslint:enable:no-unused-variable */
+
+	private _chartConfig: ILineConfig;
 	private _disposables: Array<IDisposable> = [];
 	private _dataSet: IGridDataSet;
-	private _executeResult: IExecuteResult;
+	private _executeResult: IInsightData;
 	private _chartComponent: ChartInsight;
 
 	@ViewChild(ComponentHostDirective) private componentHost: ComponentHostDirective;
-	@ViewChild('chartTypesContainer', { read: ElementRef }) chartTypesElement;
-	@ViewChild('legendContainer', { read: ElementRef }) legendElement;
-	@ViewChild('labelFirstColumnContainer', { read: ElementRef }) labelFirstColumnElement;
-	@ViewChild('createInsightButtonContainer', { read: ElementRef }) createInsightButtonElement;
+	@ViewChild('chartTypesContainer', { read: ElementRef }) private chartTypesElement;
+	@ViewChild('legendContainer', { read: ElementRef }) private legendElement;
+	@ViewChild('labelFirstColumnContainer', { read: ElementRef }) private labelFirstColumnElement;
+	@ViewChild('columnsAsLabelsContainer', { read: ElementRef }) private columnsAsLabelsElement;
+	@ViewChild('createInsightButtonContainer', { read: ElementRef }) private createInsightButtonElement;
 
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
 		@Inject(forwardRef(() => ViewContainerRef)) private _viewContainerRef: ViewContainerRef,
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _cd: ChangeDetectorRef
 	) {
 	}
 
 	ngOnInit() {
-		this._chartConfig = <IChartConfig>{
-			chartType: 'horizontalBar',
+		this._chartConfig = <ILineConfig>{
 			dataDirection: 'vertical',
 			dataType: 'number',
 			legendPosition: 'none',
 			labelFirstColumn: false
 		};
-		this.chartTypeOptions = validChartTypes;
 		this.legendOptions = validLegendPositions;
 		this.initializeUI();
 	}
 
 	private initializeUI() {
 		// Init chart type dropdown
-		this.chartTypesSelectBox = new DialogSelectBox(this.chartTypeOptions, this._chartConfig.chartType);
+		this.chartTypesSelectBox = new DialogSelectBox(insightRegistry.getAllIds(), 'horizontalBar');
 		this.chartTypesSelectBox.render(this.chartTypesElement.nativeElement);
 		this.chartTypesSelectBox.onDidSelect(selected => this.onChartChanged());
 		this._disposables.push(attachSelectBoxStyler(this.chartTypesSelectBox, this._bootstrapService.themeService));
@@ -106,6 +113,12 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 			this.labelFirstColumnLabel, 'sql-checkbox', false, () => this.onLabelFirstColumnChanged());
 		this._disposables.push(attachCheckboxStyler(this.labelFirstColumnCheckBox, this._bootstrapService.themeService));
 
+		// Init label first column checkbox
+		// Note: must use 'self' for callback
+		this.columnsAsLabelsCheckBox = DialogHelper.createCheckBox(new Builder(this.columnsAsLabelsElement.nativeElement),
+			this.columnsAsLabelsLabel, 'sql-checkbox', false, () => this.columnsAsLabelsChanged());
+		this._disposables.push(attachCheckboxStyler(this.columnsAsLabelsCheckBox, this._bootstrapService.themeService));
+
 		// Init legend dropdown
 		this.legendSelectBox = new DialogSelectBox(this.legendOptions, this._chartConfig.legendPosition);
 		this.legendSelectBox.render(this.legendElement.nativeElement);
@@ -115,18 +128,15 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		// create insight button
 		this.createInsightButton = new Button(this.createInsightButtonElement.nativeElement, {});
 		this.createInsightButton.label = this.createInsightLabel;
-		this._disposables.push(this.createInsightButton.addListener('click', () => this.onCreateInsight()));
+		this._disposables.push(this.createInsightButton.addListener(EventType.CLICK, () => this.onCreateInsight()));
 		this._disposables.push(attachButtonStyler(this.createInsightButton, this._bootstrapService.themeService));
 
 	}
 
 	public onChartChanged(): void {
-		this._chartConfig.chartType = <ChartType>this.chartTypesSelectBox.value;
-		if (['timeSeries', 'scatter'].indexOf(this._chartConfig.chartType) > -1) {
-			this._chartConfig.dataType = 'point';
-		} else {
-			// TODO gracefully handle choice at this point
-			this._chartConfig.dataType = 'number';
+		if (['scatter', 'timeSeries'].some(item => item === this.chartTypesSelectBox.value)) {
+			this.dataType = 'point';
+			this.dataDirection = 'horizontal';
 		}
 		this.initChart();
 	}
@@ -136,8 +146,25 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		this.initChart();
 	}
 
+	public columnsAsLabelsChanged(): void {
+		this._chartConfig.columnsAsLabels = this.labelFirstColumnCheckBox.checked;
+		this.initChart();
+	}
+
 	public onLegendChanged(): void {
 		this._chartConfig.legendPosition = <LegendPosition>this.legendSelectBox.value;
+		this.initChart();
+	}
+
+	public set dataType(type: DataType) {
+		this._chartConfig.dataType = type;
+		// Requires full chart refresh
+		this.initChart();
+	}
+
+	public set dataDirection(direction: DataDirection) {
+		this._chartConfig.dataDirection = direction;
+		// Requires full chart refresh
 		this.initChart();
 	}
 
@@ -154,16 +181,16 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 			this.showError(nls.localize('createInsightNoDataService', 'Cannot create insight, backing data model not found'));
 			return;
 		}
-		let queryFilePath: string = uri.fsPath;
-		let queryText: string = undefined;
+		let queryFile: string = uri.fsPath;
+		let query: string = undefined;
+		let type = {};
+		type[this.chartTypesSelectBox.value] = this._chartConfig;
 
 		// create JSON
 		let config: IInsightsConfig = {
-			type: {
-				'chart': this._chartConfig
-			},
-			query: queryText,
-			queryFile: queryFilePath
+			type,
+			query,
+			queryFile
 		};
 
 		let widgetConfig = {
@@ -187,10 +214,6 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 			sizex: 2,
 			sizey: 1
 		};
-		let isSquare = ['pie', 'doughnut'].indexOf(this._chartConfig.chartType) > -1;
-		if (isSquare) {
-			config.sizex = 1;
-		}
 		return config;
 	}
 
@@ -204,43 +227,52 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		return undefined;
 	}
 
+	private get showDataDirection(): boolean {
+		return ['pie', 'horizontalBar', 'bar', 'doughnut'].some(item => item === this.chartTypesSelectBox.value) || (this.chartTypesSelectBox.value === 'line' && this.dataType === 'number');
+	}
+
+	private get showLabelFirstColumn(): boolean {
+		return this.dataDirection === 'horizontal' && this.dataType !== 'point';
+	}
+
+	private get showColumnsAsLabels(): boolean {
+		return this.dataDirection === 'vertical' && this.dataType !== 'point';
+	}
+
+	private get showDataType(): boolean {
+		return this.chartTypesSelectBox.value === 'line';
+	}
+
 	public get dataDirection(): DataDirection {
 		return this._chartConfig.dataDirection;
 	}
 
-	public set dataDirection(direction: DataDirection) {
-		this._chartConfig.dataDirection = direction;
-		// Requires full chart refresh
-		this.initChart();
+	public get dataType(): DataType {
+		return this._chartConfig.dataType;
 	}
 
 	@Input() set dataSet(dataSet: IGridDataSet) {
 		// Setup the execute result
 		this._dataSet = dataSet;
-		this._executeResult = <IExecuteResult>{};
-		this._executeResult.rowCount = dataSet.dataRows.getLength();
-		this._executeResult.columnInfo = dataSet.columnDefinitions.map(def => <IColumn>{ columnName: def.name });
+		this._executeResult = <IInsightData>{};
+		this._executeResult.columns = dataSet.columnDefinitions.map(def => def.name);
 		this._executeResult.rows = dataSet.dataRows.getRange(0, dataSet.dataRows.getLength()).map(gridRow => {
-			let row: ICellValue[] = gridRow.values;
-			return row;
+			return gridRow.values.map(cell => cell.displayValue);
 		});
 		this.initChart();
 	}
 
 	public initChart() {
+		this._cd.detectChanges();
 		if (this._executeResult) {
 			// Reinitialize the chart component
-			let componentFactory = this._componentFactoryResolver.resolveComponentFactory<IInsightsView>(ChartInsight);
+			let componentFactory = this._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightRegistry.getCtorFromId(this.chartTypesSelectBox.value));
 			this.componentHost.viewContainerRef.clear();
 			let componentRef = this.componentHost.viewContainerRef.createComponent(componentFactory);
 			this._chartComponent = <ChartInsight>componentRef.instance;
-			this._chartComponent.chartType = this._chartConfig.chartType;
-			this._chartComponent.dataType = this._chartConfig.dataType;
-			this._chartComponent.dataDirection = this._chartConfig.dataDirection;
-			this._chartComponent.colorMap = this._chartConfig.colorMap;
-			this._chartComponent.labelFirstColumn = this._chartConfig.labelFirstColumn;
-			this._chartComponent.legendPosition = this._chartConfig.legendPosition;
-			this._chartComponent.data = <SimpleExecuteResult>this._executeResult;
+			this._chartComponent.config = this._chartConfig;
+			this._chartComponent.data = this._executeResult;
+			this._chartComponent.options = mixin(this._chartComponent.options, { animation: { duration: 0 } });
 			if (this._chartComponent.init) {
 				this._chartComponent.init();
 			}

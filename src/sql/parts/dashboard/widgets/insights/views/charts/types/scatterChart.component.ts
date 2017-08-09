@@ -1,0 +1,16 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import { ChartType, defaultChartConfig } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
+import LineChart, { ILineConfig } from './lineChart.component';
+
+import { mixin } from 'vs/base/common/objects';
+
+const defaultScatterConfig = mixin(JSON.parse(JSON.stringify(defaultChartConfig)), { dataType: 'point', dataDirection: 'horizontal' }) as ILineConfig;
+
+export default class ScatterChart extends LineChart {
+	protected readonly chartType: ChartType = 'scatter';
+	protected _defaultConfig = defaultScatterConfig;
+}

@@ -13,6 +13,9 @@ import { ChartsModule } from 'ng2-charts/ng2-charts';
 
 import CustomUrlSerializer from 'sql/common/urlSerializer';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
+
+import { Registry } from 'vs/platform/registry/common/platform';
 
 /* Services */
 import { BreadcrumbService } from 'sql/parts/dashboard/services/breadcrumb.service';
@@ -37,15 +40,12 @@ import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/propertie
 import { ExplorerWidget } from 'sql/parts/dashboard/widgets/explorer/explorerWidget.component';
 import { ExplorerFilter } from 'sql/parts/dashboard/widgets/explorer/explorerFilter.pipe';
 import { TasksWidget } from 'sql/parts/dashboard/widgets/tasks/tasksWidget.component';
-let widgetComponents = [PropertiesWidgetComponent, ExplorerWidget, TasksWidget];
+import { InsightsWidget } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
+let widgetComponents = [PropertiesWidgetComponent, ExplorerWidget, TasksWidget, InsightsWidget];
 let widgetFilters = [ExplorerFilter];
 
 /* Insights */
-import { InsightsWidget } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
-import { CountInsight } from 'sql/parts/dashboard/widgets/insights/views/countInsight.component';
-import { ChartInsight } from 'sql/parts/dashboard/widgets/insights/views/chartInsight.component';
-import { ImageInsight } from 'sql/parts/dashboard/widgets/insights/views/imageInsight.component';
-let insightComponents = [InsightsWidget, CountInsight, ChartInsight, ImageInsight];
+let insightComponents = Registry.as<IInsightRegistry>(Extensions.InsightContribution).getAllCtors();
 
 // Setup routes for various child components
 const appRoutes: Routes = [

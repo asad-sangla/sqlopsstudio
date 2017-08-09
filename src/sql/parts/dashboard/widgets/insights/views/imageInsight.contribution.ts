@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { registerInsight } from 'sql/platform/dashboard/common/insightRegistry';
 
+import ImageInsight from './imageInsight.component';
+
 import { IJSONSchema } from 'vs/base/common/jsonSchema';
 import * as nls from 'vs/nls';
 
@@ -26,4 +28,4 @@ let imageInsightSchema: IJSONSchema = {
 	}
 };
 
-registerInsight('image', '', imageInsightSchema);
+registerInsight('image', '', imageInsightSchema, ImageInsight);

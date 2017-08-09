@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import {
 	Component, Inject, ViewContainerRef, forwardRef, AfterContentInit,
-	ComponentFactoryResolver, ViewChild, Type, OnDestroy
+	ComponentFactoryResolver, ViewChild, OnDestroy
 } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
@@ -13,13 +13,9 @@ import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboar
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { InsightAction, InsightActionContext } from 'sql/workbench/electron-browser/actions';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
-import { IInsightsConfig } from './interfaces';
+import { IInsightsConfig, IInsightsView } from './interfaces';
+import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { insertValueRegex } from 'sql/parts/insights/insightsDialog';
-
-/* Insights */
-import { ChartInsight } from './views/chartInsight.component';
-import { CountInsight } from './views/countInsight.component';
-import { ImageInsight } from './views/imageInsight.component';
 
 import { SimpleExecuteResult } from 'data';
 
@@ -28,23 +24,17 @@ import { Action } from 'vs/base/common/actions';
 import * as types from 'vs/base/common/types';
 import * as pfs from 'vs/base/node/pfs';
 import * as nls from 'vs/nls';
+import { Registry } from 'vs/platform/registry/common/platform';
 
-export interface IInsightsView {
-	data: SimpleExecuteResult;
-	customFields: Array<string>;
-	init?: () => void;
-}
-
-const insightMap: { [x: string]: Type<IInsightsView> } = {
-	'chart': ChartInsight,
-	'count': CountInsight,
-	'image': ImageInsight
-};
+const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribution);
 
 @Component({
 	selector: 'insights-widget',
-	template: '<ng-template component-host></ng-template>',
-	styles: [':host {margin: 10px}', ':host { width: 100%; height: 100%}']
+	template: `
+				<div style="margin: 10px; width: calc(100% - 20px); height: calc(100% - 20px)">
+					<ng-template component-host></ng-template>
+				</div>`,
+	styles: [':host { width: 100%; height: 100%}']
 })
 export class InsightsWidget extends DashboardWidget implements IDashboardWidget, AfterContentInit, OnDestroy {
 	private insightConfig: IInsightsConfig;
@@ -113,17 +103,14 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 					}
 					let typeKey = Object.keys(self.insightConfig.type)[0];
 
-					let componentFactory = self._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightMap[typeKey]);
+					let componentFactory = self._componentFactoryResolver.resolveComponentFactory<IInsightsView>(insightRegistry.getCtorFromId(typeKey));
 					self.componentHost.viewContainerRef.clear();
 
 					let componentRef = self.componentHost.viewContainerRef.createComponent(componentFactory);
-					let componentInstance = <IInsightsView>componentRef.instance;
-					componentInstance.data = result;
-					if (self.insightConfig.type && self.insightConfig.type[typeKey]) {
-						componentInstance.customFields.forEach((field) => {
-							componentInstance[field] = self.insightConfig.type[typeKey][field];
-						});
-					}
+					let componentInstance = componentRef.instance;
+					componentInstance.data = { columns: result.columnInfo.map(item => item.columnName), rows: result.rows.map(row => row.map(item => item.displayValue)) };
+					// check if the setter is defined
+					componentInstance.config = self.insightConfig.type[typeKey];
 					if (componentInstance.init) {
 						componentInstance.init();
 					}

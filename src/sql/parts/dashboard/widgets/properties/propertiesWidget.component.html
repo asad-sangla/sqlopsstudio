@@ -4,18 +4,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 -->
-<div id="parent" style="position: absolute; height: 100%; width: 100%; margin: 10px; ">
-	<div [style.margin-right.px]="_clipped ? 30 : 0" [style.width]="_clipped ? 94 + '%' : '100%'" style="overflow: hidden">
-		<span id="child" style="white-space : nowrap; width: fit-content">
-			<ng-template ngFor let-item [ngForOf]="properties">
-				<span style="margin-left: 10px; display: inline-block;">
-					<div style="font-style: italic">{{item.displayName}}</div>
-					<div style="font-weight: bold">{{item.value}}</div>
-				</span>
-			</ng-template>
-		</span>
-	</div>
-	<span *ngIf="_clipped" style="position: absolute; right: 0; top: 0; padding-top: 5px; padding-right: 14px; z-index: 2">
-		...
-	</span>
+<div #parent style="position: absolute; height: 100%; width: 100%; margin: 10px; ">
+    <div [style.margin-right.px]="_clipped ? 30 : 0" [style.width]="_clipped ? 94 + '%' : '100%'" style="overflow: hidden">
+        <span #child style="white-space : nowrap; width: fit-content">
+            <ng-template ngFor let-item [ngForOf]="properties">
+                <span style="margin-left: 10px; display: inline-block;">
+                    <div style="font-style: italic">{{item.name}}</div>
+                    <div style="font-weight: bold">{{item.value}}</div>
+                </span>
+            </ng-template>
+        </span>
+    </div>
+    <span *ngIf="_clipped" style="position: absolute; right: 0; top: 0; padding-top: 5px; padding-right: 14px; z-index: 2">
+        ...
+    </span>
 </div>

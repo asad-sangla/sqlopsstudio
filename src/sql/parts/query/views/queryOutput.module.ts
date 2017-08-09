@@ -1,7 +1,7 @@
-   /*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
+*  Copyright (c) Microsoft Corporation. All rights reserved.
+*  Licensed under the MIT License. See License.txt in the project root for license information.
+*--------------------------------------------------------------------------------------------*/
 
 
 import { ApplicationRef, ComponentFactoryResolver, forwardRef, NgModule, Inject } from '@angular/core';
@@ -11,26 +11,30 @@ import { FormsModule } from '@angular/forms';
 import { SlickGrid } from 'angular2-slickgrid';
 import { ChartsModule } from 'ng2-charts/ng2-charts';
 
-const BrowserAnimationsModule = (<any> require.__$__nodeRequire('@angular/platform-browser/animations')).BrowserAnimationsModule;
+const BrowserAnimationsModule = (<any>require.__$__nodeRequire('@angular/platform-browser/animations')).BrowserAnimationsModule;
 
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
+
+import { Registry } from 'vs/platform/registry/common/platform';
+
 
 import { QueryOutputComponent, QUERY_OUTPUT_SELECTOR } from 'sql/parts/query/views/queryOutput.component';
-import { QueryPlanComponent,  } from 'sql/parts/queryPlan/queryPlan.component';
+import { QueryPlanComponent, } from 'sql/parts/queryPlan/queryPlan.component';
 import { QueryComponent } from 'sql/parts/grid/views/query/query.component';
 import { TopOperationsComponent } from 'sql/parts/queryPlan/topOperations.component';
 
 import { ChartViewerComponent } from 'sql/parts/grid/views/query/chartViewer.component';
-import { ChartInsight } from 'sql/parts/dashboard/widgets/insights/views/chartInsight.component';
 
 /* Directives */
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { MouseDownDirective } from 'sql/parts/grid/directives/mousedown.directive';
 import { ScrollDirective } from 'sql/parts/grid/directives/scroll.directive';
-import {ButtonModule, DropdownModule, TabViewModule} from 'primeng/primeng';
+import { ButtonModule, DropdownModule, TabViewModule } from 'primeng/primeng';
 
-let baseComponents = [QueryComponent, ComponentHostDirective, QueryOutputComponent, QueryPlanComponent, TopOperationsComponent];
-let insightComponents = [ChartViewerComponent, ChartInsight];
+let baseComponents = [QueryComponent, ComponentHostDirective, QueryOutputComponent, QueryPlanComponent, TopOperationsComponent, ChartViewerComponent];
+/* Insights */
+let insightComponents = Registry.as<IInsightRegistry>(Extensions.InsightContribution).getAllCtors();
 
 @NgModule({
 	imports: [

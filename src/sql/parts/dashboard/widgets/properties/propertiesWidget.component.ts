@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, ElementRef, OnDestroy } from '@angular/core';
+import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -15,6 +15,7 @@ import { properties } from './propertiesJson';
 import { DatabaseInfo, ServerInfo } from 'data';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
+import { EventType, addDisposableListener } from 'vs/base/browser/dom';
 
 export interface PropertiesConfig {
 	properties: Array<Property>;
@@ -57,12 +58,12 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 	private _connection: ConnectionManagementInfo;
 	private _databaseInfo: DatabaseInfo;
 	private _clipped: boolean;
-	private _eventHandler: () => any;
-	private _parent;
-	private _child;
 	private _disposables: Array<IDisposable> = [];
 	private properties: Array<DisplayProperty>;
 	private _hasInit = false;
+
+	@ViewChild('child', { read: ElementRef }) private _child: ElementRef;
+	@ViewChild('parent', { read: ElementRef }) private _parent: ElementRef;
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
@@ -78,12 +79,12 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		let self = this;
 		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
 		if (!self._connection.serverInfo.isCloud) {
-			self._disposables.push(toDisposableSubscription(self._bootstrap.adminService.databaseInfo.subscribe((data) => {
+			self._disposables.push(toDisposableSubscription(self._bootstrap.adminService.databaseInfo.subscribe(data => {
 				self._databaseInfo = data;
 				_changeRef.detectChanges();
 				self.parseProperties();
-				if (this._eventHandler) {
-					setTimeout(this._eventHandler);
+				if (self._hasInit) {
+					self.handleClipping();
 				}
 			})));
 		} else {
@@ -91,37 +92,29 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 				options: {}
 			};
 			self.parseProperties();
-			if (this._eventHandler) {
-				setTimeout(this._eventHandler);
+			if (this._hasInit) {
+				this.handleClipping();
 			}
 		}
 	}
 
 	ngOnInit() {
 		this._hasInit = true;
-		this._parent = $(this._el.nativeElement).find('#parent')[0];
-		this._child = $(this._el.nativeElement).find('#child')[0];
-		this._eventHandler = this.handleClipping();
-		$(window).on('resize', this._eventHandler);
+		this._disposables.push(addDisposableListener(window, EventType.RESIZE, () => this.handleClipping()));
 		this._changeRef.detectChanges();
 	}
 
 	ngOnDestroy() {
-		$(window).off('resize', this._eventHandler);
 		this._disposables.forEach(i => i.dispose());
 	}
 
-	private handleClipping(): () => any {
-		let self = this;
-		return () => {
-			if (self._child.offsetWidth > self._parent.offsetWidth) {
-				self._clipped = true;
-				self._changeRef.detectChanges();
-			} else {
-				self._clipped = false;
-				self._changeRef.detectChanges();
-			}
-		};
+	private handleClipping(): void {
+		if (this._child.nativeElement.offsetWidth > this._parent.nativeElement.offsetWidth) {
+			this._clipped = true;
+		} else {
+			this._clipped = false;
+		}
+		this._changeRef.detectChanges();
 	}
 
 	private parseProperties() {

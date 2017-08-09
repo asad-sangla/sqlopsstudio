@@ -31,6 +31,17 @@ export interface IInsightsConfigDetails {
 	};
 }
 
+export interface IInsightData {
+	columns: Array<string>;
+	rows: Array<Array<string>>;
+}
+
+export interface IInsightsView {
+	data: IInsightData;
+	config?: { [key: string]: any };
+	init?: () => void;
+}
+
 export interface IInsightsConfig {
 	type: any;
 	query?: string | Array<string>;

@@ -129,7 +129,13 @@ import 'sql/parts/connection/common/connection.contribution';
 import 'sql/parts/query/common/query.contribution';
 import 'sql/workbench/electron-browser/main.contribution';
 /* Insights */
-import 'sql/parts/dashboard/widgets/insights/views/chartInsight.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/charts/types/barChart.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/charts/types/doughnutChart.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/charts/types/horizontalBarChart.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/charts/types/lineChart.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/charts/types/pieChart.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/charts/types/scatterChart.contribution';
+import 'sql/parts/dashboard/widgets/insights/views/charts/types/timeSeriesChart.contribution';
 import 'sql/parts/dashboard/widgets/insights/views/countInsight.contribution';
 import 'sql/parts/dashboard/widgets/insights/views/imageInsight.contribution';
 /* Widgets */
