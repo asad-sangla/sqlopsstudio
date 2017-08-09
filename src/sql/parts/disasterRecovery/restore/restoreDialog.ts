@@ -10,22 +10,24 @@ import 'vs/css!./media/restoreDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import dom = require('vs/base/browser/dom');
 import { Button } from 'vs/base/browser/ui/button/button';
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
-import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
-import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
-import { Modal } from 'sql/parts/common/modal/modal';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
-import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
-import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import Event, { Emitter } from 'vs/base/common/event';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { Widget } from 'vs/base/browser/ui/widget';
+import { localize } from 'vs/nls';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IListService } from 'vs/platform/list/browser/listService';
 import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
+
+import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
+import { Modal } from 'sql/parts/common/modal/modal';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
+import { DialogInputBox, OnLoseFocusParams } from 'sql/parts/common/modal/dialogInputBox';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
-import Event, { Emitter } from 'vs/base/common/event';
-import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
-import { localize } from 'vs/nls';
 import * as data from 'data';
 
 export interface RestoreOptionsElement {
@@ -38,6 +40,7 @@ export class RestoreDialog extends Modal {
 	private _restoreButton: Button;
 	private _closeButton: Button;
 	private _optionPropertiesMap: { [name: string]: RestoreOptionsElement } = {};
+	private _backupSetsMap: { [name: string]: DialogCheckbox } = {};
 	private _toDispose: lifecycle.IDisposable[] = [];
 	private _toDisposeTheming: lifecycle.IDisposable[] = [];
 	private _restoreLabel: string;
@@ -107,6 +110,7 @@ export class RestoreDialog extends Modal {
 		this._restoreButton = this.addFooterButton(this._restoreLabel, () => this.restore());
 		this._closeButton = this.addFooterButton(cancelLabel, () => this.cancel());
 		this.registerListeners();
+		this._destinationRestoreToInputBox.disable();
 	}
 
 	protected renderBody(container: HTMLElement) {
@@ -254,6 +258,7 @@ export class RestoreDialog extends Modal {
 			relocatedDataFileInputBox.disable();
 			relocatedLogFileInputBox.disable();
 		}
+		this._onValidate.fire();
 	}
 
 	private createTabList(container: Builder, className: string, linkClassName: string, linkId: string, tabTitle: string): HTMLElement {
@@ -290,10 +295,16 @@ export class RestoreDialog extends Modal {
 			case ServiceOptionType.category:
 				propertyWidget = this.createSelectBoxHelper(container, option.description, option.categoryValues.map(c => c.displayName), DialogHelper.getCategoryDisplayName(option.categoryValues, option.defaultValue));
 				this._toDispose.push(attachSelectBoxStyler(propertyWidget, this._themeService));
+				this._toDispose.push(propertyWidget.onDidSelect(selectedDatabase => {
+					this._onValidate.fire();
+				}));
 				break;
 			case ServiceOptionType.string:
 				propertyWidget = this.createInputBoxHelper(container, option.description);
 				this._toDispose.push(attachInputBoxStyler(propertyWidget, this._themeService));
+				this._toDispose.push(propertyWidget.onLoseFocus(params => {
+					this.onInputBoxValidate(params);
+				}));
 		}
 		if (propertyWidget && isDisabled) {
 			propertyWidget.disable();
@@ -303,6 +314,9 @@ export class RestoreDialog extends Modal {
 	}
 
 	private createCheckBoxHelper(container: Builder, label: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): DialogCheckbox {
+		if (!onCheck) {
+			onCheck = () => this._onValidate.fire();
+		}
 		let checkbox: DialogCheckbox;
 		container.div({ class: 'dialog-input-section' }, (inputCellContainer) => {
 			checkbox = DialogHelper.createCheckBox(inputCellContainer, label, 'sql-checkbox', isChecked, onCheck);
@@ -358,6 +372,7 @@ export class RestoreDialog extends Modal {
 	private generateRestoreContent(databaseNames: string[], backupSetsToRestore: data.DatabaseFileInfo[], dbFiles: data.RestoreDatabaseFileInfo[], planDetails: { [key: string]: any }): void {
 		if (databaseNames) {
 			this._sourceDatabaseFromBackupSelectBox.setOptions(databaseNames, 0);
+			// todo: once the service gives the target database, the value should set to that
 			this._destinationDatabaseInputBox.value = this._sourceDatabaseFromBackupSelectBox.value;
 		}
 		if (backupSetsToRestore && backupSetsToRestore.length > 0) {
@@ -426,6 +441,7 @@ export class RestoreDialog extends Modal {
 		this._toDisposeTheming = lifecycle.dispose(this._toDisposeTheming);
 		new Builder(this._restorePlanListElement).empty();
 		new Builder(this._fileListElement).empty();
+		this.clearBackupSetsMap();
 	}
 
 	private appendRowToFileTable(container: Builder, file: data.RestoreDatabaseFileInfo): void {
@@ -440,11 +456,14 @@ export class RestoreDialog extends Modal {
 	private appendRowToBackupSetsTable(container: Builder, isData: boolean, databaseFileInfo: data.DatabaseFileInfo): void {
 		container.element('tr', {}, (rowContainer) => {
 			if (isData) {
+				let self = this;
 				let checkbox = new DialogCheckbox({
 					actionClassName: 'sql-checkbox',
 					title: '',
-					isChecked: true,
-					onChange: (viaKeyboard) => { }
+					isChecked: databaseFileInfo.isSelected,
+					onChange: (viaKeyboard) => {
+						self._onValidate.fire();
+					}
 				});
 
 				rowContainer.element('td', { class: 'restore-data' }, (labelCellContainer) => {
@@ -454,7 +473,7 @@ export class RestoreDialog extends Modal {
 				});
 
 				this._toDisposeTheming.push(attachCheckboxStyler(checkbox, this._themeService));
-
+				this._backupSetsMap[databaseFileInfo.id] = checkbox;
 			} else {
 				this.appendColumn(rowContainer, this._restoreLabel);
 			}
@@ -487,17 +506,21 @@ export class RestoreDialog extends Modal {
 		this._toDispose.push(attachButtonStyler(this._restoreButton, this._themeService));
 		this._toDispose.push(attachButtonStyler(this._closeButton, this._themeService));
 
-		this._toDispose.push(this._filePathInputBox.onDidChange(filePath => {
-			this.filePathChanged(filePath);
+		this._toDispose.push(this._filePathInputBox.onLoseFocus(params => {
+			this.onInputBoxValidate(params);
+		}));
+
+		this._toDispose.push(this._sourceDatabaseFromBackupSelectBox.onDidSelect(selectedDatabase => {
+			this._onValidate.fire();
+		}));
+
+		this._toDispose.push(this._destinationDatabaseInputBox.onLoseFocus(params => {
+			this.onInputBoxValidate(params);
 		}));
 	}
 
-	private filePathChanged(filePath: string) {
-		this._filePathInputBox.hideMessage();
-		if (filePath.toLocaleLowerCase().includes('.bak') ||
-			filePath.toLocaleLowerCase().includes('.trn') ||
-			filePath.toLocaleLowerCase().includes('.log')
-		) {
+	private onInputBoxValidate(params: OnLoseFocusParams) {
+		if (params.hasChanged && params.value) {
 			this._onValidate.fire();
 		}
 	}
@@ -574,6 +597,20 @@ export class RestoreDialog extends Modal {
 		}
 	}
 
+	public getSelectedBackupSets(): string[] {
+		let selectedBackupSet;
+		for (var key in this._backupSetsMap) {
+			if (!selectedBackupSet) {
+				selectedBackupSet = [];
+			}
+			var checkbox = this._backupSetsMap[key];
+			if (checkbox.checked) {
+				selectedBackupSet.push(key);
+			}
+		}
+		return selectedBackupSet;
+	}
+
 	private resetDialog(): void {
 		this.hideError();
 		this._filePathInputBox.value = '';
@@ -594,7 +631,20 @@ export class RestoreDialog extends Modal {
 		this._filePathInputBox.focus();
 	}
 
+	private clearBackupSetsMap() {
+		for (var key in this._backupSetsMap) {
+			this._backupSetsMap[key].dispose();
+			delete this._backupSetsMap[key];
+		}
+	}
+
 	public dispose(): void {
 		this._toDispose = lifecycle.dispose(this._toDispose);
+		for (var key in this._optionPropertiesMap) {
+			var widget: Widget = this._optionPropertiesMap[key].optionWidget;
+			widget.dispose();
+			delete this._optionPropertiesMap[key];
+		}
+		this.clearBackupSetsMap();
 	}
 }

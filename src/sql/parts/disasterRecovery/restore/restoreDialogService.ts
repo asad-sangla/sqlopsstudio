@@ -40,7 +40,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 		this._disasterRecoveryService.getRestorePlan(this._ownerUri, this.setRestoreOption()).then(restorePlanResponse => {
 			this._sessionId = restorePlanResponse.sessionId;
 			// Keys are defaultBackupTailLog (boolean), defaultDataFileFolder, defaultLogFileFolder, defaultStandbyFile, defaultTailLogBackupFile, lastBackupTaken
-			if (restorePlanResponse.planDetails) {
+			if (restorePlanResponse.planDetails && restorePlanResponse.planDetails['lastBackupTaken']) {
 				this._restoreDialog.lastBackupTaken = restorePlanResponse.planDetails['lastBackupTaken'];
 			}
 
@@ -59,6 +59,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 		}
 
 		restoreInfo.backupFilePaths = this._restoreDialog.filePath;
+		restoreInfo.selectedBackupSets = this._restoreDialog.getSelectedBackupSets();
 
 		if (this._restoreDialog.sourceDatabaseName) {
 			restoreInfo.sourceDatabaseName = this._restoreDialog.sourceDatabaseName;
