@@ -80,13 +80,15 @@ export interface Converter {
 
 	asCloseSessionInfo(nodeInfo: data.ObjectExplorerCloseSessionInfo): ls.CloseSessionParams;
 
- 	asExecutionPlanOptions(planOptions: data.ExecutionPlanOptions): proto.ExecutionPlanOptions;
+	asExecutionPlanOptions(planOptions: data.ExecutionPlanOptions): proto.ExecutionPlanOptions;
 
 	asListTasksParams(params: data.ListTasksParams): ls.ListTasksParams;
 
 	asCancelTaskParams(params: data.CancelTaskParams): ls.CancelTaskParams;
 
 	asRestoreParams(ownerUri: string, params: data.RestoreInfo): ls.RestoreParams;
+
+	asRestoreConfigInfoParams(ownerUri: string): ls.RestoreConfigInfoRequestParams;
 }
 
 export interface URIConverter {
@@ -419,6 +421,12 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asRestoreConfigInfoParams(ownerUri: string): ls.RestoreConfigInfoRequestParams {
+		return <ls.RestoreConfigInfoRequestParams>{
+			ownerUri: ownerUri
+		};
+	}
+
 
 	return {
 		asUri,
@@ -458,6 +466,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asListTasksParams,
 		asCancelTaskParams,
 		asRestoreParams,
+		asRestoreConfigInfoParams
 	};
 }
 

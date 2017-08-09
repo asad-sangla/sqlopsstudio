@@ -967,10 +967,11 @@ declare module 'data' {
 		getBackupConfigInfo(connectionUri: string): Thenable<BackupConfigInfo>;
 		getRestorePlan(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestorePlanResponse>;
 		restore(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestoreResponse>;
+		getRestoreConfigInfo(connectionUri: string): Thenable<RestoreConfigInfo>;
 	}
 
 	export interface RestoreInfo {
-		options: {[key: string]: any};
+		options: { [key:  string]:  any };
 	}
 
 	export interface RestoreDatabaseFileInfo {
@@ -996,6 +997,14 @@ declare module 'data' {
 		propertyValueDisplayName: string;
 	}
 
+	export interface RestorePlanDetailInfo {
+		name: string;
+		currentValue: any;
+		isReadOnly: boolean;
+		isVisible: boolean;
+		defaultValue: any;
+	}
+
 	export interface RestorePlanResponse {
 		sessionId: string;
 		backupSetsToRestore: DatabaseFileInfo[];
@@ -1003,7 +1012,11 @@ declare module 'data' {
 		errorMessage: string;
 		dbFiles: RestoreDatabaseFileInfo[];
 		databaseNamesFromBackupSets: string[];
-		planDetails: {[key: string]: any};
+		planDetails: { [key:  string]: RestorePlanDetailInfo };
+	}
+
+	export interface RestoreConfigInfo {
+		configInfo: { [key:  string]:  any };
 	}
 
 	export interface RestoreResponse {

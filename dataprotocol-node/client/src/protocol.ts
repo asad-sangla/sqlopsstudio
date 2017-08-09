@@ -28,7 +28,7 @@ import {
 	BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
 	DbCellValue, EditCell, EditRow, CreateSessionResponse, SessionCreatedParameters, ExpandParams, ExpandResponse, CloseSessionParams, CloseSessionResponse,
 	BackupInfo, BackupParams, BackupResponse,
-	RestoreParams, RestoreResponse, RestorePlanResponse,
+	RestoreParams, RestoreResponse, RestorePlanResponse, RestoreConfigInfoRequestParams, RestoreConfigInfoResponse,
 	LoginInfo, CreateLoginParams, CreateLoginResponse, GetDatabaseInfoParams, GetDatabaseInfoResponse,
 	DatabaseInfo, BackupConfigInfo, CreateDatabaseParams, CreateDatabaseResponse,
 	TaskInfo, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo,
@@ -1056,7 +1056,7 @@ export interface DidChangeLanguageFlavorParams {
 
 // ------------------------------- < Language Flavor Changed Notification > ---------------------------------------
 export namespace LanguageFlavorChangedNotification {
-		export const type: NotificationType<DidChangeLanguageFlavorParams> = { get method(): string { return 'connection/languageflavorchanged'; } };
+	export const type: NotificationType<DidChangeLanguageFlavorParams> = { get method(): string { return 'connection/languageflavorchanged'; } };
 }
 
 // ------------------------------- < Table Metadata Request > ---------------------------------------
@@ -1507,3 +1507,8 @@ export namespace RestoreRequest {
 export namespace RestorePlanRequest {
 	export const type: RequestType<RestoreParams, RestorePlanResponse, void> = { get method(): string { return 'disasterrecovery/restoreplan'; } };
 }
+
+export namespace RestoreConfigInfoRequest {
+	export const type: RequestType<RestoreConfigInfoRequestParams, RestoreConfigInfoResponse, void> = { get method(): string { return 'disasterrecovery/restoreconfiginfo'; } };
+}
+

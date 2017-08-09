@@ -6,7 +6,8 @@
 'use strict';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
-import { IDisasterRecoveryService } from './interfaces';
+import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
+import * as Constants from 'sql/common/constants';
 
 export class DisasterRecoveryService implements IDisasterRecoveryService {
 
@@ -35,20 +36,33 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	 */
 	public backup(connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> {
 		return new Promise<data.BackupResponse>((resolve, reject) => {
-			let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
-			if (providerId) {
-				let provider = this._providers[providerId];
-				if (provider) {
-					provider.backup(connectionUri, backupInfo).then(result => {
-						resolve(result);
-					}, error => {
-						reject(error);
-					});
-				} else {
-					reject('provider is undefined');
-				}
+			let provider = this.getProvider(connectionUri);
+			if (provider) {
+				provider.backup(connectionUri, backupInfo).then(result => {
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
 			} else {
-				reject('provider id is undefined');
+				reject(Constants.InvalidProvider);
+			}
+		});
+	}
+
+	/**
+	 * Gets restore config Info
+	 */
+	getRestoreConfigInfo(connectionUri: string): Thenable<data.RestoreConfigInfo> {
+		return new Promise<data.RestoreConfigInfo>((resolve, reject) => {
+			let provider = this.getProvider(connectionUri);
+			if (provider) {
+				provider.getRestoreConfigInfo(connectionUri).then(result => {
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
+			} else {
+				reject(Constants.InvalidProvider);
 			}
 		});
 	}
@@ -58,22 +72,26 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	 */
 	restore(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestoreResponse> {
 		return new Promise<data.RestoreResponse>((resolve, reject) => {
-			let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
-			if (providerId) {
-				let provider = this._providers[providerId];
-				if (provider) {
-					provider.restore(connectionUri, restoreInfo).then(result => {
-						resolve(result);
-					}, error => {
-						reject(error);
-					});
-				} else {
-					reject('provider is undefined');
-				}
+			let provider = this.getProvider(connectionUri);
+			if (provider) {
+				provider.restore(connectionUri, restoreInfo).then(result => {
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
 			} else {
-				reject('provider id is undefined');
+				reject(Constants.InvalidProvider);
 			}
 		});
+	}
+
+	private getProvider(connectionUri: string): data.DisasterRecoveryProvider {
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+		if (providerId) {
+			return this._providers[providerId];
+		} else {
+			return undefined;
+		}
 	}
 
 	/**
@@ -81,21 +99,16 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	 */
 	getRestorePlan(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse> {
 		return new Promise<data.RestorePlanResponse>((resolve, reject) => {
-			let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
-			if (providerId) {
-				let provider = this._providers[providerId];
-				if (provider) {
-					provider.getRestorePlan(connectionUri, restoreInfo).then(result => {
-						resolve(result);
-					}, error => {
-						reject(error);
-					});
-				} else {
-					reject('provider is undefined');
-
-				}
+			let provider = this.getProvider(connectionUri);
+			if (provider) {
+				provider.getRestorePlan(connectionUri, restoreInfo).then(result => {
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
 			} else {
-				reject('provider id is undefined');
+				reject(Constants.InvalidProvider);
+
 			}
 		});
 	}

@@ -239,6 +239,11 @@ export abstract class ExtHostDataProtocolShape {
 	 * Gets a plan for restoring a database
 	 */
 	$getRestorePlan(handle: number, connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse> { throw ni(); }
+
+	/**
+	 * Gets restore config Info
+	 */
+	$getRestoreConfigInfo(handle: number, connectionUri: string): Thenable<data.RestoreConfigInfo> { throw ni(); }
 }
 
 /**
@@ -256,7 +261,7 @@ export abstract class ExtHostCredentialManagementShape {
  * Serialization provider extension host class.
  */
 export abstract class ExtHostSerializationProviderShape {
-	$saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean> { throw ni();}
+	$saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean> { throw ni(); }
 }
 export abstract class MainThreadDataProtocolShape {
 	$registerProvider(providerId: string, handle: number): TPromise<any> { throw ni(); }

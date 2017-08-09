@@ -455,6 +455,14 @@ export interface RestoreParams {
 	options: {};
 }
 
+export interface RestoreConfigInfoRequestParams {
+	ownerUri: string;
+}
+
+export interface RestoreConfigInfoResponse {
+	configInfo: { [key:  string]:  any };
+}
+
 export interface RestoreDatabaseFileInfo {
 	fileType: string;
 
@@ -478,6 +486,15 @@ export interface LocalizedPropertyInfo {
 	propertyValueDisplayName: string;
 }
 
+export interface RestorePlanDetailInfo {
+	name: string;
+	currentValue: any;
+	isReadOnly: boolean;
+	isVisible: boolean;
+	defaultValue: any;
+
+}
+
 export interface RestorePlanResponse {
 	sessionId: string;
 	backupSetsToRestore: DatabaseFileInfo[];
@@ -485,7 +502,7 @@ export interface RestorePlanResponse {
 	errorMessage: string;
 	dbFiles: RestoreDatabaseFileInfo[];
 	databaseNamesFromBackupSets: string[];
-	planDetails: {[key: string]: any};
+	planDetails: { [key:  string]: RestorePlanDetailInfo };
 }
 
 export interface RestoreResponse {

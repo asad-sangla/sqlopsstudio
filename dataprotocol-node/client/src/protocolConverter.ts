@@ -94,6 +94,12 @@ export interface Converter {
 	asListTasksResponse(response: ls.ListTasksResponse): data.ListTasksResponse;
 
 	asTaskInfo(params: ls.TaskInfo): data.TaskInfo;
+
+	asRestorePlanResponse(params: ls.RestorePlanResponse): data.RestorePlanResponse;
+
+	asRestoreResponse(params: ls.RestoreResponse): data.RestoreResponse;
+
+	asRestoreConfigInfo(params: ls.RestoreConfigInfoResponse): data.RestoreConfigInfo;
 }
 
 export interface URIConverter {
@@ -583,10 +589,10 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		let objectMetadata: data.ObjectMetadata[] = [];
 
 		if (!params.metadata || !params.metadata.length) {
-            return {
-                objectMetadata: objectMetadata
-            };
-        }
+			return {
+				objectMetadata: objectMetadata
+			};
+		}
 
 		for (let i = 0; i < params.metadata.length; ++i) {
 			let metadata: ls.ObjectMetadata = params.metadata[i];
@@ -672,6 +678,32 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asRestorePlanResponse(params: ls.RestorePlanResponse): data.RestorePlanResponse {
+		return <data.RestorePlanResponse>{
+			backupSetsToRestore: params.backupSetsToRestore,
+			canRestore: params.canRestore,
+			databaseNamesFromBackupSets: params.databaseNamesFromBackupSets,
+			dbFiles: params.dbFiles,
+			errorMessage: params.errorMessage,
+			planDetails: params.planDetails,
+			sessionId: params.sessionId
+		};
+	}
+
+	function asRestoreResponse(params: ls.RestoreResponse): data.RestoreResponse {
+		return <data.RestoreResponse>{
+			result: params.result,
+			errorMessage: params.errorMessage,
+			taskId: params.taskId
+		};
+	}
+
+	function asRestoreConfigInfo(params: ls.RestoreConfigInfoResponse): data.RestoreConfigInfo {
+		return <data.RestoreConfigInfo>{
+			configInfo: params.configInfo
+		};
+	}
+
 	return {
 		asUri,
 		asDiagnostics,
@@ -714,6 +746,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asObjectExplorerCloseSessionResponse,
 		asListTasksResponse,
 		asTaskInfo,
+		asRestorePlanResponse,
+		asRestoreResponse,
+		asRestoreConfigInfo
 	};
 }
 

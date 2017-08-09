@@ -56,6 +56,11 @@ export interface IDisasterRecoveryService {
 	 * Gets restore plan to do the restore operation on a database
 	 */
 	getRestorePlan(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse>;
+
+	/**
+	 * Gets restore config Info
+	 */
+	getRestoreConfigInfo(connectionUri: string): Thenable<data.RestoreConfigInfo>;
 }
 
 export const IRestoreDialogService = createDecorator<IRestoreDialogService>('restoreDialogService');

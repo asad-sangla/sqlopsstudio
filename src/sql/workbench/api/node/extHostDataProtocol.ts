@@ -439,4 +439,14 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 				: Promise.resolve(undefined);
 		});
 	}
+
+	/**
+	 * Gets restore config Info
+	 */
+	public $getRestoreConfigInfo(handle: number, connectionUri: string): Thenable<data.RestoreConfigInfo> {
+		return this._runWithProvider(handle, provider => {
+			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.getRestoreConfigInfo(connectionUri)
+				: Promise.resolve(undefined);
+		});
+	}
 }

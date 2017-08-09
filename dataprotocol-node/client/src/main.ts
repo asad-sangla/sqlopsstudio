@@ -29,7 +29,8 @@ import {
 	SaveResultsRequestParams as VSaveResultsRequestParams, ObjectExplorerProvider,
 	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo,
 	TaskServicesProvider, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo, TaskInfo,
-	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo, ExecutionPlanOptions
+	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo, ExecutionPlanOptions,
+	RestoreConfigInfo
 } from 'data';
 
 import {
@@ -118,7 +119,7 @@ import {
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
 	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
 	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, GetDatabaseInfoRequest, BackupConfigInfoRequest,
-	RestoreRequest, RestorePlanRequest,
+	RestoreRequest, RestorePlanRequest, RestoreConfigInfoRequest,
 	ListTasksRequest, CancelTaskRequest, TaskStatusChangedNotification, TaskCreatedNotification,
 	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams
 } from './protocol';
@@ -1504,7 +1505,7 @@ export class LanguageClient {
 
 			getQueryRows(rowData: QueryExecuteSubsetParams): Thenable<QueryExecuteSubsetResult> {
 				return self.doSendRequest(connection, QueryExecuteSubsetRequest.type, rowData, undefined).then(
-	     			(result) => {
+					(result) => {
 						return result;
 					},
 					(error) => {
@@ -1859,9 +1860,7 @@ export class LanguageClient {
 			},
 			getRestorePlan(ownerUri: string, restoreInfo: RestoreInfo): Thenable<RestorePlanResponse> {
 				return self.doSendRequest(connection, RestorePlanRequest.type, self._c2p.asRestoreParams(ownerUri, restoreInfo), undefined).then(
-					result => {
-						return result;
-					},
+					self._p2c.asRestorePlanResponse,
 					error => {
 						self.logFailedRequest(RestorePlanRequest.type, error);
 						return Promise.resolve(undefined);
@@ -1870,15 +1869,22 @@ export class LanguageClient {
 			},
 			restore(ownerUri: string, restoreInfo: RestoreInfo): Thenable<RestoreResponse> {
 				return self.doSendRequest(connection, RestoreRequest.type, self._c2p.asRestoreParams(ownerUri, restoreInfo), undefined).then(
-					result => {
-						return result;
-					},
+					self._p2c.asRestoreResponse,
 					error => {
 						self.logFailedRequest(RestoreRequest.type, error);
 						return Promise.resolve(undefined);
 					}
 				);
-			}
+			},
+			getRestoreConfigInfo(ownerUri: string): Thenable<RestoreConfigInfo> {
+				return self.doSendRequest(connection, RestoreConfigInfoRequest.type, self._c2p.asRestoreConfigInfoParams(ownerUri), undefined).then(
+					self._p2c.asRestoreConfigInfo,
+					error => {
+						self.logFailedRequest(RestorePlanRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
 		};
 
 		let objectExplorer: ObjectExplorerProvider = {

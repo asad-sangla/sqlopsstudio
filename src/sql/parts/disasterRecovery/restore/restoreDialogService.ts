@@ -41,7 +41,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 			this._sessionId = restorePlanResponse.sessionId;
 			// Keys are defaultBackupTailLog (boolean), defaultDataFileFolder, defaultLogFileFolder, defaultStandbyFile, defaultTailLogBackupFile, lastBackupTaken
 			if (restorePlanResponse.planDetails && restorePlanResponse.planDetails['lastBackupTaken']) {
-				this._restoreDialog.lastBackupTaken = restorePlanResponse.planDetails['lastBackupTaken'];
+				this._restoreDialog.lastBackupTaken = restorePlanResponse.planDetails['lastBackupTaken'].currentValue;
 			}
 
 			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage,
