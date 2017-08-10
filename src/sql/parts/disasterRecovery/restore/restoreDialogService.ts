@@ -100,7 +100,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 		}
 
 		return new TPromise<void>(() => {
-			this._restoreDialog.open(connection.serverName);
+			this._restoreDialog.open(connection.serverName, connection.databaseName);
 		});
 	}
 }

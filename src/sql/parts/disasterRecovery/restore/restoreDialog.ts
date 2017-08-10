@@ -173,10 +173,10 @@ export class RestoreDialog extends Modal {
 			// Restore database file as section
 			builder.div({ class: 'new-section' }, (sectionContainer) => {
 				this.createLabelElement(sectionContainer, localize('restoreDatabaseFileAs', 'Restore database files as'), true);
-				this.creatOptionControl(sectionContainer, this._relocateDatabaseFilesOption, false, () => this.onRelocatedFilesCheck());
+				this.creatOptionControl(sectionContainer, this._relocateDatabaseFilesOption);
 				sectionContainer.div({ class: 'sub-section' }, (subSectionContainer) => {
-					this.creatOptionControl(subSectionContainer, this._relocatedDataFileFolderOption, true);
-					this.creatOptionControl(subSectionContainer, this._relocatedLogFileFolderOption, true);
+					this.creatOptionControl(subSectionContainer, this._relocatedDataFileFolderOption);
+					this.creatOptionControl(subSectionContainer, this._relocatedLogFileFolderOption);
 				});
 			});
 
@@ -204,7 +204,7 @@ export class RestoreDialog extends Modal {
 				this.creatOptionControl(sectionContainer, this._recoveryStateOption);
 
 				sectionContainer.div({ class: 'sub-section' }, (subSectionContainer) => {
-					this.creatOptionControl(subSectionContainer, this._standbyFileOption, true);
+					this.creatOptionControl(subSectionContainer, this._standbyFileOption);
 				});
 			});
 
@@ -213,8 +213,8 @@ export class RestoreDialog extends Modal {
 				this.createLabelElement(sectionContainer, localize('taillogBackup', 'Tail-Log backup'), true);
 				this.creatOptionControl(sectionContainer, this._takeTaillogBackupOption);
 				sectionContainer.div({ class: 'sub-section' }, (subSectionContainer) => {
-					this.creatOptionControl(subSectionContainer, this._tailLogWithNoRecoveryOption, true);
-					this.creatOptionControl(subSectionContainer, this._tailLogBackupFileOption, true);
+					this.creatOptionControl(subSectionContainer, this._tailLogWithNoRecoveryOption);
+					this.creatOptionControl(subSectionContainer, this._tailLogBackupFileOption);
 				});
 			});
 
@@ -246,21 +246,6 @@ export class RestoreDialog extends Modal {
 		});
 	}
 
-	private onRelocatedFilesCheck(): void {
-		let relocateDatabaseFilesCheckBox = this._optionPropertiesMap[this._relocateDatabaseFilesOption].optionWidget;
-		let relocatedDataFileInputBox = this._optionPropertiesMap[this._relocatedDataFileFolderOption].optionWidget;
-		let relocatedLogFileInputBox = this._optionPropertiesMap[this._relocatedLogFileFolderOption].optionWidget;
-
-		if (relocateDatabaseFilesCheckBox.checked) {
-			relocatedDataFileInputBox.enable();
-			relocatedLogFileInputBox.enable();
-		} else {
-			relocatedDataFileInputBox.disable();
-			relocatedLogFileInputBox.disable();
-		}
-		this._onValidate.fire();
-	}
-
 	private createTabList(container: Builder, className: string, linkClassName: string, linkId: string, tabTitle: string): HTMLElement {
 		let atag: HTMLElement;
 		container.element('li', { class: className }, (linkContainer) => {
@@ -284,12 +269,12 @@ export class RestoreDialog extends Modal {
 		});
 	}
 
-	private creatOptionControl(container: Builder, optionName: string, isDisabled?: boolean, onCheck?: (viaKeyboard: boolean) => void): void {
+	private creatOptionControl(container: Builder, optionName: string): void {
 		let option = this._optionPropertiesMap[optionName].option;
 		let propertyWidget: any;
 		switch (option.valueType) {
 			case ServiceOptionType.boolean:
-				propertyWidget = this.createCheckBoxHelper(container, option.description, DialogHelper.getBooleanValueFromStringOrBoolean(option.defaultValue), onCheck);
+				propertyWidget = this.createCheckBoxHelper(container, option.description, DialogHelper.getBooleanValueFromStringOrBoolean(option.defaultValue));
 				this._toDispose.push(attachCheckboxStyler(propertyWidget, this._themeService));
 				break;
 			case ServiceOptionType.category:
@@ -305,9 +290,6 @@ export class RestoreDialog extends Modal {
 				this._toDispose.push(propertyWidget.onLoseFocus(params => {
 					this.onInputBoxValidate(params);
 				}));
-		}
-		if (propertyWidget && isDisabled) {
-			propertyWidget.disable();
 		}
 
 		this._optionPropertiesMap[optionName].optionWidget = propertyWidget;
@@ -401,22 +383,17 @@ export class RestoreDialog extends Modal {
 
 		if (planDetails) {
 			for (var key in planDetails) {
-				let mapKey = key;
-
-				// todo: remove key modification after the restore service has changed the planDetails
-				if (key.toLocaleLowerCase().includes('default')) {
-					mapKey = key.slice(7, 8).toLocaleLowerCase() + key.slice(8);
-				}
-				let propertyElement = this._optionPropertiesMap[mapKey];
+				let propertyElement = this._optionPropertiesMap[key];
 				if (propertyElement) {
-					propertyElement.optionValue = planDetails[key];
-					this.setValueToOptionElement(propertyElement, propertyElement.optionValue);
+					let planDetailInfo = planDetails[key];
+					propertyElement.optionValue = planDetailInfo.defaultValue;
+					this.setValueToOptionElement(propertyElement, planDetailInfo.currentValue, planDetailInfo.isReadOnly);
 				}
 			}
 		}
 	}
 
-	private setValueToOptionElement(optionElement: RestoreOptionsElement, value: string) {
+	private setValueToOptionElement(optionElement: RestoreOptionsElement, value: string, isReadOnly: boolean) {
 		switch (optionElement.option.valueType) {
 			case ServiceOptionType.boolean:
 				(<DialogCheckbox>optionElement.optionWidget).checked = DialogHelper.getBooleanValueFromStringOrBoolean(value);
@@ -427,13 +404,18 @@ export class RestoreDialog extends Modal {
 			case ServiceOptionType.string:
 				(<DialogInputBox>optionElement.optionWidget).value = value ? value : '';
 		}
+		if (isReadOnly) {
+			optionElement.optionWidget.disable();
+		} else {
+			optionElement.optionWidget.enable();
+		}
 	}
 
 	private resetOptionValue() {
 		for (var key in this._optionPropertiesMap) {
 			let propertyElement = this._optionPropertiesMap[key];
 			propertyElement.optionValue = propertyElement.option.defaultValue;
-			this.setValueToOptionElement(propertyElement, propertyElement.optionValue);
+			this.setValueToOptionElement(propertyElement, propertyElement.optionValue, false);
 		}
 	}
 
@@ -624,8 +606,9 @@ export class RestoreDialog extends Modal {
 		this._generalTabElement.click();
 	}
 
-	public open(serverName: string) {
+	public open(serverName: string, databaseName: string) {
 		this.title = this._restoreTitle + ' - ' + serverName;
+		this._destinationDatabaseInputBox.value = databaseName;
 		this._restoreButton.enabled = false;
 		this.show();
 		this._filePathInputBox.focus();
