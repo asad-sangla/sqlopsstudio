@@ -670,11 +670,13 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		return <data.TaskInfo>{
 			taskId: params.taskId,
 			status: params.status,
+			taskExecutionMode: params.taskExecutionMode,
 			serverName: params.serverName,
 			name: params.name,
 			databaseName: params.databaseName,
 			description: params.description,
-			providerName: params.providerName
+			providerName: params.providerName,
+			isCancelable: params.isCancelable,
 		};
 	}
 

@@ -48,3 +48,8 @@ export enum TaskStatus {
 	failed = 4,
 	canceled = 5
 }
+
+export enum TaskExecutionMode {
+	execute = 0,
+	script = 1
+}

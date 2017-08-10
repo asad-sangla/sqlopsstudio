@@ -21,6 +21,7 @@ import { attachListBoxStyler } from 'sql/common/theme/styler';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 
 import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
@@ -77,6 +78,7 @@ export class BackupComponent{
     @ViewChild('continueOnErrorContainer', {read: ElementRef}) continueOnErrorElement;
     @ViewChild('encryptErrorContainer', {read: ElementRef}) encryptErrorElement;
     @ViewChild('modalFooterContainer', {read: ElementRef}) modalFooterElement;
+    @ViewChild('scriptButtonContainer', {read: ElementRef}) scriptButtonElement;
 
     private _disasterRecoveryService: IDisasterRecoveryService;
     private _disasterRecoveryUiService: IDisasterRecoveryUiService;
@@ -118,6 +120,7 @@ export class BackupComponent{
     private pathInputBox: DialogInputBox;
     private backupButton: Button;
     private cancelButton: Button;
+    private scriptButton: Button;
     private addPathButton: Button;
     private removePathButton: Button;
     private pathListBox: ListBox;
@@ -168,6 +171,12 @@ export class BackupComponent{
         this.isEncryptChecked = false;
         this.selectedInitOption = this.existingMediaOptions[0];
         this.backupTypeOptions = [];
+
+        // Set script footer button
+        this.scriptButton = new Button(this.scriptButtonElement.nativeElement);
+        this.scriptButton.label = 'Script';
+        this._toDispose.push(this.scriptButton.addListener('click', () => this.onScript()));
+        this._toDispose.push(attachButtonStyler(this.scriptButton, this._bootstrapService.themeService));
 
         // Set backup footer button
         this.backupButton = new Button(this.backupButtonElement.nativeElement);
@@ -351,59 +360,14 @@ export class BackupComponent{
     /*
     * UI event handlers
     */
-    private onOk(): void {
-        var backupPathArray = [];
-        for (var i in this.backupPathTypePairs) {
-            backupPathArray.push(i);
-        }
-
-        // get encryptor type and name
-        var encryptorName = '';
-        var encryptorType;
-
-        if (this.encryptCheckBox.checked && this.encryptorSelectBox.value !== '') {
-            var selectedEncryptor = this.encryptorSelectBox.value;
-            var encryptorTypeStr = selectedEncryptor.substring(selectedEncryptor.lastIndexOf('(')+1, selectedEncryptor.lastIndexOf(')'));
-            encryptorType = (encryptorTypeStr === BackupConstants.serverCertificate ? 0: 1);
-            encryptorName = selectedEncryptor.substring(0, selectedEncryptor.lastIndexOf('('));
-        }
-
-        this._disasterRecoveryService.backup(this._uri,
-        <BackupInfo>{
-            ownerUri: this._uri,
-            databaseName: this.databaseName,
-            backupType: this.getBackupTypeNumber(),
-            backupComponent: 0,
-            backupDeviceType: BackupConstants.backupDeviceTypeDisk,
-            backupPathList: backupPathArray,
-            selectedFiles: this.selectedFilesText,
-            backupsetName: this.backupNameBox.value,
-            selectedFileGroup: undefined,
-            backupPathDevices: this.backupPathTypePairs,
-            isCopyOnly: this.copyOnlyCheckBox.checked,
-
-            // Get advanced options
-            formatMedia: this.isFormatChecked,
-            initialize: (this.isFormatChecked ? true: (this.selectedInitOption === this.existingMediaOptions[1])),
-            skipTapeHeader: this.isFormatChecked,
-            mediaName: (this.isFormatChecked ? this.mediaNameBox.value: ''),
-            mediaDescription: (this.isFormatChecked ? this.mediaDescriptionBox.value: ''),
-            checksum: this.checksumCheckBox.checked,
-            continueAfterError: this.continueOnErrorCheckBox.checked,
-            logTruncation: this.isTruncateChecked,
-            tailLogBackup: this.isTaillogChecked,
-            retainDays: !this.backupRetainDaysBox.value ? 0: this.backupRetainDaysBox.value,
-            compressionOption: this.compressionOptions.indexOf(this.compressionSelectBox.value),
-            verifyBackupRequired: this.verifyCheckBox.checked,
-            encryptionAlgorithm: (this.encryptCheckBox.checked ? this.encryptionAlgorithms.indexOf(this.algorithmSelectBox.value): 0),
-            encryptorType: encryptorType,
-            encryptorName: encryptorName
-        });
-
+    private onScript(): void {
+        this._disasterRecoveryService.backup(this._uri, this.createBackupInfo(), true);
         this._disasterRecoveryUiService.closeBackup();
     }
 
-	private onGenerateScript(): void {
+    private onOk(): void {
+        this._disasterRecoveryService.backup(this._uri, this.createBackupInfo(), false);
+        this._disasterRecoveryUiService.closeBackup();
     }
 
 	private onCancel(): void {
@@ -702,5 +666,56 @@ export class BackupComponent{
         } else {
             this.enableBackupButton();
         }
+    }
+
+    private createBackupInfo(): BackupInfo {
+        var backupPathArray = [];
+        for (var i in this.backupPathTypePairs) {
+            backupPathArray.push(i);
+        }
+
+        // get encryptor type and name
+        var encryptorName = '';
+        var encryptorType;
+
+        if (this.encryptCheckBox.checked && this.encryptorSelectBox.value !== '') {
+            var selectedEncryptor = this.encryptorSelectBox.value;
+            var encryptorTypeStr = selectedEncryptor.substring(selectedEncryptor.lastIndexOf('(')+1, selectedEncryptor.lastIndexOf(')'));
+            encryptorType = (encryptorTypeStr === BackupConstants.serverCertificate ? 0: 1);
+            encryptorName = selectedEncryptor.substring(0, selectedEncryptor.lastIndexOf('('));
+        }
+
+        let backupInfo = <BackupInfo> {
+            ownerUri: this._uri,
+            databaseName: this.databaseName,
+            backupType: this.getBackupTypeNumber(),
+            backupComponent: 0,
+            backupDeviceType: BackupConstants.backupDeviceTypeDisk,
+            backupPathList: backupPathArray,
+            selectedFiles: this.selectedFilesText,
+            backupsetName: this.backupNameBox.value,
+            selectedFileGroup: undefined,
+            backupPathDevices: this.backupPathTypePairs,
+            isCopyOnly: this.copyOnlyCheckBox.checked,
+
+            // Get advanced options
+            formatMedia: this.isFormatChecked,
+            initialize: (this.isFormatChecked ? true: (this.selectedInitOption === this.existingMediaOptions[1])),
+            skipTapeHeader: this.isFormatChecked,
+            mediaName: (this.isFormatChecked ? this.mediaNameBox.value: ''),
+            mediaDescription: (this.isFormatChecked ? this.mediaDescriptionBox.value: ''),
+            checksum: this.checksumCheckBox.checked,
+            continueAfterError: this.continueOnErrorCheckBox.checked,
+            logTruncation: this.isTruncateChecked,
+            tailLogBackup: this.isTaillogChecked,
+            retainDays: DialogHelper.isNullOrWhiteSpace(this.backupRetainDaysBox.value) ? 0: this.backupRetainDaysBox.value,
+            compressionOption: this.compressionOptions.indexOf(this.compressionSelectBox.value),
+            verifyBackupRequired: this.verifyCheckBox.checked,
+            encryptionAlgorithm: (this.encryptCheckBox.checked ? this.encryptionAlgorithms.indexOf(this.algorithmSelectBox.value): 0),
+            encryptorType: encryptorType,
+            encryptorName: encryptorName
+        }
+
+        return backupInfo;
     }
 }

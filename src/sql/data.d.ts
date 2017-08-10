@@ -853,6 +853,11 @@ declare module 'data' {
 		canceled = 5
 	}
 
+	export enum TaskExecutionMode {
+		execute = 0,
+		script = 1
+	}
+
 	export interface ListTasksParams {
 		listActiveTasksOnly: boolean;
 	}
@@ -860,11 +865,13 @@ declare module 'data' {
 	export interface TaskInfo {
 		taskId: string;
 		status: TaskStatus;
+		taskExecutionMode: TaskExecutionMode;
 		serverName: string;
 		databaseName: string;
 		name: string;
 		description: string;
 		providerName: string;
+		isCancelable: boolean;
 	}
 
 	export interface ListTasksResponse {
@@ -879,6 +886,7 @@ declare module 'data' {
 		taskId: string;
 		status: TaskStatus;
 		message: string;
+		script: string;
 		duration: number;
 	}
 
@@ -963,7 +971,7 @@ declare module 'data' {
 	}
 
 	export interface DisasterRecoveryProvider {
-		backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse>;
+		backup(connectionUri: string, backupInfo: BackupInfo, isScripting: boolean): Thenable<BackupResponse>;
 		getBackupConfigInfo(connectionUri: string): Thenable<BackupConfigInfo>;
 		getRestorePlan(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestorePlanResponse>;
 		restore(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestoreResponse>;

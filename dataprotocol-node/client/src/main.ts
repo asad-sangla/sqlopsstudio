@@ -1834,8 +1834,8 @@ export class LanguageClient {
 		};
 
 		let disasterRecoveryProvider: DisasterRecoveryProvider = {
-			backup(connectionUri: string, backupInfo: BackupInfo): Thenable<BackupResponse> {
-				let params: BackupParams = { ownerUri: connectionUri, backupInfo: backupInfo };
+			backup(connectionUri: string, backupInfo: BackupInfo, isScripting: boolean): Thenable<BackupResponse> {
+				let params: BackupParams = { ownerUri: connectionUri, backupInfo: backupInfo, isScripting: isScripting };
 				return self.doSendRequest(connection, BackupRequest.type, params, undefined).then(
 					(result) => {
 						return result;
@@ -2055,6 +2055,7 @@ export class LanguageClient {
 						taskId: params.taskId,
 						status: params.status,
 						message: params.message,
+						script: params.script,
 						duration: params.duration
 					});
 				});

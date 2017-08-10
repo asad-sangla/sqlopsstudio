@@ -15,6 +15,11 @@ export enum TaskStatus {
 	canceling = 6
 }
 
+export enum TaskExecutionMode {
+	execute = 0,
+	script = 1
+}
+
 export class TaskNode {
 	/**
      * id for TaskNode
@@ -77,7 +82,17 @@ export class TaskNode {
      */
 	public status: TaskStatus;
 
-	constructor(taskName: string, serverName: string, databaseName: string, taskId: string = undefined) {
+	/**
+     * Execution mode of task
+     */
+	public taskExecutionMode: TaskExecutionMode;
+
+	/**
+	 * Indicates if the task can be canceled
+	 */
+	public isCancelable: boolean;
+
+	constructor(taskName: string, serverName: string, databaseName: string, taskId: string = undefined, taskExecutionMode: TaskExecutionMode = TaskExecutionMode.execute) {
 		if (taskId) {
 			this.id = taskId;
 		} else {
@@ -91,5 +106,6 @@ export class TaskNode {
 		this.startTime = new Date().toLocaleTimeString();
 		this.status = TaskStatus.inProgress;
 		this.hasChildren = false;
+		this.taskExecutionMode = taskExecutionMode;
 	}
 }

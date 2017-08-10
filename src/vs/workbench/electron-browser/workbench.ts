@@ -633,7 +633,6 @@ export class Workbench implements IPartService {
 		this.splashScreenService = this.instantiationService.createInstance(SplashScreenService);
 		serviceCollection.set(ISplashScreenService, this.splashScreenService);
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
-		serviceCollection.set(ITaskService, this.instantiationService.createInstance(TaskService));
 		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(IServerGroupController, this.instantiationService.createInstance(ServerGroupController));
@@ -645,6 +644,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));
 		serviceCollection.set(IEditorDescriptorService, this.instantiationService.createInstance(EditorDescriptorService));
+		serviceCollection.set(ITaskService, this.instantiationService.createInstance(TaskService));
 		serviceCollection.set(IMetadataService, this.instantiationService.createInstance(MetadataService));
 		serviceCollection.set(IObjectExplorerService, this.instantiationService.createInstance(ObjectExplorerService));
 		serviceCollection.set(IScriptingService, this.instantiationService.createInstance(ScriptingService));

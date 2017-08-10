@@ -136,7 +136,8 @@ export function createApiFactory(
 				ConnectionOptionSpecialType: sqlExtHostTypes.ConnectionOptionSpecialType,
 				EditRowState: sqlExtHostTypes.EditRowState,
 				MetadataType: sqlExtHostTypes.MetadataType,
-				TaskStatus: sqlExtHostTypes.TaskStatus
+				TaskStatus: sqlExtHostTypes.TaskStatus,
+				TaskExecutionMode: sqlExtHostTypes.TaskExecutionMode
 			};
 		}
 	};

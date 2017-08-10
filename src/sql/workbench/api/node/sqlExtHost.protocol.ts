@@ -223,7 +223,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Backup a database
 	 */
-	$backup(handle: number, connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> { throw ni(); }
+	$backup(handle: number, connectionUri: string, backupInfo: data.BackupInfo, isScripting: boolean): Thenable<data.BackupResponse> { throw ni(); }
 
 	/**
 	 * Get the extended database prototype

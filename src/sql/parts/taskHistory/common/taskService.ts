@@ -5,7 +5,7 @@
 
 'use strict';
 import * as data from 'data';
-import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
+import { TaskNode, TaskStatus, TaskExecutionMode } from 'sql/parts/taskHistory/common/taskNode';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import Event, { Emitter } from 'vs/base/common/event';
 export const SERVICE_ID = 'taskHistoryService';
@@ -14,6 +14,7 @@ import { IChoiceService } from 'vs/platform/message/common/message';
 import { localize } from 'vs/nls';
 import Severity from 'vs/base/common/severity';
 import { TPromise } from 'vs/base/common/winjs.base';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 
 export const ITaskService = createDecorator<ITaskService>(SERVICE_ID);
 
@@ -38,6 +39,7 @@ export interface TaskStatusChangeArgs {
 	taskId: string;
 	status: data.TaskStatus;
 	message?: string;
+	script?: string;
 }
 
 export class TaskService implements ITaskService {
@@ -49,7 +51,8 @@ export class TaskService implements ITaskService {
 
 	constructor(
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@IChoiceService private choiceService: IChoiceService
+		@IChoiceService private choiceService: IChoiceService,
+		@IQueryEditorService private queryEditorService: IQueryEditorService
 	) {
 		this._taskQueue = new TaskNode('Root', undefined, undefined);
 		this._onTaskComplete = new Emitter<TaskNode>();
@@ -67,7 +70,7 @@ export class TaskService implements ITaskService {
 	}
 
 	public onNewTaskCreated(handle: number, taskInfo: data.TaskInfo) {
-		let node: TaskNode = new TaskNode(taskInfo.name, taskInfo.serverName, taskInfo.databaseName, taskInfo.taskId);
+		let node: TaskNode = new TaskNode(taskInfo.name, taskInfo.serverName, taskInfo.databaseName, taskInfo.taskId, taskInfo.taskExecutionMode);
 		node.providerName = taskInfo.providerName;
 		this.handleNewTask(node);
 	}
@@ -76,7 +79,8 @@ export class TaskService implements ITaskService {
 		this.handleTaskComplete({
 			taskId: taskProgressInfo.taskId,
 			status: taskProgressInfo.status,
-			message: taskProgressInfo.message
+			message: taskProgressInfo.message,
+			script: taskProgressInfo.script
 		});
 	}
 
@@ -180,7 +184,14 @@ export class TaskService implements ITaskService {
 				default:
 					break;
 			}
+
+			if (task.taskExecutionMode === TaskExecutionMode.script) {
+				if (task.status === TaskStatus.succeeded && eventArgs.script && eventArgs.script !== '') {
+					this.queryEditorService.newSqlEditor(eventArgs.script);
+				}
+			}
 		}
+
 	}
 
 	private getTaskInQueue(taskId: string): TaskNode {

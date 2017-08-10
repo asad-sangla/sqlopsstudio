@@ -285,14 +285,21 @@ export enum TaskStatus {
 	canceled = 5
 }
 
+export enum TaskExecutionMode {
+	execute = 0,
+	script = 1
+}
+
 export interface TaskInfo {
 	taskId: string;
 	status: TaskStatus;
+	taskExecutionMode: TaskExecutionMode;
 	serverName: string;
 	databaseName: string;
 	name: string;
 	description: string;
 	providerName: string;
+	isCancelable: boolean;
 }
 
 export interface ListTasksParams {
@@ -312,6 +319,7 @@ export interface TaskProgressInfo {
 	taskId: string;
 	status: TaskStatus;
 	message: string;
+	script: string;
 	duration: number;
 }
 
@@ -443,6 +451,8 @@ export interface BackupParams {
 	ownerUri: string;
 
 	backupInfo: BackupInfo;
+
+	isScripting: boolean;
 }
 
 export interface BackupResponse {

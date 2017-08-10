@@ -34,11 +34,11 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	/**
 	 * Backup a data source using the provided connection
 	 */
-	public backup(connectionUri: string, backupInfo: data.BackupInfo): Thenable<data.BackupResponse> {
+	public backup(connectionUri: string, backupInfo: data.BackupInfo, isScripting: boolean): Thenable<data.BackupResponse> {
 		return new Promise<data.BackupResponse>((resolve, reject) => {
 			let provider = this.getProvider(connectionUri);
 			if (provider) {
-				provider.backup(connectionUri, backupInfo).then(result => {
+				provider.backup(connectionUri, backupInfo, isScripting).then(result => {
 					resolve(result);
 				}, error => {
 					reject(error);
