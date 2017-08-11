@@ -97,6 +97,7 @@ const vscodeResources = [
 	'out-build/sql/parts/disasterRecovery/**/*.html',
 	'out-build/sql/parts/common/modal/media/**',
 	'out-build/sql/parts/grid/directives/{slick.dragrowselector.js,slick.autosizecolumn.js}',
+	'out-build/sql/parts/grid/load/lib/**',
 	'out-build/sql/parts/grid/load/loadJquery.js',
 	'out-build/sql/parts/grid/media/**',
 	'out-build/sql/parts/grid/views/**/*.html',
