@@ -15,7 +15,8 @@ var jsdom = require('jsdom-no-contextify');
 var minimatch = require('minimatch');
 var fs = require('fs');
 var vm = require('vm');
-var TEST_GLOB = '**/test/**/*.test.js';
+// {{SQL CARBON EDIT}}
+var TEST_GLOB = '**/*test*/**/*.test.js';
 
 // {{SQL CARBON EDIT}}
 var SQL_TEST_GLOB = '**/sqltest/**/*.test.js';

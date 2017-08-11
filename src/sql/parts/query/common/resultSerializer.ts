@@ -18,7 +18,7 @@ import { IWorkspaceConfigurationService } from 'vs/workbench/services/configurat
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IWindowsService } from 'vs/platform/windows/common/windows';
-import { IWindowIPCService } from 'vs/workbench/services/window/electron-browser/windowService';
+//import { IWindowIPCService } from 'vs/workbench/services/window/electron-browser/windowService';
 import { Registry } from 'vs/platform/registry/common/platform';
 import URI from 'vs/base/common/uri';
 import { IUntitledEditorService, UNTITLED_SCHEMA } from 'vs/workbench/services/untitled/common/untitledEditorService';
@@ -58,7 +58,7 @@ export class ResultSerializer {
         @IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
         @IWorkspaceContextService private _contextService: IWorkspaceContextService,
         @IWindowsService private _windowsService: IWindowsService,
-        @IWindowIPCService private _windowIpcService: IWindowIPCService,
+        //@IWindowIPCService private _windowIpcService: IWindowIPCService,
         @IUntitledEditorService private _untitledEditorService: IUntitledEditorService
     ) {
         if (prettyData) {
@@ -156,11 +156,13 @@ export class ResultSerializer {
         let filepathPlaceHolder = this.resolveCurrentDirectory(this._uri);
         filepathPlaceHolder = path.join(filepathPlaceHolder, this.getResultsDefaultFilename(saveRequest));
 
-        let filePath: string = this._windowIpcService.getWindow().showSaveDialog({
-            title: nls.localize('saveAsFileTitle', 'Choose Results File'),
-            defaultPath: paths.normalize(filepathPlaceHolder, true)
-        });
-        return filePath;
+        // Todo bug #1640: showSaveDialog in ResultSerializer is broken.
+        // let filePath: string = this._windowIpcService.getWindow().showSaveDialog({
+        //     title: nls.localize('saveAsFileTitle', 'Choose Results File'),
+        //     defaultPath: paths.normalize(filepathPlaceHolder, true)
+        // });
+        // return filePath;
+        return '';
     }
 
     private getResultsDefaultFilename(saveRequest: ISaveRequest): string {
