@@ -9,6 +9,7 @@ import { Action } from 'vs/base/common/actions';
 import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
 import { TaskNode } from 'sql/parts/taskHistory/common/taskNode';
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import Severity from 'vs/base/common/severity';
 
 export class CancelAction extends Action {
@@ -42,5 +43,27 @@ export class CancelAction extends Action {
 		if (this._errorMessageService) {
 			this._errorMessageService.showDialog(Severity.Error, '', errorMessage);
 		}
+	}
+}
+
+export class ScriptAction extends Action {
+	public static ID = 'taskHistory.script';
+	public static LABEL = localize('script', 'Script');
+
+	constructor(
+		id: string,
+		label: string,
+		@IQueryEditorService private _queryEditorService: IQueryEditorService
+	) {
+		super(id, label);
+	}
+
+	public run(element: TaskNode): TPromise<boolean> {
+		if (element instanceof TaskNode) {
+			if (element.script && element.script !== '') {
+				this._queryEditorService.newSqlEditor(element.script);
+			}
+		}
+		return TPromise.as(true);
 	}
 }

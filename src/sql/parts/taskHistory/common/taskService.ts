@@ -6,6 +6,7 @@
 'use strict';
 import * as data from 'data';
 import { TaskNode, TaskStatus, TaskExecutionMode } from 'sql/parts/taskHistory/common/taskNode';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import Event, { Emitter } from 'vs/base/common/event';
 export const SERVICE_ID = 'taskHistoryService';
@@ -14,7 +15,6 @@ import { IChoiceService } from 'vs/platform/message/common/message';
 import { localize } from 'vs/nls';
 import Severity from 'vs/base/common/severity';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 
 export const ITaskService = createDecorator<ITaskService>(SERVICE_ID);
 
@@ -70,7 +70,7 @@ export class TaskService implements ITaskService {
 	}
 
 	public onNewTaskCreated(handle: number, taskInfo: data.TaskInfo) {
-		let node: TaskNode = new TaskNode(taskInfo.name, taskInfo.serverName, taskInfo.databaseName, taskInfo.taskId, taskInfo.taskExecutionMode);
+		let node: TaskNode = new TaskNode(taskInfo.name, taskInfo.serverName, taskInfo.databaseName, taskInfo.taskId, taskInfo.taskExecutionMode, taskInfo.isCancelable);
 		node.providerName = taskInfo.providerName;
 		this.handleNewTask(node);
 	}
@@ -185,9 +185,12 @@ export class TaskService implements ITaskService {
 					break;
 			}
 
-			if (task.taskExecutionMode === TaskExecutionMode.script) {
-				if (task.status === TaskStatus.succeeded && eventArgs.script && eventArgs.script !== '') {
+			if ((task.status === TaskStatus.succeeded || task.status === TaskStatus.succeededWithWarning)
+				&& eventArgs.script && eventArgs.script !== '') {
+				if (task.taskExecutionMode === TaskExecutionMode.script) {
 					this.queryEditorService.newSqlEditor(eventArgs.script);
+				} else if (task.taskExecutionMode === TaskExecutionMode.executeAndScript) {
+					task.script = eventArgs.script;
 				}
 			}
 		}

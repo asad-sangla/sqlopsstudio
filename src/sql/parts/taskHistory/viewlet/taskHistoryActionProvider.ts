@@ -9,8 +9,8 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ContributableActionProvider } from 'vs/workbench/browser/actions';
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
-import { CancelAction } from 'sql/parts/taskHistory/viewlet/taskAction';
+import { TaskNode, TaskStatus, TaskExecutionMode } from 'sql/parts/taskHistory/common/taskNode';
+import { CancelAction, ScriptAction } from 'sql/parts/taskHistory/viewlet/taskAction';
 
 /**
  *  Provides actions for the history tasks
@@ -32,9 +32,7 @@ export class TaskHistoryActionProvider extends ContributableActionProvider {
 	 */
 	public getActions(tree: ITree, element: any): TPromise<IAction[]> {
 		if (element instanceof TaskNode) {
-			if (element.status === TaskStatus.inProgress){
-				return TPromise.as(this.getTaskHistoryActions(tree, element));
-			}
+			return TPromise.as(this.getTaskHistoryActions(tree, element));
 		}
 		return TPromise.as([]);
 	}
@@ -51,8 +49,20 @@ export class TaskHistoryActionProvider extends ContributableActionProvider {
 	 * Return actions for history task
 	 */
 	public getTaskHistoryActions(tree: ITree, element: TaskNode): IAction[] {
-		return [
-			this._instantiationService.createInstance(CancelAction, CancelAction.ID, CancelAction.LABEL)
-		];
+		var actions = [];
+
+		// get actions for tasks in progress
+		if (element.status === TaskStatus.inProgress && element.isCancelable) {
+			actions.push(this._instantiationService.createInstance(CancelAction, CancelAction.ID, CancelAction.LABEL));
+		}
+
+		// get actions for tasks succeeded
+		if (element.status === TaskStatus.succeeded || element.status === TaskStatus.succeededWithWarning) {
+			if (element.taskExecutionMode === TaskExecutionMode.executeAndScript) {
+				actions.push(this._instantiationService.createInstance(ScriptAction, ScriptAction.ID, ScriptAction.LABEL));
+			}
+		}
+
+		return actions;
 	}
 }

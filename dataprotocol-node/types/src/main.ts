@@ -287,7 +287,8 @@ export enum TaskStatus {
 
 export enum TaskExecutionMode {
 	execute = 0,
-	script = 1
+	script = 1,
+	executeAndScript = 2,
 }
 
 export interface TaskInfo {

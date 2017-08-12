@@ -855,7 +855,8 @@ declare module 'data' {
 
 	export enum TaskExecutionMode {
 		execute = 0,
-		script = 1
+		script = 1,
+		executeAndScript = 2,
 	}
 
 	export interface ListTasksParams {
