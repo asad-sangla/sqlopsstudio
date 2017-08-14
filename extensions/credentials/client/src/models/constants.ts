@@ -58,7 +58,7 @@ export class Constants implements IExtensionConstants {
                 if (architecture === 'x86_64') {
 
                     // First try the distribution name
-                    let runtimeId = this.getRuntimeIdHelper(distribution.name, distribution.version);
+                    let runtimeId = Constants.getRuntimeIdHelper(distribution.name, distribution.version);
 
                     // If the distribution isn't one that we understand, but the 'ID_LIKE' field has something that we understand, use that
                     //
@@ -66,7 +66,7 @@ export class Constants implements IExtensionConstants {
                     // how useful ID_LIKE will be since it requires the version numbers to match up, but it is the best we can do.
                     if (runtimeId === Runtime.UnknownRuntime && distribution.idLike && distribution.idLike.length > 0) {
                         for (let id of distribution.idLike) {
-                            runtimeId = this.getRuntimeIdHelper(id, distribution.version);
+                            runtimeId = Constants.getRuntimeIdHelper(id, distribution.version);
                             if (runtimeId !== Runtime.UnknownRuntime) {
                                 break;
                             }
@@ -87,7 +87,7 @@ export class Constants implements IExtensionConstants {
         }
     }
 
-    private getRuntimeIdHelper(distributionName: string, distributionVersion: string): Runtime {
+    private static getRuntimeIdHelper(distributionName: string, distributionVersion: string): Runtime {
         switch (distributionName) {
             case 'ubuntu':
                 if (distributionVersion.startsWith('14')) {
