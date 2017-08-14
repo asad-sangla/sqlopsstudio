@@ -46,9 +46,25 @@ let editorConnectionProfile: IConnectionProfile = {
 	saveProfile: true,
 	id: undefined
 };
+let connectionProfileWithoutDbName: IConnectionProfile = {
+	serverName: 'new server',
+	databaseName: '',
+	userName: 'user',
+	password: 'password',
+	authenticationType: '',
+	savePassword: true,
+	groupFullName: 'g2/g2-2',
+	groupId: 'group id',
+	getOptionsKey: () => 'connection1',
+	providerName: 'MSSQL',
+	options: {},
+	saveProfile: true,
+	id: undefined
+};
 
 let connection1Id: string;
 let connection2Id: string;
+let connection3Id: string;
 
 suite('SQL ConnectionStatusManager tests', () => {
 	setup(() => {
@@ -58,8 +74,10 @@ suite('SQL ConnectionStatusManager tests', () => {
 		connections = new ConnectionStatusManager(capabilitiesService);
 		connection1Id = Utils.generateUri(connectionProfile);
 		connection2Id = 'connection2Id';
+		connection3Id = 'connection3Id';
 		connections.addConnection(connectionProfile, connection1Id);
 		connections.addConnection(editorConnectionProfile, connection2Id);
+		connections.addConnection(connectionProfileWithoutDbName, connection3Id);
 	});
 
 	test('findConnection should return undefined given invalid id', () => {
@@ -151,5 +169,67 @@ suite('SQL ConnectionStatusManager tests', () => {
 		assert.equal(actual, expected);
 		assert.equal(actualId, newId);
 		assert.equal(actualConnectionId, expectedConnectionId);
+	});
+
+	test('updateDatabaseName should update the database name in connection', () => {
+		let dbName: string = 'db name';
+		let summary: data.ConnectionInfoSummary = {
+			connectionSummary: {
+				databaseName: dbName,
+				serverName: undefined,
+				userName: undefined
+			}
+			, ownerUri: connection3Id,
+			connectionId: 'connection id',
+			errorMessage: undefined,
+			errorNumber: undefined,
+			messages: undefined,
+			serverInfo: undefined
+		};
+
+		//The original connection didn't have database name
+		let connectionStatus = connections.findConnection(connection3Id);
+		connectionStatus.connectionProfile.databaseName = '';
+
+		//Verify database name changed after connection is complete
+		connections.updateDatabaseName(summary);
+		connectionStatus = connections.findConnection(connection3Id);
+		assert.equal(connectionStatus.connectionProfile.databaseName, dbName);
+	});
+
+	test('getOriginalOwnerUri should return the original uri given uri with db name', () => {
+		let dbName: string = 'db name';
+		let summary: data.ConnectionInfoSummary = {
+			connectionSummary: {
+				databaseName: dbName,
+				serverName: undefined,
+				userName: undefined
+			}
+			, ownerUri: connection3Id,
+			connectionId: 'connection id',
+			errorMessage: undefined,
+			errorNumber: undefined,
+			messages: undefined,
+			serverInfo: undefined
+		};
+
+		//The original connection didn't have database name
+		let connectionStatus = connections.findConnection(connection3Id);
+		connectionStatus.connectionProfile.databaseName = '';
+
+		//Verify database name changed after connection is complete
+		connections.updateDatabaseName(summary);
+		connectionStatus = connections.findConnection(connection3Id);
+		let ownerUriWithDbName = Utils.generateUriWithPrefix(connectionStatus.connectionProfile, 'connection://');
+
+		//The uri assigned to connection without db name should be the original one
+		let connectionWitDbStatus = connections.getOriginalOwnerUri(ownerUriWithDbName);
+		assert.equal(connectionWitDbStatus, connection3Id);
+	});
+
+	test('getOriginalOwnerUri should return given uri if the original uri is the same as the given uri', () => {
+
+		let connectionStatus = connections.getOriginalOwnerUri(connection2Id);
+		assert.equal(connectionStatus, connection2Id);
 	});
 });

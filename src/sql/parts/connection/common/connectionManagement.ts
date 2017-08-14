@@ -107,6 +107,13 @@ export interface IConnectionManagementService {
 	findExistingConnection(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): ConnectionProfile;
 
 	/**
+	 * If there's already a connection for given profile and purpose, returns the ownerUri for the connection
+	 * otherwise tries to make a connection and returns the owner uri when connection is complete
+	 * The purpose is connection by default
+	 */
+	connectIfNotConnected(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): Promise<string>;
+
+	/**
 	 * Adds the successful connection to MRU and send the connection error back to the connection handler for failed connections
 	 */
 	onConnectionComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void;

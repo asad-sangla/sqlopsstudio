@@ -89,18 +89,25 @@ export class RestoreDialogService implements IRestoreDialogService {
 	}
 
 	public showDialog(connection: IConnectionProfile): TPromise<void> {
-		this._ownerUri = this._connectionService.getConnectionId(connection);
-		this._sessionId = null;
-		if (!this._restoreDialog) {
-			this._restoreDialog = this._instantiationService.createInstance(RestoreDialog, this.getRestoreOption());
-			this._restoreDialog.onCancel(() => { });
-			this._restoreDialog.onRestore(() => this.handleOnRestore());
-			this._restoreDialog.onValidate(() => this.handleOnValidateFile());
-			this._restoreDialog.render();
-		}
+		return new TPromise<void>((resolve, reject) => {
+			let result: void;
+			this._connectionService.connectIfNotConnected(connection).then(ownerUri => {
+				this._ownerUri = ownerUri;
 
-		return new TPromise<void>(() => {
-			this._restoreDialog.open(connection.serverName, connection.databaseName);
+				this._sessionId = null;
+				if (!this._restoreDialog) {
+					this._restoreDialog = this._instantiationService.createInstance(RestoreDialog, this.getRestoreOption());
+					this._restoreDialog.onCancel(() => { });
+					this._restoreDialog.onRestore(() => this.handleOnRestore());
+					this._restoreDialog.onValidate(() => this.handleOnValidateFile());
+					this._restoreDialog.render();
+				}
+
+				this._restoreDialog.open(connection.serverName, connection.databaseName);
+				resolve(result);
+			}, error => {
+				reject(error);
+			});
 		});
 	}
 }

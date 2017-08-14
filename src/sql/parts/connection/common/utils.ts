@@ -88,20 +88,6 @@ export function formatString(str: string, ...args: any[]): string {
 	return result;
 }
 
-/**
- * Compares 2 database names to see if they are the same.
- * If either is undefined or empty, it is assumed to be 'master'
- */
-function isSameDatabase(currentDatabase: string, expectedDatabase: string): boolean {
-	if (isEmpty(currentDatabase)) {
-		currentDatabase = Constants.defaultDatabase;
-	}
-	if (isEmpty(expectedDatabase)) {
-		expectedDatabase = Constants.defaultDatabase;
-	}
-	return currentDatabase === expectedDatabase;
-}
-
 // One-time use timer for performance testing
 export class Timer {
 	private _startTime: [number, number];
@@ -142,33 +128,33 @@ export class Timer {
  *		 the number of milliseconds in the time string is returned otherwise.
  */
 export function parseTimeString(value: string): number | boolean {
-    if (!value) {
-        return false;
-    }
-    let tempVal = value.split('.');
+	if (!value) {
+		return false;
+	}
+	let tempVal = value.split('.');
 
-    if (tempVal.length === 1) {
-        // Ideally would handle more cleanly than this but for now handle case where ms not set
-        tempVal = [tempVal[0], '0'];
-    } else if (tempVal.length !== 2) {
-        return false;
-    }
+	if (tempVal.length === 1) {
+		// Ideally would handle more cleanly than this but for now handle case where ms not set
+		tempVal = [tempVal[0], '0'];
+	} else if (tempVal.length !== 2) {
+		return false;
+	}
 
-    let msString = tempVal[1];
-    let msStringEnd = msString.length < 3 ? msString.length : 3;
-    let ms = parseInt(tempVal[1].substring(0, msStringEnd), 10);
+	let msString = tempVal[1];
+	let msStringEnd = msString.length < 3 ? msString.length : 3;
+	let ms = parseInt(tempVal[1].substring(0, msStringEnd), 10);
 
-    tempVal = tempVal[0].split(':');
+	tempVal = tempVal[0].split(':');
 
-    if (tempVal.length !== 3) {
-        return false;
-    }
+	if (tempVal.length !== 3) {
+		return false;
+	}
 
-    let h = parseInt(tempVal[0], 10);
-    let m = parseInt(tempVal[1], 10);
-    let s = parseInt(tempVal[2], 10);
+	let h = parseInt(tempVal[0], 10);
+	let m = parseInt(tempVal[1], 10);
+	let s = parseInt(tempVal[2], 10);
 
-    return ms + (h * msInH) + (m * msInM) + (s * msInS);
+	return ms + (h * msInH) + (m * msInM) + (s * msInS);
 }
 
 /**
@@ -213,9 +199,27 @@ export function isNumber(val: any): boolean {
 }
 
 export function generateUri(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): string {
-
-	let id = connection.getOptionsKey();
 	let prefix = purpose ? uriPrefixes[purpose] : uriPrefixes.default;
+	let uri = generateUriWithPrefix(connection, prefix);
+
+	return uri;
+}
+
+export function getUriPrefix(ownerUri: string): string {
+	let prefix: string = '';
+	if (ownerUri) {
+		let index = ownerUri.indexOf('://');
+		if (index > 0) {
+			prefix = ownerUri.substring(0, index + 3);
+		} else {
+			return uriPrefixes.default;
+		}
+	}
+	return prefix;
+}
+
+export function generateUriWithPrefix(connection: IConnectionProfile, prefix: string): string {
+	let id = connection.getOptionsKey();
 	let uri = prefix + (id ? id : connection.serverName + ':' + connection.databaseName);
 
 	return uri;

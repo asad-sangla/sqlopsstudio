@@ -81,6 +81,7 @@ export class ConnectionStatusManager {
 		connectionInfo.connecting = true;
 		self._connections[id] = connectionInfo;
 		connectionInfo.serviceTimer = new Utils.Timer();
+		connectionInfo.ownerUri = id;
 
 		return connectionInfo;
 	}
@@ -117,6 +118,45 @@ export class ConnectionStatusManager {
 		return connection;
 	}
 
+	/**
+	 * Updates database name after connection is complete
+	 * @param summary connection summary
+	 */
+	public updateDatabaseName(summary: data.ConnectionInfoSummary): void {
+		let connection = this._connections[summary.ownerUri];
+
+		//Check if the existing connection database name is different the one in the summary
+		if (connection.connectionProfile.databaseName !== summary.connectionSummary.databaseName) {
+			//Add the ownerUri with database name to the map if not already exists
+			connection.connectionProfile.databaseName = summary.connectionSummary.databaseName;
+			let prefix = Utils.getUriPrefix(summary.ownerUri);
+			let ownerUriWithDbName = Utils.generateUriWithPrefix(connection.connectionProfile, prefix);
+			if (!(ownerUriWithDbName in this._connections)) {
+				this._connections[ownerUriWithDbName] = connection;
+			}
+		}
+	}
+
+	/**
+	 * Tries to find an existing connection that's mapped with given the ownerUri
+	 * The purpose for this method is to find the connection given the ownerUri and find the original uri assigned to it. most of the times should be the same.
+	 * Only if the db name in the original uri is different than when connection is complete, we need to use the original uri
+	 * Returns the generated ownerUri for the connection profile if not existing connection found
+	 * @param ownerUri connection owner uri to find an existing connection
+	 * @param purpose purpose for the connection
+	 */
+	public getOriginalOwnerUri(ownerUri: string): string {
+		let ownerUriToReturn: string = ownerUri;
+
+		let connectionStatusInfo = this.findConnection(ownerUriToReturn);
+		if (connectionStatusInfo && !Utils.isEmpty(connectionStatusInfo.ownerUri)) {
+			//The ownerUri in the connection status is the one service knows about so use that
+			//To call the service for any operation
+			ownerUriToReturn = connectionStatusInfo.ownerUri;
+		}
+		return ownerUriToReturn;
+	}
+
 	public onConnectionChanged(changedConnInfo: data.ChangedConnectionInfo): IConnectionProfile {
 		let connection = this._connections[changedConnInfo.connectionUri];
 		if (connection && connection.connectionProfile) {
@@ -140,7 +180,7 @@ export class ConnectionStatusManager {
 		return uri && uri.startsWith(Utils.uriPrefixes.default);
 	}
 
-	public getProviderIdFromUri(ownerUri: string) {
+	public getProviderIdFromUri(ownerUri: string): string {
 		let providerId: string = '';
 		let connection = this.findConnection(ownerUri);
 		if (connection) {

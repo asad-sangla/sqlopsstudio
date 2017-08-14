@@ -178,8 +178,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 			// show the Registered Server viewlet
 
-			let startupConfig =  this._workspaceConfigurationService.getConfiguration('startup');
-			let showServerViewlet = <boolean> startupConfig['alwaysShowServersView'];
+			let startupConfig = this._workspaceConfigurationService.getConfiguration('startup');
+			let showServerViewlet = <boolean>startupConfig['alwaysShowServersView'];
 			if (showServerViewlet) {
 				this._commandService.executeCommand('workbench.view.connections', {});
 			}
@@ -362,6 +362,31 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	/**
+	 * If there's already a connection for given profile and purpose, returns the ownerUri for the connection
+	 * otherwise tries to make a connection and returns the owner uri when connection is complete
+	 * The purpose is connection by default
+	 */
+	public connectIfNotConnected(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			let ownerUri: string = Utils.generateUri(connection, purpose);
+			if (this._connectionStatusManager.isConnected(ownerUri)) {
+
+				resolve(this._connectionStatusManager.getOriginalOwnerUri(ownerUri));
+			} else {
+				this.connect(connection, ownerUri).then(connectionResult => {
+					if (connectionResult && connectionResult.connected) {
+						resolve(this._connectionStatusManager.getOriginalOwnerUri(ownerUri));
+					} else {
+						reject(connectionResult.error);
+					}
+				}, error => {
+					reject(error);
+				});
+			}
+		});
+	}
+
+	/**
 	 * Opens a new connection and saves the profile in the settings.
 	 * This method doesn't load the password because it only gets called from the
 	 * connection dialog and password should be already in the profile
@@ -388,6 +413,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		if (Utils.isEmpty(uri)) {
 			uri = Utils.generateUri(connection);
 		}
+		uri = this._connectionStatusManager.getOriginalOwnerUri(uri);
 		if (!callbacks) {
 			callbacks = {
 				onConnectReject: () => { },
@@ -760,7 +786,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 		if (Utils.isNotEmpty(info.connectionId)) {
 			if (info.connectionSummary && info.connectionSummary.databaseName) {
-				connection.connectionProfile.databaseName = info.connectionSummary.databaseName;
+				this._connectionStatusManager.updateDatabaseName(info);
 			}
 			connection.serverInfo = info.serverInfo;
 			connection.extensionTimer.end();

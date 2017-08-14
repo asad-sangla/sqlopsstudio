@@ -217,4 +217,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	public getProviderNames(): string[] {
 		return [];
 	}
+
+	connectIfNotConnected(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): Promise<string> {
+		return undefined;
+	}
 }

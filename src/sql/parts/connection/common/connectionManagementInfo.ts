@@ -19,7 +19,7 @@ export class ConnectionManagementInfo {
 	public connectionId: string;
 
 
-    public providerId: string;
+	public providerId: string;
 
     /**
      * Credentials used to connect
@@ -60,4 +60,9 @@ export class ConnectionManagementInfo {
      * Information about the connected server.
      */
 	serverInfo: data.ServerInfo;
+
+    /**
+     * Owner uri assigned to the connection
+     */
+	public ownerUri: string;
 }
