@@ -50,3 +50,28 @@ input[type="radio"] {
 	background-color: #3C3C3C;
 	border-color: #E1E1E1;
 }
+
+.chart-viewer .footer {
+	display: flex;
+}
+
+.chart-viewer .footer .right-footer {
+	display: flex;
+	flex: 1 1 auto;
+	justify-content: flex-end;
+}
+
+.chart-viewer .footer-button a.monaco-button.monaco-text-button {
+	width: 100px;
+}
+
+.vs-dark.monaco-shell .chart-viewer .footer-button a.monaco-button.monaco-text-button {
+	outline-color: #8e8c8c;
+}
+.chart-viewer .footer-button {
+	margin-right: 5px;
+}
+
+.chart-viewer .right-footer .footer-button:last-of-type {
+	margin-right: none;
+}

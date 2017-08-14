@@ -10,6 +10,8 @@ import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { SaveResultsRequestParams } from 'data';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { ISaveRequest } from 'sql/parts/grid/common/interfaces';
+import { PathUtilities } from 'sql/common/pathUtilities';
+import { ISqlWindowService } from 'sql/common/sqlWindowServices';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
@@ -18,7 +20,6 @@ import { IWorkspaceConfigurationService } from 'vs/workbench/services/configurat
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IWindowsService } from 'vs/platform/windows/common/windows';
-//import { IWindowIPCService } from 'vs/workbench/services/window/electron-browser/windowService';
 import { Registry } from 'vs/platform/registry/common/platform';
 import URI from 'vs/base/common/uri';
 import { IUntitledEditorService, UNTITLED_SCHEMA } from 'vs/workbench/services/untitled/common/untitledEditorService';
@@ -27,8 +28,6 @@ import nls = require('vs/nls');
 
 import { ISlickRange } from 'angular2-slickgrid';
 import path = require('path');
-import os = require('os');
-import fs = require('fs');
 declare let prettyData;
 
 /**
@@ -41,12 +40,10 @@ export class ResultSerializer {
     private static CSV_TYPE: string = 'csv';
     private static XML_TYPE: string = 'xml';
     private static EXCEL_TYPE: string = 'excel';
-    private static FILE_SCHEMA: string = 'file';
     private static MAX_FILENAMES = 100;
 
     private _uri: string;
     private _filePath: string;
-    private _isTempFile: boolean;
     private pd: any;
 
     constructor(
@@ -58,7 +55,7 @@ export class ResultSerializer {
         @IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
         @IWorkspaceContextService private _contextService: IWorkspaceContextService,
         @IWindowsService private _windowsService: IWindowsService,
-        //@IWindowIPCService private _windowIpcService: IWindowIPCService,
+        @ISqlWindowService private _sqlWindowService: ISqlWindowService,
         @IUntitledEditorService private _untitledEditorService: IUntitledEditorService
     ) {
         if (prettyData) {
@@ -145,7 +142,7 @@ export class ResultSerializer {
     }
 
     private get rootPath(): string {
-        return this._contextService.hasWorkspace() ? this._contextService.getWorkspace().resource.fsPath : undefined;
+        return PathUtilities.getRootPath(this._contextService);
     }
 
     private logToOutputChannel(message: string): void {
@@ -153,16 +150,14 @@ export class ResultSerializer {
     }
 
     private promptForFilepath(saveRequest: ISaveRequest): string {
-        let filepathPlaceHolder = this.resolveCurrentDirectory(this._uri);
+        let filepathPlaceHolder = PathUtilities.resolveCurrentDirectory(this._uri, this.rootPath);
         filepathPlaceHolder = path.join(filepathPlaceHolder, this.getResultsDefaultFilename(saveRequest));
 
-        // Todo bug #1640: showSaveDialog in ResultSerializer is broken.
-        // let filePath: string = this._windowIpcService.getWindow().showSaveDialog({
-        //     title: nls.localize('saveAsFileTitle', 'Choose Results File'),
-        //     defaultPath: paths.normalize(filepathPlaceHolder, true)
-        // });
-        // return filePath;
-        return '';
+        let filePath: string = this._sqlWindowService.showSaveDialog({
+            title: nls.localize('saveAsFileTitle', 'Choose Results File'),
+            defaultPath: paths.normalize(filepathPlaceHolder, true)
+        });
+        return filePath;
     }
 
     private getResultsDefaultFilename(saveRequest: ISaveRequest): string {
@@ -215,40 +210,10 @@ export class ResultSerializer {
         return config;
     }
 
-    private resolveCurrentDirectory(uri: string): string {
-        const self = this;
-        self._isTempFile = false;
-        let sqlUri = URI.parse(uri);
-        let currentDirectory: string;
-
-        // use current directory of the sql file if sql file is saved
-        if (sqlUri.scheme === ResultSerializer.FILE_SCHEMA) {
-            currentDirectory = path.dirname(sqlUri.fsPath);
-        } else if (sqlUri.scheme === UNTITLED_SCHEMA) {
-            // if sql file is unsaved/untitled but a workspace is open use workspace root
-            let root = this.rootPath;
-            if (root) {
-                currentDirectory = root;
-            } else {
-                // use temp directory
-                currentDirectory = os.tmpdir();
-                self._isTempFile = true;
-            }
-        } else {
-            currentDirectory = path.dirname(sqlUri.path);
-        }
-        return currentDirectory;
-    }
-
-    private resolveFilePath(uri: string, filePath: string): string {
-        let currentDirectory = this.resolveCurrentDirectory(uri);
-        return path.normalize(path.join(currentDirectory, filePath));
-    }
-
     private getParameters(filePath: string, batchIndex: number, resultSetNo: number, format: string, selection: ISlickRange): SaveResultsRequestParams {
         let saveResultsParams: SaveResultsRequestParams;
         if (!path.isAbsolute(filePath)) {
-            this._filePath = this.resolveFilePath(this._uri, filePath);
+            this._filePath = PathUtilities.resolveFilePath(this._uri, filePath, this.rootPath);
         } else {
             this._filePath = filePath;
         }
@@ -316,7 +281,7 @@ export class ResultSerializer {
             // This will not open in VSCode as it's treated as binary. Use the native file opener instead
             // Note: must use filePath here, URI does not open correctly
             // TODO see if there is an alternative opener that includes error handling
-            let fileUri = URI.from({ scheme: ResultSerializer.FILE_SCHEMA, path: filePath });
+            let fileUri = URI.from({ scheme: PathUtilities.FILE_SCHEMA, path: filePath });
             this._windowsService.openExternal(fileUri.toString());
         } else {
             let uri = URI.file(filePath);

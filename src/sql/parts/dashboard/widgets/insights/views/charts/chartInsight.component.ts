@@ -72,7 +72,7 @@ export const defaultChartConfig: IChartConfig = {
 
 @Component({
 	template: `	<div style="display: block; width: 100%; height: 100%; position: relative">
-					<canvas *ngIf="_isDataAvailable"
+					<canvas #canvas *ngIf="_isDataAvailable"
 							baseChart
 							[datasets]="chartData"
 							[labels]="labels"
@@ -86,6 +86,7 @@ export abstract class ChartInsight implements IInsightsView, OnDestroy {
 	private _options: any = {};
 
 	@ViewChild(BaseChartDirective) private _chart: BaseChartDirective;
+	@ViewChild('canvas', {read: ElementRef}) private _canvas: ElementRef;
 
 	protected _defaultConfig = defaultChartConfig;
 	protected _disposables: Array<IDisposable> = [];
@@ -144,6 +145,19 @@ export abstract class ChartInsight implements IInsightsView, OnDestroy {
 	public refresh() {
 		// cheaper refresh but causes problems when change data for rerender
 		this._chart.ngOnChanges({});
+	}
+
+	public getCanvasData(format?: string): any {
+		if (!format) {
+			format = 'png';
+		}
+
+		if (this._canvas) {
+			let canvasElement = <HTMLCanvasElement>$(this._canvas.nativeElement).get(0);
+			let canvasData = canvasElement.toDataURL('image/' + format);
+			return canvasData;
+		}
+		return undefined;
 	}
 
 	@Input() set data(data: IInsightData) {

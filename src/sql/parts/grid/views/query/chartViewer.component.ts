@@ -20,6 +20,8 @@ import { IInsightData, IInsightsView, IInsightsConfig } from 'sql/parts/dashboar
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { DataType, ILineConfig } from 'sql/parts/dashboard/widgets/insights/views/charts/types/lineChart.component';
+import { PathUtilities } from 'sql/common/pathUtilities';
+import * as Utils from 'sql/parts/connection/common/utils';
 
 /* Insights */
 import {
@@ -38,6 +40,10 @@ import URI from 'vs/base/common/uri';
 import * as nls from 'vs/nls';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { mixin } from 'vs/base/common/objects';
+import paths = require('vs/base/common/paths');
+
+import path = require('path');
+import fs = require('fs');
 
 const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribution);
 
@@ -52,6 +58,8 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 	private labelFirstColumnCheckBox: Checkbox;
 	private columnsAsLabelsCheckBox: Checkbox;
 	private createInsightButton: Button;
+	private saveChartButton: Button;
+	private copyChartButton: Button;
 
 	/* UI */
 	/* tslint:disable:no-unused-variable */
@@ -66,6 +74,9 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 	private columnsAsLabelsLabel: string = nls.localize('columnsAsLabelsLabel', 'Use Column names as labels?');
 	private legendLabel: string = nls.localize('legendLabel', 'Legend Position');
 	private createInsightLabel: string = nls.localize('createInsightLabel', 'Create Dashboard Insight');
+	private saveChartLabel: string = nls.localize('saveChartLabel', 'Save As Image');
+	private copyChartLabel: string = nls.localize('copyChartLabel', 'Copy Image');
+	private chartNotFoundError: string = nls.localize('chartNotFound', 'Could not find chart to save');
 	/* tslint:enable:no-unused-variable */
 
 	private _chartConfig: ILineConfig;
@@ -80,6 +91,8 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 	@ViewChild('labelFirstColumnContainer', { read: ElementRef }) private labelFirstColumnElement;
 	@ViewChild('columnsAsLabelsContainer', { read: ElementRef }) private columnsAsLabelsElement;
 	@ViewChild('createInsightButtonContainer', { read: ElementRef }) private createInsightButtonElement;
+	@ViewChild('saveChartButtonContainer', { read: ElementRef }) private saveChartButtonElement;
+	@ViewChild('copyChartButtonContainer', { read: ElementRef }) private copyChartButtonElement;
 
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
@@ -131,6 +144,18 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		this._disposables.push(this.createInsightButton.addListener(EventType.CLICK, () => this.onCreateInsight()));
 		this._disposables.push(attachButtonStyler(this.createInsightButton, this._bootstrapService.themeService));
 
+		// save as image button
+		this.saveChartButton = new Button(this.saveChartButtonElement.nativeElement, {});
+		this.saveChartButton.label = this.saveChartLabel;
+		this._disposables.push(this.saveChartButton.addListener(EventType.CLICK, () => this.onSaveChart()));
+		this._disposables.push(attachButtonStyler(this.saveChartButton, this._bootstrapService.themeService));
+
+		// copy image button
+		this.copyChartButton = new Button(this.copyChartButtonElement.nativeElement, {});
+		this.copyChartButton.label = this.copyChartLabel;
+		this._disposables.push(this.copyChartButton.addListener(EventType.CLICK, () => this.onCopyChart()));
+		this._disposables.push(attachButtonStyler(this.copyChartButton, this._bootstrapService.themeService));
+
 	}
 
 	public onChartChanged(): void {
@@ -166,6 +191,55 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		this._chartConfig.dataDirection = direction;
 		// Requires full chart refresh
 		this.initChart();
+	}
+
+	public onCopyChart(): void {
+		let data = this._chartComponent.getCanvasData('jpeg');
+		if (!data) {
+			this.showError(this.chartNotFoundError);
+			return;
+		}
+
+		this._bootstrapService.sqlWindowService.writeImageFromDataUrl(data);
+	}
+
+	public onSaveChart(): void {
+		let filePath = this.promptForFilepath();
+		let format = paths.extname(filePath);
+		let self = this;
+		let data = this._chartComponent.getCanvasData(format);
+		if (!data) {
+			this.showError(this.chartNotFoundError);
+			return;
+		}
+		if (!Utils.isEmpty(filePath)) {
+			let buffer = self.decodeBase64Image(data);
+			fs.writeFile(filePath, buffer, (err) => {
+				if (err) {
+					self.showError(err.message);
+				} else {
+					let fileUri = URI.from({ scheme: PathUtilities.FILE_SCHEMA, path: filePath });
+					self._bootstrapService.windowsService.openExternal(fileUri.toString());
+					self._bootstrapService.messageService.show(Severity.Info, nls.localize('chartSaved', 'Saved Chart to path: {0}', filePath));
+				}
+			});
+		}
+	}
+
+    private promptForFilepath(): string {
+        let filepathPlaceHolder = PathUtilities.resolveCurrentDirectory(this.getActiveUriString(), PathUtilities.getRootPath(this._bootstrapService.workspaceContextService));
+        filepathPlaceHolder = path.join(filepathPlaceHolder, 'Chart.jpeg');
+
+        let filePath: string = this._bootstrapService.sqlWindowService.showSaveDialog({
+            title: nls.localize('saveAsFileTitle', 'Choose Results File'),
+            defaultPath: paths.normalize(filepathPlaceHolder, true)
+        });
+        return filePath;
+	}
+
+	private decodeBase64Image(data: string): Buffer {
+		let matches = data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+		return new Buffer(matches[2], 'base64');
 	}
 
 	public onCreateInsight(): void {

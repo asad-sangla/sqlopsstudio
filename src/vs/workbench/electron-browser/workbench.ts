@@ -130,6 +130,8 @@ import { DisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/dis
 import { RestoreDialogService } from 'sql/parts/disasterRecovery/restore/restoreDialogService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService, InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { ISqlWindowService } from 'sql/common/sqlWindowServices';
+import { SqlWindowService } from 'sql/common/browser/sqlWindowServicesImpl';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -632,6 +634,7 @@ export class Workbench implements IPartService {
 		// SQL Tools services
 		this.splashScreenService = this.instantiationService.createInstance(SplashScreenService);
 		serviceCollection.set(ISplashScreenService, this.splashScreenService);
+		serviceCollection.set(ISqlWindowService, this.instantiationService.createInstance(SqlWindowService));
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
 		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));

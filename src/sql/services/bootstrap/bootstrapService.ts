@@ -17,6 +17,7 @@ import { IQueryManagementService } from 'sql/parts/query/common/queryManagement'
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { ISqlWindowService } from 'sql/common/sqlWindowServices';
 
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
@@ -29,6 +30,7 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { IWindowsService } from 'vs/platform/windows/common/windows';
 
 export const BOOTSTRAP_SERVICE_ID = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -66,6 +68,8 @@ export interface IBootstrapService {
 	restoreDialogService: IRestoreDialogService;
 	messageService: IMessageService;
 	workspaceContextService: IWorkspaceContextService;
+	windowsService: IWindowsService;
+	sqlWindowService: ISqlWindowService;
 
 	/*
 	* Bootstraps the Angular module described. Components that need singleton services should inject the

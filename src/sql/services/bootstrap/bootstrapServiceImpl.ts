@@ -19,6 +19,7 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { ISqlWindowService } from 'sql/common/sqlWindowServices';
 
 import { $ } from 'vs/base/browser/dom';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
@@ -33,6 +34,7 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from './bootstrapService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { IWindowsService } from 'vs/platform/windows/common/windows';
 
 export class BootstrapService implements IBootstrapService {
 
@@ -73,7 +75,9 @@ export class BootstrapService implements IBootstrapService {
 		@IInsightsDialogService public insightsDialogService: IInsightsDialogService,
 		@IContextViewService public contextViewService: IContextViewService,
 		@IMessageService public messageService: IMessageService,
-		@IWorkspaceContextService public workspaceContextService: IWorkspaceContextService
+		@IWorkspaceContextService public workspaceContextService: IWorkspaceContextService,
+		@IWindowsService public windowsService: IWindowsService,
+		@ISqlWindowService public sqlWindowService: ISqlWindowService,
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();
