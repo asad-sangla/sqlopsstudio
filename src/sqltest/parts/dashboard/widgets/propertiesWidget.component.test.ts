@@ -38,33 +38,9 @@ suite('Dashboard Properties Widget Tests', () => {
 		let propertiesConfig = {
 			properties: [
 				{
-					provider: 'MSSQL',
-					flavors: [
-						{
-							flavor: 'blank',
-							condition: {
-								field: 'isCloud',
-								operator: '!=',
-								value: 'true'
-							},
-							databaseProperties: [
-								{
-									name: 'Test',
-									value: [
-										'testProperty'
-									]
-								}
-							],
-							serverProperties: [
-								{
-									name: 'Test',
-									value: [
-										'testProperty'
-									]
-								}
-							]
-						}
-					]
+
+					displayName: 'Test',
+					value: 'testProperty'
 				}
 			]
 		};
@@ -123,7 +99,7 @@ suite('Dashboard Properties Widget Tests', () => {
 		setTimeout(() => {
 			// because properties is private we need to do some work arounds to access it.
 			assert.equal((<any>testComponent).properties.length, 1);
-			assert.equal((<any>testComponent).properties[0].name, 'Test');
+			assert.equal((<any>testComponent).properties[0].displayName, 'Test');
 			assert.equal((<any>testComponent).properties[0].value, 'Test Property');
 			done();
 		});
