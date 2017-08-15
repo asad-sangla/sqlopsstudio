@@ -42,13 +42,14 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 import { getParseErrorMessage } from 'vs/base/common/jsonErrorMessages';
 
 // implementation
-
-const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
-const DEFAULT_THEME_SETTING_VALUE = 'Default Dark+';
+  // {{SQL CARBON EDIT}}
+const DEFAULT_THEME_ID = 'vs sql-theme-carbon-themes-light_carbon-json';
+const DEFAULT_THEME_SETTING_VALUE = 'Default Light Carbon';
 
 const PERSISTED_THEME_STORAGE_KEY = 'colorThemeData';
 
-const defaultThemeExtensionId = 'vscode-theme-defaults';
+// {{SQL CARBON EDIT}}
+const defaultThemeExtensionId = 'sql-theme-carbon';
 const oldDefaultThemeExtensionId = 'vscode-theme-colorful-defaults';
 
 const DEFAULT_ICON_THEME_SETTING_VALUE = 'vs-seti';

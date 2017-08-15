@@ -1,0 +1,29 @@
+{
+    "name": "theme-carbon",
+    "displayName": "Carbon Themes",
+    "description": "The light and dark themes for Carbon",
+    "version": "0.1.0",
+    "publisher": "sql",
+    "engines": {
+        "vscode": "*"
+    },
+    "categories": [
+        "Themes"
+    ],
+    "contributes": {
+        "themes": [
+            {
+                "id": "Default Light Carbon",
+                "label": "Light Carbon (default light)",
+                "uiTheme": "vs",
+                "path": "./themes/light_carbon.json"
+            },
+            {
+                "id": "Default Dark Carbon",
+                "label": "Dark Carbon (default dark)",
+                "uiTheme": "vs-dark",
+                "path": "./themes/dark_carbon.json"
+            }
+        ]
+    }
+}
