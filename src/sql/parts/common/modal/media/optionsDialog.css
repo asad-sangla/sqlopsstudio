@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.advancedDialog-label {
+.optionsDialog-label {
 	width: 120px;
 	padding-bottom: 5px;
 }
 
-.advancedDialog-input {
+.optionsDialog-input {
 	width: 200px;
 	padding-bottom: 5px;
 	padding-right: 7px;
 }
 
-.advanced-dialog .select-box {
+.options-dialog .select-box {
 	width: 321px;
 	margin-left: 1px;
 }
 
-.advancedDialog-properties-groups {
+.optionsDialog-options-groups {
 	padding: 15px;
 	height: calc(100% - 150px);
 	overflow-y: auto;
@@ -33,24 +33,24 @@
 	cursor: pointer;
 }
 
-.advancedDialog-description {
+.optionsDialog-description {
 	padding: 15px;
 	overflow-y: auto;
 }
 
-.advancedDialog-properties {
+.optionsDialog-options {
 	height: calc(100% - 30px);
 }
 
-.advancedDialog-description-content {
+.optionsDialog-description-content {
 	padding: 10px;
 }
 
-.advancedDialog-table{
+.optionsDialog-table{
 	width:100%;
 	padding: 10px;
 }
 
-td.advancedDialog-input.select-container {
+td.optionsDialog-input.select-container {
 	padding-right: 9px;
 }

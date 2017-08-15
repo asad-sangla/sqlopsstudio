@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+import { OptionsDialog } from 'sql/parts/common/modal/optionsDialog';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
-import { AdvancedPropertiesDialog } from 'sql/parts/connection/connectionDialog/advancedPropertiesDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import data = require('data');
 import * as TypeMoq from 'typemoq';
@@ -81,27 +81,11 @@ suite('Advanced properties dialog tests', () => {
 		];
 	});
 
-	test('group connection properties by category should set group and order properties correctly', () => {
-		var connectionPropertiesMaps = advancedController.groupConnectionPropertiesByCategory(providerOptions);
-		assert.equal(connectionPropertiesMaps['General'].length, 1);
-		assert.equal(connectionPropertiesMaps['General'][0].name, 'noType');
-		assert.equal(connectionPropertiesMaps['a'].length, 2);
-		assert.equal(connectionPropertiesMaps['b'].length, 2);
-
-		var expectedResult = ['a', 'b', 'General'];
-		var count = 0;
-		//Testing the order of the properties Map
-		for (var category in connectionPropertiesMaps) {
-			assert.equal(category, expectedResult[count]);
-			count++;
-		}
-	});
-
 	test('advanced dialog should open when showDialog in advancedController get called', () => {
 		var isAdvancedDialogCalled = false;
 		let options: { [name: string]: any } = {};
 		let builder: Builder = $().div();
-		let advanceDialog = TypeMoq.Mock.ofType(AdvancedPropertiesDialog, TypeMoq.MockBehavior.Loose, builder.getHTMLElement(), {});
+		let advanceDialog = TypeMoq.Mock.ofType(OptionsDialog, TypeMoq.MockBehavior.Loose, builder.getHTMLElement(), {});
 		advanceDialog.setup(x => x.open(TypeMoq.It.isAny(), TypeMoq.It.isAny())).callback(() => {
 			isAdvancedDialogCalled = true;
 		});

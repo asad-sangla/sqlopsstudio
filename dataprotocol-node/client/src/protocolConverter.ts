@@ -457,18 +457,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 				&& result.capabilities.adminServicesProvider.databaseInfoOptions.length > 0) {
 				for (let i = 0; i < result.capabilities.adminServicesProvider.databaseInfoOptions.length; ++i) {
 					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.databaseInfoOptions[i];
-					let descOption: data.ServiceOption = {
-						name: srcOption.name,
-						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
-						description: srcOption.description,
-						groupName: srcOption.groupName,
-						defaultValue: srcOption.defaultValue,
-						categoryValues: srcOption.categoryValues,
-						isRequired: srcOption.isRequired,
-						isArray: srcOption.isArray,
-						objectType: srcOption.objectType,
-						valueType: asServiceOptionType(srcOption.valueType)
-					};
+					let descOption: data.ServiceOption = buildServiceOption(srcOption);
 					capabilities.adminServicesProvider.databaseInfoOptions.push(descOption);
 				}
 			}
@@ -477,18 +466,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 				&& result.capabilities.adminServicesProvider.databaseFileInfoOptions.length > 0) {
 				for (let i = 0; i < result.capabilities.adminServicesProvider.databaseFileInfoOptions.length; ++i) {
 					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.databaseFileInfoOptions[i];
-					let descOption: data.ServiceOption = {
-						name: srcOption.name,
-						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
-						description: srcOption.description,
-						groupName: srcOption.groupName,
-						defaultValue: srcOption.defaultValue,
-						categoryValues: srcOption.categoryValues,
-						isRequired: srcOption.isRequired,
-						isArray: srcOption.isArray,
-						objectType: srcOption.objectType,
-						valueType: asServiceOptionType(srcOption.valueType),
-					};
+					let descOption: data.ServiceOption = buildServiceOption(srcOption);
 					capabilities.adminServicesProvider.databaseFileInfoOptions.push(descOption);
 				}
 			}
@@ -497,49 +475,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 				&& result.capabilities.adminServicesProvider.fileGroupInfoOptions.length > 0) {
 				for (let i = 0; i < result.capabilities.adminServicesProvider.fileGroupInfoOptions.length; ++i) {
 					let srcOption: ls.ServiceOption = result.capabilities.adminServicesProvider.fileGroupInfoOptions[i];
-					let descOption: data.ServiceOption = {
-						name: srcOption.name,
-						displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
-						description: srcOption.description,
-						groupName: srcOption.groupName,
-						defaultValue: srcOption.defaultValue,
-						categoryValues: srcOption.categoryValues,
-						isRequired: srcOption.isRequired,
-						isArray: srcOption.isArray,
-						objectType: srcOption.objectType,
-						valueType: asServiceOptionType(srcOption.valueType),
-					};
+					let descOption: data.ServiceOption = buildServiceOption(srcOption);
 					capabilities.adminServicesProvider.fileGroupInfoOptions.push(descOption);
 				}
-			}
-
-			if (result.capabilities.features
-				&& result.capabilities.features.length > 0) {
-				result.capabilities.features.forEach(feature => {
-					let descFeature: data.FeatureMetadataProvider = {
-						enabled: feature.enabled,
-						featureName: feature.featureName,
-						optionsMetadata: []
-					};
-					capabilities.features.push(descFeature);
-
-					feature.optionsMetadata.forEach(srcOption => {
-						let descOption: data.ServiceOption = {
-							name: srcOption.name,
-							displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
-							description: srcOption.description,
-							groupName: srcOption.groupName,
-							defaultValue: srcOption.defaultValue,
-							categoryValues: srcOption.categoryValues,
-							isRequired: srcOption.isRequired,
-							isArray: srcOption.isArray,
-							objectType: srcOption.objectType,
-							valueType: asServiceOptionType(srcOption.valueType)
-						};
-						descFeature.optionsMetadata.push(descOption);
-					});
-
-				});
 			}
 		}
 
@@ -582,7 +520,38 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 			}
 		}
 
+		if (result.capabilities.features
+			&& result.capabilities.features.length > 0) {
+			result.capabilities.features.forEach(feature => {
+				let descFeature: data.FeatureMetadataProvider = {
+					enabled: feature.enabled,
+					featureName: feature.featureName,
+					optionsMetadata: []
+				};
+				capabilities.features.push(descFeature);
+
+				feature.optionsMetadata.forEach(srcOption => {
+					descFeature.optionsMetadata.push(buildServiceOption(srcOption));
+				});
+			});
+		}
+
 		return capabilities;
+	}
+
+	function buildServiceOption(srcOption: ls.ServiceOption): data.ServiceOption {
+		return {
+			name: srcOption.name,
+			displayName: srcOption.displayName ? srcOption.displayName : srcOption.name,
+			description: srcOption.description,
+			groupName: srcOption.groupName,
+			defaultValue: srcOption.defaultValue,
+			categoryValues: srcOption.categoryValues,
+			isRequired: srcOption.isRequired,
+			isArray: srcOption.isArray,
+			objectType: srcOption.objectType,
+			valueType: asServiceOptionType(srcOption.valueType),
+		};
 	}
 
 	function asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata {

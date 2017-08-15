@@ -5,14 +5,16 @@
 
 'use strict';
 
-import { AdvancedPropertiesDialog } from 'sql/parts/connection/connectionDialog/advancedPropertiesDialog';
+// // import { AdvancedPropertiesDialog } from 'sql/parts/connection/connectionDialog/advancedPropertiesDialog';
+import { OptionsDialog } from 'sql/parts/common/modal/optionsDialog';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import data = require('data');
+import { localize } from 'vs/nls';
 
 export class AdvancedPropertiesController {
 	private _container: HTMLElement;
 
-	private _advancedDialog: AdvancedPropertiesDialog;
+	private _advancedDialog: OptionsDialog;
 	private _options: { [name: string]: any };
 
 	constructor(private _onCloseAdvancedProperties: () => void,
@@ -22,37 +24,21 @@ export class AdvancedPropertiesController {
 
 
 	private handleOnOk(): void {
-		this._options = this._advancedDialog.options;
+		this._options = this._advancedDialog.optionValues;
 	}
 
 	public showDialog(providerOptions: data.ConnectionOption[], container: HTMLElement, options: { [name: string]: any }): void {
 		this._options = options;
 		this._container = container;
-		var connectionPropertiesMaps = this.groupConnectionPropertiesByCategory(providerOptions);
-		this.advancedDialog.open(connectionPropertiesMaps, this._options);
-	}
-
-	public groupConnectionPropertiesByCategory(providerOptions: data.ConnectionOption[]): { [category: string]: data.ConnectionOption[] } {
-		var connectionPropertiesMaps: { [category: string]: data.ConnectionOption[] } = {};
-		for (var i = 0; i < providerOptions.length; i++) {
-			var property = providerOptions[i];
-			var groupName = property.groupName;
-			if (groupName === null || groupName === undefined) {
-				groupName = 'General';
-			}
-
-			if (!!connectionPropertiesMaps[groupName]) {
-				connectionPropertiesMaps[groupName].push(property);
-			} else {
-				connectionPropertiesMaps[groupName] = [property];
-			}
-		}
-		return connectionPropertiesMaps;
+		var serviceOptions = providerOptions.map(option => AdvancedPropertiesController.connectionOptionToServiceOption(option));
+		this.advancedDialog.open(serviceOptions, this._options);
 	}
 
 	public get advancedDialog() {
 		if (!this._advancedDialog) {
-			this._advancedDialog = this._instantiationService.createInstance(AdvancedPropertiesDialog);
+			this._advancedDialog = this._instantiationService.createInstance(
+				OptionsDialog, localize('advancedProperties', 'Advanced properties'), { hasBackButton: true });
+			this._advancedDialog.cancelLabel = localize('discard', 'Discard');
 			this._advancedDialog.onCloseEvent(() => this._onCloseAdvancedProperties());
 			this._advancedDialog.onOk(() => this.handleOnOk());
 			this._advancedDialog.render();
@@ -60,7 +46,22 @@ export class AdvancedPropertiesController {
 		return this._advancedDialog;
 	}
 
-	public set advancedDialog(dialog: AdvancedPropertiesDialog) {
+	public set advancedDialog(dialog: OptionsDialog) {
 		this._advancedDialog = dialog;
+	}
+
+	public static connectionOptionToServiceOption(connectionOption: data.ConnectionOption): data.ServiceOption {
+		return {
+			name: connectionOption.name,
+			displayName: connectionOption.displayName,
+			description: connectionOption.description,
+			groupName: connectionOption.groupName,
+			valueType: connectionOption.valueType,
+			defaultValue: connectionOption.defaultValue,
+			objectType: undefined,
+			categoryValues: connectionOption.categoryValues,
+			isRequired: connectionOption.isRequired,
+			isArray: undefined,
+		};
 	}
 }
