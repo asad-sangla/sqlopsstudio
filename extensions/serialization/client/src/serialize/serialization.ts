@@ -7,6 +7,7 @@
 import * as Contracts from '../models/contracts';
 import { ISerialization } from './iserialization';
 import { SqlToolsServiceClient } from 'extensions-modules';
+import * as data from 'data';
 
 /**
  * Implements serializer for query results
@@ -25,14 +26,14 @@ export class Serialization implements ISerialization {
      * @param {string} credentialId the ID uniquely identifying this credential
      * @returns {Promise<ISaveResultsInfo>} Promise that resolved to the credential, or undefined if not found
      */
-    public saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Promise<boolean> {
+    public saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Promise<data.SaveResultRequestResult> {
         let self = this;
         let resultsInfo: Contracts.SaveResultsInfo  = new Contracts.SaveResultsInfo(saveFormat, savePath, results, appendToFile);
-        return new Promise<boolean>( (resolve, reject) => {
+        return new Promise<data.SaveResultRequestResult>( (resolve, reject) => {
             self._client
             .sendRequest(Contracts.SaveAsRequest.type, resultsInfo)
-            .then(status => {
-                resolve(<boolean>status);
+            .then(result => {
+                resolve(<data.SaveResultRequestResult>result);
             }, err => reject(err));
         });
     }

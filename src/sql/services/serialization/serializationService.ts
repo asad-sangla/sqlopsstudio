@@ -7,11 +7,15 @@
 
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
+import * as Constants from 'sql/common/constants';
+import * as data from 'data';
 
 export const SERVICE_ID = 'serializationService';
 
 export interface SerializationProviderEvents {
-	onSaveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean>;
+	onSaveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult>;
 }
 
 export const ISerializationService = createDecorator<ISerializationService>(SERVICE_ID);
@@ -19,9 +23,13 @@ export const ISerializationService = createDecorator<ISerializationService>(SERV
 export interface ISerializationService {
 	_serviceBrand: any;
 
-	saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean>;
+	saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult>;
+
+	disabledSaveAs(): Thenable<data.SaveResultRequestResult>;
 
 	addEventListener(handle: number, events: SerializationProviderEvents): IDisposable;
+
+	getSerializationFeatureMetadataProvider(ownerUri: string): data.FeatureMetadataProvider;
 }
 
 export class SerializationService implements ISerializationService {
@@ -34,7 +42,10 @@ export class SerializationService implements ISerializationService {
 
 	private _lastHandle: number;
 
-	constructor() {
+	constructor(
+		@IConnectionManagementService private _connectionService: IConnectionManagementService,
+		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService
+	) {
 	}
 
 	public addEventListener(handle: number, events: SerializationProviderEvents): IDisposable {
@@ -48,12 +59,28 @@ export class SerializationService implements ISerializationService {
 		};
 	}
 
-	public saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean> {
+	public saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult> {
 		if (this._serverEvents === undefined || this._serverEvents[this._lastHandle] === undefined) {
-			return undefined;
+			return this.disabledSaveAs();
 		}
 
 		return this._serverEvents[this._lastHandle].onSaveAs(saveFormat, savePath, results, appendToFile);
+	}
+
+	public disabledSaveAs(): Thenable<data.SaveResultRequestResult> {
+		return Promise.resolve({messages: Constants.SerializationDisabled});
+
+	}
+
+	public getSerializationFeatureMetadataProvider(ownerUri: string) : data.FeatureMetadataProvider {
+		let providerId: string = this._connectionService.getProviderIdFromUri(ownerUri);
+		let providerCapabilities = this._capabilitiesService.getCapabilities().find(c => c.providerName === providerId);
+
+		if (providerCapabilities) {
+			return providerCapabilities.features.find(f => f.featureName === SERVICE_ID);
+		}
+
+		return undefined;
 	}
 
 	public dispose(): void {

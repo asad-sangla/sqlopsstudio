@@ -254,7 +254,7 @@ export class ResultSerializer {
 
         this.logToOutputChannel(Constants.msgSaveStarted + this._filePath);
 
-        // send message to the sqlserverclient for converting resuts to the requested format and saving to filepath
+        // send message to the sqlserverclient for converting results to the requested format and saving to filepath
         return this._queryManagementService.saveResults(saveResultsParams).then(result => {
             if (result.messages) {
                 this._messageService.show(Severity.Error, Constants.msgSaveFailed + result.messages);

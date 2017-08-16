@@ -18,6 +18,7 @@ import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
+import { ISerializationService } from 'sql/services/serialization/serializationService';
 
 /**
  * Main thread class for handling data protocol management registration.
@@ -40,7 +41,8 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		@IScriptingService private _scriptingService: IScriptingService,
 		@IAdminService private _adminService: IAdminService,
 		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService,
-		@ITaskService private _taskService: ITaskService
+		@ITaskService private _taskService: ITaskService,
+		@ISerializationService private _serializationService: ISerializationService
 	) {
 		super();
 		this._proxy = threadService.get(SqlExtHostContext.ExtHostDataProtocol);
@@ -102,7 +104,17 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 				return self._proxy.$disposeQuery(handle, ownerUri);
 			},
 			saveResults(requestParams: data.SaveResultsRequestParams): Thenable<data.SaveResultRequestResult> {
-				return self._proxy.$saveResults(handle, requestParams);
+				let serializationProvider = self._serializationService.getSerializationFeatureMetadataProvider(requestParams.ownerUri);
+				if (serializationProvider && serializationProvider.enabled) {
+					return self._proxy.$saveResults(handle, requestParams);
+				}
+				else if (serializationProvider && !serializationProvider.enabled)
+				{
+					return self._serializationService.disabledSaveAs();
+				}
+				else {
+					return self._serializationService.saveAs(requestParams.resultFormat, requestParams.filePath, undefined, true);
+				}
 			},
 			initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number): Thenable<void> {
 				return self._proxy.$initializeEdit(handle, ownerUri, schemaName, objectName, objectType, rowLimit);

@@ -5,6 +5,7 @@
 'use strict';
 
 import { SaveResultsInfo } from '../models/contracts';
+import * as data from 'data';
 
 /**
  * Serializer for saving results into a different format
@@ -13,5 +14,5 @@ import { SaveResultsInfo } from '../models/contracts';
  * @interface ISerialization
  */
 export interface ISerialization {
-    saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Promise<boolean>;
+    saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Promise<data.SaveResultRequestResult>;
 }

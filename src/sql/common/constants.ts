@@ -6,4 +6,5 @@
 // localizable strings
 
 export const InvalidProvider = 'Provider is invalid';
+export const SerializationDisabled = 'Saving results into different format disabled for this data provider.';
 

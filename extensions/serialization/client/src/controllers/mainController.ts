@@ -73,7 +73,7 @@ export default class MainController implements vscode.Disposable {
         return new Promise<boolean>( (resolve, reject) => {
                 let provider: data.SerializationProvider = {
                     handle: 0,
-		            saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean> {
+		            saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult> {
                         return self._serialization.saveAs(saveFormat, savePath, results, appendToFile);
                     }
                 };

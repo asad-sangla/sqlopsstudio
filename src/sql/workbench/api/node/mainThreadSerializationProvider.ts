@@ -9,6 +9,7 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
 import { SqlExtHostContext, ExtHostSerializationProviderShape, MainThreadSerializationProviderShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { ISerializationService } from 'sql/services/serialization/serializationService';
+import * as data from 'data';
 
 export class MainThreadSerializationProvider extends MainThreadSerializationProviderShape {
 
@@ -35,7 +36,7 @@ export class MainThreadSerializationProvider extends MainThreadSerializationProv
 		let self = this;
 
 		this._registrations[handle] = this.serializationService.addEventListener(handle, {
-			onSaveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean> {
+			onSaveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult> {
 				return self._proxy.$saveAs(saveFormat, savePath, results, appendToFile);
 			}
 		});

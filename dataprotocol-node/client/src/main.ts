@@ -30,7 +30,7 @@ import {
 	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo,
 	TaskServicesProvider, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo, TaskInfo,
 	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo, ExecutionPlanOptions,
-	RestoreConfigInfo
+	RestoreConfigInfo, SerializationProvider
 } from 'data';
 
 import {
@@ -2062,6 +2062,13 @@ export class LanguageClient {
 			}
 		};
 
+		let serializationProvider: SerializationProvider = {
+			handle: 0,
+			saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<SaveResultRequestResult> {
+				throw new Error('NotImplemented');
+			}
+		}
+
 		this._providers.push(dataprotocol.registerProvider({
 			handle: -1,
 
@@ -2083,7 +2090,8 @@ export class LanguageClient {
 
 			disasterRecoveryProvider: disasterRecoveryProvider,
 
-			taskServicesProvider: taskServicesProvider
+			taskServicesProvider: taskServicesProvider,
+
 		}));
 
 		// Hook to the workspace-wide notifications that aren't routed to a specific provider

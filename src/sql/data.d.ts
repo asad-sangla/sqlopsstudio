@@ -421,7 +421,7 @@ declare module 'data' {
 
 	export interface SerializationProvider {
 		handle: number;
-		saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean>;
+		saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<SaveResultRequestResult>;
 	}
 
 

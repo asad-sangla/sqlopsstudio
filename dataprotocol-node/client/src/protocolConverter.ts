@@ -529,10 +529,11 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 					optionsMetadata: []
 				};
 				capabilities.features.push(descFeature);
-
-				feature.optionsMetadata.forEach(srcOption => {
-					descFeature.optionsMetadata.push(buildServiceOption(srcOption));
-				});
+				if (feature.optionsMetadata) {
+					feature.optionsMetadata.forEach(srcOption => {
+						descFeature.optionsMetadata.push(buildServiceOption(srcOption));
+					});
+				}
 			});
 		}
 

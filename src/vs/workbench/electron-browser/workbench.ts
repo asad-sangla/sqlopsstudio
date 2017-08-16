@@ -640,9 +640,9 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(IServerGroupController, this.instantiationService.createInstance(ServerGroupController));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
-		serviceCollection.set(ISerializationService, this.instantiationService.createInstance(SerializationService));
 		let connectionManagementService = this.instantiationService.createInstance(ConnectionManagementService, undefined, undefined);
 		serviceCollection.set(IConnectionManagementService, connectionManagementService);
+		serviceCollection.set(ISerializationService, this.instantiationService.createInstance(SerializationService));
 		serviceCollection.set(IQueryManagementService, this.instantiationService.createInstance(QueryManagementService));
 		serviceCollection.set(IQueryModelService, this.instantiationService.createInstance(QueryModelService));
 		serviceCollection.set(IQueryEditorService, this.instantiationService.createInstance(QueryEditorService));

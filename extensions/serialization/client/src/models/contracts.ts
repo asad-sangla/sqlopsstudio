@@ -5,9 +5,10 @@
 'use strict';
 
 import {RequestType} from 'dataprotocol-client';
+import * as data from 'data';
 
 // DEV-NOTE: Still finalizing what we'll need as part of this interface
-/** 
+/**
  * Contains necessary information for serializing and saving results
  * @param {string} saveFormat the format / type that the results will be saved in
  * @param {string} savePath path the results will be saved to
@@ -17,11 +18,11 @@ import {RequestType} from 'dataprotocol-client';
 export class SaveResultsInfo {
 
 
-    constructor(public saveFormat: string, public savePath: string, public results: string, 
+    constructor(public saveFormat: string, public savePath: string, public results: string,
                 public appendToFile: boolean) {
     }
 }
 
 export namespace SaveAsRequest {
-    export const type: RequestType<SaveResultsInfo, boolean, void> = { get method(): string { return 'query/saveAs'; } };
+    export const type: RequestType<SaveResultsInfo, data.SaveResultRequestResult, void> = { get method(): string { return 'query/saveAs'; } };
 }

@@ -18,7 +18,7 @@ class SerializationAdapter {
 		this._provider = provider;
 	}
 
-	public saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean>  {
+	public saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult>  {
 		return this._provider.saveAs(saveFormat, savePath, results, appendToFile);
 	}
 
@@ -66,7 +66,7 @@ export class ExtHostSerializationProvider extends ExtHostSerializationProviderSh
 		return this._createDisposable(provider.handle);
 	}
 
-	public $saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean> {
+	public $saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult> {
 		return this._withAdapter(0, SerializationAdapter, adapter => adapter.saveAs(saveFormat, savePath, results, appendToFile));
 	}
 

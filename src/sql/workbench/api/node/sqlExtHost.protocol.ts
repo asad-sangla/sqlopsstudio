@@ -261,7 +261,7 @@ export abstract class ExtHostCredentialManagementShape {
  * Serialization provider extension host class.
  */
 export abstract class ExtHostSerializationProviderShape {
-	$saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<boolean> { throw ni(); }
+	$saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult> { throw ni();}
 }
 export abstract class MainThreadDataProtocolShape {
 	$registerProvider(providerId: string, handle: number): TPromise<any> { throw ni(); }
