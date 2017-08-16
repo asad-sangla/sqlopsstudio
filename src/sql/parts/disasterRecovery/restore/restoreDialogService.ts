@@ -36,16 +36,20 @@ export class RestoreDialogService implements IRestoreDialogService {
 	}
 
 	private handleOnValidateFile(): void {
-
 		this._disasterRecoveryService.getRestorePlan(this._ownerUri, this.setRestoreOption()).then(restorePlanResponse => {
 			this._sessionId = restorePlanResponse.sessionId;
-			// Keys are defaultBackupTailLog (boolean), defaultDataFileFolder, defaultLogFileFolder, defaultStandbyFile, defaultTailLogBackupFile, lastBackupTaken
-			if (restorePlanResponse.planDetails && restorePlanResponse.planDetails['lastBackupTaken']) {
-				this._restoreDialog.lastBackupTaken = restorePlanResponse.planDetails['lastBackupTaken'].currentValue;
+
+			if (restorePlanResponse.canRestore) {
+				this._restoreDialog.enableRestoreButton(true);
+			} else {
+				this._restoreDialog.enableRestoreButton(false);
 			}
 
-			this._restoreDialog.onValidateResponse(restorePlanResponse.canRestore, restorePlanResponse.errorMessage,
-				restorePlanResponse.databaseNamesFromBackupSets, restorePlanResponse.backupSetsToRestore, restorePlanResponse.dbFiles, restorePlanResponse.planDetails);
+			if (restorePlanResponse.errorMessage) {
+				this._restoreDialog.onValidateResponseFail(restorePlanResponse.errorMessage);
+			} else {
+				this._restoreDialog.viewModel.onRestorePlanResponse(restorePlanResponse);
+			}
 		}, error => {
 			this._restoreDialog.showError(error);
 		});
@@ -58,18 +62,20 @@ export class RestoreDialogService implements IRestoreDialogService {
 			restoreInfo.sessionId = this._sessionId;
 		}
 
-		restoreInfo.backupFilePaths = this._restoreDialog.filePath;
-		restoreInfo.selectedBackupSets = this._restoreDialog.getSelectedBackupSets();
+		restoreInfo.backupFilePaths = this._restoreDialog.viewModel.filePath;
+		// todo: Need to change restoreInfo.readHeaderFromMedia when implement restore from database
+		restoreInfo.readHeaderFromMedia = true;
+		restoreInfo.selectedBackupSets = this._restoreDialog.viewModel.getSelectedBackupSets();
 
-		if (this._restoreDialog.sourceDatabaseName) {
-			restoreInfo.sourceDatabaseName = this._restoreDialog.sourceDatabaseName;
+		if (this._restoreDialog.viewModel.sourceDatabaseName) {
+			restoreInfo.sourceDatabaseName = this._restoreDialog.viewModel.sourceDatabaseName;
 		}
-		if (this._restoreDialog.tagetDatabaseName) {
-			restoreInfo.targetDatabaseName = this._restoreDialog.tagetDatabaseName;
+		if (this._restoreDialog.viewModel.targetDatabaseName) {
+			restoreInfo.targetDatabaseName = this._restoreDialog.viewModel.targetDatabaseName;
 		}
 
 		// Set other restore options
-		this._restoreDialog.getRestoreAdvancedOptions(restoreInfo.options);
+		this._restoreDialog.viewModel.getRestoreAdvancedOptions(restoreInfo.options);
 
 		return restoreInfo;
 	}
@@ -103,6 +109,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 					this._restoreDialog.render();
 				}
 
+				this._restoreDialog.viewModel.resetRestoreOptions();
 				this._restoreDialog.open(connection.serverName, connection.databaseName);
 				resolve(result);
 			}, error => {

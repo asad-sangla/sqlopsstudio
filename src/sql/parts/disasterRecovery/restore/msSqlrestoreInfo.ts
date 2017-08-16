@@ -78,4 +78,12 @@ export class MssqlRestoreInfo implements data.RestoreInfo {
 	public set selectedBackupSets(value: string[]) {
 		this.options['selectedBackupSets'] = value;
 	}
+
+	public get readHeaderFromMedia(): boolean {
+		return this.options['readHeaderFromMedia'];
+	}
+
+	public set readHeaderFromMedia(value: boolean) {
+		this.options['readHeaderFromMedia'] = value;
+	}
 }

@@ -25,21 +25,18 @@ import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
 import { Modal } from 'sql/parts/common/modal/modal';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 'sql/parts/disasterRecovery/restore/restoreViewModel';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { DialogInputBox, OnLoseFocusParams } from 'sql/parts/common/modal/dialogInputBox';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import * as data from 'data';
 
-export interface RestoreOptionsElement {
-	optionWidget: any;
-	option: data.ServiceOption;
-	optionValue: any;
-}
-
 export class RestoreDialog extends Modal {
+	public viewModel: RestoreViewModel;
+
 	private _restoreButton: Button;
 	private _closeButton: Button;
-	private _optionPropertiesMap: { [name: string]: RestoreOptionsElement } = {};
+	private _optionsMap: { [name: string]: Widget } = {};
 	private _backupSetsMap: { [name: string]: DialogCheckbox } = {};
 	private _toDispose: lifecycle.IDisposable[] = [];
 	private _toDisposeTheming: lifecycle.IDisposable[] = [];
@@ -98,9 +95,17 @@ export class RestoreDialog extends Modal {
 		this._restoreTitle = localize('restoreTitle', 'Restore database');
 		this._backupFileTitle = localize('backupFile', 'Backup file');
 		this._restoreLabel = localize('restore', 'Restore');
-		optionsMetadata.forEach(optionMedata => {
-			this._optionPropertiesMap[optionMedata.name] = { optionWidget: null, option: optionMedata, optionValue: optionMedata.defaultValue };
-		});
+
+		// view model
+		this.viewModel = new RestoreViewModel(optionsMetadata);
+		this.viewModel.onSetLastBackupTaken((value) => this.updateLastBackupTaken(value));
+		this.viewModel.onSetfilePath((value) => this.updateFilePath(value));
+		this.viewModel.onSetSourceDatabaseNames((databaseNamesParam) => this.updateSourceDatabaseName(databaseNamesParam));
+		this.viewModel.onSetTargetDatabaseName((value) => this.updateTargetDatabaseName(value));
+		this.viewModel.onSetLastBackupTaken((value) => this.updateLastBackupTaken(value));
+		this.viewModel.onSetRestoreOption((optionParams) => this.updateRestoreOption(optionParams));
+		this.viewModel.onUpdateBackupSetsToRestore((backupSets) => this.updateBackupSetsToRestore(backupSets));
+		this.viewModel.onUpdateRestoreDatabaseFiles((files) => this.updateRestoreDatabaseFiles(files));
 	}
 
 	public render() {
@@ -270,35 +275,50 @@ export class RestoreDialog extends Modal {
 	}
 
 	private creatOptionControl(container: Builder, optionName: string): void {
-		let option = this._optionPropertiesMap[optionName].option;
+		let option = this.viewModel.getOptionMetadata(optionName);
 		let propertyWidget: any;
 		switch (option.valueType) {
 			case ServiceOptionType.boolean:
-				propertyWidget = this.createCheckBoxHelper(container, option.description, DialogHelper.getBooleanValueFromStringOrBoolean(option.defaultValue));
+				propertyWidget = this.createCheckBoxHelper(container, option.description,
+					DialogHelper.getBooleanValueFromStringOrBoolean(option.defaultValue), () => this.onBooleanOptionChecked(optionName));
 				this._toDispose.push(attachCheckboxStyler(propertyWidget, this._themeService));
 				break;
 			case ServiceOptionType.category:
 				propertyWidget = this.createSelectBoxHelper(container, option.description, option.categoryValues.map(c => c.displayName), DialogHelper.getCategoryDisplayName(option.categoryValues, option.defaultValue));
 				this._toDispose.push(attachSelectBoxStyler(propertyWidget, this._themeService));
 				this._toDispose.push(propertyWidget.onDidSelect(selectedDatabase => {
-					this._onValidate.fire();
+					this.onCatagoryOptionChanged(optionName);
 				}));
 				break;
 			case ServiceOptionType.string:
 				propertyWidget = this.createInputBoxHelper(container, option.description);
 				this._toDispose.push(attachInputBoxStyler(propertyWidget, this._themeService));
 				this._toDispose.push(propertyWidget.onLoseFocus(params => {
-					this.onInputBoxValidate(params);
+					this.onStringOptionChanged(optionName, params);
 				}));
 		}
 
-		this._optionPropertiesMap[optionName].optionWidget = propertyWidget;
+		this._optionsMap[optionName] = propertyWidget;
 	}
 
-	private createCheckBoxHelper(container: Builder, label: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): DialogCheckbox {
-		if (!onCheck) {
-			onCheck = () => this._onValidate.fire();
+	private onBooleanOptionChecked(optionName: string) {
+		this.viewModel.setOptionValue(optionName, (<DialogCheckbox>this._optionsMap[optionName]).checked);
+		this._onValidate.fire();
+	}
+
+	private onCatagoryOptionChanged(optionName: string) {
+		this.viewModel.setOptionValue(optionName, (<DialogSelectBox>this._optionsMap[optionName]).value);
+		this._onValidate.fire();
+	}
+
+	private onStringOptionChanged(optionName: string, params: OnLoseFocusParams) {
+		if (params.hasChanged && params.value) {
+			this.viewModel.setOptionValue(optionName, params.value);
+			this._onValidate.fire();
 		}
+	}
+
+	private createCheckBoxHelper(container: Builder, label: string, isChecked: boolean, onCheck: (viaKeyboard: boolean) => void): DialogCheckbox {
 		let checkbox: DialogCheckbox;
 		container.div({ class: 'dialog-input-section' }, (inputCellContainer) => {
 			checkbox = DialogHelper.createCheckBox(inputCellContainer, label, 'sql-checkbox', isChecked, onCheck);
@@ -335,88 +355,17 @@ export class RestoreDialog extends Modal {
 		return inputBox;
 	}
 
-	public onValidateResponse(canRestore: boolean, errorMessage: string, databaseNames: string[], backupSetsToRestore: data.DatabaseFileInfo[], dbFiles: data.RestoreDatabaseFileInfo[], planDetails: { [key: string]: any }): void {
+	public onValidateResponseFail(errorMessage: string) {
 		this.resetTables();
-		if (canRestore) {
-			this.hideError();
-			this._restoreButton.enabled = true;
-			this.generateRestoreContent(databaseNames, backupSetsToRestore, dbFiles, planDetails);
-		} else {
-			this._restoreButton.enabled = false;
-			this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
-		}
+		this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
+	}
+
+	public enableRestoreButton(enabled: boolean) {
+		this._restoreButton.enabled = enabled;
 	}
 
 	public showError(errorMessage: string): void {
 		this.setError(errorMessage);
-	}
-
-	private generateRestoreContent(databaseNames: string[], backupSetsToRestore: data.DatabaseFileInfo[], dbFiles: data.RestoreDatabaseFileInfo[], planDetails: { [key: string]: any }): void {
-		if (databaseNames) {
-			this._sourceDatabaseFromBackupSelectBox.setOptions(databaseNames, 0);
-			// todo: once the service gives the target database, the value should set to that
-			this._destinationDatabaseInputBox.value = this._sourceDatabaseFromBackupSelectBox.value;
-		}
-		if (backupSetsToRestore && backupSetsToRestore.length > 0) {
-			var container = new Builder(this._restorePlanListElement);
-			container.element('table', { class: 'backup-table-content' }, (tableContainer) => {
-				this.appendRowToBackupSetsTable(tableContainer, false, backupSetsToRestore[0]);
-				backupSetsToRestore.forEach(file => {
-					this.appendRowToBackupSetsTable(tableContainer, true, file);
-				});
-			});
-		}
-		if (dbFiles) {
-			let columnNames = [localize('logicalFileName', 'Logical file Name'), localize('fileType', 'File type'), localize('originalFileName', 'Original File Name'), localize('Restore As', 'Restore as')];
-			var container = new Builder(this._fileListElement);
-			container.element('table', { class: 'backup-table-content' }, (tableContainer) => {
-				tableContainer.element('tr', {}, (rowContainer) => {
-					columnNames.forEach(columnName => {
-						this.appendColumn(rowContainer, columnName);
-					});
-				});
-				dbFiles.forEach(file => {
-					this.appendRowToFileTable(tableContainer, file);
-				});
-			});
-		}
-
-		if (planDetails) {
-			for (var key in planDetails) {
-				let propertyElement = this._optionPropertiesMap[key];
-				if (propertyElement) {
-					let planDetailInfo = planDetails[key];
-					propertyElement.optionValue = planDetailInfo.defaultValue;
-					this.setValueToOptionElement(propertyElement, planDetailInfo.currentValue, planDetailInfo.isReadOnly);
-				}
-			}
-		}
-	}
-
-	private setValueToOptionElement(optionElement: RestoreOptionsElement, value: string, isReadOnly: boolean) {
-		switch (optionElement.option.valueType) {
-			case ServiceOptionType.boolean:
-				(<DialogCheckbox>optionElement.optionWidget).checked = DialogHelper.getBooleanValueFromStringOrBoolean(value);
-				break;
-			case ServiceOptionType.category:
-				(<DialogSelectBox>optionElement.optionWidget).selectWithOptionName(DialogHelper.getCategoryDisplayName(optionElement.option.categoryValues, value));
-				break;
-			case ServiceOptionType.string:
-				(<DialogInputBox>optionElement.optionWidget).value = value ? value : '';
-		}
-		if (isReadOnly) {
-			optionElement.optionWidget.disable();
-		} else {
-			optionElement.optionWidget.enable();
-		}
-	}
-
-	private resetOptionValue() {
-		for (var key in this._optionPropertiesMap) {
-			let propertyElement = this._optionPropertiesMap[key];
-			propertyElement.optionValue = propertyElement.option.defaultValue;
-			this.setValueToOptionElement(propertyElement, propertyElement.optionValue, false);
-		}
 	}
 
 	private resetTables() {
@@ -435,16 +384,21 @@ export class RestoreDialog extends Modal {
 		});
 	}
 
+	private backupFileCheckboxChanged(fileId: string) {
+		this.viewModel.setSelectedBackupFile(fileId, this._backupSetsMap[fileId].checked);
+		this._onValidate.fire();
+	}
+
 	private appendRowToBackupSetsTable(container: Builder, isData: boolean, databaseFileInfo: data.DatabaseFileInfo): void {
+		let self = this;
 		container.element('tr', {}, (rowContainer) => {
 			if (isData) {
-				let self = this;
 				let checkbox = new DialogCheckbox({
 					actionClassName: 'sql-checkbox',
 					title: '',
 					isChecked: databaseFileInfo.isSelected,
 					onChange: (viaKeyboard) => {
-						self._onValidate.fire();
+						self.backupFileCheckboxChanged(databaseFileInfo.id);
 					}
 				});
 
@@ -489,38 +443,37 @@ export class RestoreDialog extends Modal {
 		this._toDispose.push(attachButtonStyler(this._closeButton, this._themeService));
 
 		this._toDispose.push(this._filePathInputBox.onLoseFocus(params => {
-			this.onInputBoxValidate(params);
+			this.onFilePathChanged(params);
 		}));
 
 		this._toDispose.push(this._sourceDatabaseFromBackupSelectBox.onDidSelect(selectedDatabase => {
-			this._onValidate.fire();
+			this.onSourceDatabaseChanged(selectedDatabase);
 		}));
 
 		this._toDispose.push(this._destinationDatabaseInputBox.onLoseFocus(params => {
-			this.onInputBoxValidate(params);
+			this.onTargetDatabaseChanged(params);
 		}));
 	}
 
-	private onInputBoxValidate(params: OnLoseFocusParams) {
+	private onFilePathChanged(params: OnLoseFocusParams) {
 		if (params.hasChanged && params.value) {
+			this.viewModel.filePath = params.value;
+			this.viewModel.emptyBackupSetsToRestore();
 			this._onValidate.fire();
 		}
 	}
 
-	public get filePath(): string {
-		return this._filePathInputBox.value;
+	private onSourceDatabaseChanged(selectedDatabase: string) {
+		this.viewModel.sourceDatabaseName = selectedDatabase;
+		this.viewModel.emptyBackupSetsToRestore();
+		this._onValidate.fire();
 	}
 
-	public get sourceDatabaseName(): string {
-		return this._sourceDatabaseFromBackupSelectBox.value;
-	}
-
-	public get tagetDatabaseName(): string {
-		return this._destinationDatabaseInputBox.value;
-	}
-
-	public set lastBackupTaken(content: string) {
-		this._destinationRestoreToInputBox.value = content;
+	private onTargetDatabaseChanged(params: OnLoseFocusParams) {
+		if (params.hasChanged && params.value) {
+			this.viewModel.targetDatabaseName = params.value;
+			this._onValidate.fire();
+		}
 	}
 
 	public restore(): void {
@@ -553,55 +506,9 @@ export class RestoreDialog extends Modal {
 		this.hide();
 	}
 
-	public getRestoreAdvancedOptions(options: { [name: string]: any }) {
-		for (let key in this._optionPropertiesMap) {
-			let optionElement = this._optionPropertiesMap[key];
-			let widgetValue;
-			switch (optionElement.option.valueType) {
-				case ServiceOptionType.boolean:
-					widgetValue = (<DialogCheckbox>optionElement.optionWidget).checked;
-					if (widgetValue !== DialogHelper.getBooleanValueFromStringOrBoolean(optionElement.optionValue)) {
-						options[key] = widgetValue;
-					}
-					break;
-				case ServiceOptionType.category:
-					widgetValue = DialogHelper.getCategoryName(optionElement.option.categoryValues, (<DialogSelectBox>optionElement.optionWidget).value);
-					if (widgetValue !== optionElement.optionValue) {
-						options[key] = widgetValue;
-					}
-					break;
-				case ServiceOptionType.string:
-					widgetValue = (<DialogInputBox>optionElement.optionWidget).value;
-					if (widgetValue && widgetValue !== optionElement.optionValue) {
-						options[key] = widgetValue;
-					}
-			}
-		}
-	}
-
-	public getSelectedBackupSets(): string[] {
-		let selectedBackupSet;
-		for (var key in this._backupSetsMap) {
-			if (!selectedBackupSet) {
-				selectedBackupSet = [];
-			}
-			var checkbox = this._backupSetsMap[key];
-			if (checkbox.checked) {
-				selectedBackupSet.push(key);
-			}
-		}
-		return selectedBackupSet;
-	}
-
 	private resetDialog(): void {
 		this.hideError();
-		this._filePathInputBox.value = '';
-		this._filePathInputBox.hideMessage();
-		this._destinationDatabaseInputBox.value = '';
-		this._destinationRestoreToInputBox.value = '';
 		this._restoreFromSelectBox.selectWithOptionName(this._backupFileTitle);
-		this._sourceDatabaseFromBackupSelectBox.setOptions([]);
-		this.resetOptionValue();
 		this.resetTables();
 		this._generalTabElement.click();
 	}
@@ -623,11 +530,90 @@ export class RestoreDialog extends Modal {
 
 	public dispose(): void {
 		this._toDispose = lifecycle.dispose(this._toDispose);
-		for (var key in this._optionPropertiesMap) {
-			var widget: Widget = this._optionPropertiesMap[key].optionWidget;
+		for (var key in this._optionsMap) {
+			var widget: Widget = this._optionsMap[key];
 			widget.dispose();
-			delete this._optionPropertiesMap[key];
+			delete this._optionsMap[key];
 		}
 		this.clearBackupSetsMap();
+	}
+
+	private updateLastBackupTaken(value: string) {
+		this._destinationRestoreToInputBox.value = value;
+	}
+
+	private updateFilePath(value: string) {
+		this._filePathInputBox.value = value;
+		if (!value) {
+			this._filePathInputBox.hideMessage();
+		}
+	}
+
+	private updateSourceDatabaseName(databaseNamesParam: SouceDatabaseNamesParam) {
+		this._sourceDatabaseFromBackupSelectBox.setOptions(databaseNamesParam.databaseNames);
+		if (databaseNamesParam.selectedDatabased) {
+			this._sourceDatabaseFromBackupSelectBox.selectWithOptionName(databaseNamesParam.selectedDatabased);
+		}
+	}
+
+	private updateTargetDatabaseName(value: string) {
+		this._destinationDatabaseInputBox.value = value;
+	}
+
+	private updateRestoreOption(optionParam: RestoreOptionParam) {
+		let widget = this._optionsMap[optionParam.optionName];
+		if (widget) {
+			if (widget instanceof DialogCheckbox) {
+				(<DialogCheckbox>widget).checked = optionParam.value;
+				this.enableDisableWiget(widget, optionParam.isReadOnly);
+			} else if (widget instanceof DialogSelectBox) {
+				(<DialogSelectBox>widget).selectWithOptionName(optionParam.value);
+				this.enableDisableWiget(widget, optionParam.isReadOnly);
+			} else if (widget instanceof DialogInputBox) {
+				(<DialogInputBox>widget).value = optionParam.value;
+				this.enableDisableWiget(widget, optionParam.isReadOnly);
+			}
+		}
+	}
+
+	private enableDisableWiget(widget: DialogCheckbox | DialogSelectBox | DialogInputBox, isReadOnly: boolean) {
+		if (isReadOnly) {
+			widget.disable();
+		} else {
+			widget.enable();
+		}
+	}
+
+	private updateRestoreDatabaseFiles(dbFiles: data.RestoreDatabaseFileInfo[]) {
+		if (dbFiles) {
+			let columnNames = [localize('logicalFileName', 'Logical file Name'), localize('fileType', 'File type'), localize('originalFileName', 'Original File Name'), localize('Restore As', 'Restore as')];
+			var container = new Builder(this._fileListElement);
+			container.empty();
+			container.element('table', { class: 'backup-table-content' }, (tableContainer) => {
+				tableContainer.element('tr', {}, (rowContainer) => {
+					columnNames.forEach(columnName => {
+						this.appendColumn(rowContainer, columnName);
+					});
+				});
+				dbFiles.forEach(file => {
+					this.appendRowToFileTable(tableContainer, file);
+				});
+			});
+		}
+	}
+
+	private updateBackupSetsToRestore(backupSetsToRestore: data.DatabaseFileInfo[]) {
+		this._toDisposeTheming = lifecycle.dispose(this._toDisposeTheming);
+		this.clearBackupSetsMap();
+		if (backupSetsToRestore && backupSetsToRestore.length > 0) {
+			var container = new Builder(this._restorePlanListElement);
+			container.empty();
+			container.element('table', { class: 'backup-table-content' }, (tableContainer) => {
+				this.appendRowToBackupSetsTable(tableContainer, false, backupSetsToRestore[0]);
+				backupSetsToRestore.forEach(file => {
+					this.appendRowToBackupSetsTable(tableContainer, true, file);
+				});
+			});
+		}
 	}
 }
