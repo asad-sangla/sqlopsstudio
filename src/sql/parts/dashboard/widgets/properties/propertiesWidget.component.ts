@@ -212,7 +212,9 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 
 		let infoObject: ServerInfo | {};
 		if (this._config.context === 'database') {
-			infoObject = this._databaseInfo.options;
+			if (this._databaseInfo && this._databaseInfo.options) {
+				infoObject = this._databaseInfo.options;
+			}
 		} else {
 			infoObject = this._connection.serverInfo;
 		}
