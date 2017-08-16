@@ -107,9 +107,9 @@ export class RestoreViewModel {
 	}
 
 	/**
- 	* Set restore option value
+ 	* Set current value for restore option
  	*/
-	public setOptionValue(optionName: string, value: any): void {
+	public setOptionCurrentValue(optionName: string, value: any): void {
 		if (this._optionsMap[optionName]) {
 			this._optionsMap[optionName].currentValue = value;
 		}
@@ -231,6 +231,7 @@ export class RestoreViewModel {
 		this.emptyBackupSetsToRestore();
 		for (var key in this._optionsMap) {
 			this._optionsMap[key].defaultValue = this.getDisplayValue(this._optionsMap[key].optionMetadata, this._optionsMap[key].optionMetadata.defaultValue);
+			this._optionsMap[key].currentValue = this._optionsMap[key].defaultValue;
 			this._onSetRestoreOption.fire({ optionName: key, value: this._optionsMap[key].defaultValue, isReadOnly: false });
 		}
 	}

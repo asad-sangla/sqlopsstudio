@@ -302,18 +302,18 @@ export class RestoreDialog extends Modal {
 	}
 
 	private onBooleanOptionChecked(optionName: string) {
-		this.viewModel.setOptionValue(optionName, (<DialogCheckbox>this._optionsMap[optionName]).checked);
+		this.viewModel.setOptionCurrentValue(optionName, (<DialogCheckbox>this._optionsMap[optionName]).checked);
 		this._onValidate.fire();
 	}
 
 	private onCatagoryOptionChanged(optionName: string) {
-		this.viewModel.setOptionValue(optionName, (<DialogSelectBox>this._optionsMap[optionName]).value);
+		this.viewModel.setOptionCurrentValue(optionName, (<DialogSelectBox>this._optionsMap[optionName]).value);
 		this._onValidate.fire();
 	}
 
 	private onStringOptionChanged(optionName: string, params: OnLoseFocusParams) {
 		if (params.hasChanged && params.value) {
-			this.viewModel.setOptionValue(optionName, params.value);
+			this.viewModel.setOptionCurrentValue(optionName, params.value);
 			this._onValidate.fire();
 		}
 	}
