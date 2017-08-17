@@ -100,10 +100,12 @@
 
 .vs-dark .disconnectDatabase {
 	background-image: url('disconnect_inverse.svg');
+	background-repeat: no-repeat;
 }
 
 .hc-black .disconnectDatabase {
 	background-image: url('disconnect_inverse.svg');
+	background-repeat: no-repeat;
 }
 
 .disconnectDatabase {
@@ -112,10 +114,12 @@
 
 .vs-dark .connectDatabase {
 	background-image: url('connect_inverse.svg');
+	background-repeat: no-repeat;
 }
 
 .hc-black .connectDatabase {
 	background-image: url('connect_inverse.svg');
+	background-repeat: no-repeat;
 }
 
 .connectDatabase {
@@ -124,10 +128,12 @@
 
 .vs-dark .changeConnectionDatabase {
 	background-image: url('change_connection_inverse.svg');
+	background-repeat: no-repeat;
 }
 
 .hc-black .changeConnectionDatabase {
 	background-image: url('change_connection_inverse.svg');
+	background-repeat: no-repeat;
 }
 
 .changeConnectionDatabase {

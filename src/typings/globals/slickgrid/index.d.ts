@@ -96,8 +96,8 @@ declare namespace Slick {
 	export class EventHandler {
 		constructor();
 
-		public subscribe(event: EventData, handler: Function): EventHandler;
-		public unsubscribe(event: EventData, handler: Function): EventHandler;
+		public subscribe<T>(event: Event<T>, handler: Function): EventHandler;
+		public unsubscribe<T>(event: Event<T>, handler: Function): EventHandler;
 		public unsubscribeAll(): EventHandler;
 	}
 
@@ -307,7 +307,7 @@ declare namespace Slick {
 		* @param editController {EditController}
 		* @return {Boolean}
 		*/
-		public isActive(editController: Editors.Editor<T>): boolean;
+		public isActive(editController?: Editors.Editor<T>): boolean;
 
 		/***
 		* Sets the specified edit controller as the active edit controller (acquire edit lock).
@@ -772,7 +772,7 @@ declare namespace Slick {
 		* @param options Additional options.  See Grid Options for a list of options that can be included.
 		**/
 		constructor(
-			container: string|HTMLElement|any,
+			container: string|HTMLElement|JQuery,
 			data: T[]|DataProvider<T>,
 			columns: Column<T>[],
 			options: GridOptions<T>);

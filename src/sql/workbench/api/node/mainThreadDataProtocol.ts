@@ -18,6 +18,7 @@ import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
+import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { ISerializationService } from 'sql/services/serialization/serializationService';
 
 /**
@@ -42,6 +43,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		@IAdminService private _adminService: IAdminService,
 		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService,
 		@ITaskService private _taskService: ITaskService,
+		@IProfilerService private _profilerService: IProfilerService,
 		@ISerializationService private _serializationService: ISerializationService
 	) {
 		super();

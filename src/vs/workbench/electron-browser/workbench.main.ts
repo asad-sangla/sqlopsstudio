@@ -128,6 +128,8 @@ import 'sql/workbench/api/node/sqlExtHost.contribution';
 import 'sql/parts/connection/common/connection.contribution';
 import 'sql/parts/query/common/query.contribution';
 import 'sql/workbench/electron-browser/main.contribution';
+import 'sql/parts/profiler/profiler.contribution';
+import 'sql/parts/profiler/profilerActions.contribution';
 /* Insights */
 import 'sql/parts/dashboard/widgets/insights/views/charts/types/barChart.contribution';
 import 'sql/parts/dashboard/widgets/insights/views/charts/types/doughnutChart.contribution';

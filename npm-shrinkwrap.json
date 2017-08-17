@@ -638,9 +638,9 @@
       "resolved": "https://registry.npmjs.org/set-immediate-shim/-/set-immediate-shim-1.0.1.tgz"
     },
     "slickgrid": {
-      "version": "2.3.5",
-      "from": "anthonydresser/SlickGrid#2.3.5",
-      "resolved": "git://github.com/anthonydresser/SlickGrid.git#4f912fb8a92b48d68b96a0a36c69be2669a4b7e8"
+      "version": "2.3.6",
+      "from": "anthonydresser/SlickGrid#2.3.6",
+      "resolved": "git://github.com/anthonydresser/SlickGrid.git#978ffad9c4f09afa5f71dedc4d2df6847e58d49f"
     },
     "string_decoder": {
       "version": "1.0.1",

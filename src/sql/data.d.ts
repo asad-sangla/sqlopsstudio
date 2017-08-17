@@ -1033,4 +1033,19 @@ declare module 'data' {
 		taskId: string;
 		errorMessage: string;
 	}
+
+	export interface IProfilerProvider {
+		startSession(sessionId: string): Thenable<boolean>;
+		stopSession(sessionId: string): Thenable<boolean>;
+		pauseSession(sessionId: string): Thenable<boolean>;
+		connectSession(sessionId: string): Thenable<boolean>;
+		disconnectSession(sessionId: string): Thenable<boolean>;
+		getColumns(sessionId: string): Thenable<Array<string>>;
+	}
+
+	export interface IProfilerMoreRowsNotificationParams {
+		uri: string;
+		rowCount: number;
+		data: Array<string>;
+	}
 }

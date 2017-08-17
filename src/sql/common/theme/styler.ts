@@ -5,6 +5,8 @@
 
 'use strict';
 
+import * as sqlcolors from './colors';
+
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import * as cr from 'vs/platform/theme/common/colorRegistry';
 import { IThemable, attachStyler } from 'vs/platform/theme/common/styler';
@@ -47,5 +49,47 @@ export function attachListBoxStyler(widget: IThemable, themeService: IThemeServi
 		inputValidationWarningBackground: (style && style.inputValidationWarningBackground) || cr.inputValidationWarningBackground,
 		inputValidationErrorBorder: (style && style.inputValidationErrorBorder) || cr.inputValidationErrorBorder,
 		inputValidationErrorBackground: (style && style.inputValidationErrorBackground) || cr.inputValidationErrorBackground
+	}, widget);
+}
+
+export function attachTableStyler(widget: IThemable, themeService: IThemeService, style?: {
+	listFocusBackground?: cr.ColorIdentifier,
+	listFocusForeground?: cr.ColorIdentifier,
+	listActiveSelectionBackground?: cr.ColorIdentifier,
+	listActiveSelectionForeground?: cr.ColorIdentifier,
+	listFocusAndSelectionBackground?: cr.ColorIdentifier,
+	listFocusAndSelectionForeground?: cr.ColorIdentifier,
+	listInactiveFocusBackground?: cr.ColorIdentifier,
+	listInactiveSelectionBackground?: cr.ColorIdentifier,
+	listInactiveSelectionForeground?: cr.ColorIdentifier,
+	listHoverBackground?: cr.ColorIdentifier,
+	listHoverForeground?: cr.ColorIdentifier,
+	listDropBackground?: cr.ColorIdentifier,
+	listFocusOutline?: cr.ColorIdentifier,
+	listInactiveFocusOutline?: cr.ColorIdentifier,
+	listSelectionOutline?: cr.ColorIdentifier,
+	listHoverOutline?: cr.ColorIdentifier,
+	tableHeaderBackground?: cr.ColorIdentifier,
+	tableHeaderForeground?: cr.ColorIdentifier
+}): IDisposable {
+	return attachStyler(themeService, {
+		listFocusBackground: (style && style.listFocusBackground) || cr.listFocusBackground,
+		listFocusForeground: (style && style.listFocusForeground) || cr.listFocusForeground,
+		listActiveSelectionBackground: (style && style.listActiveSelectionBackground) || cr.lighten(cr.listActiveSelectionBackground, 0.1),
+		listActiveSelectionForeground: (style && style.listActiveSelectionForeground) || cr.listActiveSelectionForeground,
+		listFocusAndSelectionBackground: style && style.listFocusAndSelectionBackground || cr.listActiveSelectionBackground,
+		listFocusAndSelectionForeground: (style && style.listFocusAndSelectionForeground) || cr.listActiveSelectionForeground,
+		listInactiveFocusBackground: (style && style.listInactiveFocusBackground),
+		listInactiveSelectionBackground: (style && style.listInactiveSelectionBackground) || cr.listInactiveSelectionBackground,
+		listInactiveSelectionForeground: (style && style.listInactiveSelectionForeground) || cr.listInactiveSelectionForeground,
+		listHoverBackground: (style && style.listHoverBackground) || cr.listHoverBackground,
+		listHoverForeground: (style && style.listHoverForeground) || cr.listHoverForeground,
+		listDropBackground: (style && style.listDropBackground) || cr.listDropBackground,
+		listFocusOutline: (style && style.listFocusOutline) || cr.activeContrastBorder,
+		listSelectionOutline: (style && style.listSelectionOutline) || cr.activeContrastBorder,
+		listHoverOutline: (style && style.listHoverOutline) || cr.activeContrastBorder,
+		listInactiveFocusOutline: style && style.listInactiveFocusOutline,
+		tableHeaderBackground: (style && style.tableHeaderBackground) || sqlcolors.tableHeaderBackground,
+		tableHeaderForeground: (style && style.tableHeaderForeground) || sqlcolors.tableHeaderForeground
 	}, widget);
 }

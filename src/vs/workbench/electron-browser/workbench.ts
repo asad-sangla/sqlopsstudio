@@ -130,6 +130,8 @@ import { DisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/dis
 import { RestoreDialogService } from 'sql/parts/disasterRecovery/restore/restoreDialogService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService, InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
+import { ProfilerService } from 'sql/parts/profiler/service/profilerService';
 import { ISqlWindowService } from 'sql/common/sqlWindowServices';
 import { SqlWindowService } from 'sql/common/browser/sqlWindowServicesImpl';
 
@@ -658,6 +660,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
 		serviceCollection.set(IInsightsDialogService, this.instantiationService.createInstance(InsightsDialogService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
+		serviceCollection.set(IProfilerService, this.instantiationService.createInstance(ProfilerService));
 
 		this.toDispose.push(connectionManagementService);
 		this.toShutdown.push(connectionManagementService);
