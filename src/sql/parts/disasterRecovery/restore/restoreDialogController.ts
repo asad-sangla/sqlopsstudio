@@ -6,7 +6,7 @@
 'use strict';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IDisasterRecoveryService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
 import { MssqlRestoreInfo } from 'sql/parts/disasterRecovery/restore/mssqlRestoreInfo';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -14,7 +14,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as data from 'data';
 
-export class RestoreDialogService implements IRestoreDialogService {
+export class RestoreDialogController implements IRestoreDialogController {
 	_serviceBrand: any;
 
 	private _restoreDialog: RestoreDialog;
@@ -48,8 +48,17 @@ export class RestoreDialogService implements IRestoreDialogService {
 			if (restorePlanResponse.errorMessage) {
 				this._restoreDialog.onValidateResponseFail(restorePlanResponse.errorMessage);
 			} else {
+				this._restoreDialog.removeErrorMessage();
 				this._restoreDialog.viewModel.onRestorePlanResponse(restorePlanResponse);
 			}
+		}, error => {
+			this._restoreDialog.showError(error);
+		});
+	}
+
+	private getRestoreConfigInfo(): void {
+		this._disasterRecoveryService.getRestoreConfigInfo(this._ownerUri).then(restoreConfigInfo => {
+			this._restoreDialog.viewModel.updateOptionWithConfigInfo(restoreConfigInfo.configInfo);
 		}, error => {
 			this._restoreDialog.showError(error);
 		});
@@ -64,7 +73,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 
 		restoreInfo.backupFilePaths = this._restoreDialog.viewModel.filePath;
 		// todo: Need to change restoreInfo.readHeaderFromMedia when implement restore from database
-		restoreInfo.readHeaderFromMedia = true;
+		restoreInfo.readHeaderFromMedia = this._restoreDialog.viewModel.readHeaderFromMedia;
 		restoreInfo.selectedBackupSets = this._restoreDialog.viewModel.getSelectedBackupSets();
 
 		if (this._restoreDialog.viewModel.sourceDatabaseName) {
@@ -110,6 +119,7 @@ export class RestoreDialogService implements IRestoreDialogService {
 				}
 
 				this._restoreDialog.viewModel.resetRestoreOptions();
+				this.getRestoreConfigInfo();
 				this._restoreDialog.open(connection.serverName, connection.databaseName);
 				resolve(result);
 			}, error => {

@@ -15,7 +15,7 @@ import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
-import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { ISqlWindowService } from 'sql/common/sqlWindowServices';
 
@@ -65,7 +65,7 @@ export interface IBootstrapService {
 	configurationService: IConfigurationService;
 	insightsDialogService: IInsightsDialogService;
 	contextViewService: IContextViewService;
-	restoreDialogService: IRestoreDialogService;
+	restoreDialogService: IRestoreDialogController;
 	messageService: IMessageService;
 	workspaceContextService: IWorkspaceContextService;
 	windowsService: IWindowsService;

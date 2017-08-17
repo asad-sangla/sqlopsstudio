@@ -7,6 +7,7 @@
 import * as data from 'data';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import * as types from 'vs/base/common/types';
 
 import Event, { Emitter } from 'vs/base/common/event';
 
@@ -41,6 +42,8 @@ export class RestoreViewModel {
 	public sourceDatabaseName: string;
 	public targetDatabaseName: string;
 	public lastBackupTaken: string;
+	public databaseList: string[];
+	public readHeaderFromMedia: boolean;
 
 	private _onSetLastBackupTaken = new Emitter<string>();
 	public onSetLastBackupTaken: Event<string> = this._onSetLastBackupTaken.event;
@@ -100,6 +103,19 @@ export class RestoreViewModel {
 	}
 
 	/**
+ 	* On restore from changed set readHeaderFromMedia and reset the source database names and selected database name based on isFromBackupFile value.
+ 	*/
+	public onRestoreFromChanged(isFromBackupFile: boolean) {
+		this.readHeaderFromMedia = isFromBackupFile;
+		if (isFromBackupFile) {
+			this.updateFilePath('');
+			this.updateSourceDatabaseNames([], '');
+		} else {
+			this.updateSourceDatabaseNames(this.databaseList, this.databaseList[0]);
+		}
+	}
+
+	/**
  	* Get option metadata from the option map
  	*/
 	public getOptionMetadata(optionName: string): data.ServiceOption {
@@ -109,10 +125,20 @@ export class RestoreViewModel {
 	/**
  	* Set current value for restore option
  	*/
-	public setOptionCurrentValue(optionName: string, value: any): void {
+	public setOptionValue(optionName: string, value: any): void {
 		if (this._optionsMap[optionName]) {
 			this._optionsMap[optionName].currentValue = value;
 		}
+	}
+
+	/**
+ 	* Get current value for restore option
+ 	*/
+	public getOptionValue(optionName: string): any {
+		if (this._optionsMap[optionName]) {
+			return this._optionsMap[optionName].currentValue;
+		}
+		return undefined;
 	}
 
 	/**
@@ -160,7 +186,7 @@ export class RestoreViewModel {
 	/**
  	* Update options with plan details
  	*/
-	public updateOptionWithPlanDetail(planDetails: { [key: string]: any }): void {
+	public updateOptionWithPlanDetail(planDetails: { [key: string]: data.RestorePlanDetailInfo }): void {
 		if (planDetails) {
 			for (var key in planDetails) {
 				let optionElement = this._optionsMap[key];
@@ -169,6 +195,33 @@ export class RestoreViewModel {
 					optionElement.defaultValue = this.getDisplayValue(optionElement.optionMetadata, planDetailInfo.defaultValue);
 					optionElement.currentValue = this.getDisplayValue(optionElement.optionMetadata, planDetailInfo.currentValue);
 					this._onSetRestoreOption.fire({ optionName: key, value: this._optionsMap[key].currentValue, isReadOnly: planDetailInfo.isReadOnly });
+				}
+			}
+		}
+	}
+
+	/**
+ 	* Update options with restore config info. The option values will be both default and current values.
+ 	*/
+	public updateOptionWithConfigInfo(configInfo: { [key: string]: any }): void {
+		if (configInfo && configInfo['sourceDatabaseNamesWithBackupSets']) {
+			let databaseList = configInfo['sourceDatabaseNamesWithBackupSets'];
+			if (types.isStringArray(databaseList)) {
+				this.databaseList = databaseList;
+				this.databaseList.unshift('');
+				this.sourceDatabaseName = this.databaseList[0];
+				this.readHeaderFromMedia = false;
+				this.updateSourceDatabaseNames(this.databaseList, this.sourceDatabaseName);
+			}
+		}
+		if (configInfo) {
+			for (var key in configInfo) {
+				let optionElement = this._optionsMap[key];
+				if (optionElement) {
+					let planDetailInfo = configInfo[key];
+					optionElement.defaultValue = this.getDisplayValue(optionElement.optionMetadata, planDetailInfo);
+					optionElement.currentValue = optionElement.defaultValue;
+					this._onSetRestoreOption.fire({ optionName: key, value: this._optionsMap[key].currentValue, isReadOnly: true });
 				}
 			}
 		}
@@ -228,6 +281,7 @@ export class RestoreViewModel {
 		this.updateFilePath('');
 		this.updateTargetDatabaseName('');
 		this.updateLastBackupTaken('');
+		this.databaseList = [];
 		this.emptyBackupSetsToRestore();
 		for (var key in this._optionsMap) {
 			this._optionsMap[key].defaultValue = this.getDisplayValue(this._optionsMap[key].optionMetadata, this._optionsMap[key].optionMetadata.defaultValue);

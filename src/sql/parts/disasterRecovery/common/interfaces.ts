@@ -62,8 +62,8 @@ export interface IDisasterRecoveryService {
 	getRestoreConfigInfo(connectionUri: string): Thenable<data.RestoreConfigInfo>;
 }
 
-export const IRestoreDialogService = createDecorator<IRestoreDialogService>('restoreDialogService');
-export interface IRestoreDialogService {
+export const IRestoreDialogController = createDecorator<IRestoreDialogController>('restoreDialogService');
+export interface IRestoreDialogController {
 	_serviceBrand: any;
 	showDialog(connection: IConnectionProfile): TPromise<void>;
 }

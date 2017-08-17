@@ -10,7 +10,7 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
-import { IDisasterRecoveryUiService, IRestoreDialogService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
@@ -212,7 +212,7 @@ export class RestoreAction extends TaskAction {
 
 	constructor(
 		id: string, label: string, icon: string,
-		@IRestoreDialogService protected _restoreService: IRestoreDialogService
+		@IRestoreDialogController protected _restoreService: IRestoreDialogController
 	) {
 		super(id, label, icon);
 	}

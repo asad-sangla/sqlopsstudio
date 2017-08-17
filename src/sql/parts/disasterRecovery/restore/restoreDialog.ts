@@ -42,6 +42,7 @@ export class RestoreDialog extends Modal {
 	private _toDisposeTheming: lifecycle.IDisposable[] = [];
 	private _restoreLabel: string;
 	private _restoreTitle: string;
+	private _databaseTitle: string;
 	private _backupFileTitle: string;
 
 	// General options
@@ -49,7 +50,7 @@ export class RestoreDialog extends Modal {
 	private _destinationDatabaseInputBox: DialogInputBox;
 	private _destinationRestoreToInputBox: DialogInputBox;
 	private _restoreFromSelectBox: DialogSelectBox;
-	private _sourceDatabaseFromBackupSelectBox: DialogSelectBox;
+	private _sourceDatabaseSelectBox: DialogSelectBox;
 
 	// File option
 	private readonly _relocateDatabaseFilesOption = 'relocateDbFiles';
@@ -74,6 +75,7 @@ export class RestoreDialog extends Modal {
 	private _restorePlanListElement: HTMLElement;
 	private _fileListElement: HTMLElement;
 	private _generalTabElement: HTMLElement;
+	private _restoreFromBackupFileElement: HTMLElement;
 
 	private _onRestore = new Emitter<void>();
 	public onRestore: Event<void> = this._onRestore.event;
@@ -93,6 +95,7 @@ export class RestoreDialog extends Modal {
 	) {
 		super('Restore database', partService, { hasErrors: true, isWide: true });
 		this._restoreTitle = localize('restoreTitle', 'Restore database');
+		this._databaseTitle = localize('database', 'Database');
 		this._backupFileTitle = localize('backupFile', 'Backup file');
 		this._restoreLabel = localize('restore', 'Restore');
 
@@ -119,23 +122,39 @@ export class RestoreDialog extends Modal {
 	}
 
 	protected renderBody(container: HTMLElement) {
-		// Source section
-		let sourceElement: HTMLElement;
-		$().div({ class: 'source-section new-section' }, (sourceContainer) => {
-			sourceElement = sourceContainer.getHTMLElement();
-			this.createLabelElement(sourceContainer, localize('source', 'Source'), true);
 
-			this._restoreFromSelectBox = this.createSelectBoxHelper(sourceContainer, localize('restoreFrom', 'Restore from'), [this._backupFileTitle], this._backupFileTitle);
+		let restoreFromElement;
+		$().div({ class: 'restore-from' }, (restoreFromContainer) => {
+			restoreFromElement = restoreFromContainer.getHTMLElement();
+			this.createLabelElement(restoreFromContainer, localize('source', 'Source'), true);
+			this._restoreFromSelectBox = this.createSelectBoxHelper(restoreFromContainer, localize('restoreFrom', 'Restore from'), [this._databaseTitle, this._backupFileTitle], this._databaseTitle);
+		});
 
+		$().div({ class: 'backup-file-path' }, (filePathContainer) => {
+			filePathContainer.hide();
+			this._restoreFromBackupFileElement = filePathContainer.getHTMLElement();
 			let errorMessage = localize('missingBackupFilePathError', 'Backup file path is required.');
 			let validationOptions: IInputOptions = {
 				validationOptions: {
 					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: errorMessage }) : null
 				}
 			};
-			this._filePathInputBox = this.createInputBoxHelper(sourceContainer, localize('backupFilePath', 'Backup file path'), validationOptions);
+			this._filePathInputBox = this.createInputBoxHelper(filePathContainer, localize('backupFilePath', 'Backup file path'), validationOptions);
+		});
 
-			this._sourceDatabaseFromBackupSelectBox = this.createSelectBoxHelper(sourceContainer, localize('database', 'Database'), [], '');
+		let sourceDatabasesElement;
+		$().div({ class: 'source-database-list' }, (sourceDatabasesContainer) => {
+			sourceDatabasesElement = sourceDatabasesContainer.getHTMLElement();
+			this._sourceDatabaseSelectBox = this.createSelectBoxHelper(sourceDatabasesContainer, localize('database', 'Database'), [], '');
+		});
+
+		// Source section
+		let sourceElement: HTMLElement;
+		$().div({ class: 'source-section new-section' }, (sourceContainer) => {
+			sourceElement = sourceContainer.getHTMLElement();
+			sourceContainer.append(restoreFromElement);
+			sourceContainer.append(this._restoreFromBackupFileElement);
+			sourceContainer.append(sourceDatabasesElement);
 		});
 
 		// Destination section
@@ -302,18 +321,18 @@ export class RestoreDialog extends Modal {
 	}
 
 	private onBooleanOptionChecked(optionName: string) {
-		this.viewModel.setOptionCurrentValue(optionName, (<DialogCheckbox>this._optionsMap[optionName]).checked);
+		this.viewModel.setOptionValue(optionName, (<DialogCheckbox>this._optionsMap[optionName]).checked);
 		this._onValidate.fire();
 	}
 
 	private onCatagoryOptionChanged(optionName: string) {
-		this.viewModel.setOptionCurrentValue(optionName, (<DialogSelectBox>this._optionsMap[optionName]).value);
+		this.viewModel.setOptionValue(optionName, (<DialogSelectBox>this._optionsMap[optionName]).value);
 		this._onValidate.fire();
 	}
 
 	private onStringOptionChanged(optionName: string, params: OnLoseFocusParams) {
 		if (params.hasChanged && params.value) {
-			this.viewModel.setOptionCurrentValue(optionName, params.value);
+			this.viewModel.setOptionValue(optionName, params.value);
 			this._onValidate.fire();
 		}
 	}
@@ -358,6 +377,10 @@ export class RestoreDialog extends Modal {
 	public onValidateResponseFail(errorMessage: string) {
 		this.resetTables();
 		this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
+	}
+
+	public removeErrorMessage() {
+		this._filePathInputBox.hideMessage();
 	}
 
 	public enableRestoreButton(enabled: boolean) {
@@ -438,7 +461,7 @@ export class RestoreDialog extends Modal {
 		this._toDispose.push(attachInputBoxStyler(this._destinationDatabaseInputBox, this._themeService));
 		this._toDispose.push(attachInputBoxStyler(this._destinationRestoreToInputBox, this._themeService));
 		this._toDispose.push(attachSelectBoxStyler(this._restoreFromSelectBox, this._themeService));
-		this._toDispose.push(attachSelectBoxStyler(this._sourceDatabaseFromBackupSelectBox, this._themeService));
+		this._toDispose.push(attachSelectBoxStyler(this._sourceDatabaseSelectBox, this._themeService));
 		this._toDispose.push(attachButtonStyler(this._restoreButton, this._themeService));
 		this._toDispose.push(attachButtonStyler(this._closeButton, this._themeService));
 
@@ -446,12 +469,16 @@ export class RestoreDialog extends Modal {
 			this.onFilePathChanged(params);
 		}));
 
-		this._toDispose.push(this._sourceDatabaseFromBackupSelectBox.onDidSelect(selectedDatabase => {
+		this._toDispose.push(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
 			this.onSourceDatabaseChanged(selectedDatabase);
 		}));
 
 		this._toDispose.push(this._destinationDatabaseInputBox.onLoseFocus(params => {
 			this.onTargetDatabaseChanged(params);
+		}));
+
+		this._toDispose.push(this._restoreFromSelectBox.onDidSelect(selectedRestoreFrom => {
+			this.onRestoreFromChanged(selectedRestoreFrom);
 		}));
 	}
 
@@ -467,6 +494,16 @@ export class RestoreDialog extends Modal {
 		this.viewModel.sourceDatabaseName = selectedDatabase;
 		this.viewModel.emptyBackupSetsToRestore();
 		this._onValidate.fire();
+	}
+
+	private onRestoreFromChanged(selectedRestoreFrom: string) {
+		if (selectedRestoreFrom === this._backupFileTitle) {
+			this.viewModel.onRestoreFromChanged(true);
+			new Builder(this._restoreFromBackupFileElement).show();
+		} else {
+			this.viewModel.onRestoreFromChanged(false);
+			new Builder(this._restoreFromBackupFileElement).hide();
+		}
 	}
 
 	private onTargetDatabaseChanged(params: OnLoseFocusParams) {
@@ -508,7 +545,7 @@ export class RestoreDialog extends Modal {
 
 	private resetDialog(): void {
 		this.hideError();
-		this._restoreFromSelectBox.selectWithOptionName(this._backupFileTitle);
+		this._restoreFromSelectBox.selectWithOptionName(this._databaseTitle);
 		this.resetTables();
 		this._generalTabElement.click();
 	}
@@ -550,9 +587,9 @@ export class RestoreDialog extends Modal {
 	}
 
 	private updateSourceDatabaseName(databaseNamesParam: SouceDatabaseNamesParam) {
-		this._sourceDatabaseFromBackupSelectBox.setOptions(databaseNamesParam.databaseNames);
+		this._sourceDatabaseSelectBox.setOptions(databaseNamesParam.databaseNames);
 		if (databaseNamesParam.selectedDatabased) {
-			this._sourceDatabaseFromBackupSelectBox.selectWithOptionName(databaseNamesParam.selectedDatabased);
+			this._sourceDatabaseSelectBox.selectWithOptionName(databaseNamesParam.selectedDatabased);
 		}
 	}
 

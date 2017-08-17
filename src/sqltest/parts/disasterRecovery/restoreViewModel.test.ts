@@ -154,9 +154,9 @@ suite('Restore Dialog view model tests', () => {
 	});
 
 	test('get restore advanced option should return the only the options that have been changed and are different from the default value', () => {
-		viewModel.setOptionCurrentValue(option1String, 'default');
-		viewModel.setOptionCurrentValue(option2Category, 'Catagory 2');
-		viewModel.setOptionCurrentValue(option3Boolean, false);
+		viewModel.setOptionValue(option1String, 'default');
+		viewModel.setOptionValue(option2Category, 'Catagory 2');
+		viewModel.setOptionValue(option3Boolean, false);
 		options = {};
 		viewModel.getRestoreAdvancedOptions(options);
 		assert.equal(undefined, options[option1String]);
@@ -215,6 +215,7 @@ suite('Restore Dialog view model tests', () => {
 		assert.equal('', viewModel.sourceDatabaseName);
 		assert.equal('', viewModel.targetDatabaseName);
 		assert.equal('', viewModel.lastBackupTaken);
+		assert.equal(0, viewModel.databaseList.length);
 
 		// verify that advanced options get set correctly
 		options = {};
@@ -243,5 +244,39 @@ suite('Restore Dialog view model tests', () => {
 		viewModel.emptyBackupSetsToRestore();
 		selectedBackupSets = viewModel.getSelectedBackupSets();
 		assert.equal(undefined, selectedBackupSets);
+	});
+
+	test('update options with config info should update option correctly', () => {
+		let databaseList = ['db1', 'db2'];
+		let configInfo: { [key: string]: any } = {};
+		configInfo['sourceDatabaseNamesWithBackupSets'] = databaseList;
+		configInfo[option1String] = 'option1 from config info';
+		viewModel.updateOptionWithConfigInfo(configInfo);
+		assert.equal(3, viewModel.databaseList.length);
+		assert.equal('', viewModel.databaseList[0]);
+		assert.equal(databaseList[1], viewModel.databaseList[1]);
+		assert.equal(databaseList[2], viewModel.databaseList[2]);
+		assert.equal('option1 from config info', viewModel.getOptionValue(option1String));
+
+		// verify that the options from get restore advanced options doesn't contain option1String
+		options = {};
+		viewModel.getRestoreAdvancedOptions(options);
+		assert.equal(undefined, options[option1String]);
+	});
+
+	test('on restore from changed should set readHeaderFromMedia and reset the source database names and selected database name correctly', () => {
+		viewModel.databaseList = ['', 'db1', 'db2'];
+		viewModel.sourceDatabaseName = 'sourceDatabase';
+		viewModel.filePath = 'filepath';
+		viewModel.readHeaderFromMedia = false;
+		viewModel.onRestoreFromChanged(true);
+		assert.equal(true, viewModel.readHeaderFromMedia);
+		assert.equal('', viewModel.sourceDatabaseName);
+		assert.equal('', viewModel.filePath);
+
+		viewModel.sourceDatabaseName = 'sourceDatabase2';
+		viewModel.onRestoreFromChanged(false);
+		assert.equal(false, viewModel.readHeaderFromMedia);
+		assert.equal('', viewModel.sourceDatabaseName);
 	});
 });
