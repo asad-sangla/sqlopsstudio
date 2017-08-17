@@ -59,6 +59,18 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		this._grid.autosizeColumns();
 	}
 
+	setSelectedRows(rows: number[]) {
+		this._grid.setSelectedRows(rows);
+	}
+
+	getSelectedRows(): number[] {
+		return this._grid.getSelectedRows();
+	}
+
+	onSelectedRowsChanged(fn: (e: Slick.EventData, data: Slick.OnSelectedRowsChangedEventArgs<T>) => any) {
+		this._grid.onSelectedRowsChanged.subscribe(fn);
+	}
+
 	setSelectionModel(model: Slick.SelectionModel<T, Array<Slick.Range>>) {
 		this._grid.setSelectionModel(model);
 	}
