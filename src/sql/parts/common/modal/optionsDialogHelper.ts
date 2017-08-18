@@ -140,7 +140,7 @@ export function validateInputs(optionsMap: { [optionName: string]: IOptionElemen
 export function updateOptions(options: { [optionName: string]: any }, optionsMap: { [optionName: string]: IOptionElement }): void {
 	for (var optionName in optionsMap) {
 		var optionElement: IOptionElement = optionsMap[optionName];
-		if (optionElement.optionWidget.value !== optionElement.optionValue) {
+		if (optionElement.optionWidget.value !== options[optionName]) {
 			if (!optionElement.optionWidget.value && options[optionName]) {
 				delete options[optionName];
 			}
@@ -151,6 +151,7 @@ export function updateOptions(options: { [optionName: string]: any }, optionsMap
 					options[optionName] = optionElement.optionWidget.value;
 				}
 			}
+			optionElement.optionValue = options[optionName];
 		}
 	}
 }

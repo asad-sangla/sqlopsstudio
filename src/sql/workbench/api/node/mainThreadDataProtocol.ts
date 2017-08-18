@@ -220,7 +220,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		});
 
 		this._disasterRecoveryService.registerProvider(providerId, <data.DisasterRecoveryProvider>{
-			backup(connectionUri: string, backupInfo: data.BackupInfo, isScripting: boolean): Thenable<data.BackupResponse> {
+			backup(connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<data.BackupResponse> {
 				return self._proxy.$backup(handle, connectionUri, backupInfo, isScripting);
 			},
 			getBackupConfigInfo(connectionUri: string): Thenable<data.BackupConfigInfo> {

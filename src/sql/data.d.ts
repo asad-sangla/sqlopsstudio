@@ -911,68 +911,13 @@ declare module 'data' {
 		backupEncryptors: {};
 	}
 
-	export interface BackupInfo {
-		ownerUri: string;
-
-		databaseName: string;
-
-		backupType: number;
-
-		backupComponent: number;
-
-		backupDeviceType: number;
-
-		selectedFiles: string;
-
-		backupsetName: string;
-
-		selectedFileGroup: { [path: string]: string };
-
-		// List of {key: backup path, value: device type}
-		backupPathDevices: { [path: string]: number };
-
-		backupPathList: [string];
-
-		isCopyOnly: boolean;
-
-		formatMedia: boolean;
-
-		initialize: boolean;
-
-		skipTapeHeader: boolean;
-
-		mediaName: string;
-
-		mediaDescription: string;
-
-		checksum: boolean;
-
-		continueAfterError: boolean;
-
-		logTruncation: boolean;
-
-		tailLogBackup: boolean;
-
-		retainDays: number;
-
-		compressionOption: number;
-
-		verifyBackupRequired: boolean;
-
-		encryptionAlgorithm: number;
-
-		encryptorType: number;
-
-		encryptorName: string;
-	}
-
 	export interface BackupResponse {
 		result: boolean;
 		taskId: number;
 	}
 
 	export interface DisasterRecoveryProvider {
-		backup(connectionUri: string, backupInfo: BackupInfo, isScripting: boolean): Thenable<BackupResponse>;
+		backup(connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<BackupResponse>;
 		getBackupConfigInfo(connectionUri: string): Thenable<BackupConfigInfo>;
 		getRestorePlan(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestorePlanResponse>;
 		restore(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestoreResponse>;

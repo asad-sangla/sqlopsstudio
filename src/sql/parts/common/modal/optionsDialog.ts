@@ -174,7 +174,7 @@ export class OptionsDialog extends Modal {
 		}
 	}
 
-	public get optionValues(): { [name: string]: string } {
+	public get optionValues(): { [name: string]: any } {
 		return this._optionValues;
 	}
 

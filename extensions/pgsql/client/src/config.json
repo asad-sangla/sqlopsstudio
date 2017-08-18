@@ -1,7 +1,7 @@
 {
 	"service": {
 		"downloadUrl": "http://dtnuget:8080/download/pgtoolsservice/{#version#}/pgsqltoolsservice-{#fileName#}",
-		"version": "1.1.0-alpha.32",
+		"version": "1.1.0-alpha.33",
 		"downloadFileNames": {
 			"Windows_64": "win-x64.zip",
 			"Windows_86": "win-x86.zip",

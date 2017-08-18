@@ -6,7 +6,6 @@
 import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
 import 'vs/css!sql/media/primeng';
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { BackupInfo } from 'data';
 import { SelectItem } from 'primeng/primeng';
 import { PathUtilities } from 'sql/common/pathUtilities';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -42,6 +41,37 @@ export class RestoreItemSource {
         this.restoreItemLocation = location.restoreItemLocation;
         this.isLogicalDevice = location.isLogicalDevice;
     }
+}
+
+interface MssqlBackupInfo {
+    ownerUri: string;
+    databaseName: string;
+    backupType: number;
+    backupComponent: number;
+    backupDeviceType: number;
+    selectedFiles: string;
+    backupsetName: string;
+    selectedFileGroup: { [path: string]: string };
+
+    // List of {key: backup path, value: device type}
+    backupPathDevices: { [path: string]: number };
+    backupPathList: [string];
+    isCopyOnly: boolean;
+    formatMedia: boolean;
+    initialize: boolean;
+    skipTapeHeader: boolean;
+    mediaName: string;
+    mediaDescription: string;
+    checksum: boolean;
+    continueAfterError: boolean;
+    logTruncation: boolean;
+    tailLogBackup: boolean;
+    retainDays: number;
+    compressionOption: number;
+    verifyBackupRequired: boolean;
+    encryptionAlgorithm: number;
+    encryptorType: number;
+    encryptorName: string;
 }
 
 @Component({
@@ -668,7 +698,7 @@ export class BackupComponent{
         }
     }
 
-    private createBackupInfo(): BackupInfo {
+    private createBackupInfo(): MssqlBackupInfo {
         var backupPathArray = [];
         for (var i in this.backupPathTypePairs) {
             backupPathArray.push(i);
@@ -685,7 +715,7 @@ export class BackupComponent{
             encryptorName = selectedEncryptor.substring(0, selectedEncryptor.lastIndexOf('('));
         }
 
-        let backupInfo = <BackupInfo> {
+        let backupInfo = <MssqlBackupInfo> {
             ownerUri: this._uri,
             databaseName: this.databaseName,
             backupType: this.getBackupTypeNumber(),

@@ -21,7 +21,7 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	public _serviceBrand: any;
 	private _backupDialog: BackupDialog | OptionsDialog;
 	private _optionsMap: { [providerName: string]: data.FeatureMetadataProvider } = {};
-	private _optionValues: { [optionName: string]: string } = {};
+	private _optionValues: { [optionName: string]: any } = {};
 	private _connectionUri: string;
 
 	constructor( @IInstantiationService private _instantiationService: IInstantiationService,
@@ -83,35 +83,7 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	}
 
 	private handleOptionDialogClosed() {
-		let backupInfo = <data.BackupInfo> {
-			ownerUri: this._connectionUri,
-			backupPathList: [this._optionValues['path']],
-			backupType: undefined,
-			databaseName: undefined,
-			backupComponent: undefined,
-			backupDeviceType: undefined,
-			selectedFiles: undefined,
-			backupsetName: undefined,
-			selectedFileGroup: undefined,
-			backupPathDevices: undefined,
-			isCopyOnly: undefined,
-			formatMedia: undefined,
-			initialize: undefined,
-			skipTapeHeader: undefined,
-			mediaName: undefined,
-			mediaDescription: undefined,
-			checksum: undefined,
-			continueAfterError: undefined,
-			logTruncation: undefined,
-			tailLogBackup: undefined,
-			retainDays: undefined,
-			compressionOption: undefined,
-			verifyBackupRequired: undefined,
-			encryptionAlgorithm: undefined,
-			encryptorType: undefined,
-			encryptorName: undefined
-		};
-		this._disasterRecoveryService.backup(this._connectionUri, backupInfo, false);
+		this._disasterRecoveryService.backup(this._connectionUri, this._optionValues, false);
 		this._backupDialog = undefined;
 	}
 

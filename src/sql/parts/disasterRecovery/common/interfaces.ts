@@ -39,7 +39,7 @@ export interface IDisasterRecoveryService {
 	/**
 	 * Backup a data source using the provided connection
 	 */
-	backup(connectionUri: string, backupInfo: data.BackupInfo, isScripting: boolean): Thenable<data.BackupResponse>;
+	backup(connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<data.BackupResponse>;
 
 	/**
 	 * Register a disaster recovery provider
