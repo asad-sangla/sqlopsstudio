@@ -16,11 +16,16 @@ import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
-
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import Severity from 'vs/base/common/severity';
-
 import data = require('data');
+import nls = require('vs/nls');
+
+export enum ScriptAction {
+	ScriptCreateAction,
+	ScriptDeleteAction,
+	ScriptSelectAction
+}
 
 export function connectIfNotAlreadyConnected(connectionProfile: IConnectionProfile, connectionService: IConnectionManagementService): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
@@ -51,7 +56,7 @@ export function connectIfNotAlreadyConnected(connectionProfile: IConnectionProfi
 export function scriptSelect(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		connectIfNotAlreadyConnected(connectionProfile, connectionService).then(connectionResult => {
-			scriptingService.scriptAsSelect(ownerUri, metadata).then(result => {
+			scriptingService.script(ownerUri, metadata, ScriptAction.ScriptSelectAction).then(result => {
 				if (result && result.script) {
 					queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
 						// Connect our editor to the input connection
@@ -68,7 +73,8 @@ export function scriptSelect(connectionProfile: IConnectionProfile, metadata: da
 						reject(edirotError);
 					});
 				} else {
-					reject('Scripting service did not return anything');
+					let errMsg = nls.localize("scriptNotFound", "No script was returned when calling script {action} on object {metadata.metadataTypeName}");
+					reject(errMsg);
 				}
 			}, scriptError => {
 				reject(scriptError);
@@ -100,15 +106,15 @@ export function editData(connectionProfile: IConnectionProfile, tableName: strin
 }
 
 /**
- * Script the object as a CREATE statement
+ * Script the object as a statement based on the provided action
  */
-export function scriptCreate(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
+export function script(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService, action: ScriptAction): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		connectIfNotAlreadyConnected(connectionProfile, connectionService).then(connectionResult => {
-			scriptingService.scriptAsCreate(ownerUri, metadata).then(result => {
+			scriptingService.script(ownerUri, metadata, action).then(result => {
 				if (result && result.script) {
 					let script = result.script;
-					var startPos: number = script.toLowerCase().indexOf('create');
+					var startPos: number = getStartPos(script, action);
 					if (startPos > 0) {
 						script = script.substring(startPos);
 					}
@@ -118,7 +124,8 @@ export function scriptCreate(connectionProfile: IConnectionProfile, metadata: da
 						reject(editorError);
 					});
 				} else {
-					reject('Scripting service did not return anything');
+					let errMsg = nls.localize("scriptNotFound", "No script was returned when calling script {action} on object {metadata.metadataTypeName}");
+					reject(errMsg);
 				}
 			}, scriptingError => {
 				reject(scriptingError);
@@ -181,4 +188,18 @@ export function showRestore(connection: IConnectionProfile, restoreDialogService
 
 export function openInsight(query: IInsightsConfig, profile: IConnectionProfile, insightDialogService: IInsightsDialogService) {
 	insightDialogService.show(query, profile);
+}
+
+/* Helper Methods */
+function getStartPos(script: string, action: ScriptAction): number {
+	switch(action)
+	{
+		case (ScriptAction.ScriptCreateAction):
+			return script.toLowerCase().indexOf('create');
+		case (ScriptAction.ScriptDeleteAction):
+			return script.toLowerCase().indexOf('drop');
+		default:
+			/* start script from the start */
+			return 0;
+	}
 }

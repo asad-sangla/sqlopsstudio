@@ -14,7 +14,7 @@ import {
 	RenameGroupAction, DeleteConnectionAction, RefreshAction, EditServerGroupAction
 }
 	from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
-import { OENewQueryAction, DisconnectAction, OEScriptSelectAction, OEEditDataAction, OEScriptCreateAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
+import { OENewQueryAction, DisconnectAction, ObjectExplorerActionUtilities } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
@@ -90,20 +90,16 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	 * Return actions for OE elements
 	 */
 	public getObjectExplorerNodeActions(tree: ITree, treeNode: TreeNode): IAction[] {
-		var actions: IAction[] = [];
-
+		let actions = [];
 		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL, OENewQueryAction.ICON));
-
-		if (treeNode.nodeTypeId === NodeType.Table) {
-			actions.push(this._instantiationService.createInstance(OEScriptSelectAction, OEScriptSelectAction.ID, OEScriptSelectAction.LABEL));
-			actions.push(this._instantiationService.createInstance(OEEditDataAction, OEEditDataAction.ID, OEEditDataAction.LABEL));
-			actions.push(this._instantiationService.createInstance(OEScriptCreateAction, OEScriptCreateAction.ID, OEScriptCreateAction.LABEL));
+		let scriptMap: Map<NodeType, any[]> = ObjectExplorerActionUtilities.getScriptMap();
+		let supportedActions = scriptMap.get(treeNode.nodeTypeId);
+		let self = this;
+		if (supportedActions != null) {
+			supportedActions.forEach(function(action) {
+			actions.push(self._instantiationService.createInstance(action, action.ID, action.LABEL))
+			});
 		}
-		if (treeNode.nodeTypeId === NodeType.View) {
-			actions.push(this._instantiationService.createInstance(OEScriptSelectAction, OEScriptSelectAction.ID, OEScriptSelectAction.LABEL));
-			actions.push(this._instantiationService.createInstance(OEScriptCreateAction, OEScriptCreateAction.ID, OEScriptCreateAction.LABEL));
-		}
-
 		actions.push(this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, treeNode));
 
 		if (treeNode.isTopLevel()) {

@@ -14,9 +14,8 @@ import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
-
 import { ObjectMetadata } from 'data';
-
+import { ScriptAction } from 'sql/workbench/electron-browser/taskUtilities';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import * as nls from 'vs/nls';
@@ -157,13 +156,14 @@ export class ScriptCreateAction extends Action {
 
 	public run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
-			TaskUtilities.scriptCreate(
+			TaskUtilities.script(
 				actionContext.profile,
 				actionContext.object,
 				actionContext.uri,
 				this._connectionManagementService,
 				this._queryEditorService,
-				this._scriptingService
+				this._scriptingService,
+				ScriptAction.ScriptCreateAction
 			).then(
 				result => {
 					resolve(true);
@@ -171,7 +171,42 @@ export class ScriptCreateAction extends Action {
 				error => {
 					resolve(false);
 				}
-				);
+			);
+		});
+	}
+}
+
+export class ScriptDeleteAction extends Action {
+	public static ID = 'scriptDelete';
+	public static LABEL = nls.localize('scriptDelete', 'Script as Delete');
+
+	constructor(
+		id: string, label: string,
+		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
+		@IScriptingService protected _scriptingService: IScriptingService
+	) {
+		super(id, label);
+	}
+
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.script(
+				actionContext.profile,
+				actionContext.object,
+				actionContext.uri,
+				this._connectionManagementService,
+				this._queryEditorService,
+				this._scriptingService,
+				ScriptAction.ScriptDeleteAction
+			).then(
+				result => {
+					resolve(true);
+				},
+				error => {
+					resolve(false);
+				}
+			);
 		});
 	}
 }
