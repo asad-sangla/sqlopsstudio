@@ -483,10 +483,12 @@ export class RestoreDialog extends Modal {
 	}
 
 	private onFilePathChanged(params: OnLoseFocusParams) {
-		if (params.hasChanged && params.value) {
-			this.viewModel.filePath = params.value;
-			this.viewModel.emptyBackupSetsToRestore();
-			this._onValidate.fire();
+		if (params.value) {
+			if (params.hasChanged || (this.viewModel.filePath !== params.value)) {
+				this.viewModel.filePath = params.value;
+				this.viewModel.emptyBackupSetsToRestore();
+				this._onValidate.fire();
+			}
 		}
 	}
 
@@ -546,6 +548,8 @@ export class RestoreDialog extends Modal {
 	private resetDialog(): void {
 		this.hideError();
 		this._restoreFromSelectBox.selectWithOptionName(this._databaseTitle);
+		this.onRestoreFromChanged(this._databaseTitle);
+		this._sourceDatabaseSelectBox.select(0);
 		this.resetTables();
 		this._generalTabElement.click();
 	}
