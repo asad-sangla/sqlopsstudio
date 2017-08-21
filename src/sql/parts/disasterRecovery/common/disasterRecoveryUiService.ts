@@ -9,7 +9,7 @@ import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesServ
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { OptionsDialog } from 'sql/parts/common/modal/optionsDialog';
 import { BackupDialog } from 'sql/parts/disasterRecovery/backup/backupDialog';
-import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -83,7 +83,7 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	}
 
 	private handleOptionDialogClosed() {
-		this._disasterRecoveryService.backup(this._connectionUri, this._optionValues, false);
+		this._disasterRecoveryService.backup(this._connectionUri, this._optionValues, TaskExecutionMode.executeAndScript);
 		this._backupDialog = undefined;
 	}
 

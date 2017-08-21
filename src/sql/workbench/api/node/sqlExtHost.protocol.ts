@@ -223,7 +223,7 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Backup a database
 	 */
-	$backup(handle: number, connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<data.BackupResponse> { throw ni(); }
+	$backup(handle: number, connectionUri: string, backupInfo: { [key: string]: any }, taskExecutionMode: data.TaskExecutionMode): Thenable<data.BackupResponse> { throw ni(); }
 
 	/**
 	 * Get the extended database prototype
@@ -261,7 +261,7 @@ export abstract class ExtHostCredentialManagementShape {
  * Serialization provider extension host class.
  */
 export abstract class ExtHostSerializationProviderShape {
-	$saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult> { throw ni();}
+	$saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult> { throw ni(); }
 }
 export abstract class MainThreadDataProtocolShape {
 	$registerProvider(providerId: string, handle: number): TPromise<any> { throw ni(); }

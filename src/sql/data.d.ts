@@ -917,7 +917,7 @@ declare module 'data' {
 	}
 
 	export interface DisasterRecoveryProvider {
-		backup(connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<BackupResponse>;
+		backup(connectionUri: string, backupInfo: { [key: string]: any }, taskExecutionMode: TaskExecutionMode): Thenable<BackupResponse>;
 		getBackupConfigInfo(connectionUri: string): Thenable<BackupConfigInfo>;
 		getRestorePlan(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestorePlanResponse>;
 		restore(connectionUri: string, restoreInfo: RestoreInfo): Thenable<RestoreResponse>;

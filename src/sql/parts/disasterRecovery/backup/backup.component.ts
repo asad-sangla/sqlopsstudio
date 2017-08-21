@@ -10,7 +10,7 @@ import { SelectItem } from 'primeng/primeng';
 import { PathUtilities } from 'sql/common/pathUtilities';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
-import { IDisasterRecoveryService, IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import { modalFooterStyle } from 'sql/parts/common/modal/modal';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
@@ -21,7 +21,6 @@ import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
-
 import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
@@ -391,12 +390,12 @@ export class BackupComponent{
     * UI event handlers
     */
     private onScript(): void {
-        this._disasterRecoveryService.backup(this._uri, this.createBackupInfo(), true);
+        this._disasterRecoveryService.backup(this._uri, this.createBackupInfo(), TaskExecutionMode.script);
         this._disasterRecoveryUiService.closeBackup();
     }
 
     private onOk(): void {
-        this._disasterRecoveryService.backup(this._uri, this.createBackupInfo(), false);
+        this._disasterRecoveryService.backup(this._uri, this.createBackupInfo(), TaskExecutionMode.executeAndScript);
         this._disasterRecoveryUiService.closeBackup();
     }
 

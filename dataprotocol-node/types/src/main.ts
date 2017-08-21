@@ -453,7 +453,7 @@ export interface BackupParams {
 
 	backupInfo: BackupInfo;
 
-	isScripting: boolean;
+	taskExecutionMode: TaskExecutionMode;
 }
 
 export interface BackupResponse {
@@ -472,7 +472,7 @@ export interface RestoreConfigInfoRequestParams {
 }
 
 export interface RestoreConfigInfoResponse {
-	configInfo: { [key:  string]:  any };
+	configInfo: { [key: string]: any };
 }
 
 export interface RestoreDatabaseFileInfo {
@@ -514,7 +514,7 @@ export interface RestorePlanResponse {
 	errorMessage: string;
 	dbFiles: RestoreDatabaseFileInfo[];
 	databaseNamesFromBackupSets: string[];
-	planDetails: { [key:  string]: RestorePlanDetailInfo };
+	planDetails: { [key: string]: RestorePlanDetailInfo };
 }
 
 export interface RestoreResponse {

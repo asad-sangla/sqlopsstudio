@@ -58,7 +58,7 @@ import {
 	ScriptingScriptAsParams, ScriptingScriptAsResult, ScriptOperation,
 	DatabaseInfo, BackupConfigInfo, CreateDatabaseResponse, CreateDatabaseParams,
 	LoginInfo, CreateLoginResponse, CreateLoginParams,
-	BackupInfo, BackupResponse, BackupParams,
+	BackupInfo, BackupResponse, BackupParams, TaskExecutionMode,
 	RestoreParams, RestoreResponse, RestorePlanResponse,
 	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams,
 	GetDatabaseInfoResponse, GetDatabaseInfoParams,
@@ -1834,8 +1834,8 @@ export class LanguageClient {
 		};
 
 		let disasterRecoveryProvider: DisasterRecoveryProvider = {
-			backup(connectionUri: string, backupInfo: BackupInfo, isScripting: boolean): Thenable<BackupResponse> {
-				let params: BackupParams = { ownerUri: connectionUri, backupInfo: backupInfo, isScripting: isScripting };
+			backup(connectionUri: string, backupInfo: BackupInfo, taskExecutionMode: TaskExecutionMode): Thenable<BackupResponse> {
+				let params: BackupParams = { ownerUri: connectionUri, backupInfo: backupInfo, taskExecutionMode: taskExecutionMode };
 				return self.doSendRequest(connection, BackupRequest.type, params, undefined).then(
 					(result) => {
 						return result;

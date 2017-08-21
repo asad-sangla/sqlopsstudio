@@ -6,7 +6,7 @@
 'use strict';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import data = require('data');
-import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import * as Constants from 'sql/common/constants';
 
 export class DisasterRecoveryService implements IDisasterRecoveryService {
@@ -34,11 +34,11 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	/**
 	 * Backup a data source using the provided connection
 	 */
-	public backup(connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<data.BackupResponse> {
+	public backup(connectionUri: string, backupInfo: { [key: string]: any }, taskExecutionMode: TaskExecutionMode): Thenable<data.BackupResponse> {
 		return new Promise<data.BackupResponse>((resolve, reject) => {
 			let provider = this.getProvider(connectionUri);
 			if (provider) {
-				provider.backup(connectionUri, backupInfo, isScripting).then(result => {
+				provider.backup(connectionUri, backupInfo, taskExecutionMode).then(result => {
 					resolve(result);
 				}, error => {
 					reject(error);

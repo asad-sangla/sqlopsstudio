@@ -110,8 +110,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 				if (serializationProvider && serializationProvider.enabled) {
 					return self._proxy.$saveResults(handle, requestParams);
 				}
-				else if (serializationProvider && !serializationProvider.enabled)
-				{
+				else if (serializationProvider && !serializationProvider.enabled) {
 					return self._serializationService.disabledSaveAs();
 				}
 				else {
@@ -220,8 +219,8 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		});
 
 		this._disasterRecoveryService.registerProvider(providerId, <data.DisasterRecoveryProvider>{
-			backup(connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<data.BackupResponse> {
-				return self._proxy.$backup(handle, connectionUri, backupInfo, isScripting);
+			backup(connectionUri: string, backupInfo: { [key: string]: any }, taskExecutionMode: data.TaskExecutionMode): Thenable<data.BackupResponse> {
+				return self._proxy.$backup(handle, connectionUri, backupInfo, taskExecutionMode);
 			},
 			getBackupConfigInfo(connectionUri: string): Thenable<data.BackupConfigInfo> {
 				return self._proxy.$getBackupConfigInfo(handle, connectionUri);

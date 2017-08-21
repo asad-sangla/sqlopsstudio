@@ -403,9 +403,9 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	/**
 	 * Backup a database
 	 */
-	public $backup(handle: number, connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<data.BackupResponse> {
+	public $backup(handle: number, connectionUri: string, backupInfo: { [key: string]: any }, taskExecutionMode: data.TaskExecutionMode): Thenable<data.BackupResponse> {
 		return this._runWithProvider(handle, provider => {
-			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.backup(connectionUri, backupInfo, isScripting)
+			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.backup(connectionUri, backupInfo, taskExecutionMode)
 				: Promise.resolve(undefined);
 		});
 	}

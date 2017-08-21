@@ -10,6 +10,13 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 import data = require('data');
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
+
+export enum TaskExecutionMode {
+	execute = 0,
+	script = 1,
+	executeAndScript = 2,
+}
+
 export const SERVICE_ID = 'disasterRecoveryService';
 export const UI_SERVICE_ID = 'disasterRecoveryUiService';
 
@@ -39,7 +46,7 @@ export interface IDisasterRecoveryService {
 	/**
 	 * Backup a data source using the provided connection
 	 */
-	backup(connectionUri: string, backupInfo: { [key: string]: any }, isScripting: boolean): Thenable<data.BackupResponse>;
+	backup(connectionUri: string, backupInfo: { [key: string]: any }, taskExecutionMode: data.TaskExecutionMode): Thenable<data.BackupResponse>;
 
 	/**
 	 * Register a disaster recovery provider
