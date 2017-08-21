@@ -464,6 +464,7 @@ export interface BackupResponse {
 export interface RestoreParams {
 	ownerUri: string;
 	options: {};
+	taskExecutionMode: TaskExecutionMode;
 }
 
 export interface RestoreConfigInfoRequestParams {

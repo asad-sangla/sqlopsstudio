@@ -925,7 +925,8 @@ declare module 'data' {
 	}
 
 	export interface RestoreInfo {
-		options: { [key:  string]:  any };
+		options: { [key: string]: any };
+		taskExecutionMode: TaskExecutionMode;
 	}
 
 	export interface RestoreDatabaseFileInfo {
@@ -966,11 +967,11 @@ declare module 'data' {
 		errorMessage: string;
 		dbFiles: RestoreDatabaseFileInfo[];
 		databaseNamesFromBackupSets: string[];
-		planDetails: { [key:  string]: RestorePlanDetailInfo };
+		planDetails: { [key: string]: RestorePlanDetailInfo };
 	}
 
 	export interface RestoreConfigInfo {
-		configInfo: { [key:  string]:  any };
+		configInfo: { [key: string]: any };
 	}
 
 	export interface RestoreResponse {

@@ -10,6 +10,7 @@ import data = require('data');
 export class MssqlRestoreInfo implements data.RestoreInfo {
 
 	options: { [name: string]: any };
+	taskExecutionMode: data.TaskExecutionMode;
 
 	public constructor() {
 		this.options = {};

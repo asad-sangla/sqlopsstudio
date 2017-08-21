@@ -417,7 +417,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	function asRestoreParams(ownerUri: string, params: data.RestoreInfo): ls.RestoreParams {
 		return <ls.RestoreParams>{
 			ownerUri: ownerUri,
-			options: params.options
+			options: params.options,
+			taskExecutionMode: params.taskExecutionMode
 		};
 	}
 
