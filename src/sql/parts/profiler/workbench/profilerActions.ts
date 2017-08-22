@@ -5,11 +5,13 @@
 
 'use strict';
 
-import { ProfilerSessionID, IProfilerService } from './service/interfaces';
+import { ProfilerSessionID, IProfilerService } from 'sql/parts/profiler/service/interfaces';
+import { IProfilerController } from 'sql/parts/profiler/controller/interfaces';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import * as nls from 'vs/nls';
+import { IEditorAction } from 'vs/editor/common/editorCommon';
 
 export interface IProfilerActionContext {
 	id: ProfilerSessionID;
@@ -85,14 +87,13 @@ export class ProfilerPause extends Action {
 		id: string, label: string,
 		@IProfilerService private _profilerService: IProfilerService
 	) {
-		super(id, label, 'queryTaskbarIcon fa fa-pause');
+		super(id, label, 'queryTaskbarIcon cancelQuery');
 	}
 
 	public run(context: IProfilerActionContext): TPromise<boolean> {
 		this.enabled = false;
 		return TPromise.wrap(this._profilerService.pauseSession(context.id).then(() => true));
 	}
-
 }
 
 export class ProfilerStop extends Action {
@@ -110,5 +111,55 @@ export class ProfilerStop extends Action {
 		this.enabled = false;
 		return TPromise.wrap(this._profilerService.stopSession(context.id).then(() => true));
 	}
+}
 
+export class ProfilerShowFind extends Action {
+	public static ID = 'profiler.findString';
+	public static LABEL = nls.localize('findString', 'Find String');
+
+	constructor(
+		id: string, label: string, private profiler: IProfilerController,
+		@IProfilerService private _profilerService: IProfilerService
+	) {
+		super(id, label, 'queryTaskbarIcon cancelQuery');
+	}
+
+	public run(context: IProfilerActionContext): TPromise<boolean> {
+		this.profiler.toggleFind();
+		return TPromise.as(true);
+	}
+}
+
+export class ProfilerFindNext implements IEditorAction {
+	public readonly id = 'profiler.findNext';
+	public readonly label = nls.localize('findNext', 'Find Next String');
+	public readonly alias = '';
+
+	constructor(private profiler: IProfilerController) { }
+
+	run(): TPromise<void> {
+		this.profiler.findNext();
+		return TPromise.as(null);
+	}
+
+	isSupported(): boolean {
+		return true;
+	}
+}
+
+export class ProfilerFindPrevious implements IEditorAction {
+	public readonly id = 'profiler.findPrevious';
+	public readonly label = nls.localize('findPrevious', 'Find Previous String');
+	public readonly alias = '';
+
+	constructor(private profiler: IProfilerController) { }
+
+	run(): TPromise<void> {
+		this.profiler.findPrevious();
+		return TPromise.as(null);
+	}
+
+	isSupported(): boolean {
+		return true;
+	}
 }

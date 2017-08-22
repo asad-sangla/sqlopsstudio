@@ -45,7 +45,7 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		gridElement.style.height = '100%';
 		body.appendChild(gridElement);
 		this._styleElement = DOM.createStyleSheet(body);
-		this._grid = new Slick.Grid(gridElement, this._data, this._columns, options || {});
+		this._grid = new Slick.Grid<T>(gridElement, this._data, this._columns, options || {});
 		this._idPrefix = gridElement.classList[0];
 		this._data.onRowCountChange(() => {
 			this._grid.updateRowCount();
@@ -75,7 +75,15 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		this._grid.setSelectionModel(model);
 	}
 
-	registerPlugin(plugin: Slick.Plugin<T>) {
+	focus(): void {
+		this._grid.focus();
+	}
+
+	setActiveCell(row: number, cell: number): void {
+		this._grid.setActiveCell(row, cell);
+	}
+
+	registerPlugin(plugin: Slick.Plugin<T>): void {
 		this._grid.registerPlugin(plugin);
 	}
 

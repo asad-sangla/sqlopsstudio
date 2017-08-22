@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { ProfilerInput } from './profilerInput';
+import { ProfilerInput } from 'sql/parts/profiler/profilerInput';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';

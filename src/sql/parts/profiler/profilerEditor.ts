@@ -46,6 +46,7 @@ export class ProfilerEditor extends BaseEditor {
 				container.className = 'carbon-profiler';
 				container.style.width = '100%';
 				container.style.height = '100%';
+				container.style.position = 'relative';
 				DOM.append(parent.getHTMLElement(), container);
 				this.input.container = container;
 			} else {
