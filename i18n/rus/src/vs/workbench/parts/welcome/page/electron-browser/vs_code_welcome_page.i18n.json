@@ -36,10 +36,5 @@
 	"welcomePage.interfaceOverview": "Общие сведения об интерфейсе",
 	"welcomePage.interfaceOverviewDescription": "Используйте визуальное наложение с выделением основных компонентов пользовательского интерфейса.",
 	"welcomePage.interactivePlayground": "Интерактивная площадка",
-	"welcomePage.interactivePlaygroundDescription": "Опробуйте основные функции редактора в ходе краткого пошагового руководства.",
-	"welcomePage.quickLinks": "Быстрые ссылки",
-	"welcomePage.keybindingsReference": "Справочник по сочетаниям клавиш",
-	"welcomePage.keybindingsReferenceDescription": "Подготовленный к печати PDF-файл с самыми частыми сочетаниями клавиш",
-	"welcomePage.configureSettings": "Настройка параметров",
-	"welcomePage.configureSettingsDescription": "Используйте все возможности VS Code, подобрав нужные параметры."
+	"welcomePage.interactivePlaygroundDescription": "Опробуйте основные функции редактора в ходе краткого пошагового руководства."
 }

@@ -6,6 +6,7 @@
 {
 	"tag at": "{0} のタグ",
 	"remote branch at": "{0} でのリモート ブランチ",
+	"create branch": "$(plus) 新しいブランチを作成",
 	"repourl": "リポジトリ URL",
 	"parent": "親ディレクトリ",
 	"cloning": "Git リポジトリを複製しています...",

@@ -9,6 +9,8 @@
 	"workbench.action.terminal.kill.short": "Encerrar Terminal",
 	"workbench.action.terminal.copySelection": "Copiar Seleção",
 	"workbench.action.terminal.selectAll": "Selecionar Tudo",
+	"workbench.action.terminal.deleteWordLeft": "Excluir Palavra à Esquerda",
+	"workbench.action.terminal.deleteWordRight": "Excluir Palavra à Direita",
 	"workbench.action.terminal.new": "Criar Novo Terminal Integrado",
 	"workbench.action.terminal.new.short": "Novo Terminal",
 	"workbench.action.terminal.focus": "Focalizar Terminal",
@@ -33,5 +35,6 @@
 	"workbench.action.terminal.rename": "Renomear",
 	"workbench.action.terminal.rename.prompt": "Digite o nome do terminal",
 	"workbench.action.terminal.focusFindWidget": "Focalizar Ferramenta de Pesquisa",
-	"workbench.action.terminal.hideFindWidget": "Ocultar Ferramenta de Pesquisa"
+	"workbench.action.terminal.hideFindWidget": "Ocultar Ferramenta de Pesquisa",
+	"quickOpenTerm": "Trocar o terminal ativo"
 }

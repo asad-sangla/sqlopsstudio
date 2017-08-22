@@ -36,10 +36,5 @@
 	"welcomePage.interfaceOverview": "인터페이스 개요",
 	"welcomePage.interfaceOverviewDescription": "UI의 주요 구성 요소를 강조 표시하는 시각적 오버레이 가져오기",
 	"welcomePage.interactivePlayground": "대화형 실습",
-	"welcomePage.interactivePlaygroundDescription": "짧은 연습에서 기본 편집기 기능 사용해 보기",
-	"welcomePage.quickLinks": "빠른 링크",
-	"welcomePage.keybindingsReference": "바로 가기 키 참조",
-	"welcomePage.keybindingsReferenceDescription": "가장 일반적인 바로 가기 키가 포함된 인쇄 가능한 PDF",
-	"welcomePage.configureSettings": "설정 구성",
-	"welcomePage.configureSettingsDescription": "설정을 조정하여 VS Code 의 전체 기능 잠금 해제"
+	"welcomePage.interactivePlaygroundDescription": "짧은 연습에서 기본 편집기 기능 사용해 보기"
 }

@@ -15,22 +15,6 @@ suite('keyboardMapper - MAC fallback', () => {
 
 	let mapper = new MacLinuxFallbackKeyboardMapper(OperatingSystem.Macintosh);
 
-	function _assertResolveKeybinding(k: number, expected: IResolvedKeybinding[]): void {
-		assertResolveKeybinding(mapper, createKeybinding(k, OperatingSystem.Macintosh), expected);
-	}
-
 	test('resolveKeybinding Cmd+Z', () => {
-		_assertResolveKeybinding(
-			KeyMod.CtrlCmd | KeyCode.KEY_Z,
-			[{
-				label: '⌘Z',
-				ariaLabel: 'Command+Z',
-				electronAccelerator: 'Cmd+Z',
-				userSettingsLabel: 'cmd+z',
-				isWYSIWYG: true,
-				isChord: false,
-				dispatchParts: ['meta+Z', null],
-			}]
-		);
 	});
 });

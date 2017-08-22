@@ -36,10 +36,5 @@
 	"welcomePage.interfaceOverview": "Panoramica dell'interfaccia",
 	"welcomePage.interfaceOverviewDescription": "Immagine in sovrimpressione che evidenzia i principali componenti dell'interfaccia utente",
 	"welcomePage.interactivePlayground": "Playground interattivo",
-	"welcomePage.interactivePlaygroundDescription": "Breve panoramica delle funzionalità essenziali dell'editor",
-	"welcomePage.quickLinks": "Collegamenti rapidi",
-	"welcomePage.keybindingsReference": "Riferimento per tasti di scelta rapida",
-	"welcomePage.keybindingsReferenceDescription": "PDF stampabile con i tasti di scelta rapida più comuni",
-	"welcomePage.configureSettings": "Configura le impostazioni",
-	"welcomePage.configureSettingsDescription": "Perfeziona le impostazioni per sfruttare appieno tutta la potenza di Visual Studio Code"
+	"welcomePage.interactivePlaygroundDescription": "Breve panoramica delle funzionalità essenziali dell'editor"
 }

@@ -55,6 +55,7 @@ export interface IUntitledEditorService {
 	 * Returns if an untitled resource with the given URI exists.
 	 */
 	exists(resource: URI): boolean;
+	
 	// {{SQL CARBON EDIT}}
 	/**
 	 * Returns all untitled editor inputs.

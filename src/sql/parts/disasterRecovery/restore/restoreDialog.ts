@@ -470,7 +470,7 @@ export class RestoreDialog extends Modal {
 		}));
 
 		this._toDispose.push(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
-			this.onSourceDatabaseChanged(selectedDatabase);
+			this.onSourceDatabaseChanged(selectedDatabase.selected);
 		}));
 
 		this._toDispose.push(this._destinationDatabaseInputBox.onLoseFocus(params => {
@@ -478,7 +478,7 @@ export class RestoreDialog extends Modal {
 		}));
 
 		this._toDispose.push(this._restoreFromSelectBox.onDidSelect(selectedRestoreFrom => {
-			this.onRestoreFromChanged(selectedRestoreFrom);
+			this.onRestoreFromChanged(selectedRestoreFrom.selected);
 		}));
 	}
 

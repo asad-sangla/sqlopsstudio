@@ -10,7 +10,7 @@ import { Position, IEditorInput } from 'vs/platform/editor/common/editor';
 import { IEditorStacksModel, IEditorGroup, EditorInput } from 'vs/workbench/common/editor';
 import Event from 'vs/base/common/event';
 import { ITabOptions, GroupArrangement, GroupOrientation } from 'vs/workbench/services/group/common/groupService';
-import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
+import { IEditorGroupService, IMoveOptions } from 'vs/workbench/services/group/common/groupService';
 import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
 
 export class EditorGroupTestService implements IEditorGroupService {
@@ -92,9 +92,9 @@ export class EditorGroupTestService implements IEditorGroupService {
 	/**
 	 * Moves an editor from one group to another. The index in the group is optional.
 	 */
-	moveEditor(input: EditorInput, from: IEditorGroup, to: IEditorGroup, index?: number): void;
-	moveEditor(input: EditorInput, from: Position, to: Position, index?: number): void;
-	moveEditor(input: EditorInput, arg2: any, arg3: any, index?: number): void {
+	moveEditor(input: IEditorInput, from: IEditorGroup, to: IEditorGroup, moveOptions?: IMoveOptions): void;
+	moveEditor(input: IEditorInput, from: Position, to: Position, moveOptions?: IMoveOptions): void;
+	moveEditor(input: EditorInput, arg2: any, arg3: any, index?: IMoveOptions): void {
 
 	}
 

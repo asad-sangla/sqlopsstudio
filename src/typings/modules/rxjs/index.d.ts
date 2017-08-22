@@ -24,7 +24,8 @@ export class Subject<T> extends Observable<T> implements ISubscription {
     thrownError: any;
     constructor();
     static create: Function;
-    lift<R>(operator: Operator<T, R>): Observable<T>;
+    //lift<R>(operator: Operator<T, R>): Observable<T>;
+    lift<R>(operator: Operator<T, R>): Observable<R>;
     next(value?: T): void;
     error(err: any): void;
     complete(): void;
@@ -1856,7 +1857,8 @@ export class WebSocketSubject<T> extends AnonymousSubject<T> {
      */
     static create<T>(urlConfigOrSource: string | WebSocketSubjectConfig): WebSocketSubject<T>;
     constructor(urlConfigOrSource: string | WebSocketSubjectConfig | Observable<T>, destination?: Observer<T>);
-    lift<R>(operator: Operator<T, R>): WebSocketSubject<R>;
+    //lift<R>(operator: Operator<T, R>): WebSocketSubject<R>;
+    lift<R>(operator: Operator<T, R>): Observable<R>;
     private _resetState();
     multiplex(subMsg: () => any, unsubMsg: () => any, messageFilter: (value: T) => boolean): Observable<any>;
     private _connectSocket();

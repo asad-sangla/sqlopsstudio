@@ -36,10 +36,5 @@
 	"welcomePage.interfaceOverview": "Überblick über die Schnittstelle",
 	"welcomePage.interfaceOverviewDescription": "Erhalten Sie eine visuelle Überlagerung, die die wichtigsten Komponenten der Benutzeroberfläche hervorhebt.",
 	"welcomePage.interactivePlayground": "Interaktiver Playground",
-	"welcomePage.interactivePlaygroundDescription": "Testen Sie die wichtigsten Editorfunktionen in einer kurzen exemplarischen Vorgehensweise.",
-	"welcomePage.quickLinks": "Direktlinks",
-	"welcomePage.keybindingsReference": "Referenz für Tastenkombinationen",
-	"welcomePage.keybindingsReferenceDescription": "Eine druckbare PDF mit den wichtigsten Tastenkombinationen",
-	"welcomePage.configureSettings": "Einstellungen konfigurieren",
-	"welcomePage.configureSettingsDescription": "Optimieren Sie die Einstellungen, um VS Code bestmöglich zu nutzen."
+	"welcomePage.interactivePlaygroundDescription": "Testen Sie die wichtigsten Editorfunktionen in einer kurzen exemplarischen Vorgehensweise."
 }

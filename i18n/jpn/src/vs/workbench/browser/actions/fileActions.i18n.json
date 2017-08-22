@@ -6,8 +6,5 @@
 {
 	"openFolder": "フォルダーを開く...",
 	"openFileFolder": "開く...",
-	"addFolderToWorkspace": "ワークスペースにフォルダーを追加...",
-	"add": "追加",
-	"addFolderToWorkspaceTitle": "ワークスペースにフォルダーを追加",
-	"removeFolderFromWorkspace": "ワークスペースからフォルダーを削除"
+	"add": "追加"
 }

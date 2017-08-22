@@ -87,7 +87,7 @@ export class WorkbenchEditorTestService implements IWorkbenchEditorService {
 	 * will not be closed. The direction can be used in that case to control if all other editors should get closed,
 	 * or towards a specific direction.
 	 */
-	closeEditors(position: Position, except?: IEditorInput, direction?: Direction): TPromise<void> {
+	closeEditors(position: Position, filter?: { except?: IEditorInput, direction?: Direction, unmodifiedOnly?: boolean }): TPromise<void> {
 		return undefined;
 	}
 

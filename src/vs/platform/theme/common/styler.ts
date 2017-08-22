@@ -6,7 +6,7 @@
 'use strict';
 
 import { ITheme, IThemeService } from 'vs/platform/theme/common/themeService';
-import { inputBackground, inputForeground, ColorIdentifier, selectForeground, selectBackground, selectBorder, inputBorder, foreground, editorBackground, contrastBorder, inputActiveOptionBorder, listFocusBackground, listFocusForeground, listActiveSelectionBackground, listActiveSelectionForeground, listInactiveSelectionForeground, listInactiveSelectionBackground, listHoverBackground, listHoverForeground, listDropBackground, pickerGroupBorder, pickerGroupForeground, widgetShadow, inputValidationInfoBorder, inputValidationInfoBackground, inputValidationWarningBorder, inputValidationWarningBackground, inputValidationErrorBorder, inputValidationErrorBackground, activeContrastBorder, buttonForeground, buttonBackground, buttonHoverBackground, ColorFunction, lighten, badgeBackground, badgeForeground, progressBarBackground } from 'vs/platform/theme/common/colorRegistry';
+import { inputBackground, inputForeground, ColorIdentifier, selectForeground, selectBackground, selectBorder, inputBorder, foreground, editorBackground, contrastBorder, inputActiveOptionBorder, listFocusBackground, listFocusForeground, listActiveSelectionBackground, listActiveSelectionForeground, listInactiveSelectionForeground, listInactiveSelectionBackground, listInactiveFocusForeground, listInactiveFocusBackground, listHoverBackground, listHoverForeground, listDropBackground, pickerGroupBorder, pickerGroupForeground, widgetShadow, inputValidationInfoBorder, inputValidationInfoBackground, inputValidationWarningBorder, inputValidationWarningBackground, inputValidationErrorBorder, inputValidationErrorBackground, activeContrastBorder, buttonForeground, buttonBackground, buttonHoverBackground, ColorFunction, lighten, badgeBackground, badgeForeground, progressBarBackground } from 'vs/platform/theme/common/colorRegistry';
 import { IDisposable } from 'vs/base/common/lifecycle';
 
 export type styleFn = (colors: { [name: string]: ColorIdentifier }) => void;
@@ -15,7 +15,6 @@ export interface IThemable {
 	style: styleFn;
 }
 
-// {{SQL CARBON EDIT}}
 export function attachStyler(themeService: IThemeService, optionsMapping: { [optionsKey: string]: ColorIdentifier | ColorFunction }, widgetOrCallback: IThemable | styleFn): IDisposable {
 	function applyStyles(theme: ITheme): void {
 		const styles = Object.create(null);
@@ -143,6 +142,8 @@ export function attachQuickOpenStyler(widget: IThemable, themeService: IThemeSer
 	listFocusAndSelectionForeground?: ColorIdentifier,
 	listInactiveSelectionBackground?: ColorIdentifier,
 	listInactiveSelectionForeground?: ColorIdentifier,
+	listInactiveFocusBackground?: ColorIdentifier,
+	listInactiveFocusForeground?: ColorIdentifier,
 	listHoverBackground?: ColorIdentifier,
 	listHoverForeground?: ColorIdentifier,
 	listDropBackground?: ColorIdentifier,
@@ -175,6 +176,8 @@ export function attachQuickOpenStyler(widget: IThemable, themeService: IThemeSer
 		listFocusAndSelectionForeground: (style && style.listFocusAndSelectionForeground) || listActiveSelectionForeground,
 		listInactiveSelectionBackground: (style && style.listInactiveSelectionBackground) || listInactiveSelectionBackground,
 		listInactiveSelectionForeground: (style && style.listInactiveSelectionForeground) || listInactiveSelectionForeground,
+		listInactiveFocusBackground: (style && style.listInactiveFocusBackground) || listInactiveFocusBackground,
+		listInactiveFocusForeground: (style && style.listInactiveFocusForeground) || listInactiveFocusForeground,
 		listHoverBackground: (style && style.listHoverBackground) || listHoverBackground,
 		listHoverForeground: (style && style.listHoverForeground) || listHoverForeground,
 		listDropBackground: (style && style.listDropBackground) || listDropBackground,
@@ -191,9 +194,10 @@ export function attachListStyler(widget: IThemable, themeService: IThemeService,
 	listActiveSelectionForeground?: ColorIdentifier,
 	listFocusAndSelectionBackground?: ColorIdentifier,
 	listFocusAndSelectionForeground?: ColorIdentifier,
-	listInactiveFocusBackground?: ColorIdentifier,
 	listInactiveSelectionBackground?: ColorIdentifier,
 	listInactiveSelectionForeground?: ColorIdentifier,
+	listInactiveFocusBackground?: ColorIdentifier,
+	listInactiveFocusForeground?: ColorIdentifier,
 	listHoverBackground?: ColorIdentifier,
 	listHoverForeground?: ColorIdentifier,
 	listDropBackground?: ColorIdentifier,
@@ -209,9 +213,10 @@ export function attachListStyler(widget: IThemable, themeService: IThemeService,
 		listActiveSelectionForeground: (style && style.listActiveSelectionForeground) || listActiveSelectionForeground,
 		listFocusAndSelectionBackground: style && style.listFocusAndSelectionBackground || listActiveSelectionBackground,
 		listFocusAndSelectionForeground: (style && style.listFocusAndSelectionForeground) || listActiveSelectionForeground,
-		listInactiveFocusBackground: (style && style.listInactiveFocusBackground),
 		listInactiveSelectionBackground: (style && style.listInactiveSelectionBackground) || listInactiveSelectionBackground,
 		listInactiveSelectionForeground: (style && style.listInactiveSelectionForeground) || listInactiveSelectionForeground,
+		listInactiveFocusBackground: (style && style.listInactiveFocusBackground) || listInactiveFocusBackground,
+		listInactiveFocusForeground: (style && style.listInactiveFocusForeground) || listInactiveFocusForeground,
 		listHoverBackground: (style && style.listHoverBackground) || listHoverBackground,
 		listHoverForeground: (style && style.listHoverForeground) || listHoverForeground,
 		listDropBackground: (style && style.listDropBackground) || listDropBackground,

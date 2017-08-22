@@ -247,9 +247,12 @@ suite('SQL Object Explorer Service tests', () => {
 
 		objectExplorerService = new ObjectExplorerService(connectionManagementService.object);
 		objectExplorerService.registerProvider('MSSQL', sqlOEProvider.object);
-
-		sqlOEProvider.setup(x => x.createNewSession(TypeMoq.It.is<data.ConnectionInfo>(x => x.options['serverName'] === connection.serverName))).returns(() => TPromise.as(response));
-		sqlOEProvider.setup(x => x.createNewSession(TypeMoq.It.is<data.ConnectionInfo>(x => x.options['serverName'] === connectionToFail.serverName))).returns(() => TPromise.as(failedResponse));
+		sqlOEProvider.setup(x => x.createNewSession(TypeMoq.It.is<data.ConnectionInfo>(x => x.options['serverName'] === connection.serverName))).returns(() => new Promise<any>((resolve) => {
+			resolve(response);
+		}));
+		sqlOEProvider.setup(x => x.createNewSession(TypeMoq.It.is<data.ConnectionInfo>(x => x.options['serverName'] === connectionToFail.serverName))).returns(() => new Promise<any>((resolve) => {
+			resolve(failedResponse);
+		}));
 		sqlOEProvider.setup(x => x.expandNode(TypeMoq.It.isAny())).callback(() => {
 			objectExplorerService.onNodeExpanded(1, objectExplorerExpandInfo);
 		}).returns(() => TPromise.as(true));

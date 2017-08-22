@@ -477,7 +477,7 @@ var AMDLoader;
                     result = this.options.baseUrl + result;
                 }
                 // {{SQL CARBON EDIT}}
-                // angular specific require
+                // angular-specific require
                 if (result.includes('component.html')) {
                     result = result.replace(new RegExp('%20', 'g'), ' ');
                 }

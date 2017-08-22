@@ -38,5 +38,11 @@
 	"openEditorsVisible": "Número de editores mostrado no painel Abrir Editores. Configurá-lo para 0 irá ocultar o painel.",
 	"dynamicHeight": "Controla se a altura da seção de editores abertos deve adaptar-se dinamicamente para o número de elementos ou não.",
 	"autoReveal": "Controla se o explorador deve automaticamente revelar e selecionar arquivos ao abri-los.",
-	"enableDragAndDrop": "Controla se o explorador deve permitir mover arquivos e pastas através de arrastar e soltar."
+	"enableDragAndDrop": "Controla se o explorador deve permitir mover arquivos e pastas através de arrastar e soltar.",
+	"sortOrder.default": "Arquivos e diretórios são classificados por seus nomes, em ordem alfabética. Diretórios são exibidos antes de arquivos.",
+	"sortOrder.mixed": "Arquivos e diretórios são classificados por seus nomes, em ordem alfabética. Arquivos são entrelaçados com diretórios.",
+	"sortOrder.filesFirst": "Arquivos e diretórios são classificados por seus nomes, em ordem alfabética. Os arquivos são exibidos antes de diretórios.",
+	"sortOrder.type": "Arquivos e diretórios são classificados por suas extensões, em ordem alfabética. Diretórios são exibidos antes de arquivos.",
+	"sortOrder.modified": "Arquivos e diretórios são classificados pela data da última modificação, em ordem decrescente. Diretórios são exibidos antes de arquivos.",
+	"sortOrder": "Controla a forma de organização de arquivos e diretórios no explorador."
 }

@@ -53,6 +53,7 @@ export class PathUtilities {
 	}
 
     public static getRootPath(contextService: IWorkspaceContextService): string {
-        return contextService.hasWorkspace() ? contextService.getWorkspace().resource.fsPath : undefined;
+        return contextService.hasWorkspace() &&  contextService.getWorkspace().roots[0]
+            ? contextService.getWorkspace().roots[0].fsPath : undefined;
     }
 }

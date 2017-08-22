@@ -32,7 +32,7 @@ export class DialogSelectBox extends SelectBox {
 		this._dialogOptions = options;
 		this._toDispose2 = [];
 		this._toDispose2.push(this.onDidSelect(newInput => {
-			this._selectedOption = newInput;
+			this._selectedOption = newInput.selected;
 		}));
 
 		this.enabledSelectBackground = this.selectBackground;

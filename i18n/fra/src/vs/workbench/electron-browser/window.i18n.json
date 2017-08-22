@@ -10,6 +10,6 @@
 	"copy": "Copier",
 	"paste": "Coller",
 	"selectAll": "Tout Sélectionner",
-	"confirmOpen": "Voulez-vous vraiment ouvrir {0} dossiers ?",
+	"confirmOpen": "Êtes-vous certain de vouloir ouvrir {0} espaces de travail ?",
 	"confirmOpenButton": "&&Ouvrir..."
 }

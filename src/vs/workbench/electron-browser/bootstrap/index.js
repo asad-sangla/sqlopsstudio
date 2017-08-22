@@ -189,7 +189,6 @@ function main() {
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.autosizecolumn.js', undefined);
 	createScript(appRoot + '/node_modules/chart.js/dist/Chart.js', undefined);
 
-
 	function onLoader() {
 		define('fs', ['original-fs'], function (originalFS) { return originalFS; }); // replace the patched electron fs with the original node fs for all AMD code
 		loaderTimer.stop();
@@ -239,9 +238,9 @@ function main() {
 
 		const workbenchMainTimer = startTimer('load:workbench.main');
 		require([
-			'vs/workbench/electron-browser/workbench.main',
-			'vs/nls!vs/workbench/electron-browser/workbench.main',
-			'vs/css!vs/workbench/electron-browser/workbench.main'
+			'vs/workbench/workbench.main',
+			'vs/nls!vs/workbench/workbench.main',
+			'vs/css!vs/workbench/workbench.main'
 		], function () {
 			workbenchMainTimer.stop();
 			timers.afterLoadWorkbenchMain = Date.now();
@@ -262,8 +261,9 @@ function main() {
 	// loads as soon as the loader loads. To be able to have pseudo translation
 	const loaderTimer = startTimer('load:loader');
 	if (typeof Monaco_Loader_Init === 'function') {
+		const loader = Monaco_Loader_Init();
 		//eslint-disable-next-line no-global-assign
-		define = Monaco_Loader_Init();
+		define = loader.define; require = loader.require;
 		onLoader();
 
 	} else {

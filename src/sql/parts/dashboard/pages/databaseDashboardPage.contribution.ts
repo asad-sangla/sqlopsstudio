@@ -13,8 +13,8 @@ let widgetRegistry = <IDashboardWidgetRegistry>Registry.as(Extensions.DashboardW
 export const databaseDashboardPropertiesSchema: IJSONSchema = {
 	description: nls.localize('dashboardDatabaseProperties', 'Enable or disable the properties widget'),
 	default: true,
-	oneOf: [
-		'boolean',
+	oneOf: <IJSONSchema[]>[
+		{ type: 'boolean' },
 		{
 			type: 'array',
 			items: {
@@ -89,7 +89,7 @@ export const databaseDashboardPropertiesSchema: IJSONSchema = {
 export const databaseDashboardSettingSchema: IJSONSchema = {
 	type: ['array'],
 	description: nls.localize('dashboardDatabase', 'Customizes the database dashboard page'),
-	items: {
+	items: <IJSONSchema>{
 		type: 'object',
 		properties: {
 			name: {

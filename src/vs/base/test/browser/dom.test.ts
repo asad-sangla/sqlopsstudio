@@ -10,6 +10,8 @@ const $ = dom.$;
 
 suite('dom', () => {
 	test('hasClass', () => {
+
 		let element = document.createElement('div');
+		element.className = 'foobar boo far';
 	});
 });

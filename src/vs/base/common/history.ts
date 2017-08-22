@@ -17,6 +17,10 @@ export class HistoryNavigator<T> implements INavigator<T> {
 		this._onChange();
 	}
 
+	public getHistory(): T[] {
+		return this._elements;
+	}
+
 	public add(t: T) {
 		this._history.add(t);
 		this._onChange();
@@ -74,7 +78,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 	}
 
 	private _initialize(history: T[]): void {
-		this._history = new Set<T>();
+		this._history = new Set();
 		for (const entry of history) {
 			this._history.add(entry);
 		}

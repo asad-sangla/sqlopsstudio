@@ -22,7 +22,7 @@ export const serverDashboardPropertiesSchema: IJSONSchema = {
 	description: nls.localize('dashboardServerProperties', 'Enable or disable the properties widget'),
 	default: true,
 	oneOf: [
-		'boolean',
+		{ type: 'boolean' },
 		{
 			type: 'object',
 			properties: {
@@ -168,7 +168,7 @@ let defaultVal = [
 export const serverDashboardSettingSchema: IJSONSchema = {
 	type: ['array'],
 	description: nls.localize('dashboardServer', 'Customizes the server dashboard page'),
-	items: {
+	items: <IJSONSchema>{
 		type: 'object',
 		properties: {
 			name: {

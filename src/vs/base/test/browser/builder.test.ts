@@ -51,4 +51,9 @@ suite('Builder', () => {
 		assert.deepEqual(d1.substract(d2), new Dimension(140, 60));
 	});
 
+	test('Position', function () {
+		let p = new Position(200, 100);
+		assert.strictEqual(p.x, 200);
+		assert.strictEqual(p.y, 100);
+	});
 });

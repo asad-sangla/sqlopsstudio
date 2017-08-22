@@ -36,6 +36,7 @@ import { ExtHostApiCommands } from 'vs/workbench/api/node/extHostApiCommands';
 import { ExtHostTask } from 'vs/workbench/api/node/extHostTask';
 // {{SQL CARBON EDIT}}
 //import { ExtHostDebugService } from 'vs/workbench/api/node/extHostDebugService';
+import { ExtHostCredentials } from 'vs/workbench/api/node/extHostCredentials';
 import * as extHostTypes from 'vs/workbench/api/node/extHostTypes';
 import URI from 'vs/base/common/uri';
 import Severity from 'vs/base/common/severity';
@@ -54,12 +55,6 @@ import { TextEditorCursorStyle } from 'vs/editor/common/config/editorOptions';
 
 export interface IExtensionApiFactory {
 	(extension: IExtensionDescription): typeof vscode;
-}
-
-function assertProposedApi(extension: IExtensionDescription): void {
-	if (!extension.enableProposedApi) {
-		throw new Error(`[${extension.id}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${extension.id}`);
-	}
 }
 
 function proposedApiFunction<T>(extension: IExtensionDescription, fn: T): T {
@@ -92,7 +87,7 @@ export function createApiFactory(
 	const extHostDocumentSaveParticipant = col.define(ExtHostContext.ExtHostDocumentSaveParticipant).set<ExtHostDocumentSaveParticipant>(new ExtHostDocumentSaveParticipant(extHostDocuments, threadService.get(MainContext.MainThreadWorkspace)));
 	const extHostEditors = col.define(ExtHostContext.ExtHostEditors).set<ExtHostEditors>(new ExtHostEditors(threadService, extHostDocumentsAndEditors));
 	const extHostCommands = col.define(ExtHostContext.ExtHostCommands).set<ExtHostCommands>(new ExtHostCommands(threadService, extHostHeapService));
-	const extHostTreeViews = col.define(ExtHostContext.ExtHostTreeViews).set<ExtHostTreeViews>(new ExtHostTreeViews(threadService, extHostCommands));
+	const extHostTreeViews = col.define(ExtHostContext.ExtHostTreeViews).set<ExtHostTreeViews>(new ExtHostTreeViews(threadService.get(MainContext.MainThreadTreeViews), extHostCommands));
 	const extHostWorkspace = col.define(ExtHostContext.ExtHostWorkspace).set<ExtHostWorkspace>(new ExtHostWorkspace(threadService, initData.workspace));
 	const extHostConfiguration = col.define(ExtHostContext.ExtHostConfiguration).set<ExtHostConfiguration>(new ExtHostConfiguration(threadService.get(MainContext.MainThreadConfiguration), extHostWorkspace, initData.configuration));
 	const extHostDiagnostics = col.define(ExtHostContext.ExtHostDiagnostics).set<ExtHostDiagnostics>(new ExtHostDiagnostics(threadService));
@@ -102,6 +97,7 @@ export function createApiFactory(
 	const extHostTerminalService = col.define(ExtHostContext.ExtHostTerminalService).set<ExtHostTerminalService>(new ExtHostTerminalService(threadService));
 	const extHostSCM = col.define(ExtHostContext.ExtHostSCM).set<ExtHostSCM>(new ExtHostSCM(threadService, extHostCommands));
 	const extHostTask = col.define(ExtHostContext.ExtHostTask).set<ExtHostTask>(new ExtHostTask(threadService));
+	const extHostCredentials = col.define(ExtHostContext.ExtHostCredentials).set<ExtHostCredentials>(new ExtHostCredentials(threadService));
 	col.define(ExtHostContext.ExtHostExtensionService).set(extensionService);
 	col.finish(false, threadService);
 
@@ -279,7 +275,11 @@ export function createApiFactory(
 			},
 			setLanguageConfiguration: (language: string, configuration: vscode.LanguageConfiguration): vscode.Disposable => {
 				return languageFeatures.setLanguageConfiguration(language, configuration);
-			}
+			},
+			// proposed API
+			registerColorProvider: proposedApiFunction(extension, (selector: vscode.DocumentSelector, provider: vscode.DocumentColorProvider) => {
+				return languageFeatures.registerColorProvider(selector, provider);
+			})
 		};
 
 		// namespace: window
@@ -290,8 +290,16 @@ export function createApiFactory(
 			get visibleTextEditors() {
 				return extHostEditors.getVisibleTextEditors();
 			},
-			showTextDocument(document: vscode.TextDocument, columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions, preserveFocus?: boolean): TPromise<vscode.TextEditor> {
-				return extHostEditors.showTextDocument(document, columnOrOptions, preserveFocus);
+			showTextDocument(documentOrUri: vscode.TextDocument | vscode.Uri, columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions, preserveFocus?: boolean): TPromise<vscode.TextEditor> {
+				let documentPromise: TPromise<vscode.TextDocument>;
+				if (URI.isUri(documentOrUri)) {
+					documentPromise = TPromise.wrap(workspace.openTextDocument(documentOrUri));
+				} else {
+					documentPromise = TPromise.wrap(<vscode.TextDocument>documentOrUri);
+				}
+				return documentPromise.then(document => {
+					return extHostEditors.showTextDocument(document, columnOrOptions, preserveFocus);
+				});
 			},
 			createTextEditorDecorationType(options: vscode.DecorationRenderOptions): vscode.TextEditorDecorationType {
 				return extHostEditors.createTextEditorDecorationType(options);
@@ -369,19 +377,19 @@ export function createApiFactory(
 			set rootPath(value) {
 				throw errors.readonly();
 			},
-			get workspaceFolders() {
-				// proposed api
-				assertProposedApi(extension);
-				apiUsage.publicLog('workspace#workspaceFolders');
-				return extHostWorkspace.getRoots();
+			getWorkspaceFolder(resource) {
+				return extHostWorkspace.getWorkspaceFolder(resource);
 			},
-			onDidChangeWorkspaceFolders: proposedApiFunction(extension, (listener, thisArgs?, disposables?) => {
-				// proposed api
+			get workspaceFolders() {
+				apiUsage.publicLog('workspace#workspaceFolders');
+				return extHostWorkspace.getWorkspaceFolders();
+			},
+			onDidChangeWorkspaceFolders: function (listener, thisArgs?, disposables?) {
 				apiUsage.publicLog('workspace#onDidChangeWorkspaceFolders');
 				return extHostWorkspace.onDidChangeWorkspace(listener, thisArgs, disposables);
-			}),
-			asRelativePath: (pathOrUri) => {
-				return extHostWorkspace.getRelativePath(pathOrUri);
+			},
+			asRelativePath: (pathOrUri, includeWorkspace) => {
+				return extHostWorkspace.getRelativePath(pathOrUri, includeWorkspace);
 			},
 			findFiles: (include, exclude, maxResults?, token?) => {
 				return extHostWorkspace.findFiles(include, exclude, maxResults, token);
@@ -443,15 +451,15 @@ export function createApiFactory(
 			onDidChangeConfiguration: (listener: (_: any) => any, thisArgs?: any, disposables?: extHostTypes.Disposable[]) => {
 				return extHostConfiguration.onDidChangeConfiguration(listener, thisArgs, disposables);
 			},
-			getConfiguration: (section?: string): vscode.WorkspaceConfiguration => {
-				return extHostConfiguration.getConfiguration(section);
+			getConfiguration: (section?: string, resource?: vscode.Uri): vscode.WorkspaceConfiguration => {
+				return extHostConfiguration.getConfiguration(section, <URI>resource);
 			},
-			getConfiguration2: proposedApiFunction(extension, (section?: string, resource?: vscode.Uri): vscode.WorkspaceConfiguration => {
-				return extHostConfiguration.getConfiguration2(section, <URI>resource);
-			}),
 			registerTaskProvider: (type: string, provider: vscode.TaskProvider) => {
 				return extHostTask.registerTaskProvider(extension, provider);
-			}
+			},
+			registerFileSystemProvider: proposedApiFunction(extension, (authority, provider) => {
+				return extHostWorkspace.registerFileSystemProvider(authority, provider);
+			})
 		};
 
 		// namespace: scm
@@ -474,7 +482,20 @@ export function createApiFactory(
 		// delete namespace: debug
 
 
-		return {
+		// namespace: credentials
+		const credentials: typeof vscode.credentials = {
+			readSecret(service: string, account: string): Thenable<string | undefined> {
+				return extHostCredentials.readSecret(service, account);
+			},
+			writeSecret(service: string, account: string, secret: string): Thenable<void> {
+				return extHostCredentials.writeSecret(service, account, secret);
+			},
+			deleteSecret(service: string, account: string): Thenable<boolean> {
+				return extHostCredentials.deleteSecret(service, account);
+			}
+		};
+
+		const api: typeof vscode = {
 			version: pkg.version,
 			// namespaces
 			commands,
@@ -486,9 +507,14 @@ export function createApiFactory(
 			scm,
 			// {{SQL CARBON EDIT}}
 			//debug,
+
+			credentials,
 			// types
 			CancellationTokenSource: CancellationTokenSource,
 			CodeLens: extHostTypes.CodeLens,
+			Color: extHostTypes.Color,
+			ColorInfo: extHostTypes.ColorInfo,
+			EndOfLine: extHostTypes.EndOfLine,
 			CompletionItem: extHostTypes.CompletionItem,
 			CompletionItemKind: extHostTypes.CompletionItemKind,
 			CompletionList: extHostTypes.CompletionList,
@@ -498,7 +524,6 @@ export function createApiFactory(
 			DocumentHighlight: extHostTypes.DocumentHighlight,
 			DocumentHighlightKind: extHostTypes.DocumentHighlightKind,
 			DocumentLink: extHostTypes.DocumentLink,
-			EndOfLine: extHostTypes.EndOfLine,
 			EventEmitter: Emitter,
 			Hover: extHostTypes.Hover,
 			IndentAction: languageConfiguration.IndentAction,
@@ -521,7 +546,7 @@ export function createApiFactory(
 			TextEditorRevealType: extHostTypes.TextEditorRevealType,
 			TextEditorSelectionChangeKind: extHostTypes.TextEditorSelectionChangeKind,
 			DecorationRangeBehavior: extHostTypes.DecorationRangeBehavior,
-			Uri: URI,
+			Uri: <any>URI,
 			ViewColumn: extHostTypes.ViewColumn,
 			WorkspaceEdit: extHostTypes.WorkspaceEdit,
 			ProgressLocation: extHostTypes.ProgressLocation,
@@ -534,8 +559,13 @@ export function createApiFactory(
 			TaskGroup: extHostTypes.TaskGroup,
 			ProcessExecution: extHostTypes.ProcessExecution,
 			ShellExecution: extHostTypes.ShellExecution,
-			Task: extHostTypes.Task
+			Task: extHostTypes.Task,
+			ConfigurationTarget: extHostTypes.ConfigurationTarget
 		};
+		if (!extension.enableProposedApi) {
+			delete api.credentials; // Instead of error to avoid #31854
+		}
+		return api;
 	};
 }
 

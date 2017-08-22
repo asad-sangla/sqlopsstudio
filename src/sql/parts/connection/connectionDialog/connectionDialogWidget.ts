@@ -157,7 +157,7 @@ export class ConnectionDialogWidget extends Modal {
 		this._toDispose.push(styler.attachButtonStyler(this._closeButton, this._themeService));
 
 		this._toDispose.push(this._providerTypeSelectBox.onDidSelect(selectedProviderType => {
-			this.onProviderTypeSelected(selectedProviderType);
+			this.onProviderTypeSelected(selectedProviderType.selected);
 		}));
 	}
 

@@ -36,10 +36,5 @@
 	"welcomePage.interfaceOverview": "Vue d'ensemble de l'interface",
 	"welcomePage.interfaceOverviewDescription": "Obtenez une superposition visuelle mettant en évidence les principaux composants de l'IU",
 	"welcomePage.interactivePlayground": "Terrain de jeu interactif",
-	"welcomePage.interactivePlaygroundDescription": "Essayez les fonctionnalités essentielles de l'éditeur en suivant une brève procédure pas à pas",
-	"welcomePage.quickLinks": "Liens rapides",
-	"welcomePage.keybindingsReference": "Référence des raccourcis clavier",
-	"welcomePage.keybindingsReferenceDescription": "Fichier PDF imprimable avec les raccourcis clavier les plus usuels",
-	"welcomePage.configureSettings": "Configurer les paramètres",
-	"welcomePage.configureSettingsDescription": "Déverrouillez toute la puissance de VS Code en adaptant les paramètres"
+	"welcomePage.interactivePlaygroundDescription": "Essayez les fonctionnalités essentielles de l'éditeur en suivant une brève procédure pas à pas"
 }

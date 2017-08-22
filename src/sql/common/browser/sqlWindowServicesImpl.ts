@@ -7,8 +7,6 @@
 
 
 import { ISqlWindowService, SaveDialogOptions } from 'sql/common/sqlWindowServices';
-
-import { IWindowIPCService } from 'vs/workbench/services/window/electron-browser/windowService';
 import { clipboard, nativeImage  } from 'electron';
 
 /**
@@ -22,8 +20,8 @@ export class SqlWindowService implements ISqlWindowService {
 
 	public _serviceBrand: any;
 
-	constructor(@IWindowIPCService private _windowIpcService: IWindowIPCService) {
-	}
+	//constructor(@IWindowIPCService private _windowIpcService: IWindowIPCService) {
+	//}
 
 	/**
 	 * Shows a save dialog and returns the file path chosen to be saved to
@@ -33,7 +31,8 @@ export class SqlWindowService implements ISqlWindowService {
 	 * @memberof IWindowUtils
 	 */
 	public showSaveDialog(options: SaveDialogOptions): string {
-		return this._windowIpcService.getWindow().showSaveDialog(options);
+		//return this._windowIpcService.getWindow().showSaveDialog(options);
+		return undefined;
 	}
 
 	/**

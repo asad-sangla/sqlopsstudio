@@ -208,12 +208,12 @@ export class ConnectionWidget {
 			// Theme styler
 			this._toDispose.push(styler.attachSelectBoxStyler(this._authTypeSelectBox, this._themeService));
 			this._toDispose.push(this._authTypeSelectBox.onDidSelect(selectedAuthType => {
-				this.onAuthTypeSelected(selectedAuthType);
+				this.onAuthTypeSelected(selectedAuthType.selected);
 			}));
 		}
 
 		this._toDispose.push(this._serverGroupSelectBox.onDidSelect(selectedGroup => {
-			this.onGroupSelected(selectedGroup);
+			this.onGroupSelected(selectedGroup.selected);
 		}));
 
 		this._toDispose.push(this._serverNameInputBox.onDidChange(serverName => {

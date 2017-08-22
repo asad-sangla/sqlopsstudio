@@ -93,11 +93,13 @@ export default class Prompt implements IPrompter {
         }
     }
 
+
+
     public promptSingle<T>(question: IQuestion): Promise<T> {
         let questions: IQuestion[] = [question];
         return this.prompt(questions).then(answers => {
             if (answers) {
-                return answers[question.name] || undefined;
+                return <T>answers[question.name] || undefined;
             }
             return undefined;
         });

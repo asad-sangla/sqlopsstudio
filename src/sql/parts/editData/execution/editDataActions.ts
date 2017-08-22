@@ -197,7 +197,7 @@ export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem
 
 	private _registerListeners(): void {
 		this.toDispose.push(this.selectBox.onDidSelect(selection => {
-			this._currentOptionsIndex = this._options.findIndex(x => x === selection);
+			this._currentOptionsIndex = this._options.findIndex(x => x === selection.selected);
 			this._editor.editDataInput.onRowDropDownSet(Number(selection));
 		}));
 	}

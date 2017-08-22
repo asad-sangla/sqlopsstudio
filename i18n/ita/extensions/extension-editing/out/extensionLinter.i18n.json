@@ -8,5 +8,7 @@
 	"svgsNotValid": "Immagini di tipo SVG non sono una fonte valida.",
 	"embeddedSvgsNotValid": "Immagini SVG incorporate non sono una fonte valida.",
 	"dataUrlsNotValid": "URL di dati non sono una fonte valida per le immagini.",
-	"relativeUrlRequiresHttpsRepository": "Immagini con URL relative richiedono un repository con protocollo HTTPS in package.json."
+	"relativeUrlRequiresHttpsRepository": "Immagini con URL relative richiedono di specificare un repository con protocollo HTTPS in package.json.",
+	"relativeIconUrlRequiresHttpsRepository": "Un'icona richiede di specificare un repository con protocollo HTTPS in questo package.json.",
+	"relativeBadgeUrlRequiresHttpsRepository": "Notifiche con URL relativo richiedono di specificare un repository con protocollo HTTPS in questo package.json."
 }

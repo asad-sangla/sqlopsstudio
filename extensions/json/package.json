@@ -9,6 +9,7 @@
   "activationEvents": [
     "onLanguage:json"
   ],
+  "enableProposedApi": true,
   "main": "./client/out/jsonMain",
   "scripts": {
     "compile": "gulp compile-extension:json-client && gulp compile-extension:json-server",
@@ -31,7 +32,8 @@
           ".jscsrc",
           ".eslintrc",
           ".babelrc",
-          ".webmanifest"
+          ".webmanifest",
+          ".code-workspace"
         ],
         "mimetypes": [
           "application/json",
