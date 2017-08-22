@@ -11,6 +11,6 @@ import { mixin } from 'vs/base/common/objects';
 const defaultScatterConfig = mixin(JSON.parse(JSON.stringify(defaultChartConfig)), { dataType: 'point', dataDirection: 'horizontal' }) as ILineConfig;
 
 export default class ScatterChart extends LineChart {
-	protected readonly chartType: ChartType = 'scatter';
+	protected readonly chartType: ChartType = ChartType.Scatter;
 	protected _defaultConfig = defaultScatterConfig;
 }

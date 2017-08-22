@@ -6,5 +6,5 @@
 import { ChartInsight, ChartType } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 
 export default class PieChart extends ChartInsight {
-	protected readonly chartType: ChartType = 'pie';
+	protected readonly chartType: ChartType = ChartType.Pie;
 }

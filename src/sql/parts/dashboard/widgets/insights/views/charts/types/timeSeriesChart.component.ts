@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { defaultChartConfig, IPointDataSet } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
+import { defaultChartConfig, IPointDataSet, ChartType } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 import LineChart, { ILineConfig } from './lineChart.component';
 
 import { mixin } from 'vs/base/common/objects';
@@ -63,7 +63,7 @@ export default class TimeSeriesChart extends LineChart {
 				}
 				dataSetMap[legend].data.push({ x: row[1], y: Number(row[2]) });
 
-				if (this.chartType === 'scatter') {
+				if (this.chartType === ChartType.Scatter) {
 					dataSetMap[legend].backgroundColor = Color.cyan;
 				}
 			}

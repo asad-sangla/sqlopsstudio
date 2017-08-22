@@ -10,7 +10,7 @@ import * as colors from 'vs/platform/theme/common/colorRegistry';
 import { mixin } from 'sql/base/common/objects';
 
 export default class BarChart extends ChartInsight {
-	protected readonly chartType: ChartType = 'bar';
+	protected readonly chartType: ChartType = ChartType.Bar;
 
 	protected updateTheme(e: IColorTheme): void {
 		super.updateTheme(e);

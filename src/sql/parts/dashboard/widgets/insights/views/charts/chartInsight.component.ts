@@ -18,13 +18,28 @@ import * as types from 'vs/base/common/types';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 
-export type ChartType = 'bar' | 'doughnut' | 'horizontalBar' | 'line' | 'pie' | 'timeSeries' | 'scatter';
-export type DataDirection = 'vertical' | 'horizontal';
-export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none';
-export const validChartTypes = ['bar', 'doughnut', 'horizontalBar', 'line', 'pie', 'timeSeries', 'scatter'];
-export const validDataTypes = ['number', 'point'];
-export const validDataDirections = ['vertical', 'horizontal'];
-export const validLegendPositions = ['top', 'bottom', 'left', 'right', 'none'];
+export enum ChartType {
+	Bar = 'bar',
+	Doughnut = 'doughnut',
+	HorizontalBar = 'horizontalBar',
+	Line = 'line',
+	Pie = 'pie',
+	TimeSeries = 'timeSeries',
+	Scatter = 'scatter'
+}
+
+export enum DataDirection {
+	Vertical = 'vertical',
+	Horizontal = 'horizontal'
+}
+
+export enum LegendPosition {
+	Top = 'top',
+	Bottom = 'bottom',
+	Left = 'left',
+	Right = 'right',
+	None =  'none'
+}
 
 export function customMixin(destination: any, source: any, overwrite?: boolean): any {
 	if (types.isObject(source)) {
@@ -66,8 +81,8 @@ export interface IChartConfig {
 export const defaultChartConfig: IChartConfig = {
 	labelFirstColumn: false,
 	columnsAsLabels: false,
-	legendPosition: 'top',
-	dataDirection: 'vertical'
+	legendPosition: LegendPosition.Top,
+	dataDirection: DataDirection.Vertical
 };
 
 @Component({

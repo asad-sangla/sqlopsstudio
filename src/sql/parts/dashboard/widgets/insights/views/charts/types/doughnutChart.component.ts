@@ -7,5 +7,5 @@ import { ChartType } from 'sql/parts/dashboard/widgets/insights/views/charts/cha
 import PieChart from './pieChart.component';
 
 export default class DoughnutChart extends PieChart {
-	protected readonly chartType: ChartType = 'doughnut';
+	protected readonly chartType: ChartType = ChartType.Doughnut;
 }

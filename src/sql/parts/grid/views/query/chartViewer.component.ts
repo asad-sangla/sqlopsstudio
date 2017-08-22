@@ -25,8 +25,7 @@ import * as Utils from 'sql/parts/connection/common/utils';
 
 /* Insights */
 import {
-	ChartInsight, DataDirection, LegendPosition,
-	validLegendPositions
+	ChartInsight, DataDirection, LegendPosition
 } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
@@ -109,7 +108,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 			legendPosition: 'none',
 			labelFirstColumn: false
 		};
-		this.legendOptions = validLegendPositions;
+		this.legendOptions = Object.values(LegendPosition);
 		this.initializeUI();
 	}
 
@@ -160,8 +159,8 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 
 	public onChartChanged(): void {
 		if (['scatter', 'timeSeries'].some(item => item === this.chartTypesSelectBox.value)) {
-			this.dataType = 'point';
-			this.dataDirection = 'horizontal';
+			this.dataType = DataType.Point;
+			this.dataDirection = DataDirection.Horizontal;
 		}
 		this.initChart();
 	}

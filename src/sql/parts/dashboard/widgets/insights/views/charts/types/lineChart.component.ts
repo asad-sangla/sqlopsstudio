@@ -10,7 +10,10 @@ import { memoize, unmemoize } from 'sql/common/decorators';
 import { mixin } from 'sql/base/common/objects';
 import { Color, RGBA } from 'vs/base/common/color';
 
-export type DataType = 'number' | 'point';
+export enum DataType {
+	Number = 'number',
+	Point = 'point'
+}
 
 export interface ILineConfig extends IChartConfig {
 	dataType?: DataType;
@@ -19,19 +22,19 @@ export interface ILineConfig extends IChartConfig {
 const defaultLineConfig = mixin(JSON.parse(JSON.stringify(defaultChartConfig)), { dataType: 'number' }) as ILineConfig;
 
 export default class LineChart extends BarChart {
-	protected readonly chartType: ChartType = 'line';
+	protected readonly chartType: ChartType = ChartType.Line;
 	protected _config: ILineConfig;
 	protected _defaultConfig = defaultLineConfig;
 
 	public init() {
-		if (this._config.dataType === 'point') {
+		if (this._config.dataType === DataType.Point) {
 			this.addAxisLabels();
 		}
 		super.init();
 	}
 
 	public get chartData(): Array<IDataSet | IPointDataSet> {
-		if (this._config.dataType === 'number') {
+		if (this._config.dataType === DataType.Number) {
 			return super.getChartData();
 		} else {
 			return this.getDataAsPoint();
@@ -59,7 +62,7 @@ export default class LineChart extends BarChart {
 	}
 
 	public get labels(): Array<string> {
-		if (this._config.dataType === 'number') {
+		if (this._config.dataType === DataType.Number) {
 			return super.getLabels();
 		} else {
 			return [];

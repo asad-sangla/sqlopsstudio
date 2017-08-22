@@ -7,5 +7,5 @@ import { ChartType } from 'sql/parts/dashboard/widgets/insights/views/charts/cha
 import BarChart from './barChart.component';
 
 export default class HorizontalBarChart extends BarChart {
-	protected readonly chartType: ChartType = 'horizontalBar';
+	protected readonly chartType: ChartType = ChartType.HorizontalBar;
 }
