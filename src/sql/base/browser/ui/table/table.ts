@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!./table';
+import 'vs/css!./media/table';
 import { TableView } from './tableView';
 
 import { IThemable } from 'vs/platform/theme/common/styler';
@@ -51,12 +51,19 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 			this._grid.updateRowCount();
 			this._grid.render();
 		});
+		this._grid.onSort.subscribe((e, args) => {
+			this._data.sort(args);
+			this._grid.invalidate();
+			this._grid.render();
+		});
 	}
 
 	set columns(columns: Slick.Column<T>[]) {
-		this._columns = columns;
 		this._grid.setColumns(columns);
-		this.autosizeColumns();
+	}
+
+	get columns(): Slick.Column<T>[] {
+		return this._grid.getColumns();
 	}
 
 	setSelectedRows(rows: number[]) {

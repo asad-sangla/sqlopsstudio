@@ -86,13 +86,15 @@ export class ProfilerController implements IProfilerSession, IProfilerController
 					profilerService.getColumns(this._id).then(result => {
 						this._columns = result;
 						let columns = result.map(item => {
-							return {
+							return <Slick.Column<Slick.SlickData>>{
 								id: item,
 								name: item,
-								field: item
+								field: item,
+								sortable: true
 							};
 						});
 						this._table.columns = columns;
+						this._table.autosizeColumns();
 					});
 				} else {
 					this._columns = [];

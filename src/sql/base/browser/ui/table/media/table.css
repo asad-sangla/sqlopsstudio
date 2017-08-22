@@ -7,3 +7,19 @@
 	width: 100%;
 	height: 100%;
 }
+
+.slick-sort-indicator-asc {
+    background: url('sort-asc.gif');
+}
+
+.slick-sort-indicator-desc {
+    background: url('sort-desc.gif');
+}
+
+.slick-sort-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 5px;
+    margin-left: 4px;
+    margin-top: 6px;
+}

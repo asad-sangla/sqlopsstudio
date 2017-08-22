@@ -13,6 +13,12 @@ export interface IFindPosition {
 	y: number;
 }
 
+function defaultSort<T>(args: Slick.OnSortEventArgs<T>, data: Array<T>): Array<T> {
+	let field = args.sortCol.field;
+	let sign = args.sortAsc ? 1 : -1;
+	return data.sort((a, b) => (a[field] === b[field] ? 0 : (a[field] > b[field] ? 1 : -1)) * sign);
+}
+
 export class TableView<T extends Slick.SlickData> implements Slick.DataProvider<T> {
 	private _data: Array<T>;
 	private _findArray: Array<IFindPosition>;
@@ -25,12 +31,24 @@ export class TableView<T extends Slick.SlickData> implements Slick.DataProvider<
 	private _onFindCountChange = new Emitter<number>();
 	get onFindCountChange(): Event<number> { return this._onFindCountChange.event; }
 
-	constructor(data?: Array<T>, private _findFn?: (val: T, exp: string) => Array<number>) {
+	constructor(
+		data?: Array<T>,
+		private _findFn?: (val: T, exp: string) => Array<number>,
+		private _sortFn?: (args: Slick.OnSortEventArgs<T>, data: Array<T>) => Array<T>
+	) {
 		if (data) {
 			this._data = data;
 		} else {
 			this._data = new Array<T>();
 		}
+
+		if (!_sortFn) {
+			this._sortFn = defaultSort;
+		}
+	}
+
+	sort(args: Slick.OnSortEventArgs<T>) {
+		this._data = this._sortFn(args, this._data);
 	}
 
 	getLength(): number {
