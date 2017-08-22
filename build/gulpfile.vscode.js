@@ -33,8 +33,6 @@ const i18n = require('./lib/i18n');
 // {{SQL CARBON EDIT}}
 const serviceInstaller = require('extensions-modules/lib/languageservice/serviceInstallerUtil');
 const glob = require('glob');
-const os = require('os');
-const cp = require('child_process');
 
 const productDependencies = Object.keys(product.dependencies || {});
 const dependencies = Object.keys(shrinkwrap.dependencies)
@@ -235,7 +233,8 @@ function computeChecksum(filename) {
 function packageTask(platform, arch, opts) {
 	opts = opts || {};
 
-	const destination = path.join(path.dirname(root), 'VSCode') + (platform ? '-' + platform : '') + (arch ? '-' + arch : '');
+  // {{SQL CARBON EDIT}}
+	const destination = path.join(path.dirname(root), 'carbon') + (platform ? '-' + platform : '') + (arch ? '-' + arch : '');
 	platform = platform || process.platform;
 
 	return () => {
@@ -302,6 +301,8 @@ function packageTask(platform, arch, opts) {
 
 		// TODO the API should be copied to `out` during compile, not here
 		const api = gulp.src('src/vs/vscode.d.ts').pipe(rename('out/vs/vscode.d.ts'));
+		// {{SQL CARBON EDIT}}
+    const dataApi = gulp.src('src/vs/data.d.ts').pipe(rename('out/sql/data.d.ts'));
 
 		const depsSrc = _.flatten(dependencies
 			.map(function (d) { return ['node_modules/' + d + '/**', '!node_modules/' + d + '/**/{test,tests}/**']; }));
