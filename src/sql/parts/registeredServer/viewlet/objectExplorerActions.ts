@@ -276,8 +276,8 @@ export class ObjectExplorerActionUtilities {
 	{
 		var scriptMap = new Map<NodeType, any[]>();
 		var basicScripting = [OEScriptCreateAction, OEScriptDeleteAction];
-		scriptMap.set(NodeType.Table, [OEScriptCreateAction, OEScriptDeleteAction, OEScriptSelectAction, OEEditDataAction]);
-		scriptMap.set(NodeType.View, [OEScriptCreateAction, OEScriptDeleteAction, OEScriptSelectAction]);
+		scriptMap.set(NodeType.Table, [OEScriptSelectAction, OEEditDataAction, OEScriptCreateAction, OEScriptDeleteAction]);
+		scriptMap.set(NodeType.View, [OEScriptSelectAction, OEScriptCreateAction, OEScriptDeleteAction]);
 		scriptMap.set(NodeType.Schema, basicScripting);
 		scriptMap.set(NodeType.Database, basicScripting);
 		scriptMap.set(NodeType.StoredProcedure, basicScripting);
