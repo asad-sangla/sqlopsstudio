@@ -6,7 +6,7 @@
 'use strict';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IDisasterRecoveryService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IDisasterRecoveryService, IRestoreDialogController, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
 import { MssqlRestoreInfo } from 'sql/parts/disasterRecovery/restore/mssqlRestoreInfo';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -30,8 +30,15 @@ export class RestoreDialogController implements IRestoreDialogController {
 	) {
 	}
 
-	private handleOnRestore(): void {
-		this._disasterRecoveryService.restore(this._ownerUri, this.setRestoreOption());
+	private handleOnRestore(isScriptOnly: boolean): void {
+		let restoreOption = this.setRestoreOption();
+		if (isScriptOnly) {
+			restoreOption.taskExecutionMode = TaskExecutionMode.script;
+		} else {
+			restoreOption.taskExecutionMode = TaskExecutionMode.executeAndScript;
+		}
+
+		this._disasterRecoveryService.restore(this._ownerUri, restoreOption);
 		this._restoreDialog.close();
 	}
 
@@ -113,7 +120,7 @@ export class RestoreDialogController implements IRestoreDialogController {
 				if (!this._restoreDialog) {
 					this._restoreDialog = this._instantiationService.createInstance(RestoreDialog, this.getRestoreOption());
 					this._restoreDialog.onCancel(() => { });
-					this._restoreDialog.onRestore(() => this.handleOnRestore());
+					this._restoreDialog.onRestore((isScriptOnly) => this.handleOnRestore(isScriptOnly));
 					this._restoreDialog.onValidate(() => this.handleOnValidateFile());
 					this._restoreDialog.render();
 				}
