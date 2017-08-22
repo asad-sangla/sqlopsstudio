@@ -56,7 +56,7 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 	set columns(columns: Slick.Column<T>[]) {
 		this._columns = columns;
 		this._grid.setColumns(columns);
-		this._grid.autosizeColumns();
+		this.autosizeColumns();
 	}
 
 	setSelectedRows(rows: number[]) {
@@ -77,6 +77,17 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 
 	registerPlugin(plugin: Slick.Plugin<T>) {
 		this._grid.registerPlugin(plugin);
+	}
+
+	/**
+	 * This function needs to be called if the table is drawn off dom.
+	 */
+	resizeCanvas() {
+		this._grid.resizeCanvas();
+	}
+
+	autosizeColumns() {
+		this._grid.autosizeColumns();
 	}
 
 	style(styles: ITableStyles): void {

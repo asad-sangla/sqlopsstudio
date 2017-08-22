@@ -44,6 +44,7 @@ export class RestoreViewModel {
 	public lastBackupTaken: string;
 	public databaseList: string[];
 	public readHeaderFromMedia: boolean;
+	public selectedBackupSets: string[];
 
 	private _onSetLastBackupTaken = new Emitter<string>();
 	public onSetLastBackupTaken: Event<string> = this._onSetLastBackupTaken.event;
@@ -67,7 +68,6 @@ export class RestoreViewModel {
 	public onUpdateRestoreDatabaseFiles: Event<data.RestoreDatabaseFileInfo[]> = this._onUpdateRestoreDatabaseFiles.event;
 
 	private _optionsMap: { [name: string]: RestoreOptionsElement } = {};
-	public _backupSetToRestoreMap: { [name: string]: boolean } = {};
 
 	constructor(optionsMetadata: data.ServiceOption[]) {
 		optionsMetadata.forEach(optionMetadata => {
@@ -228,48 +228,18 @@ export class RestoreViewModel {
 	}
 
 	/**
- 	* Empty the backup set to restore map
- 	*/
-	public emptyBackupSetsToRestore(): void {
-		for (var key in this._backupSetToRestoreMap) {
-			delete this._backupSetToRestoreMap[key];
-		}
-	}
-
-	/**
  	* Update backup sets to restore
  	*/
 	public updateBackupSetsToRestore(backupSetsToRestore: data.DatabaseFileInfo[]): void {
+		this.selectedBackupSets = null;
 		if (backupSetsToRestore) {
+			this.selectedBackupSets = [];
 			backupSetsToRestore.forEach(backupFile => {
-				this._backupSetToRestoreMap[backupFile.id] = backupFile.isSelected;
+				if (backupFile.isSelected) {
+					this.selectedBackupSets.push(backupFile.id);
+				}
 			});
 			this._onUpdateBackupSetsToRestore.fire(backupSetsToRestore);
-		}
-	}
-
-	/**
- 	* Get selected backup file
- 	*/
-	public getSelectedBackupSets(): string[] {
-		let selectedBackupSet;
-		for (var key in this._backupSetToRestoreMap) {
-			if (!selectedBackupSet) {
-				selectedBackupSet = [];
-			}
-			if (this._backupSetToRestoreMap[key]) {
-				selectedBackupSet.push(key);
-			}
-		}
-		return selectedBackupSet;
-	}
-
-	/**
- 	* Set selected backup file
- 	*/
-	public setSelectedBackupFile(fileId: string, isSelected: boolean): void {
-		if (this._backupSetToRestoreMap[fileId] !== undefined) {
-			this._backupSetToRestoreMap[fileId] = isSelected;
 		}
 	}
 
@@ -282,7 +252,7 @@ export class RestoreViewModel {
 		this.updateTargetDatabaseName('');
 		this.updateLastBackupTaken('');
 		this.databaseList = [];
-		this.emptyBackupSetsToRestore();
+		this.selectedBackupSets = null;
 		for (var key in this._optionsMap) {
 			this._optionsMap[key].defaultValue = this.getDisplayValue(this._optionsMap[key].optionMetadata, this._optionsMap[key].optionMetadata.defaultValue);
 			this._optionsMap[key].currentValue = this._optionsMap[key].defaultValue;

@@ -43,13 +43,9 @@
 
 .modal .restore-dialog .restore-list {
 	width: 100%;
+	height: 500px;
 	margin-bottom: 15px;
-	overflow: scroll;
-}
-
-.modal .restore-dialog .restore-list .backup-table-content {
-	table-layout: fixed;
-	text-align: left;
+	overflow: hidden;
 }
 
 .modal .restore-dialog .restore-list .backup-table-content .restore-data {

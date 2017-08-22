@@ -21,11 +21,12 @@ suite('Restore Dialog view model tests', () => {
 	let viewModel: RestoreViewModel;
 
 	let planDetails: { [key: string]: data.RestorePlanDetailInfo };
-	let backupSets: data.DatabaseFileInfo[] = [];
+	let backupSets: data.DatabaseFileInfo[];
 
 	setup(() => {
 		options = {};
 		planDetails = {};
+		backupSets = [];
 		planDetails['lastBackupTaken'] = {
 			name: 'lastBackupTaken',
 			currentValue: '8/16/2017',
@@ -62,11 +63,12 @@ suite('Restore Dialog view model tests', () => {
 			properties: [],
 			id: 'file1',
 			isSelected: false
-		}, {
-				properties: [],
-				id: 'file2',
-				isSelected: true
-			});
+		},
+		{
+			properties: [],
+			id: 'file2',
+			isSelected: true
+		});
 
 		stringServiceOption = {
 			name: option1String,
@@ -188,7 +190,7 @@ suite('Restore Dialog view model tests', () => {
 		assert.equal('newOptionValue', options[option1String]);
 
 		// verify that selected backup sets get set correctly
-		let selectedBackupSets = viewModel.getSelectedBackupSets();
+		let selectedBackupSets = viewModel.selectedBackupSets;
 		assert.equal(1, selectedBackupSets.length);
 		assert.equal('file2', selectedBackupSets[0]);
 	});
@@ -223,26 +225,7 @@ suite('Restore Dialog view model tests', () => {
 		assert.equal(undefined, options[option1String]);
 
 		// verify that selected backup sets get set correctly
-		let selectedBackupSets = viewModel.getSelectedBackupSets();
-		assert.equal(undefined, selectedBackupSets);
-	});
-
-	test('backup set should update, get, set and empty backup set correctly', () => {
-		viewModel.updateBackupSetsToRestore(backupSets);
-
-		let selectedBackupSets = viewModel.getSelectedBackupSets();
-		assert.equal(1, selectedBackupSets.length);
-		assert.equal('file2', selectedBackupSets[0]);
-
-		viewModel.setSelectedBackupFile('file1', true);
-		viewModel.setSelectedBackupFile('file2', false);
-
-		selectedBackupSets = viewModel.getSelectedBackupSets();
-		assert.equal(1, selectedBackupSets.length);
-		assert.equal('file1', selectedBackupSets[0]);
-
-		viewModel.emptyBackupSetsToRestore();
-		selectedBackupSets = viewModel.getSelectedBackupSets();
+		let selectedBackupSets = viewModel.selectedBackupSets;
 		assert.equal(undefined, selectedBackupSets);
 	});
 

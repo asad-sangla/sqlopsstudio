@@ -74,7 +74,7 @@ export class RestoreDialogController implements IRestoreDialogController {
 		restoreInfo.backupFilePaths = this._restoreDialog.viewModel.filePath;
 		// todo: Need to change restoreInfo.readHeaderFromMedia when implement restore from database
 		restoreInfo.readHeaderFromMedia = this._restoreDialog.viewModel.readHeaderFromMedia;
-		restoreInfo.selectedBackupSets = this._restoreDialog.viewModel.getSelectedBackupSets();
+		restoreInfo.selectedBackupSets = this._restoreDialog.viewModel.selectedBackupSets;
 
 		if (this._restoreDialog.viewModel.sourceDatabaseName) {
 			restoreInfo.sourceDatabaseName = this._restoreDialog.viewModel.sourceDatabaseName;

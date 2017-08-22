@@ -26,8 +26,14 @@ export class TableView<T extends Slick.SlickData> implements Slick.DataProvider<
 		return this._data[index];
 	}
 
-	push(item: T) {
-		this._data.push(item);
+	push(items: Array<T>);
+	push(item: T);
+	push(input: T | Array<T>) {
+		if (Array.isArray(input)) {
+			this._data.push(...input);
+		} else {
+			this._data.push(input);
+		}
 		this._onRowCountChange.fire();
 	}
 

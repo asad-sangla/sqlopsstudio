@@ -28,8 +28,19 @@ import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 'sql/parts/disasterRecovery/restore/restoreViewModel';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { DialogInputBox, OnLoseFocusParams } from 'sql/parts/common/modal/dialogInputBox';
-import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { attachModalDialogStyler, attachTableStyler } from 'sql/common/theme/styler';
+import { TableView } from 'sql/base/browser/ui/table/tableView';
+import { Table } from 'sql/base/browser/ui/table/table';
+import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
+import { CheckboxSelectColumn } from 'sql/base/browser/ui/table/plugins/checkboxSelectColumn.plugin';
 import * as data from 'data';
+
+interface FileListElement {
+	logicalFileName: string;
+	fileType: string;
+	originalFileName: string;
+	restoreAs: string;
+}
 
 export class RestoreDialog extends Modal {
 	public viewModel: RestoreViewModel;
@@ -37,7 +48,6 @@ export class RestoreDialog extends Modal {
 	private _restoreButton: Button;
 	private _closeButton: Button;
 	private _optionsMap: { [name: string]: Widget } = {};
-	private _backupSetsMap: { [name: string]: DialogCheckbox } = {};
 	private _toDispose: lifecycle.IDisposable[] = [];
 	private _toDisposeTheming: lifecycle.IDisposable[] = [];
 	private _restoreLabel: string;
@@ -72,10 +82,15 @@ export class RestoreDialog extends Modal {
 	private readonly _closeExistingConnectionsOption = 'closeExistingConnections';
 
 	// elements
-	private _restorePlanListElement: HTMLElement;
-	private _fileListElement: HTMLElement;
 	private _generalTabElement: HTMLElement;
 	private _restoreFromBackupFileElement: HTMLElement;
+
+	private _fileListTable: Table<FileListElement>;
+	private _fileListData: TableView<FileListElement>;
+
+	private _restorePlanTable: Table<Slick.SlickData>;
+	private _restorePlanData: TableView<Slick.SlickData>;
+	private _restorePlanColumn;
 
 	private _onRestore = new Emitter<void>();
 	public onRestore: Event<void> = this._onRestore.event;
@@ -176,7 +191,10 @@ export class RestoreDialog extends Modal {
 
 			// Backup sets table
 			restorePlanContainer.div({ class: 'dialog-input-section restore-list' }, (labelContainer) => {
-				this._restorePlanListElement = labelContainer.getHTMLElement();
+				this._restorePlanData = new TableView<Slick.SlickData>();
+				this._restorePlanTable = new Table<Slick.SlickData>(labelContainer.getHTMLElement(), this._restorePlanData, this._restorePlanColumn, { enableColumnReorder: false });
+				this._restorePlanTable.setSelectionModel(new RowSelectionModel({ selectActiveRow: false }));
+				this._restorePlanTable.onSelectedRowsChanged((e, data) => this.backupFileCheckboxChanged(e, data));
 			});
 		});
 
@@ -208,8 +226,31 @@ export class RestoreDialog extends Modal {
 			builder.div({ class: 'new-section' }, (sectionContainer) => {
 				this.createLabelElement(sectionContainer, localize('restoreDatabaseFileDetails', 'Restore database file details'), true);
 				// file list table
-				sectionContainer.div({ class: 'dialog-input-section restore-list' }, (container) => {
-					this._fileListElement = container.getHTMLElement();
+				sectionContainer.div({ class: 'dialog-input-section restore-list' }, (fileNameContainer) => {
+					let logicalFileName = localize('logicalFileName', 'Logical file Name');
+					let fileType = localize('fileType', 'File type');
+					let originalFileName = localize('originalFileName', 'Original File Name');
+					let restoreAs = localize('restoreAs', 'Restore as');
+					var columns = [{
+						id: 'logicalFileName',
+						name: logicalFileName,
+						field: 'logicalFileName'
+					}, {
+						id: 'fileType',
+						name: fileType,
+						field: 'fileType'
+					}, {
+						id: 'originalFileName',
+						name: originalFileName,
+						field: 'originalFileName'
+					}, {
+						id: 'restoreAs',
+						name: restoreAs,
+						field: 'restoreAs'
+					}];
+					this._fileListData = new TableView<FileListElement>();
+					this._fileListTable = new Table<FileListElement>(fileNameContainer.getHTMLElement(), this._fileListData, columns, { enableColumnReorder: false });
+					this._fileListTable.setSelectionModel(new RowSelectionModel());
 				});
 			});
 		});
@@ -250,12 +291,13 @@ export class RestoreDialog extends Modal {
 		});
 
 		let tabElement;
+		let fileTableElement: HTMLElement;
 		// create General, Files, and Options tabs
 		$().div({ class: 'backup-dialog-tab' }, (rootContainer) => {
 			tabElement = rootContainer.getHTMLElement();
 			rootContainer.element('ul', { class: 'nav nav-tabs' }, (listContainer) => {
 				this._generalTabElement = this.createTabList(listContainer, 'active general-tab', 'a.general', '#restore-general', localize('generalTitle', 'General'));
-				this.createTabList(listContainer, 'files-tab', 'a.file', '#restore-file', localize('filesTitle', 'Files'));
+				fileTableElement = this.createTabList(listContainer, 'files-tab', 'a.file', '#restore-file', localize('filesTitle', 'Files'));
 				this.createTabList(listContainer, 'options-tab', 'a.options', '#restore-options', localize('optionsTitle', 'Options'));
 			});
 		});
@@ -267,6 +309,13 @@ export class RestoreDialog extends Modal {
 				contentContainer.append(fileContentElement);
 				contentContainer.append(optionsContentElement);
 			});
+		});
+
+		jQuery(fileTableElement).on('shown.bs.tab', () => {
+			if (this._fileListTable) {
+				this._fileListTable.resizeCanvas();
+				this._fileListTable.autosizeColumns();
+			}
 		});
 	}
 
@@ -375,7 +424,8 @@ export class RestoreDialog extends Modal {
 	}
 
 	public onValidateResponseFail(errorMessage: string) {
-		this.resetTables();
+		this._restorePlanData.clear();
+		this._fileListData.clear();
 		this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
 	}
 
@@ -391,68 +441,21 @@ export class RestoreDialog extends Modal {
 		this.setError(errorMessage);
 	}
 
-	private resetTables() {
-		this._toDisposeTheming = lifecycle.dispose(this._toDisposeTheming);
-		new Builder(this._restorePlanListElement).empty();
-		new Builder(this._fileListElement).empty();
-		this.clearBackupSetsMap();
-	}
-
-	private appendRowToFileTable(container: Builder, file: data.RestoreDatabaseFileInfo): void {
-		container.element('tr', {}, (rowContainer) => {
-			this.appendColumn(rowContainer, file.logicalFileName);
-			this.appendColumn(rowContainer, file.fileType);
-			this.appendColumn(rowContainer, file.originalFileName);
-			this.appendColumn(rowContainer, file.restoreAsFileName);
+	private backupFileCheckboxChanged(e: Slick.EventData, data: Slick.OnSelectedRowsChangedEventArgs<Slick.SlickData>): void {
+		let selectedFiles = [];
+		data.grid.getSelectedRows().forEach(row => {
+			selectedFiles.push(data.grid.getDataItem(row)['Id']);
 		});
-	}
 
-	private backupFileCheckboxChanged(fileId: string) {
-		this.viewModel.setSelectedBackupFile(fileId, this._backupSetsMap[fileId].checked);
-		this._onValidate.fire();
-	}
+		let isSame = false;
+		if (this.viewModel.selectedBackupSets && this.viewModel.selectedBackupSets.length === selectedFiles.length) {
+			isSame = this.viewModel.selectedBackupSets.some(item => selectedFiles.includes(item));
+		}
 
-	private appendRowToBackupSetsTable(container: Builder, isData: boolean, databaseFileInfo: data.DatabaseFileInfo): void {
-		let self = this;
-		container.element('tr', {}, (rowContainer) => {
-			if (isData) {
-				let checkbox = new DialogCheckbox({
-					actionClassName: 'sql-checkbox',
-					title: '',
-					isChecked: databaseFileInfo.isSelected,
-					onChange: (viaKeyboard) => {
-						self.backupFileCheckboxChanged(databaseFileInfo.id);
-					}
-				});
-
-				rowContainer.element('td', { class: 'restore-data' }, (labelCellContainer) => {
-					labelCellContainer.div({}, (checkboxContainer) => {
-						checkboxContainer.append(checkbox.domNode);
-					});
-				});
-
-				this._toDisposeTheming.push(attachCheckboxStyler(checkbox, this._themeService));
-				this._backupSetsMap[databaseFileInfo.id] = checkbox;
-			} else {
-				this.appendColumn(rowContainer, this._restoreLabel);
-			}
-
-			let properties = databaseFileInfo.properties;
-			if (properties) {
-				for (var i = 0; i < properties.length; i++) {
-					let content = (isData) ? properties[i].propertyValueDisplayName : properties[i].propertyDisplayName;
-					this.appendColumn(rowContainer, content);
-				}
-			}
-		});
-	}
-
-	private appendColumn(rowContainer: Builder, content: string): void {
-		rowContainer.element('td', { class: 'restore-data' }, (labelCellContainer) => {
-			labelCellContainer.div({}, (labelContainer) => {
-				labelContainer.innerHtml(content);
-			});
-		});
+		if (!isSame) {
+			this.viewModel.selectedBackupSets = selectedFiles;
+			this._onValidate.fire();
+		}
 	}
 
 	private registerListeners(): void {
@@ -464,6 +467,8 @@ export class RestoreDialog extends Modal {
 		this._toDispose.push(attachSelectBoxStyler(this._sourceDatabaseSelectBox, this._themeService));
 		this._toDispose.push(attachButtonStyler(this._restoreButton, this._themeService));
 		this._toDispose.push(attachButtonStyler(this._closeButton, this._themeService));
+		this._toDispose.push(attachTableStyler(this._fileListTable, this._themeService));
+		this._toDispose.push(attachTableStyler(this._restorePlanTable, this._themeService));
 
 		this._toDispose.push(this._filePathInputBox.onLoseFocus(params => {
 			this.onFilePathChanged(params);
@@ -486,7 +491,7 @@ export class RestoreDialog extends Modal {
 		if (params.value) {
 			if (params.hasChanged || (this.viewModel.filePath !== params.value)) {
 				this.viewModel.filePath = params.value;
-				this.viewModel.emptyBackupSetsToRestore();
+				this.viewModel.selectedBackupSets = null;
 				this._onValidate.fire();
 			}
 		}
@@ -494,7 +499,7 @@ export class RestoreDialog extends Modal {
 
 	private onSourceDatabaseChanged(selectedDatabase: string) {
 		this.viewModel.sourceDatabaseName = selectedDatabase;
-		this.viewModel.emptyBackupSetsToRestore();
+		this.viewModel.selectedBackupSets = null;
 		this._onValidate.fire();
 	}
 
@@ -550,7 +555,8 @@ export class RestoreDialog extends Modal {
 		this._restoreFromSelectBox.selectWithOptionName(this._databaseTitle);
 		this.onRestoreFromChanged(this._databaseTitle);
 		this._sourceDatabaseSelectBox.select(0);
-		this.resetTables();
+		this._restorePlanData.clear();
+		this._fileListData.clear();
 		this._generalTabElement.click();
 	}
 
@@ -562,13 +568,6 @@ export class RestoreDialog extends Modal {
 		this._filePathInputBox.focus();
 	}
 
-	private clearBackupSetsMap() {
-		for (var key in this._backupSetsMap) {
-			this._backupSetsMap[key].dispose();
-			delete this._backupSetsMap[key];
-		}
-	}
-
 	public dispose(): void {
 		this._toDispose = lifecycle.dispose(this._toDispose);
 		for (var key in this._optionsMap) {
@@ -576,7 +575,6 @@ export class RestoreDialog extends Modal {
 			widget.dispose();
 			delete this._optionsMap[key];
 		}
-		this.clearBackupSetsMap();
 	}
 
 	private updateLastBackupTaken(value: string) {
@@ -626,35 +624,58 @@ export class RestoreDialog extends Modal {
 	}
 
 	private updateRestoreDatabaseFiles(dbFiles: data.RestoreDatabaseFileInfo[]) {
+		this._fileListData.clear();
 		if (dbFiles) {
-			let columnNames = [localize('logicalFileName', 'Logical file Name'), localize('fileType', 'File type'), localize('originalFileName', 'Original File Name'), localize('Restore As', 'Restore as')];
-			var container = new Builder(this._fileListElement);
-			container.empty();
-			container.element('table', { class: 'backup-table-content' }, (tableContainer) => {
-				tableContainer.element('tr', {}, (rowContainer) => {
-					columnNames.forEach(columnName => {
-						this.appendColumn(rowContainer, columnName);
-					});
-				});
-				dbFiles.forEach(file => {
-					this.appendRowToFileTable(tableContainer, file);
-				});
-			});
+			let data = [];
+			for (let i = 0; i < dbFiles.length; i++) {
+				data[i] = {
+					logicalFileName: dbFiles[i].logicalFileName,
+					fileType: dbFiles[i].fileType,
+					originalFileName: dbFiles[i].originalFileName,
+					restoreAs: dbFiles[i].restoreAsFileName
+				};
+			}
+
+			this._fileListData.push(data);
 		}
 	}
 
 	private updateBackupSetsToRestore(backupSetsToRestore: data.DatabaseFileInfo[]) {
 		this._toDisposeTheming = lifecycle.dispose(this._toDisposeTheming);
-		this.clearBackupSetsMap();
+		this._restorePlanData.clear();
 		if (backupSetsToRestore && backupSetsToRestore.length > 0) {
-			var container = new Builder(this._restorePlanListElement);
-			container.empty();
-			container.element('table', { class: 'backup-table-content' }, (tableContainer) => {
-				this.appendRowToBackupSetsTable(tableContainer, false, backupSetsToRestore[0]);
-				backupSetsToRestore.forEach(file => {
-					this.appendRowToBackupSetsTable(tableContainer, true, file);
+			if (!this._restorePlanColumn) {
+				let firstRow = backupSetsToRestore[0];
+				this._restorePlanColumn = firstRow.properties.map(item => {
+					return {
+						id: item.propertyName,
+						name: item.propertyDisplayName,
+						field: item.propertyName
+					};
 				});
-			});
+
+				let checkboxSelectColumn = new CheckboxSelectColumn({ title: this._restoreLabel });
+				this._toDispose.push(attachCheckboxStyler(checkboxSelectColumn, this._themeService));
+				this._restorePlanColumn.unshift(checkboxSelectColumn.getColumnDefinition());
+				this._restorePlanTable.columns = this._restorePlanColumn;
+				this._restorePlanTable.registerPlugin(checkboxSelectColumn);
+			}
+
+			let data = [];
+			let selectedRow = [];
+			for (let i = 0; i < backupSetsToRestore.length; i++) {
+				let backupFile = backupSetsToRestore[i];
+				let newData = {};
+				for (let j = 0; j < backupFile.properties.length; j++) {
+					newData[backupFile.properties[j].propertyName] = backupFile.properties[j].propertyValueDisplayName;
+				}
+				data.push(newData);
+				if (backupFile.isSelected) {
+					selectedRow.push(i);
+				}
+			}
+			this._restorePlanData.push(data);
+			this._restorePlanTable.setSelectedRows(selectedRow);
 		}
 	}
 }
