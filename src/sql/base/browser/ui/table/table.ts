@@ -117,43 +117,44 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		}
 
 		if (styles.listFocusBackground) {
-			content.push(`.monaco-table .${this._idPrefix}:focus .slick-row .focused { background-color: ${styles.listFocusBackground}; }`);
+			content.push(`.monaco-table .${this._idPrefix} .slick-row .focused { background-color: ${styles.listFocusBackground}; }`);
 		}
 
 		if (styles.listFocusForeground) {
-			content.push(`.monaco-table .${this._idPrefix}:focus .slick-row .focused { color: ${styles.listFocusForeground}; }`);
+			content.push(`.monaco-table .${this._idPrefix} .slick-row .focused { color: ${styles.listFocusForeground}; }`);
 		}
 
 		if (styles.listActiveSelectionBackground) {
-			content.push(`.monaco-table .${this._idPrefix}:focus .slick-row .selected { background-color: ${styles.listActiveSelectionBackground}; }`);
-			content.push(`.monaco-table .${this._idPrefix}:focus .slick-row .selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`); // overwrite :hover style in this case!
+			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected { background-color: ${styles.listActiveSelectionBackground}; }`);
+			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`); // overwrite :hover style in this case!
 		}
 
 		if (styles.listActiveSelectionForeground) {
-			content.push(`.monaco-table .${this._idPrefix}:focus .slick-row .selected { color: ${styles.listActiveSelectionForeground}; }`);
+			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected { color: ${styles.listActiveSelectionForeground}; }`);
 		}
 
 		if (styles.listFocusAndSelectionBackground) {
-			content.push(`.monaco-table .${this._idPrefix}:focus .slick-row .selected.focused { background-color: ${styles.listFocusAndSelectionBackground}; }`);
+			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected.active { background-color: ${styles.listFocusAndSelectionBackground}; }`);
 		}
 
 		if (styles.listFocusAndSelectionForeground) {
-			content.push(`.monaco-table .${this._idPrefix}:focus .slick-row .selected.focused { color: ${styles.listFocusAndSelectionForeground}; }`);
+			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected.active { color: ${styles.listFocusAndSelectionForeground}; }`);
 		}
 
-		if (styles.listInactiveFocusBackground) {
-			content.push(`.monaco-table .${this._idPrefix} .slick-row.focused { background-color:  ${styles.listInactiveFocusBackground}; }`);
-			content.push(`.monaco-table .${this._idPrefix} .slick-row.focused:hover { background-color:  ${styles.listInactiveFocusBackground}; }`); // overwrite :hover style in this case!
-		}
+		/* Commented out andresse 8/17/2017; keeping for reference as we iterate on the table styling */
+		// if (styles.listInactiveFocusBackground) {
+		// 	content.push(`.monaco-table .${this._idPrefix} .slick-row.focused { background-color:  ${styles.listInactiveFocusBackground}; }`);
+		// 	content.push(`.monaco-table .${this._idPrefix} .slick-row.focused:hover { background-color:  ${styles.listInactiveFocusBackground}; }`); // overwrite :hover style in this case!
+		// }
 
-		if (styles.listInactiveSelectionBackground) {
-			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected { background-color:  ${styles.listInactiveSelectionBackground}; }`);
-			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected:hover { background-color:  ${styles.listInactiveSelectionBackground}; }`); // overwrite :hover style in this case!
-		}
+		// if (styles.listInactiveSelectionBackground) {
+		// 	content.push(`.monaco-table .${this._idPrefix} .slick-row .selected { background-color:  ${styles.listInactiveSelectionBackground}; }`);
+		// 	content.push(`.monaco-table .${this._idPrefix} .slick-row .selected:hover { background-color:  ${styles.listInactiveSelectionBackground}; }`); // overwrite :hover style in this case!
+		// }
 
-		if (styles.listInactiveSelectionForeground) {
-			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected { color: ${styles.listInactiveSelectionForeground}; }`);
-		}
+		// if (styles.listInactiveSelectionForeground) {
+		// 	content.push(`.monaco-table .${this._idPrefix} .slick-row .selected { color: ${styles.listInactiveSelectionForeground}; }`);
+		// }
 
 		if (styles.listHoverBackground) {
 			content.push(`.monaco-table .${this._idPrefix} .slick-row:hover { background-color:  ${styles.listHoverBackground}; }`);
@@ -167,13 +168,14 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 			content.push(`.monaco-table .${this._idPrefix} .slick-row .selected { outline: 1px dotted ${styles.listSelectionOutline}; outline-offset: -1px; }`);
 		}
 
-		if (styles.listFocusOutline) {
-			content.push(`.monaco-table .${this._idPrefix}:focus .slick-row.focused { outline: 1px solid ${styles.listFocusOutline}; outline-offset: -1px; }`);
-		}
+		/* Commented out andresse 8/17/2017; keeping for reference as we iterate on the table styling */
+		// if (styles.listFocusOutline) {
+		// 	content.push(`.monaco-table .${this._idPrefix}:focus .slick-row.focused { outline: 1px solid ${styles.listFocusOutline}; outline-offset: -1px; }`);
+		// }
 
-		if (styles.listInactiveFocusOutline) {
-			content.push(`.monaco-table .${this._idPrefix} .slick-row.focused { outline: 1px dotted ${styles.listInactiveFocusOutline}; outline-offset: -1px; }`);
-		}
+		// if (styles.listInactiveFocusOutline) {
+		// 	content.push(`.monaco-table .${this._idPrefix} .slick-row.focused { outline: 1px dotted ${styles.listInactiveFocusOutline}; outline-offset: -1px; }`);
+		// }
 
 		if (styles.listHoverOutline) {
 			content.push(`.monaco-table .${this._idPrefix} .slick-row:hover { outline: 1px dashed ${styles.listHoverOutline}; outline-offset: -1px; }`);
