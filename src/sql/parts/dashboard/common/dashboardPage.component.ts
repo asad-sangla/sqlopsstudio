@@ -23,7 +23,6 @@ function isNumberArray(value: any): value is number[] {
 @Component({
 	selector: 'dashboard-page',
 	templateUrl: require.toUrl('sql/parts/dashboard/common/dashboardPage.component.html'),
-	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')],
 	host: {
 		class: 'dashboard-page'
 	}

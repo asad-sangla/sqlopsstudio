@@ -11,8 +11,8 @@ import { DashboardServiceInterface } from './dashboardServiceInterface.service';
 import { MenuItem } from 'sql/parts/dashboard/common/breadcrumb.component';
 
 export enum BreadcrumbClass {
-	DatabasePage = 0,
-	ServerPage = 1
+	DatabasePage,
+	ServerPage
 };
 
 @Injectable()

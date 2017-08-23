@@ -3,9 +3,6 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/parts/dashboard/media/dashboard';
-import 'vs/css!sql/media/primeng';
-
 import { OnInit, Component, Inject, forwardRef, ElementRef, ChangeDetectorRef, OnDestroy, ViewChild } from '@angular/core';
 
 import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
@@ -18,8 +15,7 @@ export const DASHBOARD_SELECTOR: string = 'dashboard-component';
 
 @Component({
 	selector: DASHBOARD_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/dashboard/dashboard.component.html'),
-	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
+	templateUrl: require.toUrl('sql/parts/dashboard/dashboard.component.html')
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 	private _subs: Array<IDisposable> = new Array();

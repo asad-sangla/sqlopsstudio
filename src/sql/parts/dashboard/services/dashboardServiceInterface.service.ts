@@ -103,21 +103,6 @@ export class SingleQueryManagementService {
 	}
 }
 
-/* Deferred implementation is make code look nicer */
-class Deferred<T> {
-
-	promise: Promise<T>;
-	resolve: (value?: T | PromiseLike<T>) => void;
-	reject: (reason?: any) => void;
-
-	constructor() {
-		this.promise = new Promise<T>((resolve, reject) => {
-			this.resolve = resolve;
-			this.reject = reject;
-		});
-	}
-}
-
 /*
 	Providers a interface between a dashboard interface and the rest of carbon.
 	Stores the uri and unique selector of a dashboard instance and uses that

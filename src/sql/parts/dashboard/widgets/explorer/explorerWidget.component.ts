@@ -63,8 +63,7 @@ interface Colors {
 
 @Component({
 	selector: 'explorer-widget',
-	templateUrl: require.toUrl('sql/parts/dashboard/widgets/explorer/explorerWidget.component.html'),
-	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
+	templateUrl: require.toUrl('sql/parts/dashboard/widgets/explorer/explorerWidget.component.html')
 })
 export class ExplorerWidget extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
 

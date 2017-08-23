@@ -30,8 +30,7 @@ interface IConfig {
 
 @Component({
 	selector: 'tasks-widget',
-	templateUrl: require.toUrl('sql/parts/dashboard/widgets/tasks/tasksWidget.component.html'),
-	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
+	templateUrl: require.toUrl('sql/parts/dashboard/widgets/tasks/tasksWidget.component.html')
 })
 export class TasksWidget extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
 	private _size: number = 100;

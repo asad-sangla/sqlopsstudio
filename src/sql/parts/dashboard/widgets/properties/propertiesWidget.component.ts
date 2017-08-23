@@ -51,8 +51,7 @@ export interface DisplayProperty {
 
 @Component({
 	selector: 'properties-widget',
-	templateUrl: require.toUrl('sql/parts/dashboard/widgets/properties/propertiesWidget.component.html'),
-	styleUrls: [require.toUrl('sql/parts/dashboard/media/dashboard.css'), require.toUrl('sql/media/primeng.css')]
+	templateUrl: require.toUrl('sql/parts/dashboard/widgets/properties/propertiesWidget.component.html')
 })
 export class PropertiesWidgetComponent extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
 	private _connection: ConnectionManagementInfo;
