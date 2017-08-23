@@ -1,5 +1,4 @@
 'use strict';
-import * as getmac from 'getmac';
 import * as crypto from 'crypto';
 import * as os from 'os';
 import vscode = require('vscode');
@@ -64,13 +63,20 @@ export function generateGuid(): string {
 export function generateUserId(): Promise<string> {
     return new Promise<string>(resolve => {
         try {
-            getmac.getMac((error, macAddress) => {
-                if (!error) {
-                    resolve(crypto.createHash('sha256').update(macAddress + os.homedir(), 'utf8').digest('hex'));
-                } else {
-                    resolve(generateGuid()); // fallback
+            let interfaces = os.networkInterfaces();
+            let mac;
+            for(let key of Object.keys(interfaces)) {
+                let item = interfaces[key][0];
+                if (!item.internal) {
+                    mac = item.mac;
+                    break;
                 }
-            });
+            }
+            if (mac) {
+                resolve(crypto.createHash('sha256').update(mac + os.homedir(), 'utf8').digest('hex'));
+            } else {
+                resolve(generateGuid());
+            }
         } catch (err) {
             resolve(generateGuid()); // fallback
         }
