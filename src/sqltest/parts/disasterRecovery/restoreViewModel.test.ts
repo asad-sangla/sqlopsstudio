@@ -59,16 +59,17 @@ suite('Restore Dialog view model tests', () => {
 			defaultValue: 'newDefault'
 		};
 
-		backupSets.push({
-			properties: [],
-			id: 'file1',
-			isSelected: false
-		},
-		{
-			properties: [],
-			id: 'file2',
-			isSelected: true
-		});
+		backupSets.push(
+			{
+				properties: [],
+				id: 'file1',
+				isSelected: false
+			},
+			{
+				properties: [],
+				id: 'file2',
+				isSelected: true
+			});
 
 		stringServiceOption = {
 			name: option1String,
@@ -210,12 +211,12 @@ suite('Restore Dialog view model tests', () => {
 		viewModel.onRestorePlanResponse(restorePlanResponse);
 
 		//reset restore options
-		viewModel.resetRestoreOptions();
+		viewModel.resetRestoreOptions('db2');
 
 		// verify that file path, source database, target databasem and last backup get set correctly
 		assert.equal('', viewModel.lastBackupTaken);
 		assert.equal('', viewModel.sourceDatabaseName);
-		assert.equal('', viewModel.targetDatabaseName);
+		assert.equal('db2', viewModel.targetDatabaseName);
 		assert.equal('', viewModel.lastBackupTaken);
 		assert.equal(0, viewModel.databaseList.length);
 

@@ -125,9 +125,9 @@ export class RestoreDialogController implements IRestoreDialogController {
 					this._restoreDialog.render();
 				}
 
-				this._restoreDialog.viewModel.resetRestoreOptions();
+				this._restoreDialog.viewModel.resetRestoreOptions(connection.databaseName);
 				this.getRestoreConfigInfo();
-				this._restoreDialog.open(connection.serverName, connection.databaseName);
+				this._restoreDialog.open(connection.serverName, this._ownerUri);
 				resolve(result);
 			}, error => {
 				reject(error);

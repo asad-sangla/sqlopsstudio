@@ -17,7 +17,6 @@ import { Widget } from 'vs/base/browser/ui/widget';
 import { localize } from 'vs/nls';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { IListService } from 'vs/platform/list/browser/listService';
 import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 
@@ -33,6 +32,11 @@ import { TableView } from 'sql/base/browser/ui/table/tableView';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
 import { CheckboxSelectColumn } from 'sql/base/browser/ui/table/plugins/checkboxSelectColumn.plugin';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
+import { DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
+import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
+import { DbListModule } from 'sql/parts/common/dblist/dblist.module';
+import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 import * as data from 'data';
 
 interface FileListElement {
@@ -42,7 +46,7 @@ interface FileListElement {
 	restoreAs: string;
 }
 
-export class RestoreDialog extends Modal {
+export class RestoreDialog extends Modal implements IDbListInterop {
 	public viewModel: RestoreViewModel;
 
 	private _scriptButton: Button;
@@ -55,10 +59,10 @@ export class RestoreDialog extends Modal {
 	private _restoreTitle: string;
 	private _databaseTitle: string;
 	private _backupFileTitle: string;
+	private _ownerUri: string;
 
 	// General options
 	private _filePathInputBox: DialogInputBox;
-	private _destinationDatabaseInputBox: DialogInputBox;
 	private _destinationRestoreToInputBox: DialogInputBox;
 	private _restoreFromSelectBox: DialogSelectBox;
 	private _sourceDatabaseSelectBox: DialogSelectBox;
@@ -102,12 +106,15 @@ export class RestoreDialog extends Modal {
 	private _onCancel = new Emitter<void>();
 	public onCancel: Event<void> = this._onCancel.event;
 
+	private _onDatabaseChanged = new Emitter<string>();
+	public onDatabaseChanged: Event<string> = this._onDatabaseChanged.event;
+
 	constructor(
 		optionsMetadata: data.ServiceOption[],
 		@IPartService partService: IPartService,
 		@IThemeService private _themeService: IThemeService,
-		@IListService private _listService: IListService,
-		@IContextViewService private _contextViewService: IContextViewService
+		@IContextViewService private _contextViewService: IContextViewService,
+		@IBootstrapService private _bootstrapService: IBootstrapService
 	) {
 		super('Restore database', partService, { hasErrors: true, isWide: true, hasSpinner: true });
 		this._restoreTitle = localize('restoreTitle', 'Restore database');
@@ -179,7 +186,23 @@ export class RestoreDialog extends Modal {
 		$().div({ class: 'destination-section new-section' }, (destinationContainer) => {
 			destinationElement = destinationContainer.getHTMLElement();
 			this.createLabelElement(destinationContainer, localize('destination', 'Destination'), true);
-			this._destinationDatabaseInputBox = this.createInputBoxHelper(destinationContainer, localize('targetDatabase', 'Target database'));
+
+			destinationContainer.div({ class: 'dialog-input-section' }, (inputContainer) => {
+				inputContainer.div({ class: 'dialog-label' }, (labelContainer) => {
+					labelContainer.innerHtml(localize('targetDatabase', 'Target database'));
+				});
+
+				inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
+					// Get the bootstrap params and perform the bootstrap
+					let params: DbListComponentParams = { dbListInterop: this, isEditable: true };
+					this._bootstrapService.bootstrap(
+						DbListModule,
+						inputCellContainer.getHTMLElement(),
+						DBLIST_SELECTOR,
+						params);
+				});
+			});
+
 			this._destinationRestoreToInputBox = this.createInputBoxHelper(destinationContainer, localize('restoreTo', 'Restore to'));
 		});
 
@@ -319,6 +342,19 @@ export class RestoreDialog extends Modal {
 				this._fileListTable.autosizeColumns();
 			}
 		});
+	}
+
+	public lookupUri(id: string): string {
+		return this._ownerUri;
+	}
+
+	public databaseSelected(dbName: string): void {
+		this.viewModel.targetDatabaseName = dbName;
+		this._onValidate.fire();
+	}
+
+	public databaseListInitialized(): void {
+		this._onDatabaseChanged.fire(this.viewModel.targetDatabaseName);
 	}
 
 	private createTabList(container: Builder, className: string, linkClassName: string, linkId: string, tabTitle: string): HTMLElement {
@@ -467,7 +503,6 @@ export class RestoreDialog extends Modal {
 	private registerListeners(): void {
 		// Theme styler
 		this._toDispose.push(attachInputBoxStyler(this._filePathInputBox, this._themeService));
-		this._toDispose.push(attachInputBoxStyler(this._destinationDatabaseInputBox, this._themeService));
 		this._toDispose.push(attachInputBoxStyler(this._destinationRestoreToInputBox, this._themeService));
 		this._toDispose.push(attachSelectBoxStyler(this._restoreFromSelectBox, this._themeService));
 		this._toDispose.push(attachSelectBoxStyler(this._sourceDatabaseSelectBox, this._themeService));
@@ -483,10 +518,6 @@ export class RestoreDialog extends Modal {
 
 		this._toDispose.push(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
 			this.onSourceDatabaseChanged(selectedDatabase.selected);
-		}));
-
-		this._toDispose.push(this._destinationDatabaseInputBox.onLoseFocus(params => {
-			this.onTargetDatabaseChanged(params);
 		}));
 
 		this._toDispose.push(this._restoreFromSelectBox.onDidSelect(selectedRestoreFrom => {
@@ -517,13 +548,6 @@ export class RestoreDialog extends Modal {
 		} else {
 			this.viewModel.onRestoreFromChanged(false);
 			new Builder(this._restoreFromBackupFileElement).hide();
-		}
-	}
-
-	private onTargetDatabaseChanged(params: OnLoseFocusParams) {
-		if (params.hasChanged && params.value) {
-			this.viewModel.targetDatabaseName = params.value;
-			this.validateRestore();
 		}
 	}
 
@@ -572,9 +596,9 @@ export class RestoreDialog extends Modal {
 		this._generalTabElement.click();
 	}
 
-	public open(serverName: string, databaseName: string) {
+	public open(serverName: string, ownerUri: string) {
 		this.title = this._restoreTitle + ' - ' + serverName;
-		this._destinationDatabaseInputBox.value = databaseName;
+		this._ownerUri = ownerUri;
 		this._restoreButton.enabled = false;
 		this._scriptButton.enabled = false;
 		this.show();
@@ -609,7 +633,7 @@ export class RestoreDialog extends Modal {
 	}
 
 	private updateTargetDatabaseName(value: string) {
-		this._destinationDatabaseInputBox.value = value;
+		this._onDatabaseChanged.fire(value);
 	}
 
 	private updateRestoreOption(optionParam: RestoreOptionParam) {

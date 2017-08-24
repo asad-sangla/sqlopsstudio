@@ -246,10 +246,10 @@ export class RestoreViewModel {
 	/**
  	* Reset restore options to the default value
  	*/
-	public resetRestoreOptions(): void {
+	public resetRestoreOptions(databaseName: string): void {
+		this.updateTargetDatabaseName(databaseName);
 		this.updateSourceDatabaseNames([], '');
 		this.updateFilePath('');
-		this.updateTargetDatabaseName('');
 		this.updateLastBackupTaken('');
 		this.databaseList = [];
 		this.selectedBackupSets = null;

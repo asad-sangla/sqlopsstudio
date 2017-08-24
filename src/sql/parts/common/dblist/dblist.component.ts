@@ -6,8 +6,10 @@
 import 'vs/css!sql/parts/common/dblist/dblist.component';
 import 'vs/css!sql/media/primeng';
 
-import { OnInit, OnDestroy, Component, Inject, forwardRef, ElementRef,
-	ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+	OnInit, OnDestroy, Component, Inject, forwardRef, ElementRef,
+	ChangeDetectionStrategy, ChangeDetectorRef
+} from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
@@ -37,17 +39,18 @@ export class DbListComponent implements OnInit, OnDestroy {
 	private id: string;
 	private dbListInterop: IDbListInterop;
 	private connectionService: IConnectionManagementService;
+	private isEditable: boolean;
 
 	constructor(
-        @Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
 		@Inject(forwardRef(() => ElementRef)) private _el: any,
 		@Inject(forwardRef(() => ChangeDetectorRef)) private changeDetectorRef: any) {
 	}
 
 	public ngOnInit(): void {
-        let bootstrapParams = <DbListComponentParams> this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
+		let bootstrapParams = <DbListComponentParams>this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 		this.dbListInterop = bootstrapParams.dbListInterop;
-
+		this.isEditable = bootstrapParams.isEditable;
 		this.connectionService = this._bootstrapService.connectionManagementService;
 		this.toDispose = [];
 		this.databases = [];
@@ -56,6 +59,7 @@ export class DbListComponent implements OnInit, OnDestroy {
 		// Workaround for broken change detection: ensure detectChanges is called
 		// on hide and on unbind of the document listener
 		dropdownFixer();
+		this.dbListInterop.databaseListInitialized();
 	}
 
 	public ngOnDestroy(): void {
@@ -63,7 +67,9 @@ export class DbListComponent implements OnInit, OnDestroy {
 	}
 
 	public onDbChanged = (action): void => {
+		this.currentDatabaseName = action.value;
 		this.dbListInterop.databaseSelected(this.currentDatabaseName);
+		this._refreshDatabaseList();
 	}
 
 	public onFocus = (action): void => {
@@ -102,7 +108,7 @@ export class DbListComponent implements OnInit, OnDestroy {
 		this.databases = [];
 		this.currentDatabaseName = databaseName;
 		if (this.currentDatabaseName) {
-			this.databases.push({ label: this.currentDatabaseName, value: this.currentDatabaseName } );
+			this.databases.push({ label: this.currentDatabaseName, value: this.currentDatabaseName });
 		}
 		this._refreshDatabaseList();
 	}

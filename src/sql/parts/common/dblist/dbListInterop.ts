@@ -23,4 +23,10 @@ export interface IDbListInterop {
      * that the active database for this URI has been changed
      */
     onDatabaseChanged: Event<string>;
+
+    /**
+     * Send a callback that the database list component has initialized, so some action can occur
+     * in the parent component
+     */
+    databaseListInitialized(): void;
 }

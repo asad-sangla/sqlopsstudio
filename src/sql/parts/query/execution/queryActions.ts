@@ -12,7 +12,8 @@ import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import {
 	IConnectionManagementService, INewConnectionParams, ConnectionType,
-	RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
+	RunQueryOnConnectionMode
+} from 'sql/parts/connection/common/connectionManagement';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
@@ -419,7 +420,7 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		// Get the bootstrap params and perform the bootstrap
 		// Note: no need to dispose this since it's expected to live
 		// for the life of the app, and it's not input-specific
-		let params: DbListComponentParams = { dbListInterop: this };
+		let params: DbListComponentParams = { dbListInterop: this, isEditable: false };
 		this._bootstrapService.bootstrap(
 			DbListModule,
 			container,
@@ -461,6 +462,9 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		return this._editor ? this._editor.uri : undefined;
 	}
 
+	public databaseListInitialized(): void {
+	}
+
 	public databaseSelected(dbName: string): void {
 		let self = this;
 		let uri = this.getConnectedQueryEditorUri(this._editor);
@@ -475,7 +479,7 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 						self.showChangeDatabaseFailed();
 					}
 				}, error => {
-						self.showChangeDatabaseFailed();
+					self.showChangeDatabaseFailed();
 				});
 			}
 		}
