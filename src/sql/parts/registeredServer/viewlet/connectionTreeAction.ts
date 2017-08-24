@@ -58,14 +58,21 @@ export class RefreshAction extends Action {
 		}
 
 		if (treeNode) {
-			this._objectExplorerService.refreshTreeNode(treeNode.getSession(), treeNode).then(() => {
-				this._tree.refresh(this.element).then(() => {
-					this._tree.expand(this.element);
+			this._tree.collapse(this.element).then(() => {
+				this._objectExplorerService.refreshTreeNode(treeNode.getSession(), treeNode).then(() => {
+
+						this._tree.refresh(this.element).then(() => {
+							this._tree.expand(this.element);
+						}, refreshError => {
+							return TPromise.as(true);
+						});
+				}, error => {
+					this.showError(error);
+					return TPromise.as(true);
 				});
-			}, error => {
-				this.showError(error);
-				return TPromise.as(true);
-			});
+			}, collapseError => {
+							return TPromise.as(true);
+						});
 		}
 		return TPromise.as(true);
 	}

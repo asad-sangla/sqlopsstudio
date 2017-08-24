@@ -356,6 +356,7 @@ suite('SQL Connection Tree Action tests', () => {
 
 		tree.setup(x => x.refresh(TypeMoq.It.isAny())).returns(() => WinJS.TPromise.as(null));
 		tree.setup(x => x.expand(TypeMoq.It.isAny())).returns(() => WinJS.TPromise.as(null));
+		tree.setup(x => x.collapse(TypeMoq.It.isAny())).returns(() => WinJS.TPromise.as(null));
 		let connectionAction: RefreshAction = new RefreshAction(RefreshAction.ID,
 			RefreshAction.LABEL,
 			tree.object,
