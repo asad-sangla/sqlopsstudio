@@ -427,7 +427,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	private createCheckBoxHelper(container: Builder, label: string, isChecked: boolean, onCheck: (viaKeyboard: boolean) => void): DialogCheckbox {
 		let checkbox: DialogCheckbox;
 		container.div({ class: 'dialog-input-section' }, (inputCellContainer) => {
-			checkbox = DialogHelper.createCheckBox(inputCellContainer, label, 'sql-checkbox', isChecked, onCheck);
+			checkbox = DialogHelper.createCheckBox(inputCellContainer, label, 'restore-checkbox', isChecked, onCheck);
 		});
 		return checkbox;
 	}

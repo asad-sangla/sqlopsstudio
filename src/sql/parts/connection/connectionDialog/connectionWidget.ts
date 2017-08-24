@@ -10,9 +10,9 @@ import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/sqlConnection';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
 import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDialog/connectionDialogService';
@@ -36,7 +36,7 @@ export class ConnectionWidget {
 	private _databaseNameInputBox: DialogInputBox;
 	private _userNameInputBox: DialogInputBox;
 	private _passwordInputBox: DialogInputBox;
-	private _rememberPasswordCheckBox: Checkbox;
+	private _rememberPasswordCheckBox: DialogCheckbox;
 	private _advancedButton: Button;
 	private _callbacks: IConnectionComponentCallbacks;
 	private _authTypeSelectBox: DialogSelectBox;
@@ -136,7 +136,7 @@ export class ConnectionWidget {
 		this._passwordInputBox.inputElement.type = 'password';
 
 		let rememberPasswordLabel = localize('rememberPassword', 'Remember password');
-		this._rememberPasswordCheckBox = this.appendCheckbox(this._tableContainer, rememberPasswordLabel, 'sql-checkbox', 'connection-input', false);
+		this._rememberPasswordCheckBox = this.appendCheckbox(this._tableContainer, rememberPasswordLabel, 'connection-checkbox', 'connection-input', false);
 
 		let databaseOption = this._optionsMaps[ConnectionOptionSpecialType.databaseName];
 		let databaseNameBuilder = DialogHelper.appendRow(this._tableContainer, databaseOption.displayName, 'connection-label', 'connection-input');
@@ -183,8 +183,8 @@ export class ConnectionWidget {
 		return button;
 	}
 
-	private appendCheckbox(container: Builder, label: string, checkboxClass: string, cellContainerClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
-		let checkbox: Checkbox;
+	private appendCheckbox(container: Builder, label: string, checkboxClass: string, cellContainerClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): DialogCheckbox {
+		let checkbox: DialogCheckbox;
 		container.element('tr', {}, (rowContainer) => {
 			rowContainer.element('td');
 			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {

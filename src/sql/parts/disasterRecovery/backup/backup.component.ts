@@ -23,7 +23,6 @@ import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
@@ -158,11 +157,11 @@ export class BackupComponent{
     private encryptorSelectBox: DialogSelectBox;
     private mediaNameBox: DialogInputBox;
     private mediaDescriptionBox: DialogInputBox;
-    private copyOnlyCheckBox: Checkbox;
-    private encryptCheckBox: Checkbox;
-    private verifyCheckBox: Checkbox;
-    private checksumCheckBox: Checkbox;
-    private continueOnErrorCheckBox: Checkbox;
+    private copyOnlyCheckBox: DialogCheckbox;
+    private encryptCheckBox: DialogCheckbox;
+    private verifyCheckBox: DialogCheckbox;
+    private checksumCheckBox: DialogCheckbox;
+    private continueOnErrorCheckBox: DialogCheckbox;
 
 	constructor(
         @Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
@@ -231,7 +230,7 @@ export class BackupComponent{
 
             // Set copy-only check box
             this.copyOnlyCheckBox = new DialogCheckbox({
-                actionClassName: 'sql-checkbox',
+                actionClassName: 'backup-checkbox',
                 title: 'Copy-only backup',
                 isChecked: false,
                 onChange: (viaKeyboard) => {}
@@ -241,7 +240,7 @@ export class BackupComponent{
             // Encryption checkbox
             let self = this;
             this.encryptCheckBox = new DialogCheckbox({
-                actionClassName: 'sql-checkbox',
+                actionClassName: 'backup-checkbox',
                 title: 'Encryption',
                 isChecked: false,
                 onChange: (viaKeyboard) => self.onChangeEncrypt()
@@ -250,7 +249,7 @@ export class BackupComponent{
 
             // Verify backup checkbox
             this.verifyCheckBox = new DialogCheckbox({
-                actionClassName: 'sql-checkbox',
+                actionClassName: 'backup-checkbox',
                 title: 'Verify',
                 isChecked: false,
                 onChange: (viaKeyboard) => {}
@@ -259,7 +258,7 @@ export class BackupComponent{
 
             // Perform checksum checkbox
             this.checksumCheckBox = new DialogCheckbox({
-                actionClassName: 'sql-checkbox',
+                actionClassName: 'backup-checkbox',
                 title: 'Perform checksum',
                 isChecked: false,
                 onChange: (viaKeyboard) => {}
@@ -268,7 +267,7 @@ export class BackupComponent{
 
             // Continue on error checkbox
             this.continueOnErrorCheckBox = new DialogCheckbox({
-                actionClassName: 'sql-checkbox',
+                actionClassName: 'backup-checkbox',
                 title: 'Continue on error',
                 isChecked: false,
                 onChange: (viaKeyboard) => {}

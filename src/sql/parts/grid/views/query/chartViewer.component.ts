@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!sql/parts/grid/views/query/chartViewer';
 
 import {
@@ -11,6 +10,7 @@ import {
 } from '@angular/core';
 import { NgGridItemConfig } from 'angular2-grid';
 
+import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
@@ -29,7 +29,6 @@ import {
 } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
-import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { Builder } from 'vs/base/browser/builder';
 import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { Button } from 'vs/base/browser/ui/button/button';
@@ -54,8 +53,8 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 	public legendOptions: string[];
 	private chartTypesSelectBox: DialogSelectBox;
 	private legendSelectBox: DialogSelectBox;
-	private labelFirstColumnCheckBox: Checkbox;
-	private columnsAsLabelsCheckBox: Checkbox;
+	private labelFirstColumnCheckBox: DialogCheckbox;
+	private columnsAsLabelsCheckBox: DialogCheckbox;
 	private createInsightButton: Button;
 	private saveChartButton: Button;
 	private copyChartButton: Button;
@@ -122,13 +121,13 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		// Init label first column checkbox
 		// Note: must use 'self' for callback
 		this.labelFirstColumnCheckBox = DialogHelper.createCheckBox(new Builder(this.labelFirstColumnElement.nativeElement),
-			this.labelFirstColumnLabel, 'sql-checkbox', false, () => this.onLabelFirstColumnChanged());
+			this.labelFirstColumnLabel, 'chartView-checkbox', false, () => this.onLabelFirstColumnChanged());
 		this._disposables.push(attachCheckboxStyler(this.labelFirstColumnCheckBox, this._bootstrapService.themeService));
 
 		// Init label first column checkbox
 		// Note: must use 'self' for callback
 		this.columnsAsLabelsCheckBox = DialogHelper.createCheckBox(new Builder(this.columnsAsLabelsElement.nativeElement),
-			this.columnsAsLabelsLabel, 'sql-checkbox', false, () => this.columnsAsLabelsChanged());
+			this.columnsAsLabelsLabel, 'chartView-checkbox', false, () => this.columnsAsLabelsChanged());
 		this._disposables.push(attachCheckboxStyler(this.columnsAsLabelsCheckBox, this._bootstrapService.themeService));
 
 		// Init legend dropdown

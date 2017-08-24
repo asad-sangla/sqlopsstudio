@@ -171,34 +171,3 @@
 	float: left;
 	padding-right: 10px;
 }
-
-.modal.flyout-dialog .custom-checkbox.sql-checkbox {
-	margin-right: 5px;
-	margin-top: 2px;
-	width: 12px;
-	height: 12px;
-}
-
-.modal.flyout-dialog .custom-checkbox.sql-checkbox.disabled {
-	pointer-events: none;
-	opacity: 0.3;
-}
-
-.modal.flyout-dialog .custom-checkbox.sql-checkbox.checked {
-	background: url('check.svg') center center no-repeat;
-	border-color:#3C3C3C;
-}
-
-.modal.flyout-dialog .custom-checkbox.sql-checkbox.unchecked {
-	border-color:#3C3C3C;
-}
-
-.vs-dark.monaco-shell .modal.flyout-dialog .custom-checkbox.sql-checkbox.checked {
-	background: url('check.svg') center center no-repeat;
-	border-color:#3C3C3C;
-}
-
-.vs-dark.monaco-shell .modal.flyout-dialog .custom-checkbox.sql-checkbox.unchecked {
-	background-color: #3C3C3C;
-	border-color: #E1E1E1;
-}

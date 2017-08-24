@@ -10,21 +10,22 @@ import 'vs/css!./media/serverGroupDialog';
 import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
-import { Modal } from 'sql/parts/common/modal/modal';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { ServerGroupViewModel } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupViewModel';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachInputBoxStyler, attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
-import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { localize } from 'vs/nls';
+
+import { Modal } from 'sql/parts/common/modal/modal';
+import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
+import { ServerGroupViewModel } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupViewModel';
+import { attachModalDialogStyler } from 'sql/common/theme/styler';
 
 export class ServerGroupDialog extends Modal {
 	private _bodyBuilder: Builder;

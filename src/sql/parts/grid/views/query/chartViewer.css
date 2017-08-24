@@ -30,27 +30,6 @@ input[type="radio"] {
 	padding-bottom: 20px;
 }
 
-.chart-viewer .custom-checkbox.sql-checkbox {
-	margin-right: 5px;
-	margin-top: 2px;
-	width: 12px;
-	height: 12px;
-}
-
-.chart-viewer .custom-checkbox.sql-checkbox.disabled {
-	pointer-events: none;
-	opacity: 0.3;
-}
-
-.chart-viewer .custom-checkbox.sql-checkbox.unchecked {
-	border-color:#3C3C3C;
-}
-
-.vs-dark.monaco-shell .chart-viewer .custom-checkbox.sql-checkbox.unchecked {
-	background-color: #3C3C3C;
-	border-color: #E1E1E1;
-}
-
 .chart-viewer .footer {
 	display: flex;
 }
