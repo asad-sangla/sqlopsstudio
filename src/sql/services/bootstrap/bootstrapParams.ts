@@ -17,6 +17,7 @@ export interface QueryComponentParams extends BootstrapParams {
 export interface DbListComponentParams extends BootstrapParams {
 	dbListInterop: IDbListInterop;
 	isEditable: boolean;
+	width: string;
 }
 
 export interface EditDataComponentParams extends BootstrapParams {

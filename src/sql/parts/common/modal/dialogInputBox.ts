@@ -14,6 +14,11 @@ export interface OnLoseFocusParams {
 	hasChanged: boolean;
 }
 
+export interface ICarbonInputBoxStyles extends IInputBoxStyles {
+	disabledInputBackground?: Color;
+	disabledInputForeground?: Color;
+}
+
 export class DialogInputBox extends InputBox {
 	private enabledInputBackground: Color;
 	private enabledInputForeground: Color;
@@ -45,15 +50,17 @@ export class DialogInputBox extends InputBox {
 		});
 	}
 
-	public style(styles: IInputBoxStyles): void {
+	public style(styles: ICarbonInputBoxStyles): void {
 		super.style(styles);
 		this.enabledInputBackground = this.inputBackground;
 		this.enabledInputForeground = this.inputForeground;
 		this.enabledInputBorder = this.inputBorder;
+		this.disabledInputBackground = styles.disabledInputBackground;
+		this.disabledInputForeground = styles.disabledInputForeground;
 	}
 
 	public enable(): void {
-		this.inputElement.readOnly = false;
+		super.enable();
 		this.inputBackground = this.enabledInputBackground;
 		this.inputForeground = this.enabledInputForeground;
 		this.inputBorder = this.enabledInputBorder;
@@ -61,7 +68,7 @@ export class DialogInputBox extends InputBox {
 	}
 
 	public disable(): void {
-		this.inputElement.readOnly = true;
+		super.disable();
 		this.inputBackground = this.disabledInputBackground;
 		this.inputForeground = this.disabledInputForeground;
 		this.inputBorder = this.disabledInputBorder;

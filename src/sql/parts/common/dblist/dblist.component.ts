@@ -40,6 +40,7 @@ export class DbListComponent implements OnInit, OnDestroy {
 	private dbListInterop: IDbListInterop;
 	private connectionService: IConnectionManagementService;
 	private isEditable: boolean;
+	private width: string;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
@@ -51,6 +52,7 @@ export class DbListComponent implements OnInit, OnDestroy {
 		let bootstrapParams = <DbListComponentParams>this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 		this.dbListInterop = bootstrapParams.dbListInterop;
 		this.isEditable = bootstrapParams.isEditable;
+		this.width = bootstrapParams.width;
 		this.connectionService = this._bootstrapService.connectionManagementService;
 		this.toDispose = [];
 		this.databases = [];

@@ -17,7 +17,7 @@ import { Widget } from 'vs/base/browser/ui/widget';
 import { localize } from 'vs/nls';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
@@ -27,7 +27,7 @@ import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 'sql/parts/disasterRecovery/restore/restoreViewModel';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { DialogInputBox, OnLoseFocusParams } from 'sql/parts/common/modal/dialogInputBox';
-import { attachModalDialogStyler, attachTableStyler } from 'sql/common/theme/styler';
+import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler } from 'sql/common/theme/styler';
 import { TableView } from 'sql/base/browser/ui/table/tableView';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
@@ -194,7 +194,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 
 				inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
 					// Get the bootstrap params and perform the bootstrap
-					let params: DbListComponentParams = { dbListInterop: this, isEditable: true };
+					let params: DbListComponentParams = { dbListInterop: this, isEditable: true, width: '100%' };
 					this._bootstrapService.bootstrap(
 						DbListModule,
 						inputCellContainer.getHTMLElement(),

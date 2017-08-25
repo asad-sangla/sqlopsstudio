@@ -27,6 +27,35 @@ export function attachModalDialogStyler(widget: IThemable, themeService: IThemeS
 	}, widget);
 }
 
+export function attachInputBoxStyler(widget: IThemable, themeService: IThemeService, style?:
+	{
+		inputBackground?: cr.ColorIdentifier,
+		inputForeground?: cr.ColorIdentifier,
+		disabledInputBackground?: cr.ColorIdentifier,
+		disabledInputForeground?: cr.ColorIdentifier,
+		inputBorder?: cr.ColorIdentifier,
+		inputValidationInfoBorder?: cr.ColorIdentifier,
+		inputValidationInfoBackground?: cr.ColorIdentifier,
+		inputValidationWarningBorder?: cr.ColorIdentifier,
+		inputValidationWarningBackground?: cr.ColorIdentifier,
+		inputValidationErrorBorder?: cr.ColorIdentifier,
+		inputValidationErrorBackground?: cr.ColorIdentifier
+	}): IDisposable {
+	return attachStyler(themeService, {
+		inputBackground: (style && style.inputBackground) || cr.inputBackground,
+		inputForeground: (style && style.inputForeground) || cr.inputForeground,
+		disabledInputBackground: (style && style.disabledInputBackground) || sqlcolors.disabledInputBackground,
+		disabledInputForeground: (style && style.disabledInputForeground) || sqlcolors.disabledInputForeground,
+		inputBorder: (style && style.inputBorder) || cr.inputBorder,
+		inputValidationInfoBorder: (style && style.inputValidationInfoBorder) || cr.inputValidationInfoBorder,
+		inputValidationInfoBackground: (style && style.inputValidationInfoBackground) || cr.inputValidationInfoBackground,
+		inputValidationWarningBorder: (style && style.inputValidationWarningBorder) || cr.inputValidationWarningBorder,
+		inputValidationWarningBackground: (style && style.inputValidationWarningBackground) || cr.inputValidationWarningBackground,
+		inputValidationErrorBorder: (style && style.inputValidationErrorBorder) || cr.inputValidationErrorBorder,
+		inputValidationErrorBackground: (style && style.inputValidationErrorBackground) || cr.inputValidationErrorBackground
+	}, widget);
+}
+
 export function attachListBoxStyler(widget: IThemable, themeService: IThemeService, style?:
 	{
 		selectBackground?: cr.ColorIdentifier,

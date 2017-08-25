@@ -1495,7 +1495,7 @@ ui-datatable-scrollable-wrapper {
     white-space: nowrap;
     overflow: hidden;
     font-weight: normal;
-    width: 85%;
+    width: calc(100% - 20px);
     padding-right: 1.5em;
     padding-left: 0.25em;
     text-align: left

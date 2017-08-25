@@ -16,7 +16,7 @@ import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
 import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
 import { ListBox } from 'sql/parts/common/modal/listBox';
 import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
-import { attachListBoxStyler } from 'sql/common/theme/styler';
+import { attachListBoxStyler, attachInputBoxStyler } from 'sql/common/theme/styler';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
@@ -25,7 +25,7 @@ import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 
 export const BACKUP_SELECTOR: string = 'backup-component';
 

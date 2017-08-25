@@ -8,6 +8,6 @@
 	<p-dropdown [options]="databases" [ngModel]="currentDatabaseName" (onFocus)="onFocus()" (onChange)="onDbChanged($event)" [filter]="true" [editable]="isEditable"
 		appendTo="body"
 		autoWidth="false"
-		[style]="{width:'120px'}" >
+		[style]="{ 'width': width }" >
 	</p-dropdown>
 </div>

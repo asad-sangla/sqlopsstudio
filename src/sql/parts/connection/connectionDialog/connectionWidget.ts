@@ -23,6 +23,7 @@ import * as Constants from 'sql/parts/connection/common/constants';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import * as styler from 'vs/platform/theme/common/styler';
+import { attachInputBoxStyler } from 'sql/common/theme/styler';
 import * as DOM from 'vs/base/browser/dom';
 import data = require('data');
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
@@ -196,10 +197,10 @@ export class ConnectionWidget {
 
 	private registerListeners(): void {
 		// Theme styler
-		this._toDispose.push(styler.attachInputBoxStyler(this._serverNameInputBox, this._themeService));
-		this._toDispose.push(styler.attachInputBoxStyler(this._databaseNameInputBox, this._themeService));
-		this._toDispose.push(styler.attachInputBoxStyler(this._userNameInputBox, this._themeService));
-		this._toDispose.push(styler.attachInputBoxStyler(this._passwordInputBox, this._themeService));
+		this._toDispose.push(attachInputBoxStyler(this._serverNameInputBox, this._themeService));
+		this._toDispose.push(attachInputBoxStyler(this._databaseNameInputBox, this._themeService));
+		this._toDispose.push(attachInputBoxStyler(this._userNameInputBox, this._themeService));
+		this._toDispose.push(attachInputBoxStyler(this._passwordInputBox, this._themeService));
 		this._toDispose.push(styler.attachSelectBoxStyler(this._serverGroupSelectBox, this._themeService));
 		this._toDispose.push(styler.attachButtonStyler(this._advancedButton, this._themeService));
 		this._toDispose.push(styler.attachCheckboxStyler(this._rememberPasswordCheckBox, this._themeService));
