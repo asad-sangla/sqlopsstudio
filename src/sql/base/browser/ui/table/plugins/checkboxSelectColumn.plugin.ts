@@ -54,9 +54,9 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 		this._handler.unsubscribeAll();
 	}
 
-	private handleSelectedRowsChanged(e, args) {
-		var selectedRows = this._grid.getSelectedRows();
-		var lookup = {}, row, i;
+	private handleSelectedRowsChanged(e: Event, args: Slick.OnSelectedRowsChangedEventArgs<T>): void {
+		let selectedRows = this._grid.getSelectedRows();
+		let lookup = {}, row, i;
 		for (i = 0; i < selectedRows.length; i++) {
 			row = selectedRows[i];
 			lookup[row] = true;
@@ -84,7 +84,7 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 		}
 	}
 
-	private handleKeyDown(e, args) {
+	private handleKeyDown(e: KeyboardEvent, args: Slick.OnKeyDownEventArgs<T>): void {
 		if (e.which === 32) {
 			if (this._grid.getColumns()[args.cell].id === this._options.columnId) {
 				// if editing, try to commit
@@ -97,7 +97,7 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 		}
 	}
 
-	private handleClick(e, args) {
+	private handleClick(e: Event, args: Slick.OnClickEventArgs<T>): void {
 		// clicking on a row select checkbox
 		if (this._grid.getColumns()[args.cell].id === this._options.columnId && $(e.target).is('.custom-checkbox')) {
 			// if editing, try to commit
@@ -113,7 +113,7 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 		}
 	}
 
-	private toggleRowSelection(row) {
+	private toggleRowSelection(row: number): void {
 		if (this._selectedRowsLookup[row]) {
 			this._grid.setSelectedRows(this._grid.getSelectedRows().filter(n => n !== row));
 		} else {
@@ -121,7 +121,7 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 		}
 	}
 
-	private handleHeaderClick(e, args) {
+	private handleHeaderClick(e: Event, args: Slick.OnHeaderClickEventArgs<T>): void {
 		if (!this._options.title && args.column.id === this._options.columnId && $(e.target).is('.custom-checkbox')) {
 			// if editing, try to commit
 			if (this._grid.getEditorLock().isActive() && !this._grid.getEditorLock().commitCurrentEdit()) {
@@ -131,8 +131,8 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 			}
 
 			if ($(e.target).is('.unchecked')) {
-				var rows = [];
-				for (var i = 0; i < this._grid.getDataLength(); i++) {
+				let rows = [];
+				for (let i = 0; i < this._grid.getDataLength(); i++) {
 					rows.push(i);
 				}
 				this._grid.setSelectedRows(rows);
@@ -149,7 +149,7 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 		}
 	}
 
-	public getColumnDefinition() {
+	public getColumnDefinition(): Slick.Column<T> {
 		return {
 			id: this._options.columnId,
 			name: this._options.title || formatString(this._checkboxTemplate, 'true', 'unchecked'),
@@ -163,7 +163,7 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 		};
 	}
 
-	private checkboxSelectionFormatter(row, cell, value, columnDef, dataContext) {
+	private checkboxSelectionFormatter(row, cell, value, columnDef: Slick.Column<T>, dataContext): string {
 		if (dataContext) {
 			return this._selectedRowsLookup[row]
 				? formatString(this._checkboxTemplate, 'true', 'checked')

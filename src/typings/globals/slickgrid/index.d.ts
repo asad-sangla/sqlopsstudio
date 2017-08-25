@@ -790,6 +790,11 @@ declare namespace Slick {
 		public destroy(): void;
 
 		/**
+		 * Get the container for the slickgrid element
+		 */
+		public getContainerNode(): HTMLElement;
+
+		/**
 		* Returns an array of every data object, unless you're using DataView in which case it returns a DataView object.
 		* @return
 		**/
