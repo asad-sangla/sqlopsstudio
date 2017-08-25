@@ -19,8 +19,9 @@ import data = require('data');
 
 export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	public _serviceBrand: any;
-	private _backupDialog: BackupDialog | OptionsDialog;
-	private _optionsMap: { [providerName: string]: data.FeatureMetadataProvider } = {};
+	private _backupDialogs: { [providerName: string]: BackupDialog | OptionsDialog } = {};
+	private _currentProvider: string;
+	private _optionsMap: { [providerName: string]: data.ServiceOption[] } = {};
 	private _optionValues: { [optionName: string]: any } = {};
 	private _connectionUri: string;
 
@@ -45,46 +46,49 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	public showBackupDialog(connection: IConnectionProfile): TPromise<void> {
 		let self = this;
 		self._connectionUri = ConnectionUtils.generateUri(connection);
-		let backupOptions = undefined;
-		let capabilitiesList = this._capabilitiesService.getCapabilities();
-		capabilitiesList.forEach(providerCapabilities => {
-			let backupOptions = providerCapabilities.features.find(feature => feature.featureName === 'backup');
+		self._currentProvider = connection.providerName;
+		let backupDialog = self._backupDialogs[self._currentProvider];
+		if (!backupDialog) {
+			let capabilitiesList = this._capabilitiesService.getCapabilities();
+			capabilitiesList.forEach(providerCapabilities => {
+				let backupFeature = providerCapabilities.features.find(feature => feature.featureName === 'backup');
+				if (backupFeature && backupFeature.optionsMetadata) {
+					this._optionsMap[providerCapabilities.providerName] = backupFeature.optionsMetadata;
+				}
+			});
+			let backupOptions = self._optionsMap[self._currentProvider];
 			if (backupOptions) {
-				this._optionsMap[providerCapabilities.providerName] = backupOptions;
+				backupDialog = self._instantiationService ? self._instantiationService.createInstance(
+					OptionsDialog, 'Backup database - ' + connection.serverName + ':' + connection.databaseName, undefined) : undefined;
+				backupDialog.onOk(() => this.handleOptionDialogClosed());
 			}
-		});
-		let providerOptions = self._optionsMap[connection.providerName];
-		if (providerOptions && providerOptions.optionsMetadata) {
-			backupOptions = providerOptions.optionsMetadata;
-			self._backupDialog = self._instantiationService ? self._instantiationService.createInstance(
-				OptionsDialog, 'Backup database - ' + connection.serverName + ':' + connection.databaseName, undefined) : undefined;
+			else {
+				backupDialog = self._instantiationService ? self._instantiationService.createInstance(BackupDialog) : undefined;
+			}
+			backupDialog.render();
+			self._backupDialogs[self._currentProvider] = backupDialog;
 		}
-		else {
-			self._backupDialog = self._instantiationService ? self._instantiationService.createInstance(BackupDialog) : undefined;
-		}
-		self._backupDialog.render();
 
+		let backupOptions = this._optionsMap[self._currentProvider];
 		return new TPromise<void>(() => {
 			if (backupOptions) {
-				let dialog = self._backupDialog as OptionsDialog;
-				dialog.onOk(() => this.handleOptionDialogClosed());
-				dialog.open(backupOptions, self._optionValues);
+				(backupDialog as OptionsDialog).open(backupOptions, self._optionValues);
 			} else {
-				(self._backupDialog as BackupDialog).open(connection);
+				(backupDialog as BackupDialog).open(connection);
 			}
 		});
 	}
 
 	public closeBackup() {
 		let self = this;
-		if (self._backupDialog) {
-			self._backupDialog.close();
+		let backupDialog = self._backupDialogs[self._currentProvider];
+		if (backupDialog) {
+			backupDialog.close();
 		}
 	}
 
 	private handleOptionDialogClosed() {
 		this._disasterRecoveryService.backup(this._connectionUri, this._optionValues, TaskExecutionMode.executeAndScript);
-		this._backupDialog = undefined;
 	}
 
 }
