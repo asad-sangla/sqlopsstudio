@@ -10,10 +10,18 @@ import { IThemable } from 'vs/platform/theme/common/styler';
 import { IListStyles } from 'vs/base/browser/ui/list/listWidget';
 import * as DOM from 'vs/base/browser/dom';
 import { Color } from 'vs/base/common/color';
+import { mixin } from 'vs/base/common/objects';
 
 export interface ITableStyles extends IListStyles {
 	tableHeaderBackground?: Color;
 	tableHeaderForeground?: Color;
+}
+
+function getDefaultOptions<T>(): Slick.GridOptions<T> {
+	return <Slick.GridOptions<T>> {
+		syncColumnCellResize: true,
+		enableColumnReorder: false
+	};
 }
 
 export class Table<T extends Slick.SlickData> implements IThemable {
@@ -36,6 +44,8 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 			this._columns = new Array<Slick.Column<T>>();
 		}
 
+		let newOptions = mixin(options || {}, getDefaultOptions<T>(), false);
+
 		let body = document.createElement('div');
 		body.className = 'monaco-table';
 		container.appendChild(body);
@@ -45,7 +55,7 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		gridElement.style.height = '100%';
 		body.appendChild(gridElement);
 		this._styleElement = DOM.createStyleSheet(body);
-		this._grid = new Slick.Grid<T>(gridElement, this._data, this._columns, options || {});
+		this._grid = new Slick.Grid<T>(gridElement, this._data, this._columns, newOptions);
 		this._idPrefix = gridElement.classList[0];
 		this._data.onRowCountChange(() => {
 			this._grid.updateRowCount();
