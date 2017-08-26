@@ -33,6 +33,10 @@
 	cursor: pointer;
 }
 
+.vs-dark.monaco-shell .backButtonIcon {
+	content: url('back_inverse.svg');
+}
+
 .optionsDialog-description {
 	padding: 15px;
 	overflow-y: auto;

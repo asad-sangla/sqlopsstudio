@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!sql/parts/common/modal/media/modal';
 import { IThemable } from 'vs/platform/theme/common/styler';
 import { Color } from 'vs/base/common/color';
@@ -27,6 +28,7 @@ export interface IModalOptions {
 	isWide?: boolean;
 	isAngular?: boolean;
 	hasBackButton?: boolean;
+	hasTitleIcon?: boolean;
 	hasErrors?: boolean;
 	hasSpinner?: boolean;
 }
@@ -44,6 +46,7 @@ const defaultOptions: IModalOptions = {
 	isWide: false,
 	isAngular: false,
 	hasBackButton: false,
+	hasTitleIcon: false,
 	hasErrors: false,
 	hasSpinner: false
 };
@@ -66,6 +69,7 @@ export abstract class Modal implements IThemable {
 	private _builder: Builder;
 	private _footerBuilder: Builder;
 	private _modalTitle: Builder;
+	private _modalTitleIcon: HTMLElement;
 	private _leftFooter: Builder;
 	private _rightFooter: Builder;
 
@@ -111,6 +115,11 @@ export abstract class Modal implements IThemable {
 						this._backButton.icon = 'backButtonIcon';
 					});
 				}
+				if (this._modalOptions.hasTitleIcon) {
+					modalHeader.div({ class: 'modal-title-icon' }, (modalIcon) => {
+						this._modalTitleIcon = modalIcon.getHTMLElement();
+					});
+				}
 				modalHeader.div({ class: 'modal-title' }, (modalTitle) => {
 					this._modalTitle = modalTitle;
 					modalTitle.innerHtml(this._title);
@@ -131,11 +140,8 @@ export abstract class Modal implements IThemable {
 
 		if (this._modalOptions.isAngular === false && this._modalOptions.hasErrors) {
 			body.div({ class: 'dialogErrorMessage', id: 'dialogErrorMessage' }, (errorMessageContainer) => {
-				errorMessageContainer.div({ class: 'errorIcon' }, (iconContainer) => {
-					iconContainer.element('img', { 'class': 'error-icon' });
+				errorMessageContainer.div({ class: 'icon error' }, (iconContainer) => {
 					this._errorIconElement = iconContainer.getHTMLElement();
-					let iconFilePath = require.toUrl('sql/parts/common/modal/media/status-error.svg');
-					this._errorIconElement.style.content = 'url(' + iconFilePath + ')';
 					this._errorIconElement.style.visibility = 'hidden';
 				});
 				errorMessageContainer.div({ class: 'errorMessage' }, (messageContainer) => {
@@ -147,10 +153,9 @@ export abstract class Modal implements IThemable {
 		if (this._modalOptions.isAngular === false) {
 			this._modalFooterSection = $().div({ class: 'modal-footer' }, (modelFooter) => {
 				if (this._modalOptions.hasSpinner) {
-					modelFooter.div({ 'class': 'footer-spinner' }, (spinnerContainer) => {
-						spinnerContainer.element('img', { 'class': 'hiddenSpinner' }, (spinnerElement) => {
-							this._spinnerElement = spinnerElement.getHTMLElement();
-						});
+					modelFooter.div({ 'class': 'icon in-progress' }, (spinnerContainer) => {
+						this._spinnerElement = spinnerContainer.getHTMLElement();
+						this._spinnerElement.style.visibility = 'hidden';
 					});
 				}
 				modelFooter.div({ 'class': 'left-footer' }, (leftFooter) => {
@@ -269,7 +274,7 @@ export abstract class Modal implements IThemable {
 	 */
 	protected showSpinner(): void {
 		if (this._modalOptions.hasSpinner) {
-			this._spinnerElement.setAttribute('class', 'spinner');
+			this._spinnerElement.style.visibility = 'visible';
 		}
 	}
 
@@ -278,7 +283,7 @@ export abstract class Modal implements IThemable {
 	 */
 	protected hideSpinner(): void {
 		if (this._modalOptions.hasSpinner) {
-			this._spinnerElement.setAttribute('class', 'hiddenSpinner');
+			this._spinnerElement.style.visibility = 'hidden';
 		}
 	}
 
@@ -289,6 +294,16 @@ export abstract class Modal implements IThemable {
 	protected set title(title: string) {
 		if (this._title !== undefined) {
 			this._modalTitle.innerHtml(title);
+		}
+	}
+
+	/**
+	 * Set the icon title class name
+	 * @param iconClassName
+	 */
+	protected set titleIconClassName(iconClassName: string) {
+		if (this._modalTitleIcon) {
+			this._modalTitleIcon.className = 'modal-title-icon ' + iconClassName;
 		}
 	}
 

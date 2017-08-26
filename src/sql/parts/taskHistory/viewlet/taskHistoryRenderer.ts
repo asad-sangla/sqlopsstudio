@@ -19,13 +19,13 @@ import * as Utils from 'sql/parts/connection/common/utils';
 export class TaskHistoryRenderer implements IRenderer {
 
 	public static readonly TASKOBJECT_HEIGHT = 65;
-	private static readonly ICON_CLASS = 'task-icon';
+	private static readonly ICON_CLASS = 'task-icon icon';
 	private static readonly TASKOBJECT_TEMPLATE_ID = 'carbonTask';
-	private static readonly FAIL_CLASS = 'fail-status';
-	private static readonly SUCCESS_CLASS = 'success-status';
-	private static readonly INPROGRESS_CLASS = 'in-progress-status';
-	private static readonly NOTSTARTED_CLASS = 'not-started-status';
-	private static readonly CANCELED_CLASS = 'canceled-status';
+	private static readonly FAIL_CLASS = 'error';
+	private static readonly SUCCESS_CLASS = 'success';
+	private static readonly INPROGRESS_CLASS = 'in-progress';
+	private static readonly NOTSTARTED_CLASS = 'not-started';
+	private static readonly CANCELED_CLASS = 'canceled';
 
 	/**
 	 * Returns the element's height in the tree, in pixels.

@@ -45,27 +45,11 @@
 	padding-right: 10px;
 }
 
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.fail-status {
-	content: url('status_fail.svg');
-}
-
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.success-status {
-	content: url('status_success.svg');
-}
-
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.in-progress-status {
-	content: url('progress_36x_animation.gif');
-}
-
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started-status {
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started {
 	content: url('status_queuedtask.svg');
 }
 
-.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started-status,
-.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started-status {
+.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started,
+.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.not-started {
 	content: url('status_queuedtask_inverse.svg');
-}
-
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group > .task-icon.canceled-status {
-	content: url('status_cancelled.svg');
 }

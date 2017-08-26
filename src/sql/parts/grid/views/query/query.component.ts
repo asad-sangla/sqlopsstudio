@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-
+import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!sql/parts/grid/media/slickColorTheme';
 import 'vs/css!sql/parts/grid/media/flexbox';
 import 'vs/css!sql/parts/grid/media/styles';
@@ -46,8 +46,6 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	private messagePaneHeight = 22;
 	// tslint:disable-next-line:no-unused-variable
 	private maxScrollGrids = 8;
-	// tslint:disable-next-line:no-unused-variable
-	private progressAnimationUri = require.toUrl('sql/parts/grid/media/progress_36x_animation.gif');
 
 	// tslint:disable-next-line:no-unused-variable
 	private dataIcons: IGridIcon[] = [

@@ -27,8 +27,15 @@
 	font-size: 11px;
 }
 
-.modal.flyout-dialog .modal-title {
+.modal .modal-title {
 	font-size: 15px;
+}
+
+.modal .modal-title-icon {
+	width: 20px;
+	height: 20px;
+	float: left;
+	margin-right: 10px;
 }
 
 .monaco-shell .modal.flyout-dialog .modal-body {
@@ -110,7 +117,6 @@
 	padding-left: 10px;
 	overflow-y: auto;
 	display: flex;
-	padding: 15px;
 }
 
 .modal .modal-footer {
@@ -149,25 +155,9 @@
 	margin-right: none;
 }
 
-.modal.flyout-dialog .footer-spinner {
-	display: flex;
-	flex: 1;
-}
-
-.modal.flyout-dialog .hiddenSpinner {
-	content: url(progress_36x_animation.gif);
+.modal.flyout-dialog .icon.error {
+	float: left;
+	margin-right: 10px;
 	width: 20px;
 	height: 20px;
-	visibility: hidden;
-}
-
-.modal.flyout-dialog .spinner {
-	content: url(progress_36x_animation.gif);
-	width: 30px;
-	visibility: visible;
-}
-
-.modal.flyout-dialog .errorIcon {
-	float: left;
-	padding-right: 10px;
 }

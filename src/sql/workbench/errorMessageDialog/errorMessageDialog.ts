@@ -7,6 +7,7 @@
 
 import 'vs/css!sql/media/bootstrap';
 import 'vs/css!sql/media/bootstrap-theme';
+import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!./media/errorMessageDialog';
 import { Modal } from 'sql/parts/common/modal/modal';
 import { Builder } from 'vs/base/browser/builder';
@@ -31,7 +32,7 @@ export class ErrorMessageDialog extends Modal {
 		@IPartService partService: IPartService,
 		@IThemeService private _themeService: IThemeService
 	) {
-		super('', partService, {isFlyout: false});
+		super('', partService, {isFlyout: false, hasTitleIcon: true});
 	}
 
 	protected renderBody(container: HTMLElement) {
@@ -44,7 +45,7 @@ export class ErrorMessageDialog extends Modal {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
 		let copyButton = this.addFooterButton('Copy to Clipboard', () => clipboard.writeText(this._message), 'left');
-		copyButton.icon = 'copyButtonIcon';
+		copyButton.icon = 'icon scriptToClipboard';
 		attachButtonStyler(copyButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
 		let okButton = this.addFooterButton('OK', () => this.ok());
 		attachButtonStyler(okButton, this._themeService);
@@ -52,21 +53,23 @@ export class ErrorMessageDialog extends Modal {
 
 	private updateDialogBody(): void {
 		let builder = new Builder(this._body).empty();
-		switch (this._severity) {
-			case Severity.Error:
-				builder.img({ 'class': 'error-icon' });
-				break;
-			case Severity.Warning:
-				builder.img({ 'class': 'warning-icon' });
-				break;
-			case Severity.Info:
-				builder.img({ 'class': 'info-icon' });
-				break;
-		}
-
 		builder.div({ class: 'error-message' }, (errorContainer) => {
 			errorContainer.innerHtml(this._message);
 		});
+	}
+
+	private updateIconTitle(): void {
+		switch (this._severity) {
+			case Severity.Error:
+				this.titleIconClassName = 'icon error';
+				break;
+			case Severity.Warning:
+				this.titleIconClassName = 'icon warning';
+				break;
+			case Severity.Info:
+				this.titleIconClassName = 'icon info';
+				break;
+		}
 	}
 
 	/* espace key */
@@ -92,6 +95,7 @@ export class ErrorMessageDialog extends Modal {
 		this._severity = severity;
 		this._message = message;
 		this.title = headerTitle;
+		this.updateIconTitle();
 		this.updateDialogBody();
 		this.show();
 	}

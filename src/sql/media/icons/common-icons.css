@@ -59,11 +59,46 @@
 	background: url("server_page_inverse.svg") center center no-repeat;
 }
 
-.vs .icon.error {
-	background: url("status-error.svg") center center no-repeat;
-}
-
+.vs .icon.error,
 .vs-dark .icon.error,
 .hc-black .icon.error {
-	background: url("status-error.svg") center center no-repeat;
+	content: url("status_error.svg");
+}
+
+.vs .icon.warning,
+.vs-dark .icon.warning,
+.hc-black .icon.warning {
+	content: url("status_warning.svg");
+}
+
+.vs .icon.info,
+.vs-dark .icon.info,
+.hc-black .icon.info {
+	content: url("status_info.svg");
+}
+
+.vs .icon.success,
+.vs-dark .icon.success,
+.hc-black .icon.success {
+	content: url("status_success.svg");
+}
+
+.vs .icon.cancelled,
+.vs-dark .icon.cancelled,
+.hc-black .icon.cancelled {
+	content: url("status_cancelled.svg");
+}
+
+.vs .icon.in-progress,
+.vs-dark .icon.in-progress,
+.hc-black .icon.in-progress {
+	content: url("progress_36x_animation.gif");
+}
+
+.vs .icon.scriptToClipboard,
+.vs-dark .icon.scriptToClipboard,
+.hc-black .icon.scriptToClipboard {
+	content: url('script_to_clipboard.svg');
+	width: auto !important;
+	height: 25px;
 }

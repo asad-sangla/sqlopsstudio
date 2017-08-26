@@ -2,34 +2,15 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
-.error-dialog .error-icon, .error-dialog .warning-icon , .error-dialog .info-icon {
-	width: 30px;
-	height: 30px;
-	float: left;
-	padding-right: 10px;
-}
-
-.error-dialog .error-icon {
-	content: url(status-error.svg);
-}
-
-.error-dialog .warning-icon {
-	content: url(status-warning.svg);
-}
-
-.error-dialog .info-icon {
-	content: url(status-info.svg);
-}
-
-.error-dialog {
+ .error-dialog {
 	padding: 15px;
 	overflow: auto;
 	height: 200px;
 }
 
-.copyButtonIcon {
-	content: url('scriptToClipboard.svg');
-	width: auto !important;
-	height: 25px;
+.error-dialog .icon.error, .error-dialog .icon.warning , .error-dialog .icon.info {
+	width: 20px;
+	height: 20px;
+	float: left;
+	margin-right: 10px;
 }

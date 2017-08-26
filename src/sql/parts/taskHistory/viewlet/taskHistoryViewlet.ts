@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-
+import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!./media/taskHistoryViewlet';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Builder, Dimension } from 'vs/base/browser/builder';
