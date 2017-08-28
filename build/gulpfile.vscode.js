@@ -86,12 +86,12 @@ const vscodeResources = [
 	'out-build/vs/code/electron-browser/sharedProcess.js',
   // {{SQL CARBON EDIT}}
 	'out-build/sql/**/*.{svg,png,cur,html}',
+	'out-build/sql/base/browser/ui/table/media/**',
+	'out-build/sql/base/browser/ui/checkbox/media/**',
 	'out-build/sql/parts/admin/**/*.html',
 	'out-build/sql/parts/connection/connectionDialog/media/**',
 	'out-build/sql/parts/common/dblist/**/*.html',
-	'out-build/sql/parts/common/dblist/media/**',
 	'out-build/sql/parts/dashboard/**/*.html',
-	'out-build/sql/parts/dashboard/media/**',
 	'out-build/sql/parts/disasterRecovery/**/*.html',
 	'out-build/sql/parts/common/modal/media/**',
 	'out-build/sql/parts/grid/directives/{slick.dragrowselector.js,slick.autosizecolumn.js}',
@@ -103,7 +103,6 @@ const vscodeResources = [
 	'out-build/sql/parts/taskHistory/viewlet/media/**',
 	'out-build/sql/media/objectTypes/*.svg',
 	'out-build/sql/media/font-awesome-4.7.0/fonts/**',
-	'out-build/sql/workbench/errorMessageDialog/media/*.svg',
 	'out-build/sql/media/icons/*.svg',
 	'!**/test/**'
 ];

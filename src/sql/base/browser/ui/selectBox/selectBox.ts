@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { SelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
+import { SelectBox as vsSelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { Color } from 'vs/base/common/color';
 import { ISelectBoxStyles } from 'vs/base/browser/ui/selectBox/selectBox';
 
-export class DialogSelectBox extends SelectBox {
+export class SelectBox extends vsSelectBox {
 	private _optionsDictionary;
 	private _dialogOptions: string[];
 	private _selectedOption: string;

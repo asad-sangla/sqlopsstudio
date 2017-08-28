@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import 'vs/css!sql/parts/common/modal/media/dialogCheckbox';
-import { Checkbox, ICheckboxOpts, ICheckboxStyles } from 'vs/base/browser/ui/checkbox/checkbox';
+import 'vs/css!sql/base/browser/ui/checkbox/media/checkbox';
+import { Checkbox as vsCheckbox, ICheckboxOpts, ICheckboxStyles } from 'vs/base/browser/ui/checkbox/checkbox';
 import { Color } from 'vs/base/common/color';
 
 const defaultOpts = {
@@ -14,7 +14,7 @@ const defaultOpts = {
 /**
  * Extends Checkbox to include Carbon checkbox icon and styling.
  */
-export class DialogCheckbox extends Checkbox {
+export class Checkbox extends vsCheckbox {
 	private _inputActiveOptionBorder: Color;
 
 	constructor(opts: ICheckboxOpts) {

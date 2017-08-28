@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { InputBox, IInputOptions, IInputBoxStyles } from 'vs/base/browser/ui/inputbox/inputBox';
+import { InputBox as vsInputBox, IInputOptions, IInputBoxStyles as vsIInputBoxStyles } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
 import { Color } from 'vs/base/common/color';
 import Event, { Emitter } from 'vs/base/common/event';
@@ -14,12 +14,12 @@ export interface OnLoseFocusParams {
 	hasChanged: boolean;
 }
 
-export interface ICarbonInputBoxStyles extends IInputBoxStyles {
+export interface IInputBoxStyles extends vsIInputBoxStyles {
 	disabledInputBackground?: Color;
 	disabledInputForeground?: Color;
 }
 
-export class DialogInputBox extends InputBox {
+export class InputBox extends vsInputBox {
 	private enabledInputBackground: Color;
 	private enabledInputForeground: Color;
 	private enabledInputBorder: Color;
@@ -50,7 +50,7 @@ export class DialogInputBox extends InputBox {
 		});
 	}
 
-	public style(styles: ICarbonInputBoxStyles): void {
+	public style(styles: IInputBoxStyles): void {
 		super.style(styles);
 		this.enabledInputBackground = this.inputBackground;
 		this.enabledInputForeground = this.inputForeground;

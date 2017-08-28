@@ -10,11 +10,11 @@ import {
 } from '@angular/core';
 import { NgGridItemConfig } from 'angular2-grid';
 
-import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
+import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IInsightData, IInsightsView, IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
@@ -51,10 +51,10 @@ const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribu
 })
 export class ChartViewerComponent implements OnInit, OnDestroy {
 	public legendOptions: string[];
-	private chartTypesSelectBox: DialogSelectBox;
-	private legendSelectBox: DialogSelectBox;
-	private labelFirstColumnCheckBox: DialogCheckbox;
-	private columnsAsLabelsCheckBox: DialogCheckbox;
+	private chartTypesSelectBox: SelectBox;
+	private legendSelectBox: SelectBox;
+	private labelFirstColumnCheckBox: Checkbox;
+	private columnsAsLabelsCheckBox: Checkbox;
 	private createInsightButton: Button;
 	private saveChartButton: Button;
 	private copyChartButton: Button;
@@ -113,7 +113,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 
 	private initializeUI() {
 		// Init chart type dropdown
-		this.chartTypesSelectBox = new DialogSelectBox(insightRegistry.getAllIds(), 'horizontalBar');
+		this.chartTypesSelectBox = new SelectBox(insightRegistry.getAllIds(), 'horizontalBar');
 		this.chartTypesSelectBox.render(this.chartTypesElement.nativeElement);
 		this.chartTypesSelectBox.onDidSelect(selected => this.onChartChanged());
 		this._disposables.push(attachSelectBoxStyler(this.chartTypesSelectBox, this._bootstrapService.themeService));
@@ -131,7 +131,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		this._disposables.push(attachCheckboxStyler(this.columnsAsLabelsCheckBox, this._bootstrapService.themeService));
 
 		// Init legend dropdown
-		this.legendSelectBox = new DialogSelectBox(this.legendOptions, this._chartConfig.legendPosition);
+		this.legendSelectBox = new SelectBox(this.legendOptions, this._chartConfig.legendPosition);
 		this.legendSelectBox.render(this.legendElement.nativeElement);
 		this.legendSelectBox.onDidSelect(selected => this.onLegendChanged());
 		this._disposables.push(attachSelectBoxStyler(this.legendSelectBox, this._bootstrapService.themeService));

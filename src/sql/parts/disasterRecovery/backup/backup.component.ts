@@ -12,18 +12,17 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import { modalFooterStyle } from 'sql/parts/common/modal/modal';
-import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
-import { ListBox } from 'sql/parts/common/modal/listBox';
-import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
+import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
+import { ListBox } from 'sql/base/browser/ui/listBox/listBox';
+import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { attachListBoxStyler, attachInputBoxStyler } from 'sql/common/theme/styler';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
-import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
+import { IInputOptions, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 
@@ -141,27 +140,27 @@ export class BackupComponent{
     private existingMediaOptions = ["append", "overwrite"];
     private backupTypeOptions: string[];
 
-    private backupTypeSelectBox: DialogSelectBox;
-    private backupNameBox: DialogInputBox;
-    private recoveryBox: DialogInputBox;
-    private backupRetainDaysBox: DialogInputBox;
-    private pathInputBox: DialogInputBox;
+    private backupTypeSelectBox: SelectBox;
+    private backupNameBox: InputBox;
+    private recoveryBox: InputBox;
+    private backupRetainDaysBox: InputBox;
+    private pathInputBox: InputBox;
     private backupButton: Button;
     private cancelButton: Button;
     private scriptButton: Button;
     private addPathButton: Button;
     private removePathButton: Button;
     private pathListBox: ListBox;
-    private compressionSelectBox: DialogSelectBox;
-    private algorithmSelectBox: DialogSelectBox;
-    private encryptorSelectBox: DialogSelectBox;
-    private mediaNameBox: DialogInputBox;
-    private mediaDescriptionBox: DialogInputBox;
-    private copyOnlyCheckBox: DialogCheckbox;
-    private encryptCheckBox: DialogCheckbox;
-    private verifyCheckBox: DialogCheckbox;
-    private checksumCheckBox: DialogCheckbox;
-    private continueOnErrorCheckBox: DialogCheckbox;
+    private compressionSelectBox: SelectBox;
+    private algorithmSelectBox: SelectBox;
+    private encryptorSelectBox: SelectBox;
+    private mediaNameBox: InputBox;
+    private mediaDescriptionBox: InputBox;
+    private copyOnlyCheckBox: Checkbox;
+    private encryptCheckBox: Checkbox;
+    private verifyCheckBox: Checkbox;
+    private checksumCheckBox: Checkbox;
+    private continueOnErrorCheckBox: Checkbox;
 
 	constructor(
         @Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
@@ -221,15 +220,15 @@ export class BackupComponent{
         if (isMetadataPopulated) {
             // Set recovery model
             this.setControlsForRecoveryModel();
-            this.recoveryBox = new DialogInputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
+            this.recoveryBox = new InputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
 
             // Set backup type
-            this.backupTypeSelectBox = new DialogSelectBox(this.backupTypeOptions, this.backupTypeOptions[0]);
+            this.backupTypeSelectBox = new SelectBox(this.backupTypeOptions, this.backupTypeOptions[0]);
             this.backupTypeSelectBox.render(this.backupTypeElement.nativeElement);
             this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged());
 
             // Set copy-only check box
-            this.copyOnlyCheckBox = new DialogCheckbox({
+            this.copyOnlyCheckBox = new Checkbox({
                 actionClassName: 'backup-checkbox',
                 title: 'Copy-only backup',
                 isChecked: false,
@@ -239,7 +238,7 @@ export class BackupComponent{
 
             // Encryption checkbox
             let self = this;
-            this.encryptCheckBox = new DialogCheckbox({
+            this.encryptCheckBox = new Checkbox({
                 actionClassName: 'backup-checkbox',
                 title: 'Encryption',
                 isChecked: false,
@@ -248,7 +247,7 @@ export class BackupComponent{
             this.encryptElement.nativeElement.appendChild(this.encryptCheckBox.domNode);
 
             // Verify backup checkbox
-            this.verifyCheckBox = new DialogCheckbox({
+            this.verifyCheckBox = new Checkbox({
                 actionClassName: 'backup-checkbox',
                 title: 'Verify',
                 isChecked: false,
@@ -257,7 +256,7 @@ export class BackupComponent{
             this.verifyElement.nativeElement.appendChild(this.verifyCheckBox.domNode);
 
             // Perform checksum checkbox
-            this.checksumCheckBox = new DialogCheckbox({
+            this.checksumCheckBox = new Checkbox({
                 actionClassName: 'backup-checkbox',
                 title: 'Perform checksum',
                 isChecked: false,
@@ -266,7 +265,7 @@ export class BackupComponent{
             this.checksumElement.nativeElement.appendChild(this.checksumCheckBox.domNode);
 
             // Continue on error checkbox
-            this.continueOnErrorCheckBox = new DialogCheckbox({
+            this.continueOnErrorCheckBox = new Checkbox({
                 actionClassName: 'backup-checkbox',
                 title: 'Continue on error',
                 isChecked: false,
@@ -275,7 +274,7 @@ export class BackupComponent{
             this.continueOnErrorElement.nativeElement.appendChild(this.continueOnErrorCheckBox.domNode);
 
             // Set backup name
-            this.backupNameBox = new DialogInputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
+            this.backupNameBox = new InputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
             this.setDefaultBackupName();
             this.backupNameBox.focus();
 
@@ -289,7 +288,7 @@ export class BackupComponent{
             this.pathListBox.render(this.pathElement.nativeElement);
 
             // Set backup path input
-            this.pathInputBox = new DialogInputBox(this.pathInputElement.nativeElement, this._bootstrapService.contextViewService);
+            this.pathInputBox = new InputBox(this.pathInputElement.nativeElement, this._bootstrapService.contextViewService);
             this.addPathButton = new Button(this.addPathElement.nativeElement);
             this.addPathButton.label = '+';
             this.addPathButton.addListener('click', () => this.onAddClick());
@@ -298,14 +297,14 @@ export class BackupComponent{
             this.removePathButton.addListener('click', () => this.onRemoveClick());
 
             // Set compression
-            this.compressionSelectBox = new DialogSelectBox(this.compressionOptions, this.compressionOptions[0]);
+            this.compressionSelectBox = new SelectBox(this.compressionOptions, this.compressionOptions[0]);
             this.compressionSelectBox.render(this.compressionElement.nativeElement);
 
             // Set encryption
-            this.algorithmSelectBox = new DialogSelectBox(this.encryptionAlgorithms, this.encryptionAlgorithms[0]);
+            this.algorithmSelectBox = new SelectBox(this.encryptionAlgorithms, this.encryptionAlgorithms[0]);
             this.algorithmSelectBox.render(this.encryptionAlgorithmElement.nativeElement);
             var encryptorItems = this.populateEncryptorCombo();
-            this.encryptorSelectBox = new DialogSelectBox(encryptorItems, encryptorItems[0]);
+            this.encryptorSelectBox = new SelectBox(encryptorItems, encryptorItems[0]);
             this.encryptorSelectBox.render(this.encryptorElement.nativeElement);
 
             // If no encryptor is provided, disable encrypt checkbox and show warning
@@ -317,7 +316,7 @@ export class BackupComponent{
             }
 
             // Set media
-            this.mediaNameBox = new DialogInputBox(this.mediaNameElement.nativeElement,
+            this.mediaNameBox = new InputBox(this.mediaNameElement.nativeElement,
                 this._bootstrapService.contextViewService,
                 {
                     validationOptions: {
@@ -330,10 +329,10 @@ export class BackupComponent{
                 this.mediaNameChanged(mediaName);
             }));
 
-            this.mediaDescriptionBox = new DialogInputBox(this.mediaDescriptionElement.nativeElement, this._bootstrapService.contextViewService);
+            this.mediaDescriptionBox = new InputBox(this.mediaDescriptionElement.nativeElement, this._bootstrapService.contextViewService);
 
             // Set backup retain days
-            this.backupRetainDaysBox = new DialogInputBox(this.backupDaysElement.nativeElement,
+            this.backupRetainDaysBox = new InputBox(this.backupDaysElement.nativeElement,
                 this._bootstrapService.contextViewService,
                 {
                     placeholder: '0',

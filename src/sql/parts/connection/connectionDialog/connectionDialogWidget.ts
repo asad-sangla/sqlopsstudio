@@ -7,7 +7,7 @@ import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/connectionDialog';
 
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Modal } from 'sql/parts/common/modal/modal';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
@@ -58,7 +58,7 @@ export class ConnectionDialogWidget extends Modal {
 	private _dividerBuilder: Builder;
 	private _connectButton: Button;
 	private _closeButton: Button;
-	private _providerTypeSelectBox: DialogSelectBox;
+	private _providerTypeSelectBox: SelectBox;
 	private _toDispose: lifecycle.IDisposable[] = [];
 	private _toDisposeStyle: lifecycle.IDisposable[] = [];
 	private _newConnectionParams: INewConnectionParams;
@@ -95,7 +95,7 @@ export class ConnectionDialogWidget extends Modal {
 
 	protected renderBody(container: HTMLElement): void {
 		this._bodyBuilder = new Builder(container);
-		this._providerTypeSelectBox = new DialogSelectBox(this.providerTypeOptions, this.selectedProviderType);
+		this._providerTypeSelectBox = new SelectBox(this.providerTypeOptions, this.selectedProviderType);
 
 		this._bodyBuilder.div({ class: 'connection-recent', id: 'recentConnection' }, (builder) => {
 			this._recentConnectionBuilder = new Builder(builder.getHTMLElement());

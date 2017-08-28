@@ -20,13 +20,13 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
-import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
+import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { Modal } from 'sql/parts/common/modal/modal';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 'sql/parts/disasterRecovery/restore/restoreViewModel';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
-import { DialogInputBox, OnLoseFocusParams } from 'sql/parts/common/modal/dialogInputBox';
+import { InputBox, OnLoseFocusParams } from 'sql/base/browser/ui/inputBox/inputBox';
 import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler } from 'sql/common/theme/styler';
 import { TableView } from 'sql/base/browser/ui/table/tableView';
 import { Table } from 'sql/base/browser/ui/table/table';
@@ -62,10 +62,10 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	private _ownerUri: string;
 
 	// General options
-	private _filePathInputBox: DialogInputBox;
-	private _destinationRestoreToInputBox: DialogInputBox;
-	private _restoreFromSelectBox: DialogSelectBox;
-	private _sourceDatabaseSelectBox: DialogSelectBox;
+	private _filePathInputBox: InputBox;
+	private _destinationRestoreToInputBox: InputBox;
+	private _restoreFromSelectBox: SelectBox;
+	private _sourceDatabaseSelectBox: SelectBox;
 
 	// File option
 	private readonly _relocateDatabaseFilesOption = 'relocateDbFiles';
@@ -408,12 +408,12 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	}
 
 	private onBooleanOptionChecked(optionName: string) {
-		this.viewModel.setOptionValue(optionName, (<DialogCheckbox>this._optionsMap[optionName]).checked);
+		this.viewModel.setOptionValue(optionName, (<Checkbox>this._optionsMap[optionName]).checked);
 		this.validateRestore();
 	}
 
 	private onCatagoryOptionChanged(optionName: string) {
-		this.viewModel.setOptionValue(optionName, (<DialogSelectBox>this._optionsMap[optionName]).value);
+		this.viewModel.setOptionValue(optionName, (<SelectBox>this._optionsMap[optionName]).value);
 		this.validateRestore();
 	}
 
@@ -424,38 +424,38 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 		}
 	}
 
-	private createCheckBoxHelper(container: Builder, label: string, isChecked: boolean, onCheck: (viaKeyboard: boolean) => void): DialogCheckbox {
-		let checkbox: DialogCheckbox;
+	private createCheckBoxHelper(container: Builder, label: string, isChecked: boolean, onCheck: (viaKeyboard: boolean) => void): Checkbox {
+		let checkbox: Checkbox;
 		container.div({ class: 'dialog-input-section' }, (inputCellContainer) => {
 			checkbox = DialogHelper.createCheckBox(inputCellContainer, label, 'restore-checkbox', isChecked, onCheck);
 		});
 		return checkbox;
 	}
 
-	private createSelectBoxHelper(container: Builder, label: string, options: string[], selectedOption: string): DialogSelectBox {
-		let selectBox: DialogSelectBox;
+	private createSelectBoxHelper(container: Builder, label: string, options: string[], selectedOption: string): SelectBox {
+		let selectBox: SelectBox;
 		container.div({ class: 'dialog-input-section' }, (inputContainer) => {
 			inputContainer.div({ class: 'dialog-label' }, (labelContainer) => {
 				labelContainer.innerHtml(label);
 			});
 
 			inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-				selectBox = new DialogSelectBox(options, selectedOption);
+				selectBox = new SelectBox(options, selectedOption);
 				selectBox.render(inputCellContainer.getHTMLElement());
 			});
 		});
 		return selectBox;
 	}
 
-	private createInputBoxHelper(container: Builder, label: string, options?: IInputOptions): DialogInputBox {
-		let inputBox: DialogInputBox;
+	private createInputBoxHelper(container: Builder, label: string, options?: IInputOptions): InputBox {
+		let inputBox: InputBox;
 		container.div({ class: 'dialog-input-section' }, (inputContainer) => {
 			inputContainer.div({ class: 'dialog-label' }, (labelContainer) => {
 				labelContainer.innerHtml(label);
 			});
 
 			inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-				inputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService, options);
+				inputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService, options);
 			});
 		});
 		return inputBox;
@@ -639,20 +639,20 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	private updateRestoreOption(optionParam: RestoreOptionParam) {
 		let widget = this._optionsMap[optionParam.optionName];
 		if (widget) {
-			if (widget instanceof DialogCheckbox) {
-				(<DialogCheckbox>widget).checked = optionParam.value;
+			if (widget instanceof Checkbox) {
+				(<Checkbox>widget).checked = optionParam.value;
 				this.enableDisableWiget(widget, optionParam.isReadOnly);
-			} else if (widget instanceof DialogSelectBox) {
-				(<DialogSelectBox>widget).selectWithOptionName(optionParam.value);
+			} else if (widget instanceof SelectBox) {
+				(<SelectBox>widget).selectWithOptionName(optionParam.value);
 				this.enableDisableWiget(widget, optionParam.isReadOnly);
-			} else if (widget instanceof DialogInputBox) {
-				(<DialogInputBox>widget).value = optionParam.value;
+			} else if (widget instanceof InputBox) {
+				(<InputBox>widget).value = optionParam.value;
 				this.enableDisableWiget(widget, optionParam.isReadOnly);
 			}
 		}
 	}
 
-	private enableDisableWiget(widget: DialogCheckbox | DialogSelectBox | DialogInputBox, isReadOnly: boolean) {
+	private enableDisableWiget(widget: Checkbox | SelectBox | InputBox, isReadOnly: boolean) {
 		if (isReadOnly) {
 			widget.disable();
 		} else {

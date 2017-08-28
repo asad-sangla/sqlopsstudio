@@ -7,10 +7,10 @@
 
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { Builder } from 'vs/base/browser/builder';
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
-import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
+import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import * as types from 'vs/base/common/types';
 import data = require('data');
 import { localize } from 'vs/nls';
@@ -40,7 +40,7 @@ export function createOptionElement(option: data.ServiceOption, rowContainer: Bu
 	let invalidInputMessage = localize('invalidInput', 'Invalid input.  Numeric value expected.');
 	switch (option.valueType) {
 		case ServiceOptionType.number:
-			optionWidget = new DialogInputBox(rowContainer.getHTMLElement(), contextViewService, {
+			optionWidget = new InputBox(rowContainer.getHTMLElement(), contextViewService, {
 				validationOptions: {
 					validation: (value: string) => {
 						if (!value && option.isRequired) {
@@ -58,13 +58,13 @@ export function createOptionElement(option: data.ServiceOption, rowContainer: Bu
 			break;
 		case ServiceOptionType.category:
 		case ServiceOptionType.boolean:
-			optionWidget = new DialogSelectBox(possibleInputs, optionValue.toString());
+			optionWidget = new SelectBox(possibleInputs, optionValue.toString());
 			DialogHelper.appendInputSelectBox(rowContainer, optionWidget);
 			inputElement = this.findElement(rowContainer, 'select-box');
 			break;
 		case ServiceOptionType.string:
 		case ServiceOptionType.password:
-			optionWidget = new DialogInputBox(rowContainer.getHTMLElement(), contextViewService, {
+			optionWidget = new InputBox(rowContainer.getHTMLElement(), contextViewService, {
 				validationOptions: {
 					validation: (value: string) => (!value && option.isRequired) ? ({ type: MessageType.ERROR, content: option.displayName + missingErrorMessage }) : null
 				}

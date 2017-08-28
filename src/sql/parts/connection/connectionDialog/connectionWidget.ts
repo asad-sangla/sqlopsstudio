@@ -11,9 +11,9 @@ import 'vs/css!./media/sqlConnection';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
-import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
-import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
+import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
+import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import * as lifecycle from 'vs/base/common/lifecycle';
@@ -31,16 +31,16 @@ import { localize } from 'vs/nls';
 
 export class ConnectionWidget {
 	private _builder: Builder;
-	private _serverGroupSelectBox: DialogSelectBox;
+	private _serverGroupSelectBox: SelectBox;
 	private _serverGroupOptions: IConnectionProfileGroup[];
-	private _serverNameInputBox: DialogInputBox;
-	private _databaseNameInputBox: DialogInputBox;
-	private _userNameInputBox: DialogInputBox;
-	private _passwordInputBox: DialogInputBox;
-	private _rememberPasswordCheckBox: DialogCheckbox;
+	private _serverNameInputBox: InputBox;
+	private _databaseNameInputBox: InputBox;
+	private _userNameInputBox: InputBox;
+	private _passwordInputBox: InputBox;
+	private _rememberPasswordCheckBox: Checkbox;
 	private _advancedButton: Button;
 	private _callbacks: IConnectionComponentCallbacks;
-	private _authTypeSelectBox: DialogSelectBox;
+	private _authTypeSelectBox: SelectBox;
 	private _toDispose: lifecycle.IDisposable[];
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
 	private _tableContainer: Builder;
@@ -86,13 +86,13 @@ export class ConnectionWidget {
 		}
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		this._authTypeSelectBox = authTypeOption ? new DialogSelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue) : undefined;
+		this._authTypeSelectBox = authTypeOption ? new SelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue) : undefined;
 		this._providerName = providerName;
 	}
 
 	public createConnectionWidget(container: HTMLElement): void {
 		this._serverGroupOptions = [this.DefaultServerGroup];
-		this._serverGroupSelectBox = new DialogSelectBox(this._serverGroupOptions.map(g => g.name), this.DefaultServerGroup.name);
+		this._serverGroupSelectBox = new SelectBox(this._serverGroupOptions.map(g => g.name), this.DefaultServerGroup.name);
 		this._builder = $().div({ class: 'connection-table' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this._tableContainer = tableContainer;
@@ -111,7 +111,7 @@ export class ConnectionWidget {
 
 		let serverNameOption = this._optionsMaps[ConnectionOptionSpecialType.serverName];
 		let serverNameBuilder = DialogHelper.appendRow(this._tableContainer, serverNameOption.displayName, 'connection-label', 'connection-input');
-		this._serverNameInputBox = new DialogInputBox(serverNameBuilder.getHTMLElement(), this._contextViewService, {
+		this._serverNameInputBox = new InputBox(serverNameBuilder.getHTMLElement(), this._contextViewService, {
 			validationOptions: {
 				validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: serverNameOption.displayName + errorMessage }) : null
 			},
@@ -125,7 +125,7 @@ export class ConnectionWidget {
 		let self = this;
 		let userNameOption = this._optionsMaps[ConnectionOptionSpecialType.userName];
 		let userNameBuilder = DialogHelper.appendRow(this._tableContainer, userNameOption.displayName, 'connection-label', 'connection-input');
-		this._userNameInputBox = new DialogInputBox(userNameBuilder.getHTMLElement(), this._contextViewService, {
+		this._userNameInputBox = new InputBox(userNameBuilder.getHTMLElement(), this._contextViewService, {
 			validationOptions: {
 				validation: (value: string) => self.validateUsername(value, userNameOption.isRequired) ? ({ type: MessageType.ERROR, content: userNameOption.displayName + errorMessage }) : null
 			}
@@ -133,7 +133,7 @@ export class ConnectionWidget {
 
 		let passwordOption = this._optionsMaps[ConnectionOptionSpecialType.password];
 		let passwordBuilder = DialogHelper.appendRow(this._tableContainer, passwordOption.displayName, 'connection-label', 'connection-input');
-		this._passwordInputBox = new DialogInputBox(passwordBuilder.getHTMLElement(), this._contextViewService);
+		this._passwordInputBox = new InputBox(passwordBuilder.getHTMLElement(), this._contextViewService);
 		this._passwordInputBox.inputElement.type = 'password';
 
 		let rememberPasswordLabel = localize('rememberPassword', 'Remember password');
@@ -141,7 +141,7 @@ export class ConnectionWidget {
 
 		let databaseOption = this._optionsMaps[ConnectionOptionSpecialType.databaseName];
 		let databaseNameBuilder = DialogHelper.appendRow(this._tableContainer, databaseOption.displayName, 'connection-label', 'connection-input');
-		this._databaseNameInputBox = new DialogInputBox(databaseNameBuilder.getHTMLElement(), this._contextViewService, {
+		this._databaseNameInputBox = new InputBox(databaseNameBuilder.getHTMLElement(), this._contextViewService, {
 			validationOptions: {
 				validation: (value: string) => (!value && databaseOption.isRequired) ? ({ type: MessageType.ERROR, content: databaseOption.displayName + errorMessage }) : null
 			},
@@ -184,8 +184,8 @@ export class ConnectionWidget {
 		return button;
 	}
 
-	private appendCheckbox(container: Builder, label: string, checkboxClass: string, cellContainerClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): DialogCheckbox {
-		let checkbox: DialogCheckbox;
+	private appendCheckbox(container: Builder, label: string, checkboxClass: string, cellContainerClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
+		let checkbox: Checkbox;
 		container.element('tr', {}, (rowContainer) => {
 			rowContainer.element('td');
 			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {

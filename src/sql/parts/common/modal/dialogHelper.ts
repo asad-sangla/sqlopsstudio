@@ -6,9 +6,9 @@
 'use strict';
 
 import { Builder } from 'vs/base/browser/builder';
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { DialogCheckbox } from 'sql/parts/common/modal/dialogCheckbox';
+import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import * as data from 'data';
 import * as types from 'vs/base/common/types';
 
@@ -47,8 +47,8 @@ export function appendRowLink(container: Builder, label: string, labelClass: str
 	return new Builder(rowButton.getElement());
 }
 
-export function createCheckBox(container: Builder, label: string, checkboxClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): DialogCheckbox {
-	let checkbox = new DialogCheckbox({
+export function createCheckBox(container: Builder, label: string, checkboxClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
+	let checkbox = new Checkbox({
 		actionClassName: checkboxClass,
 		title: label,
 		isChecked: isChecked,
@@ -66,7 +66,7 @@ export function createCheckBox(container: Builder, label: string, checkboxClass:
 	return checkbox;
 }
 
-export function appendInputSelectBox(container: Builder, selectBox: DialogSelectBox): DialogSelectBox {
+export function appendInputSelectBox(container: Builder, selectBox: SelectBox): SelectBox {
 	selectBox.render(container.getHTMLElement());
 	return selectBox;
 }

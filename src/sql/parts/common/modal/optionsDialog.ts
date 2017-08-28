@@ -15,7 +15,7 @@ import { FixedCollapsibleView } from 'sql/platform/views/fixedCollapsibleView';
 import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
-import { DialogSelectBox } from 'sql/parts/common/modal/dialogSelectBox';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IModalOptions, Modal } from 'sql/parts/common/modal/modal';
 import * as OptionsDialogHelper from 'sql/parts/common/modal/optionsDialogHelper';
@@ -164,7 +164,7 @@ export class OptionsDialog extends Modal {
 			switch (option.valueType) {
 				case OptionsDialogHelper.ServiceOptionType.category:
 				case OptionsDialogHelper.ServiceOptionType.boolean:
-					this._toDispose.push(styler.attachSelectBoxStyler(<DialogSelectBox>widget, this._themeService));
+					this._toDispose.push(styler.attachSelectBoxStyler(<SelectBox>widget, this._themeService));
 					break;
 				case OptionsDialogHelper.ServiceOptionType.string:
 				case OptionsDialogHelper.ServiceOptionType.password:

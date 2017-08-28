@@ -23,7 +23,7 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { localize } from 'vs/nls';
 
 import { Modal } from 'sql/parts/common/modal/modal';
-import { DialogInputBox } from 'sql/parts/common/modal/dialogInputBox';
+import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { ServerGroupViewModel } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupViewModel';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 
@@ -33,8 +33,8 @@ export class ServerGroupDialog extends Modal {
 	private _closeButton: Button;
 	private _colorCheckBoxesMap: Map<string, Checkbox> = new Map<string, Checkbox>();
 	private _selectedColorOption: number;
-	private _groupNameInputBox: DialogInputBox;
-	private _groupDescriptionInputBox: DialogInputBox;
+	private _groupNameInputBox: InputBox;
+	private _groupDescriptionInputBox: InputBox;
 	private _toDispose: lifecycle.IDisposable[] = [];
 	private _viewModel: ServerGroupViewModel;
 
@@ -78,7 +78,7 @@ export class ServerGroupDialog extends Modal {
 		});
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
 			let errorMessage = localize('MissingGroupNameError', 'Group name is required.');
-			this._groupNameInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
+			this._groupNameInputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
 				validationOptions: {
 					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: errorMessage }) : null
 				}
@@ -91,7 +91,7 @@ export class ServerGroupDialog extends Modal {
 			labelContainer.innerHtml(groupDescriptionLabel);
 		});
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
-			this._groupDescriptionInputBox = new DialogInputBox(inputCellContainer.getHTMLElement(), this._contextViewService);
+			this._groupDescriptionInputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService);
 		});
 
 		// Connection Group Color
