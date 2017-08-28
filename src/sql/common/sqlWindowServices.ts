@@ -7,23 +7,6 @@
 
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export interface SaveDialogOptions {
-	title?: string;
-	defaultPath?: string;
-	/**
-	 * Custom label for the confirmation button, when left empty the default label will be used.
-	 */
-	buttonLabel?: string;
-	/**
-	 * File types that can be displayed, see dialog.showOpenDialog for an example.
-	 */
-	filters?: {
-		name: string;
-		extensions: string[];
-	}[];
-}
-
-
 export const ISqlWindowService = createDecorator<ISqlWindowService>('sqlWindowService');
 
 /**
@@ -44,7 +27,7 @@ export interface ISqlWindowService {
 	 * @returns {string}
 	 * @memberof IWindowUtils
 	 */
-	showSaveDialog(options: SaveDialogOptions): string;
+	showSaveDialog(options: Electron.SaveDialogOptions): string;
 
 	/**
 	 * Writes the image into the clipboard. Data is expected to come

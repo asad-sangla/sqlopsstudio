@@ -6,8 +6,10 @@
 'use strict';
 
 
-import { ISqlWindowService, SaveDialogOptions } from 'sql/common/sqlWindowServices';
-import { clipboard, nativeImage  } from 'electron';
+import { ISqlWindowService } from 'sql/common/sqlWindowServices';
+
+import { IWindowService } from 'vs/platform/windows/common/windows';
+import { clipboard, nativeImage } from 'electron';
 
 /**
  * Defines simple window / electron based util methods to avoid breaking the layering issues
@@ -20,8 +22,8 @@ export class SqlWindowService implements ISqlWindowService {
 
 	public _serviceBrand: any;
 
-	//constructor(@IWindowIPCService private _windowIpcService: IWindowIPCService) {
-	//}
+	constructor( @IWindowService private _windowService: IWindowService) {
+	}
 
 	/**
 	 * Shows a save dialog and returns the file path chosen to be saved to
@@ -30,9 +32,8 @@ export class SqlWindowService implements ISqlWindowService {
 	 * @returns {string}
 	 * @memberof IWindowUtils
 	 */
-	public showSaveDialog(options: SaveDialogOptions): string {
-		//return this._windowIpcService.getWindow().showSaveDialog(options);
-		return undefined;
+	public showSaveDialog(options: Electron.SaveDialogOptions): string {
+		return this._windowService.showSaveDialog(options);
 	}
 
 	/**
