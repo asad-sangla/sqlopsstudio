@@ -25,6 +25,7 @@ import dom = require('vs/base/browser/dom');
 import * as fs from 'fs';
 import { PathUtilities } from 'sql/common/pathUtilities';
 import uri from 'vs/base/common/uri';
+import 'vs/css!sql/media/objectTypes/objecttypes';
 
 /**
  * Renders the tree items.
@@ -89,7 +90,7 @@ export class ServerTreeRenderer implements IRenderer {
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
 			const connectionTemplate: IObjectExplorerTemplateData = Object.create(null);
 			connectionTemplate.root = dom.append(container, $('.connection-tile'));
-			connectionTemplate.icon = dom.append(connectionTemplate.root, $('img.object-icon'));
+			connectionTemplate.icon = dom.append(connectionTemplate.root, $('div.object-icon'));
 			connectionTemplate.label = dom.append(connectionTemplate.root, $('div.label'));
 			return connectionTemplate;
 		} else if (templateId === ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID) {
@@ -101,7 +102,7 @@ export class ServerTreeRenderer implements IRenderer {
 		} else {
 			const objectExplorerTemplate: IObjectExplorerTemplateData = Object.create(null);
 			objectExplorerTemplate.root = dom.append(container, $('.object-element-group'));
-			objectExplorerTemplate.icon = dom.append(objectExplorerTemplate.root, $('img.object-icon'));
+			objectExplorerTemplate.icon = dom.append(objectExplorerTemplate.root, $('div.object-icon'));
 			objectExplorerTemplate.label = dom.append(objectExplorerTemplate.root, $('div.label'));
 			return objectExplorerTemplate;
 		}
@@ -128,11 +129,16 @@ export class ServerTreeRenderer implements IRenderer {
 		if (treeNode.nodeSubType) {
 			iconName = treeNode.nodeTypeId + '_' + treeNode.nodeSubType;
 		}
-		var iconFilePath = PathUtilities.toUrl('sql/media/objectTypes/' + iconName + '.svg');
-		if (!fs.existsSync(uri.parse(iconFilePath).fsPath)) {
-			iconFilePath = PathUtilities.toUrl('sql/media/objectTypes/DefaultIcon.svg');
+
+		let tokens: string[] = [];
+		for (var index = 1; index < templateData.icon.classList.length; index++) {
+			tokens.push(templateData.icon.classList.item(index));
 		}
-		templateData.icon.style.content = 'url(' + iconFilePath + ')';
+		templateData.icon.classList.remove(...tokens);
+		templateData.icon.classList.add('icon');
+		let iconLoweCaseName = iconName.toLocaleLowerCase();
+		templateData.icon.classList.add(iconLoweCaseName);
+
 		templateData.label.textContent = treeNode.label;
 		templateData.root.title = treeNode.label;
 	}
