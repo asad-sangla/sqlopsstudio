@@ -87,6 +87,44 @@
           "type": "string",
           "default": "postgres",
           "description": "The default database to use when creating a new PostgreSQL connection"
+        },
+        "pgsql.format.keywordCase": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "[Optional] Changes how keywords are formatted. Allowed values are 'upper', 'lower' and 'capitalize'.",
+          "default": null,
+          "enum": [
+            null,
+            "upper",
+            "lower",
+            "capitalize"
+          ]
+        },
+        "pgsql.format.identifierCase": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "[Optional] Changes how identifiers are formatted. Allowed values are 'upper', 'lower' and 'capitalize'.",
+          "default": null,
+          "enum": [
+            null,
+            "upper",
+            "lower",
+            "capitalize"
+          ]
+        },
+        "pgsql.format.stripComments": {
+          "type": "boolean",
+          "default": false,
+          "description": "[Optional] If true comments are removed from the statements"
+        },
+        "pgsql.format.reindent": {
+          "type": "boolean",
+          "default": true,
+          "description": "[Optional] If true the indentations of the statements are changed."
         }
       }
     }
