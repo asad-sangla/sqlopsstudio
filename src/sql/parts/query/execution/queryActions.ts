@@ -221,7 +221,7 @@ export class EstimatedQueryPlanAction extends QueryTaskbarAction {
 			} else {
 				// If we are not already connected, prompt for connection and run the query if the
 				// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
-				this.connectEditor(this.editor, RunQueryOnConnectionMode.executeQuery, this.editor.getSelection());
+				this.connectEditor(this.editor, RunQueryOnConnectionMode.estimatedQueryPlan, this.editor.getSelection());
 			}
 		}
 		return TPromise.as(null);

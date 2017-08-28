@@ -275,7 +275,8 @@ export enum ConnectionOptionSpecialType {
 export enum RunQueryOnConnectionMode {
 	none = 0,
 	executeQuery = 1,
-	executeCurrentQuery = 2
+	executeCurrentQuery = 2,
+	estimatedQueryPlan = 3
 }
 
 export interface INewConnectionParams {

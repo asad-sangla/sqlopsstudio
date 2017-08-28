@@ -175,14 +175,14 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this._listDatabasesConnected = true;
 
 		let isRunningQuery = this._queryModelService.isRunningQuery(this.uri);
-		if (!isRunningQuery && params && params.runQueryOnCompletion
-				&& (params.runQueryOnCompletion === RunQueryOnConnectionMode.executeCurrentQuery
-				|| params.runQueryOnCompletion === RunQueryOnConnectionMode.executeQuery)) {
+		if (!isRunningQuery && params && params.runQueryOnCompletion) {
 			let selection: ISelectionData = params ? params.querySelection : undefined;
 			if (params.runQueryOnCompletion === RunQueryOnConnectionMode.executeCurrentQuery) {
 				this.runQueryStatement(selection);
-			} else {
+			} else if (params.runQueryOnCompletion === RunQueryOnConnectionMode.executeQuery) {
 				this.runQuery(selection);
+			} else if (params.runQueryOnCompletion === RunQueryOnConnectionMode.estimatedQueryPlan) {
+				this.runQuery(selection, { displayEstimatedQueryPlan: true });
 			}
 		}
 		this._updateTaskbar.fire();
