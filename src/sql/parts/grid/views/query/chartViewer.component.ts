@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import 'vs/css!sql/parts/grid/views/query/chartViewer';
+import 'vs/css!sql/parts/query/editor/media/queryTaskbar';
 
 import {
 	Component, Inject, ViewContainerRef, forwardRef, OnInit,
@@ -10,6 +11,7 @@ import {
 } from '@angular/core';
 import { NgGridItemConfig } from 'angular2-grid';
 
+import { QueryTaskbar } from 'sql/parts/query/editor/queryTaskbar';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { IGridDataSet } from 'sql/parts/grid/common/interfaces';
@@ -22,6 +24,8 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { DataType, ILineConfig } from 'sql/parts/dashboard/widgets/insights/views/charts/types/lineChart.component';
 import { PathUtilities } from 'sql/common/pathUtilities';
 import * as Utils from 'sql/parts/connection/common/utils';
+import { ThemeUtilities } from 'sql/common/themeUtilities';
+import { IChartViewActionContext, CopyAction, CreateInsightAction, SaveImageAction } from 'sql/parts/grid/views/query/chartViewerActions';
 
 /* Insights */
 import {
@@ -29,6 +33,7 @@ import {
 } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
+import { Action } from 'vs/base/common/actions';
 import { Builder } from 'vs/base/browser/builder';
 import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { Button } from 'vs/base/browser/ui/button/button';
@@ -49,15 +54,12 @@ const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribu
 	selector: 'chart-viewer',
 	templateUrl: require.toUrl('sql/parts/grid/views/query/chartViewer.component.html')
 })
-export class ChartViewerComponent implements OnInit, OnDestroy {
+export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewActionContext {
 	public legendOptions: string[];
 	private chartTypesSelectBox: SelectBox;
 	private legendSelectBox: SelectBox;
 	private labelFirstColumnCheckBox: Checkbox;
 	private columnsAsLabelsCheckBox: Checkbox;
-	private createInsightButton: Button;
-	private saveChartButton: Button;
-	private copyChartButton: Button;
 
 	/* UI */
 	/* tslint:disable:no-unused-variable */
@@ -71,12 +73,13 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 	private labelFirstColumnLabel: string = nls.localize('labelFirstColumnLabel', 'Use First Column as row label?');
 	private columnsAsLabelsLabel: string = nls.localize('columnsAsLabelsLabel', 'Use Column names as labels?');
 	private legendLabel: string = nls.localize('legendLabel', 'Legend Position');
-	private createInsightLabel: string = nls.localize('createInsightLabel', 'Create Dashboard Insight');
-	private saveChartLabel: string = nls.localize('saveChartLabel', 'Save As Image');
-	private copyChartLabel: string = nls.localize('copyChartLabel', 'Copy Image');
 	private chartNotFoundError: string = nls.localize('chartNotFound', 'Could not find chart to save');
 	/* tslint:enable:no-unused-variable */
 
+	private _actionBar: QueryTaskbar;
+	private _createInsightAction: CreateInsightAction;
+	private _copyAction: CopyAction;
+	private _saveAction: SaveImageAction;
 	private _chartConfig: ILineConfig;
 	private _disposables: Array<IDisposable> = [];
 	private _dataSet: IGridDataSet;
@@ -84,13 +87,11 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 	private _chartComponent: ChartInsight;
 
 	@ViewChild(ComponentHostDirective) private componentHost: ComponentHostDirective;
+	@ViewChild('taskbarContainer', { read: ElementRef }) private taskbarContainer;
 	@ViewChild('chartTypesContainer', { read: ElementRef }) private chartTypesElement;
 	@ViewChild('legendContainer', { read: ElementRef }) private legendElement;
 	@ViewChild('labelFirstColumnContainer', { read: ElementRef }) private labelFirstColumnElement;
 	@ViewChild('columnsAsLabelsContainer', { read: ElementRef }) private columnsAsLabelsElement;
-	@ViewChild('createInsightButtonContainer', { read: ElementRef }) private createInsightButtonElement;
-	@ViewChild('saveChartButtonContainer', { read: ElementRef }) private saveChartButtonElement;
-	@ViewChild('copyChartButtonContainer', { read: ElementRef }) private copyChartButtonElement;
 
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
@@ -112,6 +113,9 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 	}
 
 	private initializeUI() {
+		// Initialize the taskbar
+		this._initActionBar();
+
 		// Init chart type dropdown
 		this.chartTypesSelectBox = new SelectBox(insightRegistry.getAllIds(), 'horizontalBar');
 		this.chartTypesSelectBox.render(this.chartTypesElement.nativeElement);
@@ -135,26 +139,24 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		this.legendSelectBox.render(this.legendElement.nativeElement);
 		this.legendSelectBox.onDidSelect(selected => this.onLegendChanged());
 		this._disposables.push(attachSelectBoxStyler(this.legendSelectBox, this._bootstrapService.themeService));
-
-		// create insight button
-		this.createInsightButton = new Button(this.createInsightButtonElement.nativeElement, {});
-		this.createInsightButton.label = this.createInsightLabel;
-		this._disposables.push(this.createInsightButton.addListener(EventType.CLICK, () => this.onCreateInsight()));
-		this._disposables.push(attachButtonStyler(this.createInsightButton, this._bootstrapService.themeService));
-
-		// save as image button
-		this.saveChartButton = new Button(this.saveChartButtonElement.nativeElement, {});
-		this.saveChartButton.label = this.saveChartLabel;
-		this._disposables.push(this.saveChartButton.addListener(EventType.CLICK, () => this.onSaveChart()));
-		this._disposables.push(attachButtonStyler(this.saveChartButton, this._bootstrapService.themeService));
-
-		// copy image button
-		this.copyChartButton = new Button(this.copyChartButtonElement.nativeElement, {});
-		this.copyChartButton.label = this.copyChartLabel;
-		this._disposables.push(this.copyChartButton.addListener(EventType.CLICK, () => this.onCopyChart()));
-		this._disposables.push(attachButtonStyler(this.copyChartButton, this._bootstrapService.themeService));
-
 	}
+
+	private _initActionBar() {
+		this._createInsightAction = this._bootstrapService.instantiationService.createInstance(CreateInsightAction);
+		this._copyAction = this._bootstrapService.instantiationService.createInstance(CopyAction);
+		this._saveAction = this._bootstrapService.instantiationService.createInstance(SaveImageAction);
+
+		let taskbar = <HTMLElement> this.taskbarContainer.nativeElement;
+		taskbar.className = 'queryTaskbar';
+		this._actionBar = new QueryTaskbar(taskbar, this._bootstrapService.contextMenuService);
+		this._actionBar.context = this;
+		this._actionBar.setContent([
+			{ action: this._createInsightAction },
+			{ action: this._copyAction },
+			{ action: this._saveAction }
+		]);
+	}
+
 
 	public onChartChanged(): void {
 		if (['scatter', 'timeSeries'].some(item => item === this.chartTypesSelectBox.value)) {
@@ -191,8 +193,9 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		this.initChart();
 	}
 
-	public onCopyChart(): void {
-		let data = this._chartComponent.getCanvasData('jpeg');
+	public copyChart(): void {
+		let imageFormat = this.getImageFormatForCopy();
+		let data = this._chartComponent.getCanvasData(imageFormat);
 		if (!data) {
 			this.showError(this.chartNotFoundError);
 			return;
@@ -201,7 +204,22 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		this._bootstrapService.sqlWindowService.writeImageFromDataUrl(data);
 	}
 
-	public onSaveChart(): void {
+	/**
+	 * Gets the correct image format for copying. Due to canvas + write to data URL
+	 * complexities, things render incorrectly depending on the theme since PNG gives
+	 * a transparent / light background and JPEG puts in a dark background on copy.
+	 * This does not affect saving the image.
+	 *
+	 * @private
+	 * @returns {string}
+	 * @memberof ChartViewerComponent
+	 */
+	private getImageFormatForCopy(): string {
+		let currentTheme = this._bootstrapService.themeService.getColorTheme();
+		return ThemeUtilities.isLightTheme(currentTheme) ? 'png' : 'jpeg';
+	}
+
+	public saveChart(): void {
 		let filePath = this.promptForFilepath();
 		let format = paths.extname(filePath);
 		let self = this;
@@ -240,7 +258,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy {
 		return new Buffer(matches[2], 'base64');
 	}
 
-	public onCreateInsight(): void {
+	public createInsight(): void {
 		let uriString: string = this.getActiveUriString();
 		if (!uriString) {
 			this.showError(nls.localize('createInsightNoEditor', 'Cannot create insight as the active editor is not a SQL Editor'));

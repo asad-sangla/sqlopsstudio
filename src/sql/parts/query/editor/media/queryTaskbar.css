@@ -98,11 +98,7 @@
 	background-image: url('stop.svg');
 }
 
-.vs-dark .disconnectDatabase {
-	background-image: url('disconnect_inverse.svg');
-	background-repeat: no-repeat;
-}
-
+.vs-dark .disconnectDatabase,
 .hc-black .disconnectDatabase {
 	background-image: url('disconnect_inverse.svg');
 	background-repeat: no-repeat;
@@ -112,11 +108,7 @@
 	background-image: url('disconnect.svg');
 }
 
-.vs-dark .connectDatabase {
-	background-image: url('connect_inverse.svg');
-	background-repeat: no-repeat;
-}
-
+.vs-dark .connectDatabase,
 .hc-black .connectDatabase {
 	background-image: url('connect_inverse.svg');
 	background-repeat: no-repeat;
@@ -126,12 +118,8 @@
 	background-image: url('connect.svg');
 }
 
-.vs-dark .changeConnectionDatabase {
-	background-image: url('change_connection_inverse.svg');
-	background-repeat: no-repeat;
-}
-
-.hc-black .changeConnectionDatabase {
+.vs-dark .changeConnectionDatabase,
+.hc-black .changeConnectionDatabase  {
 	background-image: url('change_connection_inverse.svg');
 	background-repeat: no-repeat;
 }
@@ -144,25 +132,47 @@
 	background-image: url('stop.svg');
 }
 
-.vs-dark .refreshData {
+.vs-dark .refreshData,
+.hc-black .refreshData  {
 	background-image: url('refresh_inverse.svg');
 }
 
-.hc-black .refreshData {
-	background-image: url('refresh_inverse.svg');
-}
 .refreshData {
 	background-image: url('refresh.svg');
 }
 
-.estimatedQueryPlan {
+.icon.estimatedQueryPlan {
 	background-image: url('query-plan.svg');
 }
 
-.vs-dark .estimatedQueryPlan {
+.vs-dark .icon.estimatedQueryPlan,
+.hc-black .icon.estimatedQueryPlan {
 	background-image: url('query-plan-inverse.svg');
 }
 
-.hc-black .estimatedQueryPlan {
-	background-image: url('query-plan-inverse.svg');
+.icon.createInsight {
+	background-image: url('create_insight.svg');
+}
+
+.vs-dark .icon.createInsight,
+.hc-black .icon.createInsight {
+	background-image: url('create_insight_inverse.svg');
+}
+
+.icon.copyImage {
+	background-image: url('copy_image.svg');
+}
+
+.vs-dark .icon.copyImage,
+.hc-black .icon.copyImage {
+	background-image: url('copy_image_inverse.svg');
+}
+
+.icon.saveAsImage {
+	background-image: url('save_as_image.svg');
+}
+
+.vs-dark .icon.saveAsImage,
+.hc-black .icon.saveAsImage {
+	background-image: url('save_as_image_inverse.svg');
 }
