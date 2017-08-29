@@ -13,14 +13,12 @@
 }
 
 .vs .icon.restore {
-	background-image: url("restore.svg");
-	background-repeat: no-repeat;
+	background: url("restore.svg") center center no-repeat;
 }
 
 .vs-dark .icon.restore,
 .hc-black .icon.restore {
-	background-image: url("restore_inverse.svg");
-	background-repeat: no-repeat;
+	background: url("restore_inverse.svg") center center no-repeat;
 }
 
 .vs .icon.database {
@@ -89,10 +87,17 @@
 	content: url("status_cancelled.svg");
 }
 
-.vs .icon.in-progress,
+.vs .icon.in-progress {
+	content: url("loading.svg");
+	width: 25px;
+	height: 25px;
+}
+
 .vs-dark .icon.in-progress,
 .hc-black .icon.in-progress {
-	content: url("progress_36x_animation.gif");
+	content: url("loading_inverse.svg");
+	width: 25px;
+	height: 25px;
 }
 
 .vs .icon.scriptToClipboard,
@@ -101,4 +106,13 @@
 	content: url('script_to_clipboard.svg');
 	width: auto !important;
 	height: 25px;
+}
+
+.vs .icon.close {
+	background-image: url('close.svg');
+}
+
+.vs-dark .icon.close,
+.hc-black .icon.close {
+	background-image: url('close-dark.svg');
 }

@@ -319,7 +319,7 @@ export class ActiveConnectionsFilterAction extends Action {
 	public static ID = 'registeredServers.recentConnections';
 	public static LABEL = localize('activeConnections', 'Show Active Connections');
 	private static enabledClass = 'active-connections-action';
-	private static disabledClass = 'active-connections-action-set';
+	private static disabledClass = 'icon server-page';
 	private static clearAllLabel = localize('clearAll', 'Clear All');
 	private _isSet: boolean;
 	public static readonly ACTIVE = 'active';
@@ -528,7 +528,7 @@ export class ClearSearchAction extends Action {
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super(id, label);
-		this.class = 'clear-search';
+		this.class = 'icon close';
 		this.enabled = false;
 	}
 

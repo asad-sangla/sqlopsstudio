@@ -30,25 +30,3 @@
 .hc-black .monaco-workbench .active-connections-action{
 	background-image: url('connected_active_server_inverse.svg');
 }
-
-/* toggle icon */
-.monaco-workbench .active-connections-action-set {
-	background-image: url('server.svg');
-}
-
-.vs-dark .monaco-workbench .active-connections-action-set,
-.hc-black .monaco-workbench .recent-connections-action {
-	background-image: url('server_inverse.svg');
-	opacity: 0.5;
-}
-
-/* ------ */
-
-.monaco-workbench .clear-search {
-	background-image: url('close.svg');
-}
-
-.vs-dark .monaco-workbench .clear-search,
-.hc-black .monaco-workbench .clear-search {
-	background-image: url('close-dark.svg');
-}

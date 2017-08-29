@@ -258,7 +258,7 @@ export class ObjectExplorerActionUtilities {
 		if (container) {
 			let groupContainer = this.getGroupContainer(container, elementName);
 			if (groupContainer) {
-				groupContainer.classList.add('loading');
+				groupContainer.classList.add('icon in-progress');
 			}
 		}
 	}
@@ -267,7 +267,7 @@ export class ObjectExplorerActionUtilities {
 		if (container) {
 			let element = this.getGroupContainer(container, elementName);
 			if (element && element.classList) {
-				element.classList.remove('loading');
+				element.classList.remove('icon in-progress');
 			}
 		}
 	}

@@ -4,6 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+import 'vs/css!sql/media/objectTypes/objecttypes';
+import 'vs/css!sql/media/icons/common-icons';
+
 import { append, $, addDisposableListener, addStandardDisposableListener } from 'vs/base/browser/dom';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
@@ -25,7 +28,6 @@ import dom = require('vs/base/browser/dom');
 import * as fs from 'fs';
 import { PathUtilities } from 'sql/common/pathUtilities';
 import uri from 'vs/base/common/uri';
-import 'vs/css!sql/media/objectTypes/objecttypes';
 
 /**
  * Renders the tree items.
@@ -90,7 +92,7 @@ export class ServerTreeRenderer implements IRenderer {
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
 			const connectionTemplate: IObjectExplorerTemplateData = Object.create(null);
 			connectionTemplate.root = dom.append(container, $('.connection-tile'));
-			connectionTemplate.icon = dom.append(connectionTemplate.root, $('div.object-icon'));
+			connectionTemplate.icon = dom.append(connectionTemplate.root, $('div.icon server-page'));
 			connectionTemplate.label = dom.append(connectionTemplate.root, $('div.label'));
 			return connectionTemplate;
 		} else if (templateId === ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID) {

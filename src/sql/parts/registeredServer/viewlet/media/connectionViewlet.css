@@ -82,48 +82,37 @@ margin-bottom: 2px;
 }
 
 /* OE and connection icon */
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon,
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .object-element-group > .object-icon {
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .icon,
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .object-element-group > .icon {
 	float: left;
 	height: 16px;
 	width: 16px;
 	padding-right: 10px;
 }
 
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon {
-	content: url('server.svg');
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .icon.server-page.connected {
+	background: url('connected_active_server.svg') center center no-repeat;
 }
 
-.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon,
-.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon{
-	content: url('server_inverse.svg');
+.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .icon.server-page.connected,
+.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .icon.server-page.connected{
+	background: url('connected_active_server_inverse.svg') center center no-repeat;
 }
 
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.connected {
-	content: url('connected_active_server.svg');
+.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .icon.server-page.disconnected {
+	background: url('disconnected_server.svg') center center no-repeat;
 }
 
-.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.connected,
-.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.connected{
-	content: url('connected_active_server_inverse.svg');
-}
-
-.monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.disconnected {
-	content: url('disconnected_server.svg');
-}
-
-.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.disconnected,
-.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .object-icon.disconnected{
-	content: url('disconnected_server_inverse.svg');
+.vs-dark .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .icon.server-page.disconnected,
+.hc-black .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .connection-tile > .icon.server-page.disconnected{
+	background: url('disconnected_server_inverse.svg') center center no-repeat;
 }
 
 /* loading for OE node */
-.server-explorer-viewlet .monaco-tree .monaco-tree-rows > .monaco-tree-row > .loading .connection-tile:before,
-.server-explorer-viewlet .monaco-tree .monaco-tree-rows > .monaco-tree-row > .loading .object-element-group:before {
-	content: ' ';
+.server-explorer-viewlet .monaco-tree .monaco-tree-rows > .monaco-tree-row > .icon.in-progress .connection-tile:before,
+.server-explorer-viewlet .monaco-tree .monaco-tree-rows > .monaco-tree-row > .icon.in-progress .object-element-group:before {
 	position: absolute;
 	display: block;
-	background: url('loading-hc.svg') 50% 50% no-repeat;
 	width: 36px;
 	height: 100%;
 	top: 0;
