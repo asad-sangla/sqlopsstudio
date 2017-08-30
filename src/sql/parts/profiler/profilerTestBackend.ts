@@ -69,11 +69,11 @@ export class ProfilerTestBackend implements data.IProfilerProvider {
 	}
 
 	connectSession(): Thenable<boolean> {
-		if(this.testData.length === 0 ) {
+		if (this.testData.length === 0) {
 			return new TPromise<boolean>((resolve, reject) => {
 				pfs.readFile(path.join(__dirname, 'testData.tsv')).then(result => {
 					let tabsep = result.toString().split('\t');
-					for(let i = 0; i < tabsep.length; i++) {
+					for (let i = 0; i < tabsep.length; i++) {
 						if (i % columns.length === 0) {
 							this.testData[i / columns.length] = new Array<string>();
 						}

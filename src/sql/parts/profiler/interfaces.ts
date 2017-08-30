@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export interface IProfilerController {
-	findNext(): void;
-	findPrevious(): void;
-}
+import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
+
+export const CONTEXT_PROFILER_EDITOR = new RawContextKey<boolean>('inProfilerTableEditor', false);
+
+export const PROFILER_TABLE_COMMAND_SEARCH = 'profiler.table.action.search';

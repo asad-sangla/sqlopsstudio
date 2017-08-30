@@ -11,6 +11,8 @@ import { IListStyles } from 'vs/base/browser/ui/list/listWidget';
 import * as DOM from 'vs/base/browser/dom';
 import { Color } from 'vs/base/common/color';
 import { mixin } from 'vs/base/common/objects';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { Dimension } from 'vs/base/browser/builder';
 
 export interface ITableStyles extends IListStyles {
 	tableHeaderBackground?: Color;
@@ -18,7 +20,7 @@ export interface ITableStyles extends IListStyles {
 }
 
 function getDefaultOptions<T>(): Slick.GridOptions<T> {
-	return <Slick.GridOptions<T>> {
+	return <Slick.GridOptions<T>>{
 		syncColumnCellResize: true,
 		enableColumnReorder: false
 	};
@@ -30,8 +32,12 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 	private _data: TableView<T>;
 	private _styleElement: HTMLStyleElement;
 	private _idPrefix: string;
+	private _autoscroll: boolean;
+	private _onRowCountChangeListener: IDisposable;
+	private _container: HTMLElement;
+	private _tableContainer: HTMLElement;
 
-	constructor(container: HTMLElement, data?: Array<T> | TableView<T>, columns?: Slick.Column<T>[], options?: Slick.GridOptions<T>) {
+	constructor(parent: HTMLElement, data?: Array<T> | TableView<T>, columns?: Slick.Column<T>[], options?: Slick.GridOptions<T>) {
 		if (data instanceof TableView) {
 			this._data = data;
 		} else {
@@ -46,21 +52,16 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 
 		let newOptions = mixin(options || {}, getDefaultOptions<T>(), false);
 
-		let body = document.createElement('div');
-		body.className = 'monaco-table';
-		container.appendChild(body);
-		this._styleElement = DOM.createStyleSheet(body);
-		let gridElement = document.createElement('div');
-		gridElement.style.width = '100%';
-		gridElement.style.height = '100%';
-		body.appendChild(gridElement);
-		this._styleElement = DOM.createStyleSheet(body);
-		this._grid = new Slick.Grid<T>(gridElement, this._data, this._columns, newOptions);
-		this._idPrefix = gridElement.classList[0];
-		this._data.onRowCountChange(() => {
-			this._grid.updateRowCount();
-			this._grid.render();
-		});
+		this._container = document.createElement('div');
+		this._container.className = 'monaco-table';
+		parent.appendChild(this._container);
+		this._styleElement = DOM.createStyleSheet(this._container);
+		this._tableContainer = document.createElement('div');
+		this._container.appendChild(this._tableContainer);
+		this._styleElement = DOM.createStyleSheet(this._container);
+		this._grid = new Slick.Grid<T>(this._tableContainer, this._data, this._columns, newOptions);
+		this._idPrefix = this._tableContainer.classList[0];
+		this._onRowCountChangeListener = this._data.onRowCountChange(() => this._handleRowCountChange());
 		this._grid.onSort.subscribe((e, args) => {
 			this._data.sort(args);
 			this._grid.invalidate();
@@ -68,8 +69,29 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		});
 	}
 
+	private _handleRowCountChange() {
+		this._grid.updateRowCount();
+		this._grid.render();
+		if (this._autoscroll) {
+			this._grid.scrollRowIntoView(this._data.getLength() - 1, false);
+		}
+	}
+
 	set columns(columns: Slick.Column<T>[]) {
 		this._grid.setColumns(columns);
+	}
+
+	setData(data: Array<T>);
+	setData(data: TableView<T>);
+	setData(data: Array<T> | TableView<T>) {
+		if (data instanceof TableView) {
+			this._data = data;
+		} else {
+			this._data = new TableView<T>(data);
+		}
+		this._onRowCountChangeListener.dispose();
+		this._grid.setData(this._data, true);
+		this._onRowCountChangeListener = this._data.onRowCountChange(() => this._handleRowCountChange());
 	}
 
 	get columns(): Slick.Column<T>[] {
@@ -111,8 +133,20 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		this._grid.resizeCanvas();
 	}
 
+	layout(dimension: Dimension): void {
+		this._container.style.width = dimension.width + 'px';
+		this._container.style.height = dimension.height + 'px';
+		this._tableContainer.style.width = dimension.width + 'px';
+		this._tableContainer.style.height = dimension.height + 'px';
+		this.resizeCanvas();
+	}
+
 	autosizeColumns() {
 		this._grid.autosizeColumns();
+	}
+
+	set autoScroll(active: boolean) {
+		this._autoscroll = active;
 	}
 
 	style(styles: ITableStyles): void {

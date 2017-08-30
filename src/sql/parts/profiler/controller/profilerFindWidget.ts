@@ -29,6 +29,7 @@ import { ITheme, registerThemingParticipant, IThemeService } from 'vs/platform/t
 import { Color } from 'vs/base/common/color';
 import { editorFindRangeHighlight, editorFindMatch, editorFindMatchHighlight, activeContrastBorder, contrastBorder, inputBackground, editorWidgetBackground, inputActiveOptionBorder, widgetShadow, inputForeground, inputBorder, inputValidationInfoBackground, inputValidationInfoBorder, inputValidationWarningBackground, inputValidationWarningBorder, inputValidationErrorBackground, inputValidationErrorBorder, errorForeground } from 'vs/platform/theme/common/colorRegistry';
 import { IEditorAction } from 'vs/editor/common/editorCommon';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 const NLS_FIND_INPUT_LABEL = nls.localize('label.find', "Find");
 const NLS_FIND_INPUT_PLACEHOLDER = nls.localize('placeholder.find', "Find");
@@ -56,9 +57,14 @@ export interface ITableController {
 	layoutOverlayWidget(widget: IOverlayWidget): void;
 	addOverlayWidget(widget: IOverlayWidget): void;
 	getAction(id: string): IEditorAction;
+	onDidChangeConfiguration(fn: (e: IConfigurationChangedEvent) => void): IDisposable;
 }
 
-export class ProfilerFindWidget extends Widget implements IOverlayWidget, IHorizontalSashLayoutProvider {
+export interface IConfigurationChangedEvent {
+	layoutInfo?: boolean;
+}
+
+export class FindWidget extends Widget implements IOverlayWidget, IHorizontalSashLayoutProvider {
 	private static ID = 'editor.contrib.findWidget';
 	private _tableController: ITableController;
 	private _state: FindReplaceState;
@@ -134,6 +140,12 @@ export class ProfilerFindWidget extends Widget implements IOverlayWidget, IHoriz
 		};
 		checkEditorWidth();
 
+		this._register(this._tableController.onDidChangeConfiguration((e: IConfigurationChangedEvent) => {
+			if (e.layoutInfo) {
+				checkEditorWidth();
+			}
+		}));
+
 		this._findInputFocussed = CONTEXT_FIND_INPUT_FOCUSSED.bindTo(contextKeyService);
 		this._focusTracker = this._register(dom.trackFocus(this._findInput.inputBox.inputElement));
 		this._focusTracker.addFocusListener(() => {
@@ -152,7 +164,7 @@ export class ProfilerFindWidget extends Widget implements IOverlayWidget, IHoriz
 	// ----- IOverlayWidget API
 
 	public getId(): string {
-		return ProfilerFindWidget.ID;
+		return FindWidget.ID;
 	}
 
 	public getDomNode(): HTMLElement {
@@ -633,46 +645,3 @@ class SimpleButton extends Widget {
 		dom.toggleClass(this._domNode, className, shouldHaveIt);
 	}
 }
-
-// theming
-
-registerThemingParticipant((theme, collector) => {
-	function addBackgroundColorRule(selector: string, color: Color): void {
-		if (color) {
-			collector.addRule(`.monaco-editor ${selector} { background-color: ${color}; }`);
-		}
-	}
-
-	addBackgroundColorRule('.findMatch', theme.getColor(editorFindMatchHighlight));
-	addBackgroundColorRule('.currentFindMatch', theme.getColor(editorFindMatch));
-	addBackgroundColorRule('.findScope', theme.getColor(editorFindRangeHighlight));
-
-	let widgetBackground = theme.getColor(editorWidgetBackground);
-	addBackgroundColorRule('.find-widget', widgetBackground);
-
-	let widgetShadowColor = theme.getColor(widgetShadow);
-	if (widgetShadowColor) {
-		collector.addRule(`.monaco-editor .find-widget { box-shadow: 0 2px 8px ${widgetShadowColor}; }`);
-	}
-
-	let hcOutline = theme.getColor(activeContrastBorder);
-	if (hcOutline) {
-		collector.addRule(`.monaco-editor .findScope { border: 1px dashed ${hcOutline.transparent(0.4)}; }`);
-		collector.addRule(`.monaco-editor .currentFindMatch { border: 2px solid ${hcOutline}; padding: 1px; -moz-box-sizing: border-box; box-sizing: border-box; }`);
-		collector.addRule(`.monaco-editor .findMatch { border: 1px dotted ${hcOutline}; -moz-box-sizing: border-box; box-sizing: border-box; }`);
-	}
-	let hcBorder = theme.getColor(contrastBorder);
-	if (hcBorder) {
-		collector.addRule(`.monaco-editor .find-widget { border: 2px solid ${hcBorder}; }`);
-	}
-
-	let error = theme.getColor(errorForeground);
-	if (error) {
-		collector.addRule(`.monaco-editor .find-widget.no-results .matchesCount { color: ${error}; }`);
-	}
-
-	let border = theme.getColor('panel.border');
-	if (border) {
-		collector.addRule(`.monaco-editor .find-widget .monaco-sash { background-color: ${border}; width: 3px !important; margin-left: -4px;}`);
-	}
-});

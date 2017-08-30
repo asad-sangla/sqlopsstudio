@@ -7,6 +7,7 @@ import { Observer } from 'rxjs/Observer';
 
 import Event, { Emitter } from 'vs/base/common/event';
 import { TPromise } from 'vs/base/common/winjs.base';
+import * as types from 'vs/base/common/types';
 
 export interface IFindPosition {
 	x: number;
@@ -118,7 +119,7 @@ export class TableView<T extends Slick.SlickData> implements Slick.DataProvider<
 			} else {
 				++this._findIndex;
 			}
-				return TPromise.as(this._findArray[this._findIndex]);
+			return TPromise.as(this._findArray[this._findIndex]);
 		} else {
 			return TPromise.wrapError(new Error('no search running'));
 		}
@@ -137,12 +138,20 @@ export class TableView<T extends Slick.SlickData> implements Slick.DataProvider<
 		}
 	}
 
+	get currentFindPosition(): Thenable<IFindPosition> {
+		if (this._findArray && this._findArray.length !== 0) {
+			return TPromise.as(this._findArray[this._findIndex]);
+		} else {
+			return TPromise.wrapError(new Error('no search running'));
+		}
+	}
+
 	/* 1 indexed */
 	get findPosition(): number {
-		return this._findIndex + 1;
+		return types.isUndefinedOrNull(this._findIndex) ? 0 : this._findIndex + 1;
 	}
 
 	get findCount(): number {
-		return this._findArray.length;
+		return types.isUndefinedOrNull(this._findArray) ? 0 : this._findArray.length;
 	}
 }
