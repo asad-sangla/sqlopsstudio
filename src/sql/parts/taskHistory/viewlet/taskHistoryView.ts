@@ -5,14 +5,7 @@
 
 import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
-import { IActionRunner, IAction } from 'vs/base/common/actions';
-import dom = require('vs/base/browser/dom');
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { CollapsibleView, ICollapsibleViewOptions } from 'vs/workbench/parts/views/browser/views';
-import * as builder from 'vs/base/browser/builder';
-import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
 import { TaskHistoryRenderer } from 'sql/parts/taskHistory/viewlet/taskHistoryRenderer';
@@ -25,68 +18,39 @@ import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
-
-const $ = builder.$;
+import { ITree } from 'vs/base/parts/tree/browser/tree';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 
 /**
  * TaskHistoryView implements the dynamic tree view.
  */
-export class TaskHistoryView extends CollapsibleView {
+export class TaskHistoryView {
+	private _tree: ITree;
+	private _toDispose: IDisposable[] = [];
 
-	public messages: builder.Builder;
-
-	constructor(actionRunner: IActionRunner, settings: any,
-		@IInstantiationService private instantiationService: IInstantiationService,
-		@IContextMenuService contextMenuService: IContextMenuService,
-		@IKeybindingService keybindingService: IKeybindingService,
-		@IMessageService messageService: IMessageService,
+	constructor(
+		@IInstantiationService private _instantiationService: IInstantiationService,
 		@ITaskService private _taskService: ITaskService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
 		@IThemeService private _themeService: IThemeService
 	) {
-		super(<ICollapsibleViewOptions>{
-			id: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
-			name: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
-			actionRunner: actionRunner,
-			collapsed: false,
-			ariaHeaderLabel: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
-			sizing: undefined,
-			initialBodySize: undefined
-		}, keybindingService, contextMenuService);
-	}
-
-	/**
-	 * Render header of the view
-	 */
-	public renderHeader(container: HTMLElement): void {
-		const titleDiv = $('div.title').appendTo(container);
-		$('span').text(nls.localize('taskHistory', 'Task History')).appendTo(titleDiv);
-		super.renderHeader(container);
 	}
 
 	/**
 	 * Render the view body
 	 */
 	public renderBody(container: HTMLElement): void {
-		// Add div to display no connections found message and hide it by default
-		this.messages = $('div.title').appendTo(container);
-		$('span').text('No history task found.').appendTo(this.messages);
-		this.messages.hide();
-
-		this.treeContainer = super.renderViewTree(container);
-		dom.addClass(this.treeContainer, 'task-history-view');
-
-		this.tree = this.createTaskHistoryTree(this.treeContainer, this.instantiationService);
-		this.toDispose.push(this.tree.addListener('selection', (event) => this.onSelected(event)));
+		this._tree = this.createTaskHistoryTree(container, this._instantiationService);
+		this._toDispose.push(this._tree.addListener('selection', (event) => this.onSelected(event)));
 
 		// Theme styler
-		this.toDispose.push(attachListStyler(this.tree, this._themeService));
+		this._toDispose.push(attachListStyler(this._tree, this._themeService));
 
 		const self = this;
-		this.toDispose.push(this._taskService.onAddNewTask(args => {
+		this._toDispose.push(this._taskService.onAddNewTask(args => {
 			self.refreshTree();
 		}));
-		this.toDispose.push(this._taskService.onTaskComplete(task => {
+		this._toDispose.push(this._taskService.onTaskComplete(task => {
 			self.updateTask(task);
 		}));
 
@@ -116,51 +80,43 @@ export class TaskHistoryView extends CollapsibleView {
 			});
 	}
 
-	/**
-	 * Return actions for the view
-	 */
-	public getActions(): IAction[] {
-		return [];
-	}
-
 	private updateTask(task: TaskNode): void {
-		this.tree.refresh(task);
+		this._tree.refresh(task);
 	}
 
 	public refreshTree(): void {
-		this.messages.hide();
 		let selectedElement: any;
 		let targetsToExpand: any[];
 
 		// Focus
-		this.tree.DOMFocus();
+		this._tree.DOMFocus();
 
-		if (this.tree) {
-			let selection = this.tree.getSelection();
+		if (this._tree) {
+			let selection = this._tree.getSelection();
 			if (selection && selection.length === 1) {
 				selectedElement = <any>selection[0];
 			}
-			targetsToExpand = this.tree.getExpandedElements();
+			targetsToExpand = this._tree.getExpandedElements();
 		}
 
 		//Get the tree Input
 		let treeInput = this._taskService.getAllTasks();
 		if (treeInput) {
-			this.tree.setInput(treeInput).then(() => {
+			this._tree.setInput(treeInput).then(() => {
 				// Make sure to expand all folders that where expanded in the previous session
 				if (targetsToExpand) {
-					this.tree.expandAll(targetsToExpand);
+					this._tree.expandAll(targetsToExpand);
 				}
 				if (selectedElement) {
-					this.tree.select(selectedElement);
+					this._tree.select(selectedElement);
 				}
-				this.tree.getFocus();
+				this._tree.getFocus();
 			}, errors.onUnexpectedError);
 		}
 	}
 
 	private onSelected(event: any) {
-		let selection = this.tree.getSelection();
+		let selection = this._tree.getSelection();
 
 		if (selection && selection.length > 0 && (selection[0] instanceof TaskNode)) {
 			let task = <TaskNode>selection[0];
@@ -175,7 +131,29 @@ export class TaskHistoryView extends CollapsibleView {
 		}
 	}
 
+	/**
+	 * set the layout of the view
+	 */
+	public layout(height: number): void {
+		this._tree.layout(height);
+	}
+
+	/**
+	 * set the visibility of the view
+	 */
+	public setVisible(visible: boolean): void {
+		if (visible) {
+			this._tree.onVisible();
+		} else {
+			this._tree.onHidden();
+		}
+	}
+
+	/**
+	 * dispose the server tree view
+	 */
 	public dispose(): void {
-		super.dispose();
+		this._tree.dispose();
+		this._toDispose = dispose(this._toDispose);
 	}
 }

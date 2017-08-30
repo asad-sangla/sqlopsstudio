@@ -696,6 +696,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 				this._restorePlanColumn.unshift(checkboxSelectColumn.getColumnDefinition());
 				this._restorePlanTable.columns = this._restorePlanColumn;
 				this._restorePlanTable.registerPlugin(checkboxSelectColumn);
+				this._restorePlanTable.autosizeColumns();
 			}
 
 			let data = [];

@@ -4,20 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/serverTreeActions';
-import nls = require('vs/nls');
 import errors = require('vs/base/common/errors');
-import { IActionRunner, IAction } from 'vs/base/common/actions';
-import dom = require('vs/base/browser/dom');
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { CollapsibleView, ICollapsibleViewOptions } from 'vs/workbench/parts/views/browser/views';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { AddServerAction, AddServerGroupAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
+import { ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
-import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils, TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
@@ -26,65 +19,44 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
+import { ITree } from 'vs/base/parts/tree/browser/tree';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 
 const $ = builder.$;
 
 /**
  * ServerTreeview implements the dynamic tree view.
  */
-export class ServerTreeView extends CollapsibleView {
+export class ServerTreeView {
 
 	public messages: builder.Builder;
-	private addServerAction: IAction;
-	private addServerGroupAction: IAction;
-	private activeConnectionsFilterAction: ActiveConnectionsFilterAction;
 	private _buttonSection: builder.Builder;
-	private treeSelectionHandler: TreeSelectionHandler;
+	private _treeSelectionHandler: TreeSelectionHandler;
+	private _activeConnectionsFilterAction: ActiveConnectionsFilterAction;
+	private _tree: ITree;
+	private _toDispose: IDisposable[] = [];
 
-	constructor(actionRunner: IActionRunner, settings: any,
+	constructor(
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IInstantiationService private instantiationService: IInstantiationService,
-		@IContextMenuService contextMenuService: IContextMenuService,
-		@IKeybindingService keybindingService: IKeybindingService,
-		@IMessageService messageService: IMessageService,
+		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
 		@IThemeService private _themeService: IThemeService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
-
-		super(<ICollapsibleViewOptions>{
-			id: nls.localize({ key: 'registeredServersSection', comment: ['Servers Tree'] }, "Servers Section"),
-			name: nls.localize({ key: 'registeredServersSection', comment: ['Servers Tree'] }, "Servers Section"),
-			actionRunner: actionRunner,
-			collapsed: false,
-			ariaHeaderLabel: nls.localize({ key: 'taskHistorySection', comment: ['Task History Tree'] }, 'Task History Section'),
-			sizing: undefined,
-			initialBodySize: undefined
-		}, keybindingService, contextMenuService);
-
-		this.addServerAction = this.instantiationService.createInstance(AddServerAction,
-			AddServerAction.ID,
-			AddServerAction.LABEL);
-		this.addServerGroupAction = this.instantiationService.createInstance(AddServerGroupAction,
-			AddServerGroupAction.ID,
-			AddServerGroupAction.LABEL);
-		this.activeConnectionsFilterAction = this.instantiationService.createInstance(
+		this._activeConnectionsFilterAction = this._instantiationService.createInstance(
 			ActiveConnectionsFilterAction,
 			ActiveConnectionsFilterAction.ID,
 			ActiveConnectionsFilterAction.LABEL,
 			this);
-		this.treeSelectionHandler = this.instantiationService.createInstance(TreeSelectionHandler);
+		this._treeSelectionHandler = this._instantiationService.createInstance(TreeSelectionHandler);
 	}
 
 	/**
-	 * Render header of the view
+	 * Get active connections filter action
 	 */
-	public renderHeader(container: HTMLElement): void {
-		const titleDiv = $('div.title').appendTo(container);
-		$('span').text(nls.localize('registeredServers', "Server Groups")).appendTo(titleDiv);
-		super.renderHeader(container);
+	public get activeConnectionsFilterAction(): ActiveConnectionsFilterAction {
+		return this._activeConnectionsFilterAction;
 	}
-
 	/**
 	 * Render the view body
 	 */
@@ -103,35 +75,32 @@ export class ServerTreeView extends CollapsibleView {
 			});
 		}
 
-		this.treeContainer = super.renderViewTree(container);
-		dom.addClass(this.treeContainer, 'servers-view');
-
-		this.tree = TreeCreationUtils.createRegisteredServersTree(this.treeContainer, this.instantiationService);
-		this.toDispose.push(this.tree.addListener('selection', (event) => this.onSelected(event)));
+		this._tree = TreeCreationUtils.createRegisteredServersTree(container, this._instantiationService);
+		this._toDispose.push(this._tree.addListener('selection', (event) => this.onSelected(event)));
 
 		// Theme styler
-		this.toDispose.push(attachListStyler(this.tree, this._themeService));
+		this._toDispose.push(attachListStyler(this._tree, this._themeService));
 
 		const self = this;
 		// Refresh Tree when these events are emitted
-		this.toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {
+		this._toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {
 			if (this._buttonSection) {
 				this._buttonSection.getHTMLElement().style.display = 'none';
 			}
 			self.refreshTree();
 		})
 		);
-		this.toDispose.push(this._connectionManagementService.onDeleteConnectionProfile(() => {
+		this._toDispose.push(this._connectionManagementService.onDeleteConnectionProfile(() => {
 			self.refreshTree();
 		})
 		);
-		this.toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
+		this._toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
 			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
 		})
 		);
 
 		if (this._objectExplorerService && this._objectExplorerService.onUpdateObjectExplorerNodes) {
-			this.toDispose.push(this._objectExplorerService.onUpdateObjectExplorerNodes(args => {
+			this._toDispose.push(this._objectExplorerService.onUpdateObjectExplorerNodes(args => {
 				if (args.errorMessage) {
 					this.showError(args.errorMessage);
 				}
@@ -147,13 +116,6 @@ export class ServerTreeView extends CollapsibleView {
 		if (this._errorMessageService) {
 			this._errorMessageService.showDialog(Severity.Error, '', errorMessage);
 		}
-	}
-
-	/**
-	 * Return actions for the view
-	 */
-	public getActions(): IAction[] {
-		return [this.addServerAction, this.addServerGroupAction, this.activeConnectionsFilterAction];
 	}
 
 	private getConnectionInTreeInput(connectionId: string): ConnectionProfile {
@@ -175,10 +137,10 @@ export class ServerTreeView extends CollapsibleView {
 	private onObjectExplorerSessionCreated(connection: IConnectionProfile) {
 		var conn = this.getConnectionInTreeInput(connection.id);
 		if (conn) {
-			this.tree.refresh(conn).then(() => {
-				return this.tree.expand(conn).then(() => {
-					return this.tree.reveal(conn, 0.5).then(() => {
-						this.treeSelectionHandler.onTreeActionStateChange(false);
+			this._tree.refresh(conn).then(() => {
+				return this._tree.expand(conn).then(() => {
+					return this._tree.reveal(conn, 0.5).then(() => {
+						this._treeSelectionHandler.onTreeActionStateChange(false);
 					});
 				});
 			}).done(null, errors.onUnexpectedError);
@@ -200,7 +162,7 @@ export class ServerTreeView extends CollapsibleView {
 			var conn = this.getConnectionInTreeInput(connection.id);
 			if (conn) {
 				this._objectExplorerService.deleteObjectExplorerNode(conn);
-				this.tree.refresh(conn);
+				this._tree.refresh(conn);
 			}
 		}
 	}
@@ -208,7 +170,7 @@ export class ServerTreeView extends CollapsibleView {
 	public refreshTree(): void {
 		this.messages.hide();
 		this.clearOtherActions();
-		TreeUpdateUtils.registeredServerUpdate(this.tree, this._connectionManagementService);
+		TreeUpdateUtils.registeredServerUpdate(this._tree, this._connectionManagementService);
 	}
 
 	/**
@@ -264,12 +226,12 @@ export class ServerTreeView extends CollapsibleView {
 				this.messages.domFocus();
 			}
 			let treeInput = filteredResults[0];
-			this.tree.setInput(treeInput).done(() => {
+			this._tree.setInput(treeInput).done(() => {
 				if (this.messages.isHidden()) {
-					self.tree.getFocus();
-					self.tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
+					self._tree.getFocus();
+					self._tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
 				} else {
-					self.tree.clearFocus();
+					self._tree.clearFocus();
 				}
 			}, errors.onUnexpectedError);
 		} else {
@@ -297,12 +259,12 @@ export class ServerTreeView extends CollapsibleView {
 		// Add all connections to tree root and set tree input
 		let treeInput = new ConnectionProfileGroup('searchroot', undefined, 'searchroot', undefined, undefined);
 		treeInput.addConnections(filteredResults);
-		this.tree.setInput(treeInput).done(() => {
+		this._tree.setInput(treeInput).done(() => {
 			if (this.messages.isHidden()) {
-				self.tree.getFocus();
-				self.tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
+				self._tree.getFocus();
+				self._tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
 			} else {
-				self.tree.clearFocus();
+				self._tree.clearFocus();
 			}
 		}, errors.onUnexpectedError);
 	}
@@ -349,18 +311,40 @@ export class ServerTreeView extends CollapsibleView {
 	 */
 	private clearOtherActions(view?: string) {
 		if (!view) {
-			this.activeConnectionsFilterAction.isSet = false;
+			this._activeConnectionsFilterAction.isSet = false;
 		}
 		if (view === 'recent') {
-			this.activeConnectionsFilterAction.isSet = false;
+			this._activeConnectionsFilterAction.isSet = false;
 		}
 	}
 
 	private onSelected(event: any): void {
-		this.treeSelectionHandler.onTreeSelect(event, this.tree, this._connectionManagementService, this._objectExplorerService);
+		this._treeSelectionHandler.onTreeSelect(event, this._tree, this._connectionManagementService, this._objectExplorerService);
 	}
 
+	/**
+	 * set the layout of the view
+	 */
+	public layout(height: number): void {
+		this._tree.layout(height);
+	}
+
+	/**
+	 * set the visibility of the view
+	 */
+	public setVisible(visible: boolean): void {
+		if (visible) {
+			this._tree.onVisible();
+		} else {
+			this._tree.onHidden();
+		}
+	}
+
+	/**
+	 * dispose the server tree view
+	 */
 	public dispose(): void {
-		super.dispose();
+		this._tree.dispose();
+		this._toDispose = dispose(this._toDispose);
 	}
 }

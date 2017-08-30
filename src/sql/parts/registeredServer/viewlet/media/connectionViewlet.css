@@ -28,6 +28,10 @@
 	background-position: 50% !important;
 }
 
+.server-explorer-viewlet .object-explorer-view {
+	height: calc(100% - 36px);
+}
+
 .server-explorer-viewlet .server-group {
 	height: 38px;
 	line-height: 38px;

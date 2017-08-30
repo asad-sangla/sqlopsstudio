@@ -19,19 +19,15 @@ import { isPromiseCanceledError } from 'vs/base/common/errors';
 import Severity from 'vs/base/common/severity';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TaskHistoryView } from 'sql/parts/taskHistory/viewlet/taskHistoryView';
-import { SplitView, IView } from 'vs/base/browser/ui/splitview/splitview';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 
 export const VIEWLET_ID = 'workbench.view.taskHistory';
 
 export class TaskHistoryViewlet extends Viewlet {
 
-	private root: HTMLElement;
-	private toDispose: IDisposable[] = [];
-	private views: IView[];
-	private taskHistoryView: TaskHistoryView;
-	private viewletContainer: Builder;
-	private splitView: SplitView;
+	private _root: HTMLElement;
+	private _toDisposeViewlet: IDisposable[] = [];
+	private _taskHistoryView: TaskHistoryView;
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -42,7 +38,6 @@ export class TaskHistoryViewlet extends Viewlet {
 		@IMessageService private messageService: IMessageService
 	) {
 		super(VIEWLET_ID, telemetryService, themeService);
-		this.views = [];
 	}
 
 	private onError(err: any): void {
@@ -54,39 +49,26 @@ export class TaskHistoryViewlet extends Viewlet {
 
 	public create(parent: Builder): TPromise<void> {
 		super.create(parent);
-		this.root = parent.getHTMLElement();
-		this.taskHistoryView = this._instantiationService.createInstance(TaskHistoryView, this.getActionRunner(), {});
-		parent.div({ class: 'task-history-viewlet' }, (viewletContainer) => {
-			this.viewletContainer = viewletContainer;
-			viewletContainer.div({}, (splitviewContainer) => {
-				this.splitView = new SplitView(splitviewContainer.getHTMLElement());
-				this.splitView.addView(this.taskHistoryView);
-				this.taskHistoryView.create().then(() => {
-					this.updateTitleArea();
-					this.setVisible(this.isVisible()).then(() => this.focus());
-				});
-				this.taskHistoryView.setVisible(true);
-				this.views.push(this.taskHistoryView);
-			});
-		});
+		this._root = parent.getHTMLElement();
+		this._taskHistoryView = this._instantiationService.createInstance(TaskHistoryView);
+		this._taskHistoryView.renderBody(parent.getHTMLElement());
+
 		return TPromise.as(null);
 	}
 
 	public setVisible(visible: boolean): TPromise<void> {
 		return super.setVisible(visible).then(() => {
-			if (visible) {
-				this.taskHistoryView.setVisible(visible);
-			}
+			this._taskHistoryView.setVisible(visible);
 		});
 	}
 
 	public focus(): void {
-		this.taskHistoryView.focus();
+		super.focus();
 	}
 
 	public layout({ height, width }: Dimension): void {
-		this.splitView.layout(height);
-		toggleClass(this.root, 'narrow', width <= 350);
+		this._taskHistoryView.layout(height);
+		toggleClass(this._root, 'narrow', width <= 350);
 	}
 
 	public getOptimalWidth(): number {
@@ -94,7 +76,7 @@ export class TaskHistoryViewlet extends Viewlet {
 	}
 
 	public dispose(): void {
-		this.toDispose = dispose(this.toDispose);
+		this._toDisposeViewlet = dispose(this._toDisposeViewlet);
 	}
 
 }
