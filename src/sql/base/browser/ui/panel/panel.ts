@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import 'vs/css!./media/panel';
 
 import { IThemable } from 'vs/platform/theme/common/styler';
 import * as objects from 'vs/base/common/objects';
@@ -11,6 +10,7 @@ import { Dimension, Builder } from 'vs/base/browser/builder';
 import { addDisposableListener, EventType } from 'vs/base/browser/dom';
 import { IAction, IActionRunner, Action, IActionChangeEvent, ActionRunner } from 'vs/base/common/actions';
 import { IActionOptions, ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
+import './panelStyles';
 
 export interface IPanelStyles {
 
@@ -29,6 +29,7 @@ export interface IPanelTab {
 
 interface IInternalPanelTab extends IPanelTab {
 	header: HTMLElement;
+	label: HTMLElement;
 }
 
 export type PanelTabIdentifier = string;
@@ -96,6 +97,7 @@ export class TabbedPanel implements IThemable {
 		addDisposableListener(tabElement, EventType.CLICK, (e) => this.showTab(tab.identifier));
 		this._tabList.appendChild(tabElement);
 		tab.header = tabElement;
+		tab.label = tabLabel;
 	}
 
 	public showTab(id: PanelTabIdentifier): void {
@@ -104,13 +106,13 @@ export class TabbedPanel implements IThemable {
 		}
 
 		if (this._shownTab) {
-			this._tabMap.get(this._shownTab).header.classList.remove('active');
+			this._tabMap.get(this._shownTab).label.classList.remove('active');
 		}
 
 		this._shownTab = id;
 		new Builder(this._body).empty();
 		let tab = this._tabMap.get(this._shownTab);
-		tab.header.classList.add('active');
+		tab.label.classList.add('active');
 		tab.view.render(this._body);
 		this._onTabChange.fire(id);
 		if (this._currentDimensions) {

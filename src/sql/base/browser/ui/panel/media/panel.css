@@ -23,8 +23,6 @@
 }
 
 .tabbedPanel .tabList > .tab {
-	border-bottom: none;
-	color: rgba(231, 231, 231, 0.5);
 	cursor: pointer;
 }
 
@@ -36,21 +34,20 @@
 	padding-bottom: 4px;
 }
 
-.tabbedPanel .tabList > .tab.active > .tabLabel {
-	color: #e7e7e7;
-	border-bottom: 1px solid rgba(128, 128, 128, 0.35);
-}
-
 .tabbedPanel .composite.title .title-actions .action-label {
 	display: block;
-    height: 35px;
-    line-height: 35px;
-    min-width: 28px;
-    background-size: 16px;
-    background-position: center center;
-    background-repeat: no-repeat;
+	height: 35px;
+	line-height: 35px;
+	min-width: 28px;
+	background-size: 16px;
+	background-position: center center;
+	background-repeat: no-repeat;
 }
 
 .composite.title .title-actions {
 	flex: 1;
+}
+
+.tab > .tabLabel.active {
+	border-bottom: 1px solid;
 }

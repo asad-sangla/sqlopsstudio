@@ -2,10 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import 'vs/css!./media/panel';
 
 import { Component, ContentChildren, QueryList, AfterContentInit, Inject, forwardRef, NgZone, OnInit, Input } from '@angular/core';
+
 import { TabComponent } from './tab.component';
+import './panelStyles';
 
 import * as types from 'vs/base/common/types';
 import { mixin } from 'vs/base/common/objects';
@@ -27,8 +28,8 @@ const defaultOptions: IPanelOptions = {
 		<div class="tabbedPanel fullsize">
 			<div *ngIf="!options.showTabsWhenOne ? _tabs.length !== 1 : true" class="composite title">
 				<div class="tabList">
-					<div *ngFor="let tab of _tabs" class="tab" [class.active]="tab.active" (click)="selectTab(tab)">
-						<a class="tabLabel">
+					<div *ngFor="let tab of _tabs" class="tab" (click)="selectTab(tab)">
+						<a class="tabLabel" [class.active]="tab.active">
 							{{tab.title}}
 						</a>
 					</div>
@@ -45,7 +46,7 @@ export class PanelComponent implements AfterContentInit, OnInit {
 	@ContentChildren(TabComponent) private _tabs: QueryList<TabComponent>;
 	private _activeTab: TabComponent;
 
-	constructor(@Inject(forwardRef(() => NgZone)) private _zone: NgZone) { }
+	constructor( @Inject(forwardRef(() => NgZone)) private _zone: NgZone) { }
 
 	ngOnInit(): void {
 		this.options = mixin(this.options || {}, defaultOptions, false);
