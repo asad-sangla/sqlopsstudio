@@ -7,7 +7,7 @@ import { defaultChartConfig, IPointDataSet, ChartType } from 'sql/parts/dashboar
 import LineChart, { ILineConfig } from './lineChart.component';
 
 import { mixin } from 'vs/base/common/objects';
-import { Color, RGBA } from 'vs/base/common/color';
+import { Color } from 'vs/base/common/color';
 
 const defaultTimeSeriesConfig = mixin(JSON.parse(JSON.stringify(defaultChartConfig)), { dataType: 'point', dataDirection: 'horizontal' }) as ILineConfig;
 
@@ -31,9 +31,6 @@ export default class TimeSeriesChart extends LineChart {
 						autoSkip: false,
 						maxRotation: 45,
 						minRotation: 45
-					},
-					gridLines: {
-						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
 					}
 				}],
 
@@ -42,9 +39,6 @@ export default class TimeSeriesChart extends LineChart {
 					scaleLabel: {
 						display: true,
 						labelString: yLabel
-					},
-					gridLines: {
-						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
 					}
 				}]
 			}

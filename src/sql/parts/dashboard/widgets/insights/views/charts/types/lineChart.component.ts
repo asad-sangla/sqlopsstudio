@@ -6,9 +6,7 @@
 import { ChartType, customMixin, IChartConfig, defaultChartConfig, IDataSet, IPointDataSet } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 import BarChart from './barChart.component';
 import { memoize, unmemoize } from 'sql/common/decorators';
-
 import { mixin } from 'sql/base/common/objects';
-import { Color, RGBA } from 'vs/base/common/color';
 
 export enum DataType {
 	Number = 'number',
@@ -81,9 +79,6 @@ export default class LineChart extends BarChart {
 					scaleLabel: {
 						display: true,
 						labelString: xLabel
-					},
-					gridLines: {
-						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
 					}
 				}],
 
@@ -92,9 +87,6 @@ export default class LineChart extends BarChart {
 					scaleLabel: {
 						display: true,
 						labelString: yLabel,
-					},
-					gridLines: {
-						color: Color.fromRGBA(new RGBA(143, 143, 143, 150))
 					}
 				}]
 			}

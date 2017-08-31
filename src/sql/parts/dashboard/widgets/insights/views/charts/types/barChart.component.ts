@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ChartInsight, ChartType, customMixin } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
+import { mixin } from 'sql/base/common/objects';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
-import { mixin } from 'sql/base/common/objects';
+import { editorLineNumbers } from 'vs/editor/common/view/editorColorRegistry';
 
 export default class BarChart extends ChartInsight {
 	protected readonly chartType: ChartType = ChartType.Bar;
@@ -22,6 +23,9 @@ export default class BarChart extends ChartInsight {
 					},
 					ticks: {
 						fontColor: e.getColor(colors.editorForeground)
+					},
+					gridLines: {
+						color: e.getColor(editorLineNumbers)
 					}
 				}],
 				yAxes: [{
@@ -30,6 +34,9 @@ export default class BarChart extends ChartInsight {
 					},
 					ticks: {
 						fontColor: e.getColor(colors.editorForeground)
+					},
+					gridLines: {
+						color: e.getColor(editorLineNumbers)
 					}
 				}]
 			}
