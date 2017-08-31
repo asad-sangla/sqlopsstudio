@@ -16,6 +16,7 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
 
 export class BackupDialog extends Modal {
 	private _bodyBuilder: Builder;
@@ -23,6 +24,7 @@ export class BackupDialog extends Modal {
 	private _backupTitle: string;
 	private _uniqueSelector: string;
 	private _moduleRef: any;
+	private static _connectionUniqueId: number = 0;
 
 	constructor(
 		@IBootstrapService private _bootstrapService: IBootstrapService,
@@ -88,7 +90,13 @@ export class BackupDialog extends Modal {
 	 * Open the dialog
 	 */
 	public async open(connection: IConnectionProfile) {
-		let uri = this._connectionManagementService.getConnectionId(connection);
+		let uri = this._connectionManagementService.getConnectionId(connection)
+			+ ProviderConnectionInfo.idSeparator
+			+ 'backupId'
+			+ ProviderConnectionInfo.nameValueSeparator
+			+ BackupDialog._connectionUniqueId;
+
+		BackupDialog._connectionUniqueId++;
 
 		// Create connection if needed
 		if (!this._connectionManagementService.isConnected(uri)) {

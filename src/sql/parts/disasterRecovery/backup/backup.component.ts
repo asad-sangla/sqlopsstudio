@@ -399,6 +399,7 @@ export class BackupComponent{
 
 	private onCancel(): void {
         this._disasterRecoveryUiService.closeBackup();
+        this._bootstrapService.connectionManagementService.disconnect(this._uri);
     }
 
     private onChangeTlog(): void {
