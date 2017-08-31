@@ -26,7 +26,7 @@ export abstract class EditDataAction extends Action {
 	private _classes: string[];
 
 	constructor(protected editor: EditDataEditor, id: string, enabledClass: string,
-	 @IConnectionManagementService private _connectionManagementService: IConnectionManagementService) {
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService) {
 		super(id);
 		this.enabled = true;
 		this.setClass(enabledClass);
@@ -80,7 +80,7 @@ export class RefreshTableAction extends EditDataAction {
 			this._queryModelService.disposeEdit(input.uri).then((result) => {
 				this._queryModelService.initializeEdit(input.uri, input.schemaName, input.tableName, input.objectType, input.rowLimit);
 			}, error => {
-				this._messageService.show(Severity.Error, nls.localize('disposeEditFailure', 'Dipose Edit Failed With Error: ') + error);
+				this._messageService.show(Severity.Error, nls.localize('disposeEditFailure', 'Dispose Edit Failed With Error: ') + error);
 			});
 		}
 		return TPromise.as(null);
@@ -163,7 +163,7 @@ export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem
 
 	public render(container: HTMLElement): void {
 		this.container = container;
-		this.selectBox.render(dom.append(container, $('.configuration.listDatabasesSelectBox')));
+		this.selectBox.render(dom.append(container, $('.configuration.listDatabasesSelectBox')));
 	}
 
 	public setActionContext(context: any): void {
@@ -198,7 +198,7 @@ export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem
 	private _registerListeners(): void {
 		this.toDispose.push(this.selectBox.onDidSelect(selection => {
 			this._currentOptionsIndex = this._options.findIndex(x => x === selection.selected);
-			this._editor.editDataInput.onRowDropDownSet(Number(selection));
+			this._editor.editDataInput.onRowDropDownSet(Number(selection.selected));
 		}));
 	}
 }
