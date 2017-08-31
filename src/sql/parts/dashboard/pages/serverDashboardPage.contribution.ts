@@ -93,6 +93,7 @@ let defaultVal = [
 		}
 	},
 	{
+		provider: 'MSSQL',
 		widget: {
 			'insights-widget': {
 				type: {
