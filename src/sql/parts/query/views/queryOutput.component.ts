@@ -20,41 +20,23 @@ import { QueryPlanComponent,  } from 'sql/parts/queryPlan/queryPlan.component';
 import { TopOperationsComponent } from 'sql/parts/queryPlan/topOperations.component';
 import { ChartViewerComponent } from 'sql/parts/grid/views/query/chartViewer.component';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
+import { PanelComponent, IPanelOptions } from 'sql/base/browser/ui/panel/panel.component';
 
-import { TabPanel, TabView } from 'primeng/primeng';
-
-import * as dom from 'vs/base/browser/dom';
+import * as nls from 'vs/nls';
 import { IDisposable } from 'vs/base/common/lifecycle';
-const $ = dom.$;
 
 export const QUERY_OUTPUT_SELECTOR: string = 'query-output-component';
 
 declare type PaneType = 'messages' | 'results';
-
-interface TabInfo {
-	name: string;
-	header: string;
-	index?: number;
-	visible?: boolean;
-}
-
-const queryOutputTabName = 'queryOutputTab';
-const resultsTabName = 'queryDiv';
-const queryPlanTabName = 'queryPlanDiv';
-const topOperationsTabName = 'topOperationsDiv';
-const chartViewerTabName = 'chartViewerDiv';
 
 @Component({
 	selector: QUERY_OUTPUT_SELECTOR,
 	templateUrl: require.toUrl('sql/parts/query/views/queryOutput.template.html'),
 	styleUrls: [require.toUrl('sql/media/primeng.css')]
 })
-
 export class QueryOutputComponent implements OnInit, OnDestroy {
 
 	@ViewChild('queryComponent') queryComponent: QueryComponent;
-
-	@ViewChild('tabComponent') tabComponent: TabView;
 
 	@ViewChild('queryPlanComponent') queryPlanComponent: QueryPlanComponent;
 
@@ -62,12 +44,25 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 
 	@ViewChild('chartViewerComponent') chartViewerComponent: ChartViewerComponent;
 
+	@ViewChild(PanelComponent) private _panel: PanelComponent;
+
+	// tslint:disable:no-unused-variable
+	private readonly queryComponentTitle: string = nls.localize('results', 'Results');
+	private readonly queryPlanTitle: string = nls.localize('queryPlan', 'Query Plan');
+	private readonly topOperationsTitle: string = nls.localize('topOperations', 'Top Operations');
+	private readonly chartViewerTitle: string = nls.localize('chartViewer', 'Chart Viewer');
+	// tslint:enable:no-unused-variable
+
+	private hasQueryPlan = false;
+	private showChartView = false;
+
+	// tslint:disable-next-line:no-unused-variable
+	private readonly panelOpt: IPanelOptions = {
+		showTabsWhenOne: false
+	};
 
 	public queryParameters: QueryComponentParams;
 
-	public activeTab: number = 0;
-
-	private _tabIndexMap = new Map<string,TabInfo>();
 	private _disposables: Array<IDisposable> = [];
 
 	constructor(
@@ -76,19 +71,6 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 		@Inject(BOOTSTRAP_SERVICE_ID) bootstrapService: IBootstrapService
 	) {
 		this.queryParameters = bootstrapService.getBootstrapParams(el.nativeElement.tagName);
-		let tabInfo: TabInfo[] = [
-			{ name: resultsTabName, header: 'Results'},
-			{ name: queryPlanTabName, header: 'Query Plan'},
-			{ name: topOperationsTabName, header: 'Top Operations'},
-			{ name: chartViewerTabName, header: 'Chart View'},
-		];
-		tabInfo.forEach((info) => {
-			info.index = -1;
-			info.visible = false;
-			this._tabIndexMap.set(info.name, info);
-		});
-		// Ensure results tab is always set as it's always in the list of tabs
-		this._tabIndexMap.get(resultsTabName).index = 0;
 	}
 
 	/**
@@ -96,133 +78,22 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 	 */
 	public ngOnInit(): void {
 		this._disposables.push(toDisposableSubscription(this.queryComponent.queryPlanAvailable.subscribe((xml) => {
-			let queryPlanTab = this._tabIndexMap.get(queryPlanTabName);
-			if (!queryPlanTab.visible) {
-				queryPlanTab.visible = true;
-				this.deselectAllTabs();
-				this.ensureTabCreated(queryPlanTab);
-				this.ensureTabCreated(this._tabIndexMap.get(topOperationsTabName));
-			}
-
-			this.enterTabMode();
-			this.onActiveTabChanged(this._tabIndexMap.get(queryPlanTabName).index);
+			this.hasQueryPlan = true;
+			this._cd.detectChanges();
 			this.queryPlanComponent.planXml = xml;
 			this.topOperationsComponent.planXml = xml;
-		})));
-
-		this._disposables.push(toDisposableSubscription(this.queryComponent.queryExecutionStatus.subscribe((status) => {
-			if (status === 'start') {
-				this.enterResultsOnlyMode();
-			}
+			this._panel.selectTab('queryPlan');
 		})));
 
 		this._disposables.push(toDisposableSubscription(this.queryComponent.showChartRequested.subscribe((dataSet) => {
+			this.showChartView = true;
+			this._cd.detectChanges();
 			this.chartViewerComponent.dataSet = dataSet;
-
-			let chartViewerTab = this._tabIndexMap.get(chartViewerTabName);
-			if (!chartViewerTab.visible) {
-				chartViewerTab.visible = true;
-				this.deselectAllTabs();
-				this.ensureTabCreated(chartViewerTab);
-			}
-			this.enterTabMode();
-			this.onActiveTabChanged(this._tabIndexMap.get(chartViewerTabName).index);
+			this._panel.selectTab('chartView');
 		})));
-	}
-
-	private deselectAllTabs(): void {
-		for (let i = 0; i < this.tabComponent.tabs.length; ++i) {
-			this.tabComponent.tabs[i].selected = false;
-		}
-	}
-
-	/**
-	 * Sets all tabs invisible and resets their tab index
-	 *
-	 * @private
-	 * @memberof QueryOutputComponent
-	 */
-	private resetAllTabs(): void {
-		this._tabIndexMap.forEach((info) => {
-			info.visible = false;
-			info.index = -1;
-		});
-	}
-
-	private ensureTabCreated(info: TabInfo): void {
-		let panel = this.tabComponent.tabs.find( tab => tab.header === info.header);
-		if (!panel) {
-			let tab: TabPanel = new TabPanel();
-			tab.header = info.header;
-			tab.selected = info.visible;
-			tab.disabled = false;
-			tab.closable = false;
-			tab.closed = false;
-			this.tabComponent.tabs.push(tab);
-			info.index = this.tabComponent.tabs.length - 1;
-		}
 	}
 
 	public ngOnDestroy(): void {
 		this._disposables.forEach(i => i.dispose());
-	}
-
-	public handleTabChange(e) {
-		this.onActiveTabChanged(e.index);
-	}
-
-	private onActiveTabChanged(index: number): void {
-		let activeTabInfo: TabInfo = this.getTabInfoForIndex(index);
-		if (activeTabInfo === undefined) {
-			throw Error('Active tab is not in known tab range');
-		}
-		this.activeTab = index;
-		let activeTabName = activeTabInfo.name;
-
-		// Disable other tabs, enable the active tab
-		this._tabIndexMap.forEach(tabInfo => {
-			let tabEl = document.getElementById(tabInfo.name);
-			if (tabEl) {
-				tabEl.style.display = (activeTabName === tabInfo.name) ? 'block' : 'none';
-			}
-		});
-		this.tabComponent.tabs[index].selected = true;
-		this._cd.detectChanges();
-	}
-
-	private getTabInfoForIndex(index: number): TabInfo {
-		let info: TabInfo = undefined;
-		this._tabIndexMap.forEach(value => {
-			if (value.index === index) {
-				info = value;
-			}
-		});
-		return info;
-	}
-
-	private enterTabMode(): void {
-		document.getElementById(queryOutputTabName).style.display = 'block';
-		let queryComp = document.getElementById('queryComp');
-		dom.addClass(queryComp, 'headersVisible');
-	}
-
-	private enterResultsOnlyMode(): void {
-		// hide the tab control
-		document.getElementById('queryOutputTab').style.display = 'none';
-		let queryComp = document.getElementById('queryComp');
-		dom.removeClass(queryComp, 'headersVisible');
-
-		// reset back to a single tab for the results
-		if (this.tabComponent && this.tabComponent.tabs) {
-			if (this.tabComponent.tabs.length > 1) {
-				this.resetAllTabs();
-				this.tabComponent.tabs = [this.tabComponent.tabs[0]];
-			}
-			this.tabComponent.tabs[0].selected = true;
-			let tabInfo: TabInfo = this._tabIndexMap.get(resultsTabName);
-			tabInfo.index = 0;
-			tabInfo.visible = true;
-			this.onActiveTabChanged(tabInfo.index);
-		}
 	}
 }

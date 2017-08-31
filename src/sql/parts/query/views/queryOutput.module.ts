@@ -26,6 +26,8 @@ import { TopOperationsComponent } from 'sql/parts/queryPlan/topOperations.compon
 
 import { ChartViewerComponent } from 'sql/parts/grid/views/query/chartViewer.component';
 
+import { PanelModule } from 'sql/base/browser/ui/panel/panel.module';
+
 /* Directives */
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { MouseDownDirective } from 'sql/parts/grid/directives/mousedown.directive';
@@ -45,7 +47,8 @@ let insightComponents = Registry.as<IInsightRegistry>(Extensions.InsightContribu
 		ButtonModule,
 		DropdownModule,
 		BrowserAnimationsModule,
-		ChartsModule
+		ChartsModule,
+		PanelModule
 	],
 	declarations: [
 		...baseComponents,
