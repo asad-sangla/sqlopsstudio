@@ -632,7 +632,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public getConnectionId(connectionProfile: IConnectionProfile): string {
-		return Utils.generateUri(connectionProfile);
+		return this._connectionStatusManager.getOriginalOwnerUri(Utils.generateUri(connectionProfile));
 	}
 
 	/**
