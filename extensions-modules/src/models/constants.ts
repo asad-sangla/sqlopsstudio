@@ -14,7 +14,6 @@ export const extensionDeactivated: string = 'de-activated.';
 export const configEnabled: string = 'enabled';
 export const configUseDebugSource = 'useDebugSource';
 export const serviceConfigKey = 'service';
-export const packageDirConfigKey = 'packageDir';
 export const executableFilesConfigKey = 'executableFiles';
 export const versionConfigKey = 'version';
 export const downloadUrlConfigKey = 'downloadUrl';

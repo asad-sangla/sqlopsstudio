@@ -5,6 +5,7 @@ import vscode = require('vscode');
 import Constants = require('./constants');
 import {ExtensionContext} from 'vscode';
 import fs = require('fs');
+var path = require('path');
 
 // CONSTANTS //////////////////////////////////////////////////////////////////////////////////////
 const msInH = 3.6e6;
@@ -244,4 +245,26 @@ export function parseNumAsTimeString(value: number): string {
     let rs = hs + ':' + ms + ':' + ss;
 
     return tempVal > 0 ? rs + '.' + mss : rs;
+}
+
+
+// The function is a duplicate of carbon\src\paths.js. IT would be better to import path.js but it doesn't
+// work for now because the extension is running in different process.
+export function getAppDataPath() {
+    var platform = process.platform;
+	switch (platform) {
+		case 'win32': return process.env['APPDATA'] || path.join(process.env['USERPROFILE'], 'AppData', 'Roaming');
+		case 'darwin': return path.join(os.homedir(), 'Library', 'Application Support');
+		case 'linux': return process.env['XDG_CONFIG_HOME'] || path.join(os.homedir(), '.config');
+		default: throw new Error('Platform not supported');
+	}
+}
+export function getDefaultLogLocation() {
+    var platform = process.platform;
+    let rootFolderName: string = '.carbon';
+    if (platform === 'win32') {
+        rootFolderName = 'carbon';
+    }
+
+    return path.join(getAppDataPath(), rootFolderName);
 }

@@ -15,7 +15,6 @@ export interface IStatusView {
 export interface IConfig {
     getDownloadUrl(): string;
     getInstallDirectory(): string;
-    getPackageDirectory(): string;
     getExecutableFiles(): string[];
     getPackageVersion(): string;
     getExtensionConfig(key: string, defaultValue?: any): any;

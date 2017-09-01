@@ -1,7 +1,7 @@
 {
 	"service": {
 		"downloadUrl": "https://github.com/Microsoft/sqltoolsservice/releases/download/v{#version#}/microsoft.sqltools.servicelayer-{#fileName#}",
-		"version": "1.1.0-alpha.26",
+		"version": "1.1.0-alpha.31",
 			"downloadFileNames": {
 			"Windows_86": "win-x86-netcoreapp2.0.zip",
 			"Windows_64": "win-x64-netcoreapp2.0.zip",
@@ -15,8 +15,7 @@
             "Ubuntu_14": "rhel-x64-netcoreapp2.0.tar.gz",
             "Ubuntu_16": "rhel-x64-netcoreapp2.0.tar.gz"
 		},
-		"installDir": "",
-		"packageDir": "sqltoolsservice/{#version#}/{#platform#}",
-		"executableFiles": ["MicrosoftSqlToolsServiceLayer.exe", "MicrosoftSqlToolsServiceLayer", "Microsoft.SqlTools.ServiceLayer.exe", "Microsoft.SqlTools.ServiceLayer", "Microsoft.SqlTools.ServiceLayer.dll"]
+		"installDir": "sqltoolsservice/{#platform#}/{#version#}",
+		"executableFiles": ["MicrosoftSqlToolsServiceLayer.exe", "MicrosoftSqlToolsServiceLayer"]
 	}
 }

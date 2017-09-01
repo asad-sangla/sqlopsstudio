@@ -60,11 +60,9 @@ export class ServiceInstaller {
 	private _downloadProvider = undefined;
 	private _serverProvider = undefined;
 	private _extensionConstants = undefined;
-	private _packaging = undefined;
 
-	constructor(extensionConstants: IExtensionConstants, packaging: boolean = false) {
+	constructor(extensionConstants: IExtensionConstants) {
 		this._extensionConstants = extensionConstants;
-		this._packaging = packaging;
 		this._config = new Config(extensionConstants.extensionConfigSectionName, true);
 		this._downloadProvider = new ServiceDownloadProvider(this._config, this._logger, this._statusView, this._httpClient, this._decompressProvider, extensionConstants, true);
 		this._serverProvider = new ServerProvider(this._downloadProvider, this._config, this._statusView, extensionConstants.extensionConfigSectionName);
@@ -75,7 +73,7 @@ export class ServiceInstaller {
 	public installService(): Promise<String> {
 		return PlatformInformation.GetCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
 			if (platformInfo.isValidRuntime()) {
-				return this._serverProvider.getOrDownloadServer(platformInfo.runtimeId, this._packaging);
+				return this._serverProvider.getOrDownloadServer(platformInfo.runtimeId);
 			} else {
 				throw new Error('unsupported runtime');
 			}
@@ -90,7 +88,7 @@ export class ServiceInstaller {
 			if (runtime === undefined) {
 				PlatformInformation.GetCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
 					if (platformInfo.isValidRuntime()) {
-						resolve(this._downloadProvider.getInstallDirectory(platformInfo.runtimeId, this._packaging));
+						resolve(this._downloadProvider.getInstallDirectory(platformInfo.runtimeId));
 					} else {
 						reject('unsupported runtime');
 					}
@@ -98,9 +96,35 @@ export class ServiceInstaller {
 					reject(error);
 				});
 			} else {
-				resolve(this._downloadProvider.getInstallDirectory(runtime, this._packaging));
+				resolve(this._downloadProvider.getInstallDirectory(runtime));
 			}
 		});
 
+	}
+
+	/*
+	* Returns the path to the root folder of service install location.
+	*/
+	public getServiceInstallDirectoryRoot(runtime: Runtime): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			if (runtime === undefined) {
+				PlatformInformation.GetCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
+					if (platformInfo.isValidRuntime()) {
+						let directoryPath: string = this._downloadProvider.getInstallDirectoryRoot(platformInfo, this._extensionConstants.extensionName);
+						directoryPath = directoryPath.replace('\\{#version#}', '');
+						directoryPath = directoryPath.replace('\\{#platform#}', '');
+						directoryPath = directoryPath.replace('/{#platform#}', '');
+						directoryPath = directoryPath.replace('/{#version#}', '');
+						resolve(directoryPath);
+					} else {
+						reject('unsupported runtime');
+					}
+				}).catch(error => {
+					reject(error);
+				});
+			} else {
+				resolve(this._downloadProvider.getInstallDirectory(runtime));
+			}
+		});
 	}
 }

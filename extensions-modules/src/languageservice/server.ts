@@ -33,7 +33,7 @@ export default class ServerProvider {
     /**
      * Given a file path, returns the path to the SQL Tools service file.
      */
-    public findServerPath(filePath: string): Promise<string> {
+    public findServerPath(filePath: string, executableFiles: string[] = undefined): Promise<string> {
         return fs.lstatAsync(filePath).then(stats => {
             // If a file path was passed, assume its the launch file.
             if (stats.isFile()) {
@@ -43,8 +43,10 @@ export default class ServerProvider {
             // Otherwise, search the specified folder.
             let candidate: string;
 
-            if (this._config !== undefined) {
-                let executableFiles: string[] = this._config.getExecutableFiles();
+            if (executableFiles === undefined && this._config !== undefined) {
+                executableFiles = this._config.getExecutableFiles();
+            }
+            if (executableFiles !== undefined) {
                 executableFiles.forEach(element => {
                     let executableFile = path.join(filePath, element);
                     if (candidate === undefined && fs.existsSync(executableFile)) {
@@ -54,6 +56,7 @@ export default class ServerProvider {
                 });
             }
 
+
             return candidate;
         });
     }
@@ -61,14 +64,14 @@ export default class ServerProvider {
    /**
     * Download the service if doesn't exist and returns the file path.
     */
-    public getOrDownloadServer(runtime: Runtime, packaging?: boolean): Promise<string> {
+    public getOrDownloadServer(runtime: Runtime): Promise<string> {
         // Attempt to find launch file path first from options, and then from the default install location.
         // If SQL tools service can't be found, download it.
 
         return new Promise<string>((resolve, reject) => {
-            return this.getServerPath(runtime, packaging).then(result => {
+            return this.getServerPath(runtime).then(result => {
                 if (result === undefined) {
-                    return this.downloadServerFiles(runtime, packaging).then ( downloadResult => {
+                    return this.downloadServerFiles(runtime).then ( downloadResult => {
                         resolve(downloadResult);
                     });
                 } else {
@@ -85,18 +88,18 @@ export default class ServerProvider {
    /**
     * Returns the path of the installed service
     */
-    public getServerPath(runtime: Runtime, packaging?: boolean): Promise<string> {
-        const installDirectory = this._downloadProvider.getInstallDirectory(runtime, this._extensionConfigSectionName, packaging);
+    public getServerPath(runtime: Runtime): Promise<string> {
+        const installDirectory = this._downloadProvider.getInstallDirectory(runtime, this._extensionConfigSectionName);
         return this.findServerPath(installDirectory);
     }
 
    /**
     * Downloads the service and returns the path of the installed service
     */
-    public downloadServerFiles(runtime: Runtime, packaging?: boolean): Promise<string> {
+    public downloadServerFiles(runtime: Runtime): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            const installDirectory = this._downloadProvider.getInstallDirectory(runtime, this._extensionConfigSectionName, packaging);
-            return this._downloadProvider.installService(runtime, packaging).then( _ => {
+            const installDirectory = this._downloadProvider.getInstallDirectory(runtime, this._extensionConfigSectionName);
+            return this._downloadProvider.installService(runtime).then( _ => {
                 return this.findServerPath(installDirectory).then ( result => {
                     return resolve(result);
                 });

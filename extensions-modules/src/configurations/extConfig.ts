@@ -37,10 +37,6 @@ export default class ExtConfig implements IConfig {
         return this.getConfigValue(Constants.installDirConfigKey);
     }
 
-    public getPackageDirectory(): string {
-        return this.getConfigValue(Constants.packageDirConfigKey);
-    }
-
     public getExecutableFiles(): string[] {
         return this.getConfigValue(Constants.executableFilesConfigKey);
     }

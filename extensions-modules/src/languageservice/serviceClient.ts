@@ -26,6 +26,8 @@ import {ServerInitializationResult, ServerStatusView} from './serverStatus';
 import StatusView from '../views/statusView';
 import * as LanguageServiceContracts from '../models/contracts/languageService';
 import * as SharedConstants from '../models/constants';
+import * as utils from '../models/utils';
+var path = require('path');
 
 let opener = require('opener');
 let _channel: OutputChannel = undefined;
@@ -145,10 +147,14 @@ export default class SqlToolsServiceClient {
         this._client = client;
     }
 
+    public installDirectory: string;
+    private _downloadProvider: ServiceDownloadProvider;
+
     constructor(
         private _server: ServerProvider,
         private _logger: Logger,
         private _statusView: StatusView) {
+            this._downloadProvider = _server.downloadProvider;
     }
 
     // gets or creates the singleton service client instance
@@ -179,26 +185,6 @@ export default class SqlToolsServiceClient {
          });
     }
 
-    /**
-     * Copy the packaged service to user directory
-     */
-    private copyPackagedService(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {
-
-        let serviceDownloadProvider = this._server.downloadProvider;
-        let srcPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, SqlToolsServiceClient.constants.extensionConfigSectionName, true);
-        let destPath = serviceDownloadProvider.getInstallDirectory(platformInfo.runtimeId, SqlToolsServiceClient.constants.extensionConfigSectionName, false);
-
-        const self = this;
-        return new Promise<ServerInitializationResult>( (resolve, reject) => {
-            fs.copy(srcPath, destPath, err => {
-                if (err) reject(err);
-                this._server.getServerPath(platformInfo.runtimeId).then(destServerPath => {
-                    this.initializeLanguageClient(destServerPath, context, platformInfo.runtimeId);
-                })
-            });
-        });
-    }
-
     public initializeForPlatform(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {
          return new Promise<ServerInitializationResult>( (resolve, reject) => {
             this._logger.appendLine(SqlToolsServiceClient._constants.commandsNotAvailableWhileInstallingTheService);
@@ -215,39 +201,28 @@ export default class SqlToolsServiceClient {
                     this._logger.appendLine();
                 }
                 this._logger.appendLine();
-                this._server.getServerPath(platformInfo.runtimeId, true).then(serverPackagePath => {
-                    // if the service wasn't packaged with installation then
-                    // check the user directory
-                    if (serverPackagePath === undefined) {
-                        this._server.getServerPath(platformInfo.runtimeId).then(serverPath => {
-                            if (serverPath === undefined) {
-                                // Check if the service already installed and if not open the output channel to show the logs
-                                if (_channel !== undefined) {
-                                    _channel.show();
-                                }
-                                this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
-                                    this.initializeLanguageClient(installedServerPath, context, platformInfo.runtimeId);
-                                    resolve(new ServerInitializationResult(true, true, installedServerPath));
-                                }).catch(downloadErr => {
-                                    reject(downloadErr);
-                                });
-                            } else {
-                                this.initializeLanguageClient(serverPath, context, platformInfo.runtimeId);
-                                resolve(new ServerInitializationResult(false, true, serverPath));
+                    this._server.getServerPath(platformInfo.runtimeId).then(serverPath => {
+                        if (serverPath === undefined) {
+                            // Check if the service already installed and if not open the output channel to show the logs
+                            if (_channel !== undefined) {
+                                _channel.show();
                             }
-                        }).catch(err => {
-                            Utils.logDebug(SqlToolsServiceClient._constants.serviceLoadingFailed + ' ' + err, SqlToolsServiceClient._constants.extensionConfigSectionName);
-                            Utils.showErrorMsg(SqlToolsServiceClient._constants.serviceLoadingFailed, SqlToolsServiceClient._constants.extensionName);
-                            Telemetry.sendTelemetryEvent('ServiceInitializingFailed');
-                            reject(err);
-                        });
-                    } else {
-                        // copy the service to user directory if service was
-                        // packaged with the installation
-                        this.copyPackagedService(platformInfo, context);
-                        this._logger.appendLine(SqlToolsServiceClient._constants.extensionName + ' service copied to user local directory');
-                    }
-                });
+                            this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
+                                this.initializeLanguageClient(installedServerPath, context, platformInfo.runtimeId);
+                                resolve(new ServerInitializationResult(true, true, installedServerPath));
+                            }).catch(downloadErr => {
+                                reject(downloadErr);
+                            });
+                        } else {
+                            this.initializeLanguageClient(serverPath, context, platformInfo.runtimeId);
+                            resolve(new ServerInitializationResult(false, true, serverPath));
+                        }
+                    }).catch(err => {
+                        Utils.logDebug(SqlToolsServiceClient._constants.serviceLoadingFailed + ' ' + err, SqlToolsServiceClient._constants.extensionConfigSectionName);
+                        Utils.showErrorMsg(SqlToolsServiceClient._constants.serviceLoadingFailed, SqlToolsServiceClient._constants.extensionName);
+                        Telemetry.sendTelemetryEvent('ServiceInitializingFailed');
+                        reject(err);
+                    });
             }
         });
     }
@@ -297,6 +272,7 @@ export default class SqlToolsServiceClient {
             let serverOptions: ServerOptions = SqlToolsServiceClient._helper ?
                 SqlToolsServiceClient._helper.createServerOptions(serverPath, runtimeId) : self.createServerOptions(serverPath);
             this.client = this.createLanguageClient(serverOptions);
+            this.installDirectory = this._downloadProvider.getInstallDirectory(runtimeId, SqlToolsServiceClient._constants.extensionConfigSectionName);
 
             if (context !== undefined) {
                 // Create the language client and start the client.
@@ -308,6 +284,48 @@ export default class SqlToolsServiceClient {
                 context.subscriptions.push(disposable);
             }
          }
+    }
+
+    public createClient(context: ExtensionContext, runtimeId: Runtime, languageClientHelper: ILanguageClientHelper, executableFiles: string[]): Promise<LanguageClient> {
+        return new Promise<LanguageClient>( (resolve, reject) => {
+            let client: LanguageClient;
+            this._server.findServerPath(this.installDirectory, executableFiles).then(serverPath => {
+                if (serverPath === undefined) {
+                    reject(new Error(SqlToolsServiceClient._constants.invalidServiceFilePath));
+                } else {
+
+                    let serverOptions: ServerOptions = languageClientHelper ?
+                        languageClientHelper.createServerOptions(serverPath, runtimeId) : this.createServerOptions(serverPath);
+
+                        // Options to control the language client
+                    let clientOptions: LanguageClientOptions = {
+                        documentSelector: [SqlToolsServiceClient._constants.languageId],
+                        providerId: '',
+                        synchronize: {
+                            configurationSection: SqlToolsServiceClient._constants.extensionConfigSectionName
+                        },
+                        errorHandler: new LanguageClientErrorHandler(SqlToolsServiceClient._constants)
+                    };
+
+                    // cache the client instance for later use
+                    client = new LanguageClient(SqlToolsServiceClient._constants.serviceName, serverOptions, clientOptions);
+
+                    if (context !== undefined) {
+                        // Create the language client and start the client.
+                        let disposable = client.start();
+
+                        // Push the disposable to the context's subscriptions so that the
+                        // client can be deactivated on extension deactivation
+
+                        context.subscriptions.push(disposable);
+                    }
+                    resolve(client);
+                }
+            }, error => {
+                reject(error);
+            });
+        });
+
     }
 
     private createServerOptions(servicePath): ServerOptions {
@@ -326,6 +344,9 @@ export default class SqlToolsServiceClient {
                 serverArgs.push('--enable-logging');
             }
         }
+        serverArgs.push('--log-dir');
+        let logFileLocation = path.join(utils.getDefaultLogLocation(), SqlToolsServiceClient.constants.extensionName);
+        serverArgs.push(logFileLocation);
 
         // run the service host using dotnet.exe from the path
         let serverOptions: ServerOptions = {  command: serverCommand, args: serverArgs, transport: TransportKind.stdio  };
@@ -367,7 +388,7 @@ export default class SqlToolsServiceClient {
         return (event: LanguageServiceContracts.StatusChangeParams): void => {
             this._statusView.languageServiceStatusChanged(event.ownerUri, event.status);
         };
-    }
+        }
 
     /**
      * Send a request to the service client
@@ -375,9 +396,12 @@ export default class SqlToolsServiceClient {
      * @param params The params to pass with the request
      * @returns A thenable object for when the request receives a response
      */
-    public sendRequest<P, R, E>(type: RequestType<P, R, E>, params?: P): Thenable<R> {
-        if (this.client !== undefined) {
-            return this.client.sendRequest(type, params);
+    public sendRequest<P, R, E>(type: RequestType<P, R, E>, params?: P, client: LanguageClient = undefined): Thenable<R> {
+        if (client === undefined) {
+            client = this._client;
+        }
+        if (client !== undefined) {
+            return client.sendRequest(type, params);
         }
     }
 
@@ -386,9 +410,12 @@ export default class SqlToolsServiceClient {
      * @param type The notification type to register the handler for
      * @param handler The handler to register
      */
-    public onNotification<P>(type: NotificationType<P>, handler: NotificationHandler<P>): void {
-        if (this._client !== undefined) {
-             return this.client.onNotification(type, handler);
+    public onNotification<P>(type: NotificationType<P>, handler: NotificationHandler<P>, client: LanguageClient = undefined): void {
+        if (client === undefined) {
+            client = this._client;
+        }
+        if (client !== undefined) {
+             return client.onNotification(type, handler);
         }
     }
 

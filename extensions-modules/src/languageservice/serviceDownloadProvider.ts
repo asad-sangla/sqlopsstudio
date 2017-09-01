@@ -56,8 +56,8 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Returns SQL tools service installed folder.
 	 */
-	public getInstallDirectory(platform: Runtime, extensionConfigSectionName: string, packaging?: boolean): string {
-		let basePath = this.getInstallDirectoryRoot(platform, extensionConfigSectionName, packaging);
+	public getInstallDirectory(platform: Runtime, extensionConfigSectionName: string): string {
+		let basePath = this.getInstallDirectoryRoot(platform, extensionConfigSectionName);
 		let versionFromConfig = this._config.getPackageVersion();
 		basePath = basePath.replace('{#version#}', versionFromConfig);
 		basePath = basePath.replace('{#platform#}', getRuntimeDisplayName(platform));
@@ -85,13 +85,9 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Returns SQL tools service installed folder root.
 	 */
-	public getInstallDirectoryRoot(platform: Runtime, extensionConfigSectionName: string, packaging?: boolean): string {
+	public getInstallDirectoryRoot(platform: Runtime, extensionConfigSectionName: string): string {
 		let installDirFromConfig : string;
-		if (packaging) {
-			installDirFromConfig = this._config.getPackageDirectory();
-		} else {
-			installDirFromConfig = this._config.getInstallDirectory();
-		}
+		installDirFromConfig = this._config.getInstallDirectory();
 		if (!installDirFromConfig || installDirFromConfig === '') {
 			let rootFolderName: string = '.carbon';
 			if (platform === Runtime.Windows_64 || platform === Runtime.Windows_86) {
@@ -123,13 +119,13 @@ export default class ServiceDownloadProvider {
 	/**
 	 * Downloads the service and decompress it in the install folder.
 	 */
-	public installService(platform: Runtime, packaging?: boolean): Promise<boolean> {
+	public installService(platform: Runtime): Promise<boolean> {
 		const proxy = <string>this._config.getWorkspaceConfig('http.proxy');
 		const strictSSL = this._config.getWorkspaceConfig('http.proxyStrictSSL', true);
 
 		return new Promise<boolean>((resolve, reject) => {
 			const fileName = this.getDownloadFileName(platform);
-			const installDirectory = this.getInstallDirectory(platform, this._extensionConstants.extensionConfigSectionName, packaging);
+			const installDirectory = this.getInstallDirectory(platform, this._extensionConstants.extensionConfigSectionName);
 
 			this._logger.appendLine(`${this._extensionConstants.serviceInstallingTo} ${installDirectory}.`);
 			const urlString = this.getGetDownloadUrl(fileName);

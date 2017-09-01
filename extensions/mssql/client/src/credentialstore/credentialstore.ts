@@ -6,7 +6,8 @@
 
 import * as Contracts from '../models/contracts';
 import { ICredentialStore } from './icredentialstore';
-import { SqlToolsServiceClient } from 'extensions-modules';
+import { SqlToolsServiceClient, Utils } from 'extensions-modules';
+import { LanguageClient } from 'dataprotocol-client';
 
 /**
  * Implements a credential storage for Windows, Mac (darwin), or Linux.
@@ -14,6 +15,8 @@ import { SqlToolsServiceClient } from 'extensions-modules';
  * Allows a single credential to be stored per service (that is, one username per service);
  */
 export class CredentialStore implements ICredentialStore {
+
+    public languageClient: LanguageClient;
 
     constructor(private _client?: SqlToolsServiceClient) {
         if (!this._client) {
@@ -28,18 +31,18 @@ export class CredentialStore implements ICredentialStore {
      * @returns {Promise<Credential>} Promise that resolved to the credential, or undefined if not found
      */
     public readCredential(credentialId: string): Promise<Contracts.Credential> {
+        Utils.logDebug(this.languageClient, 'MainController._extensionConstants');
         let self = this;
         let cred: Contracts.Credential = new Contracts.Credential();
         cred.credentialId = credentialId;
         return new Promise<Contracts.Credential>( (resolve, reject) => {
             self._client
-            .sendRequest(Contracts.ReadCredentialRequest.type, cred)
+            .sendRequest(Contracts.ReadCredentialRequest.type, cred, this.languageClient)
             .then(returnedCred => {
                 resolve(<Contracts.Credential>returnedCred);
             }, err => reject(err));
         });
     }
-
 
     public saveCredential(credentialId: string, password: any): Promise<boolean> {
         let self = this;
@@ -48,7 +51,7 @@ export class CredentialStore implements ICredentialStore {
         cred.password = password;
         return new Promise<boolean>( (resolve, reject) => {
             self._client
-            .sendRequest(Contracts.SaveCredentialRequest.type, cred)
+            .sendRequest(Contracts.SaveCredentialRequest.type, cred, this.languageClient)
             .then(status => {
                 resolve(<boolean>status);
             }, err => reject(err));
@@ -61,7 +64,7 @@ export class CredentialStore implements ICredentialStore {
         cred.credentialId = credentialId;
         return new Promise<boolean>( (resolve, reject) => {
             self._client
-            .sendRequest(Contracts.DeleteCredentialRequest.type, cred)
+            .sendRequest(Contracts.DeleteCredentialRequest.type, cred, this.languageClient)
             .then(status => {
                 resolve(<boolean>status);
             }, err => reject(err));

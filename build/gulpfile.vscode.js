@@ -30,6 +30,7 @@ const product = require('../product.json');
 const shrinkwrap = require('../npm-shrinkwrap.json');
 const crypto = require('crypto');
 const i18n = require('./lib/i18n');
+var del = require('del');
 // {{SQL CARBON EDIT}}
 const serviceInstaller = require('extensions-modules/lib/languageservice/serviceInstallerUtil');
 const glob = require('glob');
@@ -469,7 +470,18 @@ gulp.task('upload-vscode-sourcemaps', ['minify-vscode'], () => {
 
 function installService(extObj) {
 	var installer = new serviceInstaller.ServiceInstaller(extObj, true);
-	return installer.installService();
+	installer.getServiceInstallDirectoryRoot().then(serviceInstallFolder => {
+			console.log('Cleaning up the install folder: ' + serviceInstallFolder);
+			del(serviceInstallFolder + '/*').then(() => {
+				console.log('Installing the service. Install folder: ' + serviceInstallFolder);
+				installer.installService();
+			}, delError => {
+				console.log('failed to delete the install folder error: ' + delError);
+			});
+	}, getFolderPathError => {
+		console.log('failed to call getServiceInstallDirectoryRoot error: ' + getFolderPathError);
+	});
+
 }
 
 gulp.task('install-sqltoolsservice', () => {
@@ -478,20 +490,8 @@ gulp.task('install-sqltoolsservice', () => {
     return installService(extObj);
 });
 
-gulp.task('install-credentialservice', () => {
-	var credentialsExt = require('../extensions/credentials/client/out/models/constants');
-	var extObj = new credentialsExt.Constants();
-	return installService(extObj);
-});
-
 gulp.task('install-pgsqlservice', () => {
 	var pgsqlExt = require('../extensions/pgsql/client/out/models/constants');
 	var extObj = new pgsqlExt.Constants();
-	return installService(extObj);
-});
-
-gulp.task('install-serializationservice', () => {
-	var serializationExt = require('../extensions/serialization/client/out/models/constants');
-	var extObj = new serializationExt.Constants();
 	return installService(extObj);
 });

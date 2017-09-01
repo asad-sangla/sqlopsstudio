@@ -1311,8 +1311,10 @@ export class LanguageClient {
 		this.hookRenameProvider(documentSelector, connection);
 		this.hookDocumentLinkProvider(documentSelector, connection);
 
+		if (this._clientOptions.providerId && this._clientOptions.providerId !== '') {
 		// hook-up SQL data protocol provider
-		this.hookDataProtocolProvider(this._clientOptions.providerId, connection);
+			this.hookDataProtocolProvider(this._clientOptions.providerId, connection);
+		}
 	}
 
 	private logFailedRequest(type: RequestType<any, any, any>, error: any): void {

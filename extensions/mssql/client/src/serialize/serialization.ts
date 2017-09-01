@@ -8,13 +8,14 @@ import * as Contracts from '../models/contracts';
 import { ISerialization } from './iserialization';
 import { SqlToolsServiceClient } from 'extensions-modules';
 import * as data from 'data';
+import { LanguageClient } from 'dataprotocol-client';
 
 /**
  * Implements serializer for query results
  */
 export class Serialization implements ISerialization {
 
-    constructor(private _client?: SqlToolsServiceClient) {
+    constructor(private _client?: SqlToolsServiceClient, private _languageClient?: LanguageClient) {
         if (!this._client) {
             this._client = SqlToolsServiceClient.instance;
         }
@@ -31,7 +32,7 @@ export class Serialization implements ISerialization {
         let resultsInfo: Contracts.SaveResultsInfo  = new Contracts.SaveResultsInfo(saveFormat, savePath, results, appendToFile);
         return new Promise<data.SaveResultRequestResult>( (resolve, reject) => {
             self._client
-            .sendRequest(Contracts.SaveAsRequest.type, resultsInfo)
+            .sendRequest(Contracts.SaveAsRequest.type, resultsInfo, this._languageClient)
             .then(result => {
                 resolve(<data.SaveResultRequestResult>result);
             }, err => reject(err));

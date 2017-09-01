@@ -38,10 +38,6 @@ export default class Config implements IConfig {
         return this.getConfigValue(SharedConstants.installDirConfigKey);
     }
 
-    public getPackageDirectory(): string {
-        return this.getConfigValue(SharedConstants.packageDirConfigKey);
-    }
-
     public getExecutableFiles(): string[] {
         return this.getConfigValue(SharedConstants.executableFilesConfigKey);
     }

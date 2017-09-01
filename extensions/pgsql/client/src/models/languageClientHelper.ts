@@ -1,4 +1,4 @@
-import {ILanguageClientHelper, SharedConstants, SqlToolsServiceClient, Runtime} from 'extensions-modules';
+import {ILanguageClientHelper, SharedConstants, SqlToolsServiceClient, Runtime, Utils} from 'extensions-modules';
 import {ServerOptions, TransportKind} from 'dataprotocol-client';
 import {workspace} from 'vscode';
 import { Constants } from './constants';
@@ -28,6 +28,11 @@ export default class LanguageClientHelper implements ILanguageClientHelper {
                 debuggingArg += '=' + debugPort;
                 serverArgs = [filePath, debuggingArg];
             }
+
+            let logFileLocation = path.join(Utils.getDefaultLogLocation(), SqlToolsServiceClient.constants.extensionName);
+
+            serverArgs.push('--log-dir=' + logFileLocation);
+            serverArgs.push(logFileLocation);
 
             // Enable diagnostic logging in the service if it is configured
             let logDebugInfo = config[SharedConstants.configLogDebugInfo];
