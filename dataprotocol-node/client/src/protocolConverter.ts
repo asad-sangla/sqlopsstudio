@@ -584,7 +584,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 				metadataTypeName: metadataTypeName,
 				metadataType: metadata.metadataType,
 				name: metadata.name,
-				schema: metadata.schema
+				schema: metadata.schema,
+				urn: metadata.urn
 			});
 		}
 

@@ -258,7 +258,8 @@ export class ObjectExplorerActionUtilities {
 		if (container) {
 			let groupContainer = this.getGroupContainer(container, elementName);
 			if (groupContainer) {
-				groupContainer.classList.add('icon in-progress');
+				groupContainer.classList.add('icon');
+				groupContainer.classList.add('in-progress');
 			}
 		}
 	}
@@ -267,7 +268,8 @@ export class ObjectExplorerActionUtilities {
 		if (container) {
 			let element = this.getGroupContainer(container, elementName);
 			if (element && element.classList) {
-				element.classList.remove('icon in-progress');
+				element.classList.remove('icon');
+				element.classList.remove('in-progress');
 			}
 		}
 	}

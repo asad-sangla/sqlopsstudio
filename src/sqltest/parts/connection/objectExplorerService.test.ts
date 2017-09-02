@@ -428,6 +428,7 @@ suite('SQL Object Explorer Service tests', () => {
 		var databaseMetaData = {
 			metadataType: 0,
 			metadataTypeName: 'Database',
+			urn: '//server/db1/',
 			name: 'Db1',
 			schema: null
 		};

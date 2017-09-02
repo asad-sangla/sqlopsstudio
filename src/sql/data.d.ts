@@ -274,6 +274,8 @@ declare module 'data' {
 
 		metadataTypeName: string;
 
+		urn: string;
+
 		name: string;
 
 		schema: string;
