@@ -240,7 +240,7 @@ export class QueryEditorService implements IQueryEditorService {
 
 	private createEditDataFileName(tableName: string): string {
 		let editDataFileName = (counter: number): string => {
-			return `${tableName}_${counter}`;
+			return encodeURIComponent(`${tableName}_${counter}`);
 		};
 
 		let counter = 1;
