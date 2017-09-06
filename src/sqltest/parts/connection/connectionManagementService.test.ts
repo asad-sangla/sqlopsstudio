@@ -14,6 +14,7 @@ import {
 	IConnectionCompletionOptions, IConnectionResult,
 	RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import * as Constants from 'sql/parts/connection/common/constants';
+import * as Utils from 'sql/parts/connection/common/utils';
 
 import { WorkbenchEditorTestService } from 'sqltest/stubs/workbenchEditorTestService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -574,4 +575,30 @@ suite('SQL ConnectionManagementService tests', () => {
 		}
 	});
 
+	test('getConnectionId returns the URI associated with a connection that has had its database filled in', done => {
+		// Set up the connection management service with a connection corresponding to a default database
+		let dbName = 'master';
+		let serverName = 'test_server';
+		let userName = 'test_user';
+		let connectionProfileWithoutDb: IConnectionProfile = Object.assign(connectionProfile,
+			{serverName: serverName, databaseName: '', userName: userName, getOptionsKey: () => undefined});
+		let connectionProfileWithDb: IConnectionProfile = Object.assign(connectionProfileWithoutDb, {databaseName: dbName});
+		// Save the database with a URI that has the database name filled in, to mirror Carbon's behavior
+		let ownerUri = Utils.generateUri(connectionProfileWithDb);
+		connect(ownerUri, undefined, false, connectionProfileWithoutDb).then(() => {
+			try {
+				// If I get the URI for the connection with or without a database from the connection management service
+				let actualUriWithDb = connectionManagementService.getConnectionId(connectionProfileWithDb);
+				let actualUriWithoutDb = connectionManagementService.getConnectionId(connectionProfileWithoutDb);
+
+				// Then the retrieved URIs should match the one on the connection
+				let expectedUri = Utils.generateUri(connectionProfileWithoutDb);
+				assert.equal(actualUriWithDb, expectedUri);
+				assert.equal(actualUriWithoutDb, expectedUri);
+				done();
+			} catch (err) {
+				done(err);
+			}
+		}, err => done(err));
+	});
 });
