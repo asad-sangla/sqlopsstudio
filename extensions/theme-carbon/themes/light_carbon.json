@@ -5,7 +5,7 @@
 		// base
 		"foreground": "#4a4a4a",
 		"focusBorder": "#00BCF2",
-		"selection.background": "#3062d6",
+		"selection.background": "#C9D0D9",
 		"widget.shadow": "#666666",
 
 		// text colors
