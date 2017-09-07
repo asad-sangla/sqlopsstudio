@@ -2,7 +2,7 @@
 This document describes execution plan viewer scenarios and feature for the first public preview.
 
 ## Target user
-The first release of execution plan viewer in Carbon targets application developers who has a basic or intermediate knowledge of SQL Server query plan and how to read the showplan to tune up queries for their application use. It is non-goal to support very complex queries yet in the first release. 
+The first release of execution plan viewer in Carbon targets application developers who has an advanced knowledge of SQL Server query plan and how to read the showplan to tune up queries for their application use. 
 
 ## Key Customer Asks
 
