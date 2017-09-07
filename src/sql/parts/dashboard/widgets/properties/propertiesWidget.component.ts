@@ -17,6 +17,8 @@ import { DatabaseInfo, ServerInfo } from 'data';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { EventType, addDisposableListener } from 'vs/base/browser/dom';
 
+import * as ConnectionConstants from 'sql/parts/connection/common/constants';
+
 export interface PropertiesConfig {
 	properties: Array<Property>;
 }
@@ -77,7 +79,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		}
 		let self = this;
 		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
-		if (!self._connection.serverInfo.isCloud) {
+		if (self._connection.providerId !== ConnectionConstants.mssqlProviderName || !self._connection.serverInfo.isCloud) {
 			self._disposables.push(toDisposableSubscription(self._bootstrap.adminService.databaseInfo.subscribe(data => {
 				self._databaseInfo = data;
 				_changeRef.detectChanges();

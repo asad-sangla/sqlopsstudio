@@ -74,13 +74,13 @@ export const properties: Array<ProviderProperties> = [
 		provider: 'PGSQL',
 		flavors: [
 			{
-				flavor: 'on_prem',
-				condition: {
-					field: 'isCloud',
-					operator: '!=',
-					value: 'true'
-				},
-				databaseProperties: [] ,
+				flavor: 'any',
+				databaseProperties: [
+					{
+						displayName: nls.localize('owner', 'Owner'),
+						value: 'owner'
+					}
+				],
 				serverProperties: [
 					{
 						displayName: nls.localize('version', 'Version'),
