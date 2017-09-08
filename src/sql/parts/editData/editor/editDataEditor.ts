@@ -21,7 +21,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
+import { Taskbar, ITaskbarContent } from 'sql/base/browser/ui/taskbar/taskbar';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IActionItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import { Action } from 'vs/base/common/actions';
@@ -30,7 +30,8 @@ import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescripto
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import {
 	RefreshTableAction, StopRefreshTableAction,
-	ChangeMaxRowsAction, ChangeMaxRowsActionItem} from 'sql/parts/editData/execution/editDataActions';
+	ChangeMaxRowsAction, ChangeMaxRowsActionItem
+} from 'sql/parts/editData/execution/editDataActions';
 import { EditDataModule } from 'sql/parts/grid/views/editData/editData.module';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { EDITDATA_SELECTOR } from 'sql/parts/grid/views/editData/editData.component';
@@ -45,7 +46,7 @@ export class EditDataEditor extends BaseEditor {
 
 	private _dimension: Dimension;
 	private _resultsEditorContainer: HTMLElement;
-	private _taskbar: QueryTaskbar;
+	private _taskbar: Taskbar;
 	private _taskbarContainer: HTMLElement;
 	private _changeMaxRowsActionItem: ChangeMaxRowsActionItem;
 	private _stopRefreshTableAction: StopRefreshTableAction;
@@ -96,7 +97,7 @@ export class EditDataEditor extends BaseEditor {
 		}
 
 		return super.setInput(newInput, options)
-			.then(() => this._updateInput(oldInput, newInput, options) );
+			.then(() => this._updateInput(oldInput, newInput, options));
 	}
 
 	/**
@@ -175,8 +176,8 @@ export class EditDataEditor extends BaseEditor {
 
 	private _createTaskbar(parentElement: HTMLElement): void {
 		// Create QueryTaskbar
-		this._taskbarContainer = DOM.append(parentElement, DOM.$('.queryTaskbar'));
-		this._taskbar = new QueryTaskbar(this._taskbarContainer, this._contextMenuService, {
+		this._taskbarContainer = DOM.append(parentElement, DOM.$('div'));
+		this._taskbar = new Taskbar(this._taskbarContainer, this._contextMenuService, {
 			actionItemProvider: (action: Action) => this._getChangeMaxRowsAction(action)
 		});
 
@@ -186,15 +187,15 @@ export class EditDataEditor extends BaseEditor {
 		this._changeMaxRowsAction = this._instantiationService.createInstance(ChangeMaxRowsAction, this);
 
 		// Create HTML Elements for the taskbar
-		let separator = QueryTaskbar.createTaskbarSeparator();
-		let textSeperator = QueryTaskbar.createTaskbarText(nls.localize('maxRowTaskbar', 'Max Rows:'));
+		let separator = Taskbar.createTaskbarSeparator();
+		let textSeperator = Taskbar.createTaskbarText(nls.localize('maxRowTaskbar', 'Max Rows:'));
 
 		// Set the content in the order we desire
 		let content: ITaskbarContent[] = [
 			{ action: this._stopRefreshTableAction },
 			{ action: this._refreshTableAction },
 			{ element: separator },
-			{ element: textSeperator},
+			{ element: textSeperator },
 			{ action: this._changeMaxRowsAction }
 		];
 		this._taskbar.setContent(content);

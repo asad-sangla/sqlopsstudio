@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import 'vs/css!sql/parts/grid/views/query/chartViewer';
-import 'vs/css!sql/parts/query/editor/media/queryTaskbar';
 
 import {
 	Component, Inject, ViewContainerRef, forwardRef, OnInit,
@@ -11,7 +10,7 @@ import {
 } from '@angular/core';
 import { NgGridItemConfig } from 'angular2-grid';
 
-import { QueryTaskbar } from 'sql/parts/query/editor/queryTaskbar';
+import { Taskbar } from 'sql/base/browser/ui/taskbar/taskbar';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { IGridDataSet } from 'sql/parts/grid/common/interfaces';
@@ -33,11 +32,8 @@ import {
 } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
-import { Action } from 'vs/base/common/actions';
 import { Builder } from 'vs/base/browser/builder';
-import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
-import { Button } from 'vs/base/browser/ui/button/button';
-import { EventType } from 'vs/base/browser/dom';
+import { attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import Severity from 'vs/base/common/severity';
 import URI from 'vs/base/common/uri';
 import * as nls from 'vs/nls';
@@ -76,7 +72,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 	private chartNotFoundError: string = nls.localize('chartNotFound', 'Could not find chart to save');
 	/* tslint:enable:no-unused-variable */
 
-	private _actionBar: QueryTaskbar;
+	private _actionBar: Taskbar;
 	private _createInsightAction: CreateInsightAction;
 	private _copyAction: CopyAction;
 	private _saveAction: SaveImageAction;
@@ -146,9 +142,8 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 		this._copyAction = this._bootstrapService.instantiationService.createInstance(CopyAction);
 		this._saveAction = this._bootstrapService.instantiationService.createInstance(SaveImageAction);
 
-		let taskbar = <HTMLElement> this.taskbarContainer.nativeElement;
-		taskbar.className = 'queryTaskbar';
-		this._actionBar = new QueryTaskbar(taskbar, this._bootstrapService.contextMenuService);
+		let taskbar = <HTMLElement>this.taskbarContainer.nativeElement;
+		this._actionBar = new Taskbar(taskbar, this._bootstrapService.contextMenuService);
 		this._actionBar.context = this;
 		this._actionBar.setContent([
 			{ action: this._createInsightAction },
@@ -242,15 +237,15 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 		}
 	}
 
-    private promptForFilepath(): string {
-        let filepathPlaceHolder = PathUtilities.resolveCurrentDirectory(this.getActiveUriString(), PathUtilities.getRootPath(this._bootstrapService.workspaceContextService));
-        filepathPlaceHolder = path.join(filepathPlaceHolder, 'Chart.jpeg');
+	private promptForFilepath(): string {
+		let filepathPlaceHolder = PathUtilities.resolveCurrentDirectory(this.getActiveUriString(), PathUtilities.getRootPath(this._bootstrapService.workspaceContextService));
+		filepathPlaceHolder = path.join(filepathPlaceHolder, 'Chart.jpeg');
 
-        let filePath: string = this._bootstrapService.sqlWindowService.showSaveDialog({
-            title: nls.localize('saveAsFileTitle', 'Choose Results File'),
-            defaultPath: paths.normalize(filepathPlaceHolder, true)
-        });
-        return filePath;
+		let filePath: string = this._bootstrapService.sqlWindowService.showSaveDialog({
+			title: nls.localize('saveAsFileTitle', 'Choose Results File'),
+			defaultPath: paths.normalize(filepathPlaceHolder, true)
+		});
+		return filePath;
 	}
 
 	private decodeBase64Image(data: string): Buffer {

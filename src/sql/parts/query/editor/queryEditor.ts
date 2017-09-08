@@ -37,7 +37,7 @@ import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
 import * as queryContext from 'sql/parts/query/common/queryContext';
-import { QueryTaskbar, ITaskbarContent } from 'sql/parts/query/editor/queryTaskbar';
+import { Taskbar, ITaskbarContent } from 'sql/base/browser/ui/taskbar/taskbar';
 import {
 	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
 	ConnectDatabaseAction, ToggleConnectDatabaseAction, EstimatedQueryPlanAction
@@ -73,7 +73,7 @@ export class QueryEditor extends BaseEditor {
 	private _sqlEditor: TextResourceEditor;
 	private _sqlEditorContainer: HTMLElement;
 
-	private _taskbar: QueryTaskbar;
+	private _taskbar: Taskbar;
 	private _taskbarContainer: HTMLElement;
 	private _listDatabasesActionItem: ListDatabasesActionItem;
 
@@ -299,7 +299,7 @@ export class QueryEditor extends BaseEditor {
 			// If the selection is a range of characters rather than just a cursor position, return the range
 			let isRange: boolean =
 				!(vscodeSelection.getStartPosition().lineNumber === vscodeSelection.getEndPosition().lineNumber &&
-				vscodeSelection.getStartPosition().column === vscodeSelection.getEndPosition().column);
+					vscodeSelection.getStartPosition().column === vscodeSelection.getEndPosition().column);
 			if (!checkIfRange || isRange) {
 				let sqlToolsServiceSelection: ISelectionData = {
 					startLine: vscodeSelection.getStartPosition().lineNumber - 1,
@@ -318,7 +318,7 @@ export class QueryEditor extends BaseEditor {
 	public isSelectionEmpty(): boolean {
 		if (this._sqlEditor && this._sqlEditor.getControl()) {
 			let control = this._sqlEditor.getControl();
-			let codeEditor: CodeEditor = <CodeEditor> control;
+			let codeEditor: CodeEditor = <CodeEditor>control;
 
 			if (codeEditor) {
 				let value = codeEditor.getValue();
@@ -363,8 +363,8 @@ export class QueryEditor extends BaseEditor {
 	 */
 	private _createTaskbar(parentElement: HTMLElement): void {
 		// Create QueryTaskbar
-		this._taskbarContainer = DOM.append(parentElement, DOM.$('.queryTaskbar'));
-		this._taskbar = new QueryTaskbar(this._taskbarContainer, this._contextMenuService, {
+		this._taskbarContainer = DOM.append(parentElement, DOM.$('div'));
+		this._taskbar = new Taskbar(this._taskbarContainer, this._contextMenuService, {
 			actionItemProvider: (action: Action) => this._getActionItemForAction(action),
 		});
 
@@ -377,7 +377,7 @@ export class QueryEditor extends BaseEditor {
 		this._estimatedQueryPlanAction = this._instantiationService.createInstance(EstimatedQueryPlanAction, this);
 
 		// Create HTML Elements for the taskbar
-		let separator = QueryTaskbar.createTaskbarSeparator();
+		let separator = Taskbar.createTaskbarSeparator();
 
 		// Set the content in the order we desire
 		let content: ITaskbarContent[] = [
@@ -474,7 +474,7 @@ export class QueryEditor extends BaseEditor {
 				]);
 			};
 
-		// If only the sql editor exists, create a promise and wait for the sql editor to be created
+			// If only the sql editor exists, create a promise and wait for the sql editor to be created
 		} else {
 			createEditors = () => {
 				return this._createEditor(<UntitledEditorInput>newInput.sql, this._sqlEditorContainer);
@@ -568,7 +568,7 @@ export class QueryEditor extends BaseEditor {
 	 */
 	private _createSash(): void {
 		if (!this._sash) {
-			let parentElement: HTMLElement	= this.getContainer().getHTMLElement();
+			let parentElement: HTMLElement = this.getContainer().getHTMLElement();
 
 			if (this._orientation === Orientation.HORIZONTAL) {
 				this._sash = this._register(new HorizontalFlexibleSash(parentElement, this._minEditorSize));
@@ -750,11 +750,11 @@ export class QueryEditor extends BaseEditor {
 	 */
 	private _setSelection(selection: ISelectionData): void {
 		let rangeConversion: IRange = {
-				startLineNumber: selection.startLine + 1,
-				startColumn: selection.startColumn + 1,
-				endLineNumber: selection.endLine + 1,
-				endColumn: selection.endColumn + 1
-			};
+			startLineNumber: selection.startLine + 1,
+			startColumn: selection.startColumn + 1,
+			endLineNumber: selection.endLine + 1,
+			endColumn: selection.endColumn + 1
+		};
 		this._sqlEditor.getControl().setSelection(rangeConversion);
 	}
 
@@ -768,7 +768,7 @@ export class QueryEditor extends BaseEditor {
 		return this._sqlEditor;
 	}
 
-	public get taskbar(): QueryTaskbar {
+	public get taskbar(): Taskbar {
 		return this._taskbar;
 	}
 
@@ -792,7 +792,7 @@ export class QueryEditor extends BaseEditor {
 		return this._runQueryAction;
 	}
 
-	public get cancelQueryAction(): CancelQueryAction{
+	public get cancelQueryAction(): CancelQueryAction {
 		return this._cancelQueryAction;
 	}
 

@@ -22,20 +22,13 @@ import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { DbListModule } from 'sql/parts/common/dblist/dblist.module';
 import { ISelectionData } from 'data';
-import nls = require('vs/nls');
-import { TextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
-import { IEditor } from 'vs/editor/common/editorCommon';
-import { Selection } from 'vs/editor/common/core/selection';
-
-declare let AngularPlatformBrowserDynamic;
+import * as nls from 'vs/nls';
 
 /**
  * Action class that query-based Actions will extend. This base class automatically handles activating and
  * deactivating the button when a SQL file is opened.
  */
 export abstract class QueryTaskbarAction extends Action {
-
-	public static BaseClass = 'queryTaskbarIcon';
 
 	private _classes: string[];
 
@@ -66,7 +59,6 @@ export abstract class QueryTaskbarAction extends Action {
 	 */
 	private _setCssClass(enabledClass: string): void {
 		this._classes = [];
-		this._classes.push(QueryTaskbarAction.BaseClass);
 
 		if (enabledClass) {
 			this._classes.push(enabledClass);
@@ -105,7 +97,7 @@ export abstract class QueryTaskbarAction extends Action {
  */
 export class RunQueryAction extends QueryTaskbarAction {
 
-	public static EnabledClass = 'runQuery';
+	public static EnabledClass = 'start';
 	public static ID = 'runQueryAction';
 
 	constructor(
@@ -175,7 +167,7 @@ export class RunQueryAction extends QueryTaskbarAction {
  */
 export class CancelQueryAction extends QueryTaskbarAction {
 
-	public static EnabledClass = 'cancelQuery';
+	public static EnabledClass = 'stop';
 	public static ID = 'cancelQueryAction';
 
 	constructor(
@@ -245,7 +237,7 @@ export class EstimatedQueryPlanAction extends QueryTaskbarAction {
  */
 export class DisconnectDatabaseAction extends QueryTaskbarAction {
 
-	public static EnabledClass = 'disconnectDatabase';
+	public static EnabledClass = 'disconnect';
 	public static ID = 'disconnectDatabaseAction';
 
 	constructor(
@@ -269,8 +261,8 @@ export class DisconnectDatabaseAction extends QueryTaskbarAction {
  */
 export class ConnectDatabaseAction extends QueryTaskbarAction {
 
-	public static EnabledDefaultClass = 'connectDatabase';
-	public static EnabledChangeClass = 'changeConnectionDatabase';
+	public static EnabledDefaultClass = 'connect';
+	public static EnabledChangeClass = 'changeConnection';
 	public static ID = 'connectDatabaseAction';
 
 	constructor(
@@ -306,8 +298,8 @@ export class ConnectDatabaseAction extends QueryTaskbarAction {
  */
 export class ToggleConnectDatabaseAction extends QueryTaskbarAction {
 
-	public static ConnectClass = 'connectDatabase';
-	public static DisconnectClass = 'disconnectDatabase';
+	public static ConnectClass = 'connect';
+	public static DisconnectClass = 'disconnect';
 	public static ID = 'toggleConnectDatabaseAction';
 
 	private _connected: boolean;

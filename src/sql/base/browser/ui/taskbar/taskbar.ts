@@ -5,11 +5,14 @@
 
 'use strict';
 
-import 'vs/css!sql/parts/query/editor/media/queryTaskbar';
+import 'vs/css!./media/taskbar';
+import 'vs/css!./media/icons';
+
+import { ActionBar } from './actionbar';
+
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Action, IActionRunner, IAction } from 'vs/base/common/actions';
 import { ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
-import { QueryActionBar } from 'sql/parts/query/editor/queryActionbar';
 import { IContextMenuProvider } from 'vs/base/browser/ui/dropdown/dropdown';
 import { IToolBarOptions } from 'vs/base/browser/ui/toolbar/toolbar';
 
@@ -30,9 +33,9 @@ export interface ITaskbarContent {
  * want the ability to use the custom QueryActionBar in order to display other HTML
  * in our taskbar. Based off import ToolBar from vs/base/browser/ui/toolbar/toolbar.
  */
-export class QueryTaskbar {
+export class Taskbar {
 	private options: IToolBarOptions;
-	private actionBar: QueryActionBar;
+	private actionBar: ActionBar;
 	private lookupKeybindings: boolean;
 
 	constructor(container: HTMLElement, contextMenuProvider: IContextMenuProvider, options: IToolBarOptions = { orientation: ActionsOrientation.HORIZONTAL }) {
@@ -40,10 +43,10 @@ export class QueryTaskbar {
 		this.lookupKeybindings = typeof this.options.getKeyBinding === 'function' && typeof this.options.getKeyBinding === 'function';
 
 		let element = document.createElement('div');
-		element.className = 'monaco-toolbar';
+		element.className = 'monaco-toolbar carbon-taskbar';
 		container.appendChild(element);
 
-		this.actionBar = new QueryActionBar($(element), {
+		this.actionBar = new ActionBar($(element), {
 			orientation: options.orientation,
 			ariaLabel: options.ariaLabel,
 			actionItemProvider: (action: Action) => {
@@ -57,7 +60,7 @@ export class QueryTaskbar {
 	 */
 	public static createTaskbarSeparator(): HTMLElement {
 		let element = document.createElement('div');
-		element.className = 'queryTaskbarSeparator';
+		element.className = 'taskbarSeparator';
 		element.innerHTML = ' ';
 		return element;
 	}
@@ -67,7 +70,7 @@ export class QueryTaskbar {
 	 */
 	public static createTaskbarText(inputText: string): HTMLElement {
 		let element = document.createElement('div');
-		element.className = 'queryTaskbarTextSeparator';
+		element.className = 'taskbarTextSeparator';
 		element.innerHTML = inputText;
 		return element;
 	}

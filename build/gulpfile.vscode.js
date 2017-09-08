@@ -87,10 +87,10 @@ const vscodeResources = [
 	'out-build/vs/code/electron-browser/sharedProcess.js',
   // {{SQL CARBON EDIT}}
 	'out-build/sql/**/*.{svg,png,cur,html}',
-	'out-build/sql/base/browser/ui/table/media/**',
-	'out-build/sql/base/browser/ui/checkbox/media/**',
+	'out-build/sql/base/browser/ui/table/media/*.{gif,png,svg}',
+	'out-build/sql/base/browser/ui/checkbox/media/*.{gif,png,svg}',
 	'out-build/sql/parts/admin/**/*.html',
-	'out-build/sql/parts/connection/connectionDialog/media/**',
+	'out-build/sql/parts/connection/connectionDialog/media/*.{gif,png,svg}',
 	'out-build/sql/parts/common/dblist/**/*.html',
 	'out-build/sql/parts/dashboard/**/*.html',
 	'out-build/sql/parts/disasterRecovery/**/*.html',

@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import 'vs/css!sql/parts/query/editor/media/queryTaskbar';
 
 import { ProfilerInput } from './profilerInput';
 
@@ -10,7 +9,7 @@ import { TabbedPanel } from 'sql/base/browser/ui/panel/panel';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { TableView } from 'sql/base/browser/ui/table/tableView';
 import { IProfilerService, IProfilerSessionTemplate } from 'sql/parts/profiler/service/interfaces';
-import { QueryTaskbar } from 'sql/parts/query/editor/queryTaskbar';
+import { Taskbar } from 'sql/base/browser/ui/taskbar/taskbar';
 import { attachTableStyler } from 'sql/common/theme/styler';
 import { IProfilerStateChangedEvent } from './profilerState';
 import { ProfilerTableEditor } from './controller/profilerTableEditor';
@@ -104,7 +103,7 @@ export class ProfilerEditor extends BaseEditor {
 	private _container: HTMLElement;
 	private _body: HTMLElement;
 	private _header: HTMLElement;
-	private _actionBar: QueryTaskbar;
+	private _actionBar: Taskbar;
 	private _tabbedPanel: TabbedPanel;
 	private _profilerTableEditor: ProfilerTableEditor;
 	private _detailTable: Table<IDetailData>;
@@ -144,7 +143,7 @@ export class ProfilerEditor extends BaseEditor {
 		this._profilerService.registerProvider('default', this._instantiationService.createInstance(ProfilerTestBackend));
 
 		this._container = document.createElement('div');
-		this._container.className = 'carbon-profiler monaco-editor';
+		this._container.className = 'carbon-profiler';
 		parent.append(this._container);
 
 		this._createHeader();
@@ -174,9 +173,9 @@ export class ProfilerEditor extends BaseEditor {
 
 	private _createHeader(): void {
 		this._header = document.createElement('div');
-		this._header.className = 'profiler-header queryTaskbar';
+		this._header.className = 'profiler-header';
 		this._container.appendChild(this._header);
-		this._actionBar = new QueryTaskbar(this._header, this._contextMenuService);
+		this._actionBar = new Taskbar(this._header, this._contextMenuService);
 		this._startAction = this._instantiationService.createInstance(Actions.ProfilerStart, Actions.ProfilerStart.ID, Actions.ProfilerStart.LABEL);
 		this._startAction.enabled = false;
 		this._stopAction = this._instantiationService.createInstance(Actions.ProfilerStop, Actions.ProfilerStop.ID, Actions.ProfilerStop.LABEL);
@@ -204,7 +203,7 @@ export class ProfilerEditor extends BaseEditor {
 			{ action: this._pauseAction },
 			{ action: this._stopAction },
 			{ action: this._connectAction },
-			{ element: QueryTaskbar.createTaskbarSeparator() },
+			{ element: Taskbar.createTaskbarSeparator() },
 			{ action: this._autoscrollAction },
 			{ action: this._instantiationService.createInstance(Actions.ProfilerClear, Actions.ProfilerClear.ID, Actions.ProfilerClear.LABEL) },
 			{ element: dropdownContainer },
@@ -214,7 +213,7 @@ export class ProfilerEditor extends BaseEditor {
 
 	private _createProfilerTable(): HTMLElement {
 		let profilerTableContainer = document.createElement('div');
-		profilerTableContainer.className = 'profiler-table';
+		profilerTableContainer.className = 'profiler-table monaco-editor';
 		profilerTableContainer.style.width = '100%';
 		profilerTableContainer.style.height = '100%';
 		profilerTableContainer.style.overflow = 'hidden';
@@ -411,8 +410,8 @@ export class ProfilerEditor extends BaseEditor {
 		this._container.style.width = dimension.width + 'px';
 		this._container.style.height = dimension.height + 'px';
 		this._body.style.width = dimension.width + 'px';
-		this._body.style.height = (dimension.height - 28) + 'px';
-		this._splitView.layout(dimension.height - 28);
+		this._body.style.height = (dimension.height - (28 + 4)) + 'px';
+		this._splitView.layout(dimension.height - (28 + 4));
 	}
 }
 

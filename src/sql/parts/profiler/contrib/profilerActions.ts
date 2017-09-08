@@ -24,7 +24,7 @@ export class ProfilerConnect extends Action {
 		id: string, label: string,
 		@IProfilerService private _profilerService: IProfilerService
 	) {
-		super(id, label, 'queryTaskbarIcon connectDatabase');
+		super(id, label, 'connect');
 	}
 
 	public run(input: ProfilerInput): TPromise<boolean> {
@@ -48,8 +48,8 @@ export class ProfilerConnect extends Action {
 
 	public set connected(value: boolean) {
 		this._connected = value;
-		this._setClass('queryTaskbarIcon ' + (value ? 'disconnectDatabase' : 'connectDatabase'));
-		this._setLabel(value ? nls.localize('disconnect', "Disconnected") : nls.localize('connect', "Connect"));
+		this._setClass(value ? 'disconnect' : 'connect');
+		this._setLabel(value ? nls.localize('disconnect', 'Disconnected') : nls.localize('connect', "Connect"));
 	}
 
 	public get connected(): boolean {
@@ -65,7 +65,7 @@ export class ProfilerStart extends Action {
 		id: string, label: string,
 		@IProfilerService private _profilerService: IProfilerService
 	) {
-		super(id, label, 'queryTaskbarIcon runQuery');
+		super(id, label, 'start');
 	}
 
 	public run(input: ProfilerInput): TPromise<boolean> {
@@ -86,7 +86,7 @@ export class ProfilerPause extends Action {
 		id: string, label: string,
 		@IProfilerService private _profilerService: IProfilerService
 	) {
-		super(id, label, 'queryTaskbarIcon cancelQuery');
+		super(id, label, 'stop');
 	}
 
 	public run(input: ProfilerInput): TPromise<boolean> {
@@ -106,7 +106,7 @@ export class ProfilerStop extends Action {
 		id: string, label: string,
 		@IProfilerService private _profilerService: IProfilerService
 	) {
-		super(id, label, 'queryTaskbarIcon cancelQuery');
+		super(id, label, 'stop');
 	}
 
 	public run(input: ProfilerInput): TPromise<boolean> {
@@ -123,7 +123,7 @@ export class ProfilerClear extends Action {
 	public static LABEL = nls.localize('profiler.clear', "Clear Data");
 
 	constructor(id: string, label: string) {
-		super(id, label, 'queryTaskbarIcon cancelQuery');
+		super(id, label, 'stop');
 	}
 
 	run(input: ProfilerInput): TPromise<void> {
@@ -137,7 +137,7 @@ export class ProfilerAutoScroll extends Action {
 	public static LABEL = nls.localize('profiler.toggleAutoscroll', "Toggle Auto Scroll");
 
 	constructor(id: string, label: string) {
-		super(id, label, 'queryTaskbarIcon cancelQuery');
+		super(id, label, 'stop');
 	}
 
 	run(input: ProfilerInput): TPromise<boolean> {

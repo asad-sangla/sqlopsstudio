@@ -50,7 +50,7 @@ suite('SQL QueryAction Tests', () => {
 		let queryAction: QueryTaskbarAction = new RunQueryAction(undefined, undefined, undefined);
 
 		// "class should automatically get set to include the base class and the RunQueryAction class
-		let className = QueryTaskbarAction.BaseClass + ' ' + RunQueryAction.EnabledClass;
+		let className = RunQueryAction.EnabledClass;
 		assert.equal(queryAction.class, className, 'CSS class not properly set');
 		done();
 	});

@@ -6,21 +6,21 @@
 'use strict';
 
 import 'vs/css!vs/base/browser/ui/actionbar/actionbar';
-import lifecycle = require('vs/base/common/lifecycle');
+
 import { Promise } from 'vs/base/common/winjs.base';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { IAction, IActionRunner, ActionRunner } from 'vs/base/common/actions';
-import DOM = require('vs/base/browser/dom');
 import { EventType as CommonEventType } from 'vs/base/common/events';
-import types = require('vs/base/common/types');
 import { EventEmitter } from 'vs/base/common/eventEmitter';
-import { EventType } from 'vs/base/browser/touch';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 import {
 	IActionBarOptions, ActionsOrientation, IActionItem,
 	IActionOptions, ActionItem, BaseActionItem
 } from 'vs/base/browser/ui/actionbar/actionbar';
+import * as lifecycle from 'vs/base/common/lifecycle';
+import * as DOM from 'vs/base/browser/dom';
+import * as types from 'vs/base/common/types';
 
 let defaultOptions: IActionBarOptions = {
 	orientation: ActionsOrientation.HORIZONTAL,
@@ -32,7 +32,7 @@ let defaultOptions: IActionBarOptions = {
  * ActionBar vs/base/browser/ui/actionbar/actionbar. This class was needed because we
  * want the ability to display content other than Action icons in the QueryTaskbar.
  */
-export class QueryActionBar extends EventEmitter implements IActionRunner {
+export class ActionBar extends EventEmitter implements IActionRunner {
 
 	private _options: IActionBarOptions;
 	private _actionRunner: IActionRunner;
