@@ -988,12 +988,19 @@ declare module 'data' {
 		pauseSession(sessionId: string): Thenable<boolean>;
 		connectSession(sessionId: string): Thenable<boolean>;
 		disconnectSession(sessionId: string): Thenable<boolean>;
-		getColumns(sessionId: string): Thenable<Array<string>>;
+	}
+
+	export interface IProfilerTableRow {
+		/**
+		 * Name of the event; known issue this is not camel case, need to figure
+		 * out a better way to determine column id's from rendered column names
+		 */
+		EventClass: string;
 	}
 
 	export interface IProfilerMoreRowsNotificationParams {
 		uri: string;
 		rowCount: number;
-		data: Array<string>;
+		data: IProfilerTableRow;
 	}
 }

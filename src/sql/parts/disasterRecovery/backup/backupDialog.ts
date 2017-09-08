@@ -11,7 +11,6 @@ import { BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.compon
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { Builder } from 'vs/base/browser/builder';
-import * as lifecycle from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
@@ -20,7 +19,6 @@ import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConn
 
 export class BackupDialog extends Modal {
 	private _bodyBuilder: Builder;
-	private _toDispose: lifecycle.IDisposable[] = [];
 	private _backupTitle: string;
 	private _uniqueSelector: string;
 	private _moduleRef: any;
@@ -112,9 +110,5 @@ export class BackupDialog extends Modal {
 		this._backupTitle = 'Backup database - ' + connection.serverName + ':' + connection.databaseName;
 		this.title = this._backupTitle;
 		this.show();
-	}
-
-	public dispose(): void {
-		this._toDispose = lifecycle.dispose(this._toDispose);
 	}
 }

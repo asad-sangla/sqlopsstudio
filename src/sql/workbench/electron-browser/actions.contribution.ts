@@ -26,6 +26,13 @@ const newQuerySchema: IJSONSchema = {
 	default: null
 };
 
+const newProfilerSchema: IJSONSchema = {
+	description: nls.localize('carbon.actions.newProfiler', 'Open up a new profiler window'),
+	type: 'null',
+	default: null
+};
+
 registerTask('backup', '', backupSchema, Actions.BackupAction);
 registerTask('restore', '', restoreSchema, Actions.RestoreAction);
 registerTask('new-query', '', newQuerySchema, Actions.NewQueryAction);
+registerTask('new-profiler', '', newProfilerSchema, Actions.NewProfilerAction);

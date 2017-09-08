@@ -15,7 +15,6 @@ import Event, { Emitter } from 'vs/base/common/event';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { localize } from 'vs/nls';
-import * as lifecycle from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
@@ -53,8 +52,6 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	private _restoreButton: Button;
 	private _closeButton: Button;
 	private _optionsMap: { [name: string]: Widget } = {};
-	private _toDispose: lifecycle.IDisposable[] = [];
-	private _toDisposeTheming: lifecycle.IDisposable[] = [];
 	private _restoreLabel: string;
 	private _restoreTitle: string;
 	private _databaseTitle: string;
@@ -387,19 +384,19 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 			case ServiceOptionType.boolean:
 				propertyWidget = this.createCheckBoxHelper(container, option.description,
 					DialogHelper.getBooleanValueFromStringOrBoolean(option.defaultValue), () => this.onBooleanOptionChecked(optionName));
-				this._toDispose.push(attachCheckboxStyler(propertyWidget, this._themeService));
+				this._register(attachCheckboxStyler(propertyWidget, this._themeService));
 				break;
 			case ServiceOptionType.category:
 				propertyWidget = this.createSelectBoxHelper(container, option.description, option.categoryValues.map(c => c.displayName), DialogHelper.getCategoryDisplayName(option.categoryValues, option.defaultValue));
-				this._toDispose.push(attachSelectBoxStyler(propertyWidget, this._themeService));
-				this._toDispose.push(propertyWidget.onDidSelect(selectedDatabase => {
+				this._register(attachSelectBoxStyler(propertyWidget, this._themeService));
+				this._register(propertyWidget.onDidSelect(selectedDatabase => {
 					this.onCatagoryOptionChanged(optionName);
 				}));
 				break;
 			case ServiceOptionType.string:
 				propertyWidget = this.createInputBoxHelper(container, option.description);
-				this._toDispose.push(attachInputBoxStyler(propertyWidget, this._themeService));
-				this._toDispose.push(propertyWidget.onLoseFocus(params => {
+				this._register(attachInputBoxStyler(propertyWidget, this._themeService));
+				this._register(propertyWidget.onLoseFocus(params => {
 					this.onStringOptionChanged(optionName, params);
 				}));
 		}
@@ -502,25 +499,25 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 
 	private registerListeners(): void {
 		// Theme styler
-		this._toDispose.push(attachInputBoxStyler(this._filePathInputBox, this._themeService));
-		this._toDispose.push(attachInputBoxStyler(this._destinationRestoreToInputBox, this._themeService));
-		this._toDispose.push(attachSelectBoxStyler(this._restoreFromSelectBox, this._themeService));
-		this._toDispose.push(attachSelectBoxStyler(this._sourceDatabaseSelectBox, this._themeService));
-		this._toDispose.push(attachButtonStyler(this._scriptButton, this._themeService));
-		this._toDispose.push(attachButtonStyler(this._restoreButton, this._themeService));
-		this._toDispose.push(attachButtonStyler(this._closeButton, this._themeService));
-		this._toDispose.push(attachTableStyler(this._fileListTable, this._themeService));
-		this._toDispose.push(attachTableStyler(this._restorePlanTable, this._themeService));
+		this._register(attachInputBoxStyler(this._filePathInputBox, this._themeService));
+		this._register(attachInputBoxStyler(this._destinationRestoreToInputBox, this._themeService));
+		this._register(attachSelectBoxStyler(this._restoreFromSelectBox, this._themeService));
+		this._register(attachSelectBoxStyler(this._sourceDatabaseSelectBox, this._themeService));
+		this._register(attachButtonStyler(this._scriptButton, this._themeService));
+		this._register(attachButtonStyler(this._restoreButton, this._themeService));
+		this._register(attachButtonStyler(this._closeButton, this._themeService));
+		this._register(attachTableStyler(this._fileListTable, this._themeService));
+		this._register(attachTableStyler(this._restorePlanTable, this._themeService));
 
-		this._toDispose.push(this._filePathInputBox.onLoseFocus(params => {
+		this._register(this._filePathInputBox.onLoseFocus(params => {
 			this.onFilePathChanged(params);
 		}));
 
-		this._toDispose.push(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
+		this._register(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
 			this.onSourceDatabaseChanged(selectedDatabase.selected);
 		}));
 
-		this._toDispose.push(this._restoreFromSelectBox.onDidSelect(selectedRestoreFrom => {
+		this._register(this._restoreFromSelectBox.onDidSelect(selectedRestoreFrom => {
 			this.onRestoreFromChanged(selectedRestoreFrom.selected);
 		}));
 	}
@@ -606,7 +603,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	}
 
 	public dispose(): void {
-		this._toDispose = lifecycle.dispose(this._toDispose);
+		super.dispose();
 		for (var key in this._optionsMap) {
 			var widget: Widget = this._optionsMap[key];
 			widget.dispose();
@@ -678,7 +675,6 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	}
 
 	private updateBackupSetsToRestore(backupSetsToRestore: data.DatabaseFileInfo[]) {
-		this._toDisposeTheming = lifecycle.dispose(this._toDisposeTheming);
 		this._restorePlanData.clear();
 		if (backupSetsToRestore && backupSetsToRestore.length > 0) {
 			if (!this._restorePlanColumn) {
@@ -692,7 +688,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 				});
 
 				let checkboxSelectColumn = new CheckboxSelectColumn({ title: this._restoreLabel });
-				this._toDispose.push(attachCheckboxStyler(checkboxSelectColumn, this._themeService));
+				this._register(attachCheckboxStyler(checkboxSelectColumn, this._themeService));
 				this._restorePlanColumn.unshift(checkboxSelectColumn.getColumnDefinition());
 				this._restorePlanTable.columns = this._restorePlanColumn;
 				this._restorePlanTable.registerPlugin(checkboxSelectColumn);

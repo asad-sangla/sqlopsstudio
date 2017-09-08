@@ -4,10 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { ProfilerSessionID, IProfilerSession, IProfilerService } from './interfaces';
+import {
+	ProfilerSessionID, IProfilerSession, IProfilerService, IProfilerSessionTemplate,
+	PROFILER_SETTINGS, IProfilerSettings
+} from './interfaces';
+import { ProfilerInput } from 'sql/parts/profiler/editor/profilerInput';
+import { ProfilerColumnEditorDialog } from 'sql/parts/profiler/dialog/profilerColumnEditorDialog';
+
+import * as data from 'data';
 
 import { TPromise } from 'vs/base/common/winjs.base';
-import * as data from 'data';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 class TwoWayMap<T, K> {
 	private forwardMap: Map<T, K>;
@@ -38,8 +46,13 @@ export class ProfilerService implements IProfilerService {
 	private _providers = new Map<string, data.IProfilerProvider>();
 	private _idMap = new TwoWayMap<ProfilerSessionID, string>();
 	private _sessionMap = new Map<ProfilerSessionID, IProfilerSession>();
+	private _dialog: ProfilerColumnEditorDialog;
 
-	constructor( @IConnectionManagementService private _connectionService: IConnectionManagementService) { }
+	constructor(
+		@IConnectionManagementService private _connectionService: IConnectionManagementService,
+		@IConfigurationService public _configurationService: IConfigurationService,
+		@IInstantiationService private _instantiationService: IInstantiationService
+	) { }
 
 	public registerProvider(providerId: string, provider: data.IProfilerProvider): void {
 		this._providers.set(providerId, provider);
@@ -53,10 +66,6 @@ export class ProfilerService implements IProfilerService {
 
 	public onMoreRows(params: data.IProfilerMoreRowsNotificationParams): void {
 		this._sessionMap.get(this._idMap.reverseGet(params.uri)).onMoreRows(params.rowCount, params.data);
-	}
-
-	public getColumns(id: ProfilerSessionID): Thenable<Array<string>> {
-		return this._runAction(id, provider => provider.getColumns(this._idMap.get(id)));
 	}
 
 	public connectSession(id: ProfilerSessionID): Thenable<boolean> {
@@ -92,5 +101,25 @@ export class ProfilerService implements IProfilerService {
 		} else {
 			return TPromise.wrapError(new Error('No Handler Registered'));
 		}
+	}
+
+	public getSessionTemplates(provider?: string): Array<IProfilerSessionTemplate> {
+		let config = <IProfilerSettings>this._configurationService.getConfiguration(PROFILER_SETTINGS);
+
+		if (provider) {
+			return config.sessionTemplates;
+		} else {
+			return config.sessionTemplates;
+		}
+	}
+
+	public launchColumnEditor(input?: ProfilerInput): Thenable<void> {
+		if (!this._dialog) {
+			this._dialog = this._instantiationService.createInstance(ProfilerColumnEditorDialog);
+			this._dialog.render();
+		}
+
+		this._dialog.open(input);
+		return TPromise.as(null);
 	}
 }

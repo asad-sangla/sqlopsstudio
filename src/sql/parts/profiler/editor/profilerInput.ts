@@ -4,9 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TableView } from 'sql/base/browser/ui/table/tableView';
-import { IProfilerSession, IProfilerService, ProfilerSessionID } from 'sql/parts/profiler/service/interfaces';
-import { ProfilerState, IProfilerStateChangedEvent } from './profilerState';
+import { IProfilerSession, IProfilerService, ProfilerSessionID, IProfilerSessionTemplate } from 'sql/parts/profiler/service/interfaces';
+import { ProfilerState } from './profilerState';
 import * as Utils from 'sql/parts/connection/common/utils';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+
+import * as data from 'data';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput } from 'vs/workbench/common/editor';
@@ -24,11 +27,13 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 	private _id: ProfilerSessionID;
 	private _state: ProfilerState;
 	private _columns: string[] = [];
+	private _sessionTemplate: IProfilerSessionTemplate;
 
 	private _onColumnsChanged = new Emitter<Slick.Column<Slick.SlickData>[]>();
 	public onColumnsChanged: Event<Slick.Column<Slick.SlickData>[]> = this._onColumnsChanged.event;
 
 	constructor(
+		private _connection: IConnectionProfile,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IProfilerService private _profilerService: IProfilerService
 	) {
@@ -42,7 +47,6 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 			isRunning: false,
 			autoscroll: true
 		});
-		this._state.addChangeListener(e => this._onStateChange(e));
 		this._id = this._profilerService.registerSession(Utils.generateGuid(), this);
 		let searchFn = (val: { [x: string]: string }, exp: string): Array<number> => {
 			let ret = new Array<number>();
@@ -54,6 +58,26 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 			return ret;
 		};
 		this._data = new TableView<Slick.SlickData>(undefined, searchFn);
+	}
+
+	public set sessionTemplate(template: IProfilerSessionTemplate) {
+		if (!this.state.isConnected || this.state.isStopped) {
+			this._sessionTemplate = template;
+			let newColumns = this.sessionTemplate.view.events.reduce<Array<string>>((p, e) => {
+				e.columns.forEach(c => {
+					if (!p.includes(c)) {
+						p.push(c);
+					}
+				});
+				return p;
+			}, []);
+			newColumns.unshift('EventClass');
+			this.setColumns(newColumns);
+		}
+	}
+
+	public get sessionTemplate(): IProfilerSessionTemplate {
+		return this._sessionTemplate;
 	}
 
 	public getTypeId(): string {
@@ -87,6 +111,11 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 		}
 	}
 
+	public setColumns(columns: Array<string>) {
+		this._columns = columns;
+		this._onColumnsChanged.fire(this.columns);
+	}
+
 	public get id(): ProfilerSessionID {
 		return this._id;
 	}
@@ -95,22 +124,13 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 		return this._state;
 	}
 
-	public onMoreRows(rowCount: number, data: string[]) {
-		let newData = {};
-		for (let i = 0; i < data.length; i++) {
-			newData[this._columns[i]] = data[i];
-		}
-		this._data.push(newData);
-	}
-
-	private _onStateChange(e: IProfilerStateChangedEvent): void {
-		if (e.isConnected) {
-			if (this.state.isConnected) {
-				this._profilerService.getColumns(this._id).then(result => {
-					this._columns = result;
-					this._onColumnsChanged.fire(this.columns);
-				});
+	public onMoreRows(rowCount: number, data: data.IProfilerTableRow) {
+		let validColumns = this.sessionTemplate.view.events.find(i => i.name === data.EventClass).columns;
+		Object.keys(rowCount).forEach(k => {
+			if (!validColumns.includes(k)) {
+				delete rowCount[k];
 			}
-		}
+		});
+		this._data.push(data);
 	}
 }

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IProfilerService } from './service/interfaces';
+import { IProfilerService } from './interfaces';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as pfs from 'vs/base/node/pfs';
@@ -45,16 +45,21 @@ export class ProfilerTestBackend implements data.IProfilerProvider {
 
 	private intervalFn(guid: string): number {
 		return setTimeout(() => {
-			this._profilerService.onMoreRows({ uri: guid, rowCount: 1, data: this.testData[this.index++] });
+			let data = this.testData[this.index++];
+			let formattedData = {
+				EventClass: data[0].trim()
+			};
+
+			for (let i = 1; i < data.length; i++) {
+				formattedData[columns[i]] = data[i];
+			}
+
+			this._profilerService.onMoreRows({ uri: guid, rowCount: 1, data: formattedData });
 			if (this.index >= this.testData.length) {
 				this.index = 0;
 			}
 			this.timeOutMap.set(guid, this.intervalFn(guid));
 		}, Math.floor(Math.random() * 1000) + 300);
-	}
-
-	getColumns(): Thenable<Array<string>> {
-		return TPromise.as(columns);
 	}
 
 	stopSession(guid: string): Thenable<boolean> {

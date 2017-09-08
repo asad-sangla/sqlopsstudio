@@ -13,7 +13,6 @@ import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { FixedCollapsibleView } from 'sql/platform/views/fixedCollapsibleView';
 import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
-import * as lifecycle from 'vs/base/common/lifecycle';
 import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
@@ -63,8 +62,6 @@ export class OptionsDialog extends Modal {
 	private _dividerBuilder: Builder;
 	private _okButton: Button;
 	private _closeButton: Button;
-	private _toDispose: lifecycle.IDisposable[] = [];
-	private _toDisposeTheming: lifecycle.IDisposable[] = [];
 	private _optionTitle: Builder;
 	private _optionDescription: Builder;
 	private _optionElements: { [optionName: string]: OptionsDialogHelper.IOptionElement } = {};
@@ -104,9 +101,7 @@ export class OptionsDialog extends Modal {
 		styler.attachButtonStyler(this._okButton, this._themeService);
 		styler.attachButtonStyler(this._closeButton, this._themeService);
 		let self = this;
-		this._toDisposeTheming.push(self._themeService.onDidColorThemeChange((e) => {
-			self.updateTheme(e);
-		}));
+		this._register(self._themeService.onDidColorThemeChange(e => self.updateTheme(e)));
 		self.updateTheme(self._themeService.getColorTheme());
 
 	}
@@ -164,12 +159,12 @@ export class OptionsDialog extends Modal {
 			switch (option.valueType) {
 				case OptionsDialogHelper.ServiceOptionType.category:
 				case OptionsDialogHelper.ServiceOptionType.boolean:
-					this._toDispose.push(styler.attachSelectBoxStyler(<SelectBox>widget, this._themeService));
+					this._register(styler.attachSelectBoxStyler(<SelectBox>widget, this._themeService));
 					break;
 				case OptionsDialogHelper.ServiceOptionType.string:
 				case OptionsDialogHelper.ServiceOptionType.password:
 				case OptionsDialogHelper.ServiceOptionType.number:
-					this._toDispose.push(styler.attachInputBoxStyler(<InputBox>widget, this._themeService));
+					this._register(styler.attachInputBoxStyler(<InputBox>widget, this._themeService));
 			}
 		}
 	}
@@ -252,7 +247,7 @@ export class OptionsDialog extends Modal {
 	}
 
 	public dispose(): void {
-		this._toDispose = lifecycle.dispose(this._toDispose);
+		super.dispose();
 		for (var optionName in this._optionElements) {
 			var widget: Widget = this._optionElements[optionName].optionWidget;
 			widget.dispose();

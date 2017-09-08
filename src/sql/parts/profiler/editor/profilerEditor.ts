@@ -9,13 +9,14 @@ import { ProfilerInput } from './profilerInput';
 import { TabbedPanel } from 'sql/base/browser/ui/panel/panel';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { TableView } from 'sql/base/browser/ui/table/tableView';
-import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
+import { IProfilerService, IProfilerSessionTemplate } from 'sql/parts/profiler/service/interfaces';
 import { QueryTaskbar } from 'sql/parts/query/editor/queryTaskbar';
 import { attachTableStyler } from 'sql/common/theme/styler';
 import { IProfilerStateChangedEvent } from './profilerState';
 import { ProfilerTableEditor } from './controller/profilerTableEditor';
 import * as Actions from 'sql/parts/profiler/contrib/profilerActions';
 import { CONTEXT_PROFILER_EDITOR, PROFILER_TABLE_COMMAND_SEARCH } from './interfaces';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 
 import * as DOM from 'vs/base/browser/dom';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
@@ -25,9 +26,9 @@ import { EditorOptions } from 'vs/workbench/common/editor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { ReadonlyTextResourceEditor } from './readonlyTextResourceEditor';
+import { ProfilerResourceEditor } from './profilerResourceEditor';
 import { SplitView, View, Orientation, IViewOptions } from 'vs/base/browser/ui/splitview/splitview';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IContextMenuService, IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IModel, ICommonCodeEditor } from 'vs/editor/common/editorCommon';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import URI from 'vs/base/common/uri';
@@ -42,8 +43,9 @@ import { ContextKeyExpr, IContextKeyService, IContextKey } from 'vs/platform/con
 import { KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry';
 import { CommonFindController, FindStartFocusAction } from 'vs/editor/contrib/find/common/findController';
 import * as types from 'vs/base/common/types';
+import { attachSelectBoxStyler } from 'vs/platform/theme/common/styler';
 
-import { ProfilerTestBackend } from 'sql/parts/profiler/profilerTestBackend';
+import { ProfilerTestBackend } from 'sql/parts/profiler/service/profilerTestBackend';
 
 class BasicView extends View {
 	private _previousSize: number;
@@ -95,7 +97,7 @@ export interface IDetailData {
 
 export class ProfilerEditor extends BaseEditor {
 	public static ID: string = 'workbench.editor.profiler';
-	private _editor: ReadonlyTextResourceEditor;
+	private _editor: ProfilerResourceEditor;
 	private _editorModel: IModel;
 	private _editorInput: UntitledEditorInput;
 	private _splitView: SplitView;
@@ -112,6 +114,9 @@ export class ProfilerEditor extends BaseEditor {
 
 	private _profilerEditorContextKey: IContextKey<boolean>;
 
+	private _sessionTemplateSelector: SelectBox;
+	private _sessionTemplates: Array<IProfilerSessionTemplate>;
+
 	// Actions
 	private _connectAction: Actions.ProfilerConnect;
 	private _startAction: Actions.ProfilerStart;
@@ -127,14 +132,17 @@ export class ProfilerEditor extends BaseEditor {
 		@IContextMenuService private _contextMenuService: IContextMenuService,
 		@IModelService private _modelService: IModelService,
 		@IProfilerService private _profilerService: IProfilerService,
-		@IContextKeyService private _contextKeyService: IContextKeyService
+		@IContextKeyService private _contextKeyService: IContextKeyService,
+		@IContextViewService private _contextViewService: IContextViewService
 	) {
 		super(ProfilerEditor.ID, telemetryService, themeService);
 		this._profilerEditorContextKey = CONTEXT_PROFILER_EDITOR.bindTo(this._contextKeyService);
 	}
 
 	protected createEditor(parent: Builder): void {
+		// test backend
 		this._profilerService.registerProvider('default', this._instantiationService.createInstance(ProfilerTestBackend));
+
 		this._container = document.createElement('div');
 		this._container.className = 'carbon-profiler monaco-editor';
 		parent.append(this._container);
@@ -178,6 +186,19 @@ export class ProfilerEditor extends BaseEditor {
 		this._connectAction = this._instantiationService.createInstance(Actions.ProfilerConnect, Actions.ProfilerConnect.ID, Actions.ProfilerConnect.LABEL);
 		this._autoscrollAction = this._instantiationService.createInstance(Actions.ProfilerAutoScroll, Actions.ProfilerAutoScroll.ID, Actions.ProfilerAutoScroll.LABEL);
 
+		this._sessionTemplates = this._profilerService.getSessionTemplates();
+		this._sessionTemplateSelector = new SelectBox(this._sessionTemplates.map(i => i.name), 'Standard');
+		this._register(this._sessionTemplateSelector.onDidSelect(e => {
+			if (this.input) {
+				this.input.sessionTemplate = this._sessionTemplates.find(i => i.name === e.selected);
+			}
+		}));
+		let dropdownContainer = document.createElement('div');
+		dropdownContainer.style.width = '150px';
+		this._sessionTemplateSelector.render(dropdownContainer);
+
+		this._register(attachSelectBoxStyler(this._sessionTemplateSelector, this.themeService));
+
 		this._actionBar.setContent([
 			{ action: this._startAction },
 			{ action: this._pauseAction },
@@ -185,7 +206,9 @@ export class ProfilerEditor extends BaseEditor {
 			{ action: this._connectAction },
 			{ element: QueryTaskbar.createTaskbarSeparator() },
 			{ action: this._autoscrollAction },
-			{ action: this._instantiationService.createInstance(Actions.ProfilerClear, Actions.ProfilerClear.ID, Actions.ProfilerClear.LABEL) }
+			{ action: this._instantiationService.createInstance(Actions.ProfilerClear, Actions.ProfilerClear.ID, Actions.ProfilerClear.LABEL) },
+			{ element: dropdownContainer },
+			{ action: this._instantiationService.createInstance(Actions.ProfilerEditColumns, Actions.ProfilerEditColumns.ID, Actions.ProfilerEditColumns.LABEL) }
 		]);
 	}
 
@@ -230,7 +253,7 @@ export class ProfilerEditor extends BaseEditor {
 		this._tabbedPanel = new TabbedPanel(tabbedPanelContainer);
 		this._tabbedPanel.pushTab({
 			identifier: 'editor',
-			title: nls.localize('text', 'Text'),
+			title: nls.localize('text', "Text"),
 			view: {
 				layout: dim => this._editor.layout(dim),
 				render: parent => parent.appendChild(editorContainer)
@@ -245,21 +268,21 @@ export class ProfilerEditor extends BaseEditor {
 		this._detailTable = new Table(detailTableContainer, this._detailTableData, [
 			{
 				id: 'label',
-				name: nls.localize('label', 'Label'),
+				name: nls.localize('label', "Label"),
 				field: 'label'
 			},
 			{
 				id: 'value',
-				name: nls.localize('value', 'Value'),
+				name: nls.localize('value', "Value"),
 				field: 'value'
 			}
-		]);
+		], { forceFitColumns: true });
 
 		this._tabbedPanel.pushTab({
 			identifier: 'detailTable',
-			title: nls.localize('details', 'Details'),
+			title: nls.localize('details', "Details"),
 			view: {
-				layout: () => this._detailTable.resizeCanvas(),
+				layout: dim => this._detailTable.layout(dim),
 				render: parent => parent.appendChild(detailTableContainer)
 			}
 		});
@@ -274,15 +297,14 @@ export class ProfilerEditor extends BaseEditor {
 	}
 
 	private _createProfilerEditor(): HTMLElement {
-		this._editor = this._instantiationService.createInstance(ReadonlyTextResourceEditor);
+		this._editor = this._instantiationService.createInstance(ProfilerResourceEditor);
 		let editorContainer = document.createElement('div');
 		editorContainer.className = 'profiler-editor';
 		this._editor.create(new Builder(editorContainer));
+		this._editor.setVisible(true);
 		this._editorInput = this._instantiationService.createInstance(UntitledEditorInput, URI.from({ scheme: UNTITLED_SCHEMA }), false, 'sql', '', '');
-		this._editor.setInput(this._editorInput);
-		this._editorInput.resolve().then(model => {
-			this._editorModel = model.textEditorModel;
-		});
+		this._editor.setInput(this._editorInput, undefined);
+		this._editorInput.resolve().then(model => this._editorModel = model.textEditorModel);
 		return editorContainer;
 	}
 
@@ -298,8 +320,15 @@ export class ProfilerEditor extends BaseEditor {
 
 		return super.setInput(input, options).then(() => {
 			this._profilerTableEditor.setInput(input);
-			this._actionBar.context = { id: input.id, state: input.state, data: input.data };
-			this._tabbedPanel.actionBarContext = { id: input.id, state: input.state, data: input.data };
+
+			if (input.sessionTemplate) {
+				this._sessionTemplateSelector.selectWithOptionName(input.sessionTemplate.name);
+			} else {
+				input.sessionTemplate = this._sessionTemplates.find(i => i.name === 'Standard');
+			}
+
+			this._actionBar.context = input;
+			this._tabbedPanel.actionBarContext = input;
 			if (this._stateListener) {
 				this._stateListener.dispose();
 			}
@@ -355,6 +384,13 @@ export class ProfilerEditor extends BaseEditor {
 			this._startAction.enabled = this.input.state.isConnected;
 			this._stopAction.enabled = false;
 			this._pauseAction.enabled = false;
+
+			if (this.input.state.isConnected) {
+				this._sessionTemplateSelector.disable();
+			} else {
+				this._sessionTemplateSelector.enable();
+			}
+
 			return;
 		}
 

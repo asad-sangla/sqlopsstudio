@@ -4,16 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { SelectBox as vsSelectBox } from 'vs/base/browser/ui/selectBox/selectBox';
-import * as lifecycle from 'vs/base/common/lifecycle';
+import { SelectBox as vsSelectBox, ISelectBoxStyles } from 'vs/base/browser/ui/selectBox/selectBox';
 import { Color } from 'vs/base/common/color';
-import { ISelectBoxStyles } from 'vs/base/browser/ui/selectBox/selectBox';
 
 export class SelectBox extends vsSelectBox {
 	private _optionsDictionary;
 	private _dialogOptions: string[];
 	private _selectedOption: string;
-	private _toDispose2: lifecycle.IDisposable[];
 	private enabledSelectBackground: Color;
 	private enabledSelectForeground: Color;
 	private enabledSelectBorder: Color;
@@ -30,8 +27,7 @@ export class SelectBox extends vsSelectBox {
 		super.select(this._optionsDictionary[selectedOption]);
 		this._selectedOption = selectedOption;
 		this._dialogOptions = options;
-		this._toDispose2 = [];
-		this._toDispose2.push(this.onDidSelect(newInput => {
+		this._register(this.onDidSelect(newInput => {
 			this._selectedOption = newInput.selected;
 		}));
 
@@ -74,11 +70,6 @@ export class SelectBox extends vsSelectBox {
 
 	public get value(): string {
 		return this._selectedOption;
-	}
-
-	public dispose(): void {
-		this._toDispose2 = lifecycle.dispose(this._toDispose2);
-		super.dispose();
 	}
 
 	public enable(): void {

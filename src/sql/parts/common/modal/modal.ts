@@ -9,6 +9,7 @@ import { Color } from 'vs/base/common/color';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { mixin } from 'vs/base/common/objects';
+import { Disposable } from 'vs/base/common/lifecycle';
 
 /* Bad Layering */
 import { Builder, $, withElementById } from 'vs/base/browser/builder';
@@ -51,7 +52,7 @@ const defaultOptions: IModalOptions = {
 	hasSpinner: false
 };
 
-export abstract class Modal implements IThemable {
+export abstract class Modal extends Disposable implements IThemable {
 
 	private _errorMessage: Builder;
 	private _spinnerElement: HTMLElement;
@@ -93,6 +94,7 @@ export abstract class Modal implements IThemable {
 		private _partService: IPartService,
 		options?: IModalOptions
 	) {
+		super();
 		this._modalOptions = options || Object.create(null);
 		mixin(this._modalOptions, defaultOptions, false);
 	}

@@ -35,7 +35,6 @@ export class ServerGroupDialog extends Modal {
 	private _selectedColorOption: number;
 	private _groupNameInputBox: InputBox;
 	private _groupDescriptionInputBox: InputBox;
-	private _toDispose: lifecycle.IDisposable[] = [];
 	private _viewModel: ServerGroupViewModel;
 
 
@@ -116,7 +115,7 @@ export class ServerGroupDialog extends Modal {
 				groupColorContainer.getHTMLElement().appendChild(colorCheckBox.domNode);
 
 				// Theme styler
-				this._toDispose.push(attachCheckboxStyler(colorCheckBox, this._themeService));
+				this._register(attachCheckboxStyler(colorCheckBox, this._themeService));
 
 				// add the new checkbox to the color map
 				this._colorCheckBoxesMap.set(color, colorCheckBox);
@@ -247,18 +246,18 @@ export class ServerGroupDialog extends Modal {
 
 	private registerListeners(): void {
 		// Theme styler
-		this._toDispose.push(attachInputBoxStyler(this._groupNameInputBox, this._themeService));
-		this._toDispose.push(attachInputBoxStyler(this._groupDescriptionInputBox, this._themeService));
-		this._toDispose.push(attachButtonStyler(this._addServerButton, this._themeService));
-		this._toDispose.push(attachButtonStyler(this._closeButton, this._themeService));
+		this._register(attachInputBoxStyler(this._groupNameInputBox, this._themeService));
+		this._register(attachInputBoxStyler(this._groupDescriptionInputBox, this._themeService));
+		this._register(attachButtonStyler(this._addServerButton, this._themeService));
+		this._register(attachButtonStyler(this._closeButton, this._themeService));
 
 		// handler for name change events
-		this._toDispose.push(this._groupNameInputBox.onDidChange(groupName => {
+		this._register(this._groupNameInputBox.onDidChange(groupName => {
 			this.groupNameChanged(groupName);
 		}));
 
 		// handler for description change events
-		this._toDispose.push(this._groupDescriptionInputBox.onDidChange(groupDescription => {
+		this._register(this._groupDescriptionInputBox.onDidChange(groupDescription => {
 			this.groupDescriptionChanged(groupDescription);
 		}));
 	}
@@ -362,9 +361,5 @@ export class ServerGroupDialog extends Modal {
 		this.initializeView();
 		this.show();
 		this._groupNameInputBox.focus();
-	}
-
-	public dispose(): void {
-		this._toDispose = lifecycle.dispose(this._toDispose);
 	}
 }

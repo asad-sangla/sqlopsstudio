@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IProfilerController } from './interfaces';
-import { ProfilerInput } from 'sql/parts/profiler/profilerInput';
+import { ProfilerInput } from 'sql/parts/profiler/editor/profilerInput';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { attachTableStyler } from 'sql/common/theme/styler';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
-import { IProfilerStateChangedEvent } from 'sql/parts/profiler/profilerState';
+import { IProfilerStateChangedEvent } from 'sql/parts/profiler/editor/profilerState';
 import { FindWidget, ITableController, IConfigurationChangedEvent, ACTION_IDS } from './profilerFindWidget';
 import { ProfilerFindNext, ProfilerFindPrevious } from 'sql/parts/profiler/contrib/profilerActions';
 
@@ -65,7 +65,7 @@ export class ProfilerTableEditor extends BaseEditor implements IProfilerControll
 		this._overlay.style.zIndex = '4';
 		parent.getHTMLElement().appendChild(this._overlay);
 
-		this._profilerTable = new Table(parent.getHTMLElement());
+		this._profilerTable = new Table(parent.getHTMLElement(), undefined, undefined);
 		this._profilerTable.setSelectionModel(new RowSelectionModel());
 		attachTableStyler(this._profilerTable, this._themeService);
 

@@ -3,8 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
+.profiler-column-tree {
+	height: calc(100% - 25px);
+	width: 100%;
+}
 
-export const CONTEXT_PROFILER_EDITOR = new RawContextKey<boolean>('inProfilerTableEditor', false);
-
-export const PROFILER_TABLE_COMMAND_SEARCH = 'profiler.table.action.search';
+.tree-row > * {
+	display: inline-block;
+}

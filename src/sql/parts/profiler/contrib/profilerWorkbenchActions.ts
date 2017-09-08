@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { ProfilerInput } from 'sql/parts/profiler/profilerInput';
+import { ProfilerInput } from 'sql/parts/profiler/editor/profilerInput';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
@@ -25,10 +25,8 @@ export class GlobalNewProfilerAction extends Action {
 		super(id, label);
 	}
 
-	run(): TPromise<boolean> {
-		let profilerInput = this._instantiationService.createInstance(ProfilerInput);
-		return this._editorService.openEditor(profilerInput, { pinned: true }, false).then(() => {
-			return TPromise.as(true);
-		});
+	run(context?: any): TPromise<boolean> {
+		let profilerInput = this._instantiationService.createInstance(ProfilerInput, context ? context.connectionProfile : undefined);
+		return this._editorService.openEditor(profilerInput, { pinned: true }, false).then(() => TPromise.as(true));
 	}
 }

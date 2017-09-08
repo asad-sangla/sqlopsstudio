@@ -9,6 +9,7 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ContributableActionProvider } from 'vs/workbench/browser/actions';
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+
 import {
 	DisconnectConnectionAction, AddServerAction, NewQueryAction, ManageConnectionAction,
 	RenameGroupAction, DeleteConnectionAction, RefreshAction, EditServerGroupAction
@@ -19,6 +20,7 @@ import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { NewProfilerAction } from 'sql/workbench/electron-browser/actions';
 
 /**
  *  Provides actions for the server tree elements
@@ -70,7 +72,8 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
 			this._instantiationService.createInstance(DisconnectConnectionAction, DisconnectConnectionAction.ID, DisconnectConnectionAction.LABEL),
 			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL, element),
-			this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, element)
+			this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, element),
+			this._instantiationService.createInstance(NewProfilerAction, NewProfilerAction.ID, NewProfilerAction.LABEL, NewProfilerAction.ICON)
 		];
 	}
 
@@ -95,9 +98,9 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		let scriptMap: Map<NodeType, any[]> = ObjectExplorerActionUtilities.getScriptMap();
 		let supportedActions = scriptMap.get(treeNode.nodeTypeId);
 		let self = this;
-		if (supportedActions != null) {
-			supportedActions.forEach(function(action) {
-			actions.push(self._instantiationService.createInstance(action, action.ID, action.LABEL))
+		if (supportedActions !== null) {
+			supportedActions.forEach(action => {
+				actions.push(self._instantiationService.createInstance(action, action.ID, action.LABEL));
 			});
 		}
 		actions.push(this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, treeNode));

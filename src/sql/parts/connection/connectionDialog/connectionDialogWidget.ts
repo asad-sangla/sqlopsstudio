@@ -25,7 +25,6 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import Event, { Emitter } from 'vs/base/common/event';
 import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
-import * as lifecycle from 'vs/base/common/lifecycle';
 import { DefaultController, ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
 import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { localize } from 'vs/nls';
@@ -59,8 +58,6 @@ export class ConnectionDialogWidget extends Modal {
 	private _connectButton: Button;
 	private _closeButton: Button;
 	private _providerTypeSelectBox: SelectBox;
-	private _toDispose: lifecycle.IDisposable[] = [];
-	private _toDisposeStyle: lifecycle.IDisposable[] = [];
 	private _newConnectionParams: INewConnectionParams;
 	private _recentConnectionTree: ITree;
 
@@ -118,9 +115,7 @@ export class ConnectionDialogWidget extends Modal {
 		this._bodyBuilder.div({ class: 'connection-provider-info', id: 'connectionProviderInfo' });
 
 		let self = this;
-		this._toDispose.push(self._themeService.onDidColorThemeChange((e) => {
-			self.updateTheme(e);
-		}));
+		this._register(self._themeService.onDidColorThemeChange(e => self.updateTheme(e)));
 		self.updateTheme(self._themeService.getColorTheme());
 	}
 
@@ -152,11 +147,11 @@ export class ConnectionDialogWidget extends Modal {
 
 	private registerListeners(): void {
 		// Theme styler
-		this._toDispose.push(styler.attachSelectBoxStyler(this._providerTypeSelectBox, this._themeService));
-		this._toDispose.push(styler.attachButtonStyler(this._connectButton, this._themeService));
-		this._toDispose.push(styler.attachButtonStyler(this._closeButton, this._themeService));
+		this._register(styler.attachSelectBoxStyler(this._providerTypeSelectBox, this._themeService));
+		this._register(styler.attachButtonStyler(this._connectButton, this._themeService));
+		this._register(styler.attachButtonStyler(this._closeButton, this._themeService));
 
-		this._toDispose.push(this._providerTypeSelectBox.onDidSelect(selectedProviderType => {
+		this._register(this._providerTypeSelectBox.onDidSelect(selectedProviderType => {
 			this.onProviderTypeSelected(selectedProviderType.selected);
 		}));
 	}
@@ -218,7 +213,7 @@ export class ConnectionDialogWidget extends Modal {
 					this._recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true, controller);
 
 					// Theme styler
-					this._toDisposeStyle.push(styler.attachListStyler(this._recentConnectionTree, this._themeService));
+					this._register(styler.attachListStyler(this._recentConnectionTree, this._themeService));
 					divContainer.append(this._recentConnectionTree.getHTMLElement());
 				});
 			});
@@ -293,9 +288,5 @@ export class ConnectionDialogWidget extends Modal {
 	public updateProvider(displayName: string) {
 		this._providerTypeSelectBox.selectWithOptionName(displayName);
 		this.onProviderTypeSelected(displayName);
-	}
-
-	public dispose(): void {
-		this._toDispose = lifecycle.dispose(this._toDispose);
 	}
 }

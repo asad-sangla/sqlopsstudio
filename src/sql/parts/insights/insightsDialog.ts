@@ -187,8 +187,8 @@ export default class InsightsDialog extends Modal {
 	private _columns: IDbColumn[];
 	private _insight: IInsightsConfig;
 	private _disposables: IDisposable[] = [];
-	private _topList: List<any>;
-	private _bottomList: List<any>;
+	private _topList: List<ListResource>;
+	private _bottomList: List<ListResource>;
 	private _topRenderer: TopRenderer;
 	private _splitView: SplitView;
 	private _container: HTMLElement;
