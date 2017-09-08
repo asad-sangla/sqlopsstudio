@@ -12,32 +12,33 @@ import * as data from 'data';
 import { Disposable } from 'vs/workbench/api/node/extHostTypes';
 
 class CredentialAdapter {
-	private _provider: data.CredentialProvider;
+	public provider: data.CredentialProvider;
 
 	constructor(provider: data.CredentialProvider) {
-		this._provider = provider;
+		this.provider = provider;
 	}
 
 	public saveCredential(credentialId: string, password: string): Thenable<boolean>  {
-		return this._provider.saveCredential(credentialId, password);
+		return this.provider.saveCredential(credentialId, password);
 	}
 
 	public readCredential(credentialId: string): Thenable<data.Credential> {
-		return this._provider.readCredential(credentialId);
+		return this.provider.readCredential(credentialId);
 	}
 
     public deleteCredential(credentialId: string): Thenable<boolean> {
-		return this._provider.deleteCredential(credentialId);
+		return this.provider.deleteCredential(credentialId);
 	}
 }
 
 type Adapter = CredentialAdapter;
 
 export class ExtHostCredentialManagement extends ExtHostCredentialManagementShape  {
+	private _handlePool: number = 0;
 
+	// MEMBER VARIABLES ////////////////////////////////////////////////////
 	private _proxy: MainThreadCredentialManagementShape;
 
-	private static _handlePool: number = 0;
 	private _adapter: { [handle: number]: Adapter } = Object.create(null);
 
 	private _createDisposable(handle: number): Disposable {
@@ -47,30 +48,44 @@ export class ExtHostCredentialManagement extends ExtHostCredentialManagementShap
 		});
 	}
 
-	private _nextHandle(): number {
-		return ExtHostCredentialManagement._handlePool++;
-	}
-
-	private _withAdapter<A, R>(handle: number, ctor: { new (...args: any[]): A }, callback: (adapter: A) => Thenable<R>): Thenable<R> {
-		let adapter = this._adapter[handle];
-		if (!(adapter instanceof ctor)) {
-			return TPromise.wrapError(new Error('no adapter found'));
-		}
-		return callback(<any>adapter);
-	}
-
-	constructor(
-		threadService: IThreadService
-	) {
+	constructor(threadService: IThreadService) {
 		super();
 		this._proxy = threadService.get(SqlMainContext.MainThreadCredentialManagement);
 	}
 
+	// PUBLIC METHODS //////////////////////////////////////////////////////
 	public $registerCredentialProvider(provider: data.CredentialProvider): vscode.Disposable {
 		provider.handle = this._nextHandle();
 		this._adapter[provider.handle] = new CredentialAdapter(provider);
 		this._proxy.$registerCredentialProvider(provider.handle);
 		return this._createDisposable(provider.handle);
+	}
+
+	public $getCredentialProvider(namespaceId: string): Thenable<data.CredentialProvider> {
+		if (!namespaceId) {
+			return TPromise.wrapError(new Error('A namespace must be provided when retrieving a credential provider'));
+		}
+
+		return this._withAdapter(0, CredentialAdapter, adapter => {
+			// Create a provider that wraps the methods in a namespace
+			let provider: data.CredentialProvider = {
+				handle: adapter.provider.handle,
+				deleteCredential: (credentialId: string) => {
+					let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
+					return adapter.provider.deleteCredential(namespacedId);
+				},
+				readCredential: (credentialId: string) => {
+					let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
+					return adapter.provider.readCredential(namespacedId);
+				},
+				saveCredential: (credentialId: string, credential: string) => {
+					let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
+					return adapter.provider.saveCredential(namespacedId, credential);
+				}
+			};
+
+			return TPromise.as(provider);
+		});
 	}
 
 	public $saveCredential(credentialId: string, password: string): Thenable<boolean> {
@@ -83,5 +98,30 @@ export class ExtHostCredentialManagement extends ExtHostCredentialManagementShap
 
     public $deleteCredential(credentialId: string): Thenable<boolean> {
 		return this._withAdapter(0, CredentialAdapter, adapter => adapter.deleteCredential(credentialId));
+	}
+
+	/**
+	 * Helper method for tests. Not exposed via shape.
+	 * @return {number} Number of providers registered
+	 */
+	public getProviderCount(): number {
+		return Object.keys(this._adapter).length;
+	}
+
+	// PRIVATE HELPERS /////////////////////////////////////////////////////
+	private static _getNamespacedCredentialId(namespaceId: string, credentialId: string) {
+		return `${namespaceId}|${credentialId}`;
+	}
+
+	private _nextHandle(): number {
+		return this._handlePool++;
+	}
+
+	private _withAdapter<A, R>(handle: number, ctor: { new (...args: any[]): A }, callback: (adapter: A) => Thenable<R>): Thenable<R> {
+		let adapter = this._adapter[handle];
+		if (!(adapter instanceof ctor)) {
+			return TPromise.wrapError(new Error('no adapter found'));
+		}
+		return callback(<any>adapter);
 	}
 }

@@ -9,7 +9,6 @@ import * as assert from 'assert';
 import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
 import { setUnexpectedErrorHandler, errorHandler } from 'vs/base/common/errors';
 import URI from 'vs/base/common/uri';
-import * as types from 'vs/workbench/api/node/extHostTypes';
 import * as EditorCommon from 'vs/editor/common/editorCommon';
 import { Model as EditorModel } from 'vs/editor/common/model/model';
 import { TestThreadService } from 'vs/workbench/test/electron-browser/api/testThreadService';
@@ -21,9 +20,7 @@ import { MainThreadCommands } from 'vs/workbench/api/electron-browser/mainThread
 import { IHeapService } from 'vs/workbench/api/electron-browser/mainThreadHeapService';
 import { ExtHostDocuments } from 'vs/workbench/api/node/extHostDocuments';
 import { ExtHostDocumentsAndEditors } from 'vs/workbench/api/node/extHostDocumentsAndEditors';
-import { getDocumentSymbols } from 'vs/editor/contrib/quickOpen/common/quickOpen';
-import { DocumentSymbolProviderRegistry, DocumentHighlightKind } from 'vs/editor/common/modes';
-import { asWinJsPromise } from 'vs/base/common/async';
+import { DocumentSymbolProviderRegistry } from 'vs/editor/common/modes';
 import { MainContext, ExtHostContext } from 'vs/workbench/api/node/extHost.protocol';
 import { ExtHostDiagnostics } from 'vs/workbench/api/node/extHostDiagnostics';
 import { ExtHostHeapService } from 'vs/workbench/api/node/extHostHeapService';
@@ -31,12 +28,8 @@ import * as vscode from 'vscode';
 
 import * as data from 'data';
 import { ExtHostDataProtocol } from 'sql/workbench/api/node/extHostDataProtocol';
-import { MainThreadDataProtocol } from 'sql/workbench/api/node/mainThreadDataProtocol';
-import { SqlMainContext, SqlExtHostContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
-import { CapabilitiesTestService } from 'sqltest/stubs/capabilitiesTestService';
-import { TestConnectionManagementService } from 'sqltest/stubs/connectionManagementService.test';
+import { SqlExtHostContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
 
-const defaultSelector = { scheme: 'far' };
 const model: EditorCommon.IModel = EditorModel.createFromString(
 	[
 		'This is the first line',
@@ -48,7 +41,6 @@ const model: EditorCommon.IModel = EditorModel.createFromString(
 	URI.parse('far://testing/file.a'));
 
 let extHost: ExtHostDataProtocol;
-let mainThread: MainThreadDataProtocol;
 let disposables: vscode.Disposable[] = [];
 let threadService: TestThreadService;
 let originalErrorHandler: (e: any) => any;
@@ -95,13 +87,8 @@ suite('ExtHostDataProtocol', function () {
 		const diagnostics = new ExtHostDiagnostics(threadService);
 		threadService.set(ExtHostContext.ExtHostDiagnostics, diagnostics);
 
-		// const capabilitiesService = new CapabilitiesTestService();
-		// const connService = new TestConnectionManagementService();I
-
 		extHost = new ExtHostDataProtocol(threadService);
 		threadService.set(SqlExtHostContext.ExtHostDataProtocol, extHost);
-
-		// mainThread = <MainThreadDataProtocol>threadService.setTestInstance(SqlMainContext.MainThreadDataProtocol, instantiationService.createInstance(MainThreadDataProtocol));
 	});
 
 	suiteTeardown(() => {

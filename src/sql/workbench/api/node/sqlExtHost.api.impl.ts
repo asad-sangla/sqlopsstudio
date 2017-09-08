@@ -51,6 +51,9 @@ export function createApiFactory(
 				registerProvider(provider: data.CredentialProvider): vscode.Disposable {
 					return extHostCredentialManagement.$registerCredentialProvider(provider);
 				},
+				getProvider(namespaceId: string): Thenable<data.CredentialProvider> {
+					return extHostCredentialManagement.$getCredentialProvider(namespaceId);
+				}
 			};
 
 			const serialization: typeof data.serialization = {

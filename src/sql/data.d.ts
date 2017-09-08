@@ -6,6 +6,50 @@
 declare module 'data' {
 	import * as vscode from 'vscode';
 
+	// EXPORTED NAMESPACES /////////////////////////////////////////////////
+	/**
+	 * Namespace for Data Management Protocol global methods
+	 */
+	export namespace dataprotocol {
+		export function registerProvider(provider: DataProtocolProvider): vscode.Disposable;
+
+		/**
+		 * An [event](#Event) which fires when the specific flavor of a language used in DMP
+		 * connections has changed. And example is for a SQL connection, the flavor changes
+		 * to MSSQL or PGSQL
+		 */
+		export const onDidChangeLanguageFlavor: vscode.Event<DidChangeLanguageFlavorParams>;
+	}
+
+	/**
+	 * Namespace for credentials management global methods, available to all extensions
+	 */
+	export namespace credentials {
+		/**
+		 * Register a credential provider to handle credential requests.
+		 * @param {CredentialProvider} provider The provider to register
+		 * @return {Disposable} Handle to the provider for disposal
+		 */
+		export function registerProvider(provider: CredentialProvider): vscode.Disposable;
+
+		/**
+		 * Retrieves a provider from the extension host if one has been registered. Any credentials
+		 * accessed with the returned provider will have the namespaceId appended to credential ID
+		 * to prevent extensions from trampling over each others' credentials.
+		 * @param {string} namespaceId ID that will be appended to credential IDs.
+		 * @return {Thenable<CredentialProvider>} Promise that returns the namespaced provider
+		 */
+		export function getProvider(namespaceId: string): Thenable<CredentialProvider>;
+	}
+
+	/**
+	 * Namespace for serialization management global methods
+	 */
+	export namespace serialization {
+		export function registerProvider(provider: SerializationProvider): vscode.Disposable;
+	}
+
+	// EXPORTED INTERFACES /////////////////////////////////////////////////
 	export interface ConnectionInfo {
 
 		options: { [name: string]: any };
@@ -433,34 +477,6 @@ declare module 'data' {
 		flavor: string;
 	}
 
-	/**
-	 * Namespace for Data Management Protocol global methods
-	 */
-	export namespace dataprotocol {
-		export function registerProvider(provider: DataProtocolProvider): vscode.Disposable;
-
-		/**
-		 * An [event](#Event) which fires when the specific flavor of a language used in DMP
-		 * connections has changed. And example is for a SQL connection, the flavor changes
-		 * to MSSQL or PGSQL
-		 */
-		export const onDidChangeLanguageFlavor: vscode.Event<DidChangeLanguageFlavorParams>;
-	}
-
-	/**
-	 * Namespace for credentials management global methods
-	 */
-	export namespace credentials {
-		export function registerProvider(provider: CredentialProvider): vscode.Disposable;
-	}
-
-	/**
-	 * Namespace for serialization management global methods
-	 */
-	export namespace serialization {
-		export function registerProvider(provider: SerializationProvider): vscode.Disposable;
-	}
-
 	export interface QueryProvider {
 		handle: number;
 		// TODO replace this temporary queryType field to detect "MSSQL" vs "PostGre" with a standard definition for supported platform
@@ -548,7 +564,6 @@ declare module 'data' {
 		endColumn: number;
 	}
 
-
 	export interface ResultSetSummary {
 		id: number;
 		batchId: number;
@@ -593,6 +608,7 @@ declare module 'data' {
 		displayEstimatedQueryPlan?: boolean;
 		displayActualQueryPlan?: boolean;
 	}
+
 	export interface SimpleExecuteParams {
 		queryString: string;
 		ownerUri: string;
