@@ -46,7 +46,7 @@ export interface IQueryModelService {
 	onAngularLoaded(uri: string): void;
 
 	copyResults(uri: string, selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void;
-	setEditorSelection(uri: string): void;
+	setEditorSelection(uri: string, index: number): void;
 	showWarning(uri: string, message: string): void;
 	showError(uri: string, message: string): void;
 

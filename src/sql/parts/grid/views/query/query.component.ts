@@ -407,8 +407,8 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		}, self.scrollTimeOutTime);
 	}
 
-	onSelectionLinkClicked(): void {
-		this.dataService.setEditorSelection();
+	onSelectionLinkClicked(index: number): void {
+		this.dataService.setEditorSelection(index);
 	}
 
 	/**

@@ -31,7 +31,7 @@ export class DataService {
 	constructor(
 		private _uri: string,
 		@IInstantiationService private _instantiationService: IInstantiationService,
-        @IQueryModelService private _queryModel: IQueryModelService,
+		@IQueryModelService private _queryModel: IQueryModelService,
 		@IQueryEditorService private _queryEditorService: IQueryEditorService
 	) {
 		this.queryEventObserver = new Subject();
@@ -163,7 +163,7 @@ export class DataService {
 	 */
 	sendSaveRequest(saveRequest: ISaveRequest): void {
 		let serializer = this._instantiationService.createInstance(ResultSerializer);
-        serializer.saveResults(this._uri, saveRequest);
+		serializer.saveResults(this._uri, saveRequest);
 	}
 
 	/**
@@ -190,8 +190,8 @@ export class DataService {
 	/**
 	 * Sends a request to set the selection in the QueryEditor.
 	 */
-	setEditorSelection() {
-		this._queryModel.setEditorSelection(this._uri);
+	setEditorSelection(index: number) {
+		this._queryModel.setEditorSelection(this._uri, index);
 	}
 
 	showWarning(message: string): void {

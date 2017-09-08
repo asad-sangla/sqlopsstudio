@@ -41,7 +41,7 @@ class QueryInfo {
 	public queryRunner: QueryRunner;
 	public dataService: DataService;
 	public queryEventQueue: QueryEvent[];
-	public selection: ISelectionData;
+	public selection: Array<ISelectionData>;
 	public queryInput: QueryInput;
 
 	// Notes if the angular components have obtained the DataService. If not, all messages sent
@@ -51,6 +51,7 @@ class QueryInfo {
 	constructor() {
 		this.dataServiceReady = false;
 		this.queryEventQueue = [];
+		this.selection = [];
 	}
 }
 
@@ -163,10 +164,10 @@ export class QueryModelService implements IQueryModelService {
 		this._queryInfoMap.get(uri).queryRunner.copyResults(selection, batchId, resultId, includeHeaders);
 	}
 
-	public setEditorSelection(uri: string): void {
+	public setEditorSelection(uri: string, index: number): void {
 		let info: QueryInfo = this._queryInfoMap.get(uri);
 		if (info && info.queryInput) {
-			info.queryInput.updateSelection(info.selection);
+			info.queryInput.updateSelection(info.selection[index]);
 		}
 	}
 
@@ -186,7 +187,7 @@ export class QueryModelService implements IQueryModelService {
 	 * Run a query for the given URI with the given text selection
 	 */
 	public runQuery(uri: string, selection: ISelectionData,
-					title: string, queryInput: QueryInput, runOptions?: ExecutionPlanOptions): void {
+		title: string, queryInput: QueryInput, runOptions?: ExecutionPlanOptions): void {
 		this.doRunQuery(uri, selection, title, queryInput, false, runOptions);
 	}
 
@@ -194,7 +195,7 @@ export class QueryModelService implements IQueryModelService {
 	 * Run the current SQL statement for the given URI
 	 */
 	public runQueryStatement(uri: string, selection: ISelectionData,
-					title: string, queryInput: QueryInput): void {
+		title: string, queryInput: QueryInput): void {
 		this.doRunQuery(uri, selection, title, queryInput, true);
 	}
 
@@ -202,8 +203,8 @@ export class QueryModelService implements IQueryModelService {
 	 * Run Query implementation
 	 */
 	private doRunQuery(uri: string, selection: ISelectionData,
-					title: string, queryInput: QueryInput,
-					runCurrentStatement: boolean, runOptions?: ExecutionPlanOptions): void {
+		title: string, queryInput: QueryInput,
+		runCurrentStatement: boolean, runOptions?: ExecutionPlanOptions): void {
 		// Reuse existing query runner if it exists
 		let queryRunner: QueryRunner;
 		let info: QueryInfo;
@@ -226,7 +227,7 @@ export class QueryModelService implements IQueryModelService {
 			queryRunner = this.initQueryRunner(uri, title, info);
 		}
 
-		 this._getQueryInfo(uri).queryInput = queryInput;
+		this._getQueryInfo(uri).queryInput = queryInput;
 
 		if (runCurrentStatement) {
 			queryRunner.runQueryStatement(selection);
@@ -250,13 +251,13 @@ export class QueryModelService implements IQueryModelService {
 			}
 			let message = {
 				message: Constants.runQueryBatchStartMessage,
-				batchId: undefined,
+				batchId: batch.id,
 				isError: false,
 				time: new Date().toLocaleTimeString(),
 				link: link
 			};
 			this._fireQueryEvent(uri, 'message', message);
-			info.selection = this._validateSelection(batch.selection);
+			info.selection.push(this._validateSelection(batch.selection));
 		});
 		queryRunner.eventEmitter.on('message', (message) => {
 			this._fireQueryEvent(uri, 'message', message);
