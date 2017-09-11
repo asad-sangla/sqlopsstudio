@@ -112,8 +112,12 @@ export class ConnectionDialogService implements IConnectionDialogService {
 					this._connectionDialog.resetConnection();
 					return;
 				}
-
 				profile = result.connection;
+
+				// Disable password prompt during reconnect if connected with an empty password
+				if (profile.password === '' && profile.savePassword === false) {
+						profile.savePassword = true;
+				}
 
 				this.handleDefaultOnConnect(params, profile);
 			} else {

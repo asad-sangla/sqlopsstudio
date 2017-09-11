@@ -298,7 +298,13 @@ export class ConnectionWidget {
 				groupName = this.NoneServerGroup.name;
 			}
 			this._serverGroupSelectBox.selectWithOptionName(groupName);
-			this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
+
+			// To handle the empty password case
+			if (this.getModelValue(connectionInfo.password) === '') {
+				this._rememberPasswordCheckBox.checked = false;
+			} else {
+				this._rememberPasswordCheckBox.checked = connectionInfo.savePassword;
+			}
 
 			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
 				var authTypeDisplayName = this.getAuthTypeDisplayName(connectionInfo.authenticationType);
