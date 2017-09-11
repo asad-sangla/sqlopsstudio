@@ -30,6 +30,7 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
 import { IWindowsService } from 'vs/platform/windows/common/windows';
 
 export const BOOTSTRAP_SERVICE_ID = 'bootstrapService';
@@ -68,6 +69,7 @@ export interface IBootstrapService {
 	restoreDialogService: IRestoreDialogController;
 	messageService: IMessageService;
 	workspaceContextService: IWorkspaceContextService;
+	accountManagementService: IAccountManagementService;
 	windowsService: IWindowsService;
 	sqlWindowService: ISqlWindowService;
 

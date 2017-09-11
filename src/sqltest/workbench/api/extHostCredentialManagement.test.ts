@@ -21,7 +21,6 @@ let credentialServiceStub: CredentialsTestService;
 let instantiationService: TestInstantiationService;
 let threadService: TestThreadService;
 
-
 // TESTS ///////////////////////////////////////////////////////////////////
 suite('ExtHostCredentialManagement', () => {
 	suiteSetup(() => {

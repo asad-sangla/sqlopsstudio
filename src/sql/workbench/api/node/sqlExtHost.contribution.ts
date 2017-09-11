@@ -15,6 +15,7 @@ import { SqlMainContext, SqlInstanceCollection } from './sqlExtHost.protocol';
 import { MainThreadCredentialManagement } from 'sql/workbench/api/node/mainThreadCredentialManagement';
 import { MainThreadDataProtocol } from 'sql/workbench/api/node/mainThreadDataProtocol';
 import { MainThreadSerializationProvider } from 'sql/workbench/api/node/mainThreadSerializationProvider';
+import { MainThreadAccountManagement } from "./mainThreadAccountManagement";
 
 
 export class SqlExtHostContribution implements IWorkbenchContribution {
@@ -37,6 +38,7 @@ export class SqlExtHostContribution implements IWorkbenchContribution {
 
 		// Addressable instances
 		const col = new SqlInstanceCollection();
+		col.define(SqlMainContext.MainThreadAccountManagement).set(create(MainThreadAccountManagement));
 		col.define(SqlMainContext.MainThreadCredentialManagement).set(create(MainThreadCredentialManagement));
 		col.define(SqlMainContext.MainThreadDataProtocol).set(create(MainThreadDataProtocol));
 		col.define(SqlMainContext.MainThreadSerializationProvider).set(create(MainThreadSerializationProvider));

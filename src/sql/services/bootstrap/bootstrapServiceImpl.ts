@@ -34,6 +34,7 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from './bootstrapService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
 import { IWindowsService } from 'vs/platform/windows/common/windows';
 
 export class BootstrapService implements IBootstrapService {
@@ -76,8 +77,9 @@ export class BootstrapService implements IBootstrapService {
 		@IContextViewService public contextViewService: IContextViewService,
 		@IMessageService public messageService: IMessageService,
 		@IWorkspaceContextService public workspaceContextService: IWorkspaceContextService,
+		@IAccountManagementService public accountManagementService: IAccountManagementService,
 		@IWindowsService public windowsService: IWindowsService,
-		@ISqlWindowService public sqlWindowService: ISqlWindowService,
+		@ISqlWindowService public sqlWindowService: ISqlWindowService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();

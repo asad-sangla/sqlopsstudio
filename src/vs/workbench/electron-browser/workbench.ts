@@ -132,6 +132,8 @@ import { DisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/dis
 import { RestoreDialogController } from 'sql/parts/disasterRecovery/restore/restoreDialogController';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService, InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
+import { AccountManagementService } from "sql/services/accountManagement/accountManagementService";
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { ProfilerService } from 'sql/parts/profiler/service/profilerService';
 import { ISqlWindowService } from 'sql/common/sqlWindowServices';
@@ -700,11 +702,14 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IRestoreDialogController, this.instantiationService.createInstance(RestoreDialogController));
 		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
 		serviceCollection.set(IInsightsDialogService, this.instantiationService.createInstance(InsightsDialogService));
+		let accountManagementService =  this.instantiationService.createInstance(AccountManagementService, undefined);
+		serviceCollection.set(IAccountManagementService, accountManagementService);
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 		serviceCollection.set(IProfilerService, this.instantiationService.createInstance(ProfilerService));
 
 		this.toDispose.push(connectionManagementService);
 		this.toShutdown.push(connectionManagementService);
+		this.toShutdown.push(accountManagementService);
 
 		// Contributed services
 		const contributedServices = getServices();

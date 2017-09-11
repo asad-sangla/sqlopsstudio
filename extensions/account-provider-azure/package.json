@@ -1,0 +1,22 @@
+{
+  "name": "account-provider-azure",
+  "version": "0.0.1",
+  "publisher": "Microsoft",
+  "engines": { "vscode": "*" },
+  "main": "./out/main",
+  "activationEvents": [ "*" ],
+  "scripts": {
+    "compile": "gulp compile-extension:account-provider-azure"
+  },
+  "dependencies": {
+    "decompress": "^4.0.0",
+    "extensions-modules": "file:../../extensions-modules",
+    "fs-extra-promise": "^0.3.1",
+    "opener": "1.4.2",
+    "vscode-extension-telemetry": "^0.0.5",
+    "vscode-nls": "2.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.24"
+  }
+}

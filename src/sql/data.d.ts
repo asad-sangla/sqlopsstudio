@@ -1019,4 +1019,211 @@ declare module 'data' {
 		rowCount: number;
 		data: IProfilerTableRow;
 	}
+
+	// ACCOUNT MANAGEMENT //////////////////////////////////////////////////
+	export namespace accounts {
+		export function registerAccountProvider(providerMetadata: AccountProviderMetadata, provider: AccountProvider): vscode.Disposable;
+		// TODO: Add register-er for resource provider
+	}
+
+	// - ACCOUNT DATATYPES /////////////////////////////////////////////////
+	/**
+	 * Represents display information for an account.
+	 */
+	export interface AccountDisplayInfo {
+		/**
+		 * An optional base-64 encoded logo that offers context for the account.
+		 */
+		contextualLogo?: string;
+
+		/**
+		 * A display name that offers context for the account, such as "Contoso".
+		 */
+		contextualDisplayName: string;
+
+		/**
+		 * A display name that identifies the account, such as "user@contoso.com".
+		 */
+		displayName: string;
+	}
+
+	/**
+	 * Represents a key that identifies an account.
+	 * NOTE: This object will be serialized and stored in a Memento. Sensitive info should not be
+	 *       stored in an AccountKey.
+	 */
+	export interface AccountKey {
+		/**
+		 * Identifier of the provider
+		 */
+		providerId: string;
+
+		/**
+		 * Any arguments that identify an instantiation of the provider
+		 */
+		providerArgs?: any;
+
+		/**
+		 * Identifier for the account, unique to the provider
+		 */
+		accountId: string;
+	}
+
+	/**
+	 * Represents an account.
+	 */
+	export interface Account {
+		/**
+		 * The key that identifies the account
+		 */
+		key: AccountKey;
+
+		/**
+		 * A pragmatic name for the account
+		 */
+		name: string;
+
+		/**
+		 * Display information for the account
+		 */
+		displayInfo: AccountDisplayInfo;
+
+		/**
+		 * Custom properties stored with the account
+		 */
+		properties: any;
+
+		/**
+		 * Indicates if the account needs refreshing
+		 */
+		isStale: boolean;
+	}
+
+	// - ACCOUNT PROVIDER //////////////////////////////////////////////////
+	/**
+	 * Represents a provider of accounts.
+	 */
+	export interface AccountProviderMetadata {
+		/**
+		 * The identifier of the provider
+		 */
+		id: string;
+
+		/**
+		 * Display name of the provider
+		 */
+		displayName: string;
+
+		/**
+		 * Any arguments that identify an instantiation of the provider
+		 */
+		args?: any;
+
+		/**
+		 * Optional settings that identify an instantiation of a provider
+		 */
+		settings?: {};
+	}
+
+	/**
+	 * Represents a provider of accounts for use with the account management service
+	 */
+	export interface AccountProvider {
+		/**
+		 * Initializes the account provider with the accounts restored from the memento,
+		 * @param {Account[]} storedAccounts Accounts restored from the memento
+		 * @return {Thenable<Account[]>} Account objects after being rehydrated (if necessary)
+		 */
+		initialize(storedAccounts: Account[]): Thenable<Account[]>;
+
+		/**
+		 * Prompts the user to enter account information.
+		 * Returns an error if the user canceled the operation.
+		 */
+		prompt(): Thenable<Account>;
+
+		/**
+		 * Refreshes a stale account.
+		 * Returns an error if the user canceled the operation.
+		 * Otherwise, returns a new updated account instance.
+		 * @param account - An account.
+		 */
+		refresh(account: Account): Thenable<Account>;
+
+		/**
+		 * Clears sensitive information for an account.
+		 * @param account - An account.
+		 */
+		clear(account: Account): Thenable<void>;
+
+		// TODO: Add stale eventing
+		// addListener(event: 'stale', listener: AccountStaleListener): this;
+		// addListener(event: string, listener: Function): this;
+		// on(event: 'stale', listener: AccountStaleListener): this;
+		// on(event: string, listener: Function): this;
+		// once(event: 'stale', listener: AccountStaleListener): this;
+		// once(event: string, listener: Function): this;
+		// removeListener(event: 'stale', listener: AccountStaleListener): this;
+		// removeListener(event: string, listener: Function): this;
+		// listeners(event: 'stale'): AccountStaleListener[];
+		// listeners(event: string): Function[];
+		// emit(event: 'stale', account: Account): boolean;
+		// emit(event: string, ...args: any[]): boolean;
+	}
+
+	// - ACCOUNT EVENTING //////////////////////////////////////////////////
+	/**
+	 * Represents a listener that is called when an account becomes stale.
+	 */
+	export interface AccountStaleListener {
+		/**
+		 * Handles the event of an account becoming stale.
+		 * @param account - An account.
+		 */
+		(account: Account): void;
+	}
+
+	/**
+	 * Represents the before and after state of an account that was modified.
+	 */
+	export interface AccountModification {
+		/**
+		 * The account before modification.
+		 */
+		before: Account;
+		/**
+		 * The account after modification.
+		 */
+		after: Account;
+		// TODO: consider including which properties changed
+	}
+
+	/**
+	 * Represents changes to an account store.
+	 */
+	export interface AccountStoreChanges {
+		/**
+		 * An array of accounts that were added.
+		 */
+		added: Account[];
+		/**
+		 * An array of information about accounts that were modified.
+		 */
+		modified: AccountModification[];
+		/**
+		 * An array of accounts that were removed.
+		 */
+		removed: Account[];
+	}
+
+	/**
+	 * Represents a listener on changes to an account store.
+	 */
+	export interface AccountStoreChangeListener {
+		/**
+		 * Handles changes to an account store.
+		 * @param changes - A set of changes to the account store.
+		 */
+		(changes: AccountStoreChanges): void;
+	}
 }

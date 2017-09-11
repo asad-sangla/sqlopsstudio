@@ -18,6 +18,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as data from 'data';
 import * as vscode from 'vscode';
 import { SqlExtHostContext, SqlInstanceCollection } from 'sql/workbench/api/node/sqlExtHost.protocol';
+import { ExtHostAccountManagement } from "sql/workbench/api/node/extHostAccountManagement"
 import { ExtHostCredentialManagement } from 'sql/workbench/api/node/extHostCredentialManagement';
 import { ExtHostDataProtocol } from 'sql/workbench/api/node/extHostDataProtocol';
 import { ExtHostSerializationProvider } from 'sql/workbench/api/node/extHostSerializationProvider';
@@ -32,20 +33,35 @@ export interface ISqlExtensionApiFactory {
  * This method instantiates and returns the extension API surface. This overrides the default ApiFactory by extending it to add Carbon-related functions
  */
 export function createApiFactory(
-	initData: IInitData, threadService: IThreadService, extensionService: ExtHostExtensionService,
-	telemetryService: ITelemetryService): ISqlExtensionApiFactory {
+	initData: IInitData,
+	threadService: IThreadService,
+	extensionService: ExtHostExtensionService,
+	telemetryService: ITelemetryService
+): ISqlExtensionApiFactory {
 	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService, telemetryService);
 
 	// Addressable instances
 	const col = new SqlInstanceCollection();
-	const extHostCredentialManagement = col.define(SqlExtHostContext.ExtHostCredentialManagement).set<ExtHostCredentialManagement>(new ExtHostCredentialManagement(threadService));
-	const extHostDataProvider = col.define(SqlExtHostContext.ExtHostDataProtocol).set<ExtHostDataProtocol>(new ExtHostDataProtocol(threadService));
-	const extHostSerializationProvider = col.define(SqlExtHostContext.ExtHostSerializationProvider).set<ExtHostSerializationProvider>(new ExtHostSerializationProvider(threadService));
+	const extHostAccountManagement = col.define(SqlExtHostContext.ExtHostAccountManagement)
+		.set<ExtHostAccountManagement>(new ExtHostAccountManagement(threadService));
+	const extHostCredentialManagement = col.define(SqlExtHostContext.ExtHostCredentialManagement)
+		.set<ExtHostCredentialManagement>(new ExtHostCredentialManagement(threadService));
+	const extHostDataProvider = col.define(SqlExtHostContext.ExtHostDataProtocol)
+		.set<ExtHostDataProtocol>(new ExtHostDataProtocol(threadService));
+	const extHostSerializationProvider = col.define(SqlExtHostContext.ExtHostSerializationProvider)
+		.set<ExtHostSerializationProvider>(new ExtHostSerializationProvider(threadService));
 	col.finish(false, threadService);
 
 	return {
 		vsCodeFactory: vsCodeFactory,
 		dataFactory: function (extension: IExtensionDescription): typeof data {
+			// namespace: accounts
+			const accounts: typeof data.accounts = {
+				registerAccountProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): vscode.Disposable {
+					return extHostAccountManagement.$registerAccountProvider(providerMetadata, provider);
+				},
+			};
+
 			// namespace: credentials
 			const credentials: typeof data.credentials = {
 				registerProvider(provider: data.CredentialProvider): vscode.Disposable {
@@ -56,12 +72,12 @@ export function createApiFactory(
 				}
 			};
 
+			// namespace: serialization
 			const serialization: typeof data.serialization = {
 				registerProvider(provider: data.SerializationProvider): vscode.Disposable {
 					return extHostSerializationProvider.$registerSerializationProvider(provider);
 				},
 			};
-
 
 			// namespace: dataprotocol
 			const dataprotocol: typeof data.dataprotocol = {
@@ -132,6 +148,7 @@ export function createApiFactory(
 			};
 
 			return {
+				accounts,
 				credentials,
 				serialization,
 				dataprotocol,

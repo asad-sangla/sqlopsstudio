@@ -40,7 +40,8 @@ const extensions = [
 	'configuration-editing',
 	'extension-editing',
 	'markdown',
-	'merge-conflict'
+	'merge-conflict',
+	'account-provider-azure',
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));

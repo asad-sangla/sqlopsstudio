@@ -15,6 +15,13 @@ import * as data from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { InstanceSetter } from 'vs/workbench/api/node/extHost.protocol';
 
+export abstract class ExtHostAccountManagementShape {
+	$clear(handle: number, account: data.Account): Thenable<void> { throw ni(); }
+	$initialize(handle: number, restoredAccounts: data.Account[]): Thenable<data.Account[]> { throw ni(); }
+	$prompt(handle: number): Thenable<data.Account> { throw ni(); }
+	$refresh(handle: number, account: data.Account): Thenable<data.Account> { throw ni(); }
+}
+
 export abstract class ExtHostDataProtocolShape {
 
 	/**
@@ -263,6 +270,12 @@ export abstract class ExtHostCredentialManagementShape {
 export abstract class ExtHostSerializationProviderShape {
 	$saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<data.SaveResultRequestResult> { throw ni(); }
 }
+
+export abstract class MainThreadAccountManagementShape {
+	$registerAccountProvider(providerMetadata: data.AccountProviderMetadata, handle: number): Thenable<any> { throw ni(); }
+	$unregisterAccountProvider(handle: number): Thenable<any>  { throw ni(); }
+}
+
 export abstract class MainThreadDataProtocolShape {
 	$registerProvider(providerId: string, handle: number): TPromise<any> { throw ni(); }
 	$unregisterProvider(handle: number): TPromise<any> { throw ni(); }
@@ -294,7 +307,6 @@ export abstract class MainThreadSerializationProviderShape {
 	$registerSerializationProvider(handle: number): TPromise<any> { throw ni(); }
 	$unregisterSerializationProvider(handle: number): TPromise<any> { throw ni(); }
 }
-
 
 export class SqlInstanceCollection {
 	private _items: { [id: string]: any; };
@@ -337,12 +349,14 @@ function ni() { return new Error('Not implemented'); }
 
 export const SqlMainContext = {
 	// SQL entries
+	MainThreadAccountManagement: createMainId<MainThreadAccountManagementShape>('MainThreadAccountManagement', MainThreadAccountManagementShape),
 	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement', MainThreadCredentialManagementShape),
 	MainThreadDataProtocol: createMainId<MainThreadDataProtocolShape>('MainThreadDataProtocol', MainThreadDataProtocolShape),
 	MainThreadSerializationProvider: createMainId<MainThreadSerializationProviderShape>('MainThreadSerializationProvider', MainThreadSerializationProviderShape)
 };
 
 export const SqlExtHostContext = {
+	ExtHostAccountManagement: createExtId<ExtHostAccountManagementShape>('ExtHostAccountManagement', ExtHostAccountManagementShape),
 	ExtHostCredentialManagement: createExtId<ExtHostCredentialManagementShape>('ExtHostCredentialManagement', ExtHostCredentialManagementShape),
 	ExtHostDataProtocol: createExtId<ExtHostDataProtocolShape>('ExtHostDataProtocol', ExtHostDataProtocolShape),
 	ExtHostSerializationProvider: createExtId<ExtHostSerializationProviderShape>('ExtHostSerializationProvider', ExtHostSerializationProviderShape)
