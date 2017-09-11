@@ -13,6 +13,7 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { ITaskDialogComponent } from 'sql/parts/tasks/common/tasks';
 
 import data = require('data');
+import * as nls from 'vs/nls';
 
 export const CREATEDATABASE_SELECTOR: string = 'createdatabase-component';
 
@@ -41,6 +42,11 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
 	public connection: ConnectionManagementInfo;
 
     public databaseFiles: DatabaseFile[] = [];
+
+    // tslint:disable:no-unused-variable
+    private readonly databaseFilesLabel: string = nls.localize('createDatabase.databaseFiles', 'Database files:');
+    private readonly noRecordsFoundLabel: string = nls.localize('createDatabase.noRecordsFound', 'No records found');
+    // tslint:enable:no-unused-variable
 
 	constructor(
         @Inject(forwardRef(() => ElementRef)) private _el: ElementRef,

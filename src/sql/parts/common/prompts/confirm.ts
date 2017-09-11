@@ -10,7 +10,7 @@
 
 import Prompt from 'sql/parts/common/prompts/prompt';
 import EscapeException from 'sql/parts/common/prompts/escapeException';
-import Constants = require('sql/parts/connection/common/constants');
+import LocalizedConstants = require('sql/parts/connection/common/localizedConstants');
 import { IQuickOpenService, IPickOptions } from 'vs/platform/quickOpen/common/quickOpen';
 
 export default class ConfirmPrompt extends Prompt {
@@ -23,8 +23,8 @@ export default class ConfirmPrompt extends Prompt {
 
     public render(): any {
         let choices: { [id: string]: boolean } = {};
-        choices[Constants.msgYes] = true;
-        choices[Constants.msgNo] = false;
+        choices[LocalizedConstants.msgYes] = true;
+        choices[LocalizedConstants.msgNo] = false;
 
         const options: IPickOptions = {
             placeHolder: this._question.message

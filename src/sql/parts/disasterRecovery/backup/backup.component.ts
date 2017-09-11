@@ -25,6 +25,7 @@ import { IInputOptions, MessageType } from 'vs/base/browser/ui/inputbox/inputBox
 import { Button } from 'vs/base/browser/ui/button/button';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { localize } from 'vs/nls';
 
 export const BACKUP_SELECTOR: string = 'backup-component';
 
@@ -106,6 +107,27 @@ export class BackupComponent{
     @ViewChild('encryptErrorContainer', {read: ElementRef}) encryptErrorElement;
     @ViewChild('modalFooterContainer', {read: ElementRef}) modalFooterElement;
     @ViewChild('scriptButtonContainer', {read: ElementRef}) scriptButtonElement;
+
+    // tslint:disable:no-unused-variable
+    private readonly backupNameLabel: string = localize('backup.backupName', 'Backup name');
+    private readonly recoveryModelLabel: string = localize('backup.recoveryModel', 'Recovery model');
+    private readonly backupTypeLabel: string = localize('backup.backupType', 'Backup type');
+    private readonly backupDeviceLabel: string = localize('backup.backupDevice', 'Backup device');
+    private readonly algorithmLabel: string = localize('backup.algorithm', 'Algorithm');
+    private readonly certificateOrAsymmetricKeyLabel: string = localize('backup.certificateOrAsymmetricKey', 'Certificate or Asymmetric key');
+    private readonly mediaLabel: string = localize('backup.media', 'media');
+    private readonly mediaOptionLabel: string = localize('backup.mediaOption', 'Backup to the existing media set');
+    private readonly mediaOptionFormatLabel: string = localize('backup.mediaOptionFormat', 'Backup to a new media set');
+    private readonly existingMediaAppendLabel: string = localize('backup.existingMediaAppend', 'Append to the existing backup set');
+    private readonly existingMediaOverwriteLabel: string = localize('backup.existingMediaOverwrite', 'Overwrite all existing backup sets');
+    private readonly newMediaSetNameLabel: string = localize('backup.newMediaSetName', 'New media set name');
+    private readonly newMediaSetDescriptionLabel: string = localize('backup.newMediaSetDescription', 'New media set description');
+    private readonly checksumContainerLabel: string = localize('backup.checksumContainer', 'Perform checksum before writing to media');
+    private readonly verifyContainerLabel: string = localize('backup.verifyContainer', 'Verify backup when finished');
+    private readonly continueOnErrorContainerLabel: string = localize('backup.continueOnErrorContainer', 'Continue on error');
+    private readonly expirationLabel: string = localize('backup.expiration', 'Expiration');
+    private readonly setBackupRetainDaysLabel: string = localize('backup.setBackupRetainDays', 'Set backup retain days');
+    // tslint:enable:no-unused-variable
 
     private _disasterRecoveryService: IDisasterRecoveryService;
     private _disasterRecoveryUiService: IDisasterRecoveryUiService;
@@ -312,7 +334,7 @@ export class BackupComponent{
                 this.encryptCheckBox.disable();
                 let iconFilePath = require.toUrl('sql/workbench/errorMessageDialog/media/status-warning.svg');
                 this.errorIconElement.nativeElement.style.content = 'url(' + iconFilePath + ')';
-                this.errorMessage = "No certificate or asymmetric key is available";
+                this.errorMessage = localize('backup.noEncryptorError', "No certificate or asymmetric key is available");
             }
 
             // Set media
@@ -320,7 +342,7 @@ export class BackupComponent{
                 this._bootstrapService.contextViewService,
                 {
                     validationOptions: {
-                        validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: 'Media name is required' }) : null
+                        validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: localize('backup.mediaNameRequired', 'Media name is required') }) : null
                     }
                 }
             );
@@ -368,7 +390,7 @@ export class BackupComponent{
 
             // show warning message if latest backup file path contains url
             if (this.containsBackupToUrl) {
-                this.pathListBox.setValidation(false, {content: 'Only backup to file is supported', type: MessageType.WARNING});
+                this.pathListBox.setValidation(false, {content: localize('backup.containsBackupToUrlError', 'Only backup to file is supported'), type: MessageType.WARNING});
                 this.pathListBox.focus();
             }
         } else {
@@ -506,7 +528,7 @@ export class BackupComponent{
             this.backupButton.enabled = false;
 
             // show input validation error
-            this.pathListBox.setValidation(false, {content: 'Backup file path is required', type: MessageType.ERROR});
+            this.pathListBox.setValidation(false, {content: localize('backup.backupFileRequired','Backup file path is required'), type: MessageType.ERROR});
             this.pathListBox.focus();
         }
 

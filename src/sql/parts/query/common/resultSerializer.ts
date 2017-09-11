@@ -5,6 +5,7 @@
 
 import ConnectionConstants = require('sql/parts/connection/common/constants');
 import Constants = require('sql/parts/query/common/constants');
+import LocalizedConstants = require('sql/parts/query/common/localizedConstants');
 import * as Utils from 'sql/parts/connection/common/utils';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { SaveResultsRequestParams } from 'data';
@@ -252,24 +253,24 @@ export class ResultSerializer {
     private sendRequestToService(filePath: string, batchIndex: number, resultSetNo: number, format: string, selection: ISlickRange): Thenable<void> {
         let saveResultsParams = this.getParameters(filePath, batchIndex, resultSetNo, format, selection);
 
-        this.logToOutputChannel(Constants.msgSaveStarted + this._filePath);
+        this.logToOutputChannel(LocalizedConstants.msgSaveStarted + this._filePath);
 
         // send message to the sqlserverclient for converting results to the requested format and saving to filepath
         return this._queryManagementService.saveResults(saveResultsParams).then(result => {
             if (result.messages) {
-                this._messageService.show(Severity.Error, Constants.msgSaveFailed + result.messages);
-                this.logToOutputChannel(Constants.msgSaveFailed + result.messages);
+                this._messageService.show(Severity.Error, LocalizedConstants.msgSaveFailed + result.messages);
+                this.logToOutputChannel(LocalizedConstants.msgSaveFailed + result.messages);
             } else {
-                this._messageService.show(Severity.Info, Constants.msgSaveSucceeded + this._filePath);
-                this.logToOutputChannel(Constants.msgSaveSucceeded + filePath);
+                this._messageService.show(Severity.Info, LocalizedConstants.msgSaveSucceeded + this._filePath);
+                this.logToOutputChannel(LocalizedConstants.msgSaveSucceeded + filePath);
                 this.openSavedFile(this._filePath, format);
             }
             // TODO telemetry for save results
             // Telemetry.sendTelemetryEvent('SavedResults', { 'type': format });
 
         }, error => {
-            this._messageService.show(Severity.Error, Constants.msgSaveFailed + error);
-            this.logToOutputChannel(Constants.msgSaveFailed + error);
+            this._messageService.show(Severity.Error, LocalizedConstants.msgSaveFailed + error);
+            this.logToOutputChannel(LocalizedConstants.msgSaveFailed + error);
         });
     }
 

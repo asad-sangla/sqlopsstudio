@@ -177,8 +177,7 @@ export default class QueryRunner {
 			// TODO issue #228 add statusview callbacks here
 			self._isExecuting = false;
 
-			// TODO localize
-			self._messageService.show(Severity.Error, 'Execution failed: ' + error);
+			self._messageService.show(Severity.Error, nls.localize('query.ExecutionFailedError', 'Execution failed: {0}', error));
 		};
 	}
 
@@ -300,8 +299,7 @@ export default class QueryRunner {
 			self._queryManagementService.getQueryRows(rowData).then(result => {
 				resolve(result);
 			}, error => {
-				// TODO localize
-				self._messageService.show(Severity.Error, 'Something went wrong getting more rows: ' + error);
+				self._messageService.show(Severity.Error, nls.localize('query.gettingRowsFailedError', 'Something went wrong getting more rows: {0}', error));
 				reject(error);
 			});
 		});
@@ -328,8 +326,7 @@ export default class QueryRunner {
 			// TODO issue #228 add statusview callbacks here
 			self._isExecuting = false;
 
-			// TODO localize
-			self._messageService.show(Severity.Error, 'Init Edit Execution failed: ' + error);
+			self._messageService.show(Severity.Error, nls.localize('query.initEditExecutionFailed', 'Init Edit Execution failed: ') + error);
 		});
 	}
 
@@ -355,8 +352,8 @@ export default class QueryRunner {
 				}
 				resolve(result);
 			}, error => {
-				// TODO localize
-				self._messageService.show(Severity.Error, `Something went wrong getting more rows: ${error}`);
+				let errorMessage = nls.localize('query.moreRowsFailedError', 'Something went wrong getting more rows:');
+				self._messageService.show(Severity.Error, `${errorMessage} ${error}`);
 				reject(error);
 			});
 		});

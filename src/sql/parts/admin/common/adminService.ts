@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
+import { localize } from 'vs/nls';
+
 export const SERVICE_ID = 'adminService';
 
 import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
@@ -60,13 +62,13 @@ export class AdminService implements IAdminService {
 		let providerId: string = this._connectionService.getProviderIdFromUri(uri);
 
 		if (!providerId) {
-			return TPromise.wrapError(new Error('Connection is required in order to interact with adminservice'));
+			return TPromise.wrapError(new Error(localize('providerIdNotValidError', 'Connection is required in order to interact with adminservice')));
 		}
 		let handler = this._providers[providerId];
 		if (handler) {
 			return action(handler);
 		} else {
-			return TPromise.wrapError(new Error('No Handler Registered'));
+			return TPromise.wrapError(new Error(localize('noHandlerRegistered', 'No Handler Registered')));
 		}
 	}
 
@@ -93,7 +95,6 @@ export class AdminService implements IAdminService {
 
 	public showCreateLoginWizard(uri: string, connection: IConnectionProfile): Promise<any> {
 		const self = this;
-
 		self.createLogin(uri, { name: 'TEST: login name' });
 
 		return new Promise<boolean>((resolve, reject) => {

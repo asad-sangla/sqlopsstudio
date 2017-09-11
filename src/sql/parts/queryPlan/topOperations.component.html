@@ -7,21 +7,21 @@
 <div>
 	<table border="1">
 		<tr>
-			<td>Operation</td>
-			<td>Object</td>
-			<td>Est Cost</td>
-			<td>Est Subtree Cost</td>
-			<td>Actual Rows</td>
-			<td>Est Rows</td>
-			<td>Actual Executions</td>
-			<td>Est CPU Cost</td>
-			<td>Est IO Cost</td>
-			<td>Parallel</td>
-			<td>Actual Rebinds</td>
-			<td>Est Rebinds</td>
-			<td>Actual Rewinds</td>
-			<td>Est Rewinds</td>
-			<td>Partitioned</td>
+			<td>{{operationLabel}}</td>
+			<td>{{objectLabel}}</td>
+			<td>{{estCost}}</td>
+			<td>{{estSubtreeCostLabel}}</td>
+			<td>{{actualRowsLabel}}</td>
+			<td>{{estRowsLabel}}</td>
+			<td>{{actualExecutionsLabel}}</td>
+			<td>{{estCPUCostLabel}}</td>
+			<td>{{estIOCostLabel}}</td>
+			<td>{{parallelLabel}}</td>
+			<td>{{actualRebindsLabel}}</td>
+			<td>{{estRebindsLabel}}</td>
+			<td>{{actualRewindsLabel}}</td>
+			<td>{{estRewindsLabel}}</td>
+			<td>{{partitionedLabel}}</td>
 		</tr>
 		<tr *ngFor="let operation of operations">
 			<td>{{operation.title}}</td>

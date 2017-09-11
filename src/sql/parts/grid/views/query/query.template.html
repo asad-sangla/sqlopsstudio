@@ -7,7 +7,7 @@
 
 <div class="fullsize vertBox">
 	<div *ngIf="dataSets.length > 0" id="resultspane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!resultActive" (click)="togglePane('results')">
-		<span> {{Constants.resultPaneLabel}} </span>
+		<span> {{LocalizedConstants.resultPaneLabel}} </span>
 		<span class="queryResultsShortCut"> {{resultShortcut}} </span>
 	</div>
 	<div id="results" *ngIf="renderedDataSets.length > 0" class="results vertBox scrollable"
@@ -42,7 +42,7 @@
 	</div>
 	<div id="messagepane" class="boxRow resultsMessageHeader resultsViewCollapsible" [class.collapsed]="!messageActive && dataSets.length !== 0" (click)="togglePane('messages')" style="position: relative">
 		<div id="messageResizeHandle" class="resizableHandle"></div>
-		<span> {{Constants.messagePaneLabel}} </span>
+		<span> {{LocalizedConstants.messagePaneLabel}} </span>
 		<span class="queryResultsShortCut"> {{messageShortcut}} </span>
 	</div>
 	<div id="messages" class="scrollable messages" [class.hidden]="!messageActive && dataSets.length !== 0"
@@ -65,12 +65,12 @@
 					<td><span *ngIf="messages.length === 0">[{{startString}}]</span></td>
 					<td>
 						<img class="icon in-progress" height="18px" />
-						<span style="vertical-align: bottom">{{Constants.executeQueryLabel}}</span>
+						<span style="vertical-align: bottom">{{LocalizedConstants.executeQueryLabel}}</span>
 					</td>
 				</tr>
 				<tr *ngIf="complete">
 					<td></td>
-					<td>{{Utils.formatString(Constants.elapsedTimeLabel, totalElapsedTimeSpan)}}</td>
+					<td>{{Utils.formatString(LocalizedConstants.elapsedTimeLabel, totalElapsedTimeSpan)}}</td>
 				</tr>
 			</tbody>
 		</table>

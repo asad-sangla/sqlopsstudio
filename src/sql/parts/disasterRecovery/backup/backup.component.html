@@ -8,24 +8,24 @@
 	<div class="angular-modal-body" style="display: flex; flex-direction: column;">
 		<div class="angular-modal-body-content">
 			<div class="dialog-label">
-				Backup name
+				{{backupNameLabel}}
 			</div>
 			<div class="input-divider" #backupsetName>
 			</div>
 			<div class="dialog-label">
-				Recovery model
+				{{recoveryModelLabel}}
 			</div>
 			<div class="input-divider" #recoveryModelContainer>
 			</div>
 			<div class="dialog-label">
-				Backup type
+				{{backupType}}
 			</div>
 			<div class="input-divider" #backupTypeContainer>
 			</div>
 			<div class="input-divider" #copyOnlyContainer>Copy-only backup
 			</div>
 			<div class="dialog-label">
-				Backup device
+				{{backupDeviceLabel}}
 			</div>
 			<div class="backup-path-list">
 				<div #pathContainer>
@@ -83,12 +83,12 @@
 
 							<div style="display: none" #encryptContainer>
 								<div class="dialog-label">
-									Algorithm
+									{{algorithmLabel}}
 								</div>
 								<div class="dialog-label" #algorithmContainer>
 								</div>
 								<div class="dialog-label">
-									Certificate or Asymmetric key
+									{{certificateOrAsymmetricKeyLabel}}
 								</div>
 								<div class="dialog-label" #encryptorContainer>
 								</div>
@@ -97,32 +97,32 @@
 
 						<!-- Overwrite media -->
 						<div class="dialog-label advanced-header">
-							Media
+							{{media}}
 						</div>
 						<div class="radio-indent">
 							<div class="option">
-								<input type="radio" name=media-option value="no_format" [checked]="!isFormatChecked" (change)="onChangeMediaFormat()" [disabled]="isEncryptChecked">Backup to the existing media set
+								<input type="radio" name=media-option value="no_format" [checked]="!isFormatChecked" (change)="onChangeMediaFormat()" [disabled]="isEncryptChecked">{{mediaOptionLabel}}
 							</div>
 							<div style="margin-left:15px">
 								<div class="option">
-									<input type="radio" name=existing-media value="append" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Append to the existing backup set
+									<input type="radio" name=existing-media value="append" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">{{existingMediaAppendLabel}}
 								</div>
 								<div class="option">
-									<input type="radio" name=existing-media value="overwrite" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">Overwrite all existing backup sets
+									<input type="radio" name=existing-media value="overwrite" [(ngModel)]="selectedInitOption" [disabled]="isFormatChecked">{{existingMediaOverwriteLabel}}
 								</div>
 							</div>
 
 							<div class="option">
-								<input type="radio" name=media-option value="format" [checked]="isFormatChecked" (change)="onChangeMediaFormat()">Backup to a new media set
+								<input type="radio" name=media-option value="format" [checked]="isFormatChecked" (change)="onChangeMediaFormat()">{{mediaOptionFormatLabel}}
 							</div>
 							<div style="margin-left: 22px">
 								<div class="dialog-label">
-									New media set name
+									{{newMediaSetNameLabel}}
 								</div>
 								<div class="dialog-label" #mediaName>
 								</div>
 								<div class="dialog-label">
-									New media set description
+									{{newMediaSetDescriptionLabel}}
 								</div>
 								<div class="dialog-label" #mediaDescription>
 								</div>
@@ -147,21 +147,21 @@
 							Reliability
 						</div>
 						<div class="indent">
-							<div class="option" #checksumContainer>Perform checksum before writing to media
+							<div class="option" #checksumContainer>{{checksumContainerLabel}}
 							</div>
-							<div class="option" #verifyContainer>Verify backup when finished
+							<div class="option" #verifyContainer>{{verifyContainerLabel}}
 							</div>
-							<div class="option" #continueOnErrorContainer>Continue on error
+							<div class="option" #continueOnErrorContainer>{{continueOnErrorContainerLabel}}
 							</div>
 						</div>
 
 						<!-- Backup expiration -->
 						<div class="dialog-label advanced-header">
-							Expiration
+							{{expirationLabel}}
 						</div>
 						<div class="indent">
 							<div class="dialog-label">
-								Set backup retain days
+								{{setBackupRetainDaysLabel}}
 							</div>
 							<div class="dialog-label">
 								<div #backupDaysContainer></div>

@@ -16,6 +16,7 @@ import { ElementRef, QueryList, ChangeDetectorRef, ViewChildren } from '@angular
 import { IGridDataRow, ISlickRange, SlickGrid, FieldType } from 'angular2-slickgrid';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import * as Constants from 'sql/parts/query/common/constants';
+import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
 import { IGridInfo, IRange, IGridDataSet, SaveFormat, JsonFormat, ExcelFormat, CsvFormat  } from 'sql/parts/grid/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
@@ -43,6 +44,7 @@ export abstract class GridParentComponent {
 	protected _rowHeight = 29;
 	protected _defaultNumShowingRows = 8;
 	protected Constants = Constants;
+	protected LocalizedConstants = LocalizedConstants;
 	protected Utils = Utils;
 	// tslint:disable-next-line:no-unused-variable
 	protected startString = new Date().toLocaleTimeString();

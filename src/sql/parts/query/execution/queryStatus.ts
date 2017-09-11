@@ -10,7 +10,7 @@ import { IEditorCloseEvent } from 'vs/workbench/common/editor';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import Constants = require('sql/parts/query/common/constants');
+import LocalizedConstants = require('sql/parts/query/common/localizedConstants');
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 // Query execution status
@@ -106,7 +106,7 @@ export class QueryStatusbarItem implements IStatusbarItem {
 			if (uri === currentUri) {
 				switch(this._queryStatusEditors[uri]){
 					case QueryExecutionStatus.Executing:
-						this._queryElement.textContent = Constants.msgStatusRunQueryInProgress;
+						this._queryElement.textContent = LocalizedConstants.msgStatusRunQueryInProgress;
 						show(this._queryElement);
 						break;
 					default:

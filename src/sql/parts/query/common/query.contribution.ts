@@ -28,6 +28,7 @@ import * as gridActions from 'sql/parts/grid/views/gridActions';
 import * as gridCommands from 'sql/parts/grid/views/gridCommands';
 import { QueryPlanEditor } from 'sql/parts/queryPlan/queryPlanEditor';
 import { QueryPlanInput } from 'sql/parts/queryPlan/queryPlanInput';
+import { localize } from 'vs/nls';
 
 const gridCommandsWeightBonus = 100; // give our commands a little bit more weight over other default list/tree commands
 
@@ -197,53 +198,53 @@ configurationRegistry.registerConfiguration({
 	'properties': {
 		'sql.messagesDefaultOpen': {
 			'type': 'boolean',
-			'description': 'True for the messages pane to be open by default; false for closed',
+			'description': localize('sql.messagesDefaultOpen', 'True for the messages pane to be open by default; false for closed'),
 			'default': true
 		},
 		'sql.saveAsCsv.includeHeaders': {
 			'type': 'boolean',
-			'description': '[Optional] When true, column headers are included when saving results as CSV',
+			'description': localize('sql.saveAsCsv.includeHeaders', '[Optional] When true, column headers are included when saving results as CSV'),
 			'default': true
 		},
 		'sql.copyIncludeHeaders': {
 			'type': 'boolean',
-			'description': '[Optional] Configuration options for copying results from the Results View',
+			'description': localize('sql.copyIncludeHeaders', '[Optional] Configuration options for copying results from the Results View'),
 			'default': false
 		},
 		'sql.copyRemoveNewLine': {
 			'type': 'boolean',
-			'description': '[Optional] Configuration options for copying multi-line results from the Results View',
+			'description': localize('sql.copyRemoveNewLine', '[Optional] Configuration options for copying multi-line results from the Results View'),
 			'default': true
 		},
 		'sql.showBatchTime': {
 			'type': 'boolean',
-			'description': '[Optional] Should execution time be shown for individual batches',
+			'description': localize('sql.showBatchTime', '[Optional] Should execution time be shown for individual batches'),
 			'default': false
 		},
 		'sql.intelliSense.enableIntelliSense': {
 			'type': 'boolean',
 			'default': true,
-			'description': 'Should IntelliSense be enabled'
+			'description': localize('sql.intelliSense.enableIntelliSense', 'Should IntelliSense be enabled')
 		},
 		'sql.intelliSense.enableErrorChecking': {
 			'type': 'boolean',
 			'default': true,
-			'description': 'Should IntelliSense error checking be enabled'
+			'description': localize('sql.intelliSense.enableErrorChecking', 'Should IntelliSense error checking be enabled')
 		},
 		'sql.intelliSense.enableSuggestions': {
 			'type': 'boolean',
 			'default': true,
-			'description': 'Should IntelliSense suggestions be enabled'
+			'description': localize('sql.intelliSense.enableSuggestions', 'Should IntelliSense suggestions be enabled')
 		},
 		'sql.intelliSense.enableQuickInfo': {
 			'type': 'boolean',
 			'default': true,
-			'description': 'Should IntelliSense quick info be enabled'
+			'description': localize('sql.intelliSense.enableQuickInfo', 'Should IntelliSense quick info be enabled')
 		},
 		'sql.intelliSense.lowerCaseSuggestions': {
 			'type': 'boolean',
 			'default': false,
-			'description': 'Should IntelliSense suggestions be lowercase'
+			'description': localize('sql.intelliSense.lowerCaseSuggestions', 'Should IntelliSense suggestions be lowercase')
 		}
 	}
 });

@@ -20,6 +20,7 @@ import { ErrorMessageServiceStub } from 'sqltest/stubs/errorMessageServiceStub';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeView';
 import * as Constants from 'sql/parts/connection/common/constants';
+import * as  LocalizedConstants from 'sql/parts/connection/common/localizedConstants';
 import { ObjectExplorerService, ObjectExplorerNodeEventArgs } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
@@ -276,7 +277,7 @@ suite('SQL Connection Tree Action tests', () => {
 			saveProfile: true,
 			id: 'testId'
 		});
-		connection.parent = new ConnectionProfileGroup(Constants.unsavedGroupLabel, undefined, Constants.unsavedGroupId, undefined, undefined);
+		connection.parent = new ConnectionProfileGroup(LocalizedConstants.unsavedGroupLabel, undefined, Constants.unsavedGroupId, undefined, undefined);
 		let connectionAction: DeleteConnectionAction = new DeleteConnectionAction(DeleteConnectionAction.ID,
 			DeleteConnectionAction.DELETE_CONNECTION_LABEL,
 			connection,

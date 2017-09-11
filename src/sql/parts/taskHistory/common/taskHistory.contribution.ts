@@ -105,11 +105,11 @@ registry.registerWorkbenchAction(
 let configurationRegistry = <IConfigurationRegistry>Registry.as(Extensions.Configuration);
 configurationRegistry.registerConfiguration({
 	'id': 'taskHistory',
-	'title': 'Task History',
+	'title': localize('taskHistory', 'Task History'),
 	'type': 'object',
 	'properties': {
 		'datasource.task': {
-			'description': 'Operation Task Status',
+			'description': localize('datasource.task', 'Operation Task Status'),
 			'type': 'array'
 		}
 	}

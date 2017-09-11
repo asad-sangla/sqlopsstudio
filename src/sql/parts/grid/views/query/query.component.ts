@@ -11,7 +11,7 @@ import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import * as Constants from 'sql/parts/query/common/constants';
+import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 
 import {
@@ -58,8 +58,8 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			},
 			hoverText: () => {
 				return this.renderedDataSets.length === 1
-					? Constants.restoreLabel
-					: Constants.maximizeLabel;
+					? LocalizedConstants.restoreLabel
+					: LocalizedConstants.maximizeLabel;
 			},
 			functionality: (batchId, resultId, index) => {
 				this.magnify(index);
@@ -68,46 +68,46 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		{
 			showCondition: () => { return true; },
 			icon: () => { return 'saveCsv'; },
-			hoverText: () => { return Constants.saveCSVLabel; },
+			hoverText: () => { return LocalizedConstants.saveCSVLabel; },
 			functionality: (batchId, resultId, index) => {
 				let selection = this.slickgrids.toArray()[index].getSelectedRanges();
 				if (selection.length <= 1) {
 					this.handleContextClick({ type: 'savecsv', batchId: batchId, resultId: resultId, index: index, selection: selection });
 				} else {
-					this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
+					this.dataService.showWarning(LocalizedConstants.msgCannotSaveMultipleSelections);
 				}
 			}
 		},
 		{
 			showCondition: () => { return true; },
 			icon: () => { return 'saveJson'; },
-			hoverText: () => { return Constants.saveJSONLabel; },
+			hoverText: () => { return LocalizedConstants.saveJSONLabel; },
 			functionality: (batchId, resultId, index) => {
 				let selection = this.slickgrids.toArray()[index].getSelectedRanges();
 				if (selection.length <= 1) {
 					this.handleContextClick({ type: 'savejson', batchId: batchId, resultId: resultId, index: index, selection: selection });
 				} else {
-					this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
+					this.dataService.showWarning(LocalizedConstants.msgCannotSaveMultipleSelections);
 				}
 			}
 		},
 		{
 			showCondition: () => { return true; },
 			icon: () => { return 'saveExcel'; },
-			hoverText: () => { return Constants.saveExcelLabel; },
+			hoverText: () => { return LocalizedConstants.saveExcelLabel; },
 			functionality: (batchId, resultId, index) => {
 				let selection = this.slickgrids.toArray()[index].getSelectedRanges();
 				if (selection.length <= 1) {
 					this.handleContextClick({ type: 'saveexcel', batchId: batchId, resultId: resultId, index: index, selection: selection });
 				} else {
-					this.dataService.showWarning(Constants.msgCannotSaveMultipleSelections);
+					this.dataService.showWarning(LocalizedConstants.msgCannotSaveMultipleSelections);
 				}
 			}
 		},
 		{
 			showCondition: () => { return true; },
 			icon: () => { return 'viewChart'; },
-			hoverText: () => { return Constants.viewChartLabel; },
+			hoverText: () => { return LocalizedConstants.viewChartLabel; },
 			functionality: (batchId, resultId, index) => {
 				this.showChartForGrid(index);
 			}

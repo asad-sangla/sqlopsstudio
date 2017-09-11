@@ -7,6 +7,7 @@
 
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import Constants = require('sql/parts/query/common/constants');
+import LocalizedConstants = require('sql/parts/query/common/localizedConstants');
 import Utils = require('sql/parts/connection/common/utils');
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
@@ -246,11 +247,11 @@ export class QueryModelService implements IQueryModelService {
 			let link = undefined;
 			if (batch.selection) {
 				link = {
-					text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1)
+					text: Utils.formatString(LocalizedConstants.runQueryBatchStartLine, batch.selection.startLine + 1)
 				};
 			}
 			let message = {
-				message: Constants.runQueryBatchStartMessage,
+				message: LocalizedConstants.runQueryBatchStartMessage,
 				batchId: batch.id,
 				isError: false,
 				time: new Date().toLocaleTimeString(),
@@ -301,7 +302,7 @@ export class QueryModelService implements IQueryModelService {
 		queryRunner.cancelQuery().then(success => undefined, error => {
 			// On error, show error message and notify that the query is complete so that buttons and other status indicators
 			// can be correct
-			this._messageService.show(Severity.Error, Utils.formatString(Constants.msgCancelQueryFailed, error));
+			this._messageService.show(Severity.Error, Utils.formatString(LocalizedConstants.msgCancelQueryFailed, error));
 			this._fireQueryEvent(queryRunner.uri, 'complete', 0);
 		});
 
@@ -343,12 +344,12 @@ export class QueryModelService implements IQueryModelService {
 				let link = undefined;
 				if (batch.selection) {
 					link = {
-						text: Utils.formatString(Constants.runQueryBatchStartLine, batch.selection.startLine + 1),
+						text: Utils.formatString(LocalizedConstants.runQueryBatchStartLine, batch.selection.startLine + 1),
 						uri: ''
 					};
 				}
 				let message = {
-					message: Constants.runQueryBatchStartMessage,
+					message: LocalizedConstants.runQueryBatchStartMessage,
 					batchId: undefined,
 					isError: false,
 					time: new Date().toLocaleTimeString(),

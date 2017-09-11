@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ConnectionSummary } from 'data';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
-import * as Constants from 'sql/parts/connection/common/constants';
+import * as LocalizedConstants from 'sql/parts/connection/common/localizedConstants';
 
 // Status when making connections from the viewlet
 export class ConnectionGlobalStatus {
@@ -26,7 +26,7 @@ export class ConnectionGlobalStatus {
 				} else {
 					connInfo = connInfo + ' : ' + '<default>';
 				}
-				text = Constants.onDidConnectMessage + ' ' + connInfo;
+				text = LocalizedConstants.onDidConnectMessage + ' ' + connInfo;
 			}
 			this._statusBarService.setStatusMessage(text, this._displayTime);
 		}
@@ -34,7 +34,7 @@ export class ConnectionGlobalStatus {
 
 	public setStatusToDisconnected(fileUri: string): void {
 		if (this._statusBarService) {
-			this._statusBarService.setStatusMessage(Constants.onDidDisconnectMessage, this._displayTime);
+			this._statusBarService.setStatusMessage(LocalizedConstants.onDidDisconnectMessage, this._displayTime);
 		}
 	}
 }

@@ -20,6 +20,7 @@ import { ExtensionTipsService } from 'vs/workbench/parts/extensions/electron-bro
 import { ExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/node/extensionsWorkbenchService';
 import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
+import { localize } from 'vs/nls';
 
 // Singletons
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService);
@@ -58,11 +59,11 @@ configurationRegistry.registerConfiguration({
 		'sql.maxRecentConnections': {
 			'type': 'number',
 			'default': 5,
-			'description': 'The maximum number of recently used connections to store in the connection list.'
+			'description': localize('sql.maxRecentConnectionsDescription', 'The maximum number of recently used connections to store in the connection list.')
 		},
 		'sql.defaultEngine': {
 			'type': 'string',
-			'description': 'Default SQL Engine to use. This drives default language provider in .sql files and the default to use when creating a new connection. Valid options are currently MSSQL or PGSQL',
+			'description': localize('sql.defaultEngineDescription', 'Default SQL Engine to use. This drives default language provider in .sql files and the default to use when creating a new connection. Valid options are currently MSSQL or PGSQL'),
 			'default': 'MSSQL'
 		},
 	}

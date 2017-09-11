@@ -59,27 +59,27 @@ registry.registerWorkbenchAction(
 let configurationRegistry = <IConfigurationRegistry>Registry.as(Extensions.Configuration);
 configurationRegistry.registerConfiguration({
 	'id': 'databaseConnections',
-	'title': 'Database Connections',
+	'title': localize('databaseConnections', 'Database Connections'),
 	'type': 'object',
 	'properties': {
 		'datasource.connections': {
-			'description': 'data source connections',
+			'description': localize('datasource.connections', 'data source connections'),
 			'type': 'array'
 		},
 		'datasource.connectionGroups': {
-			'description': 'data source connections',
+			'description': localize('datasource.connectionGroups', 'data source groups'),
 			'type': 'array'
 		}
 	}
 });
 configurationRegistry.registerConfiguration({
 	'id': 'startupConfig',
-	'title': 'Startup Configuration',
+	'title': localize('startupConfig', 'Startup Configuration'),
 	'type': 'object',
 	'properties': {
 		'startup.alwaysShowServersView': {
 			'type': 'boolean',
-			'description': 'True for the Servers view to be shown on launch of Carbon default; false if the last opened view should be shown',
+			'description': localize('startup.alwaysShowServersView', 'True for the Servers view to be shown on launch of Carbon default; false if the last opened view should be shown'),
 			'default': true
 		}
 	}

@@ -52,11 +52,11 @@
 
 </table>
 
-<span>Database files:</span>
+<span>{{databaseFilesLabel}}</span>
 <table class="task-input-table">
     <tr>
         <td>
-            <p-dataTable [value]="databaseFiles" [tableStyle]="{'overflow': 'auto'}" emptyMessage="No records found">
+            <p-dataTable [value]="databaseFiles" [tableStyle]="{'overflow': 'auto'}" [emptyMessage]="noRecordsFoundLabel">
                 <p-column header="Logical Name" field="logicalName" ></p-column>
                 <p-column header="File Type" field="fileType"></p-column>
                 <p-column header="File Group" field="filegroup"></p-column>

@@ -44,12 +44,8 @@ export const outputServiceLocalhost = 'http://localhost:';
 export const msgContentProviderSqlOutputHtml = 'dist/html/sqlOutput.ejs';
 export const contentProviderMinFile = 'dist/js/app.min.js';
 
-export const onDidConnectMessage = 'Connected to';
-export const onDidDisconnectMessage = 'Disconnected';
-
 /**Unsaved connections Id */
 export const unsavedGroupId = 'unsaved';
-export const unsavedGroupLabel = 'Unsaved Connections';
 
 /* Memento constants */
 export const activeConnections = 'ACTIVE_CONNECTIONS';
@@ -58,10 +54,6 @@ export const capabilitiesOptions = 'OPTIONS_METADATA';
 
 export const configRecentConnections = 'recentConnections';
 export const configMaxRecentConnections = 'maxRecentConnections';
-
-export const msgIsRequired = ' is required.';
-export const msgYes = 'Yes';
-export const msgNo = 'No';
 
 export const mssqlProviderName = 'MSSQL';
 export const pgsqlProviderName = 'PGSQL';
