@@ -150,7 +150,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 			self._disposables.push(toDisposableSubscription(self._bootstrap.metadataService.metadata.subscribe((data) => {
 				if (data) {
 					self.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
-					self.tableData.sort(this.schemaSort);
+					self.tableData.sort(ExplorerWidget.schemaSort);
 					if (self.tableData.length > 0) {
 						self.selectedRow = self.tableData[0];
 					}
@@ -165,24 +165,17 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		}
 	}
 
-	// custom sort : Table > View > Stored Procedures
-	private schemaSort(metadataWrapper1, metadataWrapper2): number {
-		var metadata1 = metadataWrapper1.metadata;
-		var metadata2 = metadataWrapper2.metadata;
-		if (metadata1.metadataType === MetadataType.Table) {
+	// custom sort : Table > View > Stored Procedures > Function
+	private static schemaSort(metadataWrapper1: ObjectMetadataWrapper, metadataWrapper2: ObjectMetadataWrapper): number {
+		let metadata1 = metadataWrapper1.metadata;
+		let metadata2 = metadataWrapper2.metadata;
+		if (metadata1.metadataType < metadata2.metadataType) {
 			return -1;
-		}
-		else if (metadata1.metadataType === MetadataType.SProc) {
+		} else if (metadata1.metadataType === metadata2.metadataType) {
+			return metadata1.name.localeCompare(metadata2.name);
+		} else {
 			return 1;
 		}
-		else if (metadata1.metadataType === MetadataType.View) {
-			if (metadata2.metadataType === MetadataType.Table) {
-				return 1;
-			} else if (metadata2.metadataType === MetadataType.SProc) {
-				return -1;
-			}
-		}
-		return -1;
 	}
 
 	//tslint:disable-next-line

@@ -24,6 +24,9 @@
 				<div *ngIf="row.metadata?.metadataType === dataType.View">
 					<div class="icon view" style="padding: 8px"></div>
 				</div>
+				<div *ngIf="row.metadata?.metadataType === dataType.Function">
+					<div class="icon scalarvaluedfunction" style="padding: 8px"></div>
+				</div>
 				<div *ngIf="_config.context === 'server'">
 					<div class="icon database" style="padding: 8px"></div>
 				</div>
