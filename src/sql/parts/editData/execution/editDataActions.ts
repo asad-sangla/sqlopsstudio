@@ -152,7 +152,7 @@ export class ChangeMaxRowsActionItem extends EventEmitter implements IActionItem
 
 	constructor(private _editor: EditDataEditor) {
 		super();
-		this._options = ['10', '200', '1000'];
+		this._options = ['200', '1000', '10000'];
 		this._currentOptionsIndex = 0;
 		this.toDispose = [];
 		this.selectBox = new SelectBox([], -1);
