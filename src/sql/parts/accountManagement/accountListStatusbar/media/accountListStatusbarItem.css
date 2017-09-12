@@ -1,0 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.linked-account-staus > .linked-account-status-selection {
+	content: url(accounts_statusbar_inverse.svg);
+	width: 14px;
+	padding: 5px;
+}

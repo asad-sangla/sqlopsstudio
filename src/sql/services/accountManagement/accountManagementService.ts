@@ -14,7 +14,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import { Memento } from 'vs/workbench/common/memento';
 
 import { AccountDialogController } from 'sql/parts/accountManagement/accountDialog/accountDialogController';
-import { AccountListStatusbarItem } from 'sql/parts/accountManagement/common/accountListStatusbarItem';
+import { AccountListStatusbarItem } from 'sql/parts/accountManagement/accountListStatusbar/accountListStatusbarItem';
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
 import { AccountStore } from 'sql/services/accountManagement/accountStore';
 
@@ -46,7 +46,7 @@ export class AccountManagementService implements IAccountManagementService {
 			let statusbarDescriptor = new statusbar.StatusbarItemDescriptor(
 				AccountListStatusbarItem,
 				statusbar.StatusbarAlignment.LEFT,
-				100
+				15000 /* Highest Priority */
 			);
 			(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(statusbarDescriptor);
 		}
