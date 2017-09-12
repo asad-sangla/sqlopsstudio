@@ -23,7 +23,6 @@ export interface IAccountManagementService {
 	removeAccount(accountKey: AccountKey): Thenable<void>;
 
 	// UI METHODS //////////////////////////////////////////////////////////
-	closeAccountListDialog(): void;
 	openAccountListDialog(): TPromise<any>;
 
 	// SERVICE MANAGEMENT METHODS /////////////////////////////////////////

@@ -6,8 +6,8 @@
 'use strict';
 
 import * as data from 'data';
-import {IAccountManagementService} from "sql/services/accountManagement/interfaces";
-import {TPromise} from "vs/base/common/winjs.base";
+import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
+import { TPromise } from "vs/base/common/winjs.base";
 
 export class AccountManagementTestService implements IAccountManagementService {
 	_serviceBrand: any;
@@ -25,10 +25,6 @@ export class AccountManagementTestService implements IAccountManagementService {
 	}
 
 	removeAccount(accountKey: data.AccountKey): Thenable<void> {
-		return undefined;
-	}
-
-	closeAccountListDialog(): void {
 		return undefined;
 	}
 

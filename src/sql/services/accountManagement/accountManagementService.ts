@@ -7,21 +7,24 @@
 
 import * as platform from 'vs/platform/registry/common/platform';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
-import {AccountListStatusbarItem} from "sql/parts/accountManagement/common/accountListStatusbarItem";
-import {IInstantiationService} from "vs/platform/instantiation/common/instantiation";
-import {TPromise} from "vs/base/common/winjs.base";
-import {Account, AccountKey, AccountProvider, AccountProviderMetadata} from "data";
-import {IAccountManagementService} from "sql/services/accountManagement/interfaces";
-import {AccountStore} from "sql/services/accountManagement/accountStore";
-import {IStorageService} from "vs/platform/storage/common/storage";
-import {Memento} from 'vs/workbench/common/memento';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { TPromise } from 'vs/base/common/winjs.base';
+import { Account, AccountKey, AccountProvider, AccountProviderMetadata } from 'data';
+import { IStorageService } from 'vs/platform/storage/common/storage';
+import { Memento } from 'vs/workbench/common/memento';
+
+import { AccountDialogController } from 'sql/parts/accountManagement/accountDialog/accountDialogController';
+import { AccountListStatusbarItem } from 'sql/parts/accountManagement/common/accountListStatusbarItem';
+import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { AccountStore } from 'sql/services/accountManagement/accountStore';
 
 export class AccountManagementService implements IAccountManagementService {
 	private static ACCOUNT_MEMENTO = 'AccountManagement';
 
 	public _serviceBrand: any;
 	private _accountStore: AccountStore;
-	private _providers: {[id: string]: AccountProviderWithMetadata} = {};
+	private _accountDialogController: AccountDialogController;
+	private _providers: { [id: string]: AccountProviderWithMetadata } = {};
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
@@ -64,7 +67,7 @@ export class AccountManagementService implements IAccountManagementService {
 	 * @returns {Thenable<AccountProviderMetadata[]>} Registered account providers
 	 */
 	public getAccountProviderMetadata(): Thenable<AccountProviderMetadata[]> {
-		return Promise.resolve(Object.values(this._providers).map(provider => {return provider.metadata;}));
+		return TPromise.as(Object.values(this._providers).map(provider => provider.metadata));
 	}
 
 	/**
@@ -95,35 +98,19 @@ export class AccountManagementService implements IAccountManagementService {
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	/**
-	 * Closes the account list dialog
-	 */
-	public closeAccountListDialog(): void {
-		// TODO: Implement with @AbbiePetcht's changes
-		// if (this._accountListDialog) {
-		// 	this._accountListDialog.close();
-		// }
-	}
-
-	/**
 	 * Opens the account list dialog
 	 * @return {TPromise<any>}	Promise that finishes when the account list dialog opens
 	 */
 	public openAccountListDialog(): TPromise<any> {
-		return TPromise.as(null);
-		// TODO: Implement with @AbbiePetcht's changes
-		// let self = this;
-        //
-		// // If the account list dialog hasn't been defined, create a new one
-		// if (!self._accountListDialog) {
-		// 	self._accountListDialog = self._instantiationService
-		// 		? self._instantiationService.createInstance(AccountListDialog)
-		// 		: undefined;
-		// 	self._accountListDialog.render();
-		// }
-        //
-		// return new TPromise<void>(() => {
-		// 	self._accountListDialog.open();
-		// });
+		let self = this;
+		// If the account list dialog hasn't been defined, create a new one
+		if (!self._accountDialogController) {
+			self._accountDialogController = self._instantiationService.createInstance(AccountDialogController);
+		}
+
+		return new TPromise<void>(() => {
+			self._accountDialogController.openAccountDialog();
+		});
 	}
 
 	// SERVICE MANAGEMENT METHODS //////////////////////////////////////////

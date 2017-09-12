@@ -125,7 +125,7 @@ export class AccountStore extends EventEmitter implements IAccountStore {
 
 		// Take any display info changes
 		if (displayInfo && account.displayInfo !== displayInfo) {
-			let displayChanges = account.displayInfo.contextualLogo !== displayInfo.contextualLogo
+			let displayChanges = account.displayInfo.accountType !== displayInfo.accountType
 				|| account.displayInfo.contextualDisplayName !== displayInfo.contextualDisplayName
 				|| account.displayInfo.displayName !== displayInfo.displayName;
 			if (displayChanges) {

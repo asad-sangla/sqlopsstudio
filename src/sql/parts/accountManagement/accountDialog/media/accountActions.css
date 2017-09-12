@@ -1,0 +1,14 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Icons for various account actions */
+.account-view .split-view-view .add-linked-account-action {
+	background-image: url('new_account.svg');
+}
+
+.vs-dark .account-view .split-view-view .add-linked-account-action,
+.hc-black .account-view .split-view-view .add-linked-account-action {
+	background-image: url('new_account_inverse.svg');
+}

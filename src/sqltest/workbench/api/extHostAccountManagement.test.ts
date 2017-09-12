@@ -8,14 +8,14 @@
 import * as assert from 'assert';
 import * as data from 'data';
 import * as TypeMoq from 'typemoq';
-import {AccountProviderStub, AccountManagementTestService} from 'sqltest/stubs/accountManagementStubs';
-import {ExtHostAccountManagement} from 'sql/workbench/api/node/extHostAccountManagement';
-import {TestThreadService} from "vs/workbench/test/electron-browser/api/testThreadService";
-import {TestInstantiationService} from "vs/platform/instantiation/test/common/instantiationServiceMock";
-import {IThreadService} from "vs/workbench/services/thread/common/threadService";
-import {SqlMainContext} from "sql/workbench/api/node/sqlExtHost.protocol";
-import {MainThreadAccountManagement} from "sql/workbench/api/node/mainThreadAccountManagement";
-import {IAccountManagementService} from "sql/services/accountManagement/interfaces";
+import { AccountProviderStub, AccountManagementTestService } from 'sqltest/stubs/accountManagementStubs';
+import { ExtHostAccountManagement } from 'sql/workbench/api/node/extHostAccountManagement';
+import { TestThreadService } from 'vs/workbench/test/electron-browser/api/testThreadService';
+import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
+import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
+import { SqlMainContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
+import { MainThreadAccountManagement } from 'sql/workbench/api/node/mainThreadAccountManagement';
+import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
 
 // SUITE STATE /////////////////////////////////////////////////////////////
 let instantiationService: TestInstantiationService;
@@ -51,6 +51,7 @@ suite('ExtHostAccountManagement', () => {
 			name: 'idk',
 			properties: {},
 			displayInfo: {
+				accountType: 'testAccount',
 				displayName: 'Test Account',
 				contextualDisplayName: 'Test Kind Of Account'
 			},
@@ -107,7 +108,7 @@ suite('ExtHostAccountManagement', () => {
 
 		// If: I clear an account
 		extHost.$clear(0, mockAccount)
-			.then( () => {
+			.then(() => {
 				// Then: The call should have been passed to the provider
 				mockProvider.verify(
 					(obj) => obj.clear(TypeMoq.It.isValue(mockAccount)),
@@ -146,7 +147,7 @@ suite('ExtHostAccountManagement', () => {
 
 		// If: I initialize the provider
 		extHost.$initialize(0, [mockAccount])
-			.then( () => {
+			.then(() => {
 				// Then: The call should have been passed to the provider
 				mockProvider.verify(
 					(obj) => obj.initialize(TypeMoq.It.isValue([mockAccount])),
@@ -185,7 +186,7 @@ suite('ExtHostAccountManagement', () => {
 
 		// If: I prompt for an account
 		extHost.$prompt(0)
-			.then( () => {
+			.then(() => {
 				// Then: The call should have been passed to the provider
 				mockProvider.verify(
 					(obj) => obj.prompt(),
@@ -224,7 +225,7 @@ suite('ExtHostAccountManagement', () => {
 
 		// If: I refresh an account
 		extHost.$refresh(0, mockAccount)
-			.then( () => {
+			.then(() => {
 				// Then: The call should have been passed to the provider
 				mockProvider.verify(
 					(obj) => obj.refresh(TypeMoq.It.isValue(mockAccount)),

@@ -1032,9 +1032,9 @@ declare module 'data' {
 	 */
 	export interface AccountDisplayInfo {
 		/**
-		 * An optional base-64 encoded logo that offers context for the account.
+		 * The type of the account.
 		 */
-		contextualLogo?: string;
+		accountType: string;
 
 		/**
 		 * A display name that offers context for the account, such as "Contoso".

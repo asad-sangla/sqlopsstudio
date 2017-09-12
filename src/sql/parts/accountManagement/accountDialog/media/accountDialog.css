@@ -1,0 +1,103 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.account-view .monaco-split-view .split-view-view .header {
+	padding-right: 12px;
+}
+
+.account-view .provider-view .list-row {
+	padding: 12px;
+	display: flex;
+	align-items: flex-start;
+}
+
+.account-view .provider-view .list-row .icon {
+	flex: 0 0 50px;
+	height: 50px;
+	width: 50px;
+}
+
+.account-view .provider-view .list-row .label {
+	flex: 1 1 auto;
+	margin-left: 15px;
+}
+
+.account-view .provider-view .list-row .label .contextual-display-name {
+	font-size: 15px;
+}
+
+.account-view .provider-view .list-row .label .content {
+	opacity: 0.7;
+}
+
+.account-view .provider-view .list-row .icon.microsoftAccount {
+	background: url(microsoft_account.svg) center center no-repeat;
+	background-size: 50px;
+}
+
+.account-view .provider-view .list-row .icon.workSchoolAccount {
+	background: url(work_school_account.svg) center center no-repeat;
+	background-size: 50px;
+}
+
+.vs-dark .account-view .provider-view .list-row .icon.workSchoolAccount,
+.hc-black .account-view .provider-view .list-row .icon.workSchoolAccount {
+	background: url(work_school_account_inverse.svg) center center no-repeat;
+}
+
+.account-view .provider-view .list-row .icon .badge {
+	position: absolute;
+	top: 43px;
+	left: 43px;
+	overflow: hidden;
+	width: 22px;
+	height: 22px;
+}
+
+.account-view .provider-view .list-row .icon .badge .badge-content {
+	width: 22px;
+	height: 22px;
+}
+
+.account-view .provider-view .list-row .actions-container {
+	flex: 0 0 50px;
+}
+
+.account-view .provider-view .list-row .actions-container .action-item .action-label {
+	width: 16px;
+	margin-left: 20px;
+	margin-right: 10px;
+	background: none;
+}
+
+.account-view .provider-view .list-row .actions-container {
+	display: none;
+}
+
+.account-view .provider-view .monaco-list .monaco-list-row:hover .list-row .actions-container,
+.account-view .provider-view .monaco-list .monaco-list-row.selected .list-row .actions-container,
+.account-view .provider-view .monaco-list .monaco-list-row.focused .list-row .actions-container{
+	display: block;
+}
+
+.account-view .split-view-view .header .title {
+	display: flex;
+	justify-content: flex-start;
+	flex: 1 1 auto;
+}
+
+.account-view .split-view-view .header .actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.account-view .split-view-view .header .actions .action-item .action-label {
+	width: 30px;
+	background-size: 16px;
+	background-position: center center;
+	background-repeat: no-repeat;
+	margin-right: 0;
+	height: 22px;
+}

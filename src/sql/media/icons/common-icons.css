@@ -116,3 +116,30 @@
 .hc-black .icon.close {
 	background-image: url('close-dark.svg');
 }
+
+.vs .icon.filter {
+	content: url('filter.svg');
+}
+
+.vs-dark .icon.filter,
+.hc-black .icon.filter {
+	content: url('filter_inverse.svg');
+}
+
+.vs .icon.refresh {
+	content: url('refresh.svg');
+}
+
+.vs-dark .icon.refresh,
+.hc-black .icon.refresh {
+	content: url('refresh_inverse.svg');
+}
+
+.vs .icon.remove {
+	content: url('remove.svg');
+}
+
+.vs-dark .icon.remove,
+.hc-black .icon.remove {
+	content: url('remove_inverse.svg');
+}
