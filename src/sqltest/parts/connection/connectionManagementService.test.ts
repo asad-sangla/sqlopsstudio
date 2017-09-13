@@ -12,7 +12,8 @@ import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
 import {
 	INewConnectionParams, ConnectionType,
 	IConnectionCompletionOptions, IConnectionResult,
-	RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
+	RunQueryOnConnectionMode
+} from 'sql/parts/connection/common/connectionManagement';
 import * as Constants from 'sql/parts/connection/common/constants';
 import * as Utils from 'sql/parts/connection/common/utils';
 
@@ -62,7 +63,7 @@ suite('SQL ConnectionManagementService tests', () => {
 	let connectionProfileWithEmptySavedPassword: IConnectionProfile =
 		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 1 });
 	let connectionProfileWithEmptyUnsavedPassword: IConnectionProfile =
-		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 2, savePassword: false});
+		Object.assign({}, connectionProfile, { password: '', serverName: connectionProfile.serverName + 2, savePassword: false });
 
 	let connectionManagementService: ConnectionManagementService;
 	let configResult: { [key: string]: any } = {};
@@ -88,13 +89,13 @@ suite('SQL ConnectionManagementService tests', () => {
 		workbenchEditorService.setup(x => x.openEditor(undefined, TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => TPromise.as(undefined));
 		editorGroupService.setup(x => x.getStacksModel()).returns(() => undefined);
 		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
-			c => c.serverName === connectionProfile.serverName))).returns(() => Promise.resolve({profile: connectionProfile, savedCred: true}));
+			c => c.serverName === connectionProfile.serverName))).returns(() => Promise.resolve({ profile: connectionProfile, savedCred: true }));
 		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
 			c => c.serverName === connectionProfileWithEmptySavedPassword.serverName))).returns(
-				() => Promise.resolve({profile: connectionProfileWithEmptySavedPassword, savedCred: true}));
+			() => Promise.resolve({ profile: connectionProfileWithEmptySavedPassword, savedCred: true }));
 		connectionStore.setup(x => x.addSavedPassword(TypeMoq.It.is<IConnectionProfile>(
 			c => c.serverName === connectionProfileWithEmptyUnsavedPassword.serverName))).returns(
-				() => Promise.resolve({profile: connectionProfileWithEmptyUnsavedPassword, savedCred: false}));
+			() => Promise.resolve({ profile: connectionProfileWithEmptyUnsavedPassword, savedCred: false }));
 		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
 
 		mssqlConnectionProvider.setup(x => x.connect(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => undefined);
@@ -116,7 +117,6 @@ suite('SQL ConnectionManagementService tests', () => {
 		let connectionManagementService = new ConnectionManagementService(
 			undefined,
 			connectionStore.object,
-			undefined,
 			connectionDialogService.object,
 			undefined,
 			undefined,
@@ -581,8 +581,8 @@ suite('SQL ConnectionManagementService tests', () => {
 		let serverName = 'test_server';
 		let userName = 'test_user';
 		let connectionProfileWithoutDb: IConnectionProfile = Object.assign(connectionProfile,
-			{serverName: serverName, databaseName: '', userName: userName, getOptionsKey: () => undefined});
-		let connectionProfileWithDb: IConnectionProfile = Object.assign(connectionProfileWithoutDb, {databaseName: dbName});
+			{ serverName: serverName, databaseName: '', userName: userName, getOptionsKey: () => undefined });
+		let connectionProfileWithDb: IConnectionProfile = Object.assign(connectionProfileWithoutDb, { databaseName: dbName });
 		// Save the database with a URI that has the database name filled in, to mirror Carbon's behavior
 		let ownerUri = Utils.generateUri(connectionProfileWithDb);
 		connect(ownerUri, undefined, false, connectionProfileWithoutDb).then(() => {

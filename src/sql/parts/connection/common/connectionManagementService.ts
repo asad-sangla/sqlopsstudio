@@ -42,7 +42,6 @@ import { IConfigurationEditingService } from 'vs/workbench/services/configuratio
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import Event, { Emitter } from 'vs/base/common/event';
-import { ISplashScreenService } from 'sql/workbench/splashScreen/splashScreenService';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
@@ -75,7 +74,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 	constructor(
 		private _connectionMemento: Memento,
 		private _connectionStore: ConnectionStore,
-		@ISplashScreenService private _splashScreen: ISplashScreenService,
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
 		@IServerGroupController private _serverGroupController: IServerGroupController,
 		@ICommandService private _commandService: ICommandService,
@@ -173,8 +171,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// temporarily close splash screen when a connection provider has been registered
 		// @todo remove this code once a proper initialization event is available (karlb 4/1/2017)
 		++this._providerCount;
-		if (this._providerCount === 1 && this._splashScreen !== undefined) {
-			this._splashScreen.hideSplashScreen();
+		if (this._providerCount === 2 && typeof splash !== 'undefined') {
+			hideSplash();
 
 			// show the Registered Server viewlet
 

@@ -20,24 +20,6 @@ const electron = require('electron');
 const remote = electron.remote;
 const ipc = electron.ipcRenderer;
 
-// {{SQL CARBON EDIT}}
-// SQL global imports
-// Require slickgrid
-require('slickgrid/slick.core');
-const Slick = window.Slick;
-require('slickgrid/slick.grid');
-require('slickgrid/slick.editors');;
-require('reflect-metadata');
-require('zone.js');
-require('bootstrap');
-
-const _ = require('underscore')._;
-const rangy = require('rangy');
-const rangyCore = require('rangy/lib/rangy-core');
-const rangyTextRange = require('rangy/lib/rangy-textrange');
-const prettyData = require('pretty-data');
-const Figures = require('figures');
-
 process.lazyEnv = new Promise(function (resolve) {
 	const handle = setTimeout(function () {
 		resolve();
@@ -93,14 +75,7 @@ function uriFromPath(_path) {
 		pathName = '/' + pathName;
 	}
 
-  // {{SQL CARBON EDIT}}
-	/*
-	* This hack is for allowing spaces in installation paths
-	* when the app is optimized. The reason is the file uri
-	* is normalized twice, so we denormalize the path again
-	* after encoding when loading
-	*/
-	return encodeURI('file://' + pathName).replace('%20', ' ');
+	return encodeURI('file://' + pathName);
 }
 
 function registerListeners(enableDeveloperTools) {
@@ -140,6 +115,29 @@ function registerListeners(enableDeveloperTools) {
 			listener = void 0;
 		}
 	};
+}
+
+const splash = new remote.BrowserWindow({
+	width: 600,
+	height: 450,
+	modal: true,
+	show: false,
+	titleBarStyle: 'hidden',
+	frame: false,
+	resizable: false,
+	movable: false,
+	parent: remote.getCurrentWindow()
+});
+
+var configuration = JSON.parse(parseURLQueryArgs()['config'] || '{}') || {};
+splash.once('ready-to-show', function () {
+	splash.show();
+});
+splash.loadURL(uriFromPath(configuration.appRoot + '/out/sql/workbench/electron-browser/splashscreen/splashscreen.html'));
+
+function hideSplash() {
+	splash.hide();
+	remote.getCurrentWebContents().focus();
 }
 
 function main() {
@@ -183,7 +181,25 @@ function main() {
 	// Load the loader and start loading the workbench
 	const appRoot = uriFromPath(configuration.appRoot);
 	const rootUrl = appRoot + '/out';
-  
+
+	// {{SQL CARBON EDIT}}
+	// SQL global imports
+	// Require slickgrid
+	require('slickgrid/slick.core');
+	const Slick = window.Slick;
+	require('slickgrid/slick.grid');
+	require('slickgrid/slick.editors');;
+	require('reflect-metadata');
+	require('zone.js');
+	require('bootstrap');
+
+	const _ = require('underscore')._;
+	const rangy = require('rangy');
+	const rangyCore = require('rangy/lib/rangy-core');
+	const rangyTextRange = require('rangy/lib/rangy-textrange');
+	const prettyData = require('pretty-data');
+	const Figures = require('figures');
+
   // Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.dragrowselector.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.autosizecolumn.js', undefined);
