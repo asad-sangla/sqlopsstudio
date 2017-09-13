@@ -17,7 +17,7 @@ import { IGridDataRow, ISlickRange, SlickGrid, FieldType } from 'angular2-slickg
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import * as Constants from 'sql/parts/query/common/constants';
 import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
-import { IGridInfo, IRange, IGridDataSet, SaveFormat, JsonFormat, ExcelFormat, CsvFormat  } from 'sql/parts/grid/common/interfaces';
+import { IGridInfo, IRange, IGridDataSet, SaveFormat, JsonFormat, ExcelFormat, CsvFormat } from 'sql/parts/grid/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import * as actions from 'sql/parts/grid/views/gridActions';
@@ -81,10 +81,10 @@ export abstract class GridParentComponent {
 	@ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
 
 	// Edit Data functions
-	public onCellEditEnd: (event: {row: number, column: number, newValue: any}) => void;
-	public onCellEditBegin: (event: {row: number, column: number}) => void;
-	public onRowEditBegin: (event: {row: number}) => void;
-	public onRowEditEnd: (event: {row: number}) => void;
+	public onCellEditEnd: (event: { row: number, column: number, newValue: any }) => void;
+	public onCellEditBegin: (event: { row: number, column: number }) => void;
+	public onRowEditBegin: (event: { row: number }) => void;
+	public onRowEditEnd: (event: { row: number }) => void;
 	public onIsCellEditValid: (row: number, column: number, newValue: any) => boolean;
 	public onIsColumnEditable: (column: number) => boolean;
 	public overrideCellFn: (rowNumber, columnId, value?, data?) => string;
@@ -121,7 +121,7 @@ export abstract class GridParentComponent {
 		this.subscribeWithDispose(this.dataService.gridContentObserver, (type) => {
 			switch (type) {
 				case GridContentEvents.RefreshContents:
-					 self.refreshResultsets();
+					self.refreshResultsets();
 					break;
 				case GridContentEvents.ResizeContents:
 					self.resizeGrids();
@@ -172,7 +172,7 @@ export abstract class GridParentComponent {
 	 * Add the subscription to the list of things to be disposed on destroy, or else on a new component init
 	 * may get the "destroyed" object still getting called back.
 	 */
-	protected subscribeWithDispose<T>(subject: Subject<T>, event: (value: any)=> void): void {
+	protected subscribeWithDispose<T>(subject: Subject<T>, event: (value: any) => void): void {
 		let sub: Subscription = subject.subscribe(event);
 		this.toDispose.push(toDisposableSubscription(sub));
 	}
@@ -284,21 +284,21 @@ export abstract class GridParentComponent {
 		this.shortcutfunc = shortcuts;
 	}
 
-	protected abstract initShortcuts(shortcuts: {[name: string]: Function}): void;
+	protected abstract initShortcuts(shortcuts: { [name: string]: Function }): void;
 
 	/**
 	 * Send save result set request to service
 	 */
-	handleContextClick(event: {type: string, batchId: number, resultId: number, index: number, selection: ISlickRange[]}): void {
+	handleContextClick(event: { type: string, batchId: number, resultId: number, index: number, selection: ISlickRange[] }): void {
 		switch (event.type) {
 			case 'savecsv':
-				this.dataService.sendSaveRequest({batchIndex: event.batchId, resultSetNumber: event.resultId, format: CsvFormat, selection: event.selection});
+				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: CsvFormat, selection: event.selection });
 				break;
 			case 'savejson':
-				this.dataService.sendSaveRequest({batchIndex: event.batchId, resultSetNumber: event.resultId, format: JsonFormat, selection: event.selection});
+				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: JsonFormat, selection: event.selection });
 				break;
 			case 'saveexcel':
-				this.dataService.sendSaveRequest({batchIndex: event.batchId, resultSetNumber: event.resultId, format: ExcelFormat, selection: event.selection});
+				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: ExcelFormat, selection: event.selection });
 				break;
 			case 'selectall':
 				this.activeGrid = event.index;
@@ -316,11 +316,11 @@ export abstract class GridParentComponent {
 	}
 
 	private sendSaveRequest(format: SaveFormat) {
-			let activeGrid = this.activeGrid;
-			let batchId = this.renderedDataSets[activeGrid].batchId;
-			let resultId = this.renderedDataSets[activeGrid].resultId;
-			let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
-			this.dataService.sendSaveRequest({ batchIndex: batchId, resultSetNumber: resultId, format: format, selection: selection});
+		let activeGrid = this.activeGrid;
+		let batchId = this.renderedDataSets[activeGrid].batchId;
+		let resultId = this.renderedDataSets[activeGrid].resultId;
+		let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
+		this.dataService.sendSaveRequest({ batchIndex: batchId, resultSetNumber: resultId, format: format, selection: selection });
 	}
 
 	protected _keybindingFor(action: IAction): ResolvedKeybinding {
@@ -331,7 +331,7 @@ export abstract class GridParentComponent {
 	openContextMenu(event, batchId, resultId, index): void {
 		let selection = this.slickgrids.toArray()[index].getSelectedRanges();
 
-		let slick: any = this.slickgrids.toArray()[0];
+		let slick: any = this.slickgrids.toArray()[index];
 		let grid = slick._grid;
 		let rowIndex = grid.getCellFromEvent(event).row;
 
@@ -445,7 +445,7 @@ export abstract class GridParentComponent {
 	getSelectedRangeWithin(el): IRange {
 		let selectedRange = undefined;
 		let sel = rangy.getSelection();
-		let elRange = <IRange> rangy.createRange();
+		let elRange = <IRange>rangy.createRange();
 		elRange.selectNodeContents(el);
 		if (sel.rangeCount) {
 			selectedRange = sel.getRangeAt(0).intersection(elRange);
@@ -485,7 +485,7 @@ export abstract class GridParentComponent {
 	private handleLink(cellRef: string, row: number, dataContext: JSON, colDef: any, linkType: string): void {
 		const self = this;
 		let value = self.getCellValueString(dataContext, colDef);
-		$(cellRef).children('.xmlLink').click(function(): void {
+		$(cellRef).children('.xmlLink').click(function (): void {
 			self.dataService.openLink(value, colDef.name, linkType);
 		});
 	}
@@ -539,8 +539,8 @@ export abstract class GridParentComponent {
 		const self = this;
 		setTimeout(() => {
 			for (let grid of self.renderedDataSets) {
-					grid.resized.emit();
-				}
+				grid.resized.emit();
+			}
 		});
 	}
 
