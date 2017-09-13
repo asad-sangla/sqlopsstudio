@@ -68,7 +68,7 @@ export interface IConnectionManagementService {
 	_serviceBrand: any;
 
 	// Event Emitters
-	onAddConnectionProfile: Event<void>;
+	onAddConnectionProfile: Event<IConnectionProfile>;
 	onDeleteConnectionProfile: Event<void>;
 	onConnect: Event<IConnectionParams>;
 	onDisconnect: Event<IConnectionParams>;

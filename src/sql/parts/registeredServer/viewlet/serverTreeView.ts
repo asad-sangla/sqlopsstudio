@@ -83,11 +83,8 @@ export class ServerTreeView {
 
 		const self = this;
 		// Refresh Tree when these events are emitted
-		this._toDispose.push(this._connectionManagementService.onAddConnectionProfile(() => {
-			if (this._buttonSection) {
-				this._buttonSection.getHTMLElement().style.display = 'none';
-			}
-			self.refreshTree();
+		this._toDispose.push(this._connectionManagementService.onAddConnectionProfile((newProfile: IConnectionProfile) => {
+			self.handleAddConnectionProfile(newProfile);
 		})
 		);
 		this._toDispose.push(this._connectionManagementService.onDeleteConnectionProfile(() => {
@@ -110,6 +107,22 @@ export class ServerTreeView {
 			}));
 		}
 		self.refreshTree();
+	}
+
+	private handleAddConnectionProfile(newProfile: IConnectionProfile) {
+		if (this._buttonSection) {
+			this._buttonSection.getHTMLElement().style.display = 'none';
+		}
+		let currentSelections = this._tree.getSelection();
+		let currentSelectedElement = currentSelections && currentSelections.length >= 1 ? currentSelections[0] : undefined;
+		let newProfileIsSelected = currentSelectedElement && newProfile ? currentSelectedElement.id === newProfile.id : false;
+		if (newProfile && currentSelectedElement && !newProfileIsSelected) {
+			this._tree.clearSelection();
+		}
+		this.refreshTree();
+		if (newProfile && !newProfileIsSelected) {
+			this._tree.select(newProfile);
+		}
 	}
 
 	private showError(errorMessage: string) {

@@ -139,8 +139,11 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleDefaultOnConnect(params: INewConnectionParams, connection: IConnectionProfile): void {
-		let uri: string = params && params.input ? params.input.uri : undefined;
 		let fromEditor = params && params.connectionType === ConnectionType.editor;
+		let uri: string = undefined;
+		if (fromEditor && params.input) {
+			uri = params.input.uri;
+		}
 		let options: IConnectionCompletionOptions = {
 			params: params,
 			saveTheConnection: !fromEditor,
@@ -166,7 +169,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		// Find the provider name from the selected provider type, or throw an error if it does not correspond to a known provider
 		let providerName = this.getCurrentProviderName();
 		if (!providerName) {
-			throw 'Invalid provider type';
+			throw Error('Invalid provider type');
 		}
 
 		// Set the model name, initialize the controller if needed, and return the controller

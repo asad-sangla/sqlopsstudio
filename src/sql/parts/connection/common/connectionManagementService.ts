@@ -61,7 +61,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _connectionStatusManager: ConnectionStatusManager;
 
-	private _onAddConnectionProfile: Emitter<void>;
+	private _onAddConnectionProfile: Emitter<IConnectionProfile>;
 	private _onDeleteConnectionProfile: Emitter<void>;
 	private _onConnect: Emitter<IConnectionParams>;
 	private _onDisconnect: Emitter<IConnectionParams>;
@@ -103,7 +103,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._connectionGlobalStatus = new ConnectionGlobalStatus(this._statusBarService);
 
 		// Setting up our event emitters
-		this._onAddConnectionProfile = new Emitter<void>();
+		this._onAddConnectionProfile = new Emitter<IConnectionProfile>();
 		this._onDeleteConnectionProfile = new Emitter<void>();
 		this._onConnect = new Emitter<IConnectionParams>();
 		this._onDisconnect = new Emitter<IConnectionParams>();
@@ -134,7 +134,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	// Event Emitters
-	public get onAddConnectionProfile(): Event<void> {
+	public get onAddConnectionProfile(): Event<IConnectionProfile> {
 		return this._onAddConnectionProfile.event;
 	}
 
@@ -439,7 +439,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					}
 					if (options.saveTheConnection) {
 						this.saveToSettings(uri, connection).then(value => {
-							this._onAddConnectionProfile.fire();
+							this._onAddConnectionProfile.fire(connection);
 							this.doActionsAfterConnectionComplete(value, options);
 						});
 					} else {

@@ -43,6 +43,8 @@ export class TreeSelectionHandler {
 		let self = this;
 		this._clicks++;
 
+		let selection = tree.getSelection();
+
 		setTimeout(function () {
 			if (self._clicks === 1) {
 				isDoubleClick = false;
@@ -50,13 +52,12 @@ export class TreeSelectionHandler {
 				isDoubleClick = true;
 			}
 			let isInDoubleClickBlock = self._clicks > 1;
-			self.handleTreeItemSelected(isDoubleClick, event, tree, connectionManagementService, objectExplorerService, isInDoubleClickBlock);
+			self.handleTreeItemSelected(isDoubleClick, event, tree, connectionManagementService, objectExplorerService, isInDoubleClickBlock, selection);
 			self._clicks = 0;
 		}, 300);
 	}
 
-	private handleTreeItemSelected(isDoubleClick: boolean, event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isInDoubleClickBlock: boolean): void {
-		let selection = tree.getSelection();
+	private handleTreeItemSelected(isDoubleClick: boolean, event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isInDoubleClickBlock: boolean, selection: any[]): void {
 		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
 			let connectionProfile = <ConnectionProfile>selection[0];
 			let options: IConnectionCompletionOptions = {
