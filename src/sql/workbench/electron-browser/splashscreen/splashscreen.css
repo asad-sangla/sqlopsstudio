@@ -2,13 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-body {
-	margin: 0px
-}
-
-.splash-modal  {
-	width: 600px;
-	height: 450px;
+body, html {
+	margin: 0px;
+	height: 100%;
+	width: 100%;
 }
 
 .splash-modal {
