@@ -135,10 +135,32 @@ splash.once('ready-to-show', function () {
 });
 splash.loadURL(uriFromPath(configuration.appRoot + '/out/sql/workbench/electron-browser/splashscreen/splashscreen.html'));
 
+/* eslint-disable */
+
 function hideSplash() {
 	splash.hide();
 	remote.getCurrentWebContents().focus();
 }
+
+// {{SQL CARBON EDIT}}
+// SQL global imports
+// Require slickgrid
+require('slickgrid/slick.core');
+const Slick = window.Slick;
+require('slickgrid/slick.grid');
+require('slickgrid/slick.editors');;
+require('reflect-metadata');
+require('zone.js');
+require('bootstrap');
+
+const _ = require('underscore')._;
+const rangy = require('rangy');
+const rangyCore = require('rangy/lib/rangy-core');
+const rangyTextRange = require('rangy/lib/rangy-textrange');
+const prettyData = require('pretty-data');
+const Figures = require('figures');
+
+/* eslint-enable */
 
 function main() {
 	const webFrame = require('electron').webFrame;
@@ -177,33 +199,19 @@ function main() {
 		webFrame.setZoomLevel(zoomLevel);
 	}
 
-  // {{SQL CARBON EDIT}}
+	/* eslint-disable */
+
+	// {{SQL CARBON EDIT}}
 	// Load the loader and start loading the workbench
 	const appRoot = uriFromPath(configuration.appRoot);
 	const rootUrl = appRoot + '/out';
 
-	// {{SQL CARBON EDIT}}
-	// SQL global imports
-	// Require slickgrid
-	require('slickgrid/slick.core');
-	const Slick = window.Slick;
-	require('slickgrid/slick.grid');
-	require('slickgrid/slick.editors');;
-	require('reflect-metadata');
-	require('zone.js');
-	require('bootstrap');
-
-	const _ = require('underscore')._;
-	const rangy = require('rangy');
-	const rangyCore = require('rangy/lib/rangy-core');
-	const rangyTextRange = require('rangy/lib/rangy-textrange');
-	const prettyData = require('pretty-data');
-	const Figures = require('figures');
-
-  // Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
+  	// Run the Slick scripts to extend the global Slick object to enable our custom selection behavior
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.dragrowselector.js', undefined);
 	createScript(rootUrl + '/sql/parts/grid/directives/slick.autosizecolumn.js', undefined);
 	createScript(appRoot + '/node_modules/chart.js/dist/Chart.js', undefined);
+
+	/* eslint-enable */
 
 	function onLoader() {
 		define('fs', ['original-fs'], function (originalFS) { return originalFS; }); // replace the patched electron fs with the original node fs for all AMD code
@@ -213,7 +221,7 @@ function main() {
 
 		const onNodeCachedData = window.MonacoEnvironment.onNodeCachedData = [];
 
-    // {{SQL CARBON EDIT}}
+		// {{SQL CARBON EDIT}}
 		require.config({
 			baseUrl: rootUrl,
 			'vs/nls': nlsConfig,
