@@ -18,6 +18,7 @@ suite('Insights Dialog Tests', () => {
 			undefined,
 			undefined,
 			undefined,
+			undefined,
 			undefined);
 
 		// because the function we are trying to test is private, we will need to do some javascript trickery to bypass tsc

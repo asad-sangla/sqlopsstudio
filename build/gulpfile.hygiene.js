@@ -251,8 +251,9 @@ const hygiene = exports.hygiene = (some, options) => {
 	const javascript = result
 		.pipe(filter(eslintFilter))
 		.pipe(gulpeslint('src/.eslintrc'))
-		.pipe(gulpeslint.formatEach('compact'))
-		.pipe(gulpeslint.failAfterError());
+		.pipe(gulpeslint.formatEach('compact'));
+		// {{SQL CARBON EDIT}}
+		// .pipe(gulpeslint.failAfterError());
 
 	return es.merge(typescript, javascript)
 		.pipe(es.through(null, function () {

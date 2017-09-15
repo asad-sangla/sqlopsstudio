@@ -26,6 +26,8 @@ import { ActionBar, IActionOptions } from 'vs/base/browser/ui/actionbar/actionba
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 import { Modal } from 'sql/parts/common/modal/modal';
 import { AccountViewModel, ProviderAccountParam } from 'sql/parts/accountManagement/accountDialog/accountViewModel';
@@ -127,8 +129,9 @@ export class AccountDialog extends Modal {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
 		@IKeybindingService private _keybindingService: IKeybindingService,
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
-		super(localize('linkedAccounts', 'Linked Accounts'), partService);
+		super(localize('linkedAccounts', 'Linked Accounts'), TelemetryKeys.Accounts, partService, telemetryService);
 
 		this._delegate = new AccountListDelegate();
 		this._accountRenderer = this._instantiationService.createInstance(AccountRenderer);

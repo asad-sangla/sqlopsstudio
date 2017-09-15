@@ -16,6 +16,8 @@ import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 export class BackupDialog extends Modal {
 	private _bodyBuilder: Builder;
@@ -28,9 +30,10 @@ export class BackupDialog extends Modal {
 		@IBootstrapService private _bootstrapService: IBootstrapService,
 		@IThemeService private _themeService: IThemeService,
 		@IPartService partService: IPartService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
-		super('', partService, { isAngular: true, hasErrors: true });
+		super('', TelemetryKeys.Backup, partService, telemetryService, { isAngular: true, hasErrors: true });
 	}
 
 	protected renderBody(container: HTMLElement) {

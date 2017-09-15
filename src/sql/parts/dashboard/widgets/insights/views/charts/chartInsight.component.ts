@@ -7,6 +7,9 @@ import { BaseChartDirective } from 'ng2-charts/ng2-charts';
 
 /* SQL Imports */
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import { IInsightsView, IInsightData } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { memoize, unmemoize } from 'sql/common/decorators';
 
@@ -129,6 +132,7 @@ export abstract class ChartInsight implements IInsightsView, OnDestroy {
 		this.options = mixin(this.options, { maintainAspectRatio: false });
 		this._isDataAvailable = true;
 		this._changeRef.detectChanges();
+		TelemetryUtils.addTelemetry(this._bootstrapService.telemetryService, TelemetryKeys.ChartCreated, { type: this.chartType });
 	}
 
 	/**

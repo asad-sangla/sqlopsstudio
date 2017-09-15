@@ -143,7 +143,7 @@ export class RestoreDialogController implements IRestoreDialogController {
 						newRestoreDialog.onValidate(() => this.handleMssqlOnValidateFile());
 					} else {
 						newRestoreDialog= this._instantiationService.createInstance(
-							OptionsDialog, 'Restore database - ' + connection.serverName + ':' + connection.databaseName, undefined);
+							OptionsDialog, 'Restore database - ' + connection.serverName + ':' + connection.databaseName, 'RestoreOptions', undefined);
 							newRestoreDialog.onOk(() => this.handleOnRestore());
 					}
 					newRestoreDialog.render();

@@ -27,6 +27,8 @@ import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { DefaultController, ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
 import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import { localize } from 'vs/nls';
 
 export interface OnShowUIResponse {
@@ -85,9 +87,10 @@ export class ConnectionDialogWidget extends Modal {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
-		@IPartService _partService: IPartService
+		@IPartService _partService: IPartService,
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
-		super(localize('connection', 'Connection'), _partService, { hasSpinner: true, hasErrors: true });
+		super(localize('connection', 'Connection'), TelemetryKeys.Connection, _partService, telemetryService, { hasSpinner: true, hasErrors: true });
 	}
 
 	protected renderBody(container: HTMLElement): void {

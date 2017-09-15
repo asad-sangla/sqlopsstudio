@@ -26,6 +26,7 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { localize } from 'vs/nls';
 import data = require('data');
 
@@ -81,11 +82,13 @@ export class OptionsDialog extends Modal {
 
 	constructor(
 		title: string,
+		name: string,
 		options: IModalOptions,
 		@IPartService partService: IPartService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
-		@IContextViewService private _contextViewService: IContextViewService) {
-		super(title, partService, options);
+		@IContextViewService private _contextViewService: IContextViewService,
+		@ITelemetryService telemetryService: ITelemetryService) {
+		super(title, name, partService, telemetryService, options);
 	}
 
 	public render() {

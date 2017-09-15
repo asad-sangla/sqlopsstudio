@@ -19,6 +19,8 @@ import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 export class ErrorMessageDialog extends Modal {
 	private _body: HTMLElement;
@@ -30,13 +32,14 @@ export class ErrorMessageDialog extends Modal {
 
 	constructor(
 		@IPartService partService: IPartService,
-		@IThemeService private _themeService: IThemeService
+		@IThemeService private _themeService: IThemeService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
-		super('', partService, {isFlyout: false, hasTitleIcon: true});
+		super('', TelemetryKeys.ErrorMessage, partService, telemetryService, { isFlyout: false, hasTitleIcon: true });
 	}
 
 	protected renderBody(container: HTMLElement) {
-		new Builder(container).div({ 'class': 'error-dialog'}, (bodyBuilder) => {
+		new Builder(container).div({ 'class': 'error-dialog' }, (bodyBuilder) => {
 			this._body = bodyBuilder.getHTMLElement();;
 		});
 	}

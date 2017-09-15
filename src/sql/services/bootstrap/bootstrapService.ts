@@ -32,6 +32,7 @@ import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
 import { IWindowsService } from 'vs/platform/windows/common/windows';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 
 export const BOOTSTRAP_SERVICE_ID = 'bootstrapService';
@@ -73,6 +74,7 @@ export interface IBootstrapService {
 	accountManagementService: IAccountManagementService;
 	windowsService: IWindowsService;
 	sqlWindowService: ISqlWindowService;
+	telemetryService: ITelemetryService;
 	storageService: IStorageService;
 
 	/*

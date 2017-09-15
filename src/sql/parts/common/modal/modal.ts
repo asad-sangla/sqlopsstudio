@@ -10,6 +10,9 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { mixin } from 'vs/base/common/objects';
 import { Disposable } from 'vs/base/common/lifecycle';
+import * as TelemetryUtils from 'sql/common/telemetryUtilities';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 /* Bad Layering */
 import { Builder, $, withElementById } from 'vs/base/browser/builder';
@@ -86,12 +89,15 @@ export abstract class Modal extends Disposable implements IThemable {
 	/**
 	 * Constructor for modal
 	 * @param _title Title of the modal, if undefined, the title section is not rendered
+	 * @param _name Name of the modal, used for telemetry
 	 * @param _partService
 	 * @param options Modal options
 	 */
 	constructor(
 		private _title: string,
+		private _name: string,
 		private _partService: IPartService,
+		private _telemetryService: ITelemetryService,
 		options?: IModalOptions
 	) {
 		super();
@@ -215,7 +221,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	}
 
 	/**
-	 * Shows the modal and attachs key listeners
+	 * Shows the modal and attaches key listeners
 	 */
 	protected show() {
 		this._builder.show();
@@ -228,6 +234,8 @@ export abstract class Modal extends Disposable implements IThemable {
 				this.onClose(event);
 			}
 		});
+
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ModalDialogOpened, { name: this._name });
 	}
 
 	/**
@@ -236,6 +244,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	protected hide() {
 		this._builder.hide();
 		this._builder.off(DOM.EventType.KEY_DOWN);
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ModalDialogClosed, { name: this._name });
 	}
 
 	/**

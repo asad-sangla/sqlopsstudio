@@ -22,6 +22,8 @@ import { IDataSource, ITree, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
 import Event, { Emitter } from 'vs/base/common/event';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 class EventItem {
 
@@ -309,9 +311,10 @@ export class ProfilerColumnEditorDialog extends Modal {
 
 	constructor(
 		@IPartService _partService: IPartService,
-		@IThemeService private _themeService: IThemeService
+		@IThemeService private _themeService: IThemeService,
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
-		super(nls.localize('profiler', 'Profiler'), _partService);
+		super(nls.localize('profiler', 'Profiler'), TelemetryKeys.Profiler, _partService, telemetryService);
 	}
 
 	public render(): void {

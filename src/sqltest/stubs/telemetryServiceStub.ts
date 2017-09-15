@@ -2,27 +2,12 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-'use strict';
-
+import { ITelemetryService, ITelemetryData, ITelemetryInfo } from 'vs/platform/telemetry/common/telemetry';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
+// Test stubs for commonly used objects
 
-export const ITelemetryService = createDecorator<ITelemetryService>('telemetryService');
-
-export interface ITelemetryInfo {
-	sessionId: string;
-	machineId: string;
-	instanceId: string;
-}
-
-export interface ITelemetryData {
-	from?: string;
-	target?: string;
-	[key: string]: any;
-}
-
-export interface ITelemetryService {
+export class TelemetryServiceStub implements ITelemetryService {
 
 	_serviceBrand: any;
 
@@ -30,9 +15,13 @@ export interface ITelemetryService {
 	 * Sends a telemetry event that has been privacy approved.
 	 * Do not call this unless you have been given approval.
 	 */
-	publicLog(eventName: string, data?: ITelemetryData): TPromise<void>;
+	publicLog(eventName: string, data?: ITelemetryData): TPromise<void> {
+		return undefined;
+	}
 
-	getTelemetryInfo(): TPromise<ITelemetryInfo>;
+	getTelemetryInfo(): TPromise<ITelemetryInfo> {
+		return undefined;
+	}
 
 	isOptedIn: boolean;
 }

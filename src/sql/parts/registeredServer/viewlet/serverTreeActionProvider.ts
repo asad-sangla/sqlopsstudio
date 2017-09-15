@@ -98,7 +98,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		let scriptMap: Map<NodeType, any[]> = ObjectExplorerActionUtilities.getScriptMap();
 		let supportedActions = scriptMap.get(treeNode.nodeTypeId);
 		let self = this;
-		if (supportedActions !== null) {
+		if (supportedActions !== null && supportedActions !== undefined) {
 			supportedActions.forEach(action => {
 				actions.push(self._instantiationService.createInstance(action, action.ID, action.LABEL));
 			});

@@ -24,6 +24,8 @@ import { ConnectionStatusManager } from 'sql/parts/connection/common/connectionS
 import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
 import { ConnectionGlobalStatus } from 'sql/parts/connection/common/connectionGlobalStatus';
 import { ConnectionStatusbarItem } from 'sql/parts/connection/common/connectionStatus';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 
 import * as data from 'data';
 
@@ -563,6 +565,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public saveProfileGroup(profile: IConnectionProfileGroup): Promise<string> {
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.AddServerGroup);
 		return new Promise<string>((resolve, reject) => {
 			this._connectionStore.saveProfileGroup(profile).then(groupId => {
 				this._onAddConnectionProfile.fire();
@@ -757,25 +760,21 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	private addTelemetryForConnection(connection: ConnectionManagementInfo): void {
-		if (this._telemetryService) {
-			this._telemetryService.publicLog('DatabaseConnected', {
-				connectionType: connection.serverInfo ? (connection.serverInfo.isCloud ? 'Azure' : 'Standalone') : '',
-				provider: connection.connectionProfile.providerName,
-				serverVersion: connection.serverInfo ? connection.serverInfo.serverVersion : '',
-				serverEdition: connection.serverInfo ? connection.serverInfo.serverEdition : '',
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.DatabaseConnected, {
+			connectionType: connection.serverInfo ? (connection.serverInfo.isCloud ? 'Azure' : 'Standalone') : '',
+			provider: connection.connectionProfile.providerName,
+			serverVersion: connection.serverInfo ? connection.serverInfo.serverVersion : '',
+			serverEdition: connection.serverInfo ? connection.serverInfo.serverEdition : '',
 
-				extensionConnectionTime: connection.extensionTimer.getDuration() - connection.serviceTimer.getDuration(),
-				serviceConnectionTime: connection.serviceTimer.getDuration()
-			});
-		}
+			extensionConnectionTime: connection.extensionTimer.getDuration() - connection.serviceTimer.getDuration(),
+			serviceConnectionTime: connection.serviceTimer.getDuration()
+		});
 	}
 
 	private addTelemetryForConnectionDisconnected(connection: IConnectionProfile): void {
-		if (this._telemetryService) {
-			this._telemetryService.publicLog('DatabaseDisconnected', {
-				provider: connection.providerName
-			});
-		}
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.DatabaseDisconnected, {
+			provider: connection.providerName
+		});
 	}
 
 	public onConnectionComplete(handle: number, info: data.ConnectionInfoSummary): void {
@@ -1109,6 +1108,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * Disconnects a connection before removing from settings.
 	 */
 	public deleteConnection(connection: ConnectionProfile): Promise<boolean> {
+
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.DeleteConnection, { connection: connection });
 		// Disconnect if connected
 		let uri = Utils.generateUri(connection);
 		if (this.isConnected(uri)) {
@@ -1146,6 +1147,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * Disconnects a connection before removing from config. If disconnect fails, settings is not modified.
 	 */
 	public deleteConnectionGroup(group: ConnectionProfileGroup): Promise<boolean> {
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.DeleteServerGroup);
 		// Get all connections for this group
 		let connections = ConnectionProfileGroup.getConnectionsInGroup(group);
 

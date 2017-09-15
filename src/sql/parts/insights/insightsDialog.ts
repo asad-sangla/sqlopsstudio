@@ -40,6 +40,9 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { Registry } from 'vs/platform/registry/common/platform';
 import { IAction } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import { localize } from 'vs/nls';
 
 /* Regex that matches the form `${value}` */
 export const insertValueRegex: RegExp = /\${(.*?)\}/;
@@ -199,12 +202,13 @@ export default class InsightsDialog extends Modal {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IThemeService private _themeService: IThemeService,
 		@IListService private _listService: IListService,
-		@IPartService _partService: IPartService,
+		@IPartService partService: IPartService,
 		@IMessageService private _messageService: IMessageService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
-		@IContextMenuService private _contextMenuService: IContextMenuService
+		@IContextMenuService private _contextMenuService: IContextMenuService,
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
-		super('Insights', _partService);
+		super(localize('InsightsDialogTitle', 'Insights'), TelemetryKeys.Insights, partService, telemetryService);
 	}
 
 	protected renderBody(container: HTMLElement) {

@@ -36,6 +36,8 @@ import { DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
 import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { DbListModule } from 'sql/parts/common/dblist/dblist.module';
 import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import * as data from 'data';
 
 interface FileListElement {
@@ -111,9 +113,11 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 		@IPartService partService: IPartService,
 		@IThemeService private _themeService: IThemeService,
 		@IContextViewService private _contextViewService: IContextViewService,
-		@IBootstrapService private _bootstrapService: IBootstrapService
+		@IBootstrapService private _bootstrapService: IBootstrapService,
+		@ITelemetryService telemetryService: ITelemetryService
+
 	) {
-		super('Restore database', partService, { hasErrors: true, isWide: true, hasSpinner: true });
+		super(localize('RestoreDialogTitle', 'Restore database'), TelemetryKeys.Restore, partService, telemetryService, { hasErrors: true, isWide: true, hasSpinner: true });
 		this._restoreTitle = localize('restoreTitle', 'Restore database');
 		this._databaseTitle = localize('database', 'Database');
 		this._backupFileTitle = localize('backupFile', 'Backup file');

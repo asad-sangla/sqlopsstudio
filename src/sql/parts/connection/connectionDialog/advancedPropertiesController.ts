@@ -10,6 +10,7 @@ import { OptionsDialog } from 'sql/parts/common/modal/optionsDialog';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import data = require('data');
 import { localize } from 'vs/nls';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 export class AdvancedPropertiesController {
 	private _container: HTMLElement;
@@ -37,7 +38,7 @@ export class AdvancedPropertiesController {
 	public get advancedDialog() {
 		if (!this._advancedDialog) {
 			this._advancedDialog = this._instantiationService.createInstance(
-				OptionsDialog, localize('advancedProperties', 'Advanced properties'), { hasBackButton: true });
+				OptionsDialog, localize('connectionAdvancedProperties', 'Advanced properties'), TelemetryKeys.ConnectionAdvancedProperties, { hasBackButton: true });
 			this._advancedDialog.cancelLabel = localize('discard', 'Discard');
 			this._advancedDialog.onCloseEvent(() => this._onCloseAdvancedProperties());
 			this._advancedDialog.onOk(() => this.handleOnOk());

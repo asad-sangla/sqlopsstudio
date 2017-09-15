@@ -59,7 +59,7 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 			let backupOptions = self._optionsMap[self._currentProvider];
 			if (backupOptions) {
 				backupDialog = self._instantiationService ? self._instantiationService.createInstance(
-					OptionsDialog, 'Backup database - ' + connection.serverName + ':' + connection.databaseName, undefined) : undefined;
+					OptionsDialog, 'Backup database - ' + connection.serverName + ':' + connection.databaseName, 'BackupOptions', undefined) : undefined;
 				backupDialog.onOk(() => this.handleOptionDialogClosed());
 			}
 			else {

@@ -26,6 +26,8 @@ import { Modal } from 'sql/parts/common/modal/modal';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { ServerGroupViewModel } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupViewModel';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 export class ServerGroupDialog extends Modal {
 	private _bodyBuilder: Builder;
@@ -50,9 +52,10 @@ export class ServerGroupDialog extends Modal {
 	constructor(
 		@IPartService partService: IPartService,
 		@IThemeService private _themeService: IThemeService,
-		@IContextViewService private _contextViewService: IContextViewService
+		@IContextViewService private _contextViewService: IContextViewService,
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
-		super('Server Groups', partService);
+		super(localize('ServerGroupsDialogTitle', 'Server Groups'), TelemetryKeys.ServerGroups, partService, telemetryService);
 
 	}
 
