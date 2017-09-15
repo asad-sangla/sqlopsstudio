@@ -43,6 +43,7 @@ export interface IInsightsView {
 }
 
 export interface IInsightsConfig {
+	cacheId?: string;
 	type: any;
 	query?: string | Array<string>;
 	queryFile?: string;

@@ -96,6 +96,7 @@ let defaultVal = [
 		provider: 'MSSQL',
 		widget: {
 			'insights-widget': {
+				cacheId: '0c7cba8b-c87a-4bcc-ae54-2f40a5503a90',
 				type: {
 					'count': {}
 				},

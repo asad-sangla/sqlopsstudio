@@ -9,6 +9,7 @@ import { Action } from 'vs/base/common/actions';
 export interface IDashboardWidget {
 	actions: Array<Action>;
 	actionsContext?: any;
+	refresh?: () => void;
 }
 
 export const WIDGET_CONFIG = new InjectionToken<WidgetConfig>('widget_config');

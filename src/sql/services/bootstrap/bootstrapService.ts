@@ -32,6 +32,7 @@ import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
 import { IWindowsService } from 'vs/platform/windows/common/windows';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 export const BOOTSTRAP_SERVICE_ID = 'bootstrapService';
 export const IBootstrapService = createDecorator<IBootstrapService>(BOOTSTRAP_SERVICE_ID);
@@ -72,6 +73,7 @@ export interface IBootstrapService {
 	accountManagementService: IAccountManagementService;
 	windowsService: IWindowsService;
 	sqlWindowService: ISqlWindowService;
+	storageService: IStorageService;
 
 	/*
 	* Bootstraps the Angular module described. Components that need singleton services should inject the

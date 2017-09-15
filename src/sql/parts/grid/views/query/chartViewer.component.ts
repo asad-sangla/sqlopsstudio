@@ -270,7 +270,6 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 		let query: string = undefined;
 		let type = {};
 		type[this.chartTypesSelectBox.value] = this._chartConfig;
-
 		// create JSON
 		let config: IInsightsConfig = {
 			type,
