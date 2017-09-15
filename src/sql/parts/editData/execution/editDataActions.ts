@@ -21,8 +21,6 @@ const $ = dom.$;
  */
 export abstract class EditDataAction extends Action {
 
-	private static BaseClass = 'queryTaskbarIcon';
-
 	private _classes: string[];
 
 	constructor(protected editor: EditDataEditor, id: string, enabledClass: string,
@@ -39,7 +37,6 @@ export abstract class EditDataAction extends Action {
 
 	protected setClass(enabledClass: string): void {
 		this._classes = [];
-		this._classes.push(EditDataAction.BaseClass);
 
 		if (enabledClass) {
 			this._classes.push(enabledClass);
@@ -62,7 +59,7 @@ export abstract class EditDataAction extends Action {
  * Action class that refreshes the table for an edit data session
  */
 export class RefreshTableAction extends EditDataAction {
-	private static EnabledClass = 'refreshData';
+	private static EnabledClass = 'refresh';
 	public static ID = 'refreshTableAction';
 
 	constructor(editor: EditDataEditor,
@@ -92,7 +89,7 @@ export class RefreshTableAction extends EditDataAction {
  */
 export class StopRefreshTableAction extends EditDataAction {
 
-	private static EnabledClass = 'cancelRefreshData';
+	private static EnabledClass = 'stop';
 	public static ID = 'stopRefreshAction';
 
 	constructor(editor: EditDataEditor,

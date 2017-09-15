@@ -45,7 +45,7 @@ export class EditDataEditor extends BaseEditor {
 	public static ID: string = 'workbench.editor.editDataEditor';
 
 	private _dimension: Dimension;
-	private _resultsEditorContainer: HTMLElement;
+	private _container: HTMLElement;
 	private _taskbar: Taskbar;
 	private _taskbarContainer: HTMLElement;
 	private _changeMaxRowsActionItem: ChangeMaxRowsActionItem;
@@ -82,6 +82,9 @@ export class EditDataEditor extends BaseEditor {
 		const parentElement = parent.getHTMLElement();
 		DOM.addClass(parentElement, 'side-by-side-editor');
 		this._createTaskbar(parentElement);
+		this._container = document.createElement('div');
+		this._container.style.height = 'calc(100% - 28px)';
+		DOM.append(parentElement, this._container);
 	}
 
 	/**
@@ -224,9 +227,7 @@ export class EditDataEditor extends BaseEditor {
 		let returnValue: TPromise<void>;
 
 		if (!newInput.matches(oldInput)) {
-			if (oldInput) {
-				this._disposeEditors();
-			}
+			this._disposeEditors();
 
 			if (this._isResultsEditorVisible()) {
 				this._createTableViewContainer();
@@ -263,20 +264,17 @@ export class EditDataEditor extends BaseEditor {
 	 * Appends the HTML for the edit data table view
 	 */
 	private _createTableViewContainer() {
-		const parentElement = this.getContainer().getHTMLElement();
-
 		if (!this.editDataInput.container) {
-			this._resultsEditorContainer = DOM.append(parentElement, DOM.$('.editDataEditor'));
-			this.editDataInput.container = this._resultsEditorContainer;
+			this.editDataInput.container = DOM.append(this._container, DOM.$('.editDataContainer'));
+			this.editDataInput.container.style.height = '100%';
 		} else {
-			this._resultsEditorContainer = DOM.append(parentElement, this.editDataInput.container);
+			DOM.append(this._container, this.editDataInput.container);
 		}
 	}
 
 	private _disposeEditors(): void {
-		if (this._resultsEditorContainer) {
-			this._resultsEditorContainer.remove();
-			this._resultsEditorContainer = null;
+		if (this._container) {
+			new Builder(this._container).clearChildren();
 		}
 	}
 
@@ -301,7 +299,7 @@ export class EditDataEditor extends BaseEditor {
 			// Note: pass in input so on disposal this is cleaned up.
 			// Otherwise many components will be left around and be subscribed
 			// to events from the backing data service
-			const parent = this._resultsEditorContainer;
+			const parent = this.editDataInput.container;
 			let params: EditDataComponentParams = {
 				dataService: dataService
 			};

@@ -126,15 +126,6 @@
 	content: url('filter_inverse.svg');
 }
 
-.vs .icon.refresh {
-	content: url('refresh.svg');
-}
-
-.vs-dark .icon.refresh,
-.hc-black .icon.refresh {
-	content: url('refresh_inverse.svg');
-}
-
 .vs .icon.remove {
 	content: url('remove.svg');
 }
