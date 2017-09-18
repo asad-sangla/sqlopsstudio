@@ -37,5 +37,6 @@ export class ServerDashboardPage extends DashboardPage implements OnInit {
 
 	ngOnInit() {
 		this.breadcrumbService.setBreadcrumbs(BreadcrumbClass.ServerPage);
+		this.dashboardService.connectionManagementService.connectionInfo.connectionProfile.databaseName = null;
 	}
 }
