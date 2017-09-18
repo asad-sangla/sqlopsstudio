@@ -25,8 +25,7 @@ import { GridActionProvider } from 'sql/parts/grid/views/gridActions';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
-
-declare let rangy;
+import * as rangy from 'sql/common/lib/rangy';
 
 export const QUERY_SELECTOR: string = 'query-component';
 

@@ -154,11 +154,6 @@ require('zone.js');
 require('bootstrap');
 
 const _ = require('underscore')._;
-const rangy = require('rangy');
-const rangyCore = require('rangy/lib/rangy-core');
-const rangyTextRange = require('rangy/lib/rangy-textrange');
-const prettyData = require('pretty-data');
-const Figures = require('figures');
 
 /* eslint-enable */
 
@@ -236,8 +231,11 @@ function main() {
 				'@angular/platform-browser-dynamic',
 				'@angular/router',
 				'angular2-grid',
+				'pretty-data',
 				'primeng/primeng',
 				'ng2-charts/ng2-charts',
+				'rangy',
+				'rangy/lib/rangy-textrange',
 				'rxjs/Observable',
 				'rxjs/Subject',
 				'rxjs/Observer'

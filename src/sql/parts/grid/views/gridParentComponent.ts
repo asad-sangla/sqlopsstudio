@@ -26,6 +26,7 @@ import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import { ResultsVisibleContext, ResultsGridFocussedContext, ResultsMessagesFocussedContext } from 'sql/parts/query/common/queryContext';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
+import * as rangy from 'sql/common/lib/rangy';
 
 import { IAction } from 'vs/base/common/actions';
 import { ResolvedKeybinding } from 'vs/base/common/keyCodes';
@@ -33,8 +34,6 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-
-declare let rangy;
 
 export abstract class GridParentComponent {
 	// CONSTANTS

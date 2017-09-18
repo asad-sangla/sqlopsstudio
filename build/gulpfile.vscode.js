@@ -40,7 +40,15 @@ const dependencies = Object.keys(shrinkwrap.dependencies)
 	.concat(productDependencies); // additional dependencies from our product configuration
 const baseModules = Object.keys(process.binding('natives')).filter(n => !/^_|\//.test(n));
 // {{SQL CARBON EDIT}}
-const nodeModules = ['electron', 'original-fs', 'rxjs/Observable', 'rxjs/Subject', 'rxjs/Observer', 'primeng/primeng', 'ng2-charts/ng2-charts']
+const nodeModules = [
+	'electron',
+	'original-fs',
+	'rxjs/Observable',
+	'rxjs/Subject',
+	'rxjs/Observer',
+	'primeng/primeng',
+	'ng2-charts/ng2-charts',
+	'rangy/lib/rangy-textrange']
 	.concat(dependencies)
 	.concat(baseModules);
 
