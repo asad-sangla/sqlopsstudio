@@ -8,11 +8,14 @@
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { IProfilerController } from 'sql/parts/profiler/editor/controller/interfaces';
 import { ProfilerInput } from 'sql/parts/profiler/editor/profilerInput';
+import { ITaskActionContext, TaskAction } from 'sql/workbench/electron-browser/actions';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import * as nls from 'vs/nls';
 import { IEditorAction } from 'vs/editor/common/editorCommon';
+import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class ProfilerConnect extends Action {
 	public static ID = 'profiler.connect';
@@ -216,5 +219,26 @@ export class ProfilerFindPrevious implements IEditorAction {
 
 	isSupported(): boolean {
 		return true;
+	}
+}
+
+export class NewProfilerAction extends TaskAction {
+	public static ID = 'newProfiler';
+	public static LABEL = nls.localize('newProfiler', 'New Profiler');
+	public static ICON = 'profile';
+
+	constructor(
+		id: string, label: string, icon: string,
+		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
+		@IInstantiationService private _instantiationService: IInstantiationService
+	) {
+		super(id, label, icon);
+	}
+
+	run(actionContext: ITaskActionContext): TPromise<boolean> {
+		let profilerInput = this._instantiationService.createInstance(ProfilerInput, actionContext.profile);
+		return this._editorService.openEditor(profilerInput, { pinned: true }, false).then(() => {
+			return TPromise.as(true);
+		});
 	}
 }

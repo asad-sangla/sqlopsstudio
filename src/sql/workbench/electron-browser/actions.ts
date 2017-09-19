@@ -14,7 +14,6 @@ import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
-import { ProfilerInput } from 'sql/parts/profiler/editor/profilerInput';
 
 import { ObjectMetadata } from 'data';
 
@@ -22,8 +21,6 @@ import { ScriptAction } from 'sql/workbench/electron-browser/taskUtilities';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import * as nls from 'vs/nls';
-import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class TaskAction extends Action {
 	constructor(id: string, label: string, private _icon: string) {
@@ -176,7 +173,7 @@ export class ScriptCreateAction extends Action {
 				error => {
 					resolve(false);
 				}
-			);
+				);
 		});
 	}
 }
@@ -211,7 +208,7 @@ export class ScriptDeleteAction extends Action {
 				error => {
 					resolve(false);
 				}
-			);
+				);
 		});
 	}
 }
@@ -338,27 +335,6 @@ export class NewDatabaseAction extends TaskAction {
 	run(actionContext: ITaskActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.showCreateDatabase(actionContext.profile, this._adminService, this._errorMessageService);
-		});
-	}
-}
-
-export class NewProfilerAction extends TaskAction {
-	public static ID = 'newProfiler';
-	public static LABEL = nls.localize('newProfiler', 'New Profiler');
-	public static ICON = 'profile';
-
-	constructor(
-		id: string, label: string, icon: string,
-		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
-		@IInstantiationService private _instantiationService: IInstantiationService
-	) {
-		super(id, label, icon);
-	}
-
-	run(actionContext: ITaskActionContext): TPromise<boolean> {
-		let profilerInput = this._instantiationService.createInstance(ProfilerInput, actionContext.profile);
-		return this._editorService.openEditor(profilerInput, { pinned: true }, false).then(() => {
-			return TPromise.as(true);
 		});
 	}
 }

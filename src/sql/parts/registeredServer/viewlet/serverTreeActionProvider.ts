@@ -20,7 +20,7 @@ import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { NewProfilerAction } from 'sql/workbench/electron-browser/actions';
+import { NewProfilerAction } from 'sql/parts/profiler/contrib/profilerActions';
 
 /**
  *  Provides actions for the server tree elements
@@ -67,14 +67,19 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	 * Return actions for connection elements
 	 */
 	public getConnectionActions(tree: ITree, element: ConnectionProfile): IAction[] {
-		return [
+		let actions: IAction[] = [
 			this._instantiationService.createInstance(ManageConnectionAction, ManageConnectionAction.ID, ManageConnectionAction.LABEL),
 			this._instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL),
 			this._instantiationService.createInstance(DisconnectConnectionAction, DisconnectConnectionAction.ID, DisconnectConnectionAction.LABEL),
 			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_LABEL, element),
-			this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, element),
-			this._instantiationService.createInstance(NewProfilerAction, NewProfilerAction.ID, NewProfilerAction.LABEL, NewProfilerAction.ICON)
+			this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, element)
 		];
+
+		if (process.env['VSCODE_DEV']) {
+			actions.push(this._instantiationService.createInstance(NewProfilerAction, NewProfilerAction.ID, NewProfilerAction.LABEL, NewProfilerAction.ICON));
+		}
+
+		return actions;
 	}
 
 	/**
