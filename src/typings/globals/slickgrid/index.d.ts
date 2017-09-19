@@ -889,6 +889,12 @@ declare namespace Slick {
 		public getColumns(): Column<T>[];
 
 		/**
+		 * Sets the grid column widths
+		 * @param columnDefinitions An array of column definitions.
+		 */
+		public setColumnWidths(columnDefinitions: Column<T>[]): void;
+
+		/**
 		* Sets grid columns. Column headers will be recreated and all rendered rows will be removed. To rerender the grid (if necessary), call render().
 		* @param columnDefinitions An array of column definitions.
 		**/

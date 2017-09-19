@@ -7,6 +7,7 @@ import { ChartType, customMixin, IChartConfig, defaultChartConfig, IDataSet, IPo
 import BarChart from './barChart.component';
 import { memoize, unmemoize } from 'sql/common/decorators';
 import { mixin } from 'sql/base/common/objects';
+import { clone } from 'vs/base/common/objects';
 
 export enum DataType {
 	Number = 'number',
@@ -17,7 +18,7 @@ export interface ILineConfig extends IChartConfig {
 	dataType?: DataType;
 }
 
-const defaultLineConfig = mixin(JSON.parse(JSON.stringify(defaultChartConfig)), { dataType: 'number' }) as ILineConfig;
+const defaultLineConfig = mixin(clone(defaultChartConfig), { dataType: 'number' }) as ILineConfig;
 
 export default class LineChart extends BarChart {
 	protected readonly chartType: ChartType = ChartType.Line;

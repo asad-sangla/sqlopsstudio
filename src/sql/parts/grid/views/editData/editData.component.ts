@@ -20,6 +20,8 @@ import { EditDataComponentParams } from 'sql/services/bootstrap/bootstrapParams'
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
 import { EditDataGridActionProvider } from 'sql/parts/grid/views/editData/editDataGridActions';
 
+import { clone } from 'vs/base/common/objects';
+
 export const EDITDATA_SELECTOR: string = 'editdata-component';
 
 @Component({
@@ -45,14 +47,14 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	private firstRender = true;
 	private totalElapsedTimeSpan: number;
 	private complete = false;
-	private newRow: {exists: boolean, rowIndex: number} = {exists: false, rowIndex: undefined};
+	private newRow: { exists: boolean, rowIndex: number } = { exists: false, rowIndex: undefined };
 	private idMapping: { [row: number]: number } = {};
 
 	// Edit Data functions
-	public onCellEditEnd: (event: {row: number, column: number, newValue: any}) => void;
-	public onCellEditBegin: (event: {row: number, column: number}) => void;
-	public onRowEditBegin: (event: {row: number}) => void;
-	public onRowEditEnd: (event: {row: number}) => void;
+	public onCellEditEnd: (event: { row: number, column: number, newValue: any }) => void;
+	public onCellEditBegin: (event: { row: number, column: number }) => void;
+	public onRowEditBegin: (event: { row: number }) => void;
+	public onRowEditEnd: (event: { row: number }) => void;
 	public onIsCellEditValid: (row: number, column: number, newValue: any) => boolean;
 	public onIsColumnEditable: (column: number) => boolean;
 	public overrideCellFn: (rowNumber, columnId, value?, data?) => string;
@@ -87,7 +89,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 				case 'complete':
 					self.handleComplete(self, event);
 					break;
-			  	case 'message':
+				case 'message':
 					self.handleMessage(self, event);
 					break;
 				case 'resultSet':
@@ -106,7 +108,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		this.dataService.onAngularLoaded();
 	}
 
-	protected initShortcuts(shortcuts: {[name: string]: Function}): void {
+	protected initShortcuts(shortcuts: { [name: string]: Function }): void {
 		// TODO add any Edit Data-specific shortcuts here
 	}
 
@@ -117,7 +119,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	handleStart(self: EditDataComponent, event: any): void {
 		self.messages = [];
 		self.dataSet = undefined;
-		self.placeHolderDataSets =  [];
+		self.placeHolderDataSets = [];
 		self.renderedDataSets = self.placeHolderDataSets;
 		self.totalElapsedTimeSpan = undefined;
 		self.complete = false;
@@ -129,12 +131,12 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 			return true;
 		};
 
-		this.onCellEditEnd = (event: {row: number, column: number, newValue: any}): void => {
+		this.onCellEditEnd = (event: { row: number, column: number, newValue: any }): void => {
 			// Update the cell accordingly
 			self.dataService.updateCell(this.idMapping[event.row], event.column, event.newValue)
-			.then(
+				.then(
 				result => {
-					self.setCellDirtyState(event.row, event.column+1, result.cell.isDirty);
+					self.setCellDirtyState(event.row, event.column + 1, result.cell.isDirty);
 					self.setRowDirtyState(event.row, result.isRowDirty);
 				},
 				error => {
@@ -142,17 +144,17 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 						this.setGridClean();
 						this.refreshResultsets();
 					} else {
-						self.setCellDirtyState(event.row, event.column+1, true);
+						self.setCellDirtyState(event.row, event.column + 1, true);
 						self.setRowDirtyState(event.row, true);
 					}
-					this.focusCell(event.row, event.column+1);
+					this.focusCell(event.row, event.column + 1);
 				}
-			);
+				);
 		};
 
-		this.onCellEditBegin = (event: {row: number, column: number}): void => {
+		this.onCellEditBegin = (event: { row: number, column: number }): void => {
 			// Check if we tried to leave our 'create row' session
-			if(this.leaveCreateRow(event.row)) {
+			if (this.leaveCreateRow(event.row)) {
 				// Try to commit pending edits if we have left
 				self.dataService.commitEdit().then(result => {
 					this.setGridClean();
@@ -163,21 +165,21 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 					}
 				}, error => {
 					// Upon error prevent user from leaving the create session
-					this.focusCell(this.dataSet.totalRows-2, event.column+1);
+					this.focusCell(this.dataSet.totalRows - 2, event.column + 1);
 				});
 
-			// If we started editing a new cell in a 'new row' and we are not in a create session
+				// If we started editing a new cell in a 'new row' and we are not in a create session
 			} else if (this.isNullRow(event.row) && !this.newRow.exists) {
 				// Add a new row to slickgrid
 				this.addRow(event.row, 1);
 			}
 		};
 
-		this.onRowEditBegin = (event: {row: number}): void => {
+		this.onRowEditBegin = (event: { row: number }): void => {
 
 		};
 
-		this.onRowEditEnd = (event: {row: number}): void => {
+		this.onRowEditEnd = (event: { row: number }): void => {
 			// Check if we left a new row
 			if (!this.newRow.exists) {
 				self.dataService.commitEdit().then(result => {
@@ -186,11 +188,11 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 					// TODO create formal slickgrid api for these actions
 					this.setGridClean();
 					this.dataService.revertRow(self.idMapping[event.row])
-					.then(
+						.then(
 						result => {
 							this.refreshResultsets();
 							this.focusCell(event.row, 1);
-					});
+						});
 				});
 			}
 		};
@@ -224,12 +226,12 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 					let gridData: IGridDataRow[] = result.subset.map(row => {
 						self.idMapping[rowIndex] = row.id;
 						rowIndex++;
-						return {values: row.cells, row: row.id};
+						return { values: row.cells, row: row.id };
 					});
 
 					// Append a NULL row to the end of gridData
-					let newLastRow = gridData.length === 0 ? 0 : (gridData[gridData.length-1].row + 1);
-					gridData.push({values: self.dataSet.columnDefinitions.map(cell => {return {displayValue: 'NULL', isNull: false};}), row: newLastRow});
+					let newLastRow = gridData.length === 0 ? 0 : (gridData[gridData.length - 1].row + 1);
+					gridData.push({ values: self.dataSet.columnDefinitions.map(cell => { return { displayValue: 'NULL', isNull: false }; }), row: newLastRow });
 					resolve(gridData);
 				});
 			});
@@ -314,7 +316,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		self.dataSet = dataSet;
 
 		// Create a dataSet to render without rows to reduce DOM size
-		let undefinedDataSet = JSON.parse(JSON.stringify(dataSet));
+		let undefinedDataSet = clone(dataSet);
 		undefinedDataSet.columnDefinitions = dataSet.columnDefinitions;
 		undefinedDataSet.dataRows = undefined;
 		undefinedDataSet.resized = new EventEmitter();
@@ -342,7 +344,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 			self._cd.detectChanges();
 
 			if (self.firstRender) {
-				let setActive = function() {
+				let setActive = function () {
 					if (self.firstRender && self.slickgrids.toArray().length > 0) {
 						self.slickgrids.toArray()[0].setActive();
 						self.firstRender = false;
@@ -363,7 +365,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 			// revert our last new row
 			this.dataService.revertRow(this.idMapping[this.newRow.rowIndex]);
 			this.newRow.exists = false;
-			this.removeRow(this.newRow.rowIndex-1, 1);
+			this.removeRow(this.newRow.rowIndex - 1, 1);
 			handled = true;
 		}
 		return handled;
@@ -374,13 +376,13 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	// Checks if input row is our NULL new row
 	private isNullRow(row: number): boolean {
 		// Null row is always at index (totalRows - 1)
-		return (row === this.dataSet.totalRows-1);
+		return (row === this.dataSet.totalRows - 1);
 	}
 
 	// Checks if the input row is leaving a create row session
 	private leaveCreateRow(row: number): boolean {
 		// Temp row is always at index (totalRows -1) when it exists
-		return (this.newRow.exists && !(row === this.dataSet.totalRows-2));
+		return (this.newRow.exists && !(row === this.dataSet.totalRows - 2));
 	}
 
 	// Adds CSS classes to slickgrid cells to indicate a dirty state
@@ -391,12 +393,12 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 			// Change cell color
 			$(grid.getCellNode(row, column)).addClass('dirtyCell').removeClass('selected');
 		} else {
-			$(grid.getCellNode(row,column)).removeClass('dirtyCell');
+			$(grid.getCellNode(row, column)).removeClass('dirtyCell');
 		}
 	}
 
 	// Adds CSS classes to slickgrid rows to indicate a dirty state
-	private setRowDirtyState(row: number, dirtyState:boolean): void {
+	private setRowDirtyState(row: number, dirtyState: boolean): void {
 		let slick: any = this.slickgrids.toArray()[0];
 		let grid = slick._grid;
 		if (dirtyState) {

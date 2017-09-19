@@ -34,12 +34,16 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { AutoColumnSize } from 'sql/base/browser/ui/table/plugins/autoSizeColumns.plugin';
+import { DragCellSelectionModel } from 'sql/base/browser/ui/table/plugins/dragCellSelectionModel.plugin';
 
 export abstract class GridParentComponent {
 	// CONSTANTS
 	// tslint:disable:no-unused-variable
-	protected selectionModel = 'DragRowSelectionModel';
-	protected slickgridPlugins = ['AutoColumnSize'];
+	protected selectionModel = new DragCellSelectionModel<any>();
+	protected slickgridPlugins = [
+		new AutoColumnSize<any>({})
+	];
 	protected _rowHeight = 29;
 	protected _defaultNumShowingRows = 8;
 	protected Constants = Constants;

@@ -25,6 +25,9 @@ import { GridActionProvider } from 'sql/parts/grid/views/gridActions';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
+
+import { clone } from 'vs/base/common/objects';
+
 import * as rangy from 'sql/common/lib/rangy';
 
 export const QUERY_SELECTOR: string = 'query-component';
@@ -313,7 +316,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		}
 
 		// Create a dataSet to render without rows to reduce DOM size
-		let undefinedDataSet = JSON.parse(JSON.stringify(dataSet));
+		let undefinedDataSet = clone(dataSet);
 		undefinedDataSet.columnDefinitions = dataSet.columnDefinitions;
 		undefinedDataSet.dataRows = undefined;
 		undefinedDataSet.resized = new EventEmitter();

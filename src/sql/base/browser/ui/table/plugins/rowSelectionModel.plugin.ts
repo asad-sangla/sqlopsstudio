@@ -26,8 +26,8 @@ export class RowSelectionModel<T extends Slick.SlickData> implements Slick.Selec
 		this._grid = grid;
 		this._handler
 			.subscribe(this._grid.onActiveCellChanged, (e, data) => this.handleActiveCellChange(e, data))
-			.subscribe(this._grid.onKeyDown, (e) => this.handleKeyDown(e))
-			.subscribe(this._grid.onClick, (e) => this.handleClick(e));
+			.subscribe(this._grid.onKeyDown, e => this.handleKeyDown(e))
+			.subscribe(this._grid.onClick, e => this.handleClick(e));
 	}
 
 	private rangesToRows(ranges: Slick.Range[]): number[] {
@@ -89,7 +89,7 @@ export class RowSelectionModel<T extends Slick.SlickData> implements Slick.Selec
 		let activeRow = this._grid.getActiveCell();
 		if (activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === 38 || e.which === 40)) {
 			let selectedRows = this.getSelectedRows();
-			selectedRows.sort((x, y) => x - y );
+			selectedRows.sort((x, y) => x - y);
 
 			if (!selectedRows.length) {
 				selectedRows = [activeRow.row];
