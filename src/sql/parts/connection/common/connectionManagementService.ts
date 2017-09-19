@@ -828,11 +828,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.MoveServerConnection);
 		return this._connectionStore.changeGroupIdForConnectionGroup(source, target);
 	}
 
 	public changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void> {
 		let id = Utils.generateUri(source);
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.MoveServerGroup);
 		return this._connectionStore.changeGroupIdForConnection(source, targetGroupId).then(result => {
 			if (id && targetGroupId) {
 				source.groupId = targetGroupId;

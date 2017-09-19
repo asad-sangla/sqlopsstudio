@@ -9,6 +9,9 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 import { IDisposable } from 'vs/base/common/lifecycle';
 import data = require('data');
 import { TPromise } from 'vs/base/common/winjs.base';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import * as TelemetryUtils from 'sql/common/telemetryUtilities';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 
 export const SERVICE_ID = 'queryManagementService';
 
@@ -87,7 +90,9 @@ export class QueryManagementService implements IQueryManagementService {
 	// public for testing only
 	public _handlerCallbackQueue: ((run: QueryRunner) => void)[] = [];
 
-	constructor( @IConnectionManagementService private _connectionService: IConnectionManagementService) {
+	constructor(
+		@IConnectionManagementService private _connectionService: IConnectionManagementService,
+		@ITelemetryService private _telemetryService: ITelemetryService) {
 	}
 
 	// Registers queryRunners with their uris to distribute notifications.
@@ -135,6 +140,11 @@ export class QueryManagementService implements IQueryManagementService {
 		};
 	}
 
+	private addTelemetry(eventName: string, ownerUri: string, data?: TelemetryUtils.IConnectionTelemetryData): void {
+		let providerId: string = this._connectionService.getProviderIdFromUri(ownerUri);
+		TelemetryUtils.addTelemetry(this._telemetryService, eventName, Object.assign({}, data, { provider: providerId }));
+	}
+
 	private _runAction<T>(uri: string, action: (handler: QueryRequestHandler) => Thenable<T>): Thenable<T> {
 		let providerId: string = this._connectionService.getProviderIdFromUri(uri);
 
@@ -150,16 +160,19 @@ export class QueryManagementService implements IQueryManagementService {
 	}
 
 	public cancelQuery(ownerUri: string): Thenable<data.QueryCancelResult> {
+		this.addTelemetry(TelemetryKeys.CancelQuery, ownerUri);
 		return this._runAction(ownerUri, (runner) => {
 			return runner.cancelQuery(ownerUri);
 		});
 	}
 	public runQuery(ownerUri: string, selection: data.ISelectionData, runOptions?: data.ExecutionPlanOptions): Thenable<void> {
+		this.addTelemetry(TelemetryKeys.RunQuery, ownerUri, runOptions);
 		return this._runAction(ownerUri, (runner) => {
 			return runner.runQuery(ownerUri, selection, runOptions);
 		});
 	}
 	public runQueryStatement(ownerUri: string, line: number, column: number): Thenable<void> {
+		this.addTelemetry(TelemetryKeys.RunQueryStatement, ownerUri);
 		return this._runAction(ownerUri, (runner) => {
 			return runner.runQueryStatement(ownerUri, line, column);
 		});

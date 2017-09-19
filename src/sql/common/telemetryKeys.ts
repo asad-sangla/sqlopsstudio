@@ -9,12 +9,19 @@ export const DatabaseConnected = 'DatabaseConnected';
 export const DatabaseDisconnected = 'DatabaseDisconnected';
 export const DeleteConnection = 'DeleteConnection';
 export const AddServerGroup = 'AddServerGroup';
+export const MoveServerGroup = 'MoveServerGroup';
+export const MoveServerConnection = 'MoveServerConnection';
 export const DeleteServerGroup = 'DeleteServerGroup';
 export const ModalDialogClosed = 'ModalDialogClosed';
 export const ModalDialogOpened = 'ModalDialogOpened';
 export const BackupCreated = 'BackupCreated';
 export const RestoreRequested = 'BackupCreated';
 export const ChartCreated = 'ChartCreated';
+export const ObjectExplorerExpand = 'ObjectExplorerExpand';
+export const RunQuery = 'RunQuery';
+export const RunQueryStatement = 'RunQueryStatement';
+export const CancelQuery = 'CancelQuery';
+export const NewQuery = 'NewQuery';
 
 
 // Telemetry Properties

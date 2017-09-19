@@ -14,6 +14,9 @@ import Event, { Emitter } from 'vs/base/common/event';
 import data = require('data');
 import Utils = require('sql/parts/connection/common/utils');
 import nls = require('vs/nls');
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import * as TelemetryUtils from 'sql/common/telemetryUtilities';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 
 export const SERVICE_ID = 'ObjectExplorerService';
 
@@ -82,7 +85,8 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	private _onUpdateObjectExplorerNodes: Emitter<ObjectExplorerNodeEventArgs>;
 
 	constructor(
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@ITelemetryService private _telemetryService: ITelemetryService
 	) {
 		this._onUpdateObjectExplorerNodes = new Emitter<ObjectExplorerNodeEventArgs>();
 		this._activeObjectExplorerNodes = {};
@@ -212,6 +216,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 		return new Promise<data.ObjectExplorerExpandInfo>((resolve, reject) => {
 			let provider = this._providers[providerId];
 			if (provider) {
+				TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ObjectExplorerExpand, { refresh: 0, provider: providerId });
 				this.expandOrRefreshNode(provider, session, nodePath).then(result => {
 					resolve(result);
 				}, error => {
@@ -265,6 +270,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	public refreshNode(providerId: string, session: data.ObjectExplorerSession, nodePath: string): Thenable<data.ObjectExplorerExpandInfo> {
 		let provider = this._providers[providerId];
 		if (provider) {
+			TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ObjectExplorerExpand, { refresh: 1, provider: providerId });
 			return this.expandOrRefreshNode(provider, session, nodePath, true);
 		}
 		return Promise.resolve(undefined);
