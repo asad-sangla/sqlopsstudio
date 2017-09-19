@@ -9,7 +9,9 @@ import { Color } from 'vs/base/common/color';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { mixin } from 'vs/base/common/objects';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { EventType, addDisposableListener } from 'vs/base/browser/dom';
+
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
@@ -38,7 +40,7 @@ export interface IModalOptions {
 }
 
 // Needed for angular component dialogs to style modal footer
-export class modalFooterStyle {
+export class ModalFooterStyle {
 	public static backgroundColor;
 	public static borderTopWidth;
 	public static borderTopStyle;
@@ -77,6 +79,8 @@ export abstract class Modal extends Disposable implements IThemable {
 	private _leftFooter: Builder;
 	private _rightFooter: Builder;
 
+	private _keydownListener: IDisposable;
+
 	private _modalOptions: IModalOptions;
 	private _backButton: Button;
 	/**
@@ -109,7 +113,8 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Build and render the modal, will call {@link Modal#renderBody}
 	 */
 	public render() {
-		let container = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
+		let documentContainer = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
+
 		let modalBodyClass = (this._modalOptions.isAngular === false ? 'modal-body' : 'modal-body-and-footer');
 
 		let parts: Array<HTMLElement> = [];
@@ -186,7 +191,7 @@ export abstract class Modal extends Disposable implements IThemable {
 		}
 
 		// The builder builds the dialog. It append header, body and footer sections.
-		this._builder = $(container).div({ class: builderClass, 'role': 'dialog' }, (dialogContainer) => {
+		this._builder = $(documentContainer).div({ class: builderClass, 'role': 'dialog' }, (dialogContainer) => {
 			this._modalDialog = dialogContainer.div({ class: 'modal-dialog ', role: 'document' }, (modalDialog) => {
 				modalDialog.div({ class: 'modal-content' }, (modelContent) => {
 					parts.forEach((part) => {
@@ -226,7 +231,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	protected show() {
 		this._builder.show();
 
-		this._builder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+		this._keydownListener = addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter)) {
 				this.onAccept(event);
@@ -243,7 +248,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	 */
 	protected hide() {
 		this._builder.hide();
-		this._builder.off(DOM.EventType.KEY_DOWN);
+		this._keydownListener.dispose();
 		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ModalDialogClosed, { name: this._name });
 	}
 
@@ -334,10 +339,10 @@ export abstract class Modal extends Disposable implements IThemable {
 		const border = this._dialogBorder ? this._dialogBorder.toString() : null;
 		const headerAndFooterBackground = this._dialogHeaderAndFooterBackground ? this._dialogHeaderAndFooterBackground.toString() : null;
 		const bodyBackground = this._dialogBodyBackground ? this._dialogBodyBackground.toString() : null;
-		modalFooterStyle.backgroundColor = headerAndFooterBackground;
-		modalFooterStyle.borderTopWidth = border ? '1px' : null;
-		modalFooterStyle.borderTopStyle = border ? 'solid' : null;
-		modalFooterStyle.borderTopColor = border;
+		ModalFooterStyle.backgroundColor = headerAndFooterBackground;
+		ModalFooterStyle.borderTopWidth = border ? '1px' : null;
+		ModalFooterStyle.borderTopStyle = border ? 'solid' : null;
+		ModalFooterStyle.borderTopColor = border;
 
 		if (this._closeButtonInHeader) {
 			this._closeButtonInHeader.style('color', foreground);
@@ -360,10 +365,15 @@ export abstract class Modal extends Disposable implements IThemable {
 		}
 
 		if (this._modalFooterSection) {
-			this._modalFooterSection.style('background-color', modalFooterStyle.backgroundColor);
-			this._modalFooterSection.style('border-top-width', modalFooterStyle.borderTopWidth);
-			this._modalFooterSection.style('border-top-style', modalFooterStyle.borderTopStyle);
-			this._modalFooterSection.style('border-top-color', modalFooterStyle.borderTopColor);
+			this._modalFooterSection.style('background-color', ModalFooterStyle.backgroundColor);
+			this._modalFooterSection.style('border-top-width', ModalFooterStyle.borderTopWidth);
+			this._modalFooterSection.style('border-top-style', ModalFooterStyle.borderTopStyle);
+			this._modalFooterSection.style('border-top-color', ModalFooterStyle.borderTopColor);
 		}
+	}
+
+	public dispose() {
+		super.dispose();
+		this._keydownListener.dispose();
 	}
 }
