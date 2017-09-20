@@ -3,51 +3,91 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/media/primeng';
-import 'vs/css!sql/parts/grid/load/css/qp';
+import { ElementRef, Component, Inject, forwardRef, OnDestroy } from '@angular/core';
 
-import { ElementRef, Component, Inject, forwardRef } from '@angular/core';
 import { PlanXmlParser, PlanNode } from 'sql/parts/queryPlan/planXmlParser';
+import { TabChild } from 'sql/base/browser/ui/panel/tab.component';
+import { Table } from 'sql/base/browser/ui/table/table';
+import { attachTableStyler } from 'sql/common/theme/styler';
+import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+
 import { localize } from 'vs/nls';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 
 export const TOP_OPERATIONS_SELECTOR: string = 'top-operations-component';
 
 @Component({
 	selector: TOP_OPERATIONS_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/queryPlan/topOperations.component.html'),
-	styleUrls: [
-		require.toUrl('sql/grid/load/css/qp.css'),
-		require.toUrl('sql/media/primeng.css')]
+	template: '',
+	providers: [{ provide: TabChild, useExisting: forwardRef(() => TopOperationsComponent) }]
 })
-export class TopOperationsComponent {
+export class TopOperationsComponent extends TabChild implements OnDestroy {
 
-	protected operations: Array<PlanNode> = [];
+	private _operations: Array<PlanNode> = [];
+	private _table: Table<any>;
+	private _columns: Array<Slick.Column<any>> = [
+		{ name: localize('topOperations.operation', 'Operation'), field: 'operation' },
+		{ name: localize('topOperations.object', 'Object'), field: 'object' },
+		{ name: localize('topOperations.estCost', 'Est Cost'), field: 'estCost' },
+		{ name: localize('topOperations.estSubtreeCost', 'Est Subtree Cost'), field: 'estSubtreeCost' },
+		{ name: localize('topOperations.actualRows', 'Actual Rows'), field: 'actualRows' },
+		{ name: localize('topOperations.estRows', 'Est Rows'), field: 'estRows' },
+		{ name: localize('topOperations.actualExecutions', 'Actual Executions'), field: 'actualExecutions' },
+		{ name: localize('topOperations.estCPUCost', 'Est CPU Cost'), field: 'estCPUCost' },
+		{ name: localize('topOperations.estIOCost', 'Est IO Cost'), field: 'estIOCost' },
+		{ name: localize('topOperations.parallel', 'Parallel'), field: 'parallel' },
+		{ name: localize('topOperations.actualRebinds', 'Actual Rebinds'), field: 'actualRebinds' },
+		{ name: localize('topOperations.estRebinds', 'Est Rebinds'), field: 'estRebinds' },
+		{ name: localize('topOperations.actualRewinds', 'Actual Rewinds'), field: 'actualRewinds' },
+		{ name: localize('topOperations.estRewinds', 'Est Rewinds'), field: 'estRewinds' },
+		{ name: localize('topOperations.partitioned', 'Partitioned'), field: 'partitioned' }
+	];
+
+	private _disposables: Array<IDisposable> = [];
 
 	constructor(
 		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
 	) {
+		super();
 	}
 
-	 // tslint:disable:no-unused-variable
-	private readonly operationLabel: string = localize('topOperations.operation', 'Operation');
-	private readonly objectLabel: string = localize('topOperations.object', 'Object');
-	private readonly estCostLabel: string = localize('topOperations.estCost', 'Est Cost');
-	private readonly estSubtreeCostLabel: string = localize('topOperations.estSubtreeCost', 'Est Subtree Cost');
-	private readonly actualRowsLabel: string = localize('topOperations.actualRows', 'Actual Rows');
-	private readonly estRowsLabel: string = localize('topOperations.estRows', 'Est Rows');
-	private readonly actualExecutionsLabel: string = localize('topOperations.actualExecutions', 'Actual Executions');
-	private readonly estCPUCostLabel: string = localize('topOperations.estCPUCost', 'Est CPU Cost');
-	private readonly estIOCostLabel: string = localize('topOperations.estIOCost', 'Est IO Cost');
-	private readonly parallelLabel: string = localize('topOperations.parallel', 'Parallel');
-	private readonly actualRebindsLabel: string = localize('topOperations.actualRebinds', 'Actual Rebinds');
-	private readonly estRebindsLabel: string = localize('topOperations.estRebinds', 'Est Rebinds');
-	private readonly actualRewindsLabel: string = localize('topOperations.actualRewinds', 'Actual Rewinds');
-	private readonly estRewindsLabel: string = localize('topOperations.estRewinds', 'Est Rewinds');
-	private readonly partitionedLabel: string = localize('topOperations.partitioned', 'Partitioned');
-	// tslint:enable:no-unused-variable
+	ngOnDestroy() {
+		dispose(this._disposables);
+	}
 
 	public set planXml(val: string) {
 		let parser: PlanXmlParser = new PlanXmlParser(val);
-		this.operations = parser.topOperations;
+		this._operations = parser.topOperations;
+		let data = this._operations.map(i => {
+			return {
+				operation: i.title,
+				object: i.indexObject.title,
+				estCost: i.estimatedOperatorCost,
+				estSubtreeCost: i.subtreeCost,
+				actualRows: i.runtimeInfo.actualRows,
+				estRows: i.estimateRows,
+				actualExecutions: i.runtimeInfo.actualExecutions,
+				estCPUCost: i.estimateCpu,
+				estIOCost: i.estimateIo,
+				parallel: i.parallel,
+				actualRebinds: '',
+				estRebinds: i.estimateRebinds,
+				actualRewinds: '',
+				estRewinds: i.estimateRewinds,
+				partitioned: i.partitioned
+			};
+		});
+		if (!this._table) {
+			this._table = new Table(this._el.nativeElement, data, this._columns);
+			this._disposables.push(attachTableStyler(this._table, this._bootstrapService.themeService));
+		}
+	}
+
+	public layout(): void {
+		setTimeout(() => {
+			this._table.resizeCanvas();
+			this._table.autosizeColumns();
+		});
 	}
 }

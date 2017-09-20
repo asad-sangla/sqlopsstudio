@@ -226,6 +226,7 @@ function main() {
 				'angular2-grid',
 				'pretty-data',
 				'primeng/primeng',
+				'html-query-plan',
 				'ng2-charts/ng2-charts',
 				'rangy',
 				'rangy/lib/rangy-textrange',

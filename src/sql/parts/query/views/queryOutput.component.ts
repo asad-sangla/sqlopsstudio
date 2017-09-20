@@ -16,7 +16,7 @@ import { ElementRef, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject, fo
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { QueryComponent } from 'sql/parts/grid/views/query/query.component';
-import { QueryPlanComponent,  } from 'sql/parts/queryPlan/queryPlan.component';
+import { QueryPlanComponent } from 'sql/parts/queryPlan/queryPlan.component';
 import { TopOperationsComponent } from 'sql/parts/queryPlan/topOperations.component';
 import { ChartViewerComponent } from 'sql/parts/grid/views/query/chartViewer.component';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
@@ -31,8 +31,7 @@ declare type PaneType = 'messages' | 'results';
 
 @Component({
 	selector: QUERY_OUTPUT_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/query/views/queryOutput.template.html'),
-	styleUrls: [require.toUrl('sql/media/primeng.css')]
+	templateUrl: require.toUrl('sql/parts/query/views/queryOutput.template.html')
 })
 export class QueryOutputComponent implements OnInit, OnDestroy {
 
@@ -80,9 +79,9 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 		this._disposables.push(toDisposableSubscription(this.queryComponent.queryPlanAvailable.subscribe((xml) => {
 			this.hasQueryPlan = true;
 			this._cd.detectChanges();
+			this._panel.selectTab('queryPlan');
 			this.queryPlanComponent.planXml = xml;
 			this.topOperationsComponent.planXml = xml;
-			this._panel.selectTab('queryPlan');
 		})));
 
 		this._disposables.push(toDisposableSubscription(this.queryComponent.showChartRequested.subscribe((dataSet) => {
@@ -90,6 +89,15 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 			this._cd.detectChanges();
 			this.chartViewerComponent.dataSet = dataSet;
 			this._panel.selectTab('chartView');
+		})));
+
+		this._disposables.push(toDisposableSubscription(this.queryComponent.queryExecutionStatus.subscribe(status => {
+			if (status === 'start') {
+				this._panel.selectTab('results');
+				this.hasQueryPlan = false;
+				this.showChartView = false;
+				this._cd.detectChanges();
+			}
 		})));
 	}
 

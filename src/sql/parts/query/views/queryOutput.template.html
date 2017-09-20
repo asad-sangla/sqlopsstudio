@@ -6,27 +6,27 @@
 -->
 
 <panel class="fullsize" [options]="panelOpt">
-	<tab [title]="queryComponentTitle" class="fullsize">
+	<tab [title]="queryComponentTitle" class="fullsize" identifier="results">
 		<div id="queryDiv" class="fullsize">
 			<query-component id="queryComp" #queryComponent class="fullsize" [queryParameters]="queryParameters"></query-component>
 		</div>
 	</tab>
 
 	<tab *ngIf="hasQueryPlan" [title]="queryPlanTitle" identifier="queryPlan">
-		<div id="queryPlanDiv" class="headersVisible fullsize" style=" overflow: auto; background-color: #fff; margin-left: 2px">
-			<queryplan-component #queryPlanComponent style="display: block; width: 100%; height: 100%"></queryplan-component>
+		<div id="queryPlanDiv" class="headersVisible fullsize" style=" overflow: auto; margin-left: 2px">
+			<queryplan-component #queryPlanComponent class="fullsize" style="display: block"></queryplan-component>
 		</div>
 	</tab>
 
 	<tab *ngIf="hasQueryPlan" [title]="topOperationsTitle" identifier="topOperations">
-		<div id="topOperationsDiv">
+		<div id="topOperationsDiv" class="fullsize">
 			<top-operations-component #topOperationsComponent class="fullsize" style="display: block"></top-operations-component>
 		</div>
 	</tab>
 
 	<tab *ngIf="showChartView" [title]="chartViewerTitle" identifier="chartView">
 		<div id="chartViewerDiv" class="headersVisible fullsize" >
-			<chart-viewer  #chartViewerComponent style="display: block; width: 100%; height: 100%">
+			<chart-viewer  #chartViewerComponent class="fullsize" style="display: block">
 			</chart-viewer>
 		</div>
 	</tab>

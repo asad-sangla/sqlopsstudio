@@ -318,6 +318,11 @@
       "from": "graceful-fs@4.1.11",
       "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.1.11.tgz"
     },
+    "html-query-plan": {
+      "version": "1.0.0",
+      "from": "git://github.com/anthonydresser/html-query-plan.git#v2.2.1",
+      "resolved": "git://github.com/anthonydresser/html-query-plan.git#7de7777ae5be433b5766113c3b3c493cf570cced"
+    },
     "http-proxy-agent": {
       "version": "0.2.7",
       "from": "http-proxy-agent@0.2.7",
