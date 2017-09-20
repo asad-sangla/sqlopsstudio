@@ -43,7 +43,7 @@ export interface Property {
 	displayName: string;
 	value: string;
 	ignore?: Array<string>;
-	default?: Array<string>;
+	default?: string;
 }
 
 export interface DisplayProperty {
@@ -225,12 +225,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		for (let i = 0; i < propertyArray.length; i++) {
 			let property = propertyArray[i];
 			let assignProperty = {};
-			let propertyObject = infoObject[property.value];
-
-			// if couldn't find, set as default value
-			if (propertyObject === undefined) {
-				propertyObject = property.default || '--';
-			}
+			let propertyObject = this.getValueOrDefault<string>(infoObject, property.value, property.default || '--');
 
 			// make sure the value we got shouldn't be ignored
 			if (property.ignore !== undefined && propertyObject !== '--') {
@@ -250,6 +245,17 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		if (this._hasInit) {
 			this._changeRef.detectChanges();
 		}
+	}
+
+	private getValueOrDefault<T>(infoObject: ServerInfo | {}, propertyValue: string, defaultVal?: any): T {
+		let val: T = undefined;
+		if (infoObject) {
+			val = infoObject[propertyValue];
+		}
+		if (val === undefined) {
+			val = defaultVal;
+		}
+		return val;
 	}
 
 	// overwrittable console.error for testing

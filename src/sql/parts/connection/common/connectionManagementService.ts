@@ -402,9 +402,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 			};
 		}
 
-		// Always set the Save connection to true when connecting from the dialog so connections will be saved to MRU
-		// If connection.saveProfile is set to true, the connection will be saved to settings also
-		options.saveTheConnection = true;
+		// Do not override options.saveTheConnection as this is for saving to the server groups, not the MRU.
+		// MRU save always happens through a different path using tryAddActiveConnection
 		return this.connectWithOptions(connection, uri, options, callbacks);
 	}
 

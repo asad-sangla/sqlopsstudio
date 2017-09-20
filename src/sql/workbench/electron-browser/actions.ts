@@ -145,7 +145,7 @@ export class EditDataAction extends Action {
 
 export class ScriptCreateAction extends Action {
 	public static ID = 'scriptCreate';
-	public static LABEL = nls.localize('scriptCreate', 'View Code');
+	public static LABEL = nls.localize('scriptCreate', "Script as Create");
 
 	constructor(
 		id: string, label: string,
