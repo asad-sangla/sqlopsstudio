@@ -106,7 +106,6 @@ export class OptionsDialog extends Modal {
 		let self = this;
 		this._register(self._themeService.onDidColorThemeChange(e => self.updateTheme(e)));
 		self.updateTheme(self._themeService.getColorTheme());
-
 	}
 
 	protected renderBody(container: HTMLElement) {

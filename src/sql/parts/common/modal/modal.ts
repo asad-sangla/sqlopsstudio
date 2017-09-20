@@ -10,7 +10,6 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { mixin } from 'vs/base/common/objects';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { EventType, addDisposableListener } from 'vs/base/browser/dom';
 
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -231,12 +230,14 @@ export abstract class Modal extends Disposable implements IThemable {
 	protected show() {
 		this._builder.show();
 
-		this._keydownListener = addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter)) {
-				this.onAccept(event);
-			} else if (event.equals(KeyCode.Escape)) {
-				this.onClose(event);
+		this._keydownListener = DOM.addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			if (DOM.isAncestor(<HTMLElement>e.target, this._builder.getHTMLElement())) {
+				let event = new StandardKeyboardEvent(e);
+				if (event.equals(KeyCode.Enter)) {
+					this.onAccept(event);
+				} else if (event.equals(KeyCode.Escape)) {
+					this.onClose(event);
+				}
 			}
 		});
 
