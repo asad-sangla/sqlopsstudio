@@ -479,42 +479,6 @@ export class DeleteConnectionAction extends Action {
 }
 
 /**
- * Action to rename a server group
- */
-export class RenameGroupAction extends Action {
-	public static ID = 'registeredServers.renameGroup';
-	public static LABEL = localize('renameGroup', 'Rename Group');
-	private _connectionProfile: ConnectionProfile;
-	get connectionProfile(): ConnectionProfile {
-		return this._connectionProfile;
-	}
-	set connectionProfile(profile: ConnectionProfile) {
-		this._connectionProfile = profile;
-	}
-
-	constructor(
-		id: string,
-		label: string,
-		private _tree: ITree,
-		private _element: ConnectionProfileGroup,
-		@IConnectionManagementService private connectionManagementService: IConnectionManagementService
-	) {
-		super(id, label);
-		this.class = 'rename';
-		this.label = 'Rename Group';
-		if (this._element.id === Constants.unsavedGroupId) {
-			this.enabled = false;
-		}
-	}
-
-	public run(): TPromise<boolean> {
-		this._element.isRenamed = true;
-		this._tree.refresh(this._element, false);
-		return TPromise.as(true);
-	}
-}
-
-/**
  * Action to clear search results
  */
 export class ClearSearchAction extends Action {

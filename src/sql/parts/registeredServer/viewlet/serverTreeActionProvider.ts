@@ -12,7 +12,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 
 import {
 	DisconnectConnectionAction, AddServerAction, NewQueryAction, ManageConnectionAction,
-	RenameGroupAction, DeleteConnectionAction, RefreshAction, EditServerGroupAction
+	DeleteConnectionAction, RefreshAction, EditServerGroupAction
 }
 	from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { OENewQueryAction, DisconnectAction, ObjectExplorerActionUtilities } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
@@ -89,7 +89,6 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 		return [
 			this._instantiationService.createInstance(AddServerAction, AddServerAction.ID, AddServerAction.LABEL),
 			this._instantiationService.createInstance(EditServerGroupAction, EditServerGroupAction.ID, EditServerGroupAction.LABEL, element),
-			this._instantiationService.createInstance(RenameGroupAction, RenameGroupAction.ID, RenameGroupAction.LABEL, tree, element),
 			this._instantiationService.createInstance(DeleteConnectionAction, DeleteConnectionAction.ID, DeleteConnectionAction.DELETE_CONNECTION_GROUP_LABEL, element)
 		];
 	}
