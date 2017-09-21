@@ -69,7 +69,7 @@ export class Telemetry {
 			return Promise.resolve(this.platformInformation);
 		} else {
 			return new Promise<PlatformInformation>(resolve => {
-				PlatformInformation.GetCurrent(this.getRuntimeId).then(info => {
+				PlatformInformation.getCurrent(this.getRuntimeId).then(info => {
 					this.platformInformation = info;
 					resolve(this.platformInformation);
 				});

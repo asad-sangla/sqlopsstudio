@@ -68,11 +68,8 @@ export default class ExtConfig implements IConfig {
         }
         return configValue;
     }
+
+    public updateWorkspaceConfig(configKey: string, configValue: any) {
+        this._workspaceConfig.update(configKey, configValue, true);
+    }
 }
-
-
-
-
-
-
-

@@ -149,12 +149,17 @@ export default class SqlToolsServiceClient {
 
     public installDirectory: string;
     private _downloadProvider: ServiceDownloadProvider;
+    private _vscodeWrapper: VscodeWrapper;
 
     constructor(
-        private _server: ServerProvider,
-        private _logger: Logger,
-        private _statusView: StatusView) {
-            this._downloadProvider = _server.downloadProvider;
+            private _server: ServerProvider,
+            private _logger: Logger,
+            private _statusView: StatusView,
+            private _config: ExtConfig) {
+        this._downloadProvider = _server.downloadProvider;
+        if (!this._vscodeWrapper) {
+            this._vscodeWrapper = new VscodeWrapper(SqlToolsServiceClient.constants);
+        }
     }
 
     // gets or creates the singleton service client instance
@@ -171,7 +176,7 @@ export default class SqlToolsServiceClient {
             decompressProvider, constants, false);
             let serviceProvider = new ServerProvider(downloadProvider, config, serverStatusView, constants.extensionConfigSectionName);
             let statusView = new StatusView();
-            this._instance = new SqlToolsServiceClient(serviceProvider, logger, statusView);
+            this._instance = new SqlToolsServiceClient(serviceProvider, logger, statusView, config);
         }
         return this._instance;
     }
@@ -180,7 +185,7 @@ export default class SqlToolsServiceClient {
     // out-of-proc server through the LanguageClient
     public initialize(context: ExtensionContext): Promise<ServerInitializationResult> {
          this._logger.appendLine(SqlToolsServiceClient._constants.serviceInitializing);
-         return PlatformInformation.GetCurrent(SqlToolsServiceClient._constants.getRuntimeId).then( platformInfo => {
+         return PlatformInformation.getCurrent(SqlToolsServiceClient._constants.getRuntimeId).then( platformInfo => {
             return this.initializeForPlatform(platformInfo, context);
          });
     }
@@ -190,40 +195,58 @@ export default class SqlToolsServiceClient {
             this._logger.appendLine(SqlToolsServiceClient._constants.commandsNotAvailableWhileInstallingTheService);
             this._logger.appendLine();
             this._logger.append(`Platform: ${platformInfo.toString()}`);
+
             if (!platformInfo.isValidRuntime()) {
-                Utils.showErrorMsg(Constants.unsupportedPlatformErrorMessage, SqlToolsServiceClient._constants.extensionName);
-                Telemetry.sendTelemetryEvent('UnsupportedPlatform', {platform: platformInfo.toString()} );
-                reject('Invalid Platform');
-            } else {
-                if (platformInfo.runtimeId) {
-                    this._logger.appendLine(` (${platformInfo.getRuntimeDisplayName()})`);
-                } else {
-                    this._logger.appendLine();
+                 // if it's an unknown Linux distro then try generic Linux x64 and give a warning to the user
+                 if (platformInfo.isLinux()) {
+                    this._logger.appendLine(Constants.usingDefaultPlatformMessage);
+                    platformInfo.runtimeId = Runtime.Linux_64;
                 }
-                this._logger.appendLine();
-                    this._server.getServerPath(platformInfo.runtimeId).then(serverPath => {
-                        if (serverPath === undefined) {
-                            // Check if the service already installed and if not open the output channel to show the logs
-                            if (_channel !== undefined) {
-                                _channel.show();
-                            }
-                            this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
-                                this.initializeLanguageClient(installedServerPath, context, platformInfo.runtimeId);
-                                resolve(new ServerInitializationResult(true, true, installedServerPath));
-                            }).catch(downloadErr => {
-                                reject(downloadErr);
-                            });
-                        } else {
-                            this.initializeLanguageClient(serverPath, context, platformInfo.runtimeId);
-                            resolve(new ServerInitializationResult(false, true, serverPath));
+
+                let ignoreWarning: boolean = this._config.getWorkspaceConfig(Constants.ignorePlatformWarning, false);
+                if (!ignoreWarning) {
+                    this._vscodeWrapper.showErrorMessage(
+                        Constants.unsupportedPlatformErrorMessage,
+                        Constants.neverShowAgain)
+                    .then(action => {
+                        if (action === Constants.neverShowAgain) {
+                            this._config.updateWorkspaceConfig(Constants.ignorePlatformWarning, true);
                         }
-                    }).catch(err => {
-                        Utils.logDebug(SqlToolsServiceClient._constants.serviceLoadingFailed + ' ' + err, SqlToolsServiceClient._constants.extensionConfigSectionName);
-                        Utils.showErrorMsg(SqlToolsServiceClient._constants.serviceLoadingFailed, SqlToolsServiceClient._constants.extensionName);
-                        Telemetry.sendTelemetryEvent('ServiceInitializingFailed');
-                        reject(err);
                     });
+                }
+
+                Telemetry.sendTelemetryEvent('UnsupportedPlatform', {platform: platformInfo.toString()} );
             }
+
+            if (platformInfo.runtimeId) {
+                this._logger.appendLine(` (${platformInfo.getRuntimeDisplayName()})`);
+            } else {
+                this._logger.appendLine();
+            }
+
+            this._logger.appendLine();
+            this._server.getServerPath(platformInfo.runtimeId).then(serverPath => {
+                if (serverPath === undefined) {
+                    // Check if the service already installed and if not open the output channel to show the logs
+                    if (_channel !== undefined) {
+                        _channel.show();
+                    }
+                    this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
+                        this.initializeLanguageClient(installedServerPath, context, platformInfo.runtimeId);
+                        resolve(new ServerInitializationResult(true, true, installedServerPath));
+                    }).catch(downloadErr => {
+                        reject(downloadErr);
+                    });
+                } else {
+                    this.initializeLanguageClient(serverPath, context, platformInfo.runtimeId);
+                    resolve(new ServerInitializationResult(false, true, serverPath));
+                }
+            }).catch(err => {
+                Utils.logDebug(SqlToolsServiceClient._constants.serviceLoadingFailed + ' ' + err, SqlToolsServiceClient._constants.extensionConfigSectionName);
+                Utils.showErrorMsg(SqlToolsServiceClient._constants.serviceLoadingFailed, SqlToolsServiceClient._constants.extensionName);
+                Telemetry.sendTelemetryEvent('ServiceInitializingFailed');
+                reject(err);
+            });
         });
     }
 

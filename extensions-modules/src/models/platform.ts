@@ -119,25 +119,25 @@ export class PlatformInformation {
         return result;
     }
 
-    public static GetCurrent(getRuntimeId: (platform: string, architecture: string, distribution: LinuxDistribution) => Runtime): Promise<PlatformInformation> {
+    public static getCurrent(getRuntimeId: (platform: string, architecture: string, distribution: LinuxDistribution) => Runtime): Promise<PlatformInformation> {
         let platform = os.platform();
         let architecturePromise: Promise<string>;
         let distributionPromise: Promise<LinuxDistribution>;
 
         switch (platform) {
             case 'win32':
-                architecturePromise = PlatformInformation.GetWindowsArchitecture();
+                architecturePromise = PlatformInformation.getWindowsArchitecture();
                 distributionPromise = Promise.resolve(undefined);
                 break;
 
             case 'darwin':
-                architecturePromise = PlatformInformation.GetUnixArchitecture();
+                architecturePromise = PlatformInformation.getUnixArchitecture();
                 distributionPromise = Promise.resolve(undefined);
                 break;
 
             case 'linux':
-                architecturePromise = PlatformInformation.GetUnixArchitecture();
-                distributionPromise = LinuxDistribution.GetCurrent();
+                architecturePromise = PlatformInformation.getUnixArchitecture();
+                distributionPromise = LinuxDistribution.getCurrent();
                 break;
 
             default:
@@ -151,7 +151,24 @@ export class PlatformInformation {
         });
     }
 
-    private static GetWindowsArchitecture(): Promise<string> {
+
+    private static getWindowsArchitecture(): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            // try to get the architecture from WMIC
+            PlatformInformation.getWindowsArchitectureWmic().then(architecture => {
+                if (architecture && architecture !== unknown) {
+                    resolve(architecture);
+                } else {
+                    // sometimes WMIC isn't available on the path so then try to parse the envvar
+                    PlatformInformation.getWindowsArchitectureEnv().then(architecture => {
+                        resolve(architecture);
+                    });
+                }
+            });
+        });
+    }
+
+    private static getWindowsArchitectureWmic(): Promise<string> {
         return this.execChildProcess('wmic os get osarchitecture')
             .then(architecture => {
                 if (architecture) {
@@ -174,7 +191,18 @@ export class PlatformInformation {
             });
     }
 
-    private static GetUnixArchitecture(): Promise<string> {
+    private static getWindowsArchitectureEnv(): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            if (process.env.PROCESSOR_ARCHITECTURE === 'x86' && process.env.PROCESSOR_ARCHITEW6432 === undefined) {
+                resolve('x86');
+            }
+            else {
+                resolve('x86_64');
+            }
+        });
+    }
+
+    private static getUnixArchitecture(): Promise<string> {
         return this.execChildProcess('uname -m')
             .then(architecture => {
                 if (architecture) {
@@ -255,7 +283,7 @@ export class PlatformInformation {
                 return Runtime.Linux_64;
         }
 
-        return Runtime.UnknownVersion;
+        return Runtime.Linux_64;
     }
 }
 
@@ -271,11 +299,11 @@ export class LinuxDistribution {
         public version: string,
         public idLike?: string[]) { }
 
-    public static GetCurrent(): Promise<LinuxDistribution> {
+    public static getCurrent(): Promise<LinuxDistribution> {
         // Try /etc/os-release and fallback to /usr/lib/os-release per the synopsis
         // at https://www.freedesktop.org/software/systemd/man/os-release.html.
-        return LinuxDistribution.FromFilePath('/etc/os-release')
-            .catch(() => LinuxDistribution.FromFilePath('/usr/lib/os-release'))
+        return LinuxDistribution.fromFilePath('/etc/os-release')
+            .catch(() => LinuxDistribution.fromFilePath('/usr/lib/os-release'))
             .catch(() => Promise.resolve(new LinuxDistribution(unknown, unknown)));
     }
 
@@ -283,19 +311,19 @@ export class LinuxDistribution {
         return `name=${this.name}, version=${this.version}`;
     }
 
-    private static FromFilePath(filePath: string): Promise<LinuxDistribution> {
+    private static fromFilePath(filePath: string): Promise<LinuxDistribution> {
         return new Promise<LinuxDistribution>((resolve, reject) => {
             fs.readFile(filePath, 'utf8', (error, data) => {
                 if (error) {
                     reject(error);
                 } else {
-                    resolve(LinuxDistribution.FromReleaseInfo(data));
+                    resolve(LinuxDistribution.fromReleaseInfo(data));
                 }
             });
         });
     }
 
-    public static FromReleaseInfo(releaseInfo: string, eol: string = os.EOL): LinuxDistribution {
+    public static fromReleaseInfo(releaseInfo: string, eol: string = os.EOL): LinuxDistribution {
         let name = unknown;
         let version = unknown;
         let idLike: string[] = undefined;

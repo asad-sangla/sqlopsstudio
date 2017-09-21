@@ -94,6 +94,11 @@
           "type": "boolean",
           "default": false,
           "description": "[Optional] Log debug output to the VS Code console (Help -> Toggle Developer Tools)"
+        },
+        "ignorePlatformWarning": {
+          "type": "boolean",
+          "description": "[Optional] Do not show unsupported platform warnings",
+          "default": false
         }
       }
     }
