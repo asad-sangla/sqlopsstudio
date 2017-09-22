@@ -981,9 +981,11 @@ export class LanguageClient {
 		if (this._capabilites.textDocumentSync === TextDocumentSyncKind.Incremental) {
 			connection.didChangeTextDocument(this._c2p.asChangeTextDocumentParams(event));
 		} else {
-			this._documentSyncDelayer.trigger(() => {
-				connection.didChangeTextDocument(this._c2p.asChangeTextDocumentParams(event.document));
-			}, -1);
+			if (this._documentSyncDelayer) {
+				this._documentSyncDelayer.trigger(() => {
+					connection.didChangeTextDocument(this._c2p.asChangeTextDocumentParams(event.document));
+				}, -1);
+			}
 		}
 	}
 

@@ -173,6 +173,10 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		if (is.nil(hover)) {
 			return null;
 		}
+		if (is.nil(hover.contents) || is.undefined(hover.contents)) {
+			// Contents must be defined or hover will throw
+			return null;
+		}
 		return new code.Hover(hover.contents, is.defined(hover.range) ? asRange(hover.range) : undefined);
 	}
 
@@ -239,10 +243,13 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 	}
 
 	function asSignatureInformations(items: ls.SignatureInformation[]): code.SignatureInformation[] {
-		return items.map(asSignatureInformation);
+		return items ? items.map(asSignatureInformation) : undefined;
 	}
 
 	function asSignatureInformation(item: ls.SignatureInformation): code.SignatureInformation {
+		if (!item) {
+			return undefined;
+		}
 		let result = new code.SignatureInformation(item.label);
 		set(item.documentation, () => result.documentation = item.documentation);
 		set(item.parameters, () => result.parameters = asParameterInformations(item.parameters));
@@ -358,8 +365,8 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 
 	function asCodeLens(item: ls.CodeLens): code.CodeLens {
 		let result: ProtocolCodeLens = new ProtocolCodeLens(asRange(item.range));
-		if (is.defined(item.command)) result.command = asCommand(item.command);
-		if (is.defined(item.data)) result.data = item.data;
+		if (is.defined(item.command)) { result.command = asCommand(item.command); }
+		if (is.defined(item.data)) { result.data = item.data; }
 		return result;
 	}
 
