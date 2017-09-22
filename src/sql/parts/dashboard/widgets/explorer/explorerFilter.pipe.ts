@@ -71,9 +71,9 @@ export class ExplorerFilter implements PipeTransform {
 
 		return items.filter(item => {
 			if (metadataType !== undefined) {
-				return item.metadata.metadataType === metadataType && item.metadata.name.toLowerCase().includes(filterString);
+				return item.metadata.metadataType === metadataType && (item.metadata.schema + '.' + item.metadata.name).toLowerCase().includes(filterString);
 			} else {
-				return item.metadata.name.toLowerCase().includes(filterString);
+				return (item.metadata.schema + '.' + item.metadata.name).toLowerCase().includes(filterString);
 			}
 		});
 	}
