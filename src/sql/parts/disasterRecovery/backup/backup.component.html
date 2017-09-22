@@ -22,7 +22,7 @@
 			</div>
 			<div class="input-divider" #backupTypeContainer>
 			</div>
-			<div class="input-divider" #copyOnlyContainer>Copy-only backup
+			<div class="input-divider" #copyOnlyContainer>{{copyOnlyLabel}}
 			</div>
 			<div class="dialog-label">
 				{{backupDeviceLabel}}
@@ -50,24 +50,24 @@
 				<div class="split-view-view" >
 					<!-- TODO: should this be shown in a new page instead of collapsible view? -->
 					<div class="header collapsible collapsed" name="advanced-title" aria-expanded="false" style="height: 22px; background-color: rgba(128, 128, 128, 0.2);" (click)="onAdvancedClick()" #advancedHeader>
-						<div class="title">Advanced Configuration
+						<div class="title">{{advancedConfigurationLabel}}
 						</div>
 					</div>
 					<div class="body collapsible" name="advanced-body" style="height: calc(100% - 22px); display: none" #advancedBody>
 						<!-- Compression -->
 						<div class="dialog-label advanced-header" style="padding-top: 15px;">
-							Compression
+							{{compressionLabel}}
 						</div>
 						<div class="indent">
 							<div class="dialog-label">
-								Set backup compression
+								{{setBackupCompressionLabel}}
 							</div>
 							<div class="dialog-label" #compressionContainer>
 							</div>
 						</div>
 						<!-- Encryption -->
 						<div class="dialog-label advanced-header">
-							Encryption
+							{{encryptionLabel}}
 						</div>
 						<div class="indent">
 							<div class="option" #encryptCheckContainer>Encrypt backup
@@ -131,7 +131,7 @@
 
 						<!-- Transaction log -->
 						<div class="dialog-label advanced-header">
-							Transaction log
+							{{transactionLogLabel}}
 						</div>
 						<div class="radio-indent">
 							<div class="option">
@@ -144,7 +144,7 @@
 
 						<!-- Reliability -->
 						<div class="dialog-label advanced-header">
-							Reliability
+							{{reliabilityLabel}}
 						</div>
 						<div class="indent">
 							<div class="option" #checksumContainer>{{checksumContainerLabel}}

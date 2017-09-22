@@ -124,6 +124,13 @@ export class BackupComponent {
 	private readonly continueOnErrorContainerLabel: string = localize('backup.continueOnErrorContainer', 'Continue on error');
 	private readonly expirationLabel: string = localize('backup.expiration', 'Expiration');
 	private readonly setBackupRetainDaysLabel: string = localize('backup.setBackupRetainDays', 'Set backup retain days');
+	private readonly copyOnlyLabel: string = localize('backup.copyOnly', 'Copy-only backup');
+	private readonly advancedConfigurationLabel: string = localize('backup.advancedConfiguration', 'Advanced Configuration');
+	private readonly compressionLabel: string = localize('backup.compression', 'Compression');
+	private readonly setBackupCompressionLabel: string = localize('backup.setBackupCompression', 'Set backup compression');
+	private readonly encryptionLabel: string = localize('backup.encryption', 'Encryption');
+	private readonly transactionLogLabel: string = localize('backup.transactionLog', 'Transaction log');
+	private readonly reliabilityLabel: string = localize('backup.reliability', 'Reliability');
 	// tslint:enable:no-unused-variable
 
 	private _disasterRecoveryService: IDisasterRecoveryService;
@@ -134,7 +141,6 @@ export class BackupComponent {
 	private connection: IConnectionProfile;
 	private databaseName: string;
 	private defaultNewBackupFolder: string;
-	private lastBackupLocations;
 	private recoveryModel: string;
 	private backupEncryptors;
 	private containsBackupToUrl: boolean;
@@ -198,7 +204,6 @@ export class BackupComponent {
 		// Get backup configuration info
 		this._disasterRecoveryService.getBackupConfigInfo(this._uri).then(configInfo => {
 			if (configInfo) {
-				self.lastBackupLocations = configInfo.latestBackups;
 				self.defaultNewBackupFolder = configInfo.defaultBackupFolder;
 				self.recoveryModel = configInfo.recoveryModel;
 				self.backupEncryptors = configInfo.backupEncryptors;
@@ -249,7 +254,7 @@ export class BackupComponent {
 			// Set copy-only check box
 			this.copyOnlyCheckBox = new Checkbox({
 				actionClassName: 'backup-checkbox',
-				title: 'Copy-only backup',
+				title: this.copyOnlyLabel,
 				isChecked: false,
 				onChange: (viaKeyboard) => { }
 			});
@@ -585,43 +590,16 @@ export class BackupComponent {
 	}
 
 	private setDefaultBackupPaths(): void {
-		let previousBackupsCount = this.lastBackupLocations ? this.lastBackupLocations.length : 0;
-		if (previousBackupsCount > 0) {
-			for (var i = 0; i < previousBackupsCount; i++) {
-				let source = new RestoreItemSource(this.lastBackupLocations[i]);
-				let isFile = this.isBackupToFile(source.restoreItemDeviceType);
-
-				if (source.restoreItemDeviceType === BackupConstants.backupDeviceTypeURL) {
-					if (i === 0) {
-						this.backupPathTypePairs[source.restoreItemLocation] = BackupConstants.deviceTypeURL;
-						this.containsBackupToUrl = true;
-						break;
-					}
-				}
-
-				let lastBackupLocation = source.restoreItemLocation;
-				let destinationType = BackupConstants.deviceTypeLogicalDevice;
-				if (source.isLogicalDevice === false) {
-					if (isFile) {
-						destinationType = BackupConstants.deviceTypeFile;
-					} else {
-						destinationType = BackupConstants.deviceTypeTape;
-					}
-				}
-
-				if (lastBackupLocation.length > 0) {
-					this.backupPathTypePairs[lastBackupLocation] = destinationType;
-				}
-			}
-		} else if (this.defaultNewBackupFolder && this.defaultNewBackupFolder.length > 0) {
+		if (this.defaultNewBackupFolder && this.defaultNewBackupFolder.length > 0) {
 
 			// TEMPORARY WORKAROUND: karlb 5/27 - try to guess path separator on server based on first character in path
 			let serverPathSeparator: string = '\\';
 			if (this.defaultNewBackupFolder[0] === '/') {
 				serverPathSeparator = '/';
 			}
-
-			let defaultNewBackupLocation = this.defaultNewBackupFolder + serverPathSeparator + this.databaseName + '.bak';
+			let d: Date = new Date();
+			let formattedDateTime: string = `-${d.getFullYear()}${d.getMonth() + 1}${d.getDate()}-${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`;
+			let defaultNewBackupLocation = this.defaultNewBackupFolder + serverPathSeparator + this.databaseName + formattedDateTime + '.bak';
 
 			// Add a default new backup location
 			this.backupPathTypePairs[defaultNewBackupLocation] = BackupConstants.deviceTypeFile;
