@@ -606,6 +606,10 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 		this._filePathInputBox.focus();
 	}
 
+	protected layout(height?: number): void {
+		// Nothing currently laid out statically in this class
+	}
+
 	public dispose(): void {
 		super.dispose();
 		for (var key in this._optionsMap) {

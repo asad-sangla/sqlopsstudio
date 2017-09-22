@@ -248,6 +248,10 @@ export class OptionsDialog extends Modal {
 		this.registerStyling();
 	}
 
+	protected layout(height?: number): void {
+		// Nothing currently laid out in this class
+	}
+
 	public dispose(): void {
 		super.dispose();
 		for (var optionName in this._optionElements) {

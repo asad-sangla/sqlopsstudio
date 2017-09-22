@@ -190,6 +190,10 @@ export class AccountDialog extends Modal {
 
 	public open() {
 		this.show();
+	}
+
+	protected layout(height?: number): void {
+		// Ignore height as it's a subcomponent being laid out
 		this._splitView.layout(DOM.getContentHeight(this._container));
 	}
 
@@ -213,6 +217,6 @@ export class AccountDialog extends Modal {
 			this._accountListViewMap[providerAccountParam.providerId] = accountListView;
 		}
 		accountListView.updateList(providerAccountParam.accounts);
-		this._splitView.layout(DOM.getContentHeight(this._container));
+		this.layout();
 	}
 }

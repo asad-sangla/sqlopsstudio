@@ -21,6 +21,8 @@ import { IWorkspaceConfigurationService } from 'vs/workbench/services/configurat
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import data = require('data');
 
+const MAX_CONNECTIONS_DEFAULT = 25;
+
 /**
  * Manages the connections list including saved profiles and the most recently used connections
  *
@@ -28,7 +30,6 @@ import data = require('data');
  * @class ConnectionStore
  */
 export class ConnectionStore {
-
 	private _memento: any;
 	private _groupIdToFullNameMap: { [groupId: string]: string };
 	private _groupFullNameToIdMap: { [groupId: string]: string };
@@ -512,7 +513,7 @@ export class ConnectionStore {
 
 		let maxConnections: number = config[Constants.configMaxRecentConnections];
 		if (typeof (maxConnections) !== 'number' || maxConnections <= 0) {
-			maxConnections = 5;
+			maxConnections = MAX_CONNECTIONS_DEFAULT;
 		}
 		return maxConnections;
 	}

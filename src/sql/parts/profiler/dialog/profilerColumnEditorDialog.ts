@@ -399,4 +399,9 @@ export class ProfilerColumnEditorDialog extends Modal {
 		this._tree.setInput(this._element);
 		this._tree.layout(DOM.getTotalHeight(this._treeContainer));
 	}
+
+	protected layout(height?: number): void {
+		this._tree.layout(DOM.getContentHeight(this._treeContainer));
+	}
+
 }

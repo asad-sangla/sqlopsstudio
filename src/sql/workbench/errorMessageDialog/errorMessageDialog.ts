@@ -54,6 +54,10 @@ export class ErrorMessageDialog extends Modal {
 		attachButtonStyler(okButton, this._themeService);
 	}
 
+	protected layout(height?: number): void {
+		// Nothing to re-layout
+	}
+
 	private updateDialogBody(): void {
 		let builder = new Builder(this._body).empty();
 		builder.div({ class: 'error-message' }, (errorContainer) => {

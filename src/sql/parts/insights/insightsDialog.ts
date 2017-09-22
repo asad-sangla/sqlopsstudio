@@ -406,6 +406,11 @@ export default class InsightsDialog extends Modal {
 		this._splitView.layout(DOM.getContentHeight(this._container));
 	}
 
+	protected layout(height?: number): void {
+		// Ignore height as this lays out just 1 component
+		this._splitView.layout(DOM.getContentHeight(this._container));
+	}
+
 	/**
 	 * Calculates the state of the item value passed based on the insight conditions
 	 * @param item item to determine state for

@@ -79,6 +79,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	private _rightFooter: Builder;
 
 	private _keydownListener: IDisposable;
+	private _resizeListener: IDisposable;
 
 	private _modalOptions: IModalOptions;
 	private _backButton: Button;
@@ -240,9 +241,19 @@ export abstract class Modal extends Disposable implements IThemable {
 				}
 			}
 		});
+		this._resizeListener = DOM.addDisposableListener(window, DOM.EventType.RESIZE, (e: KeyboardEvent) => {
+			this.layout(DOM.getTotalHeight(this._builder.getHTMLElement()));
+		});
+
+		this.layout(DOM.getTotalHeight(this._builder.getHTMLElement()));
 
 		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ModalDialogOpened, { name: this._name });
 	}
+
+	/**
+	 * Required to be implemented so that scrolling and other functions operate correctly. Should re-layout controls in the modal
+	 */
+	protected abstract layout(height?: number): void;
 
 	/**
 	 * Hides the modal and removes key listeners
@@ -250,6 +261,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	protected hide() {
 		this._builder.hide();
 		this._keydownListener.dispose();
+		this._resizeListener.dispose();
 		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ModalDialogClosed, { name: this._name });
 	}
 

@@ -30,6 +30,7 @@ import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardE
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import { localize } from 'vs/nls';
+import * as DOM from 'vs/base/browser/dom';
 
 export interface OnShowUIResponse {
 	selectedProviderType: string;
@@ -240,17 +241,22 @@ export class ConnectionDialogWidget extends Modal {
 	 * @param recentConnections Are there recent connections that should be shown
 	 */
 	public open(recentConnections: boolean) {
+		this.show();
 		if (recentConnections) {
 			this._recentConnectionBuilder.show();
 			TreeUpdateUtils.structuralTreeUpdate(this._recentConnectionTree, 'recent', this._connectionManagementService);
 			// call layout with view height
-			this._recentConnectionTree.layout(300);
+			this.layout();
 		} else {
 			this._recentConnectionBuilder.hide();
 		}
 
-		this.show();
 		this.initDialog();
+	}
+
+	protected layout(height?: number): void {
+		// Height is the overall height. Since we're laying out a specific component, always get its actual height
+		this._recentConnectionTree.layout(DOM.getTotalHeight(this._recentConnectionTree.getHTMLElement()));
 	}
 
 	/**

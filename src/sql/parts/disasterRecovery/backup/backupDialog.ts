@@ -114,4 +114,9 @@ export class BackupDialog extends Modal {
 		this.title = this._backupTitle;
 		this.show();
 	}
+
+	protected layout(height?: number): void {
+		// Nothing currently laid out in this class
+	}
+
 }

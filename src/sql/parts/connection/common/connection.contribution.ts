@@ -58,7 +58,7 @@ configurationRegistry.registerConfiguration({
 	'properties': {
 		'sql.maxRecentConnections': {
 			'type': 'number',
-			'default': 5,
+			'default': 25,
 			'description': localize('sql.maxRecentConnectionsDescription', 'The maximum number of recently used connections to store in the connection list.')
 		},
 		'sql.defaultEngine': {

@@ -69,6 +69,10 @@ export class ServerGroupDialog extends Modal {
 		this.registerListeners();
 	}
 
+	protected layout(height?: number): void {
+		// Nothing to re-layout
+	}
+
 	protected renderBody(container: HTMLElement) {
 		new Builder(container).div({ class: 'server-group-dialog' }, (builder) => {
 			this._bodyBuilder = builder;
