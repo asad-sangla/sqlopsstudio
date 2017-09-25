@@ -277,20 +277,9 @@ function main() {
 
 		process.stderr.write = write;
 
-		if (!argv.run && !argv.runGlob) {
-			// set up last test
-			suite('Loader', function () {
-				test('should not explode while loading', function () {
-					assert.ok(!didErr, 'should not explode while loading');
-				});
-			});
-		}
-
 		// replace the default unexpected error handler to be useful during tests
 		loader(['vs/base/common/errors'], function(errors) {
 			errors.setUnexpectedErrorHandler(function (err) {
-				let stack = (err && err.stack) || (new Error().stack);
-				unexpectedErrors.push((err && err.message ? err.message : err) + '\n' + stack);
 			});
 
 			// fire up mocha
