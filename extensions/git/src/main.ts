@@ -68,6 +68,13 @@ export function activate(context: ExtensionContext): any {
 }
 
 async function checkGitVersion(info: IGit): Promise<void> {
+
+	// {{SQL CARBON EDIT}}
+	// remove Git version check on since for Carbon
+
+	return;
+
+	/*
 	const config = workspace.getConfiguration('git');
 	const shouldIgnore = config.get<boolean>('ignoreLegacyWarning') === true;
 
@@ -93,4 +100,5 @@ async function checkGitVersion(info: IGit): Promise<void> {
 	} else if (choice === neverShowAgain) {
 		await config.update('ignoreLegacyWarning', true, true);
 	}
+	*/
 }
