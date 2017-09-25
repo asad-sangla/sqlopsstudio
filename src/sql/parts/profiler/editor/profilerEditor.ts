@@ -7,7 +7,7 @@ import { ProfilerInput } from './profilerInput';
 
 import { TabbedPanel } from 'sql/base/browser/ui/panel/panel';
 import { Table } from 'sql/base/browser/ui/table/table';
-import { TableView } from 'sql/base/browser/ui/table/tableView';
+import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { IProfilerService, IProfilerSessionTemplate } from 'sql/parts/profiler/service/interfaces';
 import { Taskbar } from 'sql/base/browser/ui/taskbar/taskbar';
 import { attachTableStyler } from 'sql/common/theme/styler';
@@ -107,7 +107,7 @@ export class ProfilerEditor extends BaseEditor {
 	private _tabbedPanel: TabbedPanel;
 	private _profilerTableEditor: ProfilerTableEditor;
 	private _detailTable: Table<IDetailData>;
-	private _detailTableData: TableView<IDetailData>;
+	private _detailTableData: TableDataView<IDetailData>;
 	private _stateListener: IDisposable;
 	private _panelView: BasicView;
 
@@ -263,7 +263,7 @@ export class ProfilerEditor extends BaseEditor {
 		detailTableContainer.className = 'profiler-detailTable';
 		detailTableContainer.style.width = '100%';
 		detailTableContainer.style.height = '100%';
-		this._detailTableData = new TableView<IDetailData>();
+		this._detailTableData = new TableDataView<IDetailData>();
 		this._detailTable = new Table(detailTableContainer, this._detailTableData, [
 			{
 				id: 'label',

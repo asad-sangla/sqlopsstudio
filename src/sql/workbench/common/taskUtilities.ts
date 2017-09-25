@@ -192,8 +192,7 @@ export function openInsight(query: IInsightsConfig, profile: IConnectionProfile,
 
 /* Helper Methods */
 function getStartPos(script: string, action: ScriptAction): number {
-	switch(action)
-	{
+	switch (action) {
 		case (ScriptAction.ScriptCreateAction):
 			return script.toLowerCase().indexOf('create');
 		case (ScriptAction.ScriptDeleteAction):

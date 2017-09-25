@@ -8,7 +8,7 @@ import { IConnectionManagementService, MetadataType } from 'sql/parts/connection
 import {
 	NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction,
 	BackupAction, BaseActionContext, ManageAction
-} from 'sql/workbench/electron-browser/actions';
+} from 'sql/workbench/common/actions';
 import { IDisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/interfaces';
 
 import { TPromise } from 'vs/base/common/winjs.base';

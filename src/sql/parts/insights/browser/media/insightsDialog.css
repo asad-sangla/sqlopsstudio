@@ -3,32 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.insights .list-row {
-	width: 100%;
-	line-height: 22px;
-	padding-left: 12px;
-	display: flex;
-	align-items: baseline;
-
-}
-
-.insights .list-row > span {
+.insights  span {
 	display: inline-block;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
-.insights .list-row > .icon-span {
-	padding: 6px;
-	margin-right: 5px;
-}
-
-.insights .list-row .label {
-	flex: 0 0 300px;
-}
-
-.insights .list-row .value {
-	flex: 1 1 auto;
+.insights .icon-span {
+	padding: 10px;
 }
 
 .insights .badge .badge-content {
@@ -43,8 +25,8 @@
 
 .insights .badge {
 	position: absolute;
-	top: 5px;
-	left: 11px;
+	top: 7px;
+	left: 5px;
 	overflow: hidden;
 	width: 22px;
 	height: 22px;

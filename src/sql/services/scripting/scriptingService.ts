@@ -8,7 +8,7 @@
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { ScriptAction } from 'sql/workbench/electron-browser/taskUtilities';
+import { ScriptAction } from 'sql/workbench/common/taskUtilities';
 import data = require('data');
 export const SERVICE_ID = 'scriptingService';
 
@@ -33,21 +33,19 @@ export class ScriptingService implements IScriptingService {
 
 	private _providers: { [handle: string]: data.ScriptingProvider; } = Object.create(null);
 
-	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) {
-	}
+	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) { }
 
 	public script(connectionUri: string, metadata: data.ObjectMetadata, action: ScriptAction): Thenable<data.ScriptingResult> {
-		let providerId : string = this._connectionService.getProviderIdFromUri(connectionUri);
+		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
 		if (providerId) {
 			let provider = this._providers[providerId];
 			if (provider) {
-				switch(action)
-				{
-					case(ScriptAction.ScriptCreateAction):
+				switch (action) {
+					case (ScriptAction.ScriptCreateAction):
 						return provider.scriptAsCreate(connectionUri, metadata);
-					case(ScriptAction.ScriptSelectAction):
+					case (ScriptAction.ScriptSelectAction):
 						return provider.scriptAsSelect(connectionUri, metadata);
-					case(ScriptAction.ScriptDeleteAction):
+					case (ScriptAction.ScriptDeleteAction):
 						return provider.scriptAsDelete(connectionUri, metadata);
 					default:
 						return Promise.resolve(undefined);

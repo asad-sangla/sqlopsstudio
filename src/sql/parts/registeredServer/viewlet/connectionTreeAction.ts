@@ -14,7 +14,7 @@ import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeVie
 import { ConnectionViewlet } from 'sql/parts/registeredServer/viewlet/connectionViewlet';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
-import * as TaskUtilities from 'sql/workbench/electron-browser/taskUtilities';
+import * as TaskUtilities from 'sql/workbench/common/taskUtilities';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import * as Constants from 'sql/parts/connection/common/constants';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
@@ -61,18 +61,18 @@ export class RefreshAction extends Action {
 			this._tree.collapse(this.element).then(() => {
 				this._objectExplorerService.refreshTreeNode(treeNode.getSession(), treeNode).then(() => {
 
-						this._tree.refresh(this.element).then(() => {
-							this._tree.expand(this.element);
-						}, refreshError => {
-							return TPromise.as(true);
-						});
+					this._tree.refresh(this.element).then(() => {
+						this._tree.expand(this.element);
+					}, refreshError => {
+						return TPromise.as(true);
+					});
 				}, error => {
 					this.showError(error);
 					return TPromise.as(true);
 				});
 			}, collapseError => {
-							return TPromise.as(true);
-						});
+				return TPromise.as(true);
+			});
 		}
 		return TPromise.as(true);
 	}

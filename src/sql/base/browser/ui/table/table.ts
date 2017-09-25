@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/table';
-import { TableView } from './tableView';
+import { TableDataView } from './tableDataView';
 
 import { IThemable } from 'vs/platform/theme/common/styler';
 import { IListStyles } from 'vs/base/browser/ui/list/listWidget';
@@ -13,6 +13,7 @@ import { Color } from 'vs/base/common/color';
 import { mixin } from 'vs/base/common/objects';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { Dimension } from 'vs/base/browser/builder';
+import { Orientation } from 'vs/base/browser/ui/splitview/splitview';
 
 export interface ITableStyles extends IListStyles {
 	tableHeaderBackground?: Color;
@@ -29,7 +30,7 @@ function getDefaultOptions<T>(): Slick.GridOptions<T> {
 export class Table<T extends Slick.SlickData> implements IThemable {
 	private _grid: Slick.Grid<T>;
 	private _columns: Slick.Column<T>[];
-	private _data: TableView<T>;
+	private _data: TableDataView<T>;
 	private _styleElement: HTMLStyleElement;
 	private _idPrefix: string;
 	private _autoscroll: boolean;
@@ -37,11 +38,11 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 	private _container: HTMLElement;
 	private _tableContainer: HTMLElement;
 
-	constructor(parent: HTMLElement, data?: Array<T> | TableView<T>, columns?: Slick.Column<T>[], options?: Slick.GridOptions<T>) {
-		if (data instanceof TableView) {
+	constructor(parent: HTMLElement, data?: Array<T> | TableDataView<T>, columns?: Slick.Column<T>[], options?: Slick.GridOptions<T>) {
+		if (data instanceof TableDataView) {
 			this._data = data;
 		} else {
-			this._data = new TableView<T>(data);
+			this._data = new TableDataView<T>(data);
 		}
 
 		if (columns) {
@@ -82,12 +83,12 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 	}
 
 	setData(data: Array<T>);
-	setData(data: TableView<T>);
-	setData(data: Array<T> | TableView<T>) {
-		if (data instanceof TableView) {
+	setData(data: TableDataView<T>);
+	setData(data: Array<T> | TableDataView<T>) {
+		if (data instanceof TableDataView) {
 			this._data = data;
 		} else {
-			this._data = new TableView<T>(data);
+			this._data = new TableDataView<T>(data);
 		}
 		this._onRowCountChangeListener.dispose();
 		this._grid.setData(this._data, true);
@@ -106,8 +107,30 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		return this._grid.getSelectedRows();
 	}
 
-	onSelectedRowsChanged(fn: (e: Slick.EventData, data: Slick.OnSelectedRowsChangedEventArgs<T>) => any) {
+	onSelectedRowsChanged(fn: (e: Slick.EventData, data: Slick.OnSelectedRowsChangedEventArgs<T>) => any): IDisposable
+	onSelectedRowsChanged(fn: (e: DOMEvent, data: Slick.OnSelectedRowsChangedEventArgs<T>) => any): IDisposable
+	onSelectedRowsChanged(fn: any): IDisposable {
 		this._grid.onSelectedRowsChanged.subscribe(fn);
+		return {
+			dispose() {
+				this._grid.onSelectedRowsChanged.unsubscribe(fn);
+			}
+		};
+	}
+
+	onContextMenu(fn: (e: Slick.EventData, data: Slick.OnContextMenuEventArgs<T>) => any): IDisposable;
+	onContextMenu(fn: (e: DOMEvent, data: Slick.OnContextMenuEventArgs<T>) => any): IDisposable;
+	onContextMenu(fn: any): IDisposable {
+		this._grid.onContextMenu.subscribe(fn);
+		return {
+			dispose() {
+				this._grid.onContextMenu.unsubscribe(fn);
+			}
+		};
+	}
+
+	getCellFromEvent(e: DOMEvent): Slick.Cell {
+		return this._grid.getCellFromEvent(e);
 	}
 
 	setSelectionModel(model: Slick.SelectionModel<T, Array<Slick.Range>>) {
@@ -133,11 +156,27 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		this._grid.resizeCanvas();
 	}
 
-	layout(dimension: Dimension): void {
-		this._container.style.width = dimension.width + 'px';
-		this._container.style.height = dimension.height + 'px';
-		this._tableContainer.style.width = dimension.width + 'px';
-		this._tableContainer.style.height = dimension.height + 'px';
+	layout(dimension: Dimension): void
+	layout(size: number, orientation: Orientation): void
+	layout(sizing: number | Dimension, orientation?: Orientation): void {
+		if (sizing instanceof Dimension) {
+			this._container.style.width = sizing.width + 'px';
+			this._container.style.height = sizing.height + 'px';
+			this._tableContainer.style.width = sizing.width + 'px';
+			this._tableContainer.style.height = sizing.height + 'px';
+		} else {
+			if (orientation === Orientation.HORIZONTAL) {
+				this._container.style.width = '100%';
+				this._container.style.height = sizing + 'px';
+				this._tableContainer.style.width = '100%';
+				this._tableContainer.style.height = sizing + 'px';
+			} else {
+				this._container.style.width = sizing + 'px';
+				this._container.style.height = '100%';
+				this._tableContainer.style.width = sizing + 'px';
+				this._tableContainer.style.height = '100%';
+			}
+		}
 		this.resizeCanvas();
 	}
 

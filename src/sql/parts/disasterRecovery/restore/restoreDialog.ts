@@ -27,7 +27,7 @@ import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 's
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { InputBox, OnLoseFocusParams } from 'sql/base/browser/ui/inputBox/inputBox';
 import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler } from 'sql/common/theme/styler';
-import { TableView } from 'sql/base/browser/ui/table/tableView';
+import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
 import { CheckboxSelectColumn } from 'sql/base/browser/ui/table/plugins/checkboxSelectColumn.plugin';
@@ -90,10 +90,10 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	private _restoreFromBackupFileElement: HTMLElement;
 
 	private _fileListTable: Table<FileListElement>;
-	private _fileListData: TableView<FileListElement>;
+	private _fileListData: TableDataView<FileListElement>;
 
 	private _restorePlanTable: Table<Slick.SlickData>;
-	private _restorePlanData: TableView<Slick.SlickData>;
+	private _restorePlanData: TableDataView<Slick.SlickData>;
 	private _restorePlanColumn;
 
 	private _onRestore = new Emitter<boolean>();
@@ -217,7 +217,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 
 			// Backup sets table
 			restorePlanContainer.div({ class: 'dialog-input-section restore-list' }, (labelContainer) => {
-				this._restorePlanData = new TableView<Slick.SlickData>();
+				this._restorePlanData = new TableDataView<Slick.SlickData>();
 				this._restorePlanTable = new Table<Slick.SlickData>(labelContainer.getHTMLElement(), this._restorePlanData, this._restorePlanColumn, { enableColumnReorder: false });
 				this._restorePlanTable.setSelectionModel(new RowSelectionModel({ selectActiveRow: false }));
 				this._restorePlanTable.onSelectedRowsChanged((e, data) => this.backupFileCheckboxChanged(e, data));
@@ -274,7 +274,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 						name: restoreAs,
 						field: 'restoreAs'
 					}];
-					this._fileListData = new TableView<FileListElement>();
+					this._fileListData = new TableDataView<FileListElement>();
 					this._fileListTable = new Table<FileListElement>(fileNameContainer.getHTMLElement(), this._fileListData, columns, { enableColumnReorder: false });
 					this._fileListTable.setSelectionModel(new RowSelectionModel());
 				});

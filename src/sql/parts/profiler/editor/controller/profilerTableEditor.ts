@@ -65,7 +65,7 @@ export class ProfilerTableEditor extends BaseEditor implements IProfilerControll
 		this._overlay.style.zIndex = '4';
 		parent.getHTMLElement().appendChild(this._overlay);
 
-		this._profilerTable = new Table(parent.getHTMLElement(), undefined, undefined);
+		this._profilerTable = new Table(parent.getHTMLElement());
 		this._profilerTable.setSelectionModel(new RowSelectionModel());
 		attachTableStyler(this._profilerTable, this._themeService);
 
@@ -105,7 +105,7 @@ export class ProfilerTableEditor extends BaseEditor implements IProfilerControll
 		this._profilerTable.columns = input.columns;
 		this._profilerTable.autosizeColumns();
 		this._input.data.currentFindPosition.then(val => {
-			this._profilerTable.setActiveCell(val.y, val.x);
+			this._profilerTable.setActiveCell(val.row, val.col);
 			this._updateFinderMatchState();
 		}, er => { });
 		return TPromise.as(null);
@@ -120,14 +120,14 @@ export class ProfilerTableEditor extends BaseEditor implements IProfilerControll
 
 	public findNext(): void {
 		this._input.data.findNext().then(p => {
-			this._profilerTable.setActiveCell(p.y, p.x);
+			this._profilerTable.setActiveCell(p.row, p.col);
 			this._updateFinderMatchState();
 		}, er => { });
 	}
 
 	public findPrevious(): void {
 		this._input.data.findPrevious().then(p => {
-			this._profilerTable.setActiveCell(p.y, p.x);
+			this._profilerTable.setActiveCell(p.row, p.col);
 			this._updateFinderMatchState();
 		}, er => { });
 	}
@@ -196,7 +196,7 @@ export class ProfilerTableEditor extends BaseEditor implements IProfilerControll
 				if (this._findState.searchString) {
 					this._input.data.find(this._findState.searchString).then(p => {
 						if (p) {
-							this._profilerTable.setActiveCell(p.y, p.x);
+							this._profilerTable.setActiveCell(p.row, p.col);
 							this._updateFinderMatchState();
 						}
 					});

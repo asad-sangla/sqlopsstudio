@@ -17,7 +17,7 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 
 import { ObjectMetadata } from 'data';
 
-import { ScriptAction } from 'sql/workbench/electron-browser/taskUtilities';
+import { ScriptAction } from 'sql/workbench/common/taskUtilities';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import * as nls from 'vs/nls';

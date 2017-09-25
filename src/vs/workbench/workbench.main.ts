@@ -127,7 +127,6 @@ import 'sql/parts/registeredServer/viewlet/connectionViewlet';
 import 'sql/workbench/api/node/sqlExtHost.contribution';
 import 'sql/parts/connection/common/connection.contribution';
 import 'sql/parts/query/common/query.contribution';
-import 'sql/workbench/electron-browser/main.contribution';
 import 'sql/parts/profiler/contrib/profiler.contribution';
 import 'sql/parts/profiler/contrib/profilerActions.contribution';
 /* Insights */
@@ -146,4 +145,4 @@ import 'sql/parts/dashboard/widgets/explorer/explorerWidget.contribution';
 import 'sql/parts/dashboard/widgets/tasks/tasksWidget.contribution';
 import 'sql/parts/dashboard/dashboardConfig.contribution';
 /* Tasks */
-import 'sql/workbench/electron-browser/actions.contribution';
+import 'sql/workbench/common/actions.contribution';

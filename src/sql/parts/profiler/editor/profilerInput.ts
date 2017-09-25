@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TableView } from 'sql/base/browser/ui/table/tableView';
+import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { IProfilerSession, IProfilerService, ProfilerSessionID, IProfilerSessionTemplate } from 'sql/parts/profiler/service/interfaces';
 import { ProfilerState } from './profilerState';
 import * as Utils from 'sql/parts/connection/common/utils';
@@ -23,7 +23,7 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 
 	public static ID: string = 'workbench.editorinputs.profilerinputs';
 	public static SCHEMA: string = 'profiler';
-	private _data: TableView<Slick.SlickData>;
+	private _data: TableDataView<Slick.SlickData>;
 	private _id: ProfilerSessionID;
 	private _state: ProfilerState;
 	private _columns: string[] = [];
@@ -57,7 +57,7 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 			}
 			return ret;
 		};
-		this._data = new TableView<Slick.SlickData>(undefined, searchFn);
+		this._data = new TableDataView<Slick.SlickData>(undefined, searchFn);
 	}
 
 	public set sessionTemplate(template: IProfilerSessionTemplate) {
@@ -92,7 +92,7 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 		return nls.localize('profiler', 'Profiler');
 	}
 
-	public get data(): TableView<Slick.SlickData> {
+	public get data(): TableDataView<Slick.SlickData> {
 		return this._data;
 	}
 

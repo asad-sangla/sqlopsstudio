@@ -10,9 +10,9 @@ import { Action } from 'vs/base/common/actions';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction, ScriptDeleteAction } from 'sql/workbench/electron-browser/actions';
+import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction, ScriptDeleteAction } from 'sql/workbench/common/actions';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
-import { TreeUpdateUtils, TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
@@ -274,8 +274,7 @@ export class ObjectExplorerActionUtilities {
 		}
 	}
 
-	public static getScriptMap(): Map<NodeType, any[]>
-	{
+	public static getScriptMap(): Map<NodeType, any[]> {
 		var scriptMap = new Map<NodeType, any[]>();
 		var basicScripting = [OEScriptCreateAction, OEScriptDeleteAction];
 		scriptMap.set(NodeType.Table, [OEScriptSelectAction, OEEditDataAction, OEScriptCreateAction, OEScriptDeleteAction]);
