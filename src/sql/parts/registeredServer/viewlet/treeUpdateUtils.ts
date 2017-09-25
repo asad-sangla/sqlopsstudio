@@ -8,78 +8,11 @@ import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
+import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 
-import { IProgressService, IProgressRunner } from 'vs/platform/progress/common/progress';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import errors = require('vs/base/common/errors');
-
-export class TreeSelectionHandler {
-	progressRunner: IProgressRunner;
-
-	private _clicks: number = 0;
-
-	constructor( @IProgressService private progressService: IProgressService) {
-
-	}
-
-	public onTreeActionStateChange(started: boolean): void {
-		if (this.progressRunner) {
-			this.progressRunner.done();
-		}
-
-		if (started) {
-			this.progressRunner = this.progressService.show(true);
-		} else {
-			this.progressRunner = null;
-		}
-	}
-
-	/**
-	 * Handle selection of tree element
-	 */
-	public onTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService) {
-		let isDoubleClick: boolean = false;
-		let self = this;
-		this._clicks++;
-
-		let selection = tree.getSelection();
-
-		setTimeout(function () {
-			if (self._clicks === 1) {
-				isDoubleClick = false;
-			} else {
-				isDoubleClick = true;
-			}
-			let isInDoubleClickBlock = self._clicks > 1;
-			self.handleTreeItemSelected(isDoubleClick, event, tree, connectionManagementService, objectExplorerService, isInDoubleClickBlock, selection);
-			self._clicks = 0;
-		}, 300);
-	}
-
-	private handleTreeItemSelected(isDoubleClick: boolean, event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isInDoubleClickBlock: boolean, selection: any[]): void {
-		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
-			let connectionProfile = <ConnectionProfile>selection[0];
-			let options: IConnectionCompletionOptions = {
-				params: undefined,
-				saveTheConnection: false,
-				showConnectionDialogOnError: true,
-				showDashboard: isDoubleClick
-			};
-			if (!isInDoubleClickBlock) {
-				this.onTreeActionStateChange(true);
-
-				TreeUpdateUtils.connectAndCreateOeSession(connectionProfile, options, connectionManagementService, objectExplorerService).then(sessionCreated => {
-					if (!sessionCreated) {
-						this.onTreeActionStateChange(false);
-					}
-				}, error => {
-					this.onTreeActionStateChange(false);
-				});
-			}
-		}
-	}
-}
 
 export class TreeUpdateUtils {
 
@@ -272,5 +205,25 @@ export class TreeUpdateUtils {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 *
+	 * @param treeNode Returns true if the tree node is a database node
+	 */
+	public static isDatabaseNode(treeNode: TreeNode): boolean {
+		return treeNode && treeNode.nodeTypeId === NodeType.Database;
+	}
+
+	/**
+	 * Get connection profile with the current database
+	 */
+	public static getConnectionProfile(treeNode: TreeNode): ConnectionProfile {
+		var connectionProfile = treeNode.getConnectionProfile();
+		var databaseName = treeNode.getDatabaseName();
+		if (databaseName !== undefined && connectionProfile.databaseName !== databaseName) {
+			connectionProfile = connectionProfile.cloneWithDatabase(databaseName);
+		}
+		return connectionProfile;
 	}
 }

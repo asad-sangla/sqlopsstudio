@@ -7,15 +7,18 @@
 import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction, ScriptDeleteAction } from 'sql/workbench/common/actions';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
-import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeSelectionHandler';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 
 export class ObjectExplorerActionsContext {
 	public treeNode: TreeNode;
@@ -46,12 +49,79 @@ export class OENewQueryAction extends NewQueryAction {
 			this._container = actionContext.container;
 		}
 		this._treeSelectionHandler.onTreeActionStateChange(true);
-		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 
 		return super.run({ profile: connectionProfile }).then(() => {
 			this._treeSelectionHandler.onTreeActionStateChange(false);
 			return true;
 		});
+	}
+}
+
+export class ManageConnectionAction extends Action {
+	public static ID = 'objectExplorer.manage';
+	public static LABEL = localize('ManageAction', 'Manage');
+
+	private _connectionProfile: ConnectionProfile;
+	private _objectExplorerTreeNode: TreeNode;
+
+	protected _container: HTMLElement;
+
+	constructor(
+		id: string,
+		label: string,
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
+		@IObjectExplorerService private _objectExplorerService?: IObjectExplorerService,
+	) {
+		super(id, label);
+	}
+
+	run(actionContext: ObjectExplorerActionsContext): TPromise<any> {
+		return new TPromise<boolean>((resolve, reject) => {
+			if (actionContext instanceof ObjectExplorerActionsContext) {
+				//set objectExplorerTreeNode for context menu clicks
+				this._connectionProfile = actionContext.connectionProfile;
+				this._objectExplorerTreeNode = actionContext.treeNode;
+				if (this._connectionProfile === undefined && TreeUpdateUtils.isDatabaseNode(this._objectExplorerTreeNode)) {
+					this._connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+				}
+				this._container = actionContext.container;
+				resolve(true);
+			}
+
+			if (!this._connectionProfile) {
+				// This should never happens. There should be always a valid connection if the manage action is called for
+				// a OE node or a database node
+				resolve(true);
+			}
+
+			let options: IConnectionCompletionOptions = {
+				params: undefined,
+				saveTheConnection: false,
+				showConnectionDialogOnError: true,
+				showDashboard: true
+			};
+
+			// If it's a database node just open a database connection and open dashboard,
+			// the node is already from an open OE session we don't need to create new session
+			if (TreeUpdateUtils.isDatabaseNode(this._objectExplorerTreeNode)) {
+				TreeUpdateUtils.connectIfNotConnected(this._connectionProfile, options, this._connectionManagementService).then(() => {
+					resolve(true);
+				}, error => {
+					reject(error);
+				});
+			} else {
+				TreeUpdateUtils.connectAndCreateOeSession(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService).then(() => {
+					resolve(true);
+				}, error => {
+					reject(error);
+				});
+			}
+		});
+	}
+
+	dispose(): void {
+		super.dispose();
 	}
 }
 
@@ -79,7 +149,7 @@ export class OEScriptSelectAction extends ScriptSelectAction {
 			this._container = actionContext.container;
 		}
 		this._treeSelectionHandler.onTreeActionStateChange(true);
-		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
@@ -113,7 +183,7 @@ export class OEEditDataAction extends EditDataAction {
 			this._container = actionContext.container;
 		}
 		this._treeSelectionHandler.onTreeActionStateChange(true);
-		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
 		return super.run({ profile: connectionProfile, object: metadata }).then((result) => {
@@ -147,7 +217,7 @@ export class OEScriptCreateAction extends ScriptCreateAction {
 			this._container = actionContext.container;
 		}
 		this._treeSelectionHandler.onTreeActionStateChange(true);
-		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
 
@@ -182,7 +252,7 @@ export class OEScriptDeleteAction extends ScriptDeleteAction {
 			this._container = actionContext.container;
 		}
 		this._treeSelectionHandler.onTreeActionStateChange(true);
-		var connectionProfile = ObjectExplorerActionUtilities.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
 
@@ -234,17 +304,7 @@ export class ObjectExplorerActionUtilities {
 
 	public static readonly objectExplorerElementClass = 'object-element-group';
 	public static readonly connectionElementClass = 'connection-tile';
-	/**
-	 * Get connection profile with the current database
-	 */
-	public static getConnectionProfile(treeNode: TreeNode): ConnectionProfile {
-		var connectionProfile = treeNode.getConnectionProfile();
-		var databaseName = treeNode.getDatabaseName();
-		if (databaseName !== undefined && connectionProfile.databaseName !== databaseName) {
-			connectionProfile = connectionProfile.cloneWithDatabase(databaseName);
-		}
-		return connectionProfile;
-	}
+
 
 	private static getGroupContainer(container: HTMLElement, elementName: string): HTMLElement {
 		var element = container;

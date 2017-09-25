@@ -11,16 +11,20 @@ import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 import {
-	DisconnectConnectionAction, AddServerAction, NewQueryAction, ManageConnectionAction,
+	DisconnectConnectionAction, AddServerAction, NewQueryAction,
 	DeleteConnectionAction, RefreshAction, EditServerGroupAction
 }
 	from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
-import { OENewQueryAction, DisconnectAction, ObjectExplorerActionUtilities } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
+import {
+	OENewQueryAction, DisconnectAction, ObjectExplorerActionUtilities,
+	ManageConnectionAction
+} from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { NewProfilerAction } from 'sql/parts/profiler/contrib/profilerActions';
+import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 
 /**
  *  Provides actions for the server tree elements
@@ -98,16 +102,21 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	 */
 	public getObjectExplorerNodeActions(tree: ITree, treeNode: TreeNode): IAction[] {
 		let actions = [];
+		if (TreeUpdateUtils.isDatabaseNode(treeNode)) {
+			actions.push(this._instantiationService.createInstance(ManageConnectionAction, ManageConnectionAction.ID, ManageConnectionAction.LABEL));
+		}
 		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL, OENewQueryAction.ICON));
 		let scriptMap: Map<NodeType, any[]> = ObjectExplorerActionUtilities.getScriptMap();
 		let supportedActions = scriptMap.get(treeNode.nodeTypeId);
 		let self = this;
+
 		if (supportedActions !== null && supportedActions !== undefined) {
 			supportedActions.forEach(action => {
 				actions.push(self._instantiationService.createInstance(action, action.ID, action.LABEL));
 			});
 		}
 		actions.push(this._instantiationService.createInstance(RefreshAction, RefreshAction.ID, RefreshAction.LABEL, tree, treeNode));
+
 
 		if (treeNode.isTopLevel()) {
 			actions.push(this._instantiationService.createInstance(DisconnectAction, DisconnectAction.ID, DisconnectAction.LABEL));

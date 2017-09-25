@@ -21,7 +21,6 @@ import { IObjectExplorerService } from 'sql/parts/registeredServer/common/object
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import Severity from 'vs/base/common/severity';
 import { ObjectExplorerActionsContext, ObjectExplorerActionUtilities } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
-import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 
 export class RefreshAction extends Action {
 
@@ -179,56 +178,6 @@ export class DisconnectConnectionAction extends Action {
 	}
 }
 
-export class ManageConnectionAction extends Action {
-	public static ID = 'objectExplorer.manage';
-	public static LABEL = localize('ManageAction', 'Manage');
-
-	private _disposables: IDisposable[] = [];
-	private _connectionProfile: ConnectionProfile;
-
-	private _container: HTMLElement;
-
-	constructor(
-		id: string,
-		label: string,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
-	) {
-		super(id, label);
-	}
-
-	run(actionContext: ObjectExplorerActionsContext): TPromise<any> {
-		return new TPromise<boolean>((resolve, reject) => {
-			if (actionContext instanceof ObjectExplorerActionsContext) {
-				//set objectExplorerTreeNode for context menu clicks
-				this._connectionProfile = actionContext.connectionProfile;
-				this._container = actionContext.container;
-				resolve(true);
-			}
-
-			if (!this._connectionProfile) {
-				resolve(true);
-			}
-
-			let options: IConnectionCompletionOptions = {
-				params: undefined,
-				saveTheConnection: false,
-				showConnectionDialogOnError: true,
-				showDashboard: true
-			};
-			TreeUpdateUtils.connectAndCreateOeSession(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService).then(() => {
-				resolve(true);
-			}, error => {
-				reject(error);
-			});
-		});
-	}
-
-	dispose(): void {
-		super.dispose();
-		this._disposables = dispose(this._disposables);
-	}
-}
 
 /**
  * Actions to add a server to the group

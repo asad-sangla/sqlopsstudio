@@ -13,7 +13,8 @@ import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/co
 import * as builder from 'vs/base/browser/builder';
 import Severity from 'vs/base/common/severity';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
-import { TreeUpdateUtils, TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
+import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeSelectionHandler';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Button } from 'vs/base/browser/ui/button/button';
