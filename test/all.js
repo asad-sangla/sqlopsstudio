@@ -77,6 +77,7 @@ function main() {
 		]
 	};
 
+
 	if (argv.coverage) {
 		var instrumenter = new istanbul.Instrumenter();
 
@@ -98,6 +99,7 @@ function main() {
 			}
 
 			if (argv.forceLoad) {
+        // {{SQL CARBON EDIT}}
 				var allFiles = glob.sync(out + '/sqltest/**/*.js');
 				allFiles = allFiles.map(function(source) {
 					return path.join(__dirname, '..', source);
@@ -106,6 +108,8 @@ function main() {
 					if (seenSources[source]) {
 						return false;
 					}
+
+          // {{SQL CARBON EDIT}}
 					if (minimatch(source, SQL_TEST_GLOB)) {
 						return false;
 					}
@@ -184,7 +188,6 @@ function main() {
 
 	loader.config(loaderConfig);
 
-
 	global.define = loader;
 	global.document = jsdom.jsdom('<!doctype html><html><body></body></html>');
 	global.self = global.window = global.document.parentWindow;
@@ -194,7 +197,6 @@ function main() {
 	global.Node = global.window.Node;
 	global.navigator = global.window.navigator;
 	global.XMLHttpRequest = global.window.XMLHttpRequest;
-
   // {{SQL CARBON EDIT}}
 	global.Event = global.window.Event;
 
@@ -283,21 +285,6 @@ function main() {
 				});
 			});
 		}
-
-		// report failing test for every unexpected error during any of the tests
-		var unexpectedErrors = [];
-		suite('Errors', function () {
-			test('should not have unexpected errors in tests', function () {
-				if (unexpectedErrors.length) {
-					unexpectedErrors.forEach(function (stack) {
-						console.error('');
-						console.error(stack);
-					});
-
-					assert.ok(false);
-				}
-			});
-		});
 
 		// replace the default unexpected error handler to be useful during tests
 		loader(['vs/base/common/errors'], function(errors) {

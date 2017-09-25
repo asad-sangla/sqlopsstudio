@@ -14,7 +14,7 @@
 	"invalid.title": "configuration.title muss eine Zeichenfolge sein.",
 	"vscode.extension.contributes.defaultConfiguration": "Trägt zu Konfigurationeinstellungen des Standard-Editors für die jeweilige Sprache bei.",
 	"invalid.properties": "\"configuration.properties\" muss ein Objekt sein.",
-	"workspaceConfig.id.description": "Arbeitsbereichsbezeichner. Dient zum Speichern des internen Arbeitsbereichszustands, der verloren gehen oder sich ändern kann.",
-	"workspaceConfig.folders.description": "Liste von Ordnern, die in den Arbeitsbereich geladen werden. Hierbei muss es sich um einen Dateipfad handeln, z.B. \"file:///root/folderA\".",
+	"workspaceConfig.folders.description": "Liste von Ordnern, die in den Arbeitsbereich geladen werden. Hierbei muss es sich um einen Dateipfad handeln, z. B. \" /root/folderA\" oder \"./folderA\" bei einem relativen Pfad, der in Bezug auf den Speicherort der Arbeitsbereichsdatei aufgelöst wird.",
+	"workspaceConfig.folder.description": "Ein Dateipfad, z. B. \" /root/folderA\" oder \"./folderA\" bei einem relativen Pfad, der in Bezug auf den Speicherort der Arbeitsbereichsdatei  aufgelöst wird.",
 	"workspaceConfig.settings.description": "Arbeitsbereichseinstellungen"
 }

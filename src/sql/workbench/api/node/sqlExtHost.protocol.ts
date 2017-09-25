@@ -13,7 +13,6 @@ import {
 import * as data from 'data';
 
 import { TPromise } from 'vs/base/common/winjs.base';
-import { InstanceSetter } from 'vs/workbench/api/node/extHost.protocol';
 
 export abstract class ExtHostAccountManagementShape {
 	$clear(handle: number, account: data.Account): Thenable<void> { throw ni(); }
@@ -308,40 +307,40 @@ export abstract class MainThreadSerializationProviderShape {
 	$unregisterSerializationProvider(handle: number): TPromise<any> { throw ni(); }
 }
 
-export class SqlInstanceCollection {
-	private _items: { [id: string]: any; };
+// export class SqlInstanceCollection {
+// 	private _items: { [id: string]: any; };
 
-	constructor() {
-		this._items = Object.create(null);
-	}
+// 	constructor() {
+// 		this._items = Object.create(null);
+// 	}
 
-	public define<T>(id: ProxyIdentifier<T>): InstanceSetter<T> {
-		let that = this;
-		return new class {
-			set<R extends T>(value: T): R {
-				that._set(id, value);
-				return <R>value;
-			}
-		};
-	}
+// 	public define<T>(id: ProxyIdentifier<T>): InstanceSetter<T> {
+// 		let that = this;
+// 		return new class {
+// 			set<R extends T>(value: T): R {
+// 				that._set(id, value);
+// 				return <R>value;
+// 			}
+// 		};
+// 	}
 
-	_set<T>(id: ProxyIdentifier<T>, value: T): void {
-		this._items[id.id] = value;
-	}
+// 	_set<T>(id: ProxyIdentifier<T>, value: T): void {
+// 		this._items[id.id] = value;
+// 	}
 
-	public finish(isMain: boolean, threadService: IThreadService): void {
-		let expected = (isMain ? SqlMainContext : SqlExtHostContext);
-		Object.keys(expected).forEach((key) => {
-			let id = expected[key];
-			let value = this._items[id.id];
+// 	public finish(isMain: boolean, threadService: IThreadService): void {
+// 		let expected = (isMain ? SqlMainContext : SqlExtHostContext);
+// 		Object.keys(expected).forEach((key) => {
+// 			let id = expected[key];
+// 			let value = this._items[id.id];
 
-			if (!value) {
-				throw new Error(`Missing actor ${key} (isMain: ${id.isMain}, id:  ${id.id})`);
-			}
-			threadService.set<any>(id, value);
-		});
-	}
-}
+// 			if (!value) {
+// 				throw new Error(`Missing actor ${key} (isMain: ${id.isMain}, id:  ${id.id})`);
+// 			}
+// 			threadService.set<any>(id, value);
+// 		});
+// 	}
+// }
 
 function ni() { return new Error('Not implemented'); }
 
@@ -349,15 +348,15 @@ function ni() { return new Error('Not implemented'); }
 
 export const SqlMainContext = {
 	// SQL entries
-	MainThreadAccountManagement: createMainId<MainThreadAccountManagementShape>('MainThreadAccountManagement', MainThreadAccountManagementShape),
-	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement', MainThreadCredentialManagementShape),
-	MainThreadDataProtocol: createMainId<MainThreadDataProtocolShape>('MainThreadDataProtocol', MainThreadDataProtocolShape),
-	MainThreadSerializationProvider: createMainId<MainThreadSerializationProviderShape>('MainThreadSerializationProvider', MainThreadSerializationProviderShape)
+	MainThreadAccountManagement: createMainId<MainThreadAccountManagementShape>('MainThreadAccountManagement'),
+	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement'),
+	MainThreadDataProtocol: createMainId<MainThreadDataProtocolShape>('MainThreadDataProtocol'),
+	MainThreadSerializationProvider: createMainId<MainThreadSerializationProviderShape>('MainThreadSerializationProvider')
 };
 
 export const SqlExtHostContext = {
-	ExtHostAccountManagement: createExtId<ExtHostAccountManagementShape>('ExtHostAccountManagement', ExtHostAccountManagementShape),
-	ExtHostCredentialManagement: createExtId<ExtHostCredentialManagementShape>('ExtHostCredentialManagement', ExtHostCredentialManagementShape),
-	ExtHostDataProtocol: createExtId<ExtHostDataProtocolShape>('ExtHostDataProtocol', ExtHostDataProtocolShape),
-	ExtHostSerializationProvider: createExtId<ExtHostSerializationProviderShape>('ExtHostSerializationProvider', ExtHostSerializationProviderShape)
+	ExtHostAccountManagement: createExtId<ExtHostAccountManagementShape>('ExtHostAccountManagement'),
+	ExtHostCredentialManagement: createExtId<ExtHostCredentialManagementShape>('ExtHostCredentialManagement'),
+	ExtHostDataProtocol: createExtId<ExtHostDataProtocolShape>('ExtHostDataProtocol'),
+	ExtHostSerializationProvider: createExtId<ExtHostSerializationProviderShape>('ExtHostSerializationProvider')
 };

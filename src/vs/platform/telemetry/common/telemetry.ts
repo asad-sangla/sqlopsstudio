@@ -7,7 +7,6 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-
 export const ITelemetryService = createDecorator<ITelemetryService>('telemetryService');
 
 export interface ITelemetryInfo {

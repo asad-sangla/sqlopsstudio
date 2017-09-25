@@ -30,7 +30,6 @@ const product = require('../product.json');
 const shrinkwrap = require('../npm-shrinkwrap.json');
 const crypto = require('crypto');
 const i18n = require('./lib/i18n');
-var del = require('del');
 // {{SQL CARBON EDIT}}
 const serviceInstaller = require('extensions-modules/lib/languageservice/serviceInstallerUtil');
 const glob = require('glob');
@@ -52,11 +51,12 @@ const nodeModules = [
 	.concat(dependencies)
 	.concat(baseModules);
 
+
 // Build
 
 const builtInExtensions = [
-	{ name: 'ms-vscode.node-debug', version: '1.15.19' },
-	{ name: 'ms-vscode.node-debug2', version: '1.15.5' }
+	{ name: 'ms-vscode.node-debug', version: '1.16.10' },
+	{ name: 'ms-vscode.node-debug2', version: '1.16.9' }
 ];
 
 const excludedExtensions = [
@@ -321,8 +321,10 @@ function packageTask(platform, arch, opts) {
 			.pipe(util.cleanNodeModule('oniguruma', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node', 'src/*.js']))
 			.pipe(util.cleanNodeModule('windows-mutex', ['binding.gyp', 'build/**', 'src/**'], ['**/*.node']))
 			.pipe(util.cleanNodeModule('native-keymap', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node']))
+			.pipe(util.cleanNodeModule('native-watchdog', ['binding.gyp', 'build/**', 'src/**'], ['**/*.node']))
 			.pipe(util.cleanNodeModule('jschardet', ['dist/**']))
 			.pipe(util.cleanNodeModule('windows-foreground-love', ['binding.gyp', 'build/**', 'src/**'], ['**/*.node']))
+			.pipe(util.cleanNodeModule('windows-process-tree', ['binding.gyp', 'build/**', 'src/**'], ['**/*.node']))
 			.pipe(util.cleanNodeModule('gc-signals', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node', 'src/index.js']))
 			.pipe(util.cleanNodeModule('v8-profiler', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node', 'src/index.js']))
 			.pipe(util.cleanNodeModule('node-pty', ['binding.gyp', 'build/**', 'src/**', 'tools/**'], ['build/Release/**']))

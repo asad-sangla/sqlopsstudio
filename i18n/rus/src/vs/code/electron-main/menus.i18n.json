@@ -102,6 +102,7 @@
 	"miHideActivityBar": "Скрыть &&панель действий",
 	"miShowActivityBar": "Показать &&панель действий",
 	"miToggleWordWrap": "&&Включить/выключить перенос текста",
+	"miToggleMinimap": "Переключить мини-карту",
 	"miToggleRenderWhitespace": "Показать/&&скрыть символы пробелов",
 	"miToggleRenderControlCharacters": "Переключить &&управляющие символы",
 	"miZoomIn": "&&Увеличить",

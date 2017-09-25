@@ -6,11 +6,15 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { SqlExtHostContext, ExtHostCredentialManagementShape, MainThreadCredentialManagementShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
+import {
+	SqlExtHostContext, ExtHostCredentialManagementShape,
+	MainThreadCredentialManagementShape, SqlMainContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { ICredentialsService } from 'sql/services/credentials/credentialsService';
 import * as data from 'data';
+import { IExtHostContext } from 'vs/workbench/api/node/extHost.protocol';
+import { extHostNamedCustomer } from 'vs/workbench/api/electron-browser/extHostCustomers';
 
+@extHostNamedCustomer(SqlMainContext.MainThreadCredentialManagement)
 export class MainThreadCredentialManagement extends MainThreadCredentialManagementShape {
 
 	private _proxy: ExtHostCredentialManagementShape;
@@ -20,12 +24,13 @@ export class MainThreadCredentialManagement extends MainThreadCredentialManageme
 	private _registrations: { [handle: number]: IDisposable; } = Object.create(null);
 
 	constructor(
-		@IThreadService threadService: IThreadService,
+		extHostContext: IExtHostContext,
 		@ICredentialsService private credentialService: ICredentialsService
-
 	) {
 		super();
-		this._proxy = threadService.get(SqlExtHostContext.ExtHostCredentialManagement);
+		if (extHostContext) {
+			this._proxy = extHostContext.get(SqlExtHostContext.ExtHostCredentialManagement);
+		}
 	}
 
 	public dispose(): void {

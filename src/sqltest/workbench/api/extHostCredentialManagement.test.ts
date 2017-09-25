@@ -6,15 +6,18 @@
 'use strict';
 
 import * as assert from 'assert';
-import {TestThreadService} from "vs/workbench/test/electron-browser/api/testThreadService";
-import {TestInstantiationService} from "vs/platform/instantiation/test/common/instantiationServiceMock";
-import {ExtHostCredentialManagement} from "sql/workbench/api/node/extHostCredentialManagement";
-import {SqlMainContext} from "sql/workbench/api/node/sqlExtHost.protocol";
-import {IThreadService} from "vs/workbench/services/thread/common/threadService";
-import {MainThreadCredentialManagement} from "sql/workbench/api/node/mainThreadCredentialManagement";
-import {CredentialsTestProvider, CredentialsTestService} from "sqltest/stubs/credentialsTestStubs";
-import {ICredentialsService} from "sql/services/credentials/credentialsService";
-import {Credential, CredentialProvider} from "data";
+import {TestThreadService} from 'vs/workbench/test/electron-browser/api/testThreadService';
+import {TestInstantiationService} from 'vs/platform/instantiation/test/common/instantiationServiceMock';
+import {ExtHostCredentialManagement} from 'sql/workbench/api/node/extHostCredentialManagement';
+import {SqlMainContext} from 'sql/workbench/api/node/sqlExtHost.protocol';
+import {IThreadService} from 'vs/workbench/services/thread/common/threadService';
+import {MainThreadCredentialManagement} from 'sql/workbench/api/node/mainThreadCredentialManagement';
+import {CredentialsTestProvider, CredentialsTestService} from 'sqltest/stubs/credentialsTestStubs';
+import {ICredentialsService} from 'sql/services/credentials/credentialsService';
+import {Credential, CredentialProvider} from 'data';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+
+const IThreadService = createDecorator<IThreadService>('threadService');
 
 // SUITE STATE /////////////////////////////////////////////////////////////
 let credentialServiceStub: CredentialsTestService;

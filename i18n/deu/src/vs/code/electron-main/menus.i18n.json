@@ -102,6 +102,7 @@
 	"miHideActivityBar": "&&Aktivitätsleiste ausblenden",
 	"miShowActivityBar": "&&Aktivitätsleiste anzeigen",
 	"miToggleWordWrap": "&&Zeilenumbruch umschalten",
+	"miToggleMinimap": "&&Minikarte umschalten",
 	"miToggleRenderWhitespace": "&&Rendern von Leerzeichen umschalten",
 	"miToggleRenderControlCharacters": "&&Steuerzeichen umschalten",
 	"miZoomIn": "&&Vergrößern",

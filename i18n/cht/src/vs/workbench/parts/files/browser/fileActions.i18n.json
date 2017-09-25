@@ -40,7 +40,7 @@
 	"pickHistory": "選取先前開啟的檔案以相比較",
 	"unableToFileToCompare": "選取的檔案無法與 '{0}' 進行比較。",
 	"openFileToCompare": "先開啟檔案以與其他檔案進行比較",
-	"compareWith": "與 '{0}' 比較",
+	"compareWith": "比較 '{0}' 與 '{1}'",
 	"compareFiles": "比較檔案",
 	"refresh": "重新整理",
 	"save": "儲存",

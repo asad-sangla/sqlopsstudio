@@ -21,5 +21,9 @@
 	"errorForeground": "Vordergrundfarbe von Fehlerunterstreichungen im Editor.",
 	"errorBorder": "Rahmenfarbe von Fehlerunterstreichungen im Editor.",
 	"warningForeground": "Vordergrundfarbe von Warnungsunterstreichungen im Editor.",
-	"warningBorder": "Rahmenfarbe von Warnungsunterstreichungen im Editor."
+	"warningBorder": "Rahmenfarbe von Warnungsunterstreichungen im Editor.",
+	"overviewRulerRangeHighlight": "Übersichtslineal-Markierungsfarbe für Bereichshervorhebungen.",
+	"overviewRuleError": "Übersichtslineal-Markierungsfarbe für Fehler.",
+	"overviewRuleWarning": "Übersichtslineal-Markierungsfarbe für Warnungen.",
+	"overviewRuleInfo": "Übersichtslineal-Markierungsfarbe für Informationen."
 }

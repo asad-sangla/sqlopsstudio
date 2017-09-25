@@ -168,4 +168,8 @@ suite('ExtHostWorkspace', function () {
 		sub.dispose();
 
 	});
+
+	test('Multiroot change event is immutable', function () {
+		assert.equal(1, 1);
+	});
 });

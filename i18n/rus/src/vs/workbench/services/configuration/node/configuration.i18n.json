@@ -14,7 +14,7 @@
 	"invalid.title": "configuration.title должно быть строкой",
 	"vscode.extension.contributes.defaultConfiguration": "Предоставляет параметры конфигурации редактора по умолчанию в соответствии с языком.",
 	"invalid.properties": "configuration.properties должно быть объектом",
-	"workspaceConfig.id.description": "Идентификатор рабочей области. Используется для хранения внутреннего состояния рабочей области, которое может быть утеряно во время изменения.",
-	"workspaceConfig.folders.description": "Список папок, которые будут загружены в рабочую область. Необходимо указывать пути к файлам, например, \"file:///root/folderA\"",
+	"workspaceConfig.folders.description": "Список папок, которые будут загружены в рабочую область. Необходимо указывать пути к файлам, например, \"/root/folderA\" или \"./folderA\" для пути по отношению к файлу рабочей области.",
+	"workspaceConfig.folder.description": "Путь к файлу, например, \"/root/folderA\" или \"./folderA\" для пути по отношению к файлу рабочей области.",
 	"workspaceConfig.settings.description": "Параметры рабочей области"
 }

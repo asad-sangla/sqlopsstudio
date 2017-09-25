@@ -39,10 +39,10 @@
 	"dynamicHeight": "Controla si la altura de la sección de editores abiertos debería adaptarse o no de forma dinámica al número de elementos.",
 	"autoReveal": "Controla si el explorador debe mostrar y seleccionar automáticamente los archivos al abrirlos.",
 	"enableDragAndDrop": "Controla si el explorador debe permitir mover archivos y carpetas mediante la función arrastrar y colocar.",
-	"sortOrder.default": "Los archivos y directorios se ordenan por nombre, en orden alfabético. Los directorios se muestran antes que los archivos.",
-	"sortOrder.mixed": "Los archivos y directorios se ordenan por nombre, en orden alfabético. Los archivos se muestran intercalados con los directorios.",
-	"sortOrder.filesFirst": "Los archivos y directorios se ordenan por nombre, en orden alfabético. Los archivos se muestran antes que los directorios.",
-	"sortOrder.type": "Los archivos y directorios se ordenan por extensión, en orden alfabético. Los directorios se muestran antes que los archivos.",
-	"sortOrder.modified": "Los archivos y directorios se ordenan por fecha de última modificación, en orden descendente. Los directorios se muestran antes que los archivos.",
-	"sortOrder": "Controla el modo en el que se ordenan los archivos y directorios en el explorador."
+	"sortOrder.default": "Los archivos y las carpetas se ordenan por nombre alfabéticamente. Las carpetas se muestran antes que los archivos.",
+	"sortOrder.mixed": "Los archivos y las carpetas se ordenan por nombre alfabéticamente. Los archivos se entrelazan con las carpetas.",
+	"sortOrder.filesFirst": "Los archivos y las carpetas se ordenan por nombre alfabéticamente. Los archivos se muestran antes que las carpetas.",
+	"sortOrder.type": "Los archivos y las carpetas se ordenan por extensión. Las carpetas se muestran antes que los archivos.",
+	"sortOrder.modified": "Los archivos y las carpetas se ordenan por fecha de última modificación. Las carpetas se muestran antes que los archivos.",
+	"sortOrder": "Controla el criterio de ordenación de los archivos y las carpetas en el explorador. Además del orden \"default\", puede establecer el orden en \"mixed\" (los archivos y las carpetas se ordenan combinados), \"type\" (por tipo de archivo), \"modified\" (por fecha de última modificación) o \"filesFirst\" (los archivos se colocan antes que las carpetas)."
 }

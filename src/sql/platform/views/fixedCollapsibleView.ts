@@ -17,8 +17,8 @@ export interface IFixedCollapsibleViewOptions extends ICollapsibleViewOptions {
 export abstract class FixedCollapsibleView extends AbstractCollapsibleView {
 	private _expandedBodySize: number;
 
-	constructor(opts: IFixedCollapsibleViewOptions) {
-		super(objects.mixin({ sizing: ViewSizing.Fixed }, opts));
+	constructor(initialSize: number, opts: IFixedCollapsibleViewOptions) {
+		super(initialSize, objects.mixin({ sizing: ViewSizing.Fixed }, opts));
 		this._expandedBodySize = types.isUndefined(opts.expandedBodySize) ? 22 : opts.expandedBodySize;
 	}
 

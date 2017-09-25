@@ -16,6 +16,9 @@ import { IThreadService } from 'vs/workbench/services/thread/common/threadServic
 import { SqlMainContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { MainThreadAccountManagement } from 'sql/workbench/api/node/mainThreadAccountManagement';
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+
+const IThreadService = createDecorator<IThreadService>('threadService');
 
 // SUITE STATE /////////////////////////////////////////////////////////////
 let instantiationService: TestInstantiationService;

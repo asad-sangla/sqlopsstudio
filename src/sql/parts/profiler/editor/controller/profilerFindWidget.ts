@@ -24,7 +24,7 @@ import { IOverlayWidget, IOverlayWidgetPosition, OverlayWidgetPositionPreference
 import { FIND_IDS, MATCHES_LIMIT } from 'vs/editor/contrib/find/common/findModel';
 import { FindReplaceState, FindReplaceStateChangedEvent } from 'vs/editor/contrib/find/common/findState';
 import { IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { CONTEXT_FIND_INPUT_FOCUSSED } from 'vs/editor/contrib/find/common/findController';
+import { CONTEXT_FIND_INPUT_FOCUSED } from 'vs/editor/contrib/find/common/findController';
 import { ITheme, registerThemingParticipant, IThemeService } from 'vs/platform/theme/common/themeService';
 import { Color } from 'vs/base/common/color';
 import { editorFindRangeHighlight, editorFindMatch, editorFindMatchHighlight, activeContrastBorder, contrastBorder, inputBackground, editorWidgetBackground, inputActiveOptionBorder, widgetShadow, inputForeground, inputBorder, inputValidationInfoBackground, inputValidationInfoBorder, inputValidationWarningBackground, inputValidationWarningBorder, inputValidationErrorBackground, inputValidationErrorBorder, errorForeground } from 'vs/platform/theme/common/colorRegistry';
@@ -146,7 +146,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IHorizontalSas
 			}
 		}));
 
-		this._findInputFocussed = CONTEXT_FIND_INPUT_FOCUSSED.bindTo(contextKeyService);
+		this._findInputFocussed = CONTEXT_FIND_INPUT_FOCUSED.bindTo(contextKeyService);
 		this._focusTracker = this._register(dom.trackFocus(this._findInput.inputBox.inputElement));
 		this._focusTracker.addFocusListener(() => {
 			this._findInputFocussed.set(true);

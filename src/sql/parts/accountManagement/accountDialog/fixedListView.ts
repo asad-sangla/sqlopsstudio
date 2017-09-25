@@ -20,7 +20,9 @@ export class FixedListView extends CollapsibleView {
 	private _badge: CountBadge;
 	private _disposables: IDisposable[] = [];
 
-	constructor(private _viewTitle: string,
+	constructor(
+		initialSize: number,
+		private _viewTitle: string,
 		private _list: List<any>,
 		private _bodyContainer: HTMLElement,
 		collapsed: boolean,
@@ -30,7 +32,7 @@ export class FixedListView extends CollapsibleView {
 		contextMenuService: IContextMenuService,
 		keybindingService: IKeybindingService,
 		private _themeService: IThemeService) {
-		super(<ICollapsibleViewOptions>{
+		super(initialSize, <ICollapsibleViewOptions>{
 			id: _viewTitle,
 			name: _viewTitle,
 			actionRunner: actionRunner,

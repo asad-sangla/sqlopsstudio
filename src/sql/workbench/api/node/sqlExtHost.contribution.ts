@@ -7,42 +7,23 @@
 
 import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
 import { Registry } from 'vs/platform/registry/common/platform';
-import { IInstantiationService, IConstructorSignature0 } from 'vs/platform/instantiation/common/instantiation';
-import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { SqlMainContext, SqlInstanceCollection } from './sqlExtHost.protocol';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 // --- SQL contributions
-import { MainThreadCredentialManagement } from 'sql/workbench/api/node/mainThreadCredentialManagement';
-import { MainThreadDataProtocol } from 'sql/workbench/api/node/mainThreadDataProtocol';
-import { MainThreadSerializationProvider } from 'sql/workbench/api/node/mainThreadSerializationProvider';
-import { MainThreadAccountManagement } from "./mainThreadAccountManagement";
-
+import 'sql/workbench/api/node/mainThreadCredentialManagement';
+import 'sql/workbench/api/node/mainThreadDataProtocol';
+import 'sql/workbench/api/node/mainThreadSerializationProvider';
+import './mainThreadAccountManagement';
 
 export class SqlExtHostContribution implements IWorkbenchContribution {
 
 	constructor(
-		@IThreadService private threadService: IThreadService,
 		@IInstantiationService private instantiationService: IInstantiationService
 	) {
-		this.initExtensionSystem();
 	}
 
 	public getId(): string {
 		return 'sql.api.sqlExtHost';
-	}
-
-	private initExtensionSystem(): void {
-		const create = <T>(ctor: IConstructorSignature0<T>): T => {
-			return this.instantiationService.createInstance(ctor);
-		};
-
-		// Addressable instances
-		const col = new SqlInstanceCollection();
-		col.define(SqlMainContext.MainThreadAccountManagement).set(create(MainThreadAccountManagement));
-		col.define(SqlMainContext.MainThreadCredentialManagement).set(create(MainThreadCredentialManagement));
-		col.define(SqlMainContext.MainThreadDataProtocol).set(create(MainThreadDataProtocol));
-		col.define(SqlMainContext.MainThreadSerializationProvider).set(create(MainThreadSerializationProvider));
-		col.finish(true, this.threadService);
 	}
 }
 

@@ -47,10 +47,11 @@
 		],
 		"import-patterns": [
 			true,
+			// {{SQL CARBON EDIT}}
 			{
 				"target": "**/{node,electron-browser,electron-main,extensions}/**",
 				"restrictions": "**/*"
-			},
+			},		
 			{
 				"target": "{**/**.test.ts,**/test/**}",
 				"restrictions": "{**/vs/**,**/sql/**,**/sqltest/**,assert,sinon,typemoq,data,@angular/**,rxjs/**}"

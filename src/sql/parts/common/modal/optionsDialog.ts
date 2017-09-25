@@ -33,12 +33,14 @@ import data = require('data');
 class CategoryView extends FixedCollapsibleView {
 	private _treecontainer: HTMLElement;
 	constructor(private viewTitle: string, private _bodyContainer: HTMLElement, collapsed: boolean, initialBodySize: number, headerSize: number) {
-		super({
-			expandedBodySize: initialBodySize,
-			sizing: headerSize,
-			initialState: collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED,
-			ariaHeaderLabel: viewTitle
-		});
+		super(
+			initialBodySize,
+			{
+				expandedBodySize: initialBodySize,
+				sizing: headerSize,
+				initialState: collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED,
+				ariaHeaderLabel: viewTitle
+			});
 	}
 
 	public renderHeader(container: HTMLElement): void {

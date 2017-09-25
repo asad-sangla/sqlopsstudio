@@ -7,6 +7,7 @@
 	"workbench.action.terminal.toggleTerminal": "Integriertes Terminal umschalten",
 	"workbench.action.terminal.kill": "Aktive Terminalinstanz beenden",
 	"workbench.action.terminal.kill.short": "Terminal beenden",
+	"workbench.action.terminal.quickKill": "Terminalinstanz beenden",
 	"workbench.action.terminal.copySelection": "Auswahl kopieren",
 	"workbench.action.terminal.selectAll": "Alles auswählen",
 	"workbench.action.terminal.deleteWordLeft": "Wort links löschen",
@@ -36,5 +37,7 @@
 	"workbench.action.terminal.rename.prompt": "Terminalnamen eingeben",
 	"workbench.action.terminal.focusFindWidget": "Widget zum Anzeigen der Suche mit Fokus",
 	"workbench.action.terminal.hideFindWidget": "Widget zum Ausblenden der Suche",
-	"quickOpenTerm": "Aktives Terminal wechseln"
+	"nextTerminalFindTerm": "Nächsten Suchbegriff anzeigen",
+	"previousTerminalFindTerm": "Vorherigen Suchbegriff anzeigen",
+	"quickOpenTerm": "Terminal: Aktives Terminal wechseln"
 }

@@ -18,11 +18,11 @@ import { IUpdateService, State as UpdateState } from 'vs/platform/update/common/
 import product from 'vs/platform/node/product';
 import { RunOnceScheduler } from 'vs/base/common/async';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { tildify } from 'vs/base/common/labels';
-import { KeybindingsResolver } from "vs/code/electron-main/keyboard";
-import { IWindowsMainService, IWindowsCountChangedEvent } from "vs/platform/windows/electron-main/windows";
-import { IHistoryMainService } from "vs/platform/history/common/history";
-import { IWorkspaceIdentifier, IWorkspacesMainService, getWorkspaceLabel, ISingleFolderWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier } from "vs/platform/workspaces/common/workspaces";
+import { mnemonicMenuLabel as baseMnemonicLabel, unmnemonicLabel, getPathLabel } from 'vs/base/common/labels';
+import { KeybindingsResolver } from 'vs/code/electron-main/keyboard';
+import { IWindowsMainService, IWindowsCountChangedEvent } from 'vs/platform/windows/electron-main/windows';
+import { IHistoryMainService } from 'vs/platform/history/common/history';
+import { IWorkspaceIdentifier, IWorkspacesMainService, getWorkspaceLabel, ISingleFolderWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
 
 interface IExtensionViewlet {
 	id: string;
@@ -73,7 +73,7 @@ export class CodeMenu {
 
 	private closeFolder: Electron.MenuItem;
 	private closeWorkspace: Electron.MenuItem;
-	private saveWorkspace: Electron.MenuItem;
+	private saveWorkspaceAs: Electron.MenuItem;
 
 	constructor(
 		@IUpdateService private updateService: IUpdateService,
@@ -227,7 +227,7 @@ export class CodeMenu {
 		this.closeWorkspace.visible = isInWorkspaceContext;
 		this.closeFolder.visible = !isInWorkspaceContext;
 		this.closeFolder.enabled = isInFolderContext;
-		this.saveWorkspace.enabled = isInFolderContext || isInWorkspaceContext;
+		this.saveWorkspaceAs.enabled = isInFolderContext || isInWorkspaceContext;
 	}
 
 	private install(): void {
@@ -384,7 +384,7 @@ export class CodeMenu {
 
 		const isMultiRootEnabled = (product.quality !== 'stable'); // TODO@Ben multi root
 
-		this.saveWorkspace = this.createMenuItem(nls.localize({ key: 'miSaveWorkspaceAs', comment: ['&& denotes a mnemonic'] }, "&&Save Workspace As..."), 'workbench.action.saveWorkspaceAs');
+		this.saveWorkspaceAs = this.createMenuItem(nls.localize({ key: 'miSaveWorkspaceAs', comment: ['&& denotes a mnemonic'] }, "&&Save Workspace As..."), 'workbench.action.saveWorkspaceAs');
 		const addFolder = this.createMenuItem(nls.localize({ key: 'miAddFolderToWorkspace', comment: ['&& denotes a mnemonic'] }, "&&Add Folder to Workspace..."), 'workbench.action.addRootFolder');
 
 		const saveFile = this.createMenuItem(nls.localize({ key: 'miSave', comment: ['&& denotes a mnemonic'] }, "&&Save"), 'workbench.action.files.save');
@@ -420,7 +420,7 @@ export class CodeMenu {
 			openRecent,
 			isMultiRootEnabled ? __separator__() : null,
 			isMultiRootEnabled ? addFolder : null,
-			isMultiRootEnabled ? this.saveWorkspace : null,
+			isMultiRootEnabled ? this.saveWorkspaceAs : null,
 			__separator__(),
 			saveFile,
 			saveFileAs,
@@ -443,6 +443,7 @@ export class CodeMenu {
 	private getPreferencesMenu(): Electron.MenuItem {
 		const settings = this.createMenuItem(nls.localize({ key: 'miOpenSettings', comment: ['&& denotes a mnemonic'] }, "&&Settings"), 'workbench.action.openGlobalSettings');
 		const kebindingSettings = this.createMenuItem(nls.localize({ key: 'miOpenKeymap', comment: ['&& denotes a mnemonic'] }, "&&Keyboard Shortcuts"), 'workbench.action.openGlobalKeybindings');
+		// {{SQL CARBON EDIT}}
 		// const keymapExtensions = this.createMenuItem(nls.localize({ key: 'miOpenKeymapExtensions', comment: ['&& denotes a mnemonic'] }, "&&Keymap Extensions"), 'workbench.extensions.action.showRecommendedKeymapExtensions');
 		// const snippetsSettings = this.createMenuItem(nls.localize({ key: 'miOpenSnippets', comment: ['&& denotes a mnemonic'] }, "User &&Snippets"), 'workbench.action.openSnippets');
 		const colorThemeSelection = this.createMenuItem(nls.localize({ key: 'miSelectColorTheme', comment: ['&& denotes a mnemonic'] }, "&&Color Theme"), 'workbench.action.selectTheme');
@@ -452,6 +453,7 @@ export class CodeMenu {
 		preferencesMenu.append(settings);
 		preferencesMenu.append(__separator__());
 		preferencesMenu.append(kebindingSettings);
+		// {{SQL CARBON EDIT}}
 		// preferencesMenu.append(keymapExtensions);
 		// preferencesMenu.append(__separator__());
 		// preferencesMenu.append(snippetsSettings);
@@ -497,7 +499,7 @@ export class CodeMenu {
 		let label: string;
 		let path: string;
 		if (isSingleFolderWorkspaceIdentifier(workspace) || typeof workspace === 'string') {
-			label = this.unmnemonicLabel(tildify(workspace, this.environmentService.userHome));
+			label = unmnemonicLabel(getPathLabel(workspace, null, this.environmentService));
 			path = workspace;
 		} else {
 			label = getWorkspaceLabel(workspace, this.environmentService, { verbose: true });
@@ -562,6 +564,7 @@ export class CodeMenu {
 		const findInFiles = this.createMenuItem(nls.localize({ key: 'miFindInFiles', comment: ['&& denotes a mnemonic'] }, "Find &&in Files"), 'workbench.action.findInFiles');
 		const replaceInFiles = this.createMenuItem(nls.localize({ key: 'miReplaceInFiles', comment: ['&& denotes a mnemonic'] }, "Replace &&in Files"), 'workbench.action.replaceInFiles');
 
+		// {{SQL CARBON EDIT}}
 		// const emmetExpandAbbreviation = this.createMenuItem(nls.localize({ key: 'miEmmetExpandAbbreviation', comment: ['&& denotes a mnemonic'] }, "Emmet: E&&xpand Abbreviation"), 'editor.emmet.action.expandAbbreviation');
 		// const showEmmetCommands = this.createMenuItem(nls.localize({ key: 'miShowEmmetCommands', comment: ['&& denotes a mnemonic'] }, "E&&mmet..."), 'workbench.action.showEmmetCommands');
 		// const toggleLineComment = this.createMenuItem(nls.localize({ key: 'miToggleLineComment', comment: ['&& denotes a mnemonic'] }, "&&Toggle Line Comment"), 'editor.action.commentLine');
@@ -580,6 +583,7 @@ export class CodeMenu {
 			__separator__(),
 			findInFiles,
 			replaceInFiles,
+			// {{SQL CARBON EDIT}}
 			// __separator__(),
 			// toggleLineComment,
 			// toggleBlockComment,
@@ -651,10 +655,12 @@ export class CodeMenu {
 		const servers = this.createMenuItem(nls.localize({ key: 'miViewRegisteredServers', comment: ['&& denotes a mnemonic'] }, "&&Servers"), 'workbench.view.connections');
 		const explorer = this.createMenuItem(nls.localize({ key: 'miViewExplorer', comment: ['&& denotes a mnemonic'] }, "&&Explorer"), 'workbench.view.explorer');
 		const search = this.createMenuItem(nls.localize({ key: 'miViewSearch', comment: ['&& denotes a mnemonic'] }, "&&Search"), 'workbench.view.search');
+		// {{SQL CARBON EDIT}}
 		// const scm = this.createMenuItem(nls.localize({ key: 'miViewSCM', comment: ['&& denotes a mnemonic'] }, "S&&CM"), 'workbench.view.scm');
 		// const debug = this.createMenuItem(nls.localize({ key: 'miViewDebug', comment: ['&& denotes a mnemonic'] }, "&&Debug"), 'workbench.view.debug');
 		// const extensions = this.createMenuItem(nls.localize({ key: 'miViewExtensions', comment: ['&& denotes a mnemonic'] }, "E&&xtensions"), 'workbench.view.extensions');
 		const output = this.createMenuItem(nls.localize({ key: 'miToggleOutput', comment: ['&& denotes a mnemonic'] }, "&&Output"), 'workbench.action.output.toggleOutput');
+		// {{SQL CARBON EDIT}}
 		// const debugConsole = this.createMenuItem(nls.localize({ key: 'miToggleDebugConsole', comment: ['&& denotes a mnemonic'] }, "De&&bug Console"), 'workbench.debug.action.toggleRepl');
 		const integratedTerminal = this.createMenuItem(nls.localize({ key: 'miToggleIntegratedTerminal', comment: ['&& denotes a mnemonic'] }, "&&Integrated Terminal"), 'workbench.action.terminal.toggleTerminal');
 		const problems = this.createMenuItem(nls.localize({ key: 'miMarker', comment: ['&& denotes a mnemonic'] }, "&&Problems"), 'workbench.actions.view.problems');
@@ -688,6 +694,7 @@ export class CodeMenu {
 
 		const moveSidebar = this.createMenuItem(moveSideBarLabel, 'workbench.action.toggleSidebarPosition');
 
+		// {{SQL CARBON EDIT}}
 		// const togglePanel = this.createMenuItem(nls.localize({ key: 'miTogglePanel', comment: ['&& denotes a mnemonic'] }, "Toggle &&Panel"), 'workbench.action.togglePanel');
 
 		let statusBarLabel: string;
@@ -706,7 +713,9 @@ export class CodeMenu {
 		}
 		const toggleActivtyBar = this.createMenuItem(activityBarLabel, 'workbench.action.toggleActivityBarVisibility');
 
+		// {{SQL CARBON EDIT}}
 		// const toggleWordWrap = this.createMenuItem(nls.localize({ key: 'miToggleWordWrap', comment: ['&& denotes a mnemonic'] }, "Toggle &&Word Wrap"), 'editor.action.toggleWordWrap');
+		// const toggleMinimap = this.createMenuItem(nls.localize({ key: 'miToggleMinimap', comment: ['&& denotes a mnemonic'] }, "Toggle &&Minimap"), 'editor.action.toggleMinimap');
 		// const toggleRenderWhitespace = this.createMenuItem(nls.localize({ key: 'miToggleRenderWhitespace', comment: ['&& denotes a mnemonic'] }, "Toggle &&Render Whitespace"), 'editor.action.toggleRenderWhitespace');
 		// const toggleRenderControlCharacters = this.createMenuItem(nls.localize({ key: 'miToggleRenderControlCharacters', comment: ['&& denotes a mnemonic'] }, "Toggle &&Control Characters"), 'editor.action.toggleRenderControlCharacter');
 
@@ -720,6 +729,7 @@ export class CodeMenu {
 			servers,
 			explorer,
 			search,
+			// {{SQL CARBON EDIT}}
 			// scm,
 			// debug,
 			// extensions,
@@ -727,6 +737,7 @@ export class CodeMenu {
 			__separator__(),
 			output,
 			problems,
+			// {{SQL CARBON EDIT}}
 			// debugConsole,
 			integratedTerminal,
 			__separator__(),
@@ -741,8 +752,10 @@ export class CodeMenu {
 			// togglePanel,
 			toggleStatusbar,
 			toggleActivtyBar,
+			// {{SQL CARBON EDIT}}
 			// __separator__(),
 			// toggleWordWrap,
+			// toggleMinimap,
 			// toggleRenderWhitespace,
 			// toggleRenderControlCharacters,
 			__separator__(),
@@ -793,6 +806,7 @@ export class CodeMenu {
 		const switchGroup = new MenuItem({ label: this.mnemonicLabel(nls.localize({ key: 'miSwitchGroup', comment: ['&& denotes a mnemonic'] }, "Switch &&Group")), submenu: switchGroupMenu, enabled: true });
 
 		const gotoFile = this.createMenuItem(nls.localize({ key: 'miGotoFile', comment: ['&& denotes a mnemonic'] }, "Go to &&File..."), 'workbench.action.quickOpen');
+		// {{SQL CARBON EDIT}}
 		// const gotoSymbolInFile = this.createMenuItem(nls.localize({ key: 'miGotoSymbolInFile', comment: ['&& denotes a mnemonic'] }, "Go to &&Symbol in File..."), 'workbench.action.gotoSymbol');
 		// const gotoSymbolInWorkspace = this.createMenuItem(nls.localize({ key: 'miGotoSymbolInWorkspace', comment: ['&& denotes a mnemonic'] }, "Go to Symbol in &&Workspace..."), 'workbench.action.showAllSymbols');
 		// const gotoDefinition = this.createMenuItem(nls.localize({ key: 'miGotoDefinition', comment: ['&& denotes a mnemonic'] }, "Go to &&Definition"), 'editor.action.goToDeclaration');
@@ -808,6 +822,7 @@ export class CodeMenu {
 			switchGroup,
 			__separator__(),
 			gotoFile,
+			// {{SQL CARBON EDIT}}
 			// gotoSymbolInFile,
 			// gotoSymbolInWorkspace,
 			// gotoDefinition,
@@ -870,7 +885,7 @@ export class CodeMenu {
 		const minimize = new MenuItem({ label: nls.localize('mMinimize', "Minimize"), role: 'minimize', accelerator: 'Command+M', enabled: this.windowsService.getWindowCount() > 0 });
 		const zoom = new MenuItem({ label: nls.localize('mZoom', "Zoom"), role: 'zoom', enabled: this.windowsService.getWindowCount() > 0 });
 		const bringAllToFront = new MenuItem({ label: nls.localize('mBringToFront', "Bring All to Front"), role: 'front', enabled: this.windowsService.getWindowCount() > 0 });
-		const switchWindow = this.createMenuItem(nls.localize({ key: 'miSwitchWindow', comment: ['&& denotes a mnemonic'] }, "Switch &&Window..."), 'workbench.action.switchWindow', this.windowsService.getWindowCount() > 0);
+		const switchWindow = this.createMenuItem(nls.localize({ key: 'miSwitchWindow', comment: ['&& denotes a mnemonic'] }, "Switch &&Window..."), 'workbench.action.switchWindow');
 
 		[
 			minimize,
@@ -919,6 +934,7 @@ export class CodeMenu {
 			}
 		}
 
+		// {{SQL CARBON EDIT}}
 		// const keyboardShortcutsUrl = isLinux ? product.keyboardShortcutsUrlLinux : isMacintosh ? product.keyboardShortcutsUrlMac : product.keyboardShortcutsUrlWin;
 		arrays.coalesce([
 			// new MenuItem({ label: mnemonicLabel(nls.localize({ key: 'miWelcome', comment: ['&& denotes a mnemonic'] }, "&&Welcome")), click: () => this.windowsService.sendToFocused('vscode:runAction', 'workbench.action.showWelcomePage') }),
@@ -970,6 +986,7 @@ export class CodeMenu {
 	}
 
 	private setTaskMenu(taskMenu: Electron.Menu): void {
+	// {{SQL CARBON EDIT}}
 	/*
 		const runTask = this.createMenuItem(nls.localize({ key: 'miRunTask', comment: ['&& denotes a mnemonic'] }, "&&Run Task..."), 'workbench.action.tasks.runTask');
 		const buildTask = this.createMenuItem(nls.localize({ key: 'miBuildTask', comment: ['&& denotes a mnemonic'] }, "Run &&Build Task..."), 'workbench.action.tasks.build');
@@ -1193,19 +1210,7 @@ export class CodeMenu {
 	}
 
 	private mnemonicLabel(label: string): string {
-		if (isMacintosh || !this.currentEnableMenuBarMnemonics) {
-			return label.replace(/\(&&\w\)|&&/g, ''); // no mnemonic support on mac
-		}
-
-		return label.replace(/&&/g, '&');
-	}
-
-	private unmnemonicLabel(label: string): string {
-		if (isMacintosh || !this.currentEnableMenuBarMnemonics) {
-			return label; // no mnemonic support on mac
-		}
-
-		return label.replace(/&/g, '&&');
+		return baseMnemonicLabel(label, !this.currentEnableMenuBarMnemonics);
 	}
 }
 

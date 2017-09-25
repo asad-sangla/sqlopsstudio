@@ -8,20 +8,19 @@ import * as extHostApi from 'vs/workbench/api/node/extHost.api.impl';
 import { TrieMap } from 'vs/base/common/map';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInitData } from 'vs/workbench/api/node/extHost.protocol';
-import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { ExtHostExtensionService } from "vs/workbench/api/node/extHostExtensionService";
+import { ExtHostExtensionService } from 'vs/workbench/api/node/extHostExtensionService';
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 import { realpath } from 'fs';
 import * as extHostTypes from 'vs/workbench/api/node/extHostTypes';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 
 import * as data from 'data';
 import * as vscode from 'vscode';
-import { SqlExtHostContext, SqlInstanceCollection } from 'sql/workbench/api/node/sqlExtHost.protocol';
-import { ExtHostAccountManagement } from "sql/workbench/api/node/extHostAccountManagement"
+import { SqlExtHostContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
+import { ExtHostAccountManagement } from 'sql/workbench/api/node/extHostAccountManagement';
 import { ExtHostCredentialManagement } from 'sql/workbench/api/node/extHostCredentialManagement';
 import { ExtHostDataProtocol } from 'sql/workbench/api/node/extHostDataProtocol';
 import { ExtHostSerializationProvider } from 'sql/workbench/api/node/extHostSerializationProvider';
+import { ExtHostThreadService } from 'vs/workbench/services/thread/node/extHostThreadService';
 import * as sqlExtHostTypes from 'sql/workbench/api/node/sqlExtHostTypes';
 
 export interface ISqlExtensionApiFactory {
@@ -34,23 +33,16 @@ export interface ISqlExtensionApiFactory {
  */
 export function createApiFactory(
 	initData: IInitData,
-	threadService: IThreadService,
-	extensionService: ExtHostExtensionService,
-	telemetryService: ITelemetryService
+	threadService: ExtHostThreadService,
+	extensionService: ExtHostExtensionService
 ): ISqlExtensionApiFactory {
-	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService, telemetryService);
+	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService);
 
 	// Addressable instances
-	const col = new SqlInstanceCollection();
-	const extHostAccountManagement = col.define(SqlExtHostContext.ExtHostAccountManagement)
-		.set<ExtHostAccountManagement>(new ExtHostAccountManagement(threadService));
-	const extHostCredentialManagement = col.define(SqlExtHostContext.ExtHostCredentialManagement)
-		.set<ExtHostCredentialManagement>(new ExtHostCredentialManagement(threadService));
-	const extHostDataProvider = col.define(SqlExtHostContext.ExtHostDataProtocol)
-		.set<ExtHostDataProtocol>(new ExtHostDataProtocol(threadService));
-	const extHostSerializationProvider = col.define(SqlExtHostContext.ExtHostSerializationProvider)
-		.set<ExtHostSerializationProvider>(new ExtHostSerializationProvider(threadService));
-	col.finish(false, threadService);
+	const extHostAccountManagement = threadService.set(SqlExtHostContext.ExtHostAccountManagement, new ExtHostAccountManagement(threadService));
+	const extHostCredentialManagement = threadService.set(SqlExtHostContext.ExtHostCredentialManagement, new ExtHostCredentialManagement(threadService));
+	const extHostDataProvider = threadService.set(SqlExtHostContext.ExtHostDataProtocol, new ExtHostDataProtocol(threadService));
+	const extHostSerializationProvider = threadService.set(SqlExtHostContext.ExtHostSerializationProvider, new ExtHostSerializationProvider(threadService));
 
 	return {
 		vsCodeFactory: vsCodeFactory,

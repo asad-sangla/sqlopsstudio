@@ -7,7 +7,9 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { SqlExtHostContext, ExtHostDataProtocolShape, MainThreadDataProtocolShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
+import {
+	SqlExtHostContext, ExtHostDataProtocolShape,
+	MainThreadDataProtocolShape, SqlMainContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
@@ -20,10 +22,13 @@ import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/inte
 import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { ISerializationService } from 'sql/services/serialization/serializationService';
+import { IExtHostContext } from 'vs/workbench/api/node/extHost.protocol';
+import { extHostNamedCustomer } from 'vs/workbench/api/electron-browser/extHostCustomers';
 
 /**
  * Main thread class for handling data protocol management registration.
  */
+@extHostNamedCustomer(SqlMainContext.MainThreadDataProtocol)
 export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 
 	private _proxy: ExtHostDataProtocolShape;
@@ -33,7 +38,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	private _capabilitiesRegistrations: { [handle: number]: IDisposable; } = Object.create(null);
 
 	constructor(
-		@IThreadService threadService: IThreadService,
+		extHostContext: IExtHostContext,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IQueryManagementService private _queryManagementService: IQueryManagementService,
@@ -47,7 +52,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		@ISerializationService private _serializationService: ISerializationService
 	) {
 		super();
-		this._proxy = threadService.get(SqlExtHostContext.ExtHostDataProtocol);
+		if (extHostContext) {
+			this._proxy = extHostContext.get(SqlExtHostContext.ExtHostDataProtocol);
+		}
 		if (this._connectionManagementService) {
 			this._connectionManagementService.onLanguageFlavorChanged(e => this._proxy.$languageFlavorChanged(e), this, this._toDispose);
 		}

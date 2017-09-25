@@ -102,6 +102,7 @@
 	"miHideActivityBar": "隱藏活動列(&&A)",
 	"miShowActivityBar": "顯示活動列(&&A)",
 	"miToggleWordWrap": "切換自動換行(&&W)",
+	"miToggleMinimap": "切換迷你地圖(&M)",
 	"miToggleRenderWhitespace": "切換轉譯空白字元(&&R)",
 	"miToggleRenderControlCharacters": "切換&&控制字元",
 	"miZoomIn": "放大(&&Z)",

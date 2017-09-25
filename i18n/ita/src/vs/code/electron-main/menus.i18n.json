@@ -102,6 +102,7 @@
 	"miHideActivityBar": "Nascondi &&barra attività",
 	"miShowActivityBar": "Mostra &&barra attività",
 	"miToggleWordWrap": "Attiva/Disattiva &&ritorno a capo automatico",
+	"miToggleMinimap": "Attiva/Disattiva &&mini mappa",
 	"miToggleRenderWhitespace": "Attiva/Disattiva rendering &&spazi vuoti",
 	"miToggleRenderControlCharacters": "Attiva/Disattiva &&caratteri di controllo",
 	"miZoomIn": "&&Zoom avanti",

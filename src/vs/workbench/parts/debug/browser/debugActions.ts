@@ -118,9 +118,8 @@ export class StartAction extends AbstractDebugAction {
 		@IWorkspaceContextService private contextService: IWorkspaceContextService
 	) {
 		super(id, label, 'debug-action start', debugService, keybindingService);
-		this.debugService.getConfigurationManager().onDidSelectConfiguration(() => {
-			this.updateEnablement();
-		});
+		this.debugService.getConfigurationManager().onDidSelectConfiguration(() => this.updateEnablement());
+		this.debugService.getModel().onDidChangeCallStack(() => this.updateEnablement());
 	}
 
 	public run(): TPromise<any> {
@@ -144,7 +143,11 @@ export class StartAction extends AbstractDebugAction {
 		if (this.contextService && !this.contextService.hasWorkspace() && processes.length > 0) {
 			return false;
 		}
-		if (processes.some(p => p.name === selectedName && (!launch || p.session.root.toString() === launch.workspaceUri.toString()))) {
+		if (processes.some(p => p.getName(false) === selectedName && (!launch || p.session.root.toString() === launch.workspaceUri.toString()))) {
+			return false;
+		}
+		const compound = launch && launch.getCompound(selectedName);
+		if (compound && compound.configurations && processes.some(p => compound.configurations.indexOf(p.getName(false)) !== -1)) {
 			return false;
 		}
 
@@ -777,7 +780,8 @@ export class FocusProcessAction extends AbstractDebugAction {
 	}
 
 	public run(processName: string): TPromise<any> {
-		const process = this.debugService.getModel().getProcesses().filter(p => p.name === processName).pop();
+		const isMultiRoot = this.debugService.getConfigurationManager().getLaunches().length > 1;
+		const process = this.debugService.getModel().getProcesses().filter(p => p.getName(isMultiRoot) === processName).pop();
 		return this.debugService.focusStackFrameAndEvaluate(null, process, true).then(() => {
 			const stackFrame = this.debugService.getViewModel().focusedStackFrame;
 			if (stackFrame) {

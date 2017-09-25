@@ -210,7 +210,7 @@ export class AccountDialog extends Modal {
 		if (!accountListView) {
 			let providerView = $().div({ 'class': 'provider-view' });
 			let accountList = new List<data.Account>(providerView.getHTMLElement(), this._delegate, [this._accountRenderer]);
-			accountListView = new FixedListView(providerAccountParam.providerDisplayName, accountList, providerView.getHTMLElement(), false, 22, [this._addAccountAction], this._actionRunner, this._contextMenuService, this._keybindingService, this._themeService);
+			accountListView = new FixedListView(undefined, providerAccountParam.providerDisplayName, accountList, providerView.getHTMLElement(), false, 22, [this._addAccountAction], this._actionRunner, this._contextMenuService, this._keybindingService, this._themeService);
 			this._splitView.addView(accountListView);
 			this._register(attachListStyler(accountList, this._themeService));
 			this._register(this._listService.register(accountList));

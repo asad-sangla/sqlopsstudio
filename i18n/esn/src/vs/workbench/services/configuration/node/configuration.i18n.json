@@ -14,7 +14,7 @@
 	"invalid.title": "configuration.title debe ser una cadena",
 	"vscode.extension.contributes.defaultConfiguration": "Contribuye a la configuración de los parámetros del editor predeterminados por lenguaje.",
 	"invalid.properties": "configuration.properties debe ser un objeto",
-	"workspaceConfig.id.description": "Identificador del área de trabajo. Se usa para almacenar el estado interno del área de trabajo, que se puede perder al cambiar.",
-	"workspaceConfig.folders.description": "Lista de carpetas para cargar en el área de trabajo. Debe ser una ruta de acceso de archivo; por ejemplo, \"file:///raíz/carpetaA\"",
+	"workspaceConfig.folders.description": "Lista de carpetas que debe cargarse en el área de trabajo. Debe ser una ruta de acceso de archivo; por ejemplo, \"/raíz/carpetaA\" o \"./carpetaA\" para una ruta de acceso relativa que se resolverá respecto a la ubicación del archivo del área de trabajo.",
+	"workspaceConfig.folder.description": "Ruta de acceso de archivo; por ejemplo, \"/raíz/carpetaA\" o \"./carpetaA\" para una ruta de acceso de archivo que se resolverá respecto a la ubicación del archivo del área de trabajo.",
 	"workspaceConfig.settings.description": "Configuración de área de trabajo"
 }

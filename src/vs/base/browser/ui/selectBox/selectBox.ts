@@ -32,14 +32,17 @@ export interface ISelectData {
 }
 
 export class SelectBox extends Widget {
-	private selected: number;
-	private container: HTMLElement;
-	private _onDidSelect: Emitter<ISelectData>;
-	private toDispose: IDisposable[];
 
 	// {{SQL CARBON EDIT}}
 	protected selectElement: HTMLSelectElement;
 	protected options: string[];
+
+	private selected: number;
+	private container: HTMLElement;
+	private _onDidSelect: Emitter<ISelectData>;
+	private toDispose: IDisposable[];
+	
+	// {{SQL CARBON EDIT}}
 	protected selectBackground: Color;
 	protected selectForeground: Color;
 	protected selectBorder: Color;

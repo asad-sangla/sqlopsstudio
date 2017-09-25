@@ -12,6 +12,7 @@ import URI from 'vs/base/common/uri';
 import * as EditorCommon from 'vs/editor/common/editorCommon';
 import { Model as EditorModel } from 'vs/editor/common/model/model';
 import { TestThreadService } from 'vs/workbench/test/electron-browser/api/testThreadService';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IMarkerService } from 'vs/platform/markers/common/markers';
 import { MarkerService } from 'vs/platform/markers/common/markerService';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
@@ -29,6 +30,8 @@ import * as vscode from 'vscode';
 import * as data from 'data';
 import { ExtHostDataProtocol } from 'sql/workbench/api/node/extHostDataProtocol';
 import { SqlExtHostContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
+
+const IThreadService = createDecorator<IThreadService>('threadService');
 
 const model: EditorCommon.IModel = EditorModel.createFromString(
 	[

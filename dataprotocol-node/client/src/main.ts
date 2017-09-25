@@ -2139,7 +2139,7 @@ export class LanguageClient {
 		}
 
 		this._providers.push(Languages.registerHoverProvider(documentSelector, {
-			provideHover: (document: TextDocument, position: VPosition, token: CancellationToken): Thenable<Hover> => {
+			provideHover: (document: TextDocument, position: VPosition, token: CancellationToken): Thenable<VHover> => {
 				return this.doSendRequest(connection, HoverRequest.type, this._c2p.asTextDocumentPositionParams(document, position), token).then(
 					this._p2c.asHover,
 					(error) => {

@@ -7,10 +7,15 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
-import { SqlExtHostContext, ExtHostSerializationProviderShape, MainThreadSerializationProviderShape } from 'sql/workbench/api/node/sqlExtHost.protocol';
+import {
+	SqlExtHostContext, ExtHostSerializationProviderShape,
+	MainThreadSerializationProviderShape, SqlMainContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { ISerializationService } from 'sql/services/serialization/serializationService';
 import * as data from 'data';
+import { IExtHostContext } from 'vs/workbench/api/node/extHost.protocol';
+import { extHostNamedCustomer } from 'vs/workbench/api/electron-browser/extHostCustomers';
 
+@extHostNamedCustomer(SqlMainContext.MainThreadSerializationProvider)
 export class MainThreadSerializationProvider extends MainThreadSerializationProviderShape {
 
 	private _proxy: ExtHostSerializationProviderShape;
@@ -20,12 +25,14 @@ export class MainThreadSerializationProvider extends MainThreadSerializationProv
 	private _registrations: { [handle: number]: IDisposable; } = Object.create(null);
 
 	constructor(
-		@IThreadService threadService: IThreadService,
+		extHostContext: IExtHostContext,
 		@ISerializationService private serializationService: ISerializationService
 
 	) {
 		super();
-		this._proxy = threadService.get(SqlExtHostContext.ExtHostSerializationProvider);
+		if (extHostContext) {
+			this._proxy = extHostContext.get(SqlExtHostContext.ExtHostSerializationProvider);
+		}
 	}
 
 	public dispose(): void {

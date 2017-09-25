@@ -19,7 +19,7 @@ export class TableBasicView<T> extends View {
 		columns?: Slick.Column<T>[],
 		tableOpts?: Slick.GridOptions<T>
 	) {
-		super(viewOpts);
+		super(undefined, viewOpts);
 		this._container = document.createElement('div');
 		this._container.className = 'table-view';
 		this._table = new Table<T>(this._container, data, columns, tableOpts);
@@ -53,7 +53,7 @@ export class TableHeaderView<T> extends HeaderView {
 		columns?: Slick.Column<T>[],
 		tableOpts?: Slick.GridOptions<T>
 	) {
-		super(viewOpts);
+		super(undefined, viewOpts);
 		this._container = document.createElement('div');
 		this._container.className = 'table-view';
 		this._table = new Table<T>(this._container, data, columns, tableOpts);
@@ -92,7 +92,7 @@ export class TableCollapsibleView<T> extends AbstractCollapsibleView {
 		columns?: Slick.Column<T>[],
 		tableOpts?: Slick.GridOptions<T>
 	) {
-		super(viewOpts);
+		super(undefined, viewOpts);
 		this._container = document.createElement('div');
 		this._container.className = 'table-view';
 		this._table = new Table<T>(this._container, data, columns, tableOpts);

@@ -51,12 +51,13 @@ class BasicView extends View {
 	private _collapsed: boolean;
 	public headerSize: number;
 	constructor(
+		initialSize: number,
 		private _element: HTMLElement,
 		private _focus: () => void,
 		private _layout: (size: number, orientation: Orientation) => void,
 		opts: IViewOptions
 	) {
-		super(opts);
+		super(initialSize, opts);
 	}
 
 	render(container: HTMLElement, orientation: Orientation): void {
@@ -156,13 +157,16 @@ export class ProfilerEditor extends BaseEditor {
 		let tableContainer = this._createProfilerTable();
 		let paneContainer = this._createProfilerPane();
 		this._splitView.addView(new BasicView(
+			undefined,
 			tableContainer,
 			() => this._profilerTableEditor.focus(),
 			size => this._profilerTableEditor.layout(new Dimension(parseFloat(DOM.getComputedStyle(this._body).width), size)),
 			{}
 		));
 
-		this._panelView = new BasicView(paneContainer,
+		this._panelView = new BasicView(
+			undefined,
+			paneContainer,
 			() => this._tabbedPanel.focus(),
 			size => this._tabbedPanel.layout(new Dimension(DOM.getTotalWidth(this._body), size)),
 			{ minimumSize: 35 }

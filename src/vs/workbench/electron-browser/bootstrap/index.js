@@ -117,6 +117,7 @@ function registerListeners(enableDeveloperTools) {
 	};
 }
 
+// {{SQL CARBON EDIT}}
 const splash = new remote.BrowserWindow({
 	width: 600,
 	height: 450,
@@ -143,7 +144,6 @@ function hideSplash() {
 
 /* eslint-disable */
 
-// {{SQL CARBON EDIT}}
 // SQL global imports
 require('slickgrid/slick.core');
 const Slick = window.Slick;
@@ -156,7 +156,6 @@ require('bootstrap');
 const _ = require('underscore')._;
 
 /* eslint-enable */
-
 function main() {
 	const webFrame = require('electron').webFrame;
 	const args = parseURLQueryArgs();
@@ -201,7 +200,10 @@ function main() {
 
 	createScript(appRoot + '/node_modules/chart.js/dist/Chart.js', undefined);
 
+
 	function onLoader() {
+		window.nodeRequire = require.__$__nodeRequire;
+
 		define('fs', ['original-fs'], function (originalFS) { return originalFS; }); // replace the patched electron fs with the original node fs for all AMD code
 		loaderTimer.stop();
 
@@ -209,7 +211,7 @@ function main() {
 
 		const onNodeCachedData = window.MonacoEnvironment.onNodeCachedData = [];
 
-	// {{SQL CARBON EDIT}}
+	  // {{SQL CARBON EDIT}}
 		require.config({
 			baseUrl: rootUrl,
 			'vs/nls': nlsConfig,
@@ -235,6 +237,7 @@ function main() {
 				'rxjs/Observer'
 			]
 		});
+
 
 		if (nlsConfig.pseudo) {
 			require(['vs/nls'], function (nlsPlugin) {

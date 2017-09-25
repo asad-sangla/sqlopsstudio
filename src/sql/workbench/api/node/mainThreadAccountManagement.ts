@@ -6,27 +6,33 @@
 
 import * as data from 'data';
 import {TPromise} from 'vs/base/common/winjs.base';
-import {IAccountManagementService} from "sql/services/accountManagement/interfaces";
-import {dispose, IDisposable} from "vs/base/common/lifecycle";
-import {IThreadService} from "vs/workbench/services/thread/common/threadService";
+import {IAccountManagementService} from 'sql/services/accountManagement/interfaces';
+import {dispose, IDisposable} from 'vs/base/common/lifecycle';
 import {
 	ExtHostAccountManagementShape,
 	MainThreadAccountManagementShape,
-	SqlExtHostContext
-} from "sql/workbench/api/node/sqlExtHost.protocol";
+	SqlExtHostContext,
+	SqlMainContext
+} from 'sql/workbench/api/node/sqlExtHost.protocol';
+import { IExtHostContext } from 'vs/workbench/api/node/extHost.protocol';
+import { extHostNamedCustomer } from 'vs/workbench/api/electron-browser/extHostCustomers';
 
+
+@extHostNamedCustomer(SqlMainContext.MainThreadAccountManagement)
 export class MainThreadAccountManagement extends MainThreadAccountManagementShape {
 	private _providerMetadata: {[handle: number]: data.AccountProviderMetadata};
 	private _proxy: ExtHostAccountManagementShape;
 	private _toDispose: IDisposable[];
 
 	constructor(
-		@IThreadService threadService: IThreadService,
+		extHostContext: IExtHostContext,
 		@IAccountManagementService private _accountManagementService: IAccountManagementService
 	) {
 		super();
 		this._providerMetadata = {};
-		this._proxy = threadService.get(SqlExtHostContext.ExtHostAccountManagement);
+		if (extHostContext) {
+			this._proxy = extHostContext.get(SqlExtHostContext.ExtHostAccountManagement);
+		}
 		this._toDispose = [];
 	}
 

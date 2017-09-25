@@ -58,6 +58,7 @@ import 'vs/workbench/parts/markers/browser/markersPanel'; // can be packaged sep
 
 import 'vs/workbench/parts/html/browser/html.contribution';
 
+// {{SQL CARBON EDIT}}
 // import 'vs/workbench/parts/welcome/walkThrough/electron-browser/walkThrough.contribution';
 
 // import 'vs/workbench/parts/extensions/electron-browser/extensions.contribution';
@@ -81,6 +82,7 @@ import 'vs/workbench/parts/relauncher/electron-browser/relauncher.contribution';
 
 import 'vs/workbench/parts/tasks/electron-browser/task.contribution';
 
+// {{SQL CARBON EDIT}}
 // import 'vs/workbench/parts/emmet/browser/emmet.browser.contribution';
 // import 'vs/workbench/parts/emmet/node/emmet.contribution';
 
@@ -95,6 +97,7 @@ import 'vs/workbench/parts/themes/electron-browser/themes.contribution';
 
 import 'vs/workbench/parts/feedback/electron-browser/feedback.contribution';
 
+// {{SQL CARBON EDIT}}
 // import 'vs/workbench/parts/welcome/gettingStarted/electron-browser/gettingStarted.contribution';
 
 import 'vs/workbench/parts/update/electron-browser/update.contribution';

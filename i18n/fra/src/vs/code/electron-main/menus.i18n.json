@@ -102,6 +102,7 @@
 	"miHideActivityBar": "Masquer la &&Barre d'activités",
 	"miShowActivityBar": "Afficher la &&Barre d'activités",
 	"miToggleWordWrap": "Activer/désactiver le retour automatique à la &&ligne",
+	"miToggleMinimap": "Activer/désactiver la &&minicarte",
 	"miToggleRenderWhitespace": "Activer/désactiver &&Restituer l'espace",
 	"miToggleRenderControlCharacters": "Activer/désactiver les &&caractères de contrôle",
 	"miZoomIn": "&&Zoom avant",
