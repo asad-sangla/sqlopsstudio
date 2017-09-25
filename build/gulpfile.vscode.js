@@ -30,6 +30,8 @@ const product = require('../product.json');
 const shrinkwrap = require('../npm-shrinkwrap.json');
 const crypto = require('crypto');
 const i18n = require('./lib/i18n');
+var del = require('del');
+
 // {{SQL CARBON EDIT}}
 const serviceInstaller = require('extensions-modules/lib/languageservice/serviceInstallerUtil');
 const glob = require('glob');
