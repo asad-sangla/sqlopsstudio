@@ -946,7 +946,7 @@ export class CodeMenu {
 			// (product.introductoryVideosUrl || keyboardShortcutsUrl) ? __separator__() : null,
 			// product.twitterUrl ? new MenuItem({ label: mnemonicLabel(nls.localize({ key: 'miTwitter', comment: ['&& denotes a mnemonic'] }, "&&Join us on Twitter")), click: () => this.openUrl(product.twitterUrl, 'openTwitterUrl') }) : null,
 			// product.requestFeatureUrl ? new MenuItem({ label: mnemonicLabel(nls.localize({ key: 'miUserVoice', comment: ['&& denotes a mnemonic'] }, "&&Search Feature Requests")), click: () => this.openUrl(product.requestFeatureUrl, 'openUserVoiceUrl') }) : null,
-			// reportIssuesItem,
+			reportIssuesItem,
 			// (product.twitterUrl || product.requestFeatureUrl || product.reportIssueUrl) ? __separator__() : null,
 			// product.licenseUrl ? new MenuItem({
 			// 	label: mnemonicLabel(nls.localize({ key: 'miLicense', comment: ['&& denotes a mnemonic'] }, "View &&License")), click: () => {
