@@ -96,6 +96,7 @@ const vscodeResources = [
 	'out-build/vs/workbench/services/files/**/*.md',
 	'out-build/vs/code/electron-browser/sharedProcess.js',
   // {{SQL CARBON EDIT}}
+	'out-build/sql/workbench/electron-browser/splashscreen/*',
 	'out-build/sql/**/*.{svg,png,cur,html}',
 	'out-build/sql/base/browser/ui/table/media/*.{gif,png,svg}',
 	'out-build/sql/base/browser/ui/checkbox/media/*.{gif,png,svg}',
