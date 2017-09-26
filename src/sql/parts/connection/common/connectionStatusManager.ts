@@ -87,6 +87,14 @@ export class ConnectionStatusManager {
 	}
 
 	/**
+	 *
+	 * @param uri Remove connection from list of active connections
+	 */
+	public removeConnection(uri: string) {
+		delete this._connections[uri];
+	}
+
+	/**
 	 * Call after a connection is saved to settings. It's only for default url connections
 	 * which their id is generated from connection options. The group id is used in the generated id.
 	 * when the connection is stored, the group id get assigned to the profile and it can change the id

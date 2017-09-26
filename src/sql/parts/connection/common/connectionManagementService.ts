@@ -983,6 +983,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (result) {
 					this.addTelemetryForConnectionDisconnected(input);
 					this._connectionStore.removeActiveConnection(input);
+					this._connectionStatusManager.removeConnection(uri);
 					resolve();
 				} else {
 					reject(result);

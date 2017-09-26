@@ -8,7 +8,7 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import {
 	IConnectableInput, IConnectionManagementService,
 	IConnectionCompletionOptions, ConnectionType, IErrorMessageService,
-	RunQueryOnConnectionMode
+	RunQueryOnConnectionMode, IConnectionResult
 } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
@@ -150,6 +150,40 @@ export function newQuery(connectionProfile: IConnectionProfile, connectionServic
 				resolve();
 			});
 		});
+	});
+}
+
+export function replaceConnection(oldUri: string, newUri: string, connectionService: IConnectionManagementService): Promise<IConnectionResult> {
+	return new Promise<IConnectionResult>((resolve, reject) => {
+		let defaultResult: IConnectionResult = {
+			connected: false,
+			error: undefined
+		};
+		if (connectionService) {
+			let connectionProfile = connectionService.getConnectionProfile(oldUri);
+			if (connectionProfile) {
+				let options: IConnectionCompletionOptions = {
+					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.none },
+					saveTheConnection: false,
+					showDashboard: false,
+					showConnectionDialogOnError: true
+				};
+				connectionService.disconnect(oldUri).then(() => {
+					connectionService.connect(connectionProfile, newUri, options).then(result => {
+						resolve(result);
+					}, connectError => {
+						reject(connectError);
+					});
+				}, disconnectError => {
+					reject(disconnectError);
+				});
+
+			} else {
+				resolve(defaultResult);
+			}
+		} else {
+			resolve(defaultResult);
+		}
 	});
 }
 

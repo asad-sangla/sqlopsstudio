@@ -51,6 +51,8 @@ suite('SQL QueryEditor Tests', () => {
 			undefined,
 			editorDescriptorService.object,
 			undefined,
+			undefined,
+			undefined,
 			undefined);
 	};
 
@@ -207,6 +209,9 @@ suite('SQL QueryEditor Tests', () => {
 			undefined,
 			editorDescriptorService.object,
 			editorGroupService.object,
+			undefined,
+			undefined,
+			undefined,
 			undefined);
 		editor.create(parentBuilder);
 
