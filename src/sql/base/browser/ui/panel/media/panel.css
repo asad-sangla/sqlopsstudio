@@ -6,7 +6,8 @@
 .tabbedPanel {
 	border-top-color: rgba(128, 128, 128, 0.35);
 	border-top-width: 1;
-	border-top-style: solid
+	border-top-style: solid;
+	box-sizing: border-box;
 }
 
 .tabbedPanel .composite.title {
