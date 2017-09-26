@@ -405,7 +405,7 @@ export default class QueryRunner {
 			self._queryManagementService.disposeQuery(self.uri).then(result => {
 				resolve();
 			}, error => {
-				self._messageService.show(Severity.Error, 'Failed disposing query: ' + error);
+				console.error('Failed disposing query: ' + error);
 				reject(error);
 			});
 		});
