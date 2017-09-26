@@ -8,6 +8,7 @@ import errors = require('vs/base/common/errors');
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import ConnectionUtils = require('sql/parts/connection/common/utils');
 import { ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
@@ -22,6 +23,7 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import * as data from 'data';
 
 const $ = builder.$;
 
@@ -93,9 +95,10 @@ export class ServerTreeView {
 		})
 		);
 		this._toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
-			self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
-		})
-		);
+			if (self.isDefaultTypeUri(connectionParams.connectionUri)) {
+				self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
+			}
+		}));
 
 		if (this._objectExplorerService && this._objectExplorerService.onUpdateObjectExplorerNodes) {
 			this._toDispose.push(this._objectExplorerService.onUpdateObjectExplorerNodes(args => {
@@ -108,6 +111,10 @@ export class ServerTreeView {
 			}));
 		}
 		self.refreshTree();
+	}
+
+	private isDefaultTypeUri(uri: string): boolean {
+		return uri && uri.startsWith(ConnectionUtils.uriPrefixes.default);
 	}
 
 	private handleAddConnectionProfile(newProfile: IConnectionProfile) {
