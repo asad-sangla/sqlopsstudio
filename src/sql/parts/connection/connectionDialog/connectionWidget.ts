@@ -338,10 +338,30 @@ export class ConnectionWidget {
 
 	public handleOnConnecting(): void {
 		this._advancedButton.enabled = false;
+
+		this._serverGroupSelectBox.disable();
+		this._serverNameInputBox.disable();
+		this._databaseNameInputBox.disable();
+		this._userNameInputBox.disable();
+		this._passwordInputBox.disable();
+		this._rememberPasswordCheckBox.disable();
+		this._authTypeSelectBox.disable();
 	}
 
 	public handleResetConnection(): void {
 		this._advancedButton.enabled = true;
+
+		this._serverGroupSelectBox.enable();
+		this._serverNameInputBox.enable();
+		this._databaseNameInputBox.enable();
+		this._rememberPasswordCheckBox.enable();
+		this._authTypeSelectBox.enable();
+
+		let currentAuthType = this.getMatchingAuthType(this._authTypeSelectBox.value);
+		if (currentAuthType.showUsernameAndPassword) {
+			this._userNameInputBox.enable();
+			this._passwordInputBox.enable();
+		}
 	}
 
 	public get serverName(): string {

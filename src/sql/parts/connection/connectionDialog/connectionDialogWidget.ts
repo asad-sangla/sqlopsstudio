@@ -170,6 +170,7 @@ export class ConnectionDialogWidget extends Modal {
 	private connect(element?: IConnectionProfile): void {
 		if (this._connectButton.enabled) {
 			this._connectButton.enabled = false;
+			this._providerTypeSelectBox.disable();
 			this.showSpinner();
 			this._onConnect.fire(element);
 		}
@@ -283,6 +284,7 @@ export class ConnectionDialogWidget extends Modal {
 	public resetConnection() {
 		this.hideSpinner();
 		this._connectButton.enabled = true;
+		this._providerTypeSelectBox.enable();
 		this._onResetConnection.fire();
 	}
 
