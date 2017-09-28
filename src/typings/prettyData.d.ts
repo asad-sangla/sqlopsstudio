@@ -4,5 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'pretty-data' {
-	export function xml(input: string): string;
+	export interface PrettyData {
+		xml(input: string): string;
+	}
+	export var pd: PrettyData;
 }

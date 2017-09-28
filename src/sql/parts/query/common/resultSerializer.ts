@@ -26,7 +26,7 @@ import URI from 'vs/base/common/uri';
 import { IUntitledEditorService, UNTITLED_SCHEMA } from 'vs/workbench/services/untitled/common/untitledEditorService';
 import paths = require('vs/base/common/paths');
 import nls = require('vs/nls');
-import * as pd from 'pretty-data';
+import * as pretty from 'pretty-data';
 
 import { ISlickRange } from 'angular2-slickgrid';
 import path = require('path');
@@ -82,17 +82,17 @@ export class ResultSerializer {
 		let fileUri = this.getUntitledFileUri(columnName);
 
 		if (linkType === ResultSerializer.XML_TYPE) {
+			fileMode = ResultSerializer.XML_TYPE;
 			try {
-				content = pd.xml(content);
-				fileMode = ResultSerializer.XML_TYPE;
+				content = pretty.pd.xml(content);
 			} catch (e) {
 				// If Xml fails to parse, fall back on original Xml content
 			}
 		} else if (linkType === ResultSerializer.JSON_TYPE) {
 			let jsonContent: string = undefined;
+			fileMode = ResultSerializer.JSON_TYPE;
 			try {
 				jsonContent = JSON.parse(content);
-				fileMode = ResultSerializer.JSON_TYPE;
 			} catch (e) {
 				// If Json fails to parse, fall back on original Json content
 			}
