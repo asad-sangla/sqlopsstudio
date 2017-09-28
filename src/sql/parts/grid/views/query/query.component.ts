@@ -37,7 +37,7 @@ declare type PaneType = 'messages' | 'results';
 @Component({
 	selector: QUERY_SELECTOR,
 	host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
-	templateUrl: require.toUrl('sql/parts/grid/views/query/query.component.html')
+	templateUrl: decodeURI(require.toUrl('sql/parts/grid/views/query/query.component.html'))
 })
 
 export class QueryComponent extends GridParentComponent implements OnInit, OnDestroy {

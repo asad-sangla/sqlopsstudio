@@ -28,7 +28,7 @@ export interface DatabaseFile {
 
 @Component({
 	selector: CREATEDATABASE_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/admin/database/create/createDatabase.component.html'),
+	templateUrl: decodeURI(require.toUrl('sql/parts/admin/database/create/createDatabase.component.html')),
 	styleUrls: [require.toUrl('sql/media/primeng.css')]
 })
 export class CreateDatabaseComponent implements ITaskDialogComponent {

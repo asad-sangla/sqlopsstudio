@@ -14,7 +14,7 @@ export const CREATELOGIN_SELECTOR: string = 'createlogin-component';
 
 @Component({
 	selector: CREATELOGIN_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/admin/security/createLogin.component.html'),
+	templateUrl: decodeURI(require.toUrl('sql/parts/admin/security/createLogin.component.html')),
 	styleUrls: [require.toUrl('sql/media/primeng.css')]
 })
 export class CreateLoginComponent {

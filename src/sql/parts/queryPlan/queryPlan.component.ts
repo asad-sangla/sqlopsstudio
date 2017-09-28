@@ -20,7 +20,7 @@ export const QUERYPLAN_SELECTOR: string = 'queryplan-component';
 
 @Component({
 	selector: QUERYPLAN_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/queryPlan/queryPlan.component.html')
+	template: ''
 })
 export class QueryPlanComponent implements OnDestroy, OnInit {
 

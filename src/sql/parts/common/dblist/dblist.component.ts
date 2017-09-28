@@ -25,7 +25,7 @@ export const DBLIST_SELECTOR: string = 'dblist-component';
 
 @Component({
 	selector: DBLIST_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/common/dblist/dblist.component.html'),
+	templateUrl: decodeURI(require.toUrl('sql/parts/common/dblist/dblist.component.html')),
 	styleUrls: [require.toUrl('sql/parts/common/dblist/dblist.component.css'), require.toUrl('sql/media/primeng.css')],
 	changeDetection: ChangeDetectionStrategy.Default
 })

@@ -48,7 +48,7 @@ const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribu
 
 @Component({
 	selector: 'chart-viewer',
-	templateUrl: require.toUrl('sql/parts/grid/views/query/chartViewer.component.html')
+	templateUrl: decodeURI(require.toUrl('sql/parts/grid/views/query/chartViewer.component.html'))
 })
 export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewActionContext {
 	public legendOptions: string[];

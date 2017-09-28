@@ -39,7 +39,7 @@ const componentMap: { [x: string]: Type<IDashboardWidget> } = {
 
 @Component({
 	selector: 'dashboard-widget-wrapper',
-	templateUrl: require.toUrl('sql/parts/dashboard/common/dashboardWidgetWrapper.component.html')
+	templateUrl: decodeURI(require.toUrl('sql/parts/dashboard/common/dashboardWidgetWrapper.component.html'))
 })
 export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestroy {
 	@Input() private _config: WidgetConfig;

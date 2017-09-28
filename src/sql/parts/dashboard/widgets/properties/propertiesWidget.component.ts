@@ -53,7 +53,7 @@ export interface DisplayProperty {
 
 @Component({
 	selector: 'properties-widget',
-	templateUrl: require.toUrl('sql/parts/dashboard/widgets/properties/propertiesWidget.component.html')
+	templateUrl: decodeURI(require.toUrl('sql/parts/dashboard/widgets/properties/propertiesWidget.component.html'))
 })
 export class PropertiesWidgetComponent extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
 	private _connection: ConnectionManagementInfo;

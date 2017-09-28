@@ -31,7 +31,7 @@ declare type PaneType = 'messages' | 'results';
 
 @Component({
 	selector: QUERY_OUTPUT_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/query/views/queryOutput.component.html')
+	templateUrl: decodeURI(require.toUrl('sql/parts/query/views/queryOutput.component.html'))
 })
 export class QueryOutputComponent implements OnInit, OnDestroy {
 

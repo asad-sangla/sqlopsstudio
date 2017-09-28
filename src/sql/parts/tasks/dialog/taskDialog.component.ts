@@ -15,7 +15,7 @@ export const TASKDIALOG_SELECTOR: string = 'taskdialog-component';
 
 @Component({
 	selector: TASKDIALOG_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/tasks/dialog/taskDialog.component.html'),
+	templateUrl: decodeURI(require.toUrl('sql/parts/tasks/dialog/taskDialog.component.html')),
 	styleUrls: [require.toUrl('sql/media/primeng.css')]
 })
 export class TaskDialogComponent {

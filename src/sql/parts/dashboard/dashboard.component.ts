@@ -15,16 +15,16 @@ export const DASHBOARD_SELECTOR: string = 'dashboard-component';
 
 @Component({
 	selector: DASHBOARD_SELECTOR,
-	templateUrl: require.toUrl('sql/parts/dashboard/dashboard.component.html')
+	templateUrl: decodeURI(require.toUrl('./dashboard.component.html'))
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 	private _subs: Array<IDisposable> = new Array();
-	@ViewChild('header', {read: ElementRef}) private header: ElementRef;
+	@ViewChild('header', { read: ElementRef }) private header: ElementRef;
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrapService: DashboardServiceInterface,
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef
-		) { }
+	) { }
 
 	ngOnInit() {
 		let self = this;

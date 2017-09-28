@@ -27,7 +27,7 @@ export const EDITDATA_SELECTOR: string = 'editdata-component';
 @Component({
 	selector: EDITDATA_SELECTOR,
 	host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
-	templateUrl: require.toUrl('sql/parts/grid/views/editData/editData.component.html')
+	templateUrl: decodeURI(require.toUrl('sql/parts/grid/views/editData/editData.component.html'))
 })
 
 export class EditDataComponent extends GridParentComponent implements OnInit, OnDestroy {
