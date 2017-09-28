@@ -15,7 +15,7 @@ import * as data from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 export abstract class ExtHostAccountManagementShape {
-	$clear(handle: number, account: data.Account): Thenable<void> { throw ni(); }
+	$clear(handle: number, accountKey: data.AccountKey): Thenable<void> { throw ni(); }
 	$initialize(handle: number, restoredAccounts: data.Account[]): Thenable<data.Account[]> { throw ni(); }
 	$prompt(handle: number): Thenable<data.Account> { throw ni(); }
 	$refresh(handle: number, account: data.Account): Thenable<data.Account> { throw ni(); }

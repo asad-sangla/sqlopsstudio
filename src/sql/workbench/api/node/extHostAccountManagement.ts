@@ -27,8 +27,8 @@ export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
 	// - MAIN THREAD AVAILABLE METHODS /////////////////////////////////////
-	public $clear(handle: number, account: data.Account): Thenable<void> {
-		return this._withProvider(handle, (provider: data.AccountProvider) => provider.clear(account));
+	public $clear(handle: number, accountKey: data.AccountKey): Thenable<void> {
+		return this._withProvider(handle, (provider: data.AccountProvider) => provider.clear(accountKey));
 	}
 
 	public $initialize(handle: number, restoredAccounts: data.Account[]): Thenable<data.Account[]> {

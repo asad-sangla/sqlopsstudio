@@ -6,11 +6,21 @@
 'use strict';
 
 import * as data from 'data';
-import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import Event from 'vs/base/common/event';
+import { IAccountManagementService, AccountProviderAddedEventParams } from 'sql/services/accountManagement/interfaces';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 export class AccountManagementTestService implements IAccountManagementService {
 	_serviceBrand: any;
+	public get accountStaleEvent(): Event<data.Account> {return () => {return undefined;};}
+	public get addAccountEvent(): Event<data.Account> {return () => {return undefined;};}
+	public get addAccountProviderEvent(): Event<AccountProviderAddedEventParams> {return () => {return undefined;};}
+	public get removeAccountEvent(): Event<data.AccountKey> {return () => {return undefined;};}
+	public get removeAccountProviderEvent(): Event<data.AccountProviderMetadata> {return () => {return undefined;};}
+
+	addAccount(providerId: string): Thenable<data.Account> {
+		return undefined;
+	}
 
 	getAccountProvider(providerId: string): Thenable<data.AccountProvider> {
 		return undefined;
@@ -24,7 +34,7 @@ export class AccountManagementTestService implements IAccountManagementService {
 		return undefined;
 	}
 
-	removeAccount(accountKey: data.AccountKey): Thenable<void> {
+	removeAccount(accountKey: data.AccountKey): Thenable<boolean> {
 		return undefined;
 	}
 
@@ -32,7 +42,7 @@ export class AccountManagementTestService implements IAccountManagementService {
 		return undefined;
 	}
 
-	performOAuthAuthorization(url: string, silent: boolean): Thenable<any> {
+	performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
 		return undefined;
 	}
 
@@ -50,7 +60,7 @@ export class AccountManagementTestService implements IAccountManagementService {
 }
 
 export class AccountProviderStub implements data.AccountProvider {
-	clear(account: data.Account): Thenable<void> {
+	clear(account: data.AccountKey): Thenable<void> {
 		return Promise.resolve();
 	}
 

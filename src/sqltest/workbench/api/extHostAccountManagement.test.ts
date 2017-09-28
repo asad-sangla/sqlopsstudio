@@ -109,11 +109,11 @@ suite('ExtHostAccountManagement', () => {
 		extHost.$registerAccountProvider(mockAccountMetadata, mockProvider.object);
 
 		// If: I clear an account
-		extHost.$clear(0, mockAccount)
+		extHost.$clear(0, mockAccount.key)
 			.then(() => {
 				// Then: The call should have been passed to the provider
 				mockProvider.verify(
-					(obj) => obj.clear(TypeMoq.It.isValue(mockAccount)),
+					(obj) => obj.clear(TypeMoq.It.isValue(mockAccount.key)),
 					TypeMoq.Times.once()
 				);
 			})
@@ -128,7 +128,7 @@ suite('ExtHostAccountManagement', () => {
 
 		// If: I clear an account for a handle that doesn't exist
 		// Then: It should fail
-		extHost.$clear(1, mockAccount)
+		extHost.$clear(1, mockAccount.key)
 			.then(() => done('Clear succeeded when it should have failed'))
 			.then(null, () => {
 				// The provider's clear should not have been called
@@ -260,7 +260,7 @@ suite('ExtHostAccountManagement', () => {
 
 function getMockAccountProvider(): TypeMoq.Mock<data.AccountProvider> {
 	let mock = TypeMoq.Mock.ofType<data.AccountProvider>(AccountProviderStub);
-	mock.setup((obj) => obj.clear(TypeMoq.It.isValue(mockAccount)))
+	mock.setup((obj) => obj.clear(TypeMoq.It.isValue(mockAccount.key)))
 		.returns(() => Promise.resolve(undefined));
 	mock.setup((obj) => obj.refresh(TypeMoq.It.isValue(mockAccount)))
 		.returns(() => Promise.resolve(undefined));

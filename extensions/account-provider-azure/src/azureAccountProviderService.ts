@@ -55,7 +55,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 		throw new Error('Not implemented');
 	}
 
-	clear(account: data.Account): Promise<void> {
+	clear(accountKey: data.AccountKey): Promise<void> {
 		throw new Error('Not implemented');
 	}
 	// addListener(event, listener: data.AccountStaleListener): this;

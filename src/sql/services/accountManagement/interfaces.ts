@@ -6,6 +6,7 @@
 'use strict';
 
 import * as data from 'data';
+import Event from 'vs/base/common/event';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { TPromise } from 'vs/base/common/winjs.base';
 
@@ -17,10 +18,11 @@ export interface IAccountManagementService {
 	_serviceBrand: any;
 
 	// ACCOUNT MANAGEMENT METHODS //////////////////////////////////////////
+	addAccount(providerId: string): Thenable<data.Account>;
 	getAccountProvider(providerId: string): Thenable<data.AccountProvider>;
 	getAccountProviderMetadata(): Thenable<data.AccountProviderMetadata[]>;
 	getAccountsForProvider(providerId: string): Thenable<data.Account[]>;
-	removeAccount(accountKey: data.AccountKey): Thenable<void>;
+	removeAccount(accountKey: data.AccountKey): Thenable<boolean>;
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	openAccountListDialog(): TPromise<any>;
@@ -30,6 +32,13 @@ export interface IAccountManagementService {
 	registerProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): void;
 	shutdown(): void;
 	unregisterProvider(providerMetadata: data.AccountProviderMetadata): void;
+
+	// EVENTING ////////////////////////////////////////////////////////////
+	readonly accountStaleEvent: Event<data.Account>;
+	readonly addAccountEvent: Event<data.Account>;
+	readonly addAccountProviderEvent: Event<AccountProviderAddedEventParams>;
+	readonly removeAccountEvent: Event<data.AccountKey>;
+	readonly removeAccountProviderEvent: Event<data.AccountProviderMetadata>;
 }
 
 export interface IAccountStore {
@@ -91,4 +100,19 @@ export interface AccountAdditionResult {
 	 * The account that was added/updated (with any updates applied)
 	 */
 	changedAccount: data.Account;
+}
+
+/**
+ * Parameters that go along with an account provider being added
+ */
+export interface AccountProviderAddedEventParams {
+	/**
+	 * The provider that was registered
+	 */
+	addedProvider: data.AccountProviderMetadata;
+
+	/**
+	 * The accounts that were rehydrated with the provider
+	 */
+	initialAccounts: data.Account[];
 }

@@ -54,8 +54,8 @@ export class MainThreadAccountManagement extends MainThreadAccountManagementShap
 			refresh(account: data.Account): Thenable<data.Account> {
 				return self._proxy.$refresh(handle, account);
 			},
-			clear(account: data.Account): Thenable<void> {
-				return self._proxy.$clear(handle, account);
+			clear(accountKey: data.AccountKey): Thenable<void> {
+				return self._proxy.$clear(handle, accountKey);
 			}
 		};
 		this._accountManagementService.registerProvider(providerMetadata, accountProvider);

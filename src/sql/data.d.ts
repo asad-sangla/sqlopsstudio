@@ -1155,24 +1155,10 @@ declare module 'data' {
 		refresh(account: Account): Thenable<Account>;
 
 		/**
-		 * Clears sensitive information for an account.
-		 * @param account - An account.
+		 * Clears sensitive information for an account. To be called when account is removed
+		 * @param accountKey - Key that uniquely identifies the account to clear
 		 */
-		clear(account: Account): Thenable<void>;
-
-		// TODO: Add stale eventing
-		// addListener(event: 'stale', listener: AccountStaleListener): this;
-		// addListener(event: string, listener: Function): this;
-		// on(event: 'stale', listener: AccountStaleListener): this;
-		// on(event: string, listener: Function): this;
-		// once(event: 'stale', listener: AccountStaleListener): this;
-		// once(event: string, listener: Function): this;
-		// removeListener(event: 'stale', listener: AccountStaleListener): this;
-		// removeListener(event: string, listener: Function): this;
-		// listeners(event: 'stale'): AccountStaleListener[];
-		// listeners(event: string): Function[];
-		// emit(event: 'stale', account: Account): boolean;
-		// emit(event: string, ...args: any[]): boolean;
+		clear(accountKey: AccountKey): Thenable<void>;
 	}
 
 	// - ACCOUNT EVENTING //////////////////////////////////////////////////
