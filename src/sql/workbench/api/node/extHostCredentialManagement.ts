@@ -34,58 +34,50 @@ class CredentialAdapter {
 type Adapter = CredentialAdapter;
 
 export class ExtHostCredentialManagement extends ExtHostCredentialManagementShape  {
-	private _handlePool: number = 0;
-
 	// MEMBER VARIABLES ////////////////////////////////////////////////////
-	private _proxy: MainThreadCredentialManagementShape;
-
 	private _adapter: { [handle: number]: Adapter } = Object.create(null);
-
-	private _createDisposable(handle: number): Disposable {
-		return new Disposable(() => {
-			delete this._adapter[handle];
-			this._proxy.$unregisterCredentialProvider(handle);
-		});
-	}
+	private _handlePool: number = 0;
+	private _proxy: MainThreadCredentialManagementShape;
+	private _registrationPromise: Promise<void>;
+	private _registrationPromiseResolve;
 
 	constructor(threadService: IThreadService) {
 		super();
+
+		let self = this;
+
 		this._proxy = threadService.get(SqlMainContext.MainThreadCredentialManagement);
+
+		// Create a promise to resolve when a credential provider has been registered.
+		// HACK: this gives us a deferred promise
+		this._registrationPromise = new Promise((resolve) => { self._registrationPromiseResolve = resolve; });
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
 	public $registerCredentialProvider(provider: data.CredentialProvider): vscode.Disposable {
+		// Store the credential provider
 		provider.handle = this._nextHandle();
 		this._adapter[provider.handle] = new CredentialAdapter(provider);
+
+		// Register the credential provider with the main thread
 		this._proxy.$registerCredentialProvider(provider.handle);
+
+		// Resolve the credential provider registration promise
+		this._registrationPromiseResolve();
 		return this._createDisposable(provider.handle);
 	}
 
 	public $getCredentialProvider(namespaceId: string): Thenable<data.CredentialProvider> {
+		let self = this;
+
 		if (!namespaceId) {
 			return TPromise.wrapError(new Error('A namespace must be provided when retrieving a credential provider'));
 		}
 
-		return this._withAdapter(0, CredentialAdapter, adapter => {
-			// Create a provider that wraps the methods in a namespace
-			let provider: data.CredentialProvider = {
-				handle: adapter.provider.handle,
-				deleteCredential: (credentialId: string) => {
-					let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
-					return adapter.provider.deleteCredential(namespacedId);
-				},
-				readCredential: (credentialId: string) => {
-					let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
-					return adapter.provider.readCredential(namespacedId);
-				},
-				saveCredential: (credentialId: string, credential: string) => {
-					let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
-					return adapter.provider.saveCredential(namespacedId, credential);
-				}
-			};
-
-			return TPromise.as(provider);
-		});
+		// When the registration promise has finished successfully,
+		return this._registrationPromise.then(() =>
+			self._withAdapter(0, CredentialAdapter, adapter => self._createNamespacedCredentialProvider(namespaceId, adapter))
+		);
 	}
 
 	public $saveCredential(credentialId: string, password: string): Thenable<boolean> {
@@ -111,6 +103,33 @@ export class ExtHostCredentialManagement extends ExtHostCredentialManagementShap
 	// PRIVATE HELPERS /////////////////////////////////////////////////////
 	private static _getNamespacedCredentialId(namespaceId: string, credentialId: string) {
 		return `${namespaceId}|${credentialId}`;
+	}
+
+	private _createNamespacedCredentialProvider(namespaceId: string, adapter: CredentialAdapter): Thenable<data.CredentialProvider> {
+		// Create a provider that wraps the methods in a namespace
+		let provider: data.CredentialProvider = {
+			handle: adapter.provider.handle,
+			deleteCredential: (credentialId: string) => {
+				let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
+				return adapter.provider.deleteCredential(namespacedId);
+			},
+			readCredential: (credentialId: string) => {
+				let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
+				return adapter.provider.readCredential(namespacedId);
+			},
+			saveCredential: (credentialId: string, credential: string) => {
+				let namespacedId = ExtHostCredentialManagement._getNamespacedCredentialId(namespaceId, credentialId);
+				return adapter.provider.saveCredential(namespacedId, credential);
+			}
+		};
+		return Promise.resolve(provider);
+	}
+
+	private _createDisposable(handle: number): Disposable {
+		return new Disposable(() => {
+			delete this._adapter[handle];
+			this._proxy.$unregisterCredentialProvider(handle);
+		});
 	}
 
 	private _nextHandle(): number {
