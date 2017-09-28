@@ -27,7 +27,6 @@ suite('Account Management view model tests', () => {
 
 		account1 = {
 			key: { providerId: 'azure', accountId: 'account1' },
-			name: 'Account 1',
 			displayInfo: {
 				accountType: 'microsoftAccount',
 				contextualDisplayName: 'Microsoft Account',
@@ -39,7 +38,6 @@ suite('Account Management view model tests', () => {
 
 		account2 = {
 			key: { providerId: 'azure', accountId: 'account2' },
-			name: 'Account 2',
 			displayInfo: {
 				accountType: 'workSchoolAccount',
 				contextualDisplayName: 'Work/School Account',

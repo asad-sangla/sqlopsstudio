@@ -51,7 +51,6 @@ suite('ExtHostAccountManagement', () => {
 				providerArgs: {},
 				accountId: 'test_account'
 			},
-			name: 'idk',
 			properties: {},
 			displayInfo: {
 				accountType: 'testAccount',

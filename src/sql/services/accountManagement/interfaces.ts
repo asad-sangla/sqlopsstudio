@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import {createDecorator} from 'vs/platform/instantiation/common/instantiation';
-import {TPromise} from 'vs/base/common/winjs.base';
-import {AccountDisplayInfo, AccountKey, AccountProvider, AccountProviderMetadata} from 'data';
-import {EventEmitter} from 'vs/base/common/eventEmitter';
+
+import * as data from 'data';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { TPromise } from 'vs/base/common/winjs.base';
 
 export const SERVICE_ID = 'accountManagementService';
 
@@ -17,95 +17,78 @@ export interface IAccountManagementService {
 	_serviceBrand: any;
 
 	// ACCOUNT MANAGEMENT METHODS //////////////////////////////////////////
-	getAccountProvider(providerId: string): Thenable<AccountProvider>;
-	getAccountProviderMetadata(): Thenable<AccountProviderMetadata[]>;
-	getAccountsForProvider(providerId: string): Thenable<Account[]>;
-	removeAccount(accountKey: AccountKey): Thenable<void>;
+	getAccountProvider(providerId: string): Thenable<data.AccountProvider>;
+	getAccountProviderMetadata(): Thenable<data.AccountProviderMetadata[]>;
+	getAccountsForProvider(providerId: string): Thenable<data.Account[]>;
+	removeAccount(accountKey: data.AccountKey): Thenable<void>;
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	openAccountListDialog(): TPromise<any>;
 	performOAuthAuthorization(url: string, silent: boolean): Thenable<string>;
 
 	// SERVICE MANAGEMENT METHODS /////////////////////////////////////////
-	registerProvider(providerMetadata: AccountProviderMetadata, provider: AccountProvider): void;
+	registerProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): void;
 	shutdown(): void;
-	unregisterProvider(providerMetadata: AccountProviderMetadata): void;
+	unregisterProvider(providerMetadata: data.AccountProviderMetadata): void;
 }
 
-export interface IAccountStore extends EventEmitter {
+export interface IAccountStore {
 	/**
-	 * Adds or updates an account produced by an account provider.
-	 * Returns a new updated account instance.
-	 * @param account - An account.
+	 * Adds the provided account if the account doesn't exist. Updates the account if it already exists
+	 * @param {Account} account Account to add/update
+	 * @return {Thenable<AccountAdditionResult>} Results of the add/update operation
 	 */
-	addOrUpdate(account: Account): Promise<Account>;
+	addOrUpdate(account: data.Account): Thenable<AccountAdditionResult>;
 
 	/**
-	 * Returns all accounts in the store
+	 * Retrieves all accounts, filtered by provider ID
+	 * @param {string} providerId ID of the provider to filter by
+	 * @return {Thenable<Account[]>} Promise to return all accounts that belong to the provided provider
 	 */
-	getAccounts(): Promise<Account[]>;
+	getAccountsByProvider(providerId: string): Thenable<data.Account[]>;
 
 	/**
-	 * Returns account that matches a given account key
-	 * @param accountKey AccountKey to use to lookup the account
-	 * @returns Promise to return the matching account if a match is found, otherwise null is returned
+	 * Retrieves all accounts in the store. Returns empty array if store is not initialized
+	 * @return {Thenable<Account[]>} Promise to return all accounts
 	 */
-	getAccountByKey(accountKey: AccountKey): Promise<Account|null>;
-
-	/**
-	 * Returns all accounts that belong to a given account provider
-	 * @param providerId - ID of the provider to retrieve accounts for
-	 */
-	getAccountsByProvider(providerId: string): Promise<Account[]>;
-
-	/**
-	 * Updates the display information stored for an account.
-	 * Returns null if no account was found to update.
-	 * Otherwise, returns a new updated account instance.
-	 * @param key - The key of an account.
-	 * @param displayInfo - The updated display information for the account.
-	 */
-	updateDisplayInfo(key: AccountKey, displayInfo: AccountDisplayInfo): Promise<Account>;
-
-	/**
-	 * Updates the custom properties stored with an account.
-	 * Returns null if no account was found to update.
-	 * Otherwise, returns a new updated account instance.
-	 * @param key - The key of an account.
-	 * @param properties - The updated properties for the account.
-	 *                     Setting a property to undefined removes the property.
-	 */
-	updateProperties(key: AccountKey, properties: any): Promise<Account>;
-
-	/**
-	 * Updates the state of an account when an account provider indicated it became stale.
-	 * Returns null if no account was found to update.
-	 * Otherwise, returns a new updated account instance.
-	 * @param key - The key of an account.
-	 * @param stale - The updated value of the stale property for the account.
-	 */
-	updateState(key: AccountKey, stale: boolean): Promise<Account>;
+	getAllAccounts(): Thenable<data.Account[]>;
 
 	/**
 	 * Removes an account.
 	 * Returns false if the account was not found.
 	 * Otherwise, returns true.
 	 * @param key - The key of an account.
-	 * @returns	The account that was removed, null if the account doesn't exist
+	 * @returns	True if the account was removed, false if the account doesn't exist
 	 */
-	remove(key: AccountKey): Promise<Account|null>;
+	remove(key: data.AccountKey): Thenable<boolean>;
 
-	// TODO: Add change eventing
-	// addListener(event: "change", listener: AccountStoreChangeListener): this;
-	// addListener(event: string, listener: Function): this;
-	// on(event: "change", listener: AccountStoreChangeListener): this;
-	// on(event: string, listener: Function): this;
-	// once(event: "change", listener: AccountStoreChangeListener): this;
-	// once(event: string, listener: Function): this;
-	// removeListener(event: "change", listener: AccountStoreChangeListener): this;
-	// removeListener(event: string, listener: Function): this;
-	// listeners(event: "change"): AccountStoreChangeListener[];
-	// listeners(event: string): Function[];
-	// emit(event: "change", changes: AccountStoreChanges): boolean;
-	// emit(event: string, ...args: any[]): boolean;
+	/**
+	 * Updates the custom properties stored with an account.
+	 * Returns null if no account was found to update.
+	 * Otherwise, returns a new updated account instance.
+	 * @param key - The key of an account.
+	 * @param updateOperation - Operation to perform on the matching account
+	 * @returns True if the account was modified, false if the account doesn't exist
+	 */
+	update(key: data.AccountKey, updateOperation: (account: data.Account) => void): Thenable<boolean>;
+}
+
+/**
+ * Result from calling add/update on the account store
+ */
+export interface AccountAdditionResult {
+	/**
+	 * Whether or not an account was added in the add/update process
+	 */
+	accountAdded: boolean;
+
+	/**
+	 * Whether or not an account was updated in the add/update process
+	 */
+	accountModified: boolean;
+
+	/**
+	 * The account that was added/updated (with any updates applied)
+	 */
+	changedAccount: data.Account;
 }

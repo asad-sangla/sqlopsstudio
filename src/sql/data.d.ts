@@ -1088,11 +1088,6 @@ declare module 'data' {
 		key: AccountKey;
 
 		/**
-		 * A pragmatic name for the account
-		 */
-		name: string;
-
-		/**
 		 * Display information for the account
 		 */
 		displayInfo: AccountDisplayInfo;
@@ -1205,34 +1200,5 @@ declare module 'data' {
 		 */
 		after: Account;
 		// TODO: consider including which properties changed
-	}
-
-	/**
-	 * Represents changes to an account store.
-	 */
-	export interface AccountStoreChanges {
-		/**
-		 * An array of accounts that were added.
-		 */
-		added: Account[];
-		/**
-		 * An array of information about accounts that were modified.
-		 */
-		modified: AccountModification[];
-		/**
-		 * An array of accounts that were removed.
-		 */
-		removed: Account[];
-	}
-
-	/**
-	 * Represents a listener on changes to an account store.
-	 */
-	export interface AccountStoreChangeListener {
-		/**
-		 * Handles changes to an account store.
-		 * @param changes - A set of changes to the account store.
-		 */
-		(changes: AccountStoreChanges): void;
 	}
 }

@@ -20,7 +20,7 @@ export class AccountManagementTestService implements IAccountManagementService {
 		return undefined;
 	}
 
-	getAccountsForProvider(providerId: string): Thenable<Account[]> {
+	getAccountsForProvider(providerId: string): Thenable<data.Account[]> {
 		return undefined;
 	}
 

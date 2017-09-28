@@ -8,40 +8,44 @@
 import * as electron from 'electron';
 import * as platform from 'vs/platform/registry/common/platform';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
+import AccountStore from 'sql/services/accountManagement/accountStore';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Account, AccountKey, AccountProvider, AccountProviderMetadata } from 'data';
 import { IStorageService } from 'vs/platform/storage/common/storage';
-import { Memento } from 'vs/workbench/common/memento';
+import { Memento, Scope as MementoScope } from 'vs/workbench/common/memento';
 
 import { AccountDialogController } from 'sql/parts/accountManagement/accountDialog/accountDialogController';
 import { AccountListStatusbarItem } from 'sql/parts/accountManagement/accountListStatusbar/accountListStatusbarItem';
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
-import { AccountStore } from 'sql/services/accountManagement/accountStore';
 
 export class AccountManagementService implements IAccountManagementService {
+	// CONSTANTS ///////////////////////////////////////////////////////////
 	private static ACCOUNT_MEMENTO = 'AccountManagement';
 
+	// MEMBER VARIABLES ////////////////////////////////////////////////////
 	public _serviceBrand: any;
 	private _accountStore: AccountStore;
 	private _accountDialogController: AccountDialogController;
-	private _oAuthCallbacks: { [eventId: string]: {resolve, reject} } = {};
+	private _mementoContext: Memento;
+	private _oAuthCallbacks: { [eventId: string]: { resolve, reject } } = {};
 	private _oAuthEventId: number = 0;
 	private _providers: { [id: string]: AccountProviderWithMetadata } = {};
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
-		private _accountMemento: Memento,
+		private _mementoObj: object,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IStorageService private _storageService: IStorageService
 	) {
 		let self = this;
 
 		// Create the account store
-		if (!this._accountMemento) {
-			this._accountMemento = new Memento(AccountManagementService.ACCOUNT_MEMENTO);
+		if (!this._mementoObj) {
+			this._mementoContext = new Memento(AccountManagementService.ACCOUNT_MEMENTO);
+			this._mementoObj = this._mementoContext.getMemento(this._storageService, MementoScope.GLOBAL);
 		}
-		this._accountStore = new AccountStore(_storageService, this._accountMemento);
+		this._accountStore = new AccountStore(this._mementoObj);
 
 		// TODO: Add stale event handling to the providers
 
@@ -96,13 +100,23 @@ export class AccountManagementService implements IAccountManagementService {
 	 */
 	public removeAccount(accountKey: AccountKey): Thenable<void> {
 		let self = this;
-		return this._accountStore
-			// Step 1) Remove the account (and hold onto it)
-			.remove(accountKey)
-			// Step 2) Clear the sensitive data from the provider
-			.then((deletedAccount) => {
-				let provider = self._providers[accountKey.providerId];
-				provider.provider.clear(deletedAccount);
+
+		// Step 1) Remove the account
+		// Step 2) Clear the sensitive data from the provider (regardless of whether the account was removed)
+		// Step 3) Notify any listeners (if the account was removed)
+		return this._accountStore.remove(accountKey)
+			.then(result => {
+				// TODO: Replace with accountkey once Azure account provider is checked in
+				let account = <Account>{ key: accountKey };
+				self._providers[accountKey.providerId].provider.clear(account);
+				return result;
+			})
+			.then(result => {
+				// TODO: Reinstate once eventing is checked in
+				// if (result) {
+				// 	self._removeAccountEmitter.fire(accountKey);
+				// }
+				//return result;
 			});
 	}
 
@@ -170,7 +184,9 @@ export class AccountManagementService implements IAccountManagementService {
 	 * Handler for when shutdown of the application occurs. Writes out the memento.
 	 */
 	public shutdown(): void {
-		this._accountMemento.saveMemento();
+		if (this._mementoContext) {
+			this._mementoContext.saveMemento();
+		}
 	}
 
 	public unregisterProvider(providerMetadata: AccountProviderMetadata): void {
