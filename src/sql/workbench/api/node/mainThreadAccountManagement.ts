@@ -36,6 +36,10 @@ export class MainThreadAccountManagement extends MainThreadAccountManagementShap
 		this._toDispose = [];
 	}
 
+	public $performOAuthAuthorization(url, silent: boolean): Thenable<string> {
+		return this._accountManagementService.performOAuthAuthorization(url, silent);
+	}
+
 	public $registerAccountProvider(providerMetadata: data.AccountProviderMetadata, handle: number): Thenable<any> {
 		let self = this;
 

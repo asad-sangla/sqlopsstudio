@@ -5,6 +5,7 @@
 
 'use strict';
 
+import * as electron from 'electron';
 import * as platform from 'vs/platform/registry/common/platform';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -24,6 +25,8 @@ export class AccountManagementService implements IAccountManagementService {
 	public _serviceBrand: any;
 	private _accountStore: AccountStore;
 	private _accountDialogController: AccountDialogController;
+	private _oAuthCallbacks: { [eventId: string]: {resolve, reject} } = {};
+	private _oAuthEventId: number = 0;
 	private _providers: { [id: string]: AccountProviderWithMetadata } = {};
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
@@ -32,6 +35,8 @@ export class AccountManagementService implements IAccountManagementService {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IStorageService private _storageService: IStorageService
 	) {
+		let self = this;
+
 		// Create the account store
 		if (!this._accountMemento) {
 			this._accountMemento = new Memento(AccountManagementService.ACCOUNT_MEMENTO);
@@ -50,6 +55,11 @@ export class AccountManagementService implements IAccountManagementService {
 			);
 			(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(statusbarDescriptor);
 		}
+
+		// Register event handler for OAuth completion
+		electron.ipcRenderer.on('oauth-reply', (event, args) => {
+			self.onOAuthResponse(args);
+		});
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
@@ -113,6 +123,34 @@ export class AccountManagementService implements IAccountManagementService {
 		});
 	}
 
+	/**
+	 * Opens a browser window to perform the OAuth authentication
+	 * @param {string} url URL to visit that will perform the OAuth authentication
+	 * @param {boolean} silent Whether or not to perform authentication silently using browser's cookies
+	 * @return {Thenable<string>} Promise to return a authentication token on successful authentication
+	 */
+	public performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
+		let self = this;
+		return new Promise<string>((resolve, reject) => {
+			// TODO: replace with uniqid
+			let eventId: string = `oauthEvent${self._oAuthEventId++}`;
+			self._oAuthCallbacks[eventId] = {
+				resolve: resolve,
+				reject: reject
+			};
+
+			// Setup the args and send the IPC call
+			electron.ipcRenderer.send(
+				'oauth',
+				{
+					url: url,
+					silent: silent,
+					eventId: eventId
+				}
+			);
+		});
+	}
+
 	// SERVICE MANAGEMENT METHODS //////////////////////////////////////////
 	/**
 	 * Called by main thread to register an account provider from extension
@@ -141,6 +179,32 @@ export class AccountManagementService implements IAccountManagementService {
 	}
 
 	// TODO: Support for orphaned accounts (accounts with no provider)
+
+	// PRIVATE HELPERS /////////////////////////////////////////////////////
+	private onOAuthResponse(args: object[]): void {
+		// Verify the arguments are correct
+		if (!args || args['eventId'] === undefined) {
+			console.warn('Received invalid OAuth event response args');
+			return;
+		}
+
+		// Find the event
+		let eventId: string = args['eventId'];
+		let eventCallbacks = this._oAuthCallbacks[eventId];
+		if (!eventCallbacks) {
+			console.warn('Received OAuth event response for non-existent eventId');
+			return;
+		}
+
+		// Parse the args
+		let error: string = args['error'];
+		let code: string = args['code'];
+		if (error) {
+			eventCallbacks.reject(error);
+		} else {
+			eventCallbacks.resolve(code);
+		}
+	}
 }
 
 /**

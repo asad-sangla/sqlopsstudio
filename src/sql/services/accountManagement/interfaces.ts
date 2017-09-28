@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import {createDecorator} from "vs/platform/instantiation/common/instantiation";
-import {TPromise} from "vs/base/common/winjs.base";
-import {AccountDisplayInfo, AccountKey, AccountProvider, AccountProviderMetadata} from "data";
-import {EventEmitter} from "vs/base/common/eventEmitter";
+import {createDecorator} from 'vs/platform/instantiation/common/instantiation';
+import {TPromise} from 'vs/base/common/winjs.base';
+import {AccountDisplayInfo, AccountKey, AccountProvider, AccountProviderMetadata} from 'data';
+import {EventEmitter} from 'vs/base/common/eventEmitter';
 
 export const SERVICE_ID = 'accountManagementService';
 
@@ -24,6 +24,7 @@ export interface IAccountManagementService {
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	openAccountListDialog(): TPromise<any>;
+	performOAuthAuthorization(url: string, silent: boolean): Thenable<string>;
 
 	// SERVICE MANAGEMENT METHODS /////////////////////////////////////////
 	registerProvider(providerMetadata: AccountProviderMetadata, provider: AccountProvider): void;

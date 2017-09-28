@@ -35,6 +35,10 @@ export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 		return this._withProvider(handle, (provider: data.AccountProvider) => provider.initialize(restoredAccounts));
 	}
 
+	public $performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
+		return this._proxy.$performOAuthAuthorization(url, silent);
+	}
+
 	public $prompt(handle: number): Thenable<data.Account> {
 		return this._withProvider(handle, (provider: data.AccountProvider) => provider.prompt());
 	}

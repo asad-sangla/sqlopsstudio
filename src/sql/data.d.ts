@@ -1024,6 +1024,15 @@ declare module 'data' {
 	export namespace accounts {
 		export function registerAccountProvider(providerMetadata: AccountProviderMetadata, provider: AccountProvider): vscode.Disposable;
 		// TODO: Add register-er for resource provider
+
+		/**
+		 * Performs OAuth via the account management service and returns the resulting authorization code
+		 * @param {string} url URL to load to begin OAuth
+		 * @param {boolean} silent Whether or not to show the browser, use false when doing initial
+		 *                  login, true when doing subsequent auth requests
+		 * @return {Thenable<string>} Promise to return the authorization code, rejects on failure
+		 */
+		export function performOAuthAuthorization(url: string, silent: boolean): Thenable<string>;
 	}
 
 	// - ACCOUNT DATATYPES /////////////////////////////////////////////////
