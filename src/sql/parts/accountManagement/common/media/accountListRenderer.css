@@ -3,7 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.linked-account-staus > .linked-account-status-selection {
-	content: url(accounts_statusbar_inverse.svg);
-	width: 12px;
+.list-row {
+	display: flex;
+	align-items: flex-start;
+}
+
+.list-row .label {
+	flex: 1 1 auto;
+	margin-left: 15px;
+}
+
+.list-row .label .contextual-display-name {
+	font-size: 15px;
+}
+
+.list-row .label .content {
+	opacity: 0.7;
 }

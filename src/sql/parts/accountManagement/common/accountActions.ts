@@ -15,7 +15,7 @@ import { IAccountManagementService } from 'sql/services/accountManagement/interf
  */
 export class AddLinkedAccountAction extends Action {
 	public static ID = 'account.addLinkedAccount';
-	public static LABEL = localize('addAccount', 'New Account');
+	public static LABEL = localize('addAccount', 'Add an account');
 
 	constructor(
 		id: string,
@@ -72,7 +72,7 @@ export class RemoveAccountAction extends Action {
  */
 export class ApplyFilterAction extends Action {
 	public static ID = 'account.applyFilters';
-	public static LABEL = localize('applyFilters', 'Apply Filters...');
+	public static LABEL = localize('applyFilters', 'Apply Filters');
 
 	constructor(
 		id: string,
@@ -92,7 +92,7 @@ export class ApplyFilterAction extends Action {
  */
 export class RefreshAccountAction extends Action {
 	public static ID = 'account.refresh';
-	public static LABEL = localize('refreshAccount', 'Refresh');
+	public static LABEL = localize('refreshAccount', 'Reenter your credentials');
 
 	constructor(
 		id: string,

@@ -134,3 +134,11 @@
 .hc-black .icon.remove {
 	content: url('remove_inverse.svg');
 }
+
+.vs .icon.warning-badge {
+	content: url('warning_badge_withborder.svg');
+}
+.vs-dark .icon.warning-badge,
+.hc-black .icon.warningBadge {
+	content: url("warning_badge_withborder_inverse.svg");
+}

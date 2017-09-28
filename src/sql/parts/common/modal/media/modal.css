@@ -94,22 +94,12 @@
 	color:  #3C3C3C;
 }
 
-.modal.flyout-dialog .select-box {
+.modal .select-box {
 	width: 100%;
 	height: 25px;
 	color: #6C6C6C;
 	font-size: 11px;
 	border: 1px solid transparent;
-}
-
-.vs-dark.monaco-shell .modal.flyout-dialog .select-box {
-	background: #3C3C3C;
-	color: #BBB;
-}
-
-.vs-dark.monaco-shell .modal.flyout-dialog .select-box:disabled {
-	background-color: #E1E1E1;
-	color:  #3C3C3C;
 }
 
 .modal.flyout-dialog .dialogErrorMessage {

@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vs .icon.microsoftAccount,
+.vs-dark .icon.microsoftAccount,
+.hc-black .icon.microsoftAccount {
+	background: url(microsoft_account.svg) center center no-repeat;
+}
+
+.vs .icon.workSchoolAccount {
+	background: url(work_school_account.svg) center center no-repeat;
+}
+
+.vs-dark .icon.workSchoolAccount,
+.hc-black .icon.workSchoolAccount {
+	background: url(work_school_account_inverse.svg) center center no-repeat;
+}

@@ -27,6 +27,19 @@ export function attachModalDialogStyler(widget: IThemable, themeService: IThemeS
 	}, widget);
 }
 
+export function attachDropdownStyler(widget: IThemable, themeService: IThemeService, style?:
+	{
+		backgroundColor?: cr.ColorIdentifier,
+		foregroundColor?: cr.ColorIdentifier,
+		borderColor?: cr.ColorIdentifier,
+	}): IDisposable {
+	return attachStyler(themeService, {
+		foregroundColor: (style && style.foregroundColor) || cr.inputForeground,
+		borderColor: (style && style.borderColor) || cr.inputBorder,
+		backgroundColor: (style && style.backgroundColor) || cr.editorBackground
+	}, widget);
+}
+
 export function attachInputBoxStyler(widget: IThemable, themeService: IThemeService, style?:
 	{
 		inputBackground?: cr.ColorIdentifier,

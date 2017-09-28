@@ -36,3 +36,4 @@ export const Insights = 'Insights';
 export const Profiler = 'Profiler';
 export const ServerGroups = 'ServerGroups';
 export const Accounts = 'Accounts';
+export const FireWallRule = 'FirewallRule';

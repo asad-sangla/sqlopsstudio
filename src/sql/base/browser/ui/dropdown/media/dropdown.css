@@ -1,0 +1,32 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.dropdown {
+	width: 100%;
+	display: flex;
+	align-items: flex-start;
+}
+
+.dropdown > .dropdown-label {
+	width: 100%;
+}
+
+.dropdown > .dropdown-label:not(:empty) {
+	padding: 0px;
+}
+
+.dropdown > .dropdown-icon {
+	flex: 0 0 15px;
+	height: 10px;
+	width: 10px;
+	content: url(dropdownarrow.svg);
+	align-self: center;
+	padding-right: 10px;
+}
+
+.vs-dark .dropdown > .dropdown-icon,
+.hc-black .dropdown > .dropdown-icon {
+	content: url('dropdownarrow_inverse.svg');
+}
