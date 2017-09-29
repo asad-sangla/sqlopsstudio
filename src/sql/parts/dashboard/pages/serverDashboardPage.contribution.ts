@@ -79,7 +79,6 @@ let defaultVal = [
 			'tasks-widget': {
 				'tasks': {
 					'restore': null,
-					'new-profiler': null,
 					'new-query': null
 				}
 			}
