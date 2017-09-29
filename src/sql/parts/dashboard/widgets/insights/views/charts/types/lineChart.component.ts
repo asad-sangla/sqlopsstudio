@@ -5,7 +5,7 @@
 
 import { ChartType, customMixin, IChartConfig, defaultChartConfig, IDataSet, IPointDataSet } from 'sql/parts/dashboard/widgets/insights/views/charts/chartInsight.component';
 import BarChart from './barChart.component';
-import { memoize, unmemoize } from 'sql/common/decorators';
+import { memoize, unmemoize } from 'sql/base/common/decorators';
 import { mixin } from 'sql/base/common/objects';
 import { clone } from 'vs/base/common/objects';
 

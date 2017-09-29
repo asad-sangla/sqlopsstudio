@@ -7,8 +7,8 @@
 import * as crypto from 'crypto';
 import * as os from 'os';
 import { ITelemetryService, ITelemetryData } from 'vs/platform/telemetry/common/telemetry';
-import Utils = require('sql/parts/connection/common/utils');
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { warn } from 'sql/base/common/log';
 
 // Generate a new GUID
 export function generateGuid(): string {
@@ -84,14 +84,14 @@ export function addTelemetry(telemetryService: ITelemetryService, telemetryEvent
 				telemetryService.publicLog(telemetryEventName, telData).then(() => {
 					resolve();
 				}, telemetryServiceError => {
-					Utils.logDebug(`Failed to add telemetry. error: ${telemetryServiceError}`);
+					warn(`Failed to add telemetry. error: ${telemetryServiceError}`);
 					resolve();
 				});
 			} else {
 				resolve();
 			}
 		} catch (error) {
-			Utils.logDebug(`Failed to add telemetry. error: ${error}`);
+			warn(`Failed to add telemetry. error: ${error}`);
 			resolve();
 		}
 	});

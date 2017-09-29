@@ -116,7 +116,7 @@ import { IAngularEventingService, AngularEventingService } from 'sql/services/an
 import { BootstrapService } from 'sql/services/bootstrap/bootstrapServiceImpl';
 import { ICapabilitiesService, CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ICredentialsService, CredentialsService } from 'sql/services/credentials/credentialsService';
-import { ISerializationService, SerializationService} from 'sql/services/serialization/serializationService';
+import { ISerializationService, SerializationService } from 'sql/services/serialization/serializationService';
 import { IMetadataService, MetadataService } from 'sql/services/metadata/metadataService';
 import { IObjectExplorerService, ObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { ITaskService, TaskService } from 'sql/parts/taskHistory/common/taskService';
@@ -137,8 +137,8 @@ import { IAccountManagementService } from "sql/services/accountManagement/interf
 import { AccountManagementService } from "sql/services/accountManagement/accountManagementService";
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { ProfilerService } from 'sql/parts/profiler/service/profilerService';
-import { ISqlWindowService } from 'sql/common/sqlWindowServices';
-import { SqlWindowService } from 'sql/common/browser/sqlWindowServicesImpl';
+import { IClipboardService as sqlIClipboardService } from 'sql/platform/clipboard/common/clipboardService';
+import { ClipboardService as sqlClipboardService } from 'sql/platform/clipboard/electron-browser/clipboardService';
 
 
 
@@ -680,7 +680,7 @@ export class Workbench implements IPartService {
 		
 		// {{SQL CARBON EDIT}}
 		// SQL Tools services
-		serviceCollection.set(ISqlWindowService, this.instantiationService.createInstance(SqlWindowService));
+		serviceCollection.set(sqlIClipboardService, this.instantiationService.createInstance(sqlClipboardService));
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
 		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
@@ -703,7 +703,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IRestoreDialogController, this.instantiationService.createInstance(RestoreDialogController));
 		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
 		serviceCollection.set(IInsightsDialogService, this.instantiationService.createInstance(InsightsDialogService));
-		let accountManagementService =  this.instantiationService.createInstance(AccountManagementService, undefined);
+		let accountManagementService = this.instantiationService.createInstance(AccountManagementService, undefined);
 		serviceCollection.set(IAccountManagementService, accountManagementService);
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 		serviceCollection.set(IProfilerService, this.instantiationService.createInstance(ProfilerService));

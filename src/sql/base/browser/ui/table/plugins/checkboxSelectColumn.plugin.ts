@@ -2,12 +2,12 @@
 
 import 'vs/css!vs/base/browser/ui/checkbox/checkbox';
 
-import { formatString } from 'sql/parts/connection/common/utils';
 
 import { mixin } from 'vs/base/common/objects';
 import * as nls from 'vs/nls';
 import { ICheckboxStyles } from 'vs/base/browser/ui/checkbox/checkbox';
 import { Color } from 'vs/base/common/color';
+import * as strings from 'vs/base/common/strings';
 
 export interface ICheckboxSelectColumnOptions extends Slick.PluginOptions, ICheckboxStyles {
 	columnId?: string;
@@ -74,11 +74,11 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 		if (!this._options.title) {
 			if (selectedRows.length && selectedRows.length === this._grid.getDataLength()) {
 				this._grid.updateColumnHeader(this._options.columnId,
-					formatString(this._checkboxTemplate, 'true', 'checked'),
+					strings.format(this._checkboxTemplate, 'true', 'checked'),
 					this._options.toolTip);
 			} else {
 				this._grid.updateColumnHeader(this._options.columnId,
-					formatString(this._checkboxTemplate, 'true', 'unchecked'),
+					strings.format(this._checkboxTemplate, 'true', 'unchecked'),
 					this._options.toolTip);
 			}
 		}
@@ -137,12 +137,12 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 				}
 				this._grid.setSelectedRows(rows);
 				this._grid.updateColumnHeader(this._options.columnId,
-					formatString(this._checkboxTemplate, 'true', 'checked'),
+					strings.format(this._checkboxTemplate, 'true', 'checked'),
 					this._options.toolTip);
 			} else {
 				this._grid.setSelectedRows([]);
 				this._grid.updateColumnHeader(this._options.columnId,
-					formatString(this._checkboxTemplate, 'true', 'unchecked'), this._options.toolTip);
+					strings.format(this._checkboxTemplate, 'true', 'unchecked'), this._options.toolTip);
 				e.stopPropagation();
 				e.stopImmediatePropagation();
 			}
@@ -152,7 +152,7 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 	public getColumnDefinition(): Slick.Column<T> {
 		return {
 			id: this._options.columnId,
-			name: this._options.title || formatString(this._checkboxTemplate, 'true', 'unchecked'),
+			name: this._options.title || strings.format(this._checkboxTemplate, 'true', 'unchecked'),
 			toolTip: this._options.toolTip,
 			field: 'sel',
 			width: this._options.width,
@@ -166,8 +166,8 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 	private checkboxSelectionFormatter(row, cell, value, columnDef: Slick.Column<T>, dataContext): string {
 		if (dataContext) {
 			return this._selectedRowsLookup[row]
-				? formatString(this._checkboxTemplate, 'true', 'checked')
-					: formatString(this._checkboxTemplate, 'true', 'unchecked');
+				? strings.format(this._checkboxTemplate, 'true', 'checked')
+				: strings.format(this._checkboxTemplate, 'true', 'unchecked');
 		}
 		return null;
 	}
@@ -180,7 +180,7 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 	}
 
 	protected applyStyles(): void {
-		this._checkboxTemplate = formatString(checkBoxTemplate, this._options.inputActiveOptionBorder.toString(), '{0}', '{1}');
+		this._checkboxTemplate = strings.format(checkBoxTemplate, this._options.inputActiveOptionBorder.toString(), '{0}', '{1}');
 		if (this._grid) {
 			this._grid.invalidateAllRows();
 			this._grid.render();

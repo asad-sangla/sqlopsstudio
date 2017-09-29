@@ -28,7 +28,7 @@ import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 import { clone } from 'vs/base/common/objects';
 
-import * as rangy from 'sql/common/lib/rangy';
+import * as rangy from 'sql/base/node/rangy';
 
 export const QUERY_SELECTOR: string = 'query-component';
 

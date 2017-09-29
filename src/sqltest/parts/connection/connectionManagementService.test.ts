@@ -131,7 +131,8 @@ suite('SQL ConnectionManagementService tests', () => {
 			capabilitiesService,
 			undefined,
 			editorGroupService.object,
-			undefined);
+			undefined
+		);
 		return connectionManagementService;
 	}
 

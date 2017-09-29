@@ -57,7 +57,7 @@ export class AccountDialog extends Modal {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
 		@IKeybindingService private _keybindingService: IKeybindingService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(localize('linkedAccounts', 'Linked Accounts'), TelemetryKeys.Accounts, partService, telemetryService);
 

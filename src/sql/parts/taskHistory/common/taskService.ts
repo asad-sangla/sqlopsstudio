@@ -178,7 +178,7 @@ export class TaskService implements ITaskService {
 				case TaskStatus.succeededWithWarning:
 				case TaskStatus.failed:
 					task.endTime = new Date().toLocaleTimeString();
-					task.timer.end();
+					task.timer.stop();
 					this._onTaskComplete.fire(task);
 					break;
 				default:

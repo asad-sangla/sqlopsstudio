@@ -19,7 +19,8 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 
 	constructor(
 		@IConnectionManagementService private _connectionService: IConnectionManagementService,
-		@ITelemetryService private _telemetryService: ITelemetryService) {
+		@ITelemetryService private _telemetryService: ITelemetryService
+	) {
 	}
 
 	/**

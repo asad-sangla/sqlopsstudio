@@ -5,8 +5,7 @@
 
 'use strict';
 
-import * as Constants from 'sql/parts/connection/common/constants';
-import { IConnectionProfile, IConnectionProfileStore } from './interfaces';
+import { IConnectionProfile } from './interfaces';
 
 // CONSTANTS //////////////////////////////////////////////////////////////////////////////////////
 const msInH = 3.6e6;
@@ -22,28 +21,7 @@ export const uriPrefixes = {
 
 // FUNCTIONS //////////////////////////////////////////////////////////////////////////////////////
 
-// Helper to log debug messages
-export function logDebug(msg: any): void {
-	//let config = vscode.workspace.getConfiguration(Constants.extensionConfigSectionName);
-	let logDebugInfo = true; //config[Constants.configLogDebugInfo];
-	if (logDebugInfo === true) {
-		let currentTime = new Date().toLocaleTimeString();
-		let outputMsg = '[' + currentTime + ']: ' + msg ? msg.toString() : '';
-		console.log(outputMsg);
-	}
-}
-
-export function isEmpty(str: any): boolean {
-	return (!str || '' === str);
-}
-
-export function isNotEmpty(str: any): boolean {
-	return <boolean>(str && '' !== str);
-}
-
-export function defaultGroupId(): string {
-	return 'C777F06B-202E-4480-B475-FA416154D458';
-}
+export const defaultGroupId = 'C777F06B-202E-4480-B475-FA416154D458';
 
 // Generate a new GUID
 export function generateGuid(): string {
@@ -68,56 +46,6 @@ export function generateGuid(): string {
 	let clockSequenceHi: string = hexValues[8 + (Math.random() * 4) | 0];
 	return oct.substr(0, 8) + '-' + oct.substr(9, 4) + '-4' + oct.substr(13, 3) + '-' + clockSequenceHi + oct.substr(16, 3) + '-' + oct.substr(19, 12);
 	/* tslint:enable:no-bitwise */
-}
-
-/**
- * Format a string. Behaves like C#'s string.Format() function.
- */
-export function formatString(str: string, ...args: any[]): string {
-	// This is based on code originally from https://github.com/Microsoft/vscode/blob/master/src/vs/nls.js
-	// License: https://github.com/Microsoft/vscode/blob/master/LICENSE.txt
-	let result: string;
-	if (args.length === 0) {
-		result = str;
-	} else {
-		result = str.replace(/\{(\d+)\}/g, (match, rest) => {
-			let index = rest[0];
-			return typeof args[index] !== 'undefined' ? args[index] : match;
-		});
-	}
-	return result;
-}
-
-// One-time use timer for performance testing
-export class Timer {
-	private _startTime: [number, number];
-	private _endTime: [number, number];
-
-	constructor() {
-		this.start();
-	}
-
-	// Get the duration of time elapsed by the timer, in milliseconds
-	public getDuration(): number {
-		if (!this._startTime) {
-			return -1;
-		} else if (!this._endTime) {
-			let endTime = process.hrtime(this._startTime);
-			return endTime[0] * 1000 + endTime[1] / 1000000;
-		} else {
-			return this._endTime[0] * 1000 + this._endTime[1] / 1000000;
-		}
-	}
-
-	public start(): void {
-		this._startTime = process.hrtime();
-	}
-
-	public end(): void {
-		if (!this._endTime) {
-			this._endTime = process.hrtime(this._startTime);
-		}
-	}
 }
 
 /**
@@ -192,10 +120,6 @@ export function htmlEntities(str: string): string {
 	return typeof (str) === 'string'
 		? str.replace(/[\u00A0-\u9999<>\&"']/gim, (i) => { return `&#${i.charCodeAt(0)};`; })
 		: undefined;
-}
-
-export function isNumber(val: any): boolean {
-	return typeof (val) === 'number';
 }
 
 export function generateUri(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): string {

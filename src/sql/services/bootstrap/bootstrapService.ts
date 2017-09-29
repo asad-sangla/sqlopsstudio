@@ -17,7 +17,7 @@ import { IQueryManagementService } from 'sql/parts/query/common/queryManagement'
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
-import { ISqlWindowService } from 'sql/common/sqlWindowServices';
+import { IClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
@@ -31,8 +31,8 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
-import { IWindowsService } from 'vs/platform/windows/common/windows';
+import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { IWindowsService, IWindowService } from 'vs/platform/windows/common/windows';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 
@@ -74,9 +74,10 @@ export interface IBootstrapService {
 	workspaceContextService: IWorkspaceContextService;
 	accountManagementService: IAccountManagementService;
 	windowsService: IWindowsService;
-	sqlWindowService: ISqlWindowService;
+	windowService: IWindowService;
 	telemetryService: ITelemetryService;
 	storageService: IStorageService;
+	clipboardService: IClipboardService;
 	capabilitiesService: ICapabilitiesService;
 
 	/*

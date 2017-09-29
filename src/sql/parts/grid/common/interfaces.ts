@@ -5,22 +5,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IColumnDefinition, IObservableCollection, IGridDataRow } from 'angular2-slickgrid';
-import * as Constants from 'sql/parts/connection/common/constants';
-
-export enum ContentType {
-	Root = 0,
-	Messages = 1,
-	ResultsetsMeta = 2,
-	Columns = 3,
-	Rows = 4,
-	SaveResults = 5,
-	Copy = 6,
-	EditorSelection = 7,
-	OpenLink = 8,
-	ShowError = 9,
-	ShowWarning = 10,
-	Config = 11
-};
 
 export interface ISlickRange {
 	fromCell: number;
@@ -29,44 +13,11 @@ export interface ISlickRange {
 	toRow: number;
 }
 
-export const ContentTypes = [
-	Constants.outputContentTypeRoot,
-	Constants.outputContentTypeMessages,
-	Constants.outputContentTypeResultsetMeta,
-	Constants.outputContentTypeColumns,
-	Constants.outputContentTypeRows,
-	Constants.outputContentTypeSaveResults,
-	Constants.outputContentTypeCopy,
-	Constants.outputContentTypeEditorSelection,
-	Constants.outputContentTypeOpenLink,
-	Constants.outputContentTypeShowError,
-	Constants.outputContentTypeShowWarning,
-	Constants.outputContentTypeConfig
-];
-
-export enum FieldType {
-	String = 0,
-	Boolean = 1,
-	Integer = 2,
-	Decimal = 3,
-	Date = 4,
-	Unknown = 5
-}
-
 export interface IGridIcon {
 	showCondition: () => boolean;
 	icon: () => string;
 	hoverText: () => string;
 	functionality: (batchId: number, resultId: number, index: number) => void;
-}
-
-export interface IColumnDefinition {
-	id?: string;
-	name: string;
-	type: FieldType;
-	asyncPostRender?: (cellRef: string, row: number, dataContext: JSON, colDef: any) => void;
-	formatter?: (row: number, cell: any, value: any, columnDef: any, dataContext: any) => string;
-	isEditable?: boolean;
 }
 
 export interface IMessageLink {
@@ -87,11 +38,6 @@ export interface IGridIcon {
 	icon: () => string;
 	hoverText: () => string;
 	functionality: (batchId: number, resultId: number, index: number) => void;
-}
-
-export interface IResultsConfig {
-	shortcuts: { [key: string]: string };
-	messagesDefaultOpen: boolean;
 }
 
 /**
@@ -156,18 +102,12 @@ export interface IGridDataSet {
 	minHeight: number | string;
 }
 
-export interface IResultMessage {
-	batchId?: number;
-	isError: boolean;
-	time: string;
-	message: string;
+export enum SaveFormat {
+	CSV = 'csv',
+	JSON = 'json',
+	EXCEL = 'excel',
+	XML = 'xml'
 }
-
-export const CsvFormat   = 'csv';
-export const JsonFormat  = 'json';
-export const ExcelFormat = 'excel';
-
-export type SaveFormat = 'csv' | 'json' | 'excel';
 
 export interface IGridInfo {
 	batchIndex: number;
@@ -176,8 +116,7 @@ export interface IGridInfo {
 	gridIndex: number;
 	rowIndex?: number;
 }
-export interface ISaveRequest
-{
+export interface ISaveRequest {
 	format: SaveFormat;
 	batchIndex: number;
 	resultSetNumber: number;

@@ -312,7 +312,7 @@ export class ProfilerColumnEditorDialog extends Modal {
 	constructor(
 		@IPartService _partService: IPartService,
 		@IThemeService private _themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(nls.localize('profiler', 'Profiler'), TelemetryKeys.Profiler, _partService, telemetryService);
 	}

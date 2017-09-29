@@ -116,7 +116,7 @@ export class InsightsDialogView extends Modal {
 		@IListService private _listService: IListService,
 		@IPartService partService: IPartService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(nls.localize("InsightsDialogTitle", "Insights"), TelemetryKeys.Insights, partService, telemetryService);
 		this._model.onDataChange(e => this.build());

@@ -6,7 +6,6 @@
 'use strict';
 
 import { ConnectionProfile } from './connectionProfile';
-import * as Utils from './utils';
 
 export interface IConnectionProfileGroup {
 	id: string;
@@ -134,7 +133,7 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	public static getGroupFullNameParts(groupFullName: string): string[] {
 		groupFullName = groupFullName ? groupFullName : '';
 		let groupNames: string[] = groupFullName.split(ConnectionProfileGroup.GroupNameSeparator);
-		groupNames = groupNames.filter(g => !Utils.isEmpty(g));
+		groupNames = groupNames.filter(g => !!g);
 		if (groupNames.length === 0) {
 			groupNames.push('ROOT');
 		} else if (groupNames[0].toUpperCase() !== 'ROOT') {
@@ -145,15 +144,15 @@ export class ConnectionProfileGroup implements IConnectionProfileGroup {
 	}
 
 	public static isRoot(name: string): boolean {
-		return (Utils.isEmpty(name) || name.toUpperCase() === ConnectionProfileGroup.RootGroupName ||
+		return (!name || name.toUpperCase() === ConnectionProfileGroup.RootGroupName ||
 			name === ConnectionProfileGroup.GroupNameSeparator);
 	}
 
 	public static sameGroupName(name1: string, name2: string): boolean {
 		let sameGroupName: boolean =
-			((Utils.isEmpty(name1) && Utils.isEmpty(name2)) ||
-				name1.toUpperCase() === name2.toUpperCase() ||
-				(ConnectionProfileGroup.isRoot(name1) && ConnectionProfileGroup.isRoot(name2)));
+			(!name1 && !name2) ||
+			name1.toUpperCase() === name2.toUpperCase() ||
+			(ConnectionProfileGroup.isRoot(name1) && ConnectionProfileGroup.isRoot(name2));
 
 		return sameGroupName;
 	}

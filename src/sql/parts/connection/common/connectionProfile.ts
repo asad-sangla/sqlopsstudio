@@ -7,10 +7,10 @@
 
 import { IConnectionProfile } from './interfaces';
 import { ConnectionProfileGroup } from './connectionProfileGroup';
-import data = require('data');
+import * as data from 'data';
 import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
 import * as interfaces from 'sql/parts/connection/common/interfaces';
-import Utils = require('./utils');
+import * as Utils from './utils';
 
 // Concrete implementation of the IConnectionProfile interface
 
@@ -53,7 +53,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	}
 
 	public get id(): string {
-		if (Utils.isEmpty(this._id)) {
+		if (!this._id) {
 			this._id = Utils.generateGuid();
 		}
 		return this._id;
@@ -157,7 +157,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		connectionInfo.saveProfile = true;
 		connectionInfo.savePassword = profile.savePassword;
 		connectionInfo.id = profile.id;
-		if (Utils.isEmpty(profile.id)) {
+		if (!profile.id) {
 			connectionInfo.id = Utils.generateGuid();
 		}
 		return connectionInfo;

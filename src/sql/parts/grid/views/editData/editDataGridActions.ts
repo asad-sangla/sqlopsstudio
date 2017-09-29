@@ -5,9 +5,9 @@
 
 'use strict';
 
-import { IGridInfo, CsvFormat, JsonFormat, ExcelFormat } from 'sql/parts/grid/common/interfaces';
+import { IGridInfo } from 'sql/parts/grid/common/interfaces';
 import { DataService } from 'sql/parts/grid/services/dataService';
-import { GridActionProvider, SaveResultAction, SelectAllGridAction, CopyResultAction } from 'sql/parts/grid/views/gridActions';
+import { GridActionProvider } from 'sql/parts/grid/views/gridActions';
 import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IAction, Action } from 'vs/base/common/actions';
@@ -17,7 +17,7 @@ export class EditDataGridActionProvider extends GridActionProvider {
 	constructor(dataService: DataService, selectAllCallback: (index: number) => void,
 		private _deleteRowCallback: (index: number) => void,
 		private _revertRowCallback: (index: number) => void) {
-			super(dataService, selectAllCallback);
+		super(dataService, selectAllCallback);
 	}
 	/**
 	 * Return actions given a click on an edit data grid

@@ -14,7 +14,6 @@ import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import DOM = require('vs/base/browser/dom');
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-import * as lifecycle from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachInputBoxStyler, attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
@@ -53,7 +52,7 @@ export class ServerGroupDialog extends Modal {
 		@IPartService partService: IPartService,
 		@IThemeService private _themeService: IThemeService,
 		@IContextViewService private _contextViewService: IContextViewService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(localize('ServerGroupsDialogTitle', 'Server Groups'), TelemetryKeys.ServerGroups, partService, telemetryService);
 

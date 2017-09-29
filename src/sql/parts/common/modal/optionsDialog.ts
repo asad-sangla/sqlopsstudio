@@ -89,7 +89,8 @@ export class OptionsDialog extends Modal {
 		@IPartService partService: IPartService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IContextViewService private _contextViewService: IContextViewService,
-		@ITelemetryService telemetryService: ITelemetryService) {
+		@ITelemetryService telemetryService: ITelemetryService
+	) {
 		super(title, name, partService, telemetryService, options);
 	}
 

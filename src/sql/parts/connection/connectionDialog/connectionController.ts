@@ -96,7 +96,7 @@ export class ConnectionController implements IConnectionComponentController {
 		if (connectionGroupRoot && connectionGroupRoot.length > 0 && ConnectionProfileGroup.isRoot(connectionGroupRoot[0].name)) {
 			defaultGroupId = connectionGroupRoot[0].id;
 		} else {
-			defaultGroupId = Utils.defaultGroupId();
+			defaultGroupId = Utils.defaultGroupId;
 		}
 		connectionGroupNames.push(Object.assign({}, this._connectionWidget.DefaultServerGroup, { id: defaultGroupId }));
 		connectionGroupNames.push(this._connectionWidget.NoneServerGroup);

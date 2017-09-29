@@ -115,7 +115,6 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 		@IContextViewService private _contextViewService: IContextViewService,
 		@IBootstrapService private _bootstrapService: IBootstrapService,
 		@ITelemetryService telemetryService: ITelemetryService
-
 	) {
 		super(localize('RestoreDialogTitle', 'Restore database'), TelemetryKeys.Restore, partService, telemetryService, { hasErrors: true, isWide: true, hasSpinner: true });
 		this._restoreTitle = localize('restoreTitle', 'Restore database');

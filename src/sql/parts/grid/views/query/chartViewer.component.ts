@@ -21,8 +21,7 @@ import { IInsightData, IInsightsView, IInsightsConfig } from 'sql/parts/dashboar
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { DataType, ILineConfig } from 'sql/parts/dashboard/widgets/insights/views/charts/types/lineChart.component';
-import { PathUtilities } from 'sql/common/pathUtilities';
-import * as Utils from 'sql/parts/connection/common/utils';
+import * as PathUtilities from 'sql/common/pathUtilities';
 import { ThemeUtilities } from 'sql/common/themeUtilities';
 import { IChartViewActionContext, CopyAction, CreateInsightAction, SaveImageAction } from 'sql/parts/grid/views/query/chartViewerActions';
 
@@ -196,7 +195,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 			return;
 		}
 
-		this._bootstrapService.sqlWindowService.writeImageFromDataUrl(data);
+		this._bootstrapService.clipboardService.writeImageDataUrl(data);
 	}
 
 	/**
@@ -223,7 +222,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 			this.showError(this.chartNotFoundError);
 			return;
 		}
-		if (!Utils.isEmpty(filePath)) {
+		if (filePath) {
 			let buffer = self.decodeBase64Image(data);
 			fs.writeFile(filePath, buffer, (err) => {
 				if (err) {
@@ -241,7 +240,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 		let filepathPlaceHolder = PathUtilities.resolveCurrentDirectory(this.getActiveUriString(), PathUtilities.getRootPath(this._bootstrapService.workspaceContextService));
 		filepathPlaceHolder = path.join(filepathPlaceHolder, 'Chart.jpeg');
 
-		let filePath: string = this._bootstrapService.sqlWindowService.showSaveDialog({
+		let filePath: string = this._bootstrapService.windowService.showSaveDialog({
 			title: nls.localize('saveAsFileTitle', 'Choose Results File'),
 			defaultPath: paths.normalize(filepathPlaceHolder, true)
 		});

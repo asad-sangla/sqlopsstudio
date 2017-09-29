@@ -15,8 +15,8 @@ import {
 import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
-import Utils = require('sql/parts/connection/common/utils');
-import Constants = require('sql/parts/connection/common/constants');
+import * as Utils from 'sql/parts/connection/common/utils';
+import * as Constants from 'sql/parts/connection/common/constants';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ICredentialsService } from 'sql/services/credentials/credentialsService';
 import * as ConnectionContracts from 'sql/parts/connection/common/connection';
@@ -26,15 +26,16 @@ import { ConnectionGlobalStatus } from 'sql/parts/connection/common/connectionGl
 import { ConnectionStatusbarItem } from 'sql/parts/connection/common/connectionStatus';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
+import { warn } from 'sql/base/common/log';
 
 import * as data from 'data';
 
-import nls = require('vs/nls');
+import * as nls from 'vs/nls';
 import * as errors from 'vs/base/common/errors';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
-import platform = require('vs/platform/registry/common/platform');
+import * as platform from 'vs/platform/registry/common/platform';
 import { Memento } from 'vs/workbench/common/memento';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
@@ -47,7 +48,7 @@ import Event, { Emitter } from 'vs/base/common/event';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
 import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
-import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
+import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 
@@ -203,7 +204,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			self._connectionDialogService.showDialog(self, params, model, error).then(() => {
 				resolve();
 			}, dialogError => {
-				Utils.logDebug('failed to open the connection dialog. error: ' + dialogError);
+				warn('failed to open the connection dialog. error: ' + dialogError);
 				reject(dialogError);
 			});
 		});
@@ -250,7 +251,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 */
 	public getProviderIdFromUri(ownerUri: string): string {
 		let providerId = this._uriToProvider[ownerUri];
-		if (Utils.isEmpty(providerId)) {
+		if (!providerId) {
 			providerId = this._connectionStatusManager.getProviderIdFromUri(ownerUri);
 		}
 
@@ -340,7 +341,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * @param callbacks to call after the connection is completed
 	 */
 	public connect(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks): Promise<IConnectionResult> {
-		if (Utils.isEmpty(uri)) {
+		if (!uri) {
 			uri = Utils.generateUri(connection);
 		}
 		let input: IConnectableInput = options && options.params ? options.params.input : undefined;
@@ -357,7 +358,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 		if (uri !== input.uri) {
 			//TODO: this should never happen. If the input is already passed, it should have the uri
-			Utils.logDebug(`the given uri is different that the input uri. ${uri}|${input.uri}`);
+			warn(`the given uri is different that the input uri. ${uri}|${input.uri}`);
 		}
 		return this.tryConnect(connection, input, options);
 	}
@@ -410,7 +411,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private connectWithOptions(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks):
 		Promise<IConnectionResult> {
-		if (Utils.isEmpty(uri)) {
+		if (!uri) {
 			uri = Utils.generateUri(connection);
 		}
 		uri = this._connectionStatusManager.getOriginalOwnerUri(uri);
@@ -766,8 +767,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 			serverVersion: connection.serverInfo ? connection.serverInfo.serverVersion : '',
 			serverEdition: connection.serverInfo ? connection.serverInfo.serverEdition : '',
 
-			extensionConnectionTime: connection.extensionTimer.getDuration() - connection.serviceTimer.getDuration(),
-			serviceConnectionTime: connection.serviceTimer.getDuration()
+			extensionConnectionTime: connection.extensionTimer.elapsed() - connection.serviceTimer.elapsed(),
+			serviceConnectionTime: connection.serviceTimer.elapsed()
 		});
 	}
 
@@ -781,12 +782,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 		const self = this;
 		let connection = this._connectionStatusManager.onConnectionComplete(info);
 
-		if (Utils.isNotEmpty(info.connectionId)) {
+		if (info.connectionId) {
 			if (info.connectionSummary && info.connectionSummary.databaseName) {
 				this._connectionStatusManager.updateDatabaseName(info);
 			}
 			connection.serverInfo = info.serverInfo;
-			connection.extensionTimer.end();
+			connection.extensionTimer.stop();
 
 			connection.connectHandler(true);
 			let activeConnection = connection.connectionProfile;

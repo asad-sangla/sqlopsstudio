@@ -3,16 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import ConnectionConstants = require('sql/parts/connection/common/constants');
-import Constants = require('sql/parts/query/common/constants');
-import LocalizedConstants = require('sql/parts/query/common/localizedConstants');
-import * as Utils from 'sql/parts/connection/common/utils';
+import * as ConnectionConstants from 'sql/parts/connection/common/constants';
+import * as Constants from 'sql/parts/query/common/constants';
+import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { SaveResultsRequestParams } from 'data';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
-import { ISaveRequest } from 'sql/parts/grid/common/interfaces';
-import { PathUtilities } from 'sql/common/pathUtilities';
-import { ISqlWindowService } from 'sql/common/sqlWindowServices';
+import { ISaveRequest, SaveFormat } from 'sql/parts/grid/common/interfaces';
+import * as PathUtilities from 'sql/common/pathUtilities';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
@@ -20,27 +18,22 @@ import { IOutputService, IOutputChannel, IOutputChannelRegistry, Extensions as O
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { IWindowsService } from 'vs/platform/windows/common/windows';
+import { IWindowsService, IWindowService } from 'vs/platform/windows/common/windows';
 import { Registry } from 'vs/platform/registry/common/platform';
 import URI from 'vs/base/common/uri';
 import { IUntitledEditorService, UNTITLED_SCHEMA } from 'vs/workbench/services/untitled/common/untitledEditorService';
-import paths = require('vs/base/common/paths');
-import nls = require('vs/nls');
+import * as paths from 'vs/base/common/paths';
+import * as nls from 'vs/nls';
 import * as pretty from 'pretty-data';
 
 import { ISlickRange } from 'angular2-slickgrid';
-import path = require('path');
+import * as path from 'path';
 
 /**
  *  Handles save results request from the context menu of slickGrid
  */
 export class ResultSerializer {
 	public static tempFileCount: number = 1;
-
-	private static JSON_TYPE: string = 'json';
-	private static CSV_TYPE: string = 'csv';
-	private static XML_TYPE: string = 'xml';
-	private static EXCEL_TYPE: string = 'excel';
 	private static MAX_FILENAMES = 100;
 
 	private _uri: string;
@@ -55,7 +48,7 @@ export class ResultSerializer {
 		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService,
 		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
 		@IWindowsService private _windowsService: IWindowsService,
-		@ISqlWindowService private _sqlWindowService: ISqlWindowService,
+		@IWindowService private _windowService: IWindowService,
 		@IUntitledEditorService private _untitledEditorService: IUntitledEditorService
 	) { }
 
@@ -68,7 +61,7 @@ export class ResultSerializer {
 
 		// prompt for filepath
 		let filePath = self.promptForFilepath(saveRequest);
-		if (!Utils.isEmpty(filePath)) {
+		if (filePath) {
 			return self.sendRequestToService(filePath, saveRequest.batchIndex, saveRequest.resultSetNumber, saveRequest.format, saveRequest.selection ? saveRequest.selection[0] : undefined);
 		}
 		return Promise.resolve(undefined);
@@ -81,16 +74,16 @@ export class ResultSerializer {
 		let fileMode: string = undefined;
 		let fileUri = this.getUntitledFileUri(columnName);
 
-		if (linkType === ResultSerializer.XML_TYPE) {
-			fileMode = ResultSerializer.XML_TYPE;
+		if (linkType === SaveFormat.XML) {
+			fileMode = SaveFormat.XML;
 			try {
 				content = pretty.pd.xml(content);
 			} catch (e) {
 				// If Xml fails to parse, fall back on original Xml content
 			}
-		} else if (linkType === ResultSerializer.JSON_TYPE) {
+		} else if (linkType === SaveFormat.JSON) {
 			let jsonContent: string = undefined;
-			fileMode = ResultSerializer.JSON_TYPE;
+			fileMode = SaveFormat.JSON;
 			try {
 				jsonContent = JSON.parse(content);
 			} catch (e) {
@@ -149,7 +142,7 @@ export class ResultSerializer {
 		let filepathPlaceHolder = PathUtilities.resolveCurrentDirectory(this._uri, this.rootPath);
 		filepathPlaceHolder = path.join(filepathPlaceHolder, this.getResultsDefaultFilename(saveRequest));
 
-		let filePath: string = this._sqlWindowService.showSaveDialog({
+		let filePath: string = this._windowService.showSaveDialog({
 			title: nls.localize('saveAsFileTitle', 'Choose Results File'),
 			defaultPath: paths.normalize(filepathPlaceHolder, true)
 		});
@@ -159,16 +152,16 @@ export class ResultSerializer {
 	private getResultsDefaultFilename(saveRequest: ISaveRequest): string {
 		let fileName = 'Results';
 		switch (saveRequest.format) {
-			case ResultSerializer.CSV_TYPE:
+			case SaveFormat.CSV:
 				fileName = fileName + '.csv';
 				break;
-			case ResultSerializer.JSON_TYPE:
+			case SaveFormat.JSON:
 				fileName = fileName + '.json';
 				break;
-			case ResultSerializer.EXCEL_TYPE:
+			case SaveFormat.EXCEL:
 				fileName = fileName + '.xlsx';
 				break;
-			case ResultSerializer.XML_TYPE:
+			case SaveFormat.XML:
 				fileName = fileName + '.xml';
 				break;
 			default:
@@ -178,7 +171,7 @@ export class ResultSerializer {
 	}
 
 	private getConfigForCsv(): SaveResultsRequestParams {
-		let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: ResultSerializer.CSV_TYPE };
+		let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: SaveFormat.CSV as string };
 
 		// get save results config from vscode config
 		let saveConfig = WorkbenchUtils.getSqlConfigSection(this._workspaceConfigurationService, Constants.configSaveAsCsv);
@@ -193,7 +186,7 @@ export class ResultSerializer {
 
 	private getConfigForJson(): SaveResultsRequestParams {
 		// JSON does not currently have special conditions
-		let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: ResultSerializer.JSON_TYPE };
+		let saveResultsParams = <SaveResultsRequestParams>{ resultFormat: SaveFormat.JSON as string };
 		return saveResultsParams;
 	}
 
@@ -202,7 +195,7 @@ export class ResultSerializer {
 		// Note: we are currently using the configSaveAsCsv setting since it has the option mssql.saveAsCsv.includeHeaders
 		// and we want to have just 1 setting that lists this.
 		let config = this.getConfigForCsv();
-		config.resultFormat = ResultSerializer.EXCEL_TYPE;
+		config.resultFormat = SaveFormat.EXCEL;
 		return config;
 	}
 
@@ -214,11 +207,11 @@ export class ResultSerializer {
 			this._filePath = filePath;
 		}
 
-		if (format === ResultSerializer.CSV_TYPE) {
+		if (format === SaveFormat.CSV) {
 			saveResultsParams = this.getConfigForCsv();
-		} else if (format === ResultSerializer.JSON_TYPE) {
+		} else if (format === SaveFormat.JSON) {
 			saveResultsParams = this.getConfigForJson();
-		} else if (format === ResultSerializer.EXCEL_TYPE) {
+		} else if (format === SaveFormat.EXCEL) {
 			saveResultsParams = this.getConfigForExcel();
 		}
 
@@ -273,7 +266,7 @@ export class ResultSerializer {
 	 * Open the saved file in a new vscode editor pane
 	 */
 	private openSavedFile(filePath: string, format: string): void {
-		if (format === ResultSerializer.EXCEL_TYPE) {
+		if (format === SaveFormat.EXCEL) {
 			// This will not open in VSCode as it's treated as binary. Use the native file opener instead
 			// Note: must use filePath here, URI does not open correctly
 			// TODO see if there is an alternative opener that includes error handling

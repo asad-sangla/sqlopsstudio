@@ -31,7 +31,7 @@ export class BackupDialog extends Modal {
 		@IThemeService private _themeService: IThemeService,
 		@IPartService partService: IPartService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super('', TelemetryKeys.Backup, partService, telemetryService, { isAngular: true, hasErrors: true });
 	}

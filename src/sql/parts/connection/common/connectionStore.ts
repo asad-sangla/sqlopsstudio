@@ -5,9 +5,8 @@
 
 'use strict';
 
-import Constants = require('./constants');
-import ConnInfo = require('./connectionInfo');
-import Utils = require('./utils');
+import * as Constants from './constants';
+import * as ConnInfo from './connectionInfo';
 import { ConnectionProfile } from '../common/connectionProfile';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICredentialsService } from 'sql/services/credentials/credentialsService';
@@ -19,7 +18,7 @@ import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionPro
 import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
-import data = require('data');
+import * as data from 'data';
 
 const MAX_CONNECTIONS_DEFAULT = 25;
 
@@ -65,7 +64,7 @@ export class ConnectionStore {
 	public static get CRED_PROFILE_USER(): string { return 'Profile'; }
 
 	public formatCredentialIdForCred(connectionProfile: IConnectionProfile): string {
-		if (Utils.isEmpty(connectionProfile)) {
+		if (!connectionProfile) {
 			throw new Error('Missing Connection which is required');
 		}
 		let itemTypeString: string = ConnectionStore.CRED_PROFILE_USER;
@@ -83,7 +82,7 @@ export class ConnectionStore {
 	public formatCredentialId(connectionProfile: IConnectionProfile, itemType?: string): string {
 		let connectionProfileInstance: ConnectionProfile = ConnectionProfile.convertToConnectionProfile(
 			this._connectionConfig.getCapabilities(connectionProfile.providerName), connectionProfile);
-		if (Utils.isEmpty(connectionProfileInstance.getConnectionInfoId())) {
+		if (!connectionProfileInstance.getConnectionInfoId()) {
 			throw new Error('Missing Id, which is required');
 		}
 		let cred: string[] = [ConnectionStore.CRED_PREFIX];
@@ -97,7 +96,7 @@ export class ConnectionStore {
 	}
 
 	private static pushIfNonEmpty(value: string, prefix: string, arr: string[]): void {
-		if (Utils.isNotEmpty(value)) {
+		if (value) {
 			arr.push(prefix.concat(value));
 		}
 	}
@@ -126,11 +125,11 @@ export class ConnectionStore {
 		return this.loadProfiles(getWorkspaceProfiles);
 	}
 
-	public addSavedPassword(credentialsItem: IConnectionProfile): Promise<{profile: IConnectionProfile, savedCred: boolean}> {
+	public addSavedPassword(credentialsItem: IConnectionProfile): Promise<{ profile: IConnectionProfile, savedCred: boolean }> {
 		let self = this;
-		return new Promise<{profile: IConnectionProfile, savedCred: boolean}>((resolve, reject) => {
+		return new Promise<{ profile: IConnectionProfile, savedCred: boolean }>((resolve, reject) => {
 			if (credentialsItem.savePassword && this.isPasswordRequired(credentialsItem)
-				&& Utils.isEmpty(credentialsItem.password)) {
+				&& !credentialsItem.password) {
 
 				let credentialId = this.formatCredentialIdForCred(credentialsItem);
 				self._credentialService.readCredential(credentialId)
@@ -138,14 +137,14 @@ export class ConnectionStore {
 						if (savedCred) {
 							credentialsItem.password = savedCred.password;
 						}
-						resolve({profile: credentialsItem, savedCred: !!savedCred});
+						resolve({ profile: credentialsItem, savedCred: !!savedCred });
 					},
 					reason => {
 						reject(reason);
 					});
 			} else {
 				// No need to look up the password
-				resolve({profile: credentialsItem, savedCred: credentialsItem.savePassword});
+				resolve({ profile: credentialsItem, savedCred: credentialsItem.savePassword });
 			}
 		});
 	}
@@ -264,12 +263,12 @@ export class ConnectionStore {
 					connectionProfile.onProviderRegistered(serverCapabilities);
 				});
 				if (connectionProfile.saveProfile) {
-					if (Utils.isEmpty(connectionProfile.groupFullName) && connectionProfile.groupId) {
+					if (!connectionProfile.groupFullName && connectionProfile.groupId) {
 						connectionProfile.groupFullName = this.getGroupFullName(connectionProfile.groupId);
 					}
-					if (Utils.isEmpty(connectionProfile.groupId) && connectionProfile.groupFullName) {
+					if (!connectionProfile.groupId && connectionProfile.groupFullName) {
 						connectionProfile.groupId = this.getGroupId(connectionProfile.groupFullName);
-					} else if (Utils.isEmpty(connectionProfile.groupId) && Utils.isEmpty(connectionProfile.groupFullName)) {
+					} else if (!connectionProfile.groupId && !connectionProfile.groupFullName) {
 						connectionProfile.groupId = this.getGroupId('');
 					}
 				}
@@ -426,13 +425,6 @@ export class ConnectionStore {
 	}
 
 	/**
-	 * Remove a connection profile from the recently used list.
-	 */
-	private removeRecentlyUsed(conn: IConnectionProfile): Promise<void> {
-		return this.removeConnectionToMemento(conn, Constants.recentConnections);
-	}
-
-	/**
 	 * Remove a connection profile from the active connections list.
 	 */
 	public removeActiveConnection(conn: IConnectionProfile): Promise<void> {
@@ -449,7 +441,7 @@ export class ConnectionStore {
 	private doSavePassword(conn: IConnectionProfile): Promise<boolean> {
 		let self = this;
 		return new Promise<boolean>((resolve, reject) => {
-			if (Utils.isNotEmpty(conn.password)) {
+			if (conn.password) {
 				let credentialId = this.formatCredentialId(conn);
 				self._credentialService.saveCredential(credentialId, conn.password)
 					.then((result) => {
@@ -546,8 +538,6 @@ export class ConnectionStore {
 	}
 
 	public changeGroupIdForConnection(source: ConnectionProfile, targetGroupId: string): Promise<void> {
-		let oldId = source.getOptionsKey();
-		let oldParentId = source.parent.id;
 		return new Promise<void>((resolve, reject) => {
 			this._connectionConfig.changeGroupIdForConnection(source, targetGroupId).then(() => {
 				resolve();

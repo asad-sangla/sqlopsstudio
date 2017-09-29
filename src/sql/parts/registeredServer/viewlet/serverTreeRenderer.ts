@@ -7,7 +7,7 @@
 import 'vs/css!sql/media/objectTypes/objecttypes';
 import 'vs/css!sql/media/icons/common-icons';
 
-import { append, $, addDisposableListener, addStandardDisposableListener } from 'vs/base/browser/dom';
+import * as dom from 'vs/base/browser/dom';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -20,14 +20,10 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import { once } from 'vs/base/common/functional';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import types = require('vs/base/common/types');
+import * as types from 'vs/base/common/types';
 import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
-import dom = require('vs/base/browser/dom');
-import * as fs from 'fs';
-import { PathUtilities } from 'sql/common/pathUtilities';
-import uri from 'vs/base/common/uri';
 
 /**
  * Renders the tree items.
@@ -91,21 +87,21 @@ export class ServerTreeRenderer implements IRenderer {
 
 		if (templateId === ServerTreeRenderer.CONNECTION_TEMPLATE_ID) {
 			const connectionTemplate: IObjectExplorerTemplateData = Object.create(null);
-			connectionTemplate.root = dom.append(container, $('.connection-tile'));
-			connectionTemplate.icon = dom.append(connectionTemplate.root, $('div.icon server-page'));
-			connectionTemplate.label = dom.append(connectionTemplate.root, $('div.label'));
+			connectionTemplate.root = dom.append(container, dom.$('.connection-tile'));
+			connectionTemplate.icon = dom.append(connectionTemplate.root, dom.$('div.icon server-page'));
+			connectionTemplate.label = dom.append(connectionTemplate.root, dom.$('div.label'));
 			return connectionTemplate;
 		} else if (templateId === ServerTreeRenderer.CONNECTION_GROUP_TEMPLATE_ID) {
 			container.classList.add('server-group');
 			const groupTemplate: IConnectionProfileGroupTemplateData = Object.create(null);
-			groupTemplate.root = append(container, $('.server-group'));
-			groupTemplate.name = append(groupTemplate.root, $('span.name'));
+			groupTemplate.root = dom.append(container, dom.$('.server-group'));
+			groupTemplate.name = dom.append(groupTemplate.root, dom.$('span.name'));
 			return groupTemplate;
 		} else {
 			const objectExplorerTemplate: IObjectExplorerTemplateData = Object.create(null);
-			objectExplorerTemplate.root = dom.append(container, $('.object-element-group'));
-			objectExplorerTemplate.icon = dom.append(objectExplorerTemplate.root, $('div.object-icon'));
-			objectExplorerTemplate.label = dom.append(objectExplorerTemplate.root, $('div.label'));
+			objectExplorerTemplate.root = dom.append(container, dom.$('.object-element-group'));
+			objectExplorerTemplate.icon = dom.append(objectExplorerTemplate.root, dom.$('div.object-icon'));
+			objectExplorerTemplate.label = dom.append(objectExplorerTemplate.root, dom.$('div.label'));
 			return objectExplorerTemplate;
 		}
 	}
@@ -202,7 +198,7 @@ export class ServerTreeRenderer implements IRenderer {
 	}
 
 	private renderRenameBox(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
-		let inputBoxContainer = append(templateData.root, $('.inputBoxContainer'));
+		let inputBoxContainer = dom.append(templateData.root, dom.$('.inputBoxContainer'));
 		let inputBox = new InputBox(inputBoxContainer, this._contextViewService, {
 			validationOptions: {
 				validation: (value: string) => {
@@ -239,7 +235,7 @@ export class ServerTreeRenderer implements IRenderer {
 			}
 		});
 
-		toDispose.push(addStandardDisposableListener(inputBox.inputElement, 'keydown', (e: IKeyboardEvent) => {
+		toDispose.push(dom.addStandardDisposableListener(inputBox.inputElement, 'keydown', (e: IKeyboardEvent) => {
 			const isEscape = e.equals(KeyCode.Escape);
 			const isEnter = e.equals(KeyCode.Enter);
 			if (isEscape || isEnter) {
@@ -248,7 +244,7 @@ export class ServerTreeRenderer implements IRenderer {
 				wrapUp(isEnter);
 			}
 		}));
-		toDispose.push(addDisposableListener(inputBox.inputElement, 'blur', () => {
+		toDispose.push(dom.addDisposableListener(inputBox.inputElement, 'blur', () => {
 			wrapUp(true);
 		}));
 	}

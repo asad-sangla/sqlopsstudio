@@ -5,7 +5,6 @@
 
 import { $, append, show, hide } from 'vs/base/browser/dom';
 import { IDisposable, combinedDisposable } from 'vs/base/common/lifecycle';
-import URI from 'vs/base/common/uri';
 import { IStatusbarItem } from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IEditorCloseEvent } from 'vs/workbench/common/editor';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
@@ -19,8 +18,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { getCodeEditor as getEditorWidget } from 'vs/editor/common/services/codeEditorService';
 import nls = require('vs/nls');
 
-import { IConnectionManagementService, IConnectionParams } from 'sql/parts/connection/common/connectionManagement';
-import { QueryInput } from 'sql/parts/query/common/queryInput';
+import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 
 import { DidChangeLanguageFlavorParams } from 'data';
@@ -102,7 +100,7 @@ export class SqlFlavorStatusbarItem implements IStatusbarItem {
 		action.dispose();
 	}
 
-	private _onEditorClosed(event: IEditorCloseEvent): void{
+	private _onEditorClosed(event: IEditorCloseEvent): void {
 		let uri = WorkbenchUtils.getEditorUri(event.editor);
 		if (uri && uri in this._sqlStatusEditors) {
 			// If active editor is being closed, hide the query status.
@@ -118,7 +116,7 @@ export class SqlFlavorStatusbarItem implements IStatusbarItem {
 		}
 	}
 
-	private _onEditorsChanged(): void{
+	private _onEditorsChanged(): void {
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor) {
 			let uri = WorkbenchUtils.getEditorUri(activeEditor.input);
@@ -149,13 +147,13 @@ export class SqlFlavorStatusbarItem implements IStatusbarItem {
 	}
 
 	// Show/hide query status for active editor
-	private _showStatus(uri: string): void{
+	private _showStatus(uri: string): void {
 		let activeEditor = this._editorService.getActiveEditor();
 		if (activeEditor) {
 			let currentUri = WorkbenchUtils.getEditorUri(activeEditor.input);
 			if (uri === currentUri) {
 				let flavor: SqlProviderEntry = this._sqlStatusEditors[uri];
-				if (flavor){
+				if (flavor) {
 					this._flavorElement.textContent = flavor.label;
 				} else {
 					this._flavorElement.textContent = SqlProviderEntry.getDefaultLabel();
@@ -188,7 +186,7 @@ export class ChangeFlavorAction extends Action {
 		if (this._connectionManagementService.isConnected(currentUri)) {
 			let currentProvider = this._connectionManagementService.getProviderIdFromUri(currentUri);
 			return this._showMessage(Severity.Info, nls.localize('alreadyConnected',
-					"A connection using engine {0} exists. To change please disconnect or change connection", currentProvider));
+				"A connection using engine {0} exists. To change please disconnect or change connection", currentProvider));
 		}
 		const editorWidget = getEditorWidget(activeEditor);
 		if (!editorWidget) {

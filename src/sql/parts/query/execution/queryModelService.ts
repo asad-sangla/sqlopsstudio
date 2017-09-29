@@ -6,9 +6,7 @@
 'use strict';
 
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
-import Constants = require('sql/parts/query/common/constants');
-import LocalizedConstants = require('sql/parts/query/common/localizedConstants');
-import Utils = require('sql/parts/connection/common/utils');
+import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
 import QueryRunner from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
@@ -22,13 +20,14 @@ import {
 } from 'data';
 import { ISlickRange } from 'angular2-slickgrid';
 
-import nls = require('vs/nls');
-import statusbar = require('vs/workbench/browser/parts/statusbar/statusbar');
-import platform = require('vs/platform/registry/common/platform');
+import * as nls from 'vs/nls';
+import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
+import * as platform from 'vs/platform/registry/common/platform';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import Event, { Emitter } from 'vs/base/common/event';
 import { TPromise } from 'vs/base/common/winjs.base';
+import * as strings from 'vs/base/common/strings';
 
 interface QueryEvent {
 	type: string;
@@ -247,7 +246,7 @@ export class QueryModelService implements IQueryModelService {
 			let link = undefined;
 			if (batch.selection) {
 				link = {
-					text: Utils.formatString(LocalizedConstants.runQueryBatchStartLine, batch.selection.startLine + 1)
+					text: strings.format(LocalizedConstants.runQueryBatchStartLine, batch.selection.startLine + 1)
 				};
 			}
 			let message = {
@@ -302,7 +301,7 @@ export class QueryModelService implements IQueryModelService {
 		queryRunner.cancelQuery().then(success => undefined, error => {
 			// On error, show error message and notify that the query is complete so that buttons and other status indicators
 			// can be correct
-			this._messageService.show(Severity.Error, Utils.formatString(LocalizedConstants.msgCancelQueryFailed, error));
+			this._messageService.show(Severity.Error, strings.format(LocalizedConstants.msgCancelQueryFailed, error));
 			this._fireQueryEvent(queryRunner.uri, 'complete', 0);
 		});
 
@@ -344,7 +343,7 @@ export class QueryModelService implements IQueryModelService {
 				let link = undefined;
 				if (batch.selection) {
 					link = {
-						text: Utils.formatString(LocalizedConstants.runQueryBatchStartLine, batch.selection.startLine + 1),
+						text: strings.format(LocalizedConstants.runQueryBatchStartLine, batch.selection.startLine + 1),
 						uri: ''
 					};
 				}

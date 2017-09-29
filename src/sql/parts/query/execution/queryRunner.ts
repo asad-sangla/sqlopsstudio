@@ -18,7 +18,7 @@ import {
 } from 'data';
 
 import { EventEmitter } from 'events';
-import Constants = require('sql/parts/query/common/constants');
+import * as Constants from 'sql/parts/query/common/constants';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { ISlickRange } from 'angular2-slickgrid';
@@ -27,9 +27,9 @@ import * as Utils from 'sql/parts/connection/common/utils';
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
-import nls = require('vs/nls');
+import * as nls from 'vs/nls';
 
-import os = require('os');
+import * as os from 'os';
 
 /*
 * Query Runner class which handles running a query, reports the results to the content manager,
@@ -231,11 +231,11 @@ export default class QueryRunner {
 		// Store the batch again to get the rest of the data
 		this._batchSets[batch.id] = batch;
 		let executionTime = <number>(Utils.parseTimeString(batch.executionElapsed) || 0);
-        this._totalElapsedMilliseconds += executionTime;
-        if (executionTime > 0) {
-            // send a time message in the format used for query complete
-            this.sendBatchTimeMessage(batch.id, Utils.parseNumAsTimeString(executionTime));
-        }
+		this._totalElapsedMilliseconds += executionTime;
+		if (executionTime > 0) {
+			// send a time message in the format used for query complete
+			this.sendBatchTimeMessage(batch.id, Utils.parseNumAsTimeString(executionTime));
+		}
 		this.eventEmitter.emit('batchComplete', batch);
 	}
 
@@ -504,19 +504,19 @@ export default class QueryRunner {
 		return outputString;
 	}
 
-    private sendBatchTimeMessage(batchId: number, executionTime: string): void {
+	private sendBatchTimeMessage(batchId: number, executionTime: string): void {
 		// get config copyRemoveNewLine option from vscode config
-        let showBatchTime: boolean = WorkbenchUtils.getSqlConfigValue<boolean>(this._workspaceConfigurationService, Constants.configShowBatchTime);
-        if (showBatchTime) {
-            let message: IResultMessage = {
-                batchId: batchId,
-                message: Utils.formatString(nls.localize('elapsedBatchTime', 'Batch execution time: {0}', executionTime)),
-                time: undefined,
-                isError: false
-            };
-            // Send the message to the results pane
-            this.eventEmitter.emit('message', message);
-        }
-    }
+		let showBatchTime: boolean = WorkbenchUtils.getSqlConfigValue<boolean>(this._workspaceConfigurationService, Constants.configShowBatchTime);
+		if (showBatchTime) {
+			let message: IResultMessage = {
+				batchId: batchId,
+				message: nls.localize('elapsedBatchTime', 'Batch execution time: {0}', executionTime),
+				time: undefined,
+				isError: false
+			};
+			// Send the message to the results pane
+			this.eventEmitter.emit('message', message);
+		}
+	}
 
 }

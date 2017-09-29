@@ -19,7 +19,7 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
-import { ISqlWindowService } from 'sql/common/sqlWindowServices';
+import { IClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 
 import { $ } from 'vs/base/browser/dom';
@@ -35,8 +35,8 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from './bootstrapService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
-import { IWindowsService } from 'vs/platform/windows/common/windows';
+import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { IWindowsService, IWindowService } from 'vs/platform/windows/common/windows';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 
@@ -82,9 +82,10 @@ export class BootstrapService implements IBootstrapService {
 		@IWorkspaceContextService public workspaceContextService: IWorkspaceContextService,
 		@IAccountManagementService public accountManagementService: IAccountManagementService,
 		@IWindowsService public windowsService: IWindowsService,
-		@ISqlWindowService public sqlWindowService: ISqlWindowService,
+		@IWindowService public windowService: IWindowService,
 		@ITelemetryService public telemetryService: ITelemetryService,
 		@IStorageService public storageService: IStorageService,
+		@IClipboardService public clipboardService: IClipboardService,
 		@ICapabilitiesService public capabilitiesService: ICapabilitiesService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();

@@ -92,7 +92,8 @@ export class QueryManagementService implements IQueryManagementService {
 
 	constructor(
 		@IConnectionManagementService private _connectionService: IConnectionManagementService,
-		@ITelemetryService private _telemetryService: ITelemetryService) {
+		@ITelemetryService private _telemetryService: ITelemetryService
+	) {
 	}
 
 	// Registers queryRunners with their uris to distribute notifications.

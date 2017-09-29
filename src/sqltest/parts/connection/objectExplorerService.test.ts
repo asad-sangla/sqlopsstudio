@@ -11,8 +11,9 @@ import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionPr
 import { ObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
+
 import { TPromise } from 'vs/base/common/winjs.base';
-import data = require('data');
+import * as data from 'data';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 

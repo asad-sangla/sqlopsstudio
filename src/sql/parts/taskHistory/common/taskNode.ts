@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 'use strict';
 import * as Utils from 'sql/parts/connection/common/utils';
+import { StopWatch } from 'vs/base/common/stopwatch';
 
 export enum TaskStatus {
 	notStarted = 0,
@@ -23,49 +24,49 @@ export enum TaskExecutionMode {
 
 export class TaskNode {
 	/**
-     * id for TaskNode
-     */
+	 * id for TaskNode
+	 */
 	public id: string;
 
-    /**
-     * string defining the type of the task - for example Backup, Restore
-     */
+	/**
+	 * string defining the type of the task - for example Backup, Restore
+	 */
 	public taskName: string;
 
-    /**
-     * sever name
-     */
+	/**
+	 * sever name
+	 */
 	public serverName: string;
 
 	/**
-     * Database Name
-     */
+	 * Database Name
+	 */
 	public databaseName: string;
 
 	/**
-     * Provider Name
-     */
+	 * Provider Name
+	 */
 	public providerName: string;
 
 
 	/**
-     * The start time of the task
-     */
+	 * The start time of the task
+	 */
 	public startTime: string;
 
 	/**
-     * The end time of the task
-     */
+	 * The end time of the task
+	 */
 	public endTime: string;
 
 	/**
-     * The timer for the task
-     */
-	public timer: Utils.Timer;
+	 * The timer for the task
+	 */
+	public timer: StopWatch;
 
 	/**
-     * Does this node have children
-     */
+	 * Does this node have children
+	 */
 	public hasChildren: boolean;
 
 	/**
@@ -79,13 +80,13 @@ export class TaskNode {
 	public message: string;
 
 	/**
-     * Status of the task
-     */
+	 * Status of the task
+	 */
 	public status: TaskStatus;
 
 	/**
-     * Execution mode of task
-     */
+	 * Execution mode of task
+	 */
 	public taskExecutionMode: TaskExecutionMode;
 
 	/**
@@ -108,7 +109,7 @@ export class TaskNode {
 		this.taskName = taskName;
 		this.serverName = serverName;
 		this.databaseName = databaseName;
-		this.timer = new Utils.Timer();
+		this.timer = StopWatch.create();
 		this.startTime = new Date().toLocaleTimeString();
 		this.status = TaskStatus.inProgress;
 		this.hasChildren = false;

@@ -11,12 +11,12 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import Event, { Emitter } from 'vs/base/common/event';
-import data = require('data');
-import Utils = require('sql/parts/connection/common/utils');
-import nls = require('vs/nls');
+import * as data from 'data';
+import * as nls from 'vs/nls';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { warn, error } from 'sql/base/common/log';
 
 export const SERVICE_ID = 'ObjectExplorerService';
 
@@ -123,15 +123,15 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	 */
 	public onNodeExpanded(handle: number, expandResponse: data.ObjectExplorerExpandInfo) {
 
-		if (!Utils.isEmpty(expandResponse.errorMessage)) {
-			Utils.logDebug(expandResponse.errorMessage);
+		if (expandResponse.errorMessage) {
+			error(expandResponse.errorMessage);
 		}
 
 		let nodeStatus = this._sessions[expandResponse.sessionId].nodes[expandResponse.nodePath];
 		if (nodeStatus && nodeStatus.expandHandler) {
 			nodeStatus.expandHandler(expandResponse);
 		} else {
-			Utils.logDebug(`Cannot find node status for session: ${expandResponse.sessionId} and node path: ${expandResponse.nodePath}`);
+			warn(`Cannot find node status for session: ${expandResponse.sessionId} and node path: ${expandResponse.nodePath}`);
 		}
 	}
 
@@ -150,13 +150,13 @@ export class ObjectExplorerService implements IObjectExplorerService {
 				server.session = session;
 				this._activeObjectExplorerNodes[connection.id] = server;
 			} else {
-				errorMessage = session && !Utils.isEmpty(session.errorMessage) ? session.errorMessage :
+				errorMessage = session && session.errorMessage ? session.errorMessage :
 					nls.localize('OeSessionFailedError', 'Failed to create Object Explorer session');
-				Utils.logDebug(errorMessage);
+				error(errorMessage);
 			}
 
 		} else {
-			Utils.logDebug(`cannot find session ${session.sessionId}`);
+			warn(`cannot find session ${session.sessionId}`);
 		}
 
 		this.sendUpdateNodeEvent(connection, errorMessage);
@@ -245,7 +245,7 @@ export class ObjectExplorerService implements IObjectExplorerService {
 			if (session.sessionId in self._sessions && self._sessions[session.sessionId]) {
 				self._sessions[session.sessionId].nodes[nodePath] = {
 					expandHandler: ((expandResult) => {
-						if (expandResult && Utils.isEmpty(expandResult.errorMessage)) {
+						if (expandResult && !expandResult.errorMessage) {
 							resolve(expandResult);
 						}
 						else {

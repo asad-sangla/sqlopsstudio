@@ -164,7 +164,7 @@ export class ConnectionConfig implements IConnectionConfig {
 	 */
 	public addGroupFromProfile(profile: IConnectionProfile): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
-			if (profile.groupId && profile.groupId !== Utils.defaultGroupId()) {
+			if (profile.groupId && profile.groupId !== Utils.defaultGroupId) {
 				resolve(profile.groupId);
 			} else {
 				let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
@@ -217,7 +217,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		if (userProfiles !== undefined) {
 			profiles = profiles.concat(userProfiles);
 			profiles.forEach(profile => {
-				if (Utils.isEmpty(profile.id)) {
+				if (!profile.id) {
 					profile.id = Utils.generateGuid();
 				}
 			});
@@ -232,7 +232,7 @@ export class ConnectionConfig implements IConnectionConfig {
 			if (workspaceProfiles !== undefined) {
 				profiles = profiles.concat(workspaceProfiles);
 				workspaceProfiles.forEach(profile => {
-					if (Utils.isEmpty(profile.id)) {
+					if (!profile.id) {
 						profile.id = Utils.generateGuid();
 					}
 				});
@@ -407,8 +407,8 @@ export class ConnectionConfig implements IConnectionConfig {
 	private isSameGroupName(group1: IConnectionProfileGroup, group2: IConnectionProfileGroup): boolean {
 		let sameGroupName: boolean = false;
 		if (group1 && group2) {
-			sameGroupName = ((Utils.isEmpty(group1.name) && Utils.isEmpty(group2.name)) || group1.name.toUpperCase() === group2.name.toUpperCase()) &&
-				(group1.parentId === group2.parentId || (Utils.isEmpty(group1.parentId) && Utils.isEmpty(group2.parentId)));
+			sameGroupName = ((!group1.name && !group2.name) || group1.name.toUpperCase() === group2.name.toUpperCase()) &&
+				(group1.parentId === group2.parentId || (!group1.parentId && !group2.parentId));
 		}
 		return sameGroupName;
 	}
@@ -441,7 +441,7 @@ export class ConnectionConfig implements IConnectionConfig {
 
 			} else {
 				if (ConnectionProfileGroup.isRoot(newGroup.name)) {
-					newGroup.id = Utils.defaultGroupId();
+					newGroup.id = Utils.defaultGroupId;
 				} else {
 					newGroup.id = Utils.generateGuid();
 				}

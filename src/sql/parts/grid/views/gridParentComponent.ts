@@ -17,7 +17,7 @@ import { IGridDataRow, ISlickRange, SlickGrid, FieldType } from 'angular2-slickg
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import * as Constants from 'sql/parts/query/common/constants';
 import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
-import { IGridInfo, IRange, IGridDataSet, SaveFormat, JsonFormat, ExcelFormat, CsvFormat } from 'sql/parts/grid/common/interfaces';
+import { IGridInfo, IRange, IGridDataSet, SaveFormat } from 'sql/parts/grid/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import * as actions from 'sql/parts/grid/views/gridActions';
@@ -26,7 +26,7 @@ import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import { ResultsVisibleContext, ResultsGridFocussedContext, ResultsMessagesFocussedContext } from 'sql/parts/query/common/queryContext';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
-import * as rangy from 'sql/common/lib/rangy';
+import * as rangy from 'sql/base/node/rangy';
 
 import { IAction } from 'vs/base/common/actions';
 import { ResolvedKeybinding } from 'vs/base/common/keyCodes';
@@ -155,13 +155,13 @@ export abstract class GridParentComponent {
 					self.selectAllMessages();
 					break;
 				case GridContentEvents.SaveAsCsv:
-					self.sendSaveRequest(CsvFormat);
+					self.sendSaveRequest(SaveFormat.CSV);
 					break;
 				case GridContentEvents.SaveAsJSON:
-					self.sendSaveRequest(JsonFormat);
+					self.sendSaveRequest(SaveFormat.JSON);
 					break;
 				case GridContentEvents.SaveAsExcel:
-					self.sendSaveRequest(ExcelFormat);
+					self.sendSaveRequest(SaveFormat.EXCEL);
 					break;
 				default:
 					console.error('Unexpected grid content event type "' + type + '" sent');
@@ -277,13 +277,13 @@ export abstract class GridParentComponent {
 				this.onSelectAllForActiveGrid();
 			},
 			'SaveAsCSV': () => {
-				this.sendSaveRequest(CsvFormat);
+				this.sendSaveRequest(SaveFormat.CSV);
 			},
 			'SaveAsJSON': () => {
-				this.sendSaveRequest(JsonFormat);
+				this.sendSaveRequest(SaveFormat.JSON);
 			},
 			'SaveAsExcel': () => {
-				this.sendSaveRequest(ExcelFormat);
+				this.sendSaveRequest(SaveFormat.EXCEL);
 			}
 		};
 
@@ -299,13 +299,13 @@ export abstract class GridParentComponent {
 	handleContextClick(event: { type: string, batchId: number, resultId: number, index: number, selection: ISlickRange[] }): void {
 		switch (event.type) {
 			case 'savecsv':
-				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: CsvFormat, selection: event.selection });
+				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: SaveFormat.CSV, selection: event.selection });
 				break;
 			case 'savejson':
-				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: JsonFormat, selection: event.selection });
+				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: SaveFormat.JSON, selection: event.selection });
 				break;
 			case 'saveexcel':
-				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: ExcelFormat, selection: event.selection });
+				this.dataService.sendSaveRequest({ batchIndex: event.batchId, resultSetNumber: event.resultId, format: SaveFormat.EXCEL, selection: event.selection });
 				break;
 			case 'selectall':
 				this.activeGrid = event.index;

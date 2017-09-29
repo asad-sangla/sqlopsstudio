@@ -120,7 +120,7 @@ export class TaskHistoryRenderer implements IRenderer {
 
 			if (taskNode.timer) {
 				// Round task duration to seconds and then convert back to milliseconds
-				let duration = Math.floor(taskNode.timer.getDuration() / 1000) * 1000;
+				let duration = Math.floor(taskNode.timer.elapsed() / 1000) * 1000;
 				timeLabel += ' (' + Utils.parseNumAsTimeString(duration) + ')';
 			}
 		}

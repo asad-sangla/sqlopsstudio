@@ -89,7 +89,7 @@ export class ConnectionDialogWidget extends Modal {
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IPartService _partService: IPartService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(localize('connection', 'Connection'), TelemetryKeys.Connection, _partService, telemetryService, { hasSpinner: true, hasErrors: true });
 	}

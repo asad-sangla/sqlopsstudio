@@ -4,13 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import data = require('data');
-
-export enum AuthenticationTypes {
-	Integrated = 1,
-	SqlLogin = 2,
-	ActiveDirectoryUniversal = 3
-}
+import * as data from 'data';
 
 // A Connection Profile contains all the properties of connection credentials, with additional
 // optional name and details on whether password should be saved

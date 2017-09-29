@@ -5,7 +5,7 @@
 
 'use strict';
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
-import { ITelemetryService, ITelemetryData } from 'vs/platform/telemetry/common/telemetry';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { TelemetryServiceStub } from 'sqltest/stubs/telemetryServiceStub';
 import * as TypeMoq from 'typemoq';
 import { TPromise } from 'vs/base/common/winjs.base';

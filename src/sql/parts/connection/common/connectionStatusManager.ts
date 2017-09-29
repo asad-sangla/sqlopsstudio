@@ -8,8 +8,9 @@ import { ConnectionManagementInfo } from './connectionManagementInfo';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IConnectionProfile } from './interfaces';
-import Utils = require('./utils');
+import * as Utils from './utils';
 import * as data from 'data';
+import { StopWatch } from 'vs/base/common/stopwatch';
 
 export class ConnectionStatusManager {
 
@@ -75,12 +76,12 @@ export class ConnectionStatusManager {
 		const self = this;
 		let connectionInfo: ConnectionManagementInfo = new ConnectionManagementInfo();
 		connectionInfo.providerId = connection.providerName;
-		connectionInfo.extensionTimer = new Utils.Timer();
-		connectionInfo.intelliSenseTimer = new Utils.Timer();
+		connectionInfo.extensionTimer = StopWatch.create();
+		connectionInfo.intelliSenseTimer = StopWatch.create();
 		connectionInfo.connectionProfile = connectionProfile;
 		connectionInfo.connecting = true;
 		self._connections[id] = connectionInfo;
-		connectionInfo.serviceTimer = new Utils.Timer();
+		connectionInfo.serviceTimer = StopWatch.create();
 		connectionInfo.ownerUri = id;
 
 		return connectionInfo;
@@ -119,7 +120,7 @@ export class ConnectionStatusManager {
 
 	public onConnectionComplete(summary: data.ConnectionInfoSummary): ConnectionManagementInfo {
 		let connection = this._connections[summary.ownerUri];
-		connection.serviceTimer.end();
+		connection.serviceTimer.stop();
 		connection.connecting = false;
 		connection.connectionId = summary.connectionId;
 		connection.serverInfo = summary.serverInfo;
@@ -157,7 +158,7 @@ export class ConnectionStatusManager {
 		let ownerUriToReturn: string = ownerUri;
 
 		let connectionStatusInfo = this.findConnection(ownerUriToReturn);
-		if (connectionStatusInfo && !Utils.isEmpty(connectionStatusInfo.ownerUri)) {
+		if (connectionStatusInfo && connectionStatusInfo.ownerUri) {
 			//The ownerUri in the connection status is the one service knows about so use that
 			//To call the service for any operation
 			ownerUriToReturn = connectionStatusInfo.ownerUri;
@@ -177,7 +178,7 @@ export class ConnectionStatusManager {
 	}
 
 	public isConnected(id: string): boolean {
-		return (id in this._connections && this._connections[id].connectionId && Utils.isNotEmpty(this._connections[id].connectionId));
+		return (id in this._connections && this._connections[id].connectionId && !!this._connections[id].connectionId);
 	}
 
 	public isConnecting(id: string): boolean {
@@ -194,7 +195,7 @@ export class ConnectionStatusManager {
 		if (connection) {
 			providerId = connection.connectionProfile.providerName;
 		}
-		if (Utils.isEmpty(providerId) && this.isDefaultTypeUri(ownerUri)) {
+		if (!providerId && this.isDefaultTypeUri(ownerUri)) {
 			let optionsKey = ownerUri.replace(Utils.uriPrefixes.default, '');
 			providerId = ConnectionProfile.getProviderFromOptionsKey(optionsKey);
 		}

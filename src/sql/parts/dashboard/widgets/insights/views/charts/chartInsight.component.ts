@@ -11,7 +11,7 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import { IInsightsView, IInsightData } from 'sql/parts/dashboard/widgets/insights/interfaces';
-import { memoize, unmemoize } from 'sql/common/decorators';
+import { memoize, unmemoize } from 'sql/base/common/decorators';
 
 /* VS Imports */
 import * as colors from 'vs/platform/theme/common/colorRegistry';
@@ -41,7 +41,7 @@ export enum LegendPosition {
 	Bottom = 'bottom',
 	Left = 'left',
 	Right = 'right',
-	None =  'none'
+	None = 'none'
 }
 
 export function customMixin(destination: any, source: any, overwrite?: boolean): any {
@@ -104,7 +104,7 @@ export abstract class ChartInsight implements IInsightsView, OnDestroy {
 	private _options: any = {};
 
 	@ViewChild(BaseChartDirective) private _chart: BaseChartDirective;
-	@ViewChild('canvas', {read: ElementRef}) private _canvas: ElementRef;
+	@ViewChild('canvas', { read: ElementRef }) private _canvas: ElementRef;
 
 	protected _defaultConfig = defaultChartConfig;
 	protected _disposables: Array<IDisposable> = [];

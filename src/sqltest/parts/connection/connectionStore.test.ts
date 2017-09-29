@@ -14,9 +14,8 @@ import { ConnectionStore } from 'sql/parts/connection/common/connectionStore';
 import { CredentialsService } from 'sql/services/credentials/credentialsService';
 import * as assert from 'assert';
 import { Memento } from 'vs/workbench/common/memento';
-import * as Utils from 'sql/parts/connection/common/utils';
 import { CapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
-import data = require('data');
+import * as data from 'data';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { Emitter } from 'vs/base/common/event';
 import { IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
@@ -213,7 +212,7 @@ suite('SQL ConnectionStore tests', () => {
 					assert.equal(current.length, i + 1, `expect all credentials to be saved ${current.length}|${i + 1} `);
 				}
 				assert.equal(current[0].serverName, cred.serverName, 'Expect most recently saved item to be first in list');
-				assert.ok(Utils.isEmpty(current[0].password));
+				assert.ok(!current[0].password);
 			});
 		}
 		promise.then(() => {
@@ -251,7 +250,7 @@ suite('SQL ConnectionStore tests', () => {
 			let current = connectionStore.getRecentlyUsedConnections();
 			assert.equal(current.length, 2, 'expect 2 unique credentials to have been added');
 			assert.equal(current[0].serverName, cred.serverName, 'Expect most recently saved item to be first in list');
-			assert.ok(Utils.isEmpty(current[0].password));
+			assert.ok(!current[0].password);
 		}).then(() => done(), err => done(err));
 	});
 
@@ -297,7 +296,7 @@ suite('SQL ConnectionStore tests', () => {
 			assert.strictEqual(capturedCreds.password, defaultNamedProfile.password);
 			let credId: string = capturedCreds.credentialId;
 			assert.ok(credId.includes(ConnectionStore.CRED_PROFILE_USER), 'Expect credential to be marked as an Profile cred');
-			assert.ok(Utils.isEmpty(current[0].password));
+			assert.ok(!current[0].password);
 		}).then(() => {
 			// When add integrated auth connection
 			expectedCredCount++;
