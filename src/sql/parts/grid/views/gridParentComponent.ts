@@ -40,10 +40,14 @@ import { DragCellSelectionModel } from 'sql/base/browser/ui/table/plugins/dragCe
 export abstract class GridParentComponent {
 	// CONSTANTS
 	// tslint:disable:no-unused-variable
-	protected selectionModel = new DragCellSelectionModel<any>();
-	protected slickgridPlugins = [
-		new AutoColumnSize<any>({})
-	];
+	protected get selectionModel(): DragCellSelectionModel<any> {
+		return new DragCellSelectionModel<any>();
+	}
+	protected get slickgridPlugins(): Array<any> {
+		return [
+			new AutoColumnSize<any>({})
+		];
+	}
 	protected _rowHeight = 29;
 	protected _defaultNumShowingRows = 8;
 	protected Constants = Constants;
