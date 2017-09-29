@@ -6,18 +6,20 @@
 import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
 import 'vs/css!sql/media/primeng';
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
-import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
-import { ModalFooterStyle } from 'sql/parts/common/modal/modal';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { ListBox } from 'sql/base/browser/ui/listBox/listBox';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import { ModalFooterStyle } from 'sql/parts/common/modal/modal';
 import { attachListBoxStyler, attachInputBoxStyler } from 'sql/common/theme/styler';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import BackupConstants = require('sql/parts/disasterRecovery/backup/constants');
+import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
+import { FileBrowserDialog } from 'sql/parts/fileBrowser/fileBrowserDialog';
+import FileValidationConstants = require('sql/parts/fileBrowser/common/fileValidationServiceConstants');
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 import * as lifecycle from 'vs/base/common/lifecycle';
@@ -94,7 +96,6 @@ export class BackupComponent {
 	@ViewChild('cancelButtonContainer', { read: ElementRef }) cancelButtonElement;
 	@ViewChild('addPathContainer', { read: ElementRef }) addPathElement;
 	@ViewChild('removePathContainer', { read: ElementRef }) removePathElement;
-	@ViewChild('pathInputContainer', { read: ElementRef }) pathInputElement;
 	@ViewChild('copyOnlyContainer', { read: ElementRef }) copyOnlyElement;
 	@ViewChild('encryptCheckContainer', { read: ElementRef }) encryptElement;
 	@ViewChild('encryptContainer', { read: ElementRef }) encryptContainerElement;
@@ -145,20 +146,22 @@ export class BackupComponent {
 	private backupEncryptors;
 	private containsBackupToUrl: boolean;
 	private errorMessage: string;
+    private fileBrowserDialog: FileBrowserDialog;
 
 	// UI element disable flag
 	private disableFileComponent: boolean;
 	private disableTlog: boolean;
 
 	private selectedBackupComponent: string;
-	private selectedFilesText: string;
-	private selectedInitOption: string;
-	private isTruncateChecked: boolean;
-	private isTaillogChecked: boolean;
-	private isFormatChecked: boolean;
-	private isEncryptChecked: boolean;
-	// Key: backup path, Value: device type
-	private backupPathTypePairs: { [path: string]: number };
+    private selectedFilesText: string;
+    private selectedInitOption: string;
+    private isTruncateChecked: boolean;
+    private isTaillogChecked: boolean;
+    private isFormatChecked: boolean;
+    private isEncryptChecked: boolean;
+    // Key: backup path, Value: device type
+    private backupPathTypePairs: { [path: string]: number };
+    private fileFilters: [ {label: string, filters: string[]} ];
 
 	private compressionOptions = [BackupConstants.defaultCompression, BackupConstants.compressionOn, BackupConstants.compressionOff];
 	private encryptionAlgorithms = [BackupConstants.aes128, BackupConstants.aes192, BackupConstants.aes256, BackupConstants.tripleDES];
@@ -169,7 +172,6 @@ export class BackupComponent {
 	private backupNameBox: InputBox;
 	private recoveryBox: InputBox;
 	private backupRetainDaysBox: InputBox;
-	private pathInputBox: InputBox;
 	private backupButton: Button;
 	private cancelButton: Button;
 	private scriptButton: Button;
@@ -214,30 +216,34 @@ export class BackupComponent {
 		});
 	}
 
-	private initialize(isMetadataPopulated: boolean): void {
-		this.databaseName = this.connection.databaseName;
-		this.selectedBackupComponent = BackupConstants.labelDatabase;
-		this.backupPathTypePairs = {};
-		this.isFormatChecked = false;
-		this.isEncryptChecked = false;
-		this.selectedInitOption = this.existingMediaOptions[0];
-		this.backupTypeOptions = [];
+    private initialize(isMetadataPopulated: boolean): void {
+        this.databaseName = this.connection.databaseName;
+        this.selectedBackupComponent = BackupConstants.labelDatabase;
+        this.backupPathTypePairs = {};
+        this.isFormatChecked = false;
+        this.isEncryptChecked = false;
+        this.selectedInitOption = this.existingMediaOptions[0];
+        this.backupTypeOptions = [];
+        this.fileFilters = [
+            { label: localize('backup.filterBackupFiles', "Backup Files"), filters: ['*.bak', '*.trn'] },
+            { label: localize('backup.allFiles', "All Files"), filters: ['*'] }
+        ];
 
 		// Set script footer button
 		this.scriptButton = new Button(this.scriptButtonElement.nativeElement);
-		this.scriptButton.label = 'Script';
+		this.scriptButton.label = localize('script', 'Script');
 		this._toDispose.push(this.scriptButton.addListener('click', () => this.onScript()));
 		this._toDispose.push(attachButtonStyler(this.scriptButton, this._bootstrapService.themeService));
 
 		// Set backup footer button
 		this.backupButton = new Button(this.backupButtonElement.nativeElement);
-		this.backupButton.label = 'Backup';
+		this.backupButton.label = localize('backup', 'Backup');
 		this._toDispose.push(this.backupButton.addListener('click', () => this.onOk()));
 		this._toDispose.push(attachButtonStyler(this.backupButton, this._bootstrapService.themeService));
 
 		// Set cancel footer button
 		this.cancelButton = new Button(this.cancelButtonElement.nativeElement);
-		this.cancelButton.label = 'Cancel';
+		this.cancelButton.label = localize('cancel', 'Cancel');
 		this._toDispose.push(this.cancelButton.addListener('click', () => this.onCancel()));
 		this._toDispose.push(attachButtonStyler(this.cancelButton, this._bootstrapService.themeService));
 
@@ -311,14 +317,14 @@ export class BackupComponent {
 			this.pathListBox = new ListBox(pathlist, pathlist[0], this._bootstrapService.contextViewService);
 			this.pathListBox.render(this.pathElement.nativeElement);
 
-			// Set backup path input
-			this.pathInputBox = new InputBox(this.pathInputElement.nativeElement, this._bootstrapService.contextViewService);
-			this.addPathButton = new Button(this.addPathElement.nativeElement);
-			this.addPathButton.label = '+';
-			this.addPathButton.addListener('click', () => this.onAddClick());
-			this.removePathButton = new Button(this.removePathElement.nativeElement);
-			this.removePathButton.label = '-';
-			this.removePathButton.addListener('click', () => this.onRemoveClick());
+            // Set backup path add/remove buttons
+            this.addPathButton = new Button(this.addPathElement.nativeElement);
+            this.addPathButton.label = '+';
+            this.addPathButton.addListener('click', () => this.onAddClick());
+
+            this.removePathButton = new Button(this.removePathElement.nativeElement);
+            this.removePathButton.label = '-';
+            this.removePathButton.addListener('click', () => this.onRemoveClick());
 
 			// Set compression
 			this.compressionSelectBox = new SelectBox(this.compressionOptions, this.compressionOptions[0]);
@@ -365,25 +371,24 @@ export class BackupComponent {
 
 			this.setTLogOptions();
 
-			// apply theme
-			this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachListBoxStyler(this.pathListBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.pathInputBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
-			this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
-			this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
+            // apply theme
+            this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachListBoxStyler(this.pathListBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
+            this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
+            this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
+            this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
 
 			// disable elements
 			this.recoveryBox.disable();
@@ -489,27 +494,31 @@ export class BackupComponent {
 		this._changeDetectorRef.detectChanges();
 	}
 
-	private onAddClick(): void {
-		if (this.pathInputBox.value && this.pathInputBox.value.length > 0) {
-			if (!this.backupPathTypePairs[this.pathInputBox.value]) {
-				if ((this.getBackupPathCount() < BackupConstants.maxDevices)) {
-					this.backupPathTypePairs[this.pathInputBox.value] = BackupConstants.deviceTypeFile;
-					this.pathListBox.add(this.pathInputBox.value);
-					this.enableBackupButton();
+    private onAddClick(): void {
+        this._bootstrapService.fileBrowserDialogService.showDialog(this._uri,
+            this.defaultNewBackupFolder,
+            this.fileFilters,
+            FileValidationConstants.backup,
+            (filepath => this.handlePathAdded(filepath)));
+    }
 
-					// stop showing error message if the list content was invalid due to no file path
-					if (!this.pathListBox.isContentValid && this.pathListBox.count === 1) {
-						this.pathListBox.setValidation(true);
-					}
-				}
-			}
+    private handlePathAdded(filepath: string) {
+        if (filepath && !this.backupPathTypePairs[filepath]) {
+            if ((this.getBackupPathCount() < BackupConstants.maxDevices)) {
+                this.backupPathTypePairs[filepath] = BackupConstants.deviceTypeFile;
+                this.pathListBox.add(filepath);
+                this.enableBackupButton();
+                this.enableAddRemoveButtons();
 
-			// Reset the path text input
-			this.pathInputBox.value = '';
-			this.enableAddRemoveButtons();
-			this._changeDetectorRef.detectChanges();
-		}
-	}
+                // stop showing error message if the list content was invalid due to no file path
+                if (!this.pathListBox.isContentValid && this.pathListBox.count === 1) {
+                    this.pathListBox.setValidation(true);
+                }
+
+                this._changeDetectorRef.detectChanges();
+            }
+        }
+    }
 
 	private onRemoveClick(): void {
 		let self = this;

@@ -449,4 +449,65 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 				: Promise.resolve(undefined);
 		});
 	}
+
+	/**
+	 * Open a file browser
+	 */
+	public $openFileBrowser(handle: number, ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean> {
+		return this._runWithProvider(handle, provider => {
+			return provider.fileBrowserProvider ? provider.fileBrowserProvider.openFileBrowser(ownerUri, expandPath, fileFilters)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
+	 * Send event when opening browser is complete
+	 */
+	public $onFileBrowserOpened(handle: number, response: data.FileBrowserOpenedParams): void {
+		this._proxy.$onFileBrowserOpened(handle, response);
+	}
+
+	/**
+	 * Expand a folder node
+	 */
+	public $expandFolderNode(handle: number, ownerUri: string, expandPath: string): Thenable<boolean> {
+		return this._runWithProvider(handle, provider => {
+			return provider.fileBrowserProvider ? provider.fileBrowserProvider.expandFolderNode(ownerUri, expandPath)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
+	 * Send event when expansion is complete
+	 */
+	public $onFolderNodeExpanded(handle: number, response: data.FileBrowserExpandedParams): void {
+		this._proxy.$onFolderNodeExpanded(handle, response);
+	}
+
+	/**
+	 * Validate selected file path
+	 */
+	public $validateFilePaths(handle: number, ownerUri: string, serviceType: string, selectedFiles: string[]): Thenable<boolean> {
+		return this._runWithProvider(handle, provider => {
+			return provider.fileBrowserProvider ? provider.fileBrowserProvider.validateFilePaths(ownerUri, serviceType, selectedFiles)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
+	 * Send event when validation is complete
+	 */
+	public $onFilePathsValidated(handle: number, response: data.FileBrowserValidatedParams) {
+		this._proxy.$onFilePathsValidated(handle, response);
+	}
+
+	/**
+	 * Close file browser
+	 */
+	public $closeFileBrowser(handle: number, ownerUri: string): Thenable<data.FileBrowserCloseResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.fileBrowserProvider ? provider.fileBrowserProvider.closeFileBrowser(ownerUri)
+				: Promise.resolve(undefined);
+		});
+	}
 }

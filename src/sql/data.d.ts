@@ -438,6 +438,8 @@ declare module 'data' {
 		disasterRecoveryProvider: DisasterRecoveryProvider;
 
 		taskServicesProvider: TaskServicesProvider;
+
+		fileBrowserProvider: FileBrowserProvider;
 	}
 
 	/**
@@ -1018,6 +1020,55 @@ declare module 'data' {
 		uri: string;
 		rowCount: number;
 		data: IProfilerTableRow;
+	}
+
+	// File browser interfaces  -----------------------------------------------------------------------
+
+	export interface FileBrowserProvider {
+		openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean>;
+		registerOnFileBrowserOpened(handler: (response: FileBrowserOpenedParams) => any);
+		expandFolderNode(ownerUri: string, expandPath: string): Thenable<boolean>;
+		registerOnFolderNodeExpanded(handler: (response: FileBrowserExpandedParams) => any);
+		validateFilePaths(ownerUri: string, serviceType: string, selectedFiles: string[]): Thenable<boolean>;
+		registerOnFilePathsValidated(handler: (response: FileBrowserValidatedParams) => any);
+		closeFileBrowser(ownerUri: string): Thenable<FileBrowserCloseResponse>;
+	}
+
+	export interface FileTreeNode {
+		children: FileTreeNode[];
+		isExpanded: boolean;
+		isFile: boolean;
+		name: string;
+		fullPath: string;
+	}
+
+	export interface FileTree {
+		rootNode: FileTreeNode;
+		selectedNode: FileTreeNode;
+	}
+
+	export interface FileBrowserOpenedParams {
+		ownerUri: string;
+		fileTree: FileTree;
+		succeeded: boolean;
+		message: string;
+	}
+
+	export interface FileBrowserExpandedParams {
+		ownerUri: string;
+		expandedNode: FileTreeNode;
+		succeeded: boolean;
+		message: string;
+	}
+
+	export interface FileBrowserValidatedParams {
+		succeeded: boolean;
+		message: string;
+	}
+
+	export interface FileBrowserCloseResponse {
+		succeeded: boolean;
+		message: string;
 	}
 
 	// ACCOUNT MANAGEMENT //////////////////////////////////////////////////

@@ -30,7 +30,7 @@ import {
 	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo,
 	TaskServicesProvider, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo, TaskInfo,
 	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo, ExecutionPlanOptions,
-	RestoreConfigInfo, SerializationProvider
+	RestoreConfigInfo, SerializationProvider, FileBrowserProvider, FileBrowserOpenedParams, FileBrowserExpandedParams, FileBrowserValidatedParams
 } from 'data';
 
 import {
@@ -62,7 +62,8 @@ import {
 	RestoreParams, RestoreResponse, RestorePlanResponse,
 	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams,
 	GetDatabaseInfoResponse, GetDatabaseInfoParams,
-	BackupConfigInfoResponse
+	BackupConfigInfoResponse, FileBrowserOpenParams, FileBrowserCloseResponse,
+	FileBrowserCloseParams, FileBrowserExpandParams, FileBrowserValidateParams
 } from 'dataprotocol-languageserver-types';
 
 
@@ -121,7 +122,8 @@ import {
 	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, GetDatabaseInfoRequest, BackupConfigInfoRequest,
 	RestoreRequest, RestorePlanRequest, RestoreConfigInfoRequest,
 	ListTasksRequest, CancelTaskRequest, TaskStatusChangedNotification, TaskCreatedNotification,
-	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams
+	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams, FileBrowserOpenRequest, FileBrowserOpenedNotification,
+	FileBrowserValidateRequest, FileBrowserValidatedNotification, FileBrowserExpandRequest, FileBrowserExpandedNotification, FileBrowserCloseRequest
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -2066,6 +2068,78 @@ export class LanguageClient {
 			}
 		};
 
+		let fileBrowserProvider: FileBrowserProvider = {
+			openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean> {
+				let params: FileBrowserOpenParams = { ownerUri: ownerUri, expandPath: expandPath, fileFilters: fileFilters };
+				return self.doSendRequest(connection, FileBrowserOpenRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(FileBrowserOpenRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			registerOnFileBrowserOpened(handler: (response: FileBrowserOpenedParams) => any) {
+				connection.onNotification(FileBrowserOpenedNotification.type, (params: FileBrowserOpenedParams) => {
+					handler(params);
+				});
+			},
+
+			expandFolderNode(ownerUri: string, expandPath: string): Thenable<boolean> {
+				let params: FileBrowserExpandParams = { ownerUri: ownerUri, expandPath: expandPath };
+				return self.doSendRequest(connection, FileBrowserExpandRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(FileBrowserExpandRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			registerOnFolderNodeExpanded(handler: (response: FileBrowserExpandedParams) => any) {
+				connection.onNotification(FileBrowserExpandedNotification.type, (params: FileBrowserExpandedParams) => {
+					handler(params);
+				});
+			},
+
+			validateFilePaths(ownerUri: string, serviceType: string, selectedFiles: string[]): Thenable<boolean> {
+				let params: FileBrowserValidateParams = { ownerUri: ownerUri, serviceType: serviceType, selectedFiles: selectedFiles };
+				return self.doSendRequest(connection, FileBrowserValidateRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(FileBrowserValidateRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+
+			registerOnFilePathsValidated(handler: (response: FileBrowserValidatedParams) => any) {
+				connection.onNotification(FileBrowserValidatedNotification.type, (params: FileBrowserValidatedParams) => {
+					handler(params);
+				});
+			},
+
+			closeFileBrowser(ownerUri: string): Thenable<FileBrowserCloseResponse> {
+				let params: FileBrowserCloseParams = { ownerUri: ownerUri };
+				return self.doSendRequest(connection, FileBrowserCloseRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(FileBrowserCloseRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			}
+		};
+
 		let serializationProvider: SerializationProvider = {
 			handle: 0,
 			saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<SaveResultRequestResult> {
@@ -2096,6 +2170,7 @@ export class LanguageClient {
 
 			taskServicesProvider: taskServicesProvider,
 
+			fileBrowserProvider: fileBrowserProvider,
 		}));
 
 		// Hook to the workspace-wide notifications that aren't routed to a specific provider

@@ -317,6 +317,13 @@ export abstract class Modal extends Disposable implements IThemable {
 	}
 
 	/**
+	 * Return background color of header and footer
+	 */
+	protected get headerAndFooterBackground(): string {
+		return this._dialogHeaderAndFooterBackground ? this._dialogHeaderAndFooterBackground.toString(): null;
+	}
+
+	/**
 	 * Set the title of the modal
 	 * @param title
 	 */

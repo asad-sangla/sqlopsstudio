@@ -250,6 +250,28 @@ export abstract class ExtHostDataProtocolShape {
 	 * Gets restore config Info
 	 */
 	$getRestoreConfigInfo(handle: number, connectionUri: string): Thenable<data.RestoreConfigInfo> { throw ni(); }
+
+
+	/**
+	 * Open a file browser
+	 */
+	$openFileBrowser(handle: number, ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean> { throw ni(); }
+
+
+	/**
+	 * Expand a folder node
+	 */
+	$expandFolderNode(handle: number, ownerUri: string, expandPath: string): Thenable<boolean> { throw ni(); }
+
+	/**
+	 * Validate selected file paths
+	 */
+	$validateFilePaths(handle: number, ownerUri: string, serviceType: string, selectedFiles: string[]): Thenable<boolean> { throw ni(); }
+
+	/**
+	 * Close file browser
+	 */
+	$closeFileBrowser(handle: number, ownerUri: string): Thenable<data.FileBrowserCloseResponse> { throw ni(); }
 }
 
 /**
@@ -292,6 +314,9 @@ export abstract class MainThreadDataProtocolShape {
 	$onObjectExplorerNodeExpanded(handle: number, message: data.ObjectExplorerExpandInfo): void { throw ni(); }
 	$onTaskCreated(handle: number, sessionResponse: data.TaskInfo): void { throw ni(); }
 	$onTaskStatusChanged(handle: number, sessionResponse: data.TaskProgressInfo): void { throw ni(); }
+	$onFileBrowserOpened(handle: number, response: data.FileBrowserOpenedParams): void { throw ni(); }
+	$onFolderNodeExpanded(handle: number, response: data.FileBrowserExpandedParams): void { throw ni(); }
+	$onFilePathsValidated(handle: number, response: data.FileBrowserValidatedParams): void { throw ni(); }
 
 	/**
 	 * Callback when a session has completed initialization

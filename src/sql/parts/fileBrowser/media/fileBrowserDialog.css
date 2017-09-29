@@ -1,0 +1,41 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.file-browser-dialog {
+	height: 100%;
+	padding-top: 12px;
+	padding-left: 12px;
+	padding-right: 12px;
+	box-sizing: border-box;
+}
+
+.file-browser-dialog .tree-view {
+	height: calc(100% - 90px);
+}
+
+.file-table-content {
+	width: 100%;
+}
+
+.file-browser-dialog .option-section {
+	padding-top: 10px;
+	height: 90px;
+	box-sizing: border-box;
+}
+
+.file-input-label {
+	width: 50px;
+	padding-bottom: 5px;
+}
+
+.file-input-box {
+	width: 200px;
+	padding-bottom: 5px;
+}
+
+.file-browser-dialog .explorer-item {
+	height: 22px;
+	line-height: 22px;
+}

@@ -132,6 +132,9 @@ import { DisasterRecoveryService } from 'sql/parts/disasterRecovery/common/disas
 import { DisasterRecoveryUiService } from 'sql/parts/disasterRecovery/common/disasterRecoveryUiService';
 import { RestoreDialogController } from 'sql/parts/disasterRecovery/restore/restoreDialogController';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
+import { IFileBrowserService, IFileBrowserDialogController } from 'sql/parts/fileBrowser/common/interfaces';
+import { FileBrowserService } from 'sql/parts/fileBrowser/common/fileBrowserService';
+import { FileBrowserDialogController } from 'sql/parts/fileBrowser/fileBrowserDialogController';
 import { IInsightsDialogService, InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
 import { AccountManagementService } from "sql/services/accountManagement/accountManagementService";
@@ -139,8 +142,6 @@ import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { ProfilerService } from 'sql/parts/profiler/service/profilerService';
 import { IClipboardService as sqlIClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ClipboardService as sqlClipboardService } from 'sql/platform/clipboard/electron-browser/clipboardService';
-
-
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -677,7 +678,7 @@ export class Workbench implements IPartService {
 		this.toDispose.push(this.quickOpen);
 		this.toShutdown.push(this.quickOpen);
 		serviceCollection.set(IQuickOpenService, this.quickOpen);
-		
+
 		// {{SQL CARBON EDIT}}
 		// SQL Tools services
 		serviceCollection.set(sqlIClipboardService, this.instantiationService.createInstance(sqlClipboardService));
@@ -701,6 +702,8 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IDisasterRecoveryService, this.instantiationService.createInstance(DisasterRecoveryService));
 		serviceCollection.set(IDisasterRecoveryUiService, this.instantiationService.createInstance(DisasterRecoveryUiService));
 		serviceCollection.set(IRestoreDialogController, this.instantiationService.createInstance(RestoreDialogController));
+		serviceCollection.set(IFileBrowserService, this.instantiationService.createInstance(FileBrowserService));
+		serviceCollection.set(IFileBrowserDialogController, this.instantiationService.createInstance(FileBrowserDialogController));
 		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
 		serviceCollection.set(IInsightsDialogService, this.instantiationService.createInstance(InsightsDialogService));
 		let accountManagementService = this.instantiationService.createInstance(AccountManagementService, undefined);
@@ -710,7 +713,7 @@ export class Workbench implements IPartService {
 
 		this.toDispose.push(connectionManagementService);
 		this.toShutdown.push(connectionManagementService);
-		this.toShutdown.push(accountManagementService);		
+		this.toShutdown.push(accountManagementService);
 
 		// Contributed services
 		const contributedServices = getServices();

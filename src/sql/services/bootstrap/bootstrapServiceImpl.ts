@@ -19,6 +19,7 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IFileBrowserService, IFileBrowserDialogController } from 'sql/parts/fileBrowser/common/interfaces';
 import { IClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 
@@ -82,6 +83,8 @@ export class BootstrapService implements IBootstrapService {
 		@IWorkspaceContextService public workspaceContextService: IWorkspaceContextService,
 		@IAccountManagementService public accountManagementService: IAccountManagementService,
 		@IWindowsService public windowsService: IWindowsService,
+		@IFileBrowserService public fileBrowserService: IFileBrowserService,
+		@IFileBrowserDialogController public fileBrowserDialogService: IFileBrowserDialogController,
 		@IWindowService public windowService: IWindowService,
 		@ITelemetryService public telemetryService: ITelemetryService,
 		@IStorageService public storageService: IStorageService,

@@ -32,7 +32,9 @@ import {
 	LoginInfo, CreateLoginParams, CreateLoginResponse, GetDatabaseInfoParams, GetDatabaseInfoResponse,
 	DatabaseInfo, BackupConfigInfo, CreateDatabaseParams, CreateDatabaseResponse,
 	TaskInfo, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo,
-	DefaultDatabaseInfoParams, DefaultDatabaseInfoResponse, BackupConfigInfoResponse
+	DefaultDatabaseInfoParams, DefaultDatabaseInfoResponse, BackupConfigInfoResponse, FileBrowserOpenParams, FileBrowserOpenedParams,
+	FileBrowserCloseParams, FileBrowserExpandParams, FileBrowserValidateParams,
+	FileBrowserCloseResponse, FileBrowserExpandedParams, FileBrowserValidatedParams
 } from 'dataprotocol-languageserver-types';
 
 
@@ -1512,3 +1514,32 @@ export namespace RestoreConfigInfoRequest {
 	export const type: RequestType<RestoreConfigInfoRequestParams, RestoreConfigInfoResponse, void> = { get method(): string { return 'disasterrecovery/restoreconfiginfo'; } };
 }
 
+// ------------------------------- < File Browser Events > ------------------------------------
+
+export namespace FileBrowserOpenRequest {
+	export const type: RequestType<FileBrowserOpenParams, boolean, void> = { get method(): string { return 'filebrowser/open'; } };
+}
+
+export namespace FileBrowserOpenedNotification {
+	export const type: NotificationType<FileBrowserOpenedParams> = { get method(): string { return 'filebrowser/opencomplete'; } };
+}
+
+export namespace FileBrowserExpandRequest {
+	export const type: RequestType<FileBrowserExpandParams, boolean, void> = { get method(): string { return 'filebrowser/expand'; } };
+}
+
+export namespace FileBrowserExpandedNotification {
+	export const type: NotificationType<FileBrowserExpandedParams> = { get method(): string { return 'filebrowser/expandcomplete'; } };
+}
+
+export namespace FileBrowserValidateRequest {
+	export const type: RequestType<FileBrowserValidateParams, boolean, void> = { get method(): string { return 'filebrowser/validate'; } };
+}
+
+export namespace FileBrowserValidatedNotification {
+	export const type: NotificationType<FileBrowserValidatedParams> = { get method(): string { return 'filebrowser/validatecomplete'; } };
+}
+
+export namespace FileBrowserCloseRequest {
+	export const type: RequestType<FileBrowserCloseParams, FileBrowserCloseResponse, void> = { get method(): string { return 'filebrowser/close'; } };
+}

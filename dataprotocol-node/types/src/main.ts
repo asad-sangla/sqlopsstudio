@@ -485,6 +485,64 @@ export interface RestoreDatabaseFileInfo {
 	restoreAsFileName: string;
 }
 
+export interface FileBrowserOpenParams {
+    ownerUri: string;
+    expandPath: string;
+    fileFilters: string[];
+}
+
+export interface FileTreeNode {
+	children: FileTreeNode[];
+	isExpanded: boolean;
+	isFile: boolean;
+	name: string;
+	fullPath: string;
+}
+
+export interface FileTree {
+	rootNode: FileTreeNode;
+	selectedNode: FileTreeNode;
+}
+
+export interface FileBrowserOpenedParams {
+	ownerUri: string;
+	fileTree: FileTree;
+	succeeded: boolean;
+	message: string;
+}
+
+export interface FileBrowserExpandParams {
+    ownerUri: string;
+    expandPath: string;
+}
+
+export interface FileBrowserExpandedParams {
+	ownerUri: string;
+	expandedNode: FileTreeNode;
+	succeeded: boolean;
+	message: string;
+}
+
+export interface FileBrowserValidateParams {
+    ownerUri: string;
+    serviceType: string;
+    selectedFiles: string[];
+}
+
+export interface FileBrowserValidatedParams {
+	succeeded: boolean;
+	message: string;
+}
+
+export interface FileBrowserCloseParams {
+    ownerUri: string;
+}
+
+export interface FileBrowserCloseResponse {
+	succeeded: boolean;
+	message: string;
+}
+
 export interface DatabaseFileInfo {
 	properties: LocalizedPropertyInfo[];
 	id: string;

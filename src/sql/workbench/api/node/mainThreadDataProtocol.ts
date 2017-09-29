@@ -22,6 +22,7 @@ import { IDisasterRecoveryService } from 'sql/parts/disasterRecovery/common/inte
 import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { ISerializationService } from 'sql/services/serialization/serializationService';
+import { IFileBrowserService } from 'sql/parts/fileBrowser/common/interfaces';
 import { IExtHostContext } from 'vs/workbench/api/node/extHost.protocol';
 import { extHostNamedCustomer } from 'vs/workbench/api/electron-browser/extHostCustomers';
 
@@ -49,7 +50,8 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService,
 		@ITaskService private _taskService: ITaskService,
 		@IProfilerService private _profilerService: IProfilerService,
-		@ISerializationService private _serializationService: ISerializationService
+		@ISerializationService private _serializationService: ISerializationService,
+		@IFileBrowserService private _fileBrowserService: IFileBrowserService
 	) {
 		super();
 		if (extHostContext) {
@@ -243,6 +245,21 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			}
 		});
 
+		this._fileBrowserService.registerProvider(providerId, <data.FileBrowserProvider>{
+			openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean> {
+				return self._proxy.$openFileBrowser(handle, ownerUri, expandPath, fileFilters);
+			},
+			expandFolderNode(ownerUri: string, expandPath: string): Thenable<boolean> {
+				return self._proxy.$expandFolderNode(handle, ownerUri, expandPath);
+			},
+			validateFilePaths(ownerUri: string, serviceType: string, selectedFiles: string[]): Thenable<boolean> {
+				return self._proxy.$validateFilePaths(handle, ownerUri, serviceType, selectedFiles);
+			},
+			closeFileBrowser(ownerUri: string): Thenable<data.FileBrowserCloseResponse> {
+				return self._proxy.$closeFileBrowser(handle, ownerUri);
+			}
+		});
+
 		return undefined;
 	}
 
@@ -295,6 +312,19 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 
 	public $onTaskStatusChanged(handle: number, taskProgressInfo: data.TaskProgressInfo): void {
 		this._taskService.onTaskStatusChanged(handle, taskProgressInfo);
+	}
+
+	//File browser handlers
+	public $onFileBrowserOpened(handle: number, response: data.FileBrowserOpenedParams): void {
+		this._fileBrowserService.onFileBrowserOpened(handle, response);
+	}
+
+	public $onFolderNodeExpanded(handle: number, response: data.FileBrowserExpandedParams): void {
+		this._fileBrowserService.onFolderNodeExpanded(handle, response);
+	}
+
+	public $onFilePathsValidated(handle: number, response: data.FileBrowserValidatedParams): void {
+		this._fileBrowserService.onFilePathsValidated(handle, response);
 	}
 
 	public $unregisterProvider(handle: number): TPromise<any> {

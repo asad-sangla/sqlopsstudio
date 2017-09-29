@@ -17,6 +17,7 @@ import { IQueryManagementService } from 'sql/parts/query/common/queryManagement'
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IFileBrowserService, IFileBrowserDialogController } from 'sql/parts/fileBrowser/common/interfaces';
 import { IClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 
@@ -75,6 +76,8 @@ export interface IBootstrapService {
 	accountManagementService: IAccountManagementService;
 	windowsService: IWindowsService;
 	windowService: IWindowService;
+	fileBrowserService: IFileBrowserService;
+	fileBrowserDialogService: IFileBrowserDialogController;
 	telemetryService: ITelemetryService;
 	storageService: IStorageService;
 	clipboardService: IClipboardService;

@@ -134,6 +134,19 @@ export function createApiFactory(
 						extHostDataProvider.$onEditSessionReady(provider.handle, ownerUri, success, message);
 					});
 
+					// File browser callbacks
+					provider.fileBrowserProvider.registerOnFileBrowserOpened((response: data.FileBrowserOpenedParams) => {
+						extHostDataProvider.$onFileBrowserOpened(provider.handle, response);
+					});
+
+					provider.fileBrowserProvider.registerOnFolderNodeExpanded((response: data.FileBrowserExpandedParams) => {
+						extHostDataProvider.$onFolderNodeExpanded(provider.handle, response);
+					});
+
+					provider.fileBrowserProvider.registerOnFilePathsValidated((response: data.FileBrowserValidatedParams) => {
+						extHostDataProvider.$onFilePathsValidated(provider.handle, response);
+					});
+
 					// Complete registration
 					return extHostDataProvider.$registerProvider(provider);
 				},
