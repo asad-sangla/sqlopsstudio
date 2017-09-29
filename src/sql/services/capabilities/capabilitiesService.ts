@@ -5,10 +5,13 @@
 
 'use strict';
 
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import * as Constants from 'sql/common/constants';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import data = require('data');
 import Event, { Emitter } from 'vs/base/common/event';
+import { Action } from 'vs/base/common/actions';
 
 export const SERVICE_ID = 'capabilitiesService';
 export const HOST_NAME = 'carbon';
@@ -33,6 +36,11 @@ export interface ICapabilitiesService {
 	registerProvider(provider: data.CapabilitiesProvider): void;
 
 	/**
+	 * Returns true if the feature is available for given connection
+	 */
+	isFeatureAvailable(action: Action, connectionManagementInfo: ConnectionManagementInfo): boolean;
+
+	/**
 	 * Event raised when a provider is registered
 	 */
 	onProviderRegisteredEvent: Event<data.DataProtocolServerCapabilities>;
@@ -51,12 +59,12 @@ export class CapabilitiesService implements ICapabilitiesService {
 
 	private _capabilities: data.DataProtocolServerCapabilities[] = [];
 
-	private _onProviderRegistered : Emitter<data.DataProtocolServerCapabilities>;
+	private _onProviderRegistered: Emitter<data.DataProtocolServerCapabilities>;
 
-	private  _clientCapabilties: data.DataProtocolClientCapabilities = {
+	private _clientCapabilties: data.DataProtocolClientCapabilities = {
 
 		hostName: HOST_NAME,
-        hostVersion: HOST_VERSION
+		hostVersion: HOST_VERSION
 	};
 
 	private disposables: IDisposable[] = [];
@@ -85,6 +93,31 @@ export class CapabilitiesService implements ICapabilitiesService {
 			this._capabilities.push(serverCapabilities);
 			this._onProviderRegistered.fire(serverCapabilities);
 		});
+	}
+
+	/**
+	 * Returns true if the feature is available for given connection
+	 * @param featureComponent a component which should have the feature name
+	 * @param connectionManagementInfo connectionManagementInfo
+	 */
+	public isFeatureAvailable(action: Action, connectionManagementInfo: ConnectionManagementInfo): boolean {
+		let isCloud = connectionManagementInfo && connectionManagementInfo.serverInfo && connectionManagementInfo.serverInfo.isCloud;
+		let isMssql = connectionManagementInfo.connectionProfile.providerName === 'MSSQL';
+		// TODO: The logic should from capabilities service.
+		if (action) {
+			let featureName: string = action.id;
+			switch (featureName) {
+				case Constants.BackupFeatureName:
+					return !isMssql || !isCloud;
+				case Constants.RestoreFeatureName:
+					return !isMssql || !isCloud;
+				default:
+					return true;
+			}
+		} else {
+			return true;
+		}
+
 	}
 
 	// Event Emitters

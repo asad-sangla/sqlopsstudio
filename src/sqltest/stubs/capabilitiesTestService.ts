@@ -5,8 +5,10 @@
 
 'use strict';
 import data = require('data');
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import Event from 'vs/base/common/event';
+import { Action } from 'vs/base/common/actions';
 
 
 export class CapabilitiesTestService implements ICapabilitiesService {
@@ -113,6 +115,10 @@ export class CapabilitiesTestService implements ICapabilitiesService {
 	// Event Emitters
 	public get onProviderRegisteredEvent(): Event<data.DataProtocolServerCapabilities> {
 		return undefined;
+	}
+
+	public isFeatureAvailable(featureName: Action, connectionManagementInfo: ConnectionManagementInfo): boolean {
+		return true;
 	}
 }
 

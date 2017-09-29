@@ -69,6 +69,31 @@ export function attachInputBoxStyler(widget: IThemable, themeService: IThemeServ
 	}, widget);
 }
 
+export function attachSelectBoxStyler(widget: IThemable, themeService: IThemeService, style?:
+	{
+		selectBackground?: cr.ColorIdentifier,
+		selectForeground?: cr.ColorIdentifier,
+		selectBorder?: cr.ColorIdentifier
+		inputValidationInfoBorder?: cr.ColorIdentifier,
+		inputValidationInfoBackground?: cr.ColorIdentifier,
+		inputValidationWarningBorder?: cr.ColorIdentifier,
+		inputValidationWarningBackground?: cr.ColorIdentifier,
+		inputValidationErrorBorder?: cr.ColorIdentifier,
+		inputValidationErrorBackground?: cr.ColorIdentifier
+	}): IDisposable {
+	return attachStyler(themeService, {
+		selectBackground: (style && style.selectBackground) || cr.selectBackground,
+		selectForeground: (style && style.selectForeground) || cr.selectForeground,
+		selectBorder: (style && style.selectBorder) || cr.selectBorder,
+		inputValidationInfoBorder: (style && style.inputValidationInfoBorder) || cr.inputValidationInfoBorder,
+		inputValidationInfoBackground: (style && style.inputValidationInfoBackground) || cr.inputValidationInfoBackground,
+		inputValidationWarningBorder: (style && style.inputValidationWarningBorder) || cr.inputValidationWarningBorder,
+		inputValidationWarningBackground: (style && style.inputValidationWarningBackground) || cr.inputValidationWarningBackground,
+		inputValidationErrorBorder: (style && style.inputValidationErrorBorder) || cr.inputValidationErrorBorder,
+		inputValidationErrorBackground: (style && style.inputValidationErrorBackground) || cr.inputValidationErrorBackground
+	}, widget);
+}
+
 export function attachListBoxStyler(widget: IThemable, themeService: IThemeService, style?:
 	{
 		selectBackground?: cr.ColorIdentifier,

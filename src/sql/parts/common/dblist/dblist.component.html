@@ -5,7 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 -->
 <div class="dbdropdown-div">
-	<p-dropdown [options]="databases" [ngModel]="currentDatabaseName" (onFocus)="onFocus()" (onChange)="onDbChanged($event)" [filter]="true" [editable]="isEditable"
+	<p-dropdown [options]="databases" [ngModel]="currentDatabaseName" (onFocus)="onFocus()" (onChange)="onDbChanged($event)" (onBlur)="onBlur()" [filter]="true" [editable]="isEditable"
 		appendTo="body"
 		autoWidth="false"
 		[style]="{ 'width': width }" >

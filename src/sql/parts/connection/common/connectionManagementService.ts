@@ -202,8 +202,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 			}
 			self._connectionDialogService.showDialog(self, params, model, error).then(() => {
 				resolve();
-			}, error => {
-				reject();
+			}, dialogError => {
+				Utils.logDebug('failed to open the connection dialog. error: ' + dialogError);
+				reject(dialogError);
 			});
 		});
 	}

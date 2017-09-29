@@ -440,6 +440,9 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this._toDispose = dispose(this._toDispose);
 	}
 
+	public databasesSelectedOnLostFocus(dbName: string): void {
+	}
+
 	/**
 	 * Returns the URI of the given editor if it is not undefined and is connected.
 	 */

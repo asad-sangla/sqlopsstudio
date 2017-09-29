@@ -51,6 +51,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		this._profile = this._bootstrap.connectionManagementService.connectionInfo.connectionProfile;
 		let registry = Registry.as<ITaskRegistry>(Extensions.TaskContribution);
 		let tasksConfig = <IConfig>Object.values(this._config.widget)[0];
+		let connInfo = this._bootstrap.connectionManagementService.connectionInfo;
 		if (tasksConfig.tasks) {
 			Object.keys(tasksConfig.tasks).forEach((item) => {
 				if (registry.idToCtorMap[item]) {
@@ -61,9 +62,19 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 				}
 			});
 		} else {
-			this._actions = Object.values(registry.idToCtorMap).map((item: ActionICtor) => this._bootstrap.instantiationService.createInstance(item, item.ID, item.LABEL, item.ICON));
+			let actions = Object.values(registry.idToCtorMap).map((item: ActionICtor) => {
+
+				let action = this._bootstrap.instantiationService.createInstance(item, item.ID, item.LABEL, item.ICON);
+				if (this._bootstrap.CapabilitiesService.isFeatureAvailable(action, connInfo)) {
+					return action;
+				} else {
+					return undefined;
+				}
+			});
+
+			this._actions = actions.filter(x => x !== undefined);
 		}
-		let connInfo = this._bootstrap.connectionManagementService.connectionInfo;
+
 		this._isAzure = connInfo.serverInfo.isCloud;
 	}
 

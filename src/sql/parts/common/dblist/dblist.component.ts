@@ -74,6 +74,10 @@ export class DbListComponent implements OnInit, OnDestroy {
 		this._refreshDatabaseList();
 	}
 
+	public onBlur = (action): void => {
+		this.dbListInterop.databasesSelectedOnLostFocus(this.currentDatabaseName);
+	}
+
 	public onFocus = (action): void => {
 		let self = this;
 		let uri = this._getConnectedUri();

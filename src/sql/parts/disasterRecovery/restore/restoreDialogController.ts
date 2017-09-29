@@ -69,12 +69,16 @@ export class RestoreDialogController implements IRestoreDialogController {
 		});
 	}
 
-	private getMssqlRestoreConfigInfo(): void {
-		let restoreDialog = this._restoreDialogs[this._currentProvider] as RestoreDialog;
-		this._disasterRecoveryService.getRestoreConfigInfo(this._ownerUri).then(restoreConfigInfo => {
-			restoreDialog.viewModel.updateOptionWithConfigInfo(restoreConfigInfo.configInfo);
-		}, error => {
-			restoreDialog.showError(error);
+	private getMssqlRestoreConfigInfo(): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			let restoreDialog = this._restoreDialogs[this._currentProvider] as RestoreDialog;
+			this._disasterRecoveryService.getRestoreConfigInfo(this._ownerUri).then(restoreConfigInfo => {
+				restoreDialog.viewModel.updateOptionWithConfigInfo(restoreConfigInfo.configInfo);
+				resolve();
+			}, error => {
+				restoreDialog.showError(error);
+				reject(error);
+			});
 		});
 	}
 
@@ -142,9 +146,9 @@ export class RestoreDialogController implements IRestoreDialogController {
 						newRestoreDialog.onRestore((isScriptOnly) => this.handleOnRestore(isScriptOnly));
 						newRestoreDialog.onValidate(() => this.handleMssqlOnValidateFile());
 					} else {
-						newRestoreDialog= this._instantiationService.createInstance(
+						newRestoreDialog = this._instantiationService.createInstance(
 							OptionsDialog, 'Restore database - ' + connection.serverName + ':' + connection.databaseName, 'RestoreOptions', undefined);
-							newRestoreDialog.onOk(() => this.handleOnRestore());
+						newRestoreDialog.onOk(() => this.handleOnRestore());
 					}
 					newRestoreDialog.render();
 					this._restoreDialogs[this._currentProvider] = newRestoreDialog;
@@ -153,8 +157,13 @@ export class RestoreDialogController implements IRestoreDialogController {
 				if (this._currentProvider === ConnectionConstants.mssqlProviderName) {
 					let restoreDialog = this._restoreDialogs[this._currentProvider] as RestoreDialog;
 					restoreDialog.viewModel.resetRestoreOptions(connection.databaseName);
-					this.getMssqlRestoreConfigInfo();
-					restoreDialog.open(connection.serverName, this._ownerUri);
+					this.getMssqlRestoreConfigInfo().then(() => {
+						restoreDialog.open(connection.serverName, this._ownerUri);
+						restoreDialog.validateRestore();
+					}, restoreConfigError => {
+						reject(restoreConfigError);
+					});
+
 				} else {
 					let restoreDialog = this._restoreDialogs[this._currentProvider] as OptionsDialog;
 					restoreDialog.open(this.getRestoreOption(), this._optionValues);

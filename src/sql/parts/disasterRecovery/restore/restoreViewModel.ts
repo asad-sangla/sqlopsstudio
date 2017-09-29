@@ -31,7 +31,7 @@ export interface RestoreOptionParam {
  */
 export interface SouceDatabaseNamesParam {
 	databaseNames: string[];
-	selectedDatabased: string;
+	selectedDatabase: string;
 }
 
 /**
@@ -209,7 +209,6 @@ export class RestoreViewModel {
 			if (types.isStringArray(databaseList)) {
 				this.databaseList = databaseList;
 				this.databaseList.unshift('');
-				this.sourceDatabaseName = this.databaseList[0];
 				this.readHeaderFromMedia = false;
 				this.updateSourceDatabaseNames(this.databaseList, this.sourceDatabaseName);
 			}
@@ -248,7 +247,7 @@ export class RestoreViewModel {
  	*/
 	public resetRestoreOptions(databaseName: string): void {
 		this.updateTargetDatabaseName(databaseName);
-		this.updateSourceDatabaseNames([], '');
+		this.updateSourceDatabaseNames([], databaseName);
 		this.updateFilePath('');
 		this.updateLastBackupTaken('');
 		this.databaseList = [];
@@ -281,7 +280,7 @@ export class RestoreViewModel {
  	*/
 	public updateSourceDatabaseNames(options: string[], selectedDatabase: string) {
 		this.sourceDatabaseName = selectedDatabase;
-		this._onSetSourceDatabaseNames.fire({ databaseNames: options, selectedDatabased: selectedDatabase });
+		this._onSetSourceDatabaseNames.fire({ databaseNames: options, selectedDatabase: selectedDatabase });
 	}
 
 	/**

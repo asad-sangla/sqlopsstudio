@@ -16,7 +16,7 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { Widget } from 'vs/base/browser/ui/widget';
 import { localize } from 'vs/nls';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
@@ -26,7 +26,7 @@ import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 'sql/parts/disasterRecovery/restore/restoreViewModel';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { InputBox, OnLoseFocusParams } from 'sql/base/browser/ui/inputBox/inputBox';
-import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler } from 'sql/common/theme/styler';
+import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler, attachSelectBoxStyler } from 'sql/common/theme/styler';
 import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
@@ -350,8 +350,14 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	}
 
 	public databaseSelected(dbName: string): void {
-		this.viewModel.targetDatabaseName = dbName;
-		this._onValidate.fire();
+		// Get the selected database when the controls lost focus (happens in databasesSelectedOnLostFocus)
+	}
+
+	public databasesSelectedOnLostFocus(dbName: string) {
+		if (this.viewModel.targetDatabaseName !== dbName) {
+			this.viewModel.targetDatabaseName = dbName;
+			this._onValidate.fire();
+		}
 	}
 
 	public databaseListInitialized(): void {
@@ -441,7 +447,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 			});
 
 			inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-				selectBox = new SelectBox(options, selectedOption);
+				selectBox = new SelectBox(options, selectedOption, inputCellContainer.getHTMLElement(), this._contextViewService);
 				selectBox.render(inputCellContainer.getHTMLElement());
 			});
 		});
@@ -467,11 +473,18 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 		this._fileListData.clear();
 		this._restoreButton.enabled = false;
 		this._scriptButton.enabled = false;
-		this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
+		if (this.isRestoreFromDatabaseSelected) {
+			this._sourceDatabaseSelectBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
+		} else {
+			this._sourceDatabaseSelectBox.setOptions([]);
+			this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
+		}
 	}
 
 	public removeErrorMessage() {
 		this._filePathInputBox.hideMessage();
+		this._sourceDatabaseSelectBox.hideMessage();
+		this._destinationRestoreToInputBox.hideMessage();
 	}
 
 	public enableRestoreButton(enabled: boolean) {
@@ -543,6 +556,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	}
 
 	private onRestoreFromChanged(selectedRestoreFrom: string) {
+		this.removeErrorMessage();
 		if (selectedRestoreFrom === this._backupFileTitle) {
 			this.viewModel.onRestoreFromChanged(true);
 			new Builder(this._restoreFromBackupFileElement).show();
@@ -550,6 +564,10 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 			this.viewModel.onRestoreFromChanged(false);
 			new Builder(this._restoreFromBackupFileElement).hide();
 		}
+	}
+
+	private get isRestoreFromDatabaseSelected(): boolean {
+		return this._restoreFromSelectBox.value === this._databaseTitle;
 	}
 
 	public validateRestore(): void {
@@ -595,6 +613,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 		this._restorePlanData.clear();
 		this._fileListData.clear();
 		this._generalTabElement.click();
+		this.removeErrorMessage();
 	}
 
 	public open(serverName: string, ownerUri: string) {
@@ -631,9 +650,18 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	}
 
 	private updateSourceDatabaseName(databaseNamesParam: SouceDatabaseNamesParam) {
-		this._sourceDatabaseSelectBox.setOptions(databaseNamesParam.databaseNames);
-		if (databaseNamesParam.selectedDatabased) {
-			this._sourceDatabaseSelectBox.selectWithOptionName(databaseNamesParam.selectedDatabased);
+		// Always adding an empty name as the first item so if the selected db name is not in the list,
+		// The empty string would be selected and not the first db in the list
+		let dbNames: string[] = [];
+		if (this.isRestoreFromDatabaseSelected && databaseNamesParam.databaseNames
+			&& databaseNamesParam.databaseNames.length > 0 && databaseNamesParam.databaseNames[0] !== '') {
+			dbNames = [''].concat(databaseNamesParam.databaseNames);
+		} else {
+			dbNames = databaseNamesParam.databaseNames;
+		}
+		this._sourceDatabaseSelectBox.setOptions(dbNames);
+		if (databaseNamesParam.selectedDatabase) {
+			this._sourceDatabaseSelectBox.selectWithOptionName(databaseNamesParam.selectedDatabase);
 		}
 	}
 

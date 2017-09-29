@@ -22,6 +22,7 @@ import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IPropertiesConfig } from 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 
 import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
@@ -132,6 +133,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	private _messageService: IMessageService;
 	private _workspaceContextService: IWorkspaceContextService;
 	private _storageService: IStorageService;
+	private _capabilitiesService: ICapabilitiesService;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
@@ -146,6 +148,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._messageService = this._bootstrapService.messageService;
 		this._workspaceContextService = this._bootstrapService.workspaceContextService;
 		this._storageService = this._bootstrapService.storageService;
+		this._capabilitiesService = this._bootstrapService.capabilitiesService;
 	}
 
 	ngOnDestroy() {
@@ -194,6 +197,10 @@ export class DashboardServiceInterface implements OnDestroy {
 
 	public get storageService(): IStorageService {
 		return this._storageService;
+	}
+
+	public get CapabilitiesService(): ICapabilitiesService {
+		return this._capabilitiesService;
 	}
 
 	/**

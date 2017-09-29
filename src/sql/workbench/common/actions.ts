@@ -14,6 +14,7 @@ import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
+import * as Constants from 'sql/common/constants';
 
 import { ObjectMetadata } from 'data';
 
@@ -214,9 +215,9 @@ export class ScriptDeleteAction extends Action {
 }
 
 export class BackupAction extends TaskAction {
-	public static ID = 'backup';
+	public static ID = Constants.BackupFeatureName;
 	public static LABEL = nls.localize('backup', 'Backup');
-	public static ICON = 'backup';
+	public static ICON = Constants.BackupFeatureName;
 
 	constructor(
 		id: string, label: string, icon: string,
@@ -243,9 +244,9 @@ export class BackupAction extends TaskAction {
 }
 
 export class RestoreAction extends TaskAction {
-	public static ID = 'restore';
+	public static ID = Constants.RestoreFeatureName;
 	public static LABEL = nls.localize('restore', 'Restore');
-	public static ICON = 'restore';
+	public static ICON = Constants.RestoreFeatureName;
 
 	constructor(
 		id: string, label: string, icon: string,

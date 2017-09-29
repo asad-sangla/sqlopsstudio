@@ -20,6 +20,7 @@ import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogCon
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { ISqlWindowService } from 'sql/common/sqlWindowServices';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 
 import { $ } from 'vs/base/browser/dom';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
@@ -83,7 +84,8 @@ export class BootstrapService implements IBootstrapService {
 		@IWindowsService public windowsService: IWindowsService,
 		@ISqlWindowService public sqlWindowService: ISqlWindowService,
 		@ITelemetryService public telemetryService: ITelemetryService,
-		@IStorageService public storageService: IStorageService
+		@IStorageService public storageService: IStorageService,
+		@ICapabilitiesService public capabilitiesService: ICapabilitiesService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();

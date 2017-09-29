@@ -8,3 +8,8 @@
 export const InvalidProvider = 'Provider is invalid';
 export const SerializationDisabled = 'Saving results into different format disabled for this data provider.';
 
+/**
+ * Feature names
+ */
+export const RestoreFeatureName = 'restore';
+export const BackupFeatureName = 'backup';

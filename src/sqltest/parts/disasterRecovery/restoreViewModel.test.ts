@@ -215,7 +215,7 @@ suite('Restore Dialog view model tests', () => {
 
 		// verify that file path, source database, target databasem and last backup get set correctly
 		assert.equal('', viewModel.lastBackupTaken);
-		assert.equal('', viewModel.sourceDatabaseName);
+		assert.equal('db2', viewModel.sourceDatabaseName);
 		assert.equal('db2', viewModel.targetDatabaseName);
 		assert.equal('', viewModel.lastBackupTaken);
 		assert.equal(0, viewModel.databaseList.length);

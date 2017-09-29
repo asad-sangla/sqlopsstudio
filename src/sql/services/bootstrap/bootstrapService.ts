@@ -18,6 +18,7 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { ISqlWindowService } from 'sql/common/sqlWindowServices';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
@@ -76,6 +77,7 @@ export interface IBootstrapService {
 	sqlWindowService: ISqlWindowService;
 	telemetryService: ITelemetryService;
 	storageService: IStorageService;
+	capabilitiesService: ICapabilitiesService;
 
 	/*
 	* Bootstraps the Angular module described. Components that need singleton services should inject the
