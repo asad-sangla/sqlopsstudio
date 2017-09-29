@@ -776,7 +776,9 @@ export class QueryEditor extends BaseEditor {
 			endLineNumber: selection.endLine + 1,
 			endColumn: selection.endColumn + 1
 		};
-		this._sqlEditor.getControl().setSelection(rangeConversion);
+		let editor = this._sqlEditor.getControl();
+		editor.revealRange(rangeConversion);
+		editor.setSelection(rangeConversion);
 	}
 
 	// TESTING PROPERTIES ////////////////////////////////////////////////////////////
