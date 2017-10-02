@@ -2,8 +2,8 @@
     height: 100%;
 }
 
-.headersVisible .fullsize {
-    height: calc(100% - 35px);
+.headersVisible > .fullsize {
+    height: calc(100% - 38px);
 }
 
 /* vertical box styles */

@@ -6,7 +6,7 @@
 import 'vs/css!sql/media/primeng';
 import 'vs/css!sql/parts/grid/load/css/qp';
 
-import { ElementRef, Component, Inject, forwardRef, OnDestroy, OnInit } from '@angular/core';
+import { ElementRef, Component, Inject, forwardRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import * as QP from 'html-query-plan';
 
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
@@ -20,12 +20,16 @@ export const QUERYPLAN_SELECTOR: string = 'queryplan-component';
 
 @Component({
 	selector: QUERYPLAN_SELECTOR,
-	template: ''
+	template: `
+				<div #container class="fullsize" style="overflow: scroll">
+				</div>
+	`
 })
 export class QueryPlanComponent implements OnDestroy, OnInit {
 
 	private _planXml: string;
 	private _disposables: Array<IDisposable> = [];
+	@ViewChild('container', { read: ElementRef }) _container: ElementRef;
 
 	constructor(
 		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
@@ -46,7 +50,7 @@ export class QueryPlanComponent implements OnDestroy, OnInit {
 
 	public set planXml(val: string) {
 		this._planXml = val;
-		QP.showPlan(this._el.nativeElement, this._planXml, {
+		QP.showPlan(this._container.nativeElement, this._planXml, {
 			jsTooltips: false
 		});
 	}
