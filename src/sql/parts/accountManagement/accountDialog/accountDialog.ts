@@ -36,6 +36,8 @@ import { AccountListRenderer, AccountListDelegate } from 'sql/parts/accountManag
 import * as data from 'data';
 
 export class AccountDialog extends Modal {
+	public static ACCOUNTLIST_HEIGHT = 77;
+
 	public viewModel: AccountViewModel;
 	private _closeButton: Button;
 	private _delegate: AccountListDelegate;
@@ -61,8 +63,8 @@ export class AccountDialog extends Modal {
 	) {
 		super(localize('linkedAccounts', 'Linked Accounts'), TelemetryKeys.Accounts, partService, telemetryService);
 
-		this._delegate = new AccountListDelegate(77, AccountListRenderer.ACCOUNT_MANAGEMENT_TEMPLATE_ID);
-		this._accountRenderer = this._instantiationService.createInstance(AccountListRenderer, AccountListRenderer.ACCOUNT_MANAGEMENT_TEMPLATE_ID);
+		this._delegate = new AccountListDelegate(AccountDialog.ACCOUNTLIST_HEIGHT);
+		this._accountRenderer = this._instantiationService.createInstance(AccountListRenderer);
 		this._actionRunner = new ActionRunner();
 
 		// view model

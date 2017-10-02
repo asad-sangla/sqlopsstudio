@@ -18,7 +18,6 @@ import { buttonBackground } from 'vs/platform/theme/common/colorRegistry';
 import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { attachButtonStyler, attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 
@@ -37,8 +36,9 @@ export class FirewallRuleDialog extends Modal {
 	private _toRangeinputBox: InputBox;
 
 	private _helpLink: HTMLElement;
-	private _ipAddressInput: HTMLElement;
-	private _subnetIpRangeInput: HTMLElement;
+	private _IPAddressInput: HTMLElement;
+	private _subnetIPRangeInput: HTMLElement;
+	private _IPAddressElement: HTMLElement;
 
 	private _onCreateFirewallRule = new Emitter<void>();
 	public onCreateFirewallRule: Event<void> = this._onCreateFirewallRule.event;
@@ -95,22 +95,16 @@ export class FirewallRuleDialog extends Modal {
 			});
 		});
 
-		let subnetIpRangeSection;
-		$().div({ class: 'subnet-ip-range-input' }, (subnetIpRangeContainer) => {
-			subnetIpRangeSection = subnetIpRangeContainer.getHTMLElement();
-			let errorMessage = localize('missingIpRangeError', 'IP range is required.');
-			let validationOptions: IInputOptions = {
-				validationOptions: {
-					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: errorMessage }) : null
-				}
-			};
-			subnetIpRangeContainer.div({ class: 'dialog-input-section' }, (inputContainer) => {
+		let subnetIPRangeSection;
+		$().div({ class: 'subnet-ip-range-input' }, (subnetIPRangeContainer) => {
+			subnetIPRangeSection = subnetIPRangeContainer.getHTMLElement();
+			subnetIPRangeContainer.div({ class: 'dialog-input-section' }, (inputContainer) => {
 				inputContainer.div({ class: 'dialog-label' }, (labelContainer) => {
 					labelContainer.innerHtml(localize('from', 'From'));
 				});
 
 				inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-					this._fromRangeinputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService, validationOptions);
+					this._fromRangeinputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService);
 				});
 
 				inputContainer.div({ class: 'dialog-label' }, (labelContainer) => {
@@ -118,7 +112,7 @@ export class FirewallRuleDialog extends Modal {
 				});
 
 				inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-					this._toRangeinputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService, validationOptions);
+					this._toRangeinputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService);
 				});
 			});
 		});
@@ -130,25 +124,26 @@ export class FirewallRuleDialog extends Modal {
 			this.createLabelElement(firewallRuleContainer, firewallRuleLabel, true);
 			firewallRuleContainer.div({ class: 'radio-section' }, (radioContainer) => {
 				const form = DOM.append(radioContainer.getHTMLElement(), DOM.$('form.firewall-rule'));
-				const ipAddressDiv = DOM.append(form, DOM.$('div.firewall-ip-address dialog-input'));
-				const subnetIpRangeDiv = DOM.append(form, DOM.$('div.firewall-subnet-ip-range dialog-input'));
+				const IPAddressDiv = DOM.append(form, DOM.$('div.firewall-ip-address dialog-input'));
+				const subnetIPRangeDiv = DOM.append(form, DOM.$('div.firewall-subnet-ip-range dialog-input'));
 
-				const ipAddressContainer = DOM.append(ipAddressDiv, DOM.$('div.option-container'));
-				this._ipAddressInput = DOM.append(ipAddressContainer, DOM.$('input.option-input'));
-				this._ipAddressInput.setAttribute('type', 'radio');
-				this._ipAddressInput.setAttribute('name', 'firewallRuleChoice');
-				this._ipAddressInput.setAttribute('value', 'ipAddress');
-				const ipAddressDescription = DOM.append(ipAddressContainer, DOM.$('div.option-description'));
-				ipAddressDescription.innerText = localize('addIpAddressLabel', 'Add my client IP ({0})', '167.220.0.132');
+				const IPAddressContainer = DOM.append(IPAddressDiv, DOM.$('div.option-container'));
+				this._IPAddressInput = DOM.append(IPAddressContainer, DOM.$('input.option-input'));
+				this._IPAddressInput.setAttribute('type', 'radio');
+				this._IPAddressInput.setAttribute('name', 'firewallRuleChoice');
+				this._IPAddressInput.setAttribute('value', 'ipAddress');
+				const IPAddressDescription = DOM.append(IPAddressContainer, DOM.$('div.option-description'));
+				IPAddressDescription.innerText = localize('addIPAddressLabel', 'Add my client IP ');
+				this._IPAddressElement = DOM.append(IPAddressContainer, DOM.$('div.option-ip-address'));
 
-				const subnetIpRangeContainer = DOM.append(subnetIpRangeDiv, DOM.$('div.option-container'));
-				this._subnetIpRangeInput = DOM.append(subnetIpRangeContainer, DOM.$('input.option-input'));
-				this._subnetIpRangeInput.setAttribute('type', 'radio');
-				this._subnetIpRangeInput.setAttribute('name', 'firewallRuleChoice');
-				this._subnetIpRangeInput.setAttribute('value', 'ipRange');
-				const subnetIpRangeDescription = DOM.append(subnetIpRangeContainer, DOM.$('div.option-description'));
-				subnetIpRangeDescription.innerText = localize('addIpRangeLabel', 'Add my subnet IP range');
-				DOM.append(subnetIpRangeDiv, subnetIpRangeSection);
+				const subnetIpRangeContainer = DOM.append(subnetIPRangeDiv, DOM.$('div.option-container'));
+				this._subnetIPRangeInput = DOM.append(subnetIpRangeContainer, DOM.$('input.option-input'));
+				this._subnetIPRangeInput.setAttribute('type', 'radio');
+				this._subnetIPRangeInput.setAttribute('name', 'firewallRuleChoice');
+				this._subnetIPRangeInput.setAttribute('value', 'ipRange');
+				const subnetIPRangeDescription = DOM.append(subnetIpRangeContainer, DOM.$('div.option-description'));
+				subnetIPRangeDescription.innerText = localize('addIpRangeLabel', 'Add my subnet IP range');
+				DOM.append(subnetIPRangeDiv, subnetIPRangeSection);
 			});
 		});
 
@@ -162,21 +157,22 @@ export class FirewallRuleDialog extends Modal {
 		this._register(self._themeService.onDidColorThemeChange(e => self.updateTheme(e)));
 		self.updateTheme(self._themeService.getColorTheme());
 
-		jQuery(this._ipAddressInput).on('click', () => {
+		jQuery(this._IPAddressInput).on('click', () => {
 			this.onFirewallRuleOptionSelected(true);
 		});
 
-		jQuery(this._subnetIpRangeInput).on('click', () => {
+		jQuery(this._subnetIPRangeInput).on('click', () => {
 			this.onFirewallRuleOptionSelected(false);
 		});
 	}
 
-	private onFirewallRuleOptionSelected(isIpAddress: boolean) {
+	private onFirewallRuleOptionSelected(isIPAddress: boolean) {
+		this.viewModel.isIPAddressSelected = isIPAddress;
 		if (this._fromRangeinputBox) {
-			isIpAddress ? this._fromRangeinputBox.disable() : this._fromRangeinputBox.enable();
+			isIPAddress ? this._fromRangeinputBox.disable() : this._fromRangeinputBox.enable();
 		}
 		if (this._toRangeinputBox) {
-			isIpAddress ? this._toRangeinputBox.disable() : this._toRangeinputBox.enable();
+			isIPAddress ? this._toRangeinputBox.disable() : this._toRangeinputBox.enable();
 		}
 	}
 
@@ -210,6 +206,24 @@ export class FirewallRuleDialog extends Modal {
 		this._register(attachButtonStyler(this._closeButton, this._themeService));
 		this._register(attachInputBoxStyler(this._fromRangeinputBox, this._themeService));
 		this._register(attachInputBoxStyler(this._toRangeinputBox, this._themeService));
+
+		// handler for from subnet ip range change events
+		this._register(this._fromRangeinputBox.onDidChange(IPAddress => {
+			this.fromRangeInputChanged(IPAddress);
+		}));
+
+		// handler for to subnet ip range change events
+		this._register(this._toRangeinputBox.onDidChange(IPAddress => {
+			this.toRangeInputChanged(IPAddress);
+		}));
+	}
+
+	private fromRangeInputChanged(IPAddress: string) {
+		this.viewModel.fromSubnetIPRange = IPAddress;
+	}
+
+	private toRangeInputChanged(IPAddress: string) {
+		this.viewModel.toSubnetIPRange = IPAddress;
 	}
 
 	/* Overwrite esapce key behavior */
@@ -228,7 +242,6 @@ export class FirewallRuleDialog extends Modal {
 	}
 
 	public close() {
-		// todo reset dialog
 		this.hide();
 	}
 
@@ -237,11 +250,11 @@ export class FirewallRuleDialog extends Modal {
 	}
 
 	public open() {
-		this._ipAddressInput.click();
-		this.show();
-	}
+		this._IPAddressInput.click();
+		this._fromRangeinputBox.setPlaceHolder(this.viewModel.defaultFromSubnetIPRange);
+		this._toRangeinputBox.setPlaceHolder(this.viewModel.defaultToSubnetIPRange);
+		this._IPAddressElement.innerText = '(' + this.viewModel.defaultIPAddress + ')';
 
-	public dispose(): void {
-		super.dispose();
+		this.show();
 	}
 }

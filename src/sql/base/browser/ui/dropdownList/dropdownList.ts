@@ -4,15 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import 'vs/css!sql/base/browser/ui/dropdown/media/dropdown';
+import 'vs/css!sql/base/browser/ui/dropdownList/media/dropdownList';
 import * as DOM from 'vs/base/browser/dom';
-import { Dropdown as vsDropdown, IDropdownOptions } from 'vs/base/browser/ui/dropdown/dropdown';
+import { Dropdown, IDropdownOptions } from 'vs/base/browser/ui/dropdown/dropdown';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { Color } from 'vs/base/common/color';
 import { IAction } from 'vs/base/common/actions';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { attachButtonStyler } from 'vs/platform/theme/common/styler';
+import { EventType as GestureEventType } from 'vs/base/browser/touch';
+import { List } from 'vs/base/browser/ui/list/listWidget';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
 
 export interface IDropdownStyles {
 	backgroundColor?: Color;
@@ -20,7 +24,7 @@ export interface IDropdownStyles {
 	borderColor?: Color;
 }
 
-export class Dropdown extends vsDropdown {
+export class DropdownList extends Dropdown {
 
 	protected backgroundColor: Color;
 	protected foregroundColor: Color;
@@ -30,6 +34,7 @@ export class Dropdown extends vsDropdown {
 		container: HTMLElement,
 		private _options: IDropdownOptions,
 		private _contentContainer: HTMLElement,
+		private _list: List<any>,
 		private _themeService: IThemeService,
 		private _action?: IAction,
 	) {
@@ -40,7 +45,33 @@ export class Dropdown extends vsDropdown {
 			button.addListener('click', () => _action.run());
 			attachButtonStyler(button, this._themeService);
 		}
+
 		DOM.append(this.element.getHTMLElement(), DOM.$('div.dropdown-icon'));
+
+		this.element.on([DOM.EventType.CLICK, DOM.EventType.MOUSE_DOWN, GestureEventType.Tap], (e: Event) => {
+			DOM.EventHelper.stop(e, true); // prevent default click behaviour to trigger
+		}).on([DOM.EventType.MOUSE_DOWN, GestureEventType.Tap], (e: Event) => {
+			// We want to show the context menu on dropdown so that as a user you can press and hold the
+			// mouse button, make a choice of action in the menu and release the mouse to trigger that
+			// action.
+			// Due to some weird bugs though, we delay showing the menu to unwind event stack
+			// (see https://github.com/Microsoft/vscode/issues/27648)
+			setTimeout(() => this.show(), 100);
+		}).on([DOM.EventType.KEY_DOWN], (e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Enter)) {
+				setTimeout(() => this.show(), 100);
+			} else if (event.equals(KeyCode.DownArrow)) {
+				this._list.getHTMLElement().focus();
+			}
+		});
+
+		this.toDispose.push(this._list.onSelectionChange(() => {
+			this.element.getHTMLElement().focus();
+			this.hide();
+		}));
+
+		this.element.getHTMLElement().setAttribute('tabindex', '0');
 	}
 
 	/**
@@ -62,13 +93,9 @@ export class Dropdown extends vsDropdown {
 	}
 
 	protected onEvent(e: Event, activeElement: HTMLElement): void {
-		if (!DOM.isAncestor(<HTMLElement>e.target, this.label.getHTMLElement())) {
+		if (!DOM.isAncestor(<HTMLElement>e.target, this.element.getHTMLElement()) && !DOM.isAncestor(<HTMLElement>e.target, this._list.getHTMLElement())) {
 			this.hide();
 		}
-	}
-
-	public dispose(): void {
-		super.dispose();
 	}
 
 	public style(styles: IDropdownStyles): void {

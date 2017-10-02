@@ -4,22 +4,33 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import * as data from 'data';
-import Event, { Emitter } from 'vs/base/common/event';
-
-//import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
 
 /**
  * View model for firewall rule dialog
  */
 export class FirewallRuleViewModel {
+	public isIPAddressSelected: boolean;
+	public fromSubnetIPRange: string;
+	public toSubnetIPRange: string;
 
-	private _providers: data.AccountProviderMetadata[] = [];
+	private _defaultIPAddress: string;
+	private _defaultFromSubnetIPRange: string;
+	private _defaultToSubnetIPRange: string;
 
-	// todo: implement view model for account picker
-	// constructor(
-	// 	@IAccountManagementService private _accountManagementService: IAccountManagementService
-	// ) {
-	// }
+	// todo: integrate the view model with firewall rule service
+	constructor() {
+		this.isIPAddressSelected = true;
+	}
 
+	public get defaultIPAddress(): string {
+		return this._defaultIPAddress;
+	}
+
+	public get defaultFromSubnetIPRange(): string {
+		return this._defaultFromSubnetIPRange;
+	}
+
+	public get defaultToSubnetIPRange(): string {
+		return this._defaultToSubnetIPRange;
+	}
 }

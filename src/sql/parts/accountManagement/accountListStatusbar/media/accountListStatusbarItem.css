@@ -3,7 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.linked-account-staus > .linked-account-status-selection {
-	content: url(accounts_statusbar_inverse.svg);
+.statusbar-item .linked-account-staus a.linked-account-status-selection  {
+	background: url('accounts_statusbar_inverse.svg') center center no-repeat;
+	background-size: 12px;
+	height: 12px !important;
 	width: 12px;
 }

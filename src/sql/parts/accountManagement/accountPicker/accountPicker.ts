@@ -18,15 +18,16 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
 
-import { Dropdown } from 'sql/base/browser/ui/dropdown/dropdown';
+import { DropdownList } from 'sql/base/browser/ui/dropdownList/dropdownList';
 import { attachDropdownStyler } from 'sql/common/theme/styler';
 import { AddLinkedAccountAction, RefreshAccountAction } from 'sql/parts/accountManagement/common/accountActions';
-import { AccountListRenderer, AccountListDelegate } from 'sql/parts/accountManagement/common/accountListRenderer';
+import { AccountPickerListRenderer, AccountListDelegate } from 'sql/parts/accountManagement/common/accountListRenderer';
 import { AccountPickerViewModel } from 'sql/parts/accountManagement/accountPicker/accountPickerViewModel';
 
 import * as data from 'data';
 
 export class AccountPicker extends Disposable {
+	public static ACCOUNTPICKERLIST_HEIGHT = 47;
 	private _viewModel: AccountPickerViewModel;
 	private _accountList: List<data.Account>;
 	private _refreshContainer: HTMLElement;
@@ -40,8 +41,8 @@ export class AccountPicker extends Disposable {
 		super();
 
 		// Create an account list
-		let delegate = new AccountListDelegate(47, AccountListRenderer.ACCOUNT_PICKER_TEMPLATE_ID);
-		let accountRenderer = this._instantiationService.createInstance(AccountListRenderer, AccountListRenderer.ACCOUNT_PICKER_TEMPLATE_ID);
+		let delegate = new AccountListDelegate(AccountPicker.ACCOUNTPICKERLIST_HEIGHT);
+		let accountRenderer = new AccountPickerListRenderer();
 		this._listContainer = DOM.$('div.account-list-container');
 		this._accountList = new List<data.Account>(this._listContainer, delegate, [accountRenderer]);
 		this._register(attachListStyler(this._accountList, this._themeService));
@@ -65,7 +66,7 @@ export class AccountPicker extends Disposable {
 			AddLinkedAccountAction.ID,
 			AddLinkedAccountAction.LABEL);
 
-		let dropdown = new Dropdown(container, option, this._listContainer, this._themeService, addAccountAction);
+		let dropdown = new DropdownList(container, option, this._listContainer, this._accountList, this._themeService, addAccountAction);
 		this._register(attachDropdownStyler(dropdown, this._themeService));
 		this._register(this._accountList.onSelectionChange((e: IListEvent<data.Account>) => {
 			if (e.elements.length === 1) {

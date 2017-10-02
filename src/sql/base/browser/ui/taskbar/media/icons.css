@@ -54,15 +54,6 @@
 	background-repeat: no-repeat;
 }
 
-.vs .icon.refresh {
-	background-image: url('refresh.svg');
-}
-
-.vs-dark .icon.refresh,
-.hc-black .icon.refresh  {
-	background-image: url('refresh_inverse.svg');
-}
-
 .vs .icon.estimatedQueryPlan {
 	background-image: url('query-plan.svg');
 }

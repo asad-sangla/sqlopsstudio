@@ -21,8 +21,7 @@ import * as data from 'data';
 export class AccountListDelegate implements IDelegate<data.Account> {
 
 	constructor(
-		private _height: number,
-		private _id: string
+		private _height: number
 	) {
 	}
 
@@ -31,52 +30,42 @@ export class AccountListDelegate implements IDelegate<data.Account> {
 	}
 
 	public getTemplateId(element: data.Account): string {
-		return this._id;
+		return 'accountListRenderer';
 	}
 }
 
 export interface AccountListTemplate {
+	root: HTMLElement;
 	icon: HTMLElement;
 	badgeContent: HTMLElement;
 	contextualDisplayName: HTMLElement;
+	label: HTMLElement;
 	displayName: HTMLElement;
 	content?: HTMLElement;
 	actions?: ActionBar;
 }
 
-export class AccountListRenderer implements IRenderer<data.Account, AccountListTemplate> {
-	public static ACCOUNT_PICKER_TEMPLATE_ID = 'accountPicker';
-	public static ACCOUNT_MANAGEMENT_TEMPLATE_ID = 'accountManagement';
-	constructor(
-		private _templateId: string,
-		@IInstantiationService private _instantiationService: IInstantiationService
-	) {
-	}
+export class AccountPickerListRenderer implements IRenderer<data.Account, AccountListTemplate> {
+	public static TEMPLATE_ID = 'accountListRenderer';
 
 	public get templateId(): string {
-		return this._templateId;
+		return AccountPickerListRenderer.TEMPLATE_ID;
 	}
 
 	public renderTemplate(container: HTMLElement): AccountListTemplate {
 		const tableTemplate: AccountListTemplate = Object.create(null);
 		const badge = DOM.$('div.badge');
-		const row = DOM.append(container, DOM.$('div.list-row'));
-		tableTemplate.icon = DOM.append(row, DOM.$('div.icon'));
+		tableTemplate.root = DOM.append(container, DOM.$('div.list-row'));
+		tableTemplate.icon = DOM.append(tableTemplate.root, DOM.$('div.icon'));
 		DOM.append(tableTemplate.icon, badge);
 		tableTemplate.badgeContent = DOM.append(badge, DOM.$('div.badge-content'));
-		const label = DOM.append(row, DOM.$('div.label'));
-		tableTemplate.contextualDisplayName = DOM.append(label, DOM.$('div.contextual-display-name'));
-		tableTemplate.displayName = DOM.append(label, DOM.$('div.display-name'));
-
-		if (this._templateId === AccountListRenderer.ACCOUNT_MANAGEMENT_TEMPLATE_ID) {
-			tableTemplate.content = DOM.append(label, DOM.$('div.content'));
-			tableTemplate.actions = new ActionBar(row, { animated: false });
-		}
-
+		tableTemplate.label = DOM.append(tableTemplate.root, DOM.$('div.label'));
+		tableTemplate.contextualDisplayName = DOM.append(tableTemplate.label, DOM.$('div.contextual-display-name'));
+		tableTemplate.displayName = DOM.append(tableTemplate.label, DOM.$('div.display-name'));
 		return tableTemplate;
 	}
 
-	renderElement(account: data.Account, index: number, templateData: AccountListTemplate): void {
+	public renderElement(account: data.Account, index: number, templateData: AccountListTemplate): void {
 		let iconClass = 'icon ' + account.displayInfo.accountType;
 		templateData.icon.className = iconClass;
 		templateData.contextualDisplayName.innerText = account.displayInfo.contextualDisplayName;
@@ -86,27 +75,48 @@ export class AccountListRenderer implements IRenderer<data.Account, AccountListT
 		} else {
 			templateData.badgeContent.className = 'badge-content';
 		}
-
-		if (this._templateId === AccountListRenderer.ACCOUNT_MANAGEMENT_TEMPLATE_ID) {
-			if (account.isStale) {
-				templateData.content.innerText = localize('refreshCredentials', 'You need to refresh the credentials for this account.');
-			} else {
-				templateData.content.innerText = '';
-			}
-			templateData.actions.clear();
-
-			let actionOptions: IActionOptions = { icon: true, label: false };
-			if (account.isStale) {
-				templateData.actions.push(new RefreshAccountAction(RefreshAccountAction.ID, RefreshAccountAction.LABEL), actionOptions);
-			} else {
-				templateData.actions.push(new ApplyFilterAction(ApplyFilterAction.ID, ApplyFilterAction.LABEL), actionOptions);
-			}
-			let removeAction = this._instantiationService.createInstance(RemoveAccountAction, RemoveAccountAction.ID, RemoveAccountAction.LABEL, account.displayInfo.displayName);
-			templateData.actions.push(removeAction, actionOptions);
-		}
 	}
 
-	disposeTemplate(template: AccountListTemplate): void {
+	public disposeTemplate(template: AccountListTemplate): void {
 		// noop
+	}
+}
+
+export class AccountListRenderer extends AccountPickerListRenderer {
+	constructor(
+		@IInstantiationService private _instantiationService: IInstantiationService
+	) {
+		super();
+	}
+
+	public get templateId(): string {
+		return AccountListRenderer.TEMPLATE_ID;
+	}
+
+	public renderTemplate(container: HTMLElement): AccountListTemplate {
+		const tableTemplate = super.renderTemplate(container);
+		tableTemplate.content = DOM.append(tableTemplate.label, DOM.$('div.content'));
+		tableTemplate.actions = new ActionBar(tableTemplate.root, { animated: false });
+
+		return tableTemplate;
+	}
+
+	public renderElement(account: data.Account, index: number, templateData: AccountListTemplate): void {
+		super.renderElement(account, index, templateData);
+		if (account.isStale) {
+			templateData.content.innerText = localize('refreshCredentials', 'You need to refresh the credentials for this account.');
+		} else {
+			templateData.content.innerText = '';
+		}
+		templateData.actions.clear();
+
+		let actionOptions: IActionOptions = { icon: true, label: false };
+		if (account.isStale) {
+			templateData.actions.push(new RefreshAccountAction(RefreshAccountAction.ID, RefreshAccountAction.LABEL), actionOptions);
+		} else {
+			templateData.actions.push(new ApplyFilterAction(ApplyFilterAction.ID, ApplyFilterAction.LABEL), actionOptions);
+		}
+		let removeAction = this._instantiationService.createInstance(RemoveAccountAction, RemoveAccountAction.ID, RemoveAccountAction.LABEL, account.displayInfo.displayName);
+		templateData.actions.push(removeAction, actionOptions);
 	}
 }

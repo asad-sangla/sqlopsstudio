@@ -30,6 +30,7 @@
 .account-view .provider-view .list-row .icon .badge .badge-content {
 	width: 22px;
 	height: 22px;
+	background-size: 22px;
 }
 
 .account-view .provider-view .list-row .actions-container {
@@ -40,7 +41,9 @@
 	width: 16px;
 	margin-left: 20px;
 	margin-right: 10px;
-	background: none;
+	background-size: 16px;
+	background-position: center;
+	background-repeat: no-repeat;
 }
 
 .account-view .provider-view .list-row .actions-container {

@@ -56,7 +56,7 @@
 }
 
 .modal .firewall-rule-dialog .firewall-rule-description-section .firewall-rule-icon {
-	content: url(secure.svg);
+	background: url('secure.svg') center center no-repeat;
 	width: 50px;
 	height: 50px;
 	flex: 0 0 50px;
@@ -79,4 +79,8 @@
 
 .modal .firewall-rule-dialog .firewall-rule-section .radio-section .option-container .option-description {
 	padding-left: 10px;
+}
+
+.modal .firewall-rule-dialog .firewall-rule-section .radio-section .option-container .option-ip-address {
+	padding-left: 3px;
 }
