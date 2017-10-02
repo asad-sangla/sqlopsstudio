@@ -25,7 +25,7 @@ import { GridActionProvider } from 'sql/parts/grid/views/gridActions';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
-
+import * as strings from 'vs/base/common/strings';
 import { clone } from 'vs/base/common/objects';
 
 import * as rangy from 'sql/base/node/rangy';
@@ -48,6 +48,10 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	private messagePaneHeight = 22;
 	// tslint:disable-next-line:no-unused-variable
 	private maxScrollGrids = 8;
+
+	// create a function alias to use inside query.component
+	// tslint:disable-next-line:no-unused-variable
+	private stringsFormat:any = strings.format;
 
 	// tslint:disable-next-line:no-unused-variable
 	private dataIcons: IGridIcon[] = [
