@@ -8,7 +8,7 @@
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { ScriptAction } from 'sql/workbench/common/taskUtilities';
+import { ScriptOperation} from 'sql/workbench/common/taskUtilities';
 import data = require('data');
 export const SERVICE_ID = 'scriptingService';
 
@@ -17,7 +17,7 @@ export const IScriptingService = createDecorator<IScriptingService>(SERVICE_ID);
 export interface IScriptingService {
 	_serviceBrand: any;
 
-	script(connectionUri: string, metadata: data.ObjectMetadata, action: ScriptAction): Thenable<data.ScriptingResult>;
+	script(connectionUri: string, metadata: data.ObjectMetadata, operation: ScriptOperation, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult>;
 
 	/**
 	 * Register a scripting provider
@@ -35,18 +35,27 @@ export class ScriptingService implements IScriptingService {
 
 	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService) { }
 
-	public script(connectionUri: string, metadata: data.ObjectMetadata, action: ScriptAction): Thenable<data.ScriptingResult> {
-		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
+	/**
+	 * Call the service for scripting based on provider and scripting operation
+	 * @param connectionUri
+	 * @param metadata
+	 * @param operation
+	 * @param paramDetails
+	 */
+	public script(connectionUri: string, metadata: data.ObjectMetadata, operation: ScriptOperation, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
+		let providerId : string = this._connectionService.getProviderIdFromUri(connectionUri);
+
 		if (providerId) {
 			let provider = this._providers[providerId];
 			if (provider) {
-				switch (action) {
-					case (ScriptAction.ScriptCreateAction):
-						return provider.scriptAsCreate(connectionUri, metadata);
-					case (ScriptAction.ScriptSelectAction):
-						return provider.scriptAsSelect(connectionUri, metadata);
-					case (ScriptAction.ScriptDeleteAction):
-						return provider.scriptAsDelete(connectionUri, metadata);
+				switch(operation)
+				{
+					case(ScriptOperation.Select):
+						return provider.scriptAsSelect(connectionUri, metadata, paramDetails);
+					case(ScriptOperation.Create):
+						return provider.scriptAsCreate(connectionUri, metadata, paramDetails);
+					case(ScriptOperation.Delete):
+						return provider.scriptAsDelete(connectionUri, metadata, paramDetails);
 					default:
 						return Promise.resolve(undefined);
 				}

@@ -144,6 +144,8 @@ export interface IConnectionManagementService {
 
 	getConnectionId(connectionProfile: IConnectionProfile): string;
 
+	getFormattedUri(uri: string, connectionProfile: IConnectionProfile): string;
+
 	isConnected(fileUri: string): boolean;
 
 	/**

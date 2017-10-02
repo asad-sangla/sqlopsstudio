@@ -11,6 +11,8 @@ import * as proto from './protocol';
 import * as is from './utils/is';
 import ProtocolCompletionItem from './protocolCompletionItem';
 import ProtocolCodeLens from './protocolCodeLens';
+import os = require('os');
+import path = require('path');
 
 export interface Converter {
 
@@ -72,7 +74,7 @@ export interface Converter {
 
 	asTableMetadataParams(connectionUri: string, metadata: data.ObjectMetadata): proto.TableMetadataParams;
 
-	asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata): ls.ScriptingScriptAsParams;
+	asScriptingParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): ls.ScriptingParams;
 
 	asConnectionDetail(connInfo: data.ConnectionInfo): ls.ConnectionDetails;
 
@@ -368,11 +370,39 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
-	function asScriptingScriptAsParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata): ls.ScriptingScriptAsParams {
-		return <ls.ScriptingScriptAsParams>{
-			ownerUri: connectionUri,
-			operation: operation,
-			metadata: metadata
+	function asScriptingParams(connectionUri: string, operation: ls.ScriptOperation, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): ls.ScriptingParams {
+		let scriptingObject: ls.ScriptingObject = {
+			type: metadata.metadataTypeName,
+			schema: metadata.schema,
+			name: metadata.name
+		}
+		let targetDatabaseEngineEdition = paramDetails.targetDatabaseEngineEdition;
+		let targetDatabaseEngineType = paramDetails.targetDatabaseEngineType;
+		let scriptCompatibilityOption = paramDetails.scriptCompatibilityOption;
+		let options: ls.ScriptOptions = {
+			scriptCreateDrop: (operation === ls.ScriptOperation.Delete) ? "ScriptDrop" : 
+							  (operation === ls.ScriptOperation.Select) ? "ScriptSelect" : "ScriptCreate",
+			typeOfDataToScript: "SchemaOnly",
+			scriptStatistics: "ScriptStatsNone",
+			targetDatabaseEngineEdition: targetDatabaseEngineEdition ? targetDatabaseEngineEdition : "SqlServerEnterpriseEdition",
+			targetDatabaseEngineType: targetDatabaseEngineType ? targetDatabaseEngineType : "SingleInstance",
+			scriptCompatibilityOption: scriptCompatibilityOption ? scriptCompatibilityOption : "Script140Compat"
+		}
+		return <ls.ScriptingParams> {
+			connectionString: null,
+			filePath: paramDetails.filePath,
+			scriptingObjects: [scriptingObject],
+			scriptDestination: "ToEditor",
+			includeObjectCriteria: null,
+			excludeObjectCriteria: null,
+			includeSchemas: null,
+			excludeSchemas: null,
+			includeTypes: null,
+			excludeTypes: null,
+			scriptOptions: options,
+			connectionDetails: null,
+			ownerURI: connectionUri,
+			operation: operation
 		};
 	}
 
@@ -459,7 +489,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asMetadataQueryParams,
 		asTableMetadataParams,
 		asListDatabasesParams,
-		asScriptingScriptAsParams,
+		asScriptingParams,
 		asConnectionDetail,
 		asExpandInfo,
 		asCloseSessionInfo,

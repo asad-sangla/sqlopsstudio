@@ -325,37 +325,37 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	}
 
 	// Scripting handlers
-	public $scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+	public $scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
-			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsSelect(connectionUri, metadata)
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsSelect(connectionUri, metadata, paramDetails)
 				: Promise.resolve(undefined);
 		});
 	}
 
-	public $scriptAsCreate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+	public $scriptAsCreate(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
-			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsCreate(connectionUri, metadata)
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsCreate(connectionUri, metadata, paramDetails)
 				: Promise.resolve(undefined);
 		});
 	}
 
-	public $scriptAsUpdate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+	public $scriptAsUpdate(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
-			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsUpdate(connectionUri, metadata)
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsUpdate(connectionUri, metadata, paramDetails)
 				: Promise.resolve(undefined);
 		});
 	}
 
-	public $scriptAsInsert(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+	public $scriptAsInsert(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
-			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsInsert(connectionUri, metadata)
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsInsert(connectionUri, metadata, paramDetails)
 				: Promise.resolve(undefined);
 		});
 	}
 
-	public $scriptAsDelete(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> {
+	public $scriptAsDelete(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
 		return this._runWithProvider(handle, provider => {
-			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsDelete(connectionUri, metadata)
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsDelete(connectionUri, metadata, paramDetails)
 				: Promise.resolve(undefined);
 		});
 	}

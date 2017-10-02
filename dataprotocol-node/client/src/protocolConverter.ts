@@ -81,7 +81,7 @@ export interface Converter {
 
 	asProviderMetadata(params: ls.MetadataQueryResult): data.ProviderMetadata;
 
-	asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult;
+	asScriptingResult(params: ls.ScriptingResult): data.ScriptingResult;
 
 	asObjectExplorerSession(params: ls.SessionCreatedParameters): data.ObjectExplorerSession;
 
@@ -632,8 +632,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
-	function asScriptingResult(params: ls.ScriptingScriptAsResult): data.ScriptingResult {
+	function asScriptingResult(params: ls.ScriptingResult): data.ScriptingResult {
 		return <data.ScriptingResult>{
+			operationId: params.operationId,
 			script: params.script
 		};
 	}

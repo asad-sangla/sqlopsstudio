@@ -54,3 +54,11 @@ export enum TaskExecutionMode {
 	script = 1,
 	executeAndScript = 2,
 }
+
+export enum ScriptOperation {
+	Select = 0,
+	Create = 1,
+	Insert = 2,
+	Update = 3,
+	Delete = 4
+}

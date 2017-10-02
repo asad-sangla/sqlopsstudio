@@ -17,19 +17,70 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import Severity from 'vs/base/common/severity';
 import data = require('data');
 import nls = require('vs/nls');
+import fs = require('fs');
+import os = require('os');
+import path = require('path');
 
-export enum ScriptAction {
-	ScriptCreateAction,
-	ScriptDeleteAction,
-	ScriptSelectAction
+// map for the version of SQL Server (default is 140)
+let scriptCompatibilityOptionMap = new Map<number, string>();
+scriptCompatibilityOptionMap.set(90, "Script90Compat");
+scriptCompatibilityOptionMap.set(100, "Script100Compat");
+scriptCompatibilityOptionMap.set(105, "Script105Compat");
+scriptCompatibilityOptionMap.set(110, "Script110Compat");
+scriptCompatibilityOptionMap.set(120, "Script120Compat");
+scriptCompatibilityOptionMap.set(130, "Script130Compat");
+scriptCompatibilityOptionMap.set(140, "Script140Compat");
+
+// map for the target database engine edition (default is Enterprise)
+let targetDatabaseEngineEditionMap = new Map<number, string>();
+targetDatabaseEngineEditionMap.set(0, "SqlServerEnterpriseEdition");
+targetDatabaseEngineEditionMap.set(1, "SqlServerPersonalEdition");
+targetDatabaseEngineEditionMap.set(2, "SqlServerStandardEdition");
+targetDatabaseEngineEditionMap.set(3, "SqlServerEnterpriseEdition");
+targetDatabaseEngineEditionMap.set(4, "SqlServerExpressEdition");
+targetDatabaseEngineEditionMap.set(5, "SqlAzureDatabaseEdition");
+targetDatabaseEngineEditionMap.set(6, "SqlDatawarehouseEdition");
+targetDatabaseEngineEditionMap.set(7, "SqlServerStretchEdition");
+
+// map for object types for scripting
+let objectScriptMap = new Map<string, string>();
+objectScriptMap.set("Table", "Table");
+objectScriptMap.set("View", "View");
+objectScriptMap.set("StoredProcedure", "Procedure");
+objectScriptMap.set("UserDefinedFunction", "Function");
+objectScriptMap.set("UserDefinedDataType", "Type");
+objectScriptMap.set("User", "User");
+objectScriptMap.set("Default", "Default");
+objectScriptMap.set("Rule", "Rule");
+objectScriptMap.set("DatabaseRole", "Role");
+objectScriptMap.set("ApplicationRole", "Application Role");
+objectScriptMap.set("SqlAssembly", "Assembly");
+objectScriptMap.set("DdlTrigger", "Trigger");
+objectScriptMap.set("Synonym", "Synonym");
+objectScriptMap.set("XmlSchemaCollection", "Xml Schema Collection");
+objectScriptMap.set("Schema", "Schema");
+objectScriptMap.set("PlanGuide", "sp_create_plan_guide");
+objectScriptMap.set("UserDefinedType", "Type");
+objectScriptMap.set("UserDefinedAggregate", "Aggregate");
+objectScriptMap.set("FullTextCatalog", "Fulltext Catalog");
+objectScriptMap.set("UserDefinedTableType", "Type");
+
+export enum ScriptOperation {
+	Select = 0,
+	Create = 1,
+	Insert = 2,
+	Update = 3,
+	Delete = 4
 }
 
 export function connectIfNotAlreadyConnected(connectionProfile: IConnectionProfile, connectionService: IConnectionManagementService): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
-		let uri = connectionService.getConnectionId(connectionProfile);
+		let connectionID = connectionService.getConnectionId(connectionProfile);
+		let uri: string = connectionService.getFormattedUri(connectionID, connectionProfile);
 		if (!connectionService.isConnected(uri)) {
 			let options: IConnectionCompletionOptions = {
 				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.executeQuery, input: undefined },
@@ -56,8 +107,9 @@ export function connectIfNotAlreadyConnected(connectionProfile: IConnectionProfi
 export function scriptSelect(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		connectIfNotAlreadyConnected(connectionProfile, connectionService).then(connectionResult => {
-			scriptingService.script(ownerUri, metadata, ScriptAction.ScriptSelectAction).then(result => {
-				if (result && result.script) {
+			let paramDetails: data.ScriptingParamDetails = getScriptingParamDetails(connectionService, ownerUri, metadata);
+			scriptingService.script(ownerUri, metadata, ScriptOperation.Select, paramDetails).then(result => {
+				if (result.script) {
 					queryEditorService.newSqlEditor(result.script).then((owner: IConnectableInput) => {
 						// Connect our editor to the input connection
 						let options: IConnectionCompletionOptions = {
@@ -69,18 +121,16 @@ export function scriptSelect(connectionProfile: IConnectionProfile, metadata: da
 						connectionService.connect(connectionProfile, owner.uri, options).then(() => {
 							resolve();
 						});
-					}).catch(edirotError => {
-						reject(edirotError);
+					}).catch(editorError => {
+						reject(editorError);
 					});
 				} else {
-					let errMsg = nls.localize("scriptNotFound", "No script was returned when calling script {action} on object {metadata.metadataTypeName}");
-					reject(errMsg);
+					let errMsg: string = nls.localize('scriptNotFound', 'No script was returned when calling select script on object ');
+					reject(errMsg.concat(metadata.metadataTypeName));
 				}
 			}, scriptError => {
 				reject(scriptError);
-			});
-		}).catch(connectionError => {
-			reject(connectionError);
+			})
 		});
 	});
 }
@@ -106,25 +156,29 @@ export function editData(connectionProfile: IConnectionProfile, tableName: strin
 }
 
 /**
- * Script the object as a statement based on the provided action
+ * Script the object as a statement based on the provided action (except Select)
  */
-export function script(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService, action: ScriptAction): Promise<void> {
+export function script(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService, operation: ScriptOperation): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		connectIfNotAlreadyConnected(connectionProfile, connectionService).then(connectionResult => {
-			scriptingService.script(ownerUri, metadata, action).then(result => {
-				if (result && result.script) {
-					let script = result.script;
-					var startPos: number = getStartPos(script, action);
+			let paramDetails = getScriptingParamDetails(connectionService, ownerUri, metadata);
+			scriptingService.script(ownerUri, metadata, operation, paramDetails).then(result => {
+				let errMsg: string = nls.localize('scriptNotFound', 'No script was returned when calling script');
+				if (result) {
+					let script: string = result.script;
+					let startPos: number = getStartPos(script, operation, metadata.metadataTypeName);
 					if (startPos > 0) {
 						script = script.substring(startPos);
+						queryEditorService.newSqlEditor(script).then(() => {
+							resolve();
+						}).catch(editorError => {
+							reject(editorError);
+						});
 					}
-					queryEditorService.newSqlEditor(script).then(() => {
-						resolve();
-					}).catch(editorError => {
-						reject(editorError);
-					});
+					else {
+						reject(errMsg.concat(operation.toString(), "on object", metadata.metadataTypeName));
+					}
 				} else {
-					let errMsg = nls.localize("scriptNotFound", "No script was returned when calling script {action} on object {metadata.metadataTypeName}");
 					reject(errMsg);
 				}
 			}, scriptingError => {
@@ -225,14 +279,44 @@ export function openInsight(query: IInsightsConfig, profile: IConnectionProfile,
 }
 
 /* Helper Methods */
-function getStartPos(script: string, action: ScriptAction): number {
-	switch (action) {
-		case (ScriptAction.ScriptCreateAction):
-			return script.toLowerCase().indexOf('create');
-		case (ScriptAction.ScriptDeleteAction):
-			return script.toLowerCase().indexOf('drop');
+function getStartPos(script: string, operation: ScriptOperation, typeName: string): number {
+	let scriptTypeName = objectScriptMap.get(typeName).toLowerCase();
+	switch(operation)
+	{
+		case (ScriptOperation.Create):
+			return script.toLowerCase().indexOf(`create ${scriptTypeName}`);
+		case (ScriptOperation.Delete):
+			return script.toLowerCase().indexOf(`drop ${scriptTypeName}`);
 		default:
-			/* start script from the start */
-			return 0;
+			/* script wasn't found for that object */
+			return -1;
 	}
+}
+
+
+function getScriptingParamDetails(connectionService: IConnectionManagementService, ownerUri: string, metadata: data.ObjectMetadata): data.ScriptingParamDetails {
+	let serverInfo: data.ServerInfo = getServerInfo(connectionService, ownerUri);
+	let paramDetails: data.ScriptingParamDetails = {
+		filePath: getFilePath(metadata),
+		scriptCompatibilityOption: scriptCompatibilityOptionMap[serverInfo.serverMajorVersion],
+		targetDatabaseEngineEdition: targetDatabaseEngineEditionMap[serverInfo.engineEditionId],
+		targetDatabaseEngineType: serverInfo.isCloud ? 'SqlAzure' : 'SingleInstance'
+	}
+	return paramDetails;
+}
+
+function getFilePath(metadata: data.ObjectMetadata): string {
+	let schemaName: string = metadata.schema;
+	let objectName: string = metadata.name;
+	let timestamp = Date.now().toString();
+	if (schemaName !== null) {
+		return path.join(os.tmpdir(), `${schemaName}.${objectName}_${timestamp}.txt`);
+	} else {
+		return path.join(os.tmpdir(), `${objectName}_${timestamp}.txt`);
+	}
+}
+
+function getServerInfo(connectionService: IConnectionManagementService, ownerUri: string): data.ServerInfo {
+	let connection: ConnectionManagementInfo = connectionService.getConnectionInfo(ownerUri);
+	return connection.serverInfo;
 }

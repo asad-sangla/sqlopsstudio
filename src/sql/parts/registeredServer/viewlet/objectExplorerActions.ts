@@ -151,6 +151,7 @@ export class OEScriptSelectAction extends ScriptSelectAction {
 		this._treeSelectionHandler.onTreeActionStateChange(true);
 		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
+		ownerUri = this._connectionManagementService.getFormattedUri(ownerUri, connectionProfile);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
 		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
@@ -220,6 +221,7 @@ export class OEScriptCreateAction extends ScriptCreateAction {
 		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
+		ownerUri = this._connectionManagementService.getFormattedUri(ownerUri, connectionProfile);
 
 		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
 			this._treeSelectionHandler.onTreeActionStateChange(false);
@@ -255,6 +257,7 @@ export class OEScriptDeleteAction extends ScriptDeleteAction {
 		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
+		ownerUri = this._connectionManagementService.getFormattedUri(ownerUri, connectionProfile);
 
 		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
 			this._treeSelectionHandler.onTreeActionStateChange(false);
@@ -340,7 +343,6 @@ export class ObjectExplorerActionUtilities {
 		scriptMap.set(NodeType.Table, [OEScriptSelectAction, OEEditDataAction, OEScriptCreateAction, OEScriptDeleteAction]);
 		scriptMap.set(NodeType.View, [OEScriptSelectAction, OEScriptCreateAction, OEScriptDeleteAction]);
 		scriptMap.set(NodeType.Schema, basicScripting);
-		scriptMap.set(NodeType.Database, basicScripting);
 		scriptMap.set(NodeType.StoredProcedure, basicScripting);
 		return scriptMap;
 	}

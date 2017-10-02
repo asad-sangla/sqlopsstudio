@@ -24,7 +24,7 @@ import {
 	ColumnMetadata, IDbColumn,
 	ConnectionProviderOptions, DataProtocolServerCapabilities,
 	CapabiltiesDiscoveryResult, MetadataQueryParams, MetadataQueryResult,
-	ScriptingScriptAsParams, ScriptingScriptAsResult,
+	ScriptingParams, ScriptingResult, ScriptingCompleteParams,
 	BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
 	DbCellValue, EditCell, EditRow, CreateSessionResponse, SessionCreatedParameters, ExpandParams, ExpandResponse, CloseSessionParams, CloseSessionResponse,
 	BackupInfo, BackupParams, BackupResponse,
@@ -1308,9 +1308,16 @@ export namespace MetadataQueryRequest {
 
 // ------------------------------- < Scripting Events > ------------------------------------
 
-export namespace ScriptingScriptAsRequest {
-	export const type: RequestType<ScriptingScriptAsParams, ScriptingScriptAsResult, void> = { get method(): string { return 'scripting/scriptas'; } };
+export namespace ScriptingRequest {
+	export const type: RequestType<ScriptingParams, ScriptingResult, void> = { get method(): string { return 'scripting/script'; } };
 }
+
+// ------------------------------- < Scripting Complete Event > ------------------------------------
+
+export namespace ScriptingCompleteNotification {
+	export const type: NotificationType<ScriptingCompleteParams> = { get method(): string { return 'scripting/scriptComplete'; } };
+}
+
 
 // Edit Data ======================================================================================
 // Shared Interfaces --------------------------------------------------------------------------

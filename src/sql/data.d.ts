@@ -394,23 +394,40 @@ declare module 'data' {
 	}
 
 	export interface ScriptingResult {
-		objectName: string;
-
+		operationId: string;
 		script: string;
 	}
 
-	export interface ScriptingProvider {
-		scriptAsSelect(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
-
-		scriptAsCreate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
-
-		scriptAsInsert(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
-
-		scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
-
-		scriptAsDelete(connectionUri: string, metadata: ObjectMetadata): Thenable<ScriptingResult>;
+	export interface ScriptingParamDetails {
+		filePath: string;
+		scriptCompatibilityOption: string;
+		targetDatabaseEngineEdition: string;
+		targetDatabaseEngineType: string;
 	}
 
+	export interface ScriptingProvider {
+		scriptAsSelect(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
+
+		scriptAsCreate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
+
+		scriptAsInsert(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
+
+		scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
+
+		scriptAsDelete(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
+	}
+
+	export interface ScriptingCompleteResult {
+		errorDetails: string;
+
+		errorMessage: string;
+
+		hasError: boolean;
+
+		canceled: boolean;
+
+		success: boolean;
+	}
 	/**
 	 * Data Management Protocol main provider class that DMP extensions should implement.
 	 * This provider interface contains references to providers for the various capabilitiesProvider

@@ -97,11 +97,11 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Scripting methods
 	 */
-	$scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
-	$scriptAsCreate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
-	$scriptAsUpdate(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
-	$scriptAsInsert(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
-	$scriptAsDelete(handle: number, connectionUri: string, metadata: data.ObjectMetadata): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsCreate(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsUpdate(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsInsert(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
+	$scriptAsDelete(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
 
 	/**
 	 * Cancels the currently running query for a URI

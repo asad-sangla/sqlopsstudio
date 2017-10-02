@@ -115,6 +115,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return undefined;
 	}
 
+	getFormattedUri(uri: string, connectionProfile: ConnectionProfile): string {
+		return undefined;
+	}
+
 	isConnected(fileUri: string, connectionProfile?: ConnectionProfile): boolean {
 		return false;
 	}

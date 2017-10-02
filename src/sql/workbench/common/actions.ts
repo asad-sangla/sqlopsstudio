@@ -15,10 +15,8 @@ import { IAngularEventingService } from 'sql/services/angularEventing/angularEve
 import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import * as Constants from 'sql/common/constants';
-
 import { ObjectMetadata } from 'data';
-
-import { ScriptAction } from 'sql/workbench/common/taskUtilities';
+import { ScriptOperation } from 'sql/workbench/common/taskUtilities';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import * as nls from 'vs/nls';
@@ -166,7 +164,7 @@ export class ScriptCreateAction extends Action {
 				this._connectionManagementService,
 				this._queryEditorService,
 				this._scriptingService,
-				ScriptAction.ScriptCreateAction
+				ScriptOperation.Create,
 			).then(
 				result => {
 					resolve(true);
@@ -201,7 +199,7 @@ export class ScriptDeleteAction extends Action {
 				this._connectionManagementService,
 				this._queryEditorService,
 				this._scriptingService,
-				ScriptAction.ScriptDeleteAction
+				ScriptOperation.Delete
 			).then(
 				result => {
 					resolve(true);

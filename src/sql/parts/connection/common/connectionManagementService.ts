@@ -638,6 +638,20 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	/**
+	 * Returns a formatted URI in case the database field is empty for the original
+	 * URI, which happens when the connected database is master or the default database
+	 * @param uri
+	 * @param connectionProfile
+	 */
+	public getFormattedUri(uri: string, connectionProfile: IConnectionProfile): string {
+		if (this._connectionStatusManager.isDefaultTypeUri(uri)) {
+			return this.getConnectionId(connectionProfile);
+		} else {
+			return uri;
+		}
+	}
+
+	/**
 	 * Sends a notification that the language flavor for a given URI has changed.
 	 * For SQL, this would be the specific SQL implementation being used.
 	 *
