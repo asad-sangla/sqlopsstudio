@@ -345,7 +345,9 @@ export class ConnectionWidget {
 		this._userNameInputBox.disable();
 		this._passwordInputBox.disable();
 		this._rememberPasswordCheckBox.disable();
-		this._authTypeSelectBox.disable();
+		if (this._authTypeSelectBox) {
+			this._authTypeSelectBox.disable();
+		}
 	}
 
 	public handleResetConnection(): void {
@@ -355,10 +357,13 @@ export class ConnectionWidget {
 		this._serverNameInputBox.enable();
 		this._databaseNameInputBox.enable();
 		this._rememberPasswordCheckBox.enable();
-		this._authTypeSelectBox.enable();
+		let currentAuthType: AuthenticationType = undefined;
+		if (this._authTypeSelectBox) {
+			this._authTypeSelectBox.enable();
+			currentAuthType = this.getMatchingAuthType(this._authTypeSelectBox.value);
+		}
 
-		let currentAuthType = this.getMatchingAuthType(this._authTypeSelectBox.value);
-		if (currentAuthType.showUsernameAndPassword) {
+		if (!currentAuthType || currentAuthType.showUsernameAndPassword) {
 			this._userNameInputBox.enable();
 			this._passwordInputBox.enable();
 		}
