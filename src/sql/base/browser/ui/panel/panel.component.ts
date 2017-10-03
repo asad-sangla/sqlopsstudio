@@ -73,21 +73,21 @@ export class PanelComponent implements AfterContentInit, OnInit {
 	 */
 	selectTab(tab: TabComponent);
 	selectTab(input: TabComponent | number | string) {
-		let tab: TabComponent;
-		if (input instanceof TabComponent) {
-			tab = input;
-		} else if (types.isNumber(input)) {
-			tab = this._tabs[input];
-		} else if (types.isString(input)) {
-			tab = this._tabs.find(item => {
-				return item.identifier === input;
+		if (this._tabs) {
+			let tab: TabComponent;
+			if (input instanceof TabComponent) {
+				tab = input;
+			} else if (types.isNumber(input)) {
+				tab = this._tabs[input];
+			} else if (types.isString(input)) {
+				tab = this._tabs.find(i => i.identifier === input);
+			}
+
+			this._zone.run(() => {
+				this._activeTab.active = false;
+				this._activeTab = tab;
+				this._activeTab.active = true;
 			});
 		}
-
-		this._zone.run(() => {
-			this._activeTab.active = false;
-			this._activeTab = tab;
-			this._activeTab.active = true;
-		});
 	}
 }

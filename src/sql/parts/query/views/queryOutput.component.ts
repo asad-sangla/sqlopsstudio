@@ -49,6 +49,10 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 	private readonly queryPlanTitle: string = nls.localize('queryPlan', 'Query Plan');
 	private readonly topOperationsTitle: string = nls.localize('topOperations', 'Top Operations');
 	private readonly chartViewerTitle: string = nls.localize('chartViewer', 'Chart Viewer');
+
+	private readonly resultsTabIdentifier = 'results';
+	private readonly queryPlanTabIdentifier = 'queryPlan';
+	private readonly chartViewerTabIdentifier = 'chartViewer';
 	// tslint:enable:no-unused-variable
 
 	private hasQueryPlan = false;
@@ -78,7 +82,7 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 		this._disposables.push(toDisposableSubscription(this.queryComponent.queryPlanAvailable.subscribe((xml) => {
 			this.hasQueryPlan = true;
 			this._cd.detectChanges();
-			this._panel.selectTab('queryPlan');
+			this._panel.selectTab(this.queryPlanTabIdentifier);
 			this.queryPlanComponent.planXml = xml;
 			this.topOperationsComponent.planXml = xml;
 		})));
@@ -87,12 +91,12 @@ export class QueryOutputComponent implements OnInit, OnDestroy {
 			this.showChartView = true;
 			this._cd.detectChanges();
 			this.chartViewerComponent.dataSet = dataSet;
-			this._panel.selectTab('chartView');
+			this._panel.selectTab(this.chartViewerTabIdentifier);
 		})));
 
 		this._disposables.push(toDisposableSubscription(this.queryComponent.queryExecutionStatus.subscribe(status => {
 			if (status === 'start') {
-				this._panel.selectTab('results');
+				this._panel.selectTab(this.resultsTabIdentifier);
 				this.hasQueryPlan = false;
 				this.showChartView = false;
 				this._cd.detectChanges();
