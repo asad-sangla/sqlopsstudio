@@ -16,6 +16,7 @@ export class TreeSelectionHandler {
 	progressRunner: IProgressRunner;
 
 	private _clicks: number = 0;
+	private _doubleClickTimeoutId: number = -1;
 
 	constructor( @IProgressService private _progressService: IProgressService) {
 
@@ -32,39 +33,40 @@ export class TreeSelectionHandler {
 			this.progressRunner = null;
 		}
 	}
-
 	/**
 	 * Handle selection of tree element
 	 */
 	public onTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService) {
-		let isDoubleClick: boolean = false;
 		let self = this;
 		this._clicks++;
 
+		// clear pending click timeouts to avoid sending multiple events on double-click
+		if (this._doubleClickTimeoutId !== -1) {
+			clearTimeout(this._doubleClickTimeoutId);
+		}
+
+		// grab the current selection for use later
 		let selection = tree.getSelection();
 
-		setTimeout(function () {
-			if (self._clicks === 1) {
-				isDoubleClick = false;// using a shared variable so for click and double click would be the same value. If true, the action was double click
-			} else {
-				isDoubleClick = true;
+		this._doubleClickTimeoutId = setTimeout(function () {
+			// don't send tree update events while dragging
+			if (!TreeUpdateUtils.isInDragAndDrop) {
+				let isDoubleClick = self._clicks > 1;
+				self.handleTreeItemSelected(connectionManagementService, objectExplorerService, isDoubleClick, selection);
 			}
-			let isInDoubleClickBlock = self._clicks > 1;// using a local variable for the block so the value for click and double click would be different. If true then the
-			// method is called for double click
-			self.handleTreeItemSelected(isDoubleClick, connectionManagementService, objectExplorerService, isInDoubleClickBlock, selection);
 			self._clicks = 0;
+			self._doubleClickTimeoutId  = -1;
 		}, 300);
 	}
 
 	/**
 	 *
-	 * @param isDoubleClick true if the action was double click, false if it was click
 	 * @param connectionManagementService
 	 * @param objectExplorerService
-	 * @param isInDoubleClickBlock true if the method is called for double click, false if it's called for click
+	 * @param isDoubleClick
 	 * @param selection
 	 */
-	private handleTreeItemSelected(isDoubleClick: boolean, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isInDoubleClickBlock: boolean, selection: any[]): void {
+	private handleTreeItemSelected(connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isDoubleClick: boolean, selection: any[]): void {
 		let connectionProfile: ConnectionProfile = undefined;
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
@@ -75,8 +77,7 @@ export class TreeSelectionHandler {
 		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {
 			connectionProfile = <ConnectionProfile>selection[0];
 
-			// check isInDoubleClickBlock to only run this block once otherwise would be called for click and double click
-			if (connectionProfile && !isInDoubleClickBlock) {
+			if (connectionProfile) {
 				this.onTreeActionStateChange(true);
 
 				TreeUpdateUtils.connectAndCreateOeSession(connectionProfile, options, connectionManagementService, objectExplorerService).then(sessionCreated => {
@@ -91,10 +92,9 @@ export class TreeSelectionHandler {
 			let treeNode = <TreeNode>selection[0];
 			if (TreeUpdateUtils.isDatabaseNode(treeNode)) {
 				connectionProfile = TreeUpdateUtils.getConnectionProfile(treeNode);
-			}
-			// check isInDoubleClickBlock to only run this block once otherwise would be called for click and double click
-			if (connectionProfile && !isInDoubleClickBlock) {
-				TreeUpdateUtils.connectIfNotConnected(connectionProfile, options, connectionManagementService);
+				if (connectionProfile) {
+					TreeUpdateUtils.connectIfNotConnected(connectionProfile, options, connectionManagementService);
+				}
 			}
 		}
 	}

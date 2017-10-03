@@ -18,28 +18,27 @@ import { RecentConnectionDataSource } from 'sql/parts/registeredServer/viewlet/r
 
 export class TreeCreationUtils {
 	/**
-	 * Create a recent connections tree
+	 * Create a Recent Connections tree
 	 */
-	public static createConnectionTree(treeContainer: HTMLElement, instantiationService: IInstantiationService, isCompact: boolean, useController?: IController): Tree {
+	public static createConnectionTree(treeContainer: HTMLElement, instantiationService: IInstantiationService, useController?: IController): Tree {
 		const dataSource = instantiationService.createInstance(RecentConnectionDataSource);
-		const renderer = instantiationService.createInstance(ServerTreeRenderer, isCompact);
+		const renderer = instantiationService.createInstance(ServerTreeRenderer, true);
 		const controller = useController ? useController : new DefaultController();
 		const dnd = instantiationService.createInstance(RecentConnectionsDragAndDrop);
 		const filter = new DefaultFilter();
-		const sorter = null;
+		const sorter = undefined;
 		const accessibilityProvider = new DefaultAccessibilityProvider();
 
-		return new Tree(treeContainer, {
-			dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider
-		}, {
+		return new Tree(treeContainer, { dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider },
+			{
 				indentPixels: 10,
 				twistiePixels: 20,
-				ariaLabel: nls.localize({ key: 'treeAriaLabel', comment: ['Recent Connections'] }, 'Recent Connections')
+				ariaLabel: nls.localize('treeAriaLabel', "Recent Connections")
 			});
 	}
 
 	/**
-	 * Create a recent connections tree
+	 * Create a Servers viewlet tree
 	 */
 	public static createRegisteredServersTree(treeContainer: HTMLElement, instantiationService: IInstantiationService): Tree {
 
@@ -49,16 +48,14 @@ export class TreeCreationUtils {
 		const controller = instantiationService.createInstance(ServerTreeController, actionProvider);
 		const dnd = instantiationService.createInstance(ServerTreeDragAndDrop);
 		const filter = new DefaultFilter();
-		const sorter = null;
+		const sorter = undefined;
 		const accessibilityProvider = new DefaultAccessibilityProvider();
 
-		return new Tree(treeContainer, {
-			dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider
-		}, {
+		return new Tree(treeContainer, { dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider },
+			{
 				indentPixels: 10,
 				twistiePixels: 20,
-				ariaLabel: nls.localize({ key: 'regTreeAriaLabel', comment: ['Servers'] }, 'Servers')
+				ariaLabel: nls.localize('regTreeAriaLabel', "Servers")
 			});
-
 	}
 }

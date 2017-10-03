@@ -102,17 +102,17 @@ export class ConnectionStatusManager {
 	 * So for those kind of connections, we need to add the new id and the connection
 	 */
 	public updateConnectionProfile(connection: IConnectionProfile, id: string): string {
-		let connectionInfo: ConnectionManagementInfo = this._connections[id];
 		let newId: string = id;
-		if (connectionInfo && this.isDefaultTypeUri(id)) {
-			connectionInfo.connectionProfile.groupId = connection.groupId;
-			newId = Utils.generateUri(connection);
-			if (newId !== id) {
-				this._connections[newId] = connectionInfo;
-				this.deleteConnection(id);
+		let connectionInfo: ConnectionManagementInfo = this._connections[id];
+		if (connectionInfo && connection) {
+			if (this.isDefaultTypeUri(id)) {
+				connectionInfo.connectionProfile.groupId = connection.groupId;
+				newId = Utils.generateUri(connection);
+				if (newId !== id) {
+					this._connections[newId] = connectionInfo;
+					this.deleteConnection(id);
+				}
 			}
-		}
-		if (connection && connectionInfo) {
 			connectionInfo.connectionProfile.id = connection.id;
 		}
 		return newId;

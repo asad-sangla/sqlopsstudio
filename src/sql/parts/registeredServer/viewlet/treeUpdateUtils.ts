@@ -16,6 +16,8 @@ import errors = require('vs/base/common/errors');
 
 export class TreeUpdateUtils {
 
+	public static isInDragAndDrop: boolean = false;
+
 	/**
 	 * Set input for the tree.
 	 */
@@ -52,8 +54,8 @@ export class TreeUpdateUtils {
 	/**
 	 * Set input for the registered servers tree.
 	 */
-	public static registeredServerUpdate(tree: ITree, connectionManagementService: IConnectionManagementService): void {
-		let selectedElement: any;
+	public static registeredServerUpdate(tree: ITree, connectionManagementService: IConnectionManagementService, elementToSelect?: any): void {
+		let selectedElement: any = elementToSelect;
 		let targetsToExpand: any[];
 
 		// Focus
@@ -61,10 +63,15 @@ export class TreeUpdateUtils {
 
 		if (tree) {
 			let selection = tree.getSelection();
-			if (selection && selection.length === 1) {
-				selectedElement = <any>selection[0];
+			if (!selectedElement) {
+				if (selection && selection.length === 1) {
+					selectedElement = <any>selection[0];
+				}
 			}
 			targetsToExpand = tree.getExpandedElements();
+			if (selectedElement && targetsToExpand.indexOf(selectedElement) === -1) {
+				targetsToExpand.push(selectedElement);
+			}
 		}
 
 		let treeInput = TreeUpdateUtils.getTreeInput(connectionManagementService);

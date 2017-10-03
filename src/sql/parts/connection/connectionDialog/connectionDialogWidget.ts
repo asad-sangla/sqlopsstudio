@@ -215,7 +215,7 @@ export class ConnectionDialogWidget extends Modal {
 
 					};
 					let controller = new TreeController(leftClick);
-					this._recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, true, controller);
+					this._recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, controller);
 
 					// Theme styler
 					this._register(styler.attachListStyler(this._recentConnectionTree, this._themeService));

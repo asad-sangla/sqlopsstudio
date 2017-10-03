@@ -136,8 +136,8 @@ import { IFileBrowserService, IFileBrowserDialogController } from 'sql/parts/fil
 import { FileBrowserService } from 'sql/parts/fileBrowser/common/fileBrowserService';
 import { FileBrowserDialogController } from 'sql/parts/fileBrowser/fileBrowserDialogController';
 import { IInsightsDialogService, InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
-import { IAccountManagementService } from "sql/services/accountManagement/interfaces";
-import { AccountManagementService } from "sql/services/accountManagement/accountManagementService";
+import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { AccountManagementService } from 'sql/services/accountManagement/accountManagementService';
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { ProfilerService } from 'sql/parts/profiler/service/profilerService';
 import { IClipboardService as sqlIClipboardService } from 'sql/platform/clipboard/common/clipboardService';

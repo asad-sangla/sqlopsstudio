@@ -43,15 +43,15 @@ declare type PaneType = 'messages' | 'results';
 export class QueryComponent extends GridParentComponent implements OnInit, OnDestroy {
 	// CONSTANTS
 	// tslint:disable-next-line:no-unused-variable
-	private scrollTimeOutTime = 200;
-	private windowSize = 50;
-	private messagePaneHeight = 22;
+	private scrollTimeOutTime: number = 200;
+	private windowSize: number = 50;
+	private messagePaneHeight: number = 22;
 	// tslint:disable-next-line:no-unused-variable
-	private maxScrollGrids = 8;
+	private maxScrollGrids: number = 8;
 
 	// create a function alias to use inside query.component
 	// tslint:disable-next-line:no-unused-variable
-	private stringsFormat:any = strings.format;
+	private stringsFormat: any = strings.format;
 
 	// tslint:disable-next-line:no-unused-variable
 	private dataIcons: IGridIcon[] = [

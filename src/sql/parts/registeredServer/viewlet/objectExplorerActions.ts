@@ -17,7 +17,6 @@ import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeSel
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 
 export class ObjectExplorerActionsContext {

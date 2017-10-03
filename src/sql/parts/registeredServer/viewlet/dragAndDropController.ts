@@ -18,7 +18,7 @@ import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUt
  */
 export class ServerTreeDragAndDrop implements IDragAndDrop {
 
-	constructor( @IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+	constructor(@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IInstantiationService private _instantiationService: IInstantiationService
 	) {
 	}
@@ -54,6 +54,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Called when the drag operation starts.
 	 */
 	public onDragStart(tree: ITree, data: IDragAndDropData, originalEvent: DragMouseEvent): void {
+		TreeUpdateUtils.isInDragAndDrop = true;
 		return;
 	}
 
@@ -100,7 +101,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 			if (source instanceof ConnectionProfile) {
 				// Change group id of profile
 				this._connectionManagementService.changeGroupIdForConnection(source, targetConnectionProfileGroup.id).then(() => {
-					TreeUpdateUtils.registeredServerUpdate(tree, self._connectionManagementService);
+					TreeUpdateUtils.registeredServerUpdate(tree, self._connectionManagementService, targetConnectionProfileGroup);
 				});
 			} else if (source instanceof ConnectionProfileGroup) {
 				// Change parent id of group
@@ -109,6 +110,9 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 				});
 			}
 		}
+
+		TreeUpdateUtils.isInDragAndDrop = false;
+
 		return;
 	}
 

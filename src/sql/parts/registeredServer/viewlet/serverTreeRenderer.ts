@@ -154,7 +154,7 @@ export class ServerTreeRenderer implements IRenderer {
 		}
 
 		let databaseName = connection.databaseName ? connection.databaseName : '<default>';
-		let userName = connection.userName ? connection.userName : 'Windows Auth';
+		let userName = connection.userName ? connection.userName : "Windows Authentication";
 		let label = connection.serverName + ', ' + databaseName + ' (' + userName + ')';
 
 		templateData.label.textContent = label;
@@ -163,24 +163,21 @@ export class ServerTreeRenderer implements IRenderer {
 	}
 
 	private renderConnectionProfileGroup(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
-		if (connectionProfileGroup.isRenamed) {
-			this.renderRenameBox(tree, connectionProfileGroup, templateData);
-		} else {
-			var rowElement = this.findParentElement(templateData.root, 'monaco-tree-row');
-			if (rowElement) {
-				if (connectionProfileGroup.color) {
-					rowElement.style.background = connectionProfileGroup.color;
-				} else {
-					// If the group doesn't contain specific color, assign the default color
-					rowElement.style.background = '#515151';
-				}
+
+		var rowElement = this.findParentElement(templateData.root, 'monaco-tree-row');
+		if (rowElement) {
+			if (connectionProfileGroup.color) {
+				rowElement.style.background = connectionProfileGroup.color;
+			} else {
+				// If the group doesn't contain specific color, assign the default color
+				rowElement.style.background = '#515151';
 			}
-			if (connectionProfileGroup.description && (connectionProfileGroup.description !== '')) {
-				templateData.root.title = connectionProfileGroup.description;
-			}
-			templateData.name.hidden = false;
-			templateData.name.textContent = connectionProfileGroup.name;
 		}
+		if (connectionProfileGroup.description && (connectionProfileGroup.description !== '')) {
+			templateData.root.title = connectionProfileGroup.description;
+		}
+		templateData.name.hidden = false;
+		templateData.name.textContent = connectionProfileGroup.name;
 	}
 
 	/**
@@ -197,57 +194,6 @@ export class ServerTreeRenderer implements IRenderer {
 		return currentElement;
 	}
 
-	private renderRenameBox(tree: ITree, connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {
-		let inputBoxContainer = dom.append(templateData.root, dom.$('.inputBoxContainer'));
-		let inputBox = new InputBox(inputBoxContainer, this._contextViewService, {
-			validationOptions: {
-				validation: (value: string) => {
-					if (value && value.length > 0 && types.isString(value)) {
-						return null;
-					}
-					return { type: MessageType.ERROR, content: 'Invalid input. String value expected.' };
-				},
-				showMessage: true
-			}
-		});
-		const styler = attachInputBoxStyler(inputBox, this._themeService);
-		inputBox.value = connectionProfileGroup.name;
-		inputBox.focus();
-		inputBox.select();
-
-		let disposed = false;
-		const toDispose: [lifecycle.IDisposable] = [inputBox, styler];
-
-		const wrapUp = once((renamed: boolean) => {
-			if (!disposed) {
-				disposed = true;
-				if (renamed && inputBox.value && connectionProfileGroup.name !== inputBox.value) {
-					connectionProfileGroup.name = inputBox.value;
-					this._connectionManagementService.editGroup(connectionProfileGroup);
-				}
-				tree.clearHighlight();
-				tree.DOMFocus();
-				tree.setFocus(connectionProfileGroup);
-
-				// need to remove the input box since this template will be reused.
-				templateData.root.removeChild(inputBoxContainer);
-				lifecycle.dispose(toDispose);
-			}
-		});
-
-		toDispose.push(dom.addStandardDisposableListener(inputBox.inputElement, 'keydown', (e: IKeyboardEvent) => {
-			const isEscape = e.equals(KeyCode.Escape);
-			const isEnter = e.equals(KeyCode.Enter);
-			if (isEscape || isEnter) {
-				e.preventDefault();
-				e.stopPropagation();
-				wrapUp(isEnter);
-			}
-		}));
-		toDispose.push(dom.addDisposableListener(inputBox.inputElement, 'blur', () => {
-			wrapUp(true);
-		}));
-	}
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {
 		// no op
 		// InputBox disposed in wrapUp
