@@ -144,22 +144,22 @@ export class BackupComponent {
 	private backupEncryptors;
 	private containsBackupToUrl: boolean;
 	private errorMessage: string;
-    private fileBrowserDialog: FileBrowserDialog;
+	private fileBrowserDialog: FileBrowserDialog;
 
 	// UI element disable flag
 	private disableFileComponent: boolean;
 	private disableTlog: boolean;
 
 	private selectedBackupComponent: string;
-    private selectedFilesText: string;
-    private selectedInitOption: string;
-    private isTruncateChecked: boolean;
-    private isTaillogChecked: boolean;
-    private isFormatChecked: boolean;
-    private isEncryptChecked: boolean;
-    // Key: backup path, Value: device type
-    private backupPathTypePairs: { [path: string]: number };
-    private fileFilters: [ {label: string, filters: string[]} ];
+	private selectedFilesText: string;
+	private selectedInitOption: string;
+	private isTruncateChecked: boolean;
+	private isTaillogChecked: boolean;
+	private isFormatChecked: boolean;
+	private isEncryptChecked: boolean;
+	// Key: backup path, Value: device type
+	private backupPathTypePairs: { [path: string]: number };
+	private fileFilters: [{ label: string, filters: string[] }];
 
 	private compressionOptions = [BackupConstants.defaultCompression, BackupConstants.compressionOn, BackupConstants.compressionOff];
 	private encryptionAlgorithms = [BackupConstants.aes128, BackupConstants.aes192, BackupConstants.aes256, BackupConstants.tripleDES];
@@ -201,6 +201,9 @@ export class BackupComponent {
 
 	ngOnInit() {
 		let self = this;
+
+		this.addFooterButtons();
+
 		// Get backup configuration info
 		this._disasterRecoveryService.getBackupConfigInfo(this._uri).then(configInfo => {
 			if (configInfo) {
@@ -214,30 +217,20 @@ export class BackupComponent {
 		});
 	}
 
-    private initialize(isMetadataPopulated: boolean): void {
-        this.databaseName = this.connection.databaseName;
-        this.selectedBackupComponent = BackupConstants.labelDatabase;
-        this.backupPathTypePairs = {};
-        this.isFormatChecked = false;
-        this.isEncryptChecked = false;
-        this.selectedInitOption = this.existingMediaOptions[0];
-        this.backupTypeOptions = [];
-        this.fileFilters = [
-            { label: localize('backup.filterBackupFiles', "Backup Files"), filters: ['*.bak', '*.trn'] },
-            { label: localize('backup.allFiles', "All Files"), filters: ['*'] }
-        ];
-
+	private addFooterButtons(): void {
 		// Set script footer button
 		this.scriptButton = new Button(this.scriptButtonElement.nativeElement);
 		this.scriptButton.label = localize('script', 'Script');
 		this._toDispose.push(this.scriptButton.addListener('click', () => this.onScript()));
 		this._toDispose.push(attachButtonStyler(this.scriptButton, this._bootstrapService.themeService));
+		this.scriptButton.enabled = false;
 
 		// Set backup footer button
 		this.backupButton = new Button(this.backupButtonElement.nativeElement);
 		this.backupButton.label = localize('backup', 'Backup');
 		this._toDispose.push(this.backupButton.addListener('click', () => this.onOk()));
 		this._toDispose.push(attachButtonStyler(this.backupButton, this._bootstrapService.themeService));
+		this.backupButton.enabled = false;
 
 		// Set cancel footer button
 		this.cancelButton = new Button(this.cancelButtonElement.nativeElement);
@@ -245,7 +238,31 @@ export class BackupComponent {
 		this._toDispose.push(this.cancelButton.addListener('click', () => this.onCancel()));
 		this._toDispose.push(attachButtonStyler(this.cancelButton, this._bootstrapService.themeService));
 
+		// set modal footer style
+		let footerHtmlElement: HTMLElement = <HTMLElement>this.modalFooterElement.nativeElement;
+		footerHtmlElement.style.backgroundColor = ModalFooterStyle.backgroundColor;
+		footerHtmlElement.style.borderTopWidth = ModalFooterStyle.borderTopWidth;
+		footerHtmlElement.style.borderTopStyle = ModalFooterStyle.borderTopStyle;
+		footerHtmlElement.style.borderTopColor = ModalFooterStyle.borderTopColor;
+	}
+
+	private initialize(isMetadataPopulated: boolean): void {
+		this.databaseName = this.connection.databaseName;
+		this.selectedBackupComponent = BackupConstants.labelDatabase;
+		this.backupPathTypePairs = {};
+		this.isFormatChecked = false;
+		this.isEncryptChecked = false;
+		this.selectedInitOption = this.existingMediaOptions[0];
+		this.backupTypeOptions = [];
+		this.fileFilters = [
+			{ label: localize('backup.filterBackupFiles', "Backup Files"), filters: ['*.bak', '*.trn'] },
+			{ label: localize('backup.allFiles', "All Files"), filters: ['*'] }
+		];
+
 		if (isMetadataPopulated) {
+			this.scriptButton.enabled = true;
+			this.backupButton.enabled = true;
+
 			// Set recovery model
 			this.setControlsForRecoveryModel();
 			this.recoveryBox = new InputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
@@ -315,14 +332,14 @@ export class BackupComponent {
 			this.pathListBox = new ListBox(pathlist, pathlist[0], this._bootstrapService.contextViewService);
 			this.pathListBox.render(this.pathElement.nativeElement);
 
-            // Set backup path add/remove buttons
-            this.addPathButton = new Button(this.addPathElement.nativeElement);
-            this.addPathButton.label = '+';
-            this.addPathButton.addListener('click', () => this.onAddClick());
+			// Set backup path add/remove buttons
+			this.addPathButton = new Button(this.addPathElement.nativeElement);
+			this.addPathButton.label = '+';
+			this.addPathButton.addListener('click', () => this.onAddClick());
 
-            this.removePathButton = new Button(this.removePathElement.nativeElement);
-            this.removePathButton.label = '-';
-            this.removePathButton.addListener('click', () => this.onRemoveClick());
+			this.removePathButton = new Button(this.removePathElement.nativeElement);
+			this.removePathButton.label = '-';
+			this.removePathButton.addListener('click', () => this.onRemoveClick());
 
 			// Set compression
 			this.compressionSelectBox = new SelectBox(this.compressionOptions, this.compressionOptions[0]);
@@ -369,24 +386,24 @@ export class BackupComponent {
 
 			this.setTLogOptions();
 
-            // apply theme
-            this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachListBoxStyler(this.pathListBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
-            this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
-            this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
-            this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
+			// apply theme
+			this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachListBoxStyler(this.pathListBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
+			this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
+			this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
+			this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
 
 			// disable elements
 			this.recoveryBox.disable();
@@ -398,15 +415,7 @@ export class BackupComponent {
 				this.pathListBox.setValidation(false, { content: localize('backup.containsBackupToUrlError', 'Only backup to file is supported'), type: MessageType.WARNING });
 				this.pathListBox.focus();
 			}
-		} else {
-			this.backupButton.enabled = false;
 		}
-
-		// set modal footer style
-		(<HTMLElement>this.modalFooterElement.nativeElement).style.backgroundColor = ModalFooterStyle.backgroundColor;
-		(<HTMLElement>this.modalFooterElement.nativeElement).style.borderTopWidth = ModalFooterStyle.borderTopWidth;
-		(<HTMLElement>this.modalFooterElement.nativeElement).style.borderTopStyle = ModalFooterStyle.borderTopStyle;
-		(<HTMLElement>this.modalFooterElement.nativeElement).style.borderTopColor = ModalFooterStyle.borderTopColor;
 
 		this._changeDetectorRef.detectChanges();
 	}
@@ -492,31 +501,31 @@ export class BackupComponent {
 		this._changeDetectorRef.detectChanges();
 	}
 
-    private onAddClick(): void {
-        this._bootstrapService.fileBrowserDialogService.showDialog(this._uri,
-            this.defaultNewBackupFolder,
-            this.fileFilters,
-            FileValidationConstants.backup,
-            (filepath => this.handlePathAdded(filepath)));
-    }
+	private onAddClick(): void {
+		this._bootstrapService.fileBrowserDialogService.showDialog(this._uri,
+			this.defaultNewBackupFolder,
+			this.fileFilters,
+			FileValidationConstants.backup,
+			(filepath => this.handlePathAdded(filepath)));
+	}
 
-    private handlePathAdded(filepath: string) {
-        if (filepath && !this.backupPathTypePairs[filepath]) {
-            if ((this.getBackupPathCount() < BackupConstants.maxDevices)) {
-                this.backupPathTypePairs[filepath] = BackupConstants.deviceTypeFile;
-                this.pathListBox.add(filepath);
-                this.enableBackupButton();
-                this.enableAddRemoveButtons();
+	private handlePathAdded(filepath: string) {
+		if (filepath && !this.backupPathTypePairs[filepath]) {
+			if ((this.getBackupPathCount() < BackupConstants.maxDevices)) {
+				this.backupPathTypePairs[filepath] = BackupConstants.deviceTypeFile;
+				this.pathListBox.add(filepath);
+				this.enableBackupButton();
+				this.enableAddRemoveButtons();
 
-                // stop showing error message if the list content was invalid due to no file path
-                if (!this.pathListBox.isContentValid && this.pathListBox.count === 1) {
-                    this.pathListBox.setValidation(true);
-                }
+				// stop showing error message if the list content was invalid due to no file path
+				if (!this.pathListBox.isContentValid && this.pathListBox.count === 1) {
+					this.pathListBox.setValidation(true);
+				}
 
-                this._changeDetectorRef.detectChanges();
-            }
-        }
-    }
+				this._changeDetectorRef.detectChanges();
+			}
+		}
+	}
 
 	private onRemoveClick(): void {
 		let self = this;
