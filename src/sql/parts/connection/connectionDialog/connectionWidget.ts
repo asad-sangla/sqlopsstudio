@@ -237,9 +237,13 @@ export class ConnectionWidget {
 			this._passwordInputBox.hideMessage();
 			this._userNameInputBox.value = '';
 			this._passwordInputBox.value = '';
+
+			this._rememberPasswordCheckBox.checked = false;
+			this._rememberPasswordCheckBox.disable();
 		} else {
 			this._userNameInputBox.enable();
 			this._passwordInputBox.enable();
+			this._rememberPasswordCheckBox.enable();
 		}
 	}
 
@@ -356,7 +360,6 @@ export class ConnectionWidget {
 		this._serverGroupSelectBox.enable();
 		this._serverNameInputBox.enable();
 		this._databaseNameInputBox.enable();
-		this._rememberPasswordCheckBox.enable();
 		let currentAuthType: AuthenticationType = undefined;
 		if (this._authTypeSelectBox) {
 			this._authTypeSelectBox.enable();
@@ -366,6 +369,7 @@ export class ConnectionWidget {
 		if (!currentAuthType || currentAuthType.showUsernameAndPassword) {
 			this._userNameInputBox.enable();
 			this._passwordInputBox.enable();
+			this._rememberPasswordCheckBox.enable();
 		}
 	}
 
