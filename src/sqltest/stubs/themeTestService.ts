@@ -15,7 +15,7 @@ export class TestTheme implements ITheme {
 	type: 'light' | 'dark' | 'hc';
 
 	getColor(color: string, useDefault?: boolean): Color {
-		throw new Error('Method not implemented.');
+		return Color.white;
 	}
 
 	isDefault(color: string): boolean {

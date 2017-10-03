@@ -15,5 +15,4 @@
 /// <reference path="modules/angular2-slickgrid/index.d.ts" />
 /// <reference path="modules/html-query-plan/index.d.ts" />
 /// <reference path="modules/ng2-charts/index.d.ts" />
-/// <reference path="modules/primeng/index.d.ts" />
 /// <reference path="modules/rxjs/index.d.ts" />

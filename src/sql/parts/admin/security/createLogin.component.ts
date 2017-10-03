@@ -3,8 +3,6 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/media/primeng';
-
 import { ElementRef, Component, Inject, forwardRef } from '@angular/core';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
@@ -14,8 +12,7 @@ export const CREATELOGIN_SELECTOR: string = 'createlogin-component';
 
 @Component({
 	selector: CREATELOGIN_SELECTOR,
-	templateUrl: decodeURI(require.toUrl('sql/parts/admin/security/createLogin.component.html')),
-	styleUrls: [require.toUrl('sql/media/primeng.css')]
+	templateUrl: decodeURI(require.toUrl('sql/parts/admin/security/createLogin.component.html'))
 })
 export class CreateLoginComponent {
 

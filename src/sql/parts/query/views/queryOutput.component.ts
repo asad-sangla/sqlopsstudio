@@ -5,7 +5,6 @@
 
 'use strict';
 
-import 'vs/css!sql/media/primeng';
 import 'vs/css!sql/parts/grid/media/slickColorTheme';
 import 'vs/css!sql/parts/grid/media/flexbox';
 import 'vs/css!sql/parts/grid/media/styles';

@@ -5,19 +5,12 @@
 
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 
 export interface BootstrapParams {
 }
 
 export interface QueryComponentParams extends BootstrapParams {
 	dataService: DataService;
-}
-
-export interface DbListComponentParams extends BootstrapParams {
-	dbListInterop: IDbListInterop;
-	isEditable: boolean;
-	width: string;
 }
 
 export interface EditDataComponentParams extends BootstrapParams {

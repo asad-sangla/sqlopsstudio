@@ -3,7 +3,6 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/media/primeng';
 import { ChangeDetectorRef, ElementRef, Component, forwardRef, Inject } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
@@ -28,8 +27,7 @@ export interface DatabaseFile {
 
 @Component({
 	selector: CREATEDATABASE_SELECTOR,
-	templateUrl: decodeURI(require.toUrl('sql/parts/admin/database/create/createDatabase.component.html')),
-	styleUrls: [require.toUrl('sql/media/primeng.css')]
+	templateUrl: decodeURI(require.toUrl('sql/parts/admin/database/create/createDatabase.component.html'))
 })
 export class CreateDatabaseComponent implements ITaskDialogComponent {
 

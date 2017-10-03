@@ -32,7 +32,6 @@ import { PanelModule } from 'sql/base/browser/ui/panel/panel.module';
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { MouseDownDirective } from 'sql/parts/grid/directives/mousedown.directive';
 import { ScrollDirective } from 'sql/parts/grid/directives/scroll.directive';
-import { ButtonModule, DropdownModule, TabViewModule } from 'primeng/primeng';
 
 let baseComponents = [QueryComponent, ComponentHostDirective, QueryOutputComponent, QueryPlanComponent, TopOperationsComponent, ChartViewerComponent];
 /* Insights */
@@ -43,9 +42,6 @@ let insightComponents = Registry.as<IInsightRegistry>(Extensions.InsightContribu
 		CommonModule,
 		BrowserModule,
 		FormsModule,
-		TabViewModule,
-		ButtonModule,
-		DropdownModule,
 		BrowserAnimationsModule,
 		ChartsModule,
 		PanelModule

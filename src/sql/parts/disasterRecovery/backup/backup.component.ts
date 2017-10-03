@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
-import 'vs/css!sql/media/primeng';
+
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
@@ -73,9 +73,7 @@ interface MssqlBackupInfo {
 
 @Component({
 	selector: BACKUP_SELECTOR,
-	templateUrl: decodeURI(require.toUrl('sql/parts/disasterRecovery/backup/backup.component.html')),
-	styleUrls: [require.toUrl('sql/parts/disasterRecovery/backup/media/backupDialog.css'),
-	require.toUrl('sql/media/primeng.css')]
+	templateUrl: decodeURI(require.toUrl('sql/parts/disasterRecovery/backup/backup.component.html'))
 })
 export class BackupComponent {
 	@ViewChild('pathContainer', { read: ElementRef }) pathElement;

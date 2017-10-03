@@ -141,10 +141,12 @@ export class RestoreDialogController implements IRestoreDialogController {
 				if (!this._restoreDialogs[this._currentProvider]) {
 					let newRestoreDialog: RestoreDialog | OptionsDialog = undefined;
 					if (this._currentProvider === ConnectionConstants.mssqlProviderName) {
+						let provider = this._currentProvider;
 						newRestoreDialog = this._instantiationService.createInstance(RestoreDialog, this.getRestoreOption());
 						newRestoreDialog.onCancel(() => { });
 						newRestoreDialog.onRestore((isScriptOnly) => this.handleOnRestore(isScriptOnly));
 						newRestoreDialog.onValidate(() => this.handleMssqlOnValidateFile());
+						newRestoreDialog.onDatabaseListFocused(() => this.fetchDatabases(provider));
 					} else {
 						newRestoreDialog = this._instantiationService.createInstance(
 							OptionsDialog, 'Restore database - ' + connection.serverName + ':' + connection.databaseName, 'RestoreOptions', undefined);
@@ -178,5 +180,13 @@ export class RestoreDialogController implements IRestoreDialogController {
 
 	private getCurrentProviderId(): string {
 		return this._connectionService.getProviderIdFromUri(this._ownerUri);
+	}
+
+	private fetchDatabases(provider: string): void {
+		this._connectionService.listDatabases(this._ownerUri).then(result => {
+			if (result && result.databaseNames) {
+				(<RestoreDialog> this._restoreDialogs[provider]).databaseListOptions = result.databaseNames;
+			}
+		});
 	}
 }

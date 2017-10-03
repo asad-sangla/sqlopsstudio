@@ -47,7 +47,6 @@ const nodeModules = [
 	'rxjs/Observable',
 	'rxjs/Subject',
 	'rxjs/Observer',
-	'primeng/primeng',
 	'ng2-charts/ng2-charts',
 	'rangy/lib/rangy-textrange']
 	.concat(dependencies)

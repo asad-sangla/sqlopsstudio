@@ -452,7 +452,7 @@ suite('SQL QueryAction Tests', () => {
 		editor.setup(x => x.uri).returns(() => testUri);
 
 		// If I query without having initialized anything, state should be clear
-		listItem = new ListDatabasesActionItem(editor.object, undefined, connectionManagementService.object, undefined, undefined);
+		listItem = new ListDatabasesActionItem(editor.object, undefined, connectionManagementService.object, undefined, undefined, undefined);
 
 		assert.equal(listItem.isEnabled(), false, 'do not expect dropdown enabled unless connected');
 		assert.equal(listItem.currentDatabaseName, undefined, 'do not expect dropdown to have entries unless connected');

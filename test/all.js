@@ -69,7 +69,6 @@ function main() {
 			'@angular/platform-browser-dynamic',
 			'@angular/router',
 			'angular2-grid',
-			'primeng/primeng',
 			'rxjs/add/observable/of',
 			'rxjs/Observable',
 			'rxjs/Subject',

@@ -3,7 +3,6 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/media/primeng';
 import 'vs/css!sql/media/font-awesome-4.7.0/css/font-awesome';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
@@ -16,13 +15,12 @@ export const TASKDIALOG_SELECTOR: string = 'taskdialog-component';
 @Component({
 	selector: TASKDIALOG_SELECTOR,
 	templateUrl: decodeURI(require.toUrl('sql/parts/tasks/dialog/taskDialog.component.html')),
-	styleUrls: [require.toUrl('sql/media/primeng.css')]
 })
 export class TaskDialogComponent {
 
 	private _currentComponent: ITaskDialogComponent;
 
-	private _parameters: TaskDialogComponentParams
+	private _parameters: TaskDialogComponentParams;
 
 	public ownerUri: string;
 

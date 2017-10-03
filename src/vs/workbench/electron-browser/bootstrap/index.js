@@ -227,7 +227,6 @@ function main() {
 				'@angular/router',
 				'angular2-grid',
 				'pretty-data',
-				'primeng/primeng',
 				'html-query-plan',
 				'ng2-charts/ng2-charts',
 				'rangy',

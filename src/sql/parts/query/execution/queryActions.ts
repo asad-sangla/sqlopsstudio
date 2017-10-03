@@ -7,22 +7,20 @@ import { Action, IActionItem, IActionRunner } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import Event, { Emitter } from 'vs/base/common/event';
 import { EventEmitter } from 'vs/base/common/eventEmitter';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import {
 	IConnectionManagementService, INewConnectionParams, ConnectionType,
 	RunQueryOnConnectionMode
 } from 'sql/parts/connection/common/connectionManagement';
-import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
-import { DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
-import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
-import { DbListModule } from 'sql/parts/common/dblist/dblist.module';
 import { ISelectionData } from 'data';
 import * as nls from 'vs/nls';
+import { Builder, $ } from 'vs/base/browser/builder';
+import { Dropdown } from 'sql/base/browser/ui/editableDropdown/dropdown';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 
 /**
  * Action class that query-based Actions will extend. This base class automatically handles activating and
@@ -379,45 +377,53 @@ export class ListDatabasesAction extends QueryTaskbarAction {
  * Action item that handles the dropdown (combobox) that lists the available databases.
  * Based off StartDebugActionItem.
  */
-export class ListDatabasesActionItem extends EventEmitter implements IActionItem, IDbListInterop {
+export class ListDatabasesActionItem extends EventEmitter implements IActionItem {
 	public static ID = 'listDatabaseQueryActionItem';
 
-	// MEMBER VARIABLES ////////////////////////////////////////////////////
-	private _onDatabaseChanged = new Emitter<string>();
-
 	public actionRunner: IActionRunner;
-	private _container: HTMLElement;
 	private _toDispose: IDisposable[];
 	private _context: any;
 	private _currentDatabaseName: string;
 	private _isConnected: boolean;
-
-	// EVENTS /////////////////////////////////////////////////////////////
-	public get onDatabaseChanged(): Event<string> { return this._onDatabaseChanged.event; }
+	private $databaseListDropdown: Builder;
+	private _dropdown: Dropdown;
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
 		private _editor: QueryEditor,
 		private _action: ListDatabasesAction,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IBootstrapService private _bootstrapService: IBootstrapService,
-		@IMessageService private _messageService: IMessageService) {
+		@IMessageService private _messageService: IMessageService,
+		@IContextViewService contextViewProvider: IContextViewService,
+		@IThemeService themeService: IThemeService
+	) {
 		super();
 		this._toDispose = [];
+		this.$databaseListDropdown = $('.databaseListDropdown');
+		this._dropdown = new Dropdown(this.$databaseListDropdown.getHTMLElement(), contextViewProvider, themeService, {
+			strictSelection: true,
+			placeholder: nls.localize("selectDatabase", "Select Database"),
+			width: 155
+		});
+		this._dropdown.onValueChange(s => this.databaseSelected(s));
 	}
 
 	public render(container: HTMLElement): void {
-		this._container = container;
+		this.$databaseListDropdown.appendTo(container);
+		this._dropdown.onFocus(() => {
+			let uri = this.getConnectedQueryEditorUri(this._editor);
+			if (uri) {
+				this._connectionManagementService.listDatabases(uri).then(result => {
+					if (result && result.databaseNames) {
+						this._dropdown.values = result.databaseNames;
+					}
+				});
+			}
+		});
+	}
 
-		// Get the bootstrap params and perform the bootstrap
-		// Note: no need to dispose this since it's expected to live
-		// for the life of the app, and it's not input-specific
-		let params: DbListComponentParams = { dbListInterop: this, isEditable: false, width: '120px' };
-		this._bootstrapService.bootstrap(
-			DbListModule,
-			container,
-			DBLIST_SELECTOR,
-			params);
+	public style(styles) {
+		this._dropdown.style(styles);
 	}
 
 	public setActionContext(context: any): void {
@@ -429,11 +435,11 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 	}
 
 	public focus(): void {
-		this._container.focus();
+		this._dropdown.focus();
 	}
 
 	public blur(): void {
-		this._container.blur();
+		this._dropdown.blur();
 	}
 
 	public dispose(): void {
@@ -451,13 +457,6 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 			return undefined;
 		}
 		return this._connectionManagementService.isConnected(editor.uri) ? editor.uri : undefined;
-	}
-
-	public lookupUri(id: string): string {
-		return this._editor ? this._editor.uri : undefined;
-	}
-
-	public databaseListInitialized(): void {
 	}
 
 	public databaseSelected(dbName: string): void {
@@ -498,16 +497,18 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	private updateConnection(databaseName: string) {
 		this._isConnected = true;
+		this._dropdown.input.enable();
 		this._currentDatabaseName = databaseName;
 		if (this._currentDatabaseName) {
 		}
-		this._onDatabaseChanged.fire(databaseName);
+		this._dropdown.value = databaseName;
 	}
 
 	public onDisconnect(): void {
 		this._isConnected = false;
+		this._dropdown.input.disable();
 		this._currentDatabaseName = undefined;
-		this._onDatabaseChanged.fire(undefined);
+		this._dropdown.value = '';
 	}
 
 	private getCurrentDatabaseName() {

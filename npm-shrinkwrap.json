@@ -563,11 +563,6 @@
       "from": "pretty-data@>=0.40.0 <0.41.0",
       "resolved": "https://registry.npmjs.org/pretty-data/-/pretty-data-0.40.0.tgz"
     },
-    "primeng": {
-      "version": "4.0.3",
-      "from": "primeng@>=4.0.3 <5.0.0",
-      "resolved": "https://registry.npmjs.org/primeng/-/primeng-4.0.3.tgz"
-    },
     "process-nextick-args": {
       "version": "1.0.7",
       "from": "process-nextick-args@>=1.0.6 <1.1.0",

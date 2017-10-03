@@ -9,7 +9,6 @@ import { ApplicationRef, ComponentFactoryResolver, ModuleWithProviders, NgModule
 import { APP_BASE_HREF, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { DataTableModule } from 'primeng/primeng';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 
 import { TaskDialogComponent, TASKDIALOG_SELECTOR } from 'sql/parts/tasks/dialog/taskDialog.component';
@@ -37,7 +36,6 @@ const appRoutes: Routes = [
 		FormsModule,
 		CommonModule,
 		BrowserModule,
-		DataTableModule,
 		<ModuleWithProviders>RouterModule.forRoot(appRoutes)
 	],
 	providers: [{ provide: APP_BASE_HREF, useValue: '/' }]

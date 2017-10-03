@@ -26,18 +26,15 @@ import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
 import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 'sql/parts/disasterRecovery/restore/restoreViewModel';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { InputBox, OnLoseFocusParams } from 'sql/base/browser/ui/inputBox/inputBox';
-import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler, attachSelectBoxStyler } from 'sql/common/theme/styler';
+import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler, attachSelectBoxStyler, attachEditableDropdownStyler } from 'sql/common/theme/styler';
 import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
 import { CheckboxSelectColumn } from 'sql/base/browser/ui/table/plugins/checkboxSelectColumn.plugin';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
-import { DBLIST_SELECTOR } from 'sql/parts/common/dblist/dblist.component';
-import { DbListComponentParams } from 'sql/services/bootstrap/bootstrapParams';
-import { DbListModule } from 'sql/parts/common/dblist/dblist.module';
-import { IDbListInterop } from 'sql/parts/common/dblist/dbListInterop';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import { Dropdown } from 'sql/base/browser/ui/editableDropdown/dropdown';
 import * as data from 'data';
 
 interface FileListElement {
@@ -47,7 +44,7 @@ interface FileListElement {
 	restoreAs: string;
 }
 
-export class RestoreDialog extends Modal implements IDbListInterop {
+export class RestoreDialog extends Modal {
 	public viewModel: RestoreViewModel;
 
 	private _scriptButton: Button;
@@ -59,6 +56,7 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 	private _databaseTitle: string;
 	private _backupFileTitle: string;
 	private _ownerUri: string;
+	private _databaseDropdown: Dropdown;
 
 	// General options
 	private _filePathInputBox: InputBox;
@@ -107,6 +105,9 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 
 	private _onDatabaseChanged = new Emitter<string>();
 	public onDatabaseChanged: Event<string> = this._onDatabaseChanged.event;
+
+	private _onDatabaseListFocused = new Emitter<void>();
+	public onDatabaseListFocused: Event<void> = this._onDatabaseListFocused.event;
 
 	constructor(
 		optionsMetadata: data.ServiceOption[],
@@ -194,12 +195,22 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 
 				inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
 					// Get the bootstrap params and perform the bootstrap
-					let params: DbListComponentParams = { dbListInterop: this, isEditable: true, width: '100%' };
-					this._bootstrapService.bootstrap(
-						DbListModule,
-						inputCellContainer.getHTMLElement(),
-						DBLIST_SELECTOR,
-						params);
+					this._databaseDropdown = new Dropdown(inputCellContainer.getHTMLElement(), this._contextViewService, this._themeService,
+						{
+							strictSelection: false,
+							width: 130
+						}
+					);
+					this._databaseDropdown.onValueChange(s => {
+						this.databaseSelected(s);
+					});
+
+					this._databaseDropdown.onFocus(() => {
+						this._onDatabaseListFocused.fire();
+					});
+
+					this._databaseDropdown.value = this.viewModel.targetDatabaseName;
+					attachEditableDropdownStyler(this._databaseDropdown, this._themeService);
 				});
 			});
 
@@ -344,23 +355,15 @@ export class RestoreDialog extends Modal implements IDbListInterop {
 		});
 	}
 
-	public lookupUri(id: string): string {
-		return this._ownerUri;
-	}
-
-	public databaseSelected(dbName: string): void {
-		// Get the selected database when the controls lost focus (happens in databasesSelectedOnLostFocus)
-	}
-
-	public databasesSelectedOnLostFocus(dbName: string) {
+	private databaseSelected(dbName: string): void {
 		if (this.viewModel.targetDatabaseName !== dbName) {
 			this.viewModel.targetDatabaseName = dbName;
 			this._onValidate.fire();
 		}
 	}
 
-	public databaseListInitialized(): void {
-		this._onDatabaseChanged.fire(this.viewModel.targetDatabaseName);
+	public set databaseListOptions(vals: string[]) {
+		this._databaseDropdown.values = vals;
 	}
 
 	private createTabList(container: Builder, className: string, linkClassName: string, linkId: string, tabTitle: string): HTMLElement {

@@ -47,6 +47,7 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import * as TaskUtilities from 'sql/workbench/common/taskUtilities';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import { attachEditableDropdownStyler } from 'sql/common/theme/styler';
 
 /**
  * Editor that hosts 2 sub-editors: A TextResourceEditor for SQL file editing, and a QueryResultsEditor
@@ -432,6 +433,7 @@ export class QueryEditor extends BaseEditor {
 	public get listDatabasesActionItem(): ListDatabasesActionItem {
 		if (!this._listDatabasesActionItem) {
 			this._listDatabasesActionItem = this._instantiationService.createInstance(ListDatabasesActionItem, this, this._listDatabasesAction);
+			this._register(attachEditableDropdownStyler(this._listDatabasesActionItem, this.themeService));
 		}
 		return this._listDatabasesActionItem;
 	}

@@ -3,7 +3,6 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!sql/media/primeng';
 import 'vs/css!sql/parts/grid/load/css/qp';
 
 import { ElementRef, Component, Inject, forwardRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
