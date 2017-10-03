@@ -21,8 +21,7 @@ export class ServerGroupViewModel {
 	private readonly _editServerGroupTitle: string = localize('editServerGroup', 'Edit server group');
 	private readonly _defaultColor: string = '#515151';
 
-	constructor (domainModel?: IConnectionProfileGroup)
-	{
+	constructor(domainModel?: IConnectionProfileGroup, colors?: string[]) {
 		// keep reference to domain model to be able to see if there are pending changes
 		if (domainModel) {
 			this._domainModel = domainModel;
@@ -42,13 +41,17 @@ export class ServerGroupViewModel {
 
 			this._editMode = false;
 		}
+
+		if (colors) {
+			this.colors = colors;
+		}
 	}
 
 	// check to see if the current state of the view model is different than the data in the domain model
 	public hasPendingChanges(): boolean {
 		if (!TypeChecker.isUndefinedOrNull(this._domainModel)) {
 			return ((DialogHelper.isNullOrWhiteSpace(this.groupName) === false) &&
-					((this.groupName !== this._domainModel.name) ||
+				((this.groupName !== this._domainModel.name) ||
 					(this.groupDescription !== this._domainModel.description) ||
 					(this.groupColor !== this._domainModel.color)));
 		}

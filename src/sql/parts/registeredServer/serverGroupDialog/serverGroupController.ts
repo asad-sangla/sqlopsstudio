@@ -15,6 +15,8 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import Severity from 'vs/base/common/severity';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { SERVER_GROUP_CONFIG, SERVER_GROUP_COLORS_CONFIG } from './serverGroup.contribution';
 
 export class ServerGroupController implements IServerGroupController {
 	_serviceBrand: any;
@@ -28,7 +30,8 @@ export class ServerGroupController implements IServerGroupController {
 	constructor(
 		@IPartService private _partService: IPartService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService,
-		@IInstantiationService private _instantiationService: IInstantiationService
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IConfigurationService private _configurationService: IConfigurationService
 	) {
 	}
 
@@ -72,7 +75,7 @@ export class ServerGroupController implements IServerGroupController {
 	public showCreateGroupDialog(connectionManagementService: IConnectionManagementService, callbacks?: IServerGroupDialogCallbacks): TPromise<void> {
 		this._connectionManagementService = connectionManagementService;
 		this._group = null;
-		this._viewModel = new ServerGroupViewModel();
+		this._viewModel = new ServerGroupViewModel(undefined, this._configurationService.getConfiguration(SERVER_GROUP_CONFIG)[SERVER_GROUP_COLORS_CONFIG]);
 		this._callbacks = callbacks ? callbacks : undefined;
 		return this.openServerGroupDialog();
 	}
@@ -80,7 +83,7 @@ export class ServerGroupController implements IServerGroupController {
 	public showEditGroupDialog(connectionManagementService: IConnectionManagementService, group: ConnectionProfileGroup): TPromise<void> {
 		this._connectionManagementService = connectionManagementService;
 		this._group = group;
-		this._viewModel = new ServerGroupViewModel(group);
+		this._viewModel = new ServerGroupViewModel(group, this._configurationService.getConfiguration(SERVER_GROUP_CONFIG)[SERVER_GROUP_COLORS_CONFIG]);
 		return this.openServerGroupDialog();
 	}
 

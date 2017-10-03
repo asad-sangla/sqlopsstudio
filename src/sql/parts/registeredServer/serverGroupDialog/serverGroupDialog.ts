@@ -11,7 +11,7 @@ import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Checkbox } from 'vs/base/browser/ui/checkbox/checkbox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import DOM = require('vs/base/browser/dom');
+import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
@@ -32,12 +32,12 @@ export class ServerGroupDialog extends Modal {
 	private _bodyBuilder: Builder;
 	private _addServerButton: Button;
 	private _closeButton: Button;
-	private _colorCheckBoxesMap: Map<string, Checkbox> = new Map<string, Checkbox>();
+	private _colorCheckBoxesMap: Array<{ color: string, checkbox: Checkbox }> = [];
 	private _selectedColorOption: number;
 	private _groupNameInputBox: InputBox;
 	private _groupDescriptionInputBox: InputBox;
 	private _viewModel: ServerGroupViewModel;
-
+	private $serverGroupContainer: Builder;
 
 	private _onAddServerGroup = new Emitter<void>();
 	public onAddServerGroup: Event<void> = this._onAddServerGroup.event;
@@ -55,7 +55,6 @@ export class ServerGroupDialog extends Modal {
 		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(localize('ServerGroupsDialogTitle', 'Server Groups'), TelemetryKeys.ServerGroups, partService, telemetryService);
-
 	}
 
 	public render() {
@@ -69,7 +68,7 @@ export class ServerGroupDialog extends Modal {
 	}
 
 	protected layout(height?: number): void {
-		// Nothing to re-layout
+		// NO OP
 	}
 
 	protected renderBody(container: HTMLElement) {
@@ -106,26 +105,8 @@ export class ServerGroupDialog extends Modal {
 		});
 
 		this._bodyBuilder.div({ class: 'group-color-options' }, (groupColorContainer) => {
-			for (let i = 0; i < this._viewModel.colors.length; i++) {
-				let color = this._viewModel.colors[i];
-
-				let colorCheckBox = new Checkbox({
-					actionClassName: 'server-group-color',
-					title: color,
-					isChecked: false,
-					onChange: (viaKeyboard) => {
-						this.onSelectGroupColor(color);
-					}
-				});
-				colorCheckBox.domNode.style.backgroundColor = color;
-				groupColorContainer.getHTMLElement().appendChild(colorCheckBox.domNode);
-
-				// Theme styler
-				this._register(attachCheckboxStyler(colorCheckBox, this._themeService));
-
-				// add the new checkbox to the color map
-				this._colorCheckBoxesMap.set(color, colorCheckBox);
-			}
+			this.$serverGroupContainer = groupColorContainer;
+			this.fillGroupColors(groupColorContainer.getHTMLElement());
 		});
 
 		this._bodyBuilder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
@@ -247,6 +228,7 @@ export class ServerGroupDialog extends Modal {
 
 	private onSelectGroupColor(colorToSelect: string): void {
 		this._viewModel.groupColor = colorToSelect;
+		this._selectedColorOption = this._viewModel.colors.indexOf(colorToSelect);
 		this.updateView();
 	}
 
@@ -266,6 +248,29 @@ export class ServerGroupDialog extends Modal {
 		this._register(this._groupDescriptionInputBox.onDidChange(groupDescription => {
 			this.groupDescriptionChanged(groupDescription);
 		}));
+	}
+
+	private fillGroupColors(container: HTMLElement): void {
+		for (let i = 0; i < this._viewModel.colors.length; i++) {
+			let color = this._viewModel.colors[i];
+
+			let colorCheckBox = new Checkbox({
+				actionClassName: 'server-group-color',
+				title: color,
+				isChecked: false,
+				onChange: (viaKeyboard) => {
+					this.onSelectGroupColor(color);
+				}
+			});
+			colorCheckBox.domNode.style.backgroundColor = color;
+			container.appendChild(colorCheckBox.domNode);
+
+			// Theme styler
+			this._register(attachCheckboxStyler(colorCheckBox, this._themeService));
+
+			// add the new checkbox to the color map
+			this._colorCheckBoxesMap[i] = { color, checkbox: colorCheckBox };
+		}
 	}
 
 	private groupNameChanged(groupName: string) {
@@ -295,6 +300,10 @@ export class ServerGroupDialog extends Modal {
 	}
 	public set viewModel(theViewModel: ServerGroupViewModel) {
 		this._viewModel = theViewModel;
+		if (this.$serverGroupContainer) {
+			this.$serverGroupContainer.clearChildren();
+			this.fillGroupColors(this.$serverGroupContainer.getHTMLElement());
+		}
 	}
 
 	public addGroup(): void {
@@ -329,13 +338,15 @@ export class ServerGroupDialog extends Modal {
 	// update UI elements that have derivative behaviors based on other state changes
 	private updateView(): void {
 		// check the color buttons and if their checked state does not match the view model state then correct it
-		this._colorCheckBoxesMap.forEach((checkbox: Checkbox, color: string) => {
+		for (let i = 0; i < this._colorCheckBoxesMap.length; i++) {
+			let { checkbox, color } = this._colorCheckBoxesMap[i];
 			if ((this._viewModel.groupColor === color) && (checkbox.checked === false)) {
 				checkbox.checked = true;
+				this._selectedColorOption = i;
 			} else if ((this._viewModel.groupColor !== color) && (checkbox.checked === true)) {
 				checkbox.checked = false;
 			}
-		});
+		}
 
 		// OK button state - enabled if there are pending changes that can be saved
 		this._addServerButton.enabled = this._viewModel.hasPendingChanges();
