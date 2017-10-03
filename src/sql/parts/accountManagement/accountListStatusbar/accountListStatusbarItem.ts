@@ -58,7 +58,7 @@ export class ManageLinkedAccountAction extends Action {
 		super(id, label);
 	}
 
-	run(): TPromise<any> {
-		return this._accountManagementService.openAccountListDialog();
+	public run(): TPromise<any> {
+		return new TPromise<any>(() => this._accountManagementService.openAccountListDialog());
 	}
 }

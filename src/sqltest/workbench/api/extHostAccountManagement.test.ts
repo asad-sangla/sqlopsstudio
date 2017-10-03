@@ -53,9 +53,9 @@ suite('ExtHostAccountManagement', () => {
 			},
 			properties: {},
 			displayInfo: {
-				accountType: 'testAccount',
 				displayName: 'Test Account',
-				contextualDisplayName: 'Test Kind Of Account'
+				contextualDisplayName: 'Test Kind Of Account',
+				contextualLogo: { light: '', dark: '' }
 			},
 			isStale: false
 		};

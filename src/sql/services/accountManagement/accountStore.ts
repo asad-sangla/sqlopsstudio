@@ -6,7 +6,8 @@
 'use strict';
 
 import * as data from 'data';
-import { AccountAdditionResult, IAccountStore } from 'sql/services/accountManagement/interfaces';
+import { AccountAdditionResult } from 'sql/services/accountManagement/eventTypes';
+import { IAccountStore } from 'sql/services/accountManagement/interfaces';
 
 export default class AccountStore implements IAccountStore {
 	// CONSTANTS ///////////////////////////////////////////////////////////

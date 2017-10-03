@@ -47,6 +47,7 @@ export class FirewallRuleDialog extends Modal {
 	public onCancel: Event<void> = this._onCancel.event;
 
 	constructor(
+		private _providerId: string,
 		@IPartService partService: IPartService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
@@ -90,7 +91,7 @@ export class FirewallRuleDialog extends Modal {
 			let azureAccountLabel = localize('azureAccount', 'Azure account');
 			this.createLabelElement(azureAccountContainer, azureAccountLabel, true);
 			azureAccountContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-				let accountPicker = this._instantiationService.createInstance(AccountPicker);
+				let accountPicker = this._instantiationService.createInstance(AccountPicker, this._providerId);
 				accountPicker.render(inputCellContainer.getHTMLElement());
 			});
 		});

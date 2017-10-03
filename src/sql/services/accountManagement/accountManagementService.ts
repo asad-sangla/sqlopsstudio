@@ -6,53 +6,49 @@
 'use strict';
 
 import * as data from 'data';
+import * as nls from 'vs/nls';
 import * as platform from 'vs/platform/registry/common/platform';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
-import * as electron from 'electron';
 import AccountStore from 'sql/services/accountManagement/accountStore';
 import Event, { Emitter } from 'vs/base/common/event';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { TPromise } from 'vs/base/common/winjs.base';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { Memento, Scope as MementoScope } from 'vs/workbench/common/memento';
+import { ISqlOAuthService } from 'sql/common/sqlOAuthService';
 import { AccountDialogController } from 'sql/parts/accountManagement/accountDialog/accountDialogController';
 import { AccountListStatusbarItem } from 'sql/parts/accountManagement/accountListStatusbar/accountListStatusbarItem';
-import { IAccountManagementService, AccountProviderAddedEventParams } from 'sql/services/accountManagement/interfaces';
+import { AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
+import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
 
 export class AccountManagementService implements IAccountManagementService {
 	// CONSTANTS ///////////////////////////////////////////////////////////
 	private static ACCOUNT_MEMENTO = 'AccountManagement';
 
 	// MEMBER VARIABLES ////////////////////////////////////////////////////
+	public _providers: { [id: string]: AccountProviderWithMetadata } = {};
 	public _serviceBrand: any;
 	private _accountStore: AccountStore;
 	private _accountDialogController: AccountDialogController;
 	private _mementoContext: Memento;
 	private _oAuthCallbacks: { [eventId: string]: { resolve, reject } } = {};
 	private _oAuthEventId: number = 0;
-	private _providers: { [id: string]: AccountProviderWithMetadata } = {};
 
 	// EVENT EMITTERS //////////////////////////////////////////////////////
-	private _accountStaleEmitter: Emitter<data.Account>;
-	public get accountStaleEvent(): Event<data.Account> { return this._accountStaleEmitter.event; }
-
-	private _addAccountEmitter: Emitter<data.Account>;
-	public get addAccountEvent(): Event<data.Account> { return this._addAccountEmitter.event; }
-
 	private _addAccountProviderEmitter: Emitter<AccountProviderAddedEventParams>;
 	public get addAccountProviderEvent(): Event<AccountProviderAddedEventParams> { return this._addAccountProviderEmitter.event; }
 
-	private _removeAccountEmitter: Emitter<data.AccountKey>;
-	public get removeAccountEvent(): Event<data.AccountKey> { return this._removeAccountEmitter.event; }
-
 	private _removeAccountProviderEmitter: Emitter<data.AccountProviderMetadata>;
 	public get removeAccountProviderEvent(): Event<data.AccountProviderMetadata> { return this._removeAccountProviderEmitter.event; }
+
+	private _updateAccountListEmitter: Emitter<UpdateAccountListEventParams>;
+	public get updateAccountListEvent(): Event<UpdateAccountListEventParams> { return this._updateAccountListEmitter.event; }
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
 		private _mementoObj: object,
 		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IStorageService private _storageService: IStorageService
+		@IStorageService private _storageService: IStorageService,
+		@ISqlOAuthService private _oAuthService: ISqlOAuthService
 	) {
 		let self = this;
 
@@ -61,14 +57,12 @@ export class AccountManagementService implements IAccountManagementService {
 			this._mementoContext = new Memento(AccountManagementService.ACCOUNT_MEMENTO);
 			this._mementoObj = this._mementoContext.getMemento(this._storageService, MementoScope.GLOBAL);
 		}
-		this._accountStore = new AccountStore(this._mementoObj);
+		this._accountStore = this._instantiationService.createInstance(AccountStore, this._mementoObj);
 
 		// Setup the event emitters
-		this._accountStaleEmitter = new Emitter<data.Account>();
-		this._addAccountEmitter = new Emitter<data.Account>();
 		this._addAccountProviderEmitter = new Emitter<AccountProviderAddedEventParams>();
-		this._removeAccountEmitter = new Emitter<data.AccountKey>();
 		this._removeAccountProviderEmitter = new Emitter<data.AccountProviderMetadata>();
+		this._updateAccountListEmitter = new Emitter<UpdateAccountListEventParams>();
 
 		// Register status bar item
 		// FEATURE FLAG TOGGLE
@@ -82,7 +76,7 @@ export class AccountManagementService implements IAccountManagementService {
 		}
 
 		// Register event handler for OAuth completion
-		electron.ipcRenderer.on('oauth-reply', (event, args) => {
+		this._oAuthService.registerOAuthCallback((event, args) => {
 			self.onOAuthResponse(args);
 		});
 	}
@@ -94,7 +88,7 @@ export class AccountManagementService implements IAccountManagementService {
 		// Get the account provider
 		let provider = this._providers[providerId];
 		if (provider === undefined) {
-			throw new Error('Account provider does not exist'); // TODO: Localize?
+			return Promise.reject(new Error(nls.localize('accountManagementNoProvider', 'Account provider does not exist'))).then();
 		}
 
 		// Prompt for a new account
@@ -102,44 +96,57 @@ export class AccountManagementService implements IAccountManagementService {
 			.then(account => self._accountStore.addOrUpdate(account))
 			.then(result => {
 				if (result.accountAdded) {
-					self._addAccountEmitter.fire(result.changedAccount);
+					// Add the account to the list
+					self._providers[providerId].accounts.push(result.changedAccount);
 				}
 				if (result.accountModified) {
-					// TODO: Fire account modified event
+					// Find the updated account and splice the updated on in
+					let indexToRemove: number = self._providers[providerId].accounts.findIndex(account => {
+						return account.key.accountId === result.changedAccount.key.accountId;
+					});
+					if (indexToRemove >= 0) {
+						self._providers[providerId].accounts.splice(indexToRemove, 1, result.changedAccount);
+					}
 				}
+
+				self.fireAccountListUpdate(providerId, result.accountAdded);
 				return result.changedAccount;
 			});
 	}
 
 	/**
-	 * Retrieves the account provider specified by the provider ID
-	 * @param {string} providerId Unique identifier of the provider
-	 * @return {Thenable<"data".AccountProvider>} The requested provider
-	 */
-	public getAccountProvider(providerId: string): Thenable<data.AccountProvider> {
-		return Promise.resolve(this._providers[providerId].provider);
-	}
-
-	/**
 	 * Retrieves metadata of all providers that have been registered
-	 * @returns {Thenable<data.AccountProviderMetadata[]>} Registered account providers
+	 * @returns {Thenable<AccountProviderMetadata[]>} Registered account providers
 	 */
 	public getAccountProviderMetadata(): Thenable<data.AccountProviderMetadata[]> {
-		return TPromise.as(Object.values(this._providers).map(provider => provider.metadata));
+		return Promise.resolve(Object.values(this._providers).map(provider => provider.metadata));
 	}
 
 	/**
 	 * Retrieves the accounts that belong to a specific provider
 	 * @param {string} providerId ID of the provider the returned accounts belong to
-	 * @returns {Thenable<data.Account[]>} Promise to return a list of accounts
+	 * @returns {Thenable<Account[]>} Promise to return a list of accounts
 	 */
 	public getAccountsForProvider(providerId: string): Thenable<data.Account[]> {
-		return this._accountStore.getAccountsByProvider(providerId);
+		let self = this;
+
+		// Make sure the provider exists before attempting to retrieve accounts
+		if (!this._providers[providerId]) {
+			return Promise.reject(new Error(nls.localize('accountManagementNoProvider', 'Account provider does not exist'))).then();
+		}
+
+		// 1) Get the accounts from the store
+		// 2) Update our local cache of accounts
+		return this._accountStore.getAccountsByProvider(providerId)
+			.then(accounts => {
+				self._providers[providerId].accounts = accounts;
+				return accounts;
+			});
 	}
 
 	/**
 	 * Removes an account from the account store and clears sensitive data in the provider
-	 * @param {"data".AccountKey} accountKey Key for the account to remove
+	 * @param {AccountKey} accountKey Key for the account to remove
 	 * @returns {Thenable<void>} Promise that's resolved when the account is removed
 	 */
 	public removeAccount(accountKey: data.AccountKey): Thenable<boolean> {
@@ -147,19 +154,24 @@ export class AccountManagementService implements IAccountManagementService {
 
 		// Step 1) Remove the account
 		// Step 2) Clear the sensitive data from the provider (regardless of whether the account was removed)
-		// Step 3) Notify any listeners (if the account was removed)
+		// Step 3) Update the account cache and fire an event
 		return this._accountStore.remove(accountKey)
 			.then(result => {
 				self._providers[accountKey.providerId].provider.clear(accountKey);
 				return result;
 			})
 			.then(result => {
-				self._providers[accountKey.providerId].provider.clear(accountKey);
-				return result;
-			})
-			.then(result => {
-				if (result) {
-					self._removeAccountEmitter.fire(accountKey);
+				if (!result) {
+					return result;
+				}
+
+				let indexToRemove: number = self._providers[accountKey.providerId].accounts.findIndex(account => {
+					return account.key.accountId === accountKey.accountId;
+				});
+
+				if (indexToRemove >= 0) {
+					self._providers[accountKey.providerId].accounts.splice(indexToRemove, 1);
+					self.fireAccountListUpdate(accountKey.providerId, false);
 				}
 				return result;
 			});
@@ -167,44 +179,25 @@ export class AccountManagementService implements IAccountManagementService {
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	/**
-	 * Opens a browser window to perform the OAuth authentication
-	 * @param {string} url URL to visit that will perform the OAuth authentication
-	 * @param {boolean} silent Whether or not to perform authentication silently using browser's cookies
-	 * @return {Thenable<string>} Promise to return a authentication token on successful authentication
-	 */
-	public performOauthAuthorization(url: string, silent: boolean): Thenable<string> {
-		let self = this;
-		return new Promise<string>((resolve, reject) => {
-			// Create event ID to send along with the response
-			// let eventId = uniqid(); TODO: FIGURE OUT WHY IN THE SAM HILL THIS DOESN'T WORK
-			let eventId = `foobarbaz${self._oAuthEventId++}`;
-			self._oAuthCallbacks[eventId] = {
-				resolve: resolve,
-				reject: reject
-			};
-
-			// Setup the args and send the IPC call
-			let args = {
-				url: url,
-				silent: silent,
-				eventId: eventId
-			};
-			electron.ipcRenderer.send('oauth', args);
-		});
-	}
-
-	/**
 	 * Opens the account list dialog
 	 * @return {TPromise<any>}	Promise that finishes when the account list dialog opens
 	 */
-	public openAccountListDialog(): TPromise<any> {
+	public openAccountListDialog(): Thenable<void> {
 		let self = this;
-		// If the account list dialog hasn't been defined, create a new one
-		if (!self._accountDialogController) {
-			self._accountDialogController = self._instantiationService.createInstance(AccountDialogController);
-		}
 
-		return self._accountDialogController.openAccountDialog();
+		return new Promise((resolve, reject) => {
+			try {
+				// If the account list dialog hasn't been defined, create a new one
+				if (!self._accountDialogController) {
+					self._accountDialogController = self._instantiationService.createInstance(AccountDialogController);
+				}
+
+				self._accountDialogController.openAccountDialog();
+				resolve();
+			} catch(e) {
+				reject(e);
+			}
+		});
 	}
 
 	/**
@@ -223,15 +216,7 @@ export class AccountManagementService implements IAccountManagementService {
 				reject: reject
 			};
 
-			// Setup the args and send the IPC call
-			electron.ipcRenderer.send(
-				'oauth',
-				{
-					url: url,
-					silent: silent,
-					eventId: eventId
-				}
-			);
+			self._oAuthService.performOAuthAuthorization(eventId, url, silent);
 		});
 	}
 
@@ -241,36 +226,38 @@ export class AccountManagementService implements IAccountManagementService {
 	 * @param {data.AccountProviderMetadata} providerMetadata Metadata of the provider that is being registered
 	 * @param {data.AccountProvider} provider References to the methods of the provider
 	 */
-	public registerProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): void {
+	public registerProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): Thenable<void> {
 		let self = this;
 
 		// Store the account provider
 		this._providers[providerMetadata.id] = {
 			metadata: providerMetadata,
-			provider: provider
+			provider: provider,
+			accounts: []
 		};
 
 		// Initialize the provider:
 		// 1) Get all the accounts that were stored
 		// 2) Give those accounts to the provider for rehydration
-		// 3) Write the accounts back to the store
-		// 4) Fire the event to let folks know we have another account provider now
-		this._accountStore.getAccountsByProvider(providerMetadata.id)
+		// 3) Add the accounts to our local store of accounts
+		// 4) Write the accounts back to the store
+		// 5) Fire the event to let folks know we have another account provider now
+		return this._accountStore.getAccountsByProvider(providerMetadata.id)
 			.then((accounts: data.Account[]) => {
 				return provider.initialize(accounts);
 			})
 			.then((accounts: data.Account[]) => {
-
+				self._providers[providerMetadata.id].accounts = accounts;
 				let writePromises = accounts.map(account => {
 					return self._accountStore.addOrUpdate(account);
 				});
-				return Promise.all(writePromises)
-					.then(() => { return accounts; });
+				return Promise.all(writePromises);
 			})
-			.then((accounts: data.Account[]) => {
-				self._addAccountProviderEmitter.fire ({
-					addedProvider: providerMetadata,
-					initialAccounts: accounts
+			.then(() => {
+				let provider = self._providers[providerMetadata.id];
+				self._addAccountProviderEmitter.fire({
+					addedProvider: provider.metadata,
+					initialAccounts: provider.accounts.slice(0)		// Slice here to make sure no one can modify our cache
 				});
 			});
 
@@ -297,7 +284,29 @@ export class AccountManagementService implements IAccountManagementService {
 	// TODO: Support for orphaned accounts (accounts with no provider)
 
 	// PRIVATE HELPERS /////////////////////////////////////////////////////
-	private onOAuthResponse(args: object[]): void {
+	private fireAccountListUpdate(providerId: string, sort: boolean) {
+		// Step 1) Get and sort the list
+		if (sort) {
+			this._providers[providerId].accounts.sort((a: data.Account, b: data.Account) => {
+				if (a.displayInfo.displayName < b.displayInfo.displayName) {
+					return -1;
+				}
+				if (a.displayInfo.displayName > b.displayInfo.displayName) {
+					return 1;
+				}
+				return 0;
+			});
+		}
+
+		// Step 2) Fire the event
+		let eventArg: UpdateAccountListEventParams = {
+			providerId: providerId,
+			accountList: this._providers[providerId].accounts
+		};
+		this._updateAccountListEmitter.fire(eventArg);
+	}
+
+	private onOAuthResponse(args: object): void {
 		// Verify the arguments are correct
 		if (!args || args['eventId'] === undefined) {
 			console.warn('Received invalid OAuth event response args');
@@ -324,9 +333,10 @@ export class AccountManagementService implements IAccountManagementService {
 }
 
 /**
- * Joins together an account provider and a provider's metadata, used in the provider list
+ * Joins together an account provider, its metadata, and its accounts, used in the provider list
  */
-interface AccountProviderWithMetadata {
+export interface AccountProviderWithMetadata {
 	metadata: data.AccountProviderMetadata;
 	provider: data.AccountProvider;
+	accounts: data.Account[];
 }

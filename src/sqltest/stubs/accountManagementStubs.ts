@@ -7,22 +7,18 @@
 
 import * as data from 'data';
 import Event from 'vs/base/common/event';
-import { IAccountManagementService, AccountProviderAddedEventParams } from 'sql/services/accountManagement/interfaces';
+import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 export class AccountManagementTestService implements IAccountManagementService {
 	_serviceBrand: any;
-	public get accountStaleEvent(): Event<data.Account> {return () => {return undefined;};}
-	public get addAccountEvent(): Event<data.Account> {return () => {return undefined;};}
+
 	public get addAccountProviderEvent(): Event<AccountProviderAddedEventParams> {return () => {return undefined;};}
-	public get removeAccountEvent(): Event<data.AccountKey> {return () => {return undefined;};}
 	public get removeAccountProviderEvent(): Event<data.AccountProviderMetadata> {return () => {return undefined;};}
+	public get updateAccountListEvent(): Event<UpdateAccountListEventParams> {return () => {return undefined;};}
 
 	addAccount(providerId: string): Thenable<data.Account> {
-		return undefined;
-	}
-
-	getAccountProvider(providerId: string): Thenable<data.AccountProvider> {
 		return undefined;
 	}
 

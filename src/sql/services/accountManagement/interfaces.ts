@@ -7,8 +7,8 @@
 
 import * as data from 'data';
 import Event from 'vs/base/common/event';
+import { AccountAdditionResult, AccountProviderAddedEventParams, UpdateAccountListEventParams } from  'sql/services/accountManagement/eventTypes';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { TPromise } from 'vs/base/common/winjs.base';
 
 export const SERVICE_ID = 'accountManagementService';
 
@@ -19,13 +19,12 @@ export interface IAccountManagementService {
 
 	// ACCOUNT MANAGEMENT METHODS //////////////////////////////////////////
 	addAccount(providerId: string): Thenable<data.Account>;
-	getAccountProvider(providerId: string): Thenable<data.AccountProvider>;
 	getAccountProviderMetadata(): Thenable<data.AccountProviderMetadata[]>;
 	getAccountsForProvider(providerId: string): Thenable<data.Account[]>;
 	removeAccount(accountKey: data.AccountKey): Thenable<boolean>;
 
 	// UI METHODS //////////////////////////////////////////////////////////
-	openAccountListDialog(): TPromise<any>;
+	openAccountListDialog(): Thenable<void>;
 	performOAuthAuthorization(url: string, silent: boolean): Thenable<string>;
 
 	// SERVICE MANAGEMENT METHODS /////////////////////////////////////////
@@ -34,11 +33,9 @@ export interface IAccountManagementService {
 	unregisterProvider(providerMetadata: data.AccountProviderMetadata): void;
 
 	// EVENTING ////////////////////////////////////////////////////////////
-	readonly accountStaleEvent: Event<data.Account>;
-	readonly addAccountEvent: Event<data.Account>;
 	readonly addAccountProviderEvent: Event<AccountProviderAddedEventParams>;
-	readonly removeAccountEvent: Event<data.AccountKey>;
 	readonly removeAccountProviderEvent: Event<data.AccountProviderMetadata>;
+	readonly updateAccountListEvent: Event<UpdateAccountListEventParams>;
 }
 
 export interface IAccountStore {
@@ -80,39 +77,4 @@ export interface IAccountStore {
 	 * @returns True if the account was modified, false if the account doesn't exist
 	 */
 	update(key: data.AccountKey, updateOperation: (account: data.Account) => void): Thenable<boolean>;
-}
-
-/**
- * Result from calling add/update on the account store
- */
-export interface AccountAdditionResult {
-	/**
-	 * Whether or not an account was added in the add/update process
-	 */
-	accountAdded: boolean;
-
-	/**
-	 * Whether or not an account was updated in the add/update process
-	 */
-	accountModified: boolean;
-
-	/**
-	 * The account that was added/updated (with any updates applied)
-	 */
-	changedAccount: data.Account;
-}
-
-/**
- * Parameters that go along with an account provider being added
- */
-export interface AccountProviderAddedEventParams {
-	/**
-	 * The provider that was registered
-	 */
-	addedProvider: data.AccountProviderMetadata;
-
-	/**
-	 * The accounts that were rehydrated with the provider
-	 */
-	initialAccounts: data.Account[];
 }

@@ -8,29 +8,41 @@ import * as data from 'data';
 import Event, { Emitter } from 'vs/base/common/event';
 
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
 
 /**
  * View model for account picker
  */
 export class AccountPickerViewModel {
-	private static AZURE_ID = 'azure';
-
-	private _onUpdateAccountList = new Emitter<data.Account[]>();
-	public onUpdateProviderAccounts: Event<data.Account[]> = this._onUpdateAccountList.event;
+	// EVENTING ////////////////////////////////////////////////////////////
+	private _updateAccountListEmitter: Emitter<UpdateAccountListEventParams>;
+	public get updateAccountListEvent(): Event<UpdateAccountListEventParams> { return this._updateAccountListEmitter.event; }
 
 	constructor(
+		private _providerId: string,
 		@IAccountManagementService private _accountManagementService: IAccountManagementService
 	) {
+		let self = this;
+
+		// Create our event emitters
+		this._updateAccountListEmitter = new Emitter<UpdateAccountListEventParams>();
+
+		// Register handlers for any changes to the accounts
+		this._accountManagementService.updateAccountListEvent(arg => self._updateAccountListEmitter.fire(arg));
 	}
 
+	// PUBLIC METHODS //////////////////////////////////////////////////////
 	/**
-	 * Get all azure accounts
+	 * Loads an initial list of accounts from the account management service
+	 * @return {Thenable<Account[]>} Promise to return the list of accounts
 	 */
-	public getAllAzureAccounts(): Thenable<void> {
-		return this._accountManagementService.getAccountsForProvider(AccountPickerViewModel.AZURE_ID).then((accounts: data.Account[]) => {
-			if (accounts) {
-				this._onUpdateAccountList.fire(accounts);
-			}
-		});
+	public initialize(): Thenable<data.Account[]> {
+		// Load a baseline of the accounts for the provider
+		return this._accountManagementService.getAccountsForProvider(this._providerId)
+			.then(null, () => {
+				// In the event we failed to lookup accounts for the provider, just send
+				// back an empty collection
+				return [];
+			});
 	}
 }

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+
 import { CollapsibleView, ICollapsibleViewOptions } from 'vs/workbench/parts/views/browser/views';
 import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IAction, ActionRunner } from 'vs/base/common/actions';
@@ -16,32 +17,37 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachBadgeStyler } from 'vs/platform/theme/common/styler';
 import { CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 
-export class FixedListView extends CollapsibleView {
+export class FixedListView<T> extends CollapsibleView {
 	private _badge: CountBadge;
 	private _disposables: IDisposable[] = [];
 
 	constructor(
 		initialSize: number,
+		initiallyCollapsed: boolean,
 		private _viewTitle: string,
-		private _list: List<any>,
+		private _list: List<T>,
 		private _bodyContainer: HTMLElement,
-		collapsed: boolean,
 		headerSize: number,
 		private _actions: IAction[],
 		actionRunner: ActionRunner,
 		contextMenuService: IContextMenuService,
 		keybindingService: IKeybindingService,
-		private _themeService: IThemeService) {
+		private _themeService: IThemeService
+	) {
 		super(initialSize, <ICollapsibleViewOptions>{
 			id: _viewTitle,
 			name: _viewTitle,
 			actionRunner: actionRunner,
-			collapsed: false,
+			collapsed: initiallyCollapsed,
 			ariaHeaderLabel: _viewTitle,
 			sizing: headerSize,
 			initialBodySize: undefined
 		}, keybindingService, contextMenuService);
+	}
 
+	// RENDER METHODS //////////////////////////////////////////////////////
+	public renderBody(container: HTMLElement): void {
+		container.appendChild(this._bodyContainer);
 	}
 
 	public renderHeader(container: HTMLElement): void {
@@ -54,7 +60,7 @@ export class FixedListView extends CollapsibleView {
 		this._disposables.push(attachBadgeStyler(this._badge, this._themeService));
 	}
 
-	public updateList(content: any[]) {
+	public updateList(content: T[]) {
 		this._list.splice(0, this._list.length, content);
 		this._badge.setCount(this._list.length);
 		this._list.layout(this._list.contentHeight);
@@ -62,10 +68,6 @@ export class FixedListView extends CollapsibleView {
 
 	public listContentHeight(): number {
 		return this._list.contentHeight;
-	}
-
-	public renderBody(container: HTMLElement): void {
-		container.appendChild(this._bodyContainer);
 	}
 
 	public get fixedSize(): number {

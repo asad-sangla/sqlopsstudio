@@ -26,8 +26,11 @@ export class FirewallRuleDialogController {
 	 * Open firewall rule dialog
 	 */
 	public openFirewallRuleDialog(): TPromise<void> {
+		// TODO: expand support to multiple providers
+		const providerId: string = 'azurePublicCloud';
+
 		if (!this._firewallRuleDialog) {
-			this._firewallRuleDialog = this._instantiationService.createInstance(FirewallRuleDialog);
+			this._firewallRuleDialog = this._instantiationService.createInstance(FirewallRuleDialog, providerId);
 			this._firewallRuleDialog.onCancel(() => { });
 			this._firewallRuleDialog.onCreateFirewallRule(() => this.handleOnCreateFirewallRule);
 			this._firewallRuleDialog.render();

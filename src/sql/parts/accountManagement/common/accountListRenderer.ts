@@ -6,7 +6,6 @@
 'use strict';
 import 'vs/css!sql/parts/accountManagement/common/media/accountListRenderer';
 import 'vs/css!sql/parts/accountManagement/common/media/accountActions';
-import 'vs/css!sql/parts/accountManagement/common/media/common-icons';
 import 'vs/css!sql/media/icons/common-icons';
 import * as DOM from 'vs/base/browser/dom';
 import { IDelegate, IRenderer } from 'vs/base/browser/ui/list/list';
@@ -66,8 +65,11 @@ export class AccountPickerListRenderer implements IRenderer<data.Account, Accoun
 	}
 
 	public renderElement(account: data.Account, index: number, templateData: AccountListTemplate): void {
-		let iconClass = 'icon ' + account.displayInfo.accountType;
-		templateData.icon.className = iconClass;
+		// Set the account icon
+		templateData.icon.classList.add('account-logo');
+		templateData.icon.style.background = `url('data:${account.displayInfo.contextualLogo.light}')`;
+		// TODO: Pick between the light and dark logo
+
 		templateData.contextualDisplayName.innerText = account.displayInfo.contextualDisplayName;
 		templateData.displayName.innerText = account.displayInfo.displayName;
 		if (account.isStale) {
@@ -116,7 +118,8 @@ export class AccountListRenderer extends AccountPickerListRenderer {
 		} else {
 			templateData.actions.push(new ApplyFilterAction(ApplyFilterAction.ID, ApplyFilterAction.LABEL), actionOptions);
 		}
-		let removeAction = this._instantiationService.createInstance(RemoveAccountAction, RemoveAccountAction.ID, RemoveAccountAction.LABEL, account.displayInfo.displayName);
+
+		let removeAction = this._instantiationService.createInstance(RemoveAccountAction, account);
 		templateData.actions.push(removeAction, actionOptions);
 	}
 }

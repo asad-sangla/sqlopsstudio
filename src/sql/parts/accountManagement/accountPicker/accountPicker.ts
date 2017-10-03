@@ -18,13 +18,12 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
 
+import * as data from 'data';
 import { DropdownList } from 'sql/base/browser/ui/dropdownList/dropdownList';
 import { attachDropdownStyler } from 'sql/common/theme/styler';
-import { AddLinkedAccountAction, RefreshAccountAction } from 'sql/parts/accountManagement/common/accountActions';
+import { AddAccountAction, RefreshAccountAction } from 'sql/parts/accountManagement/common/accountActions';
 import { AccountPickerListRenderer, AccountListDelegate } from 'sql/parts/accountManagement/common/accountListRenderer';
 import { AccountPickerViewModel } from 'sql/parts/accountManagement/accountPicker/accountPickerViewModel';
-
-import * as data from 'data';
 
 export class AccountPicker extends Disposable {
 	public static ACCOUNTPICKERLIST_HEIGHT = 47;
@@ -34,11 +33,13 @@ export class AccountPicker extends Disposable {
 	private _listContainer: HTMLElement;
 
 	constructor(
+		private _providerId: string,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextViewService private _contextViewService: IContextViewService
 	) {
 		super();
+		let self = this;
 
 		// Create an account list
 		let delegate = new AccountListDelegate(AccountPicker.ACCOUNTPICKERLIST_HEIGHT);
@@ -47,12 +48,29 @@ export class AccountPicker extends Disposable {
 		this._accountList = new List<data.Account>(this._listContainer, delegate, [accountRenderer]);
 		this._register(attachListStyler(this._accountList, this._themeService));
 
-		// View model
-		this._viewModel = this._instantiationService.createInstance(AccountPickerViewModel);
-		this._viewModel.onUpdateProviderAccounts((accounts) => this.updateProviderAccounts(accounts));
-		this._viewModel.getAllAzureAccounts();
+		// Create the view model, wire up the events, and initialize with baseline data
+		this._viewModel = this._instantiationService.createInstance(AccountPickerViewModel, this._providerId);
+		this._viewModel.updateAccountListEvent(arg => {
+			if (arg.providerId === self._providerId) {
+				this.updateAccountList(arg.accountList);
+			}
+		});
+		this._viewModel.initialize()
+			.then((accounts: data.Account[]) => {
+				self.updateAccountList(accounts);
+			});
 	}
 
+	/**
+	 * Get the selected account
+	 */
+	public get selectedAccount(): data.Account {
+		return this._accountList && this._accountList.length >= 0
+			? this._accountList.getSelectedElements()[0]
+			: undefined;
+	}
+
+	// PUBLIC METHODS //////////////////////////////////////////////////////
 	/**
 	 * Render account picker
 	 */
@@ -62,9 +80,7 @@ export class AccountPicker extends Disposable {
 			contextViewProvider: this._contextViewService,
 			labelRenderer: (container) => this.renderLabel(container)
 		};
-		let addAccountAction = this._instantiationService.createInstance(AddLinkedAccountAction,
-			AddLinkedAccountAction.ID,
-			AddLinkedAccountAction.LABEL);
+		let addAccountAction = this._instantiationService.createInstance(AddAccountAction, this._providerId);
 
 		let dropdown = new DropdownList(container, option, this._listContainer, this._accountList, this._themeService, addAccountAction);
 		this._register(attachDropdownStyler(dropdown, this._themeService));
@@ -93,34 +109,20 @@ export class AccountPicker extends Disposable {
 		self.updateTheme(self._themeService.getColorTheme());
 	}
 
-	// Update theming that is specific to account picker
-	private updateTheme(theme: IColorTheme): void {
-		let linkColor = theme.getColor(buttonBackground);
-		let link = linkColor ? linkColor.toString() : null;
-		this._refreshContainer.style.color = link;
-		if (this._refreshContainer) {
-			this._refreshContainer.style.color = link;
+	public dispose() {
+		super.dispose();
+		if (this._accountList) {
+			this._accountList.dispose();
 		}
 	}
 
+	// PRIVATE HELPERS /////////////////////////////////////////////////////
 	private onAccountSelectionChange(account: data.Account) {
 		if (account.isStale) {
 			new Builder(this._refreshContainer).show();
 		} else {
 			new Builder(this._refreshContainer).hide();
 		}
-	}
-
-	/**
-	 * Get the selected account
-	 */
-	public get selectedAccount(): data.Account {
-		if (this._accountList) {
-			if (this._accountList.length > 0) {
-				return this._accountList.getSelectedElements()[0];
-			}
-		}
-		return undefined;
 	}
 
 	private renderLabel(container: HTMLElement): IDisposable {
@@ -140,7 +142,10 @@ export class AccountPicker extends Disposable {
 			const badgeContent = DOM.append(badge, DOM.$('div.badge-content'));
 			const label = DOM.append(row, DOM.$('div.label'));
 
-			icon.className = 'icon ' + account.displayInfo.accountType;
+			icon.className = 'icon';
+			// Set the account icon
+			icon.style.background = `url('data:${account.displayInfo.contextualLogo.light}')`;
+			// TODO: Pick between the light and dark logo
 			label.innerText = account.displayInfo.displayName + ' (' + account.displayInfo.contextualDisplayName + ')';
 
 			if (account.isStale) {
@@ -150,21 +155,28 @@ export class AccountPicker extends Disposable {
 			}
 		} else {
 			const row = DOM.append(container, DOM.$('div.no-account-container'));
-			row.innerText = AddLinkedAccountAction.LABEL + '...';
+			row.innerText = AddAccountAction.LABEL + '...';
 		}
 		return null;
 	}
 
-	public dispose() {
-		super.dispose();
-		if (this._accountList) {
-			this._accountList.dispose();
-		}
-	}
-
-	private updateProviderAccounts(accounts: data.Account[]): void {
+	private updateAccountList(accounts: data.Account[]): void {
+		// Replace the existing list with the new one
+		// TODO: keep the selection to the current one
 		this._accountList.splice(0, this._accountList.length, accounts);
 		this._accountList.setSelection([0]);
 		this._accountList.layout(this._accountList.contentHeight);
+	}
+
+	/**
+	 * Update theming that is specific to account picker
+ 	 */
+	private updateTheme(theme: IColorTheme): void {
+		let linkColor = theme.getColor(buttonBackground);
+		let link = linkColor ? linkColor.toString() : null;
+		this._refreshContainer.style.color = link;
+		if (this._refreshContainer) {
+			this._refreshContainer.style.color = link;
+		}
 	}
 }

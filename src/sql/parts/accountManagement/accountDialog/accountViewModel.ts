@@ -4,60 +4,71 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+
 import * as data from 'data';
 import Event, { Emitter } from 'vs/base/common/event';
-
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
-
-/**
- * Parameters for setting the list of source database names and selected database name in the restore dialog
- */
-export interface ProviderAccountParam {
-	providerId: string;
-	providerDisplayName: string;
-	accounts: data.Account[];
-}
-
-function reflect(promise: Promise<any>): any {
-	return promise.then(function (v) { return v; },
-		function (e) { return e; });
-}
+import { AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
 
 /**
  * View model for account dialog
  */
 export class AccountViewModel {
+	// EVENTING ///////////////////////////////////////////////////////
+	private _addProviderEmitter: Emitter<AccountProviderAddedEventParams>;
+	public get addProviderEvent(): Event<AccountProviderAddedEventParams> { return this._addProviderEmitter.event; }
 
-	private _providers: data.AccountProviderMetadata[] = [];
+	private _removeProviderEmitter: Emitter<data.AccountProviderMetadata>;
+	public get removeProviderEvent(): Event<data.AccountProviderMetadata> { return this._removeProviderEmitter.event; }
 
-	private _onUpdateProviderAccounts = new Emitter<ProviderAccountParam>();
-	public onUpdateProviderAccounts: Event<ProviderAccountParam> = this._onUpdateProviderAccounts.event;
+	private _updateAccountListEmitter: Emitter<UpdateAccountListEventParams>;
+	public get updateAccountListEvent(): Event<UpdateAccountListEventParams> { return this._updateAccountListEmitter.event; }
 
-	constructor(
-		@IAccountManagementService private _accountManagementService: IAccountManagementService
-	) {
+	constructor(@IAccountManagementService private _accountManagementService: IAccountManagementService) {
+		let self = this;
+
+		// Create our event emitters
+		this._addProviderEmitter = new Emitter<AccountProviderAddedEventParams>();
+		this._removeProviderEmitter = new Emitter<data.AccountProviderMetadata>();
+		this._updateAccountListEmitter = new Emitter<UpdateAccountListEventParams>();
+
+		// Register handlers for any changes to the providers or accounts
+		this._accountManagementService.addAccountProviderEvent(arg => self._addProviderEmitter.fire(arg));
+		this._accountManagementService.removeAccountProviderEvent(arg => self._removeProviderEmitter.fire(arg));
+		this._accountManagementService.updateAccountListEvent(arg => self._updateAccountListEmitter.fire(arg));
 	}
 
+	// PUBLIC METHODS //////////////////////////////////////////////////////
 	/**
-	 * Get accounts for each provider
+	 * Loads an initial list of account providers and accounts from the account management service
+	 * and fires an event after each provider/accounts has been loaded.
+	 *
 	 */
-	public getAccountsForProvider(): Thenable<void> {
-		return this._accountManagementService.getAccountProviderMetadata().then((providers: data.AccountProviderMetadata[]) => {
-			// Step 1: Load the providers and create ui elements for them
-			for (let provider of providers) {
-				this._providers.push(provider);
-			}
-		})
-			.then(() => {
-				// Step 2: For each provider, retrieve the accounts for each
-				let promises = this._providers.map(provider => {
-					return this._accountManagementService.getAccountsForProvider(provider.id).then((accounts: data.Account[]) => {
-						if (accounts) {
-							this._onUpdateProviderAccounts.fire({ providerId: provider.id, providerDisplayName: provider.displayName, accounts: accounts });
-						}
+	public initialize(): Thenable<AccountProviderAddedEventParams[]> {
+		let self = this;
+
+		// Load a baseline of the account provider metadata and accounts
+		// 1) Get all the providers from the account management service
+		// 2) For each provider, get the accounts
+		// 3) Build parameters to add a provider and return it
+		return this._accountManagementService.getAccountProviderMetadata()
+			.then(
+				(providers: data.AccountProviderMetadata[]) => {
+					let promises = providers.map(provider => {
+						return self._accountManagementService.getAccountsForProvider(provider.id)
+							.then(
+								accounts => <AccountProviderAddedEventParams> {
+									addedProvider: provider,
+									initialAccounts: accounts
+								},
+								() => { /* Swallow failures at getting accounts, we'll just hide that provider */ });
 					});
-				});
-				return Promise.all(promises.map(reflect)).then(() => undefined);
-			});
+					return Promise.all(promises);
+				},
+				() => {
+					/* Swallow failures and just pretend we don't have any providers */
+					return [];
+				}
+			);
 	}
 }

@@ -140,6 +140,8 @@ import { IAccountManagementService } from 'sql/services/accountManagement/interf
 import { AccountManagementService } from 'sql/services/accountManagement/accountManagementService';
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { ProfilerService } from 'sql/parts/profiler/service/profilerService';
+import { ISqlOAuthService } from 'sql/common/sqlOAuthService';
+import { SqlOAuthService } from 'sql/common/browser/sqlOAuthServiceImpl';
 import { IClipboardService as sqlIClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ClipboardService as sqlClipboardService } from 'sql/platform/clipboard/electron-browser/clipboardService';
 
@@ -681,6 +683,7 @@ export class Workbench implements IPartService {
 
 		// {{SQL CARBON EDIT}}
 		// SQL Tools services
+		serviceCollection.set(ISqlOAuthService, this.instantiationService.createInstance(SqlOAuthService));
 		serviceCollection.set(sqlIClipboardService, this.instantiationService.createInstance(sqlClipboardService));
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
 		serviceCollection.set(IErrorMessageService, this.instantiationService.createInstance(ErrorMessageService));

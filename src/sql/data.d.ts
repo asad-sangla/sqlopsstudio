@@ -1105,18 +1105,35 @@ declare module 'data' {
 
 	// - ACCOUNT DATATYPES /////////////////////////////////////////////////
 	/**
+	 * Image to display for an account
+	 */
+	export interface AccountContextualLogo {
+		/**
+		 * Image to display on light theme
+		 */
+		light: string;
+
+		/**
+		 * Image to display on dark theme
+		 */
+		dark: string;
+	}
+
+
+	/**
 	 * Represents display information for an account.
 	 */
 	export interface AccountDisplayInfo {
 		/**
-		 * The type of the account.
-		 */
-		accountType: string;
-
-		/**
 		 * A display name that offers context for the account, such as "Contoso".
 		 */
 		contextualDisplayName: string;
+
+		/**
+		 * Contents of the logo to display alongside the account. Indicates the context of the
+		 * account provider (eg, Work/School vs Microsoft Account)
+		 */
+		contextualLogo: AccountContextualLogo;
 
 		/**
 		 * A display name that identifies the account, such as "user@contoso.com".
@@ -1126,8 +1143,6 @@ declare module 'data' {
 
 	/**
 	 * Represents a key that identifies an account.
-	 * NOTE: This object will be serialized and stored in a Memento. Sensitive info should not be
-	 *       stored in an AccountKey.
 	 */
 	export interface AccountKey {
 		/**
@@ -1227,32 +1242,5 @@ declare module 'data' {
 		 * @param accountKey - Key that uniquely identifies the account to clear
 		 */
 		clear(accountKey: AccountKey): Thenable<void>;
-	}
-
-	// - ACCOUNT EVENTING //////////////////////////////////////////////////
-	/**
-	 * Represents a listener that is called when an account becomes stale.
-	 */
-	export interface AccountStaleListener {
-		/**
-		 * Handles the event of an account becoming stale.
-		 * @param account - An account.
-		 */
-		(account: Account): void;
-	}
-
-	/**
-	 * Represents the before and after state of an account that was modified.
-	 */
-	export interface AccountModification {
-		/**
-		 * The account before modification.
-		 */
-		before: Account;
-		/**
-		 * The account after modification.
-		 */
-		after: Account;
-		// TODO: consider including which properties changed
 	}
 }

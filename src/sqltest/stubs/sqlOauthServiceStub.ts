@@ -3,24 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.list-row {
-	display: flex;
-	align-items: flex-start;
-}
+'use strict';
 
-.list-row .label {
-	flex: 1 1 auto;
-	margin-left: 15px;
-}
+import { ISqlOAuthService } from 'sql/common/sqlOAuthService';
 
-.list-row .label .contextual-display-name {
-	font-size: 15px;
-}
+export class SqlOAuthTestService implements ISqlOAuthService {
+	_serviceBrand: any;
 
-.list-row .label .content {
-	opacity: 0.7;
-}
+	performOAuthAuthorization(eventId: string, url: string, silent: boolean): void {
+	}
 
-.account-logo {
-	background: no-repeat center center;
+	registerOAuthCallback(handler: (event, args) => void): void {
+	}
 }
