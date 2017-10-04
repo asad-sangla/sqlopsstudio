@@ -11,7 +11,6 @@ import { FileNode } from 'sql/parts/fileBrowser/common/fileNode';
 import errors = require('vs/base/common/errors');
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import * as DOM from 'vs/base/browser/dom';
-import Severity from 'vs/base/common/severity';
 import nls = require('vs/nls');
 import { DefaultFilter, DefaultAccessibilityProvider, DefaultController, DefaultDragAndDrop } from 'vs/base/parts/tree/browser/treeDefaults';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
@@ -120,7 +119,6 @@ export class FileBrowserTreeView {
 		let selection = this._tree.getSelection();
 
 		if (selection && selection.length > 0 && (selection[0] instanceof FileNode)) {
-			let task = <FileNode>selection[0];
 			let isMouseOrigin = event.payload && (event.payload.origin === 'mouse');
 			let isSingleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 1;
 			let isDoubleClick = isMouseOrigin && event.payload.originalEvent && event.payload.originalEvent.detail === 2;
@@ -145,7 +143,7 @@ export class FileBrowserTreeView {
 	/**
 	 * set the layout of the view
 	 */
-	public layout(height: number): void {
+	public layout(height?: number): void {
 		this._tree.layout(height);
 	}
 

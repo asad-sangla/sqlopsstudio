@@ -159,7 +159,6 @@ export class BackupComponent {
 	private isEncryptChecked: boolean;
 	// Key: backup path, Value: device type
 	private backupPathTypePairs: { [path: string]: number };
-	private fileFilters: [{ label: string, filters: string[] }];
 
 	private compressionOptions = [BackupConstants.defaultCompression, BackupConstants.compressionOn, BackupConstants.compressionOff];
 	private encryptionAlgorithms = [BackupConstants.aes128, BackupConstants.aes192, BackupConstants.aes256, BackupConstants.tripleDES];
@@ -254,10 +253,6 @@ export class BackupComponent {
 		this.isEncryptChecked = false;
 		this.selectedInitOption = this.existingMediaOptions[0];
 		this.backupTypeOptions = [];
-		this.fileFilters = [
-			{ label: localize('backup.filterBackupFiles', "Backup Files"), filters: ['*.bak', '*.trn'] },
-			{ label: localize('backup.allFiles', "All Files"), filters: ['*'] }
-		];
 
 		if (isMetadataPopulated) {
 			this.scriptButton.enabled = true;
@@ -504,8 +499,9 @@ export class BackupComponent {
 	private onAddClick(): void {
 		this._bootstrapService.fileBrowserDialogService.showDialog(this._uri,
 			this.defaultNewBackupFolder,
-			this.fileFilters,
+			BackupConstants.fileFiltersSet,
 			FileValidationConstants.backup,
+			false,
 			(filepath => this.handlePathAdded(filepath)));
 	}
 

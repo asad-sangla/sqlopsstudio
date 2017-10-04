@@ -10,30 +10,32 @@ import 'vs/css!./media/restoreDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import dom = require('vs/base/browser/dom');
 import { Button } from 'vs/base/browser/ui/button/button';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
-import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { Widget } from 'vs/base/browser/ui/widget';
-import { localize } from 'vs/nls';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import { localize } from 'vs/nls';
 
-import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
-import { Modal } from 'sql/parts/common/modal/modal';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
-import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 'sql/parts/disasterRecovery/restore/restoreViewModel';
-import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
 import { InputBox, OnLoseFocusParams } from 'sql/base/browser/ui/inputBox/inputBox';
-import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler, attachSelectBoxStyler, attachEditableDropdownStyler } from 'sql/common/theme/styler';
-import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
-import { Table } from 'sql/base/browser/ui/table/table';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
 import { CheckboxSelectColumn } from 'sql/base/browser/ui/table/plugins/checkboxSelectColumn.plugin';
-import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { Table } from 'sql/base/browser/ui/table/table';
+import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
+import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import { Modal } from 'sql/parts/common/modal/modal';
+import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler, attachSelectBoxStyler, attachEditableDropdownStyler } from 'sql/common/theme/styler';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';
+import * as BackupConstants from 'sql/parts/disasterRecovery/backup/constants';
+import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 'sql/parts/disasterRecovery/restore/restoreViewModel';
+import * as FileValidationConstants from 'sql/parts/fileBrowser/common/fileValidationServiceConstants';
+import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { Dropdown } from 'sql/base/browser/ui/editableDropdown/dropdown';
 import * as data from 'data';
 
@@ -60,6 +62,7 @@ export class RestoreDialog extends Modal {
 
 	// General options
 	private _filePathInputBox: InputBox;
+	private _browseFileButton: Button;
 	private _destinationRestoreToInputBox: InputBox;
 	private _restoreFromSelectBox: SelectBox;
 	private _sourceDatabaseSelectBox: SelectBox;
@@ -164,7 +167,21 @@ export class RestoreDialog extends Modal {
 					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: errorMessage }) : null
 				}
 			};
-			this._filePathInputBox = this.createInputBoxHelper(filePathContainer, localize('backupFilePath', 'Backup file path'), validationOptions);
+
+			filePathContainer.div({ class: 'dialog-input-section' }, (inputContainer) => {
+				inputContainer.div({ class: 'dialog-label' }, (labelContainer) => {
+					labelContainer.innerHtml(localize('backupFilePath', "Backup file path"));
+				});
+
+				inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
+					this._filePathInputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService, validationOptions);
+				});
+
+				inputContainer.div({ class: 'file-browser' }, (inputCellContainer) => {
+					this._browseFileButton = new Button(inputCellContainer);
+					this._browseFileButton.label = '...';
+				});
+			});
 		});
 
 		let sourceDatabasesElement;
@@ -522,6 +539,7 @@ export class RestoreDialog extends Modal {
 		this._register(attachInputBoxStyler(this._destinationRestoreToInputBox, this._themeService));
 		this._register(attachSelectBoxStyler(this._restoreFromSelectBox, this._themeService));
 		this._register(attachSelectBoxStyler(this._sourceDatabaseSelectBox, this._themeService));
+		this._register(attachButtonStyler(this._browseFileButton, this._themeService));
 		this._register(attachButtonStyler(this._scriptButton, this._themeService));
 		this._register(attachButtonStyler(this._restoreButton, this._themeService));
 		this._register(attachButtonStyler(this._closeButton, this._themeService));
@@ -532,6 +550,15 @@ export class RestoreDialog extends Modal {
 			this.onFilePathChanged(params);
 		}));
 
+		this._register(this._browseFileButton.addListener('click', () => {
+			this._bootstrapService.fileBrowserDialogService.showDialog(this._ownerUri,
+			this.viewModel.defaultBackupFolder,
+			BackupConstants.fileFiltersSet,
+			FileValidationConstants.restore,
+			true,
+			filepath => this.handleOnBrowseFile(filepath))
+		}));
+
 		this._register(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
 			this.onSourceDatabaseChanged(selectedDatabase.selected);
 		}));
@@ -539,6 +566,14 @@ export class RestoreDialog extends Modal {
 		this._register(this._restoreFromSelectBox.onDidSelect(selectedRestoreFrom => {
 			this.onRestoreFromChanged(selectedRestoreFrom.selected);
 		}));
+	}
+
+	private handleOnBrowseFile(filepath: string) {
+		if (DialogHelper.isNullOrWhiteSpace(this._filePathInputBox.value)) {
+			this._filePathInputBox.value = filepath;
+		} else {
+			this._filePathInputBox.value = this._filePathInputBox.value + ', ' + filepath;
+		}
 	}
 
 	private onFilePathChanged(params: OnLoseFocusParams) {

@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { localize } from 'vs/nls';
 
 // Constants
 export const maxDevices: number = 64;
@@ -40,3 +41,8 @@ export const tripleDES = 'Triple DES';
 
 export const serverCertificate = "Server Certificate";
 export const asymmetricKey = "Asymmetric Key";
+
+export const fileFiltersSet: [ {label: string, filters: string[]} ] = [
+	{ label: localize('backup.filterBackupFiles', "Backup Files"), filters: ['*.bak', '*.trn', '*.log'] },
+	{ label: localize('backup.allFiles', "All Files"), filters: ['*'] }
+];

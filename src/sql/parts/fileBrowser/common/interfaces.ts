@@ -21,6 +21,7 @@ export interface IFileBrowserDialogController {
 		expandPath: string,
 		fileFilters: [{label: string, filters: string[]}],
 		fileValidationServiceType: string,
+		isWide: boolean,
 		handleOnOk: (path: string) => void): void;
 }
 

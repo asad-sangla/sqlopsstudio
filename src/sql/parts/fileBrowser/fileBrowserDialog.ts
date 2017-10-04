@@ -22,7 +22,6 @@ import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import Event, { Emitter } from 'vs/base/common/event';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { localize } from 'vs/nls';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -69,7 +68,7 @@ export class FileBrowserDialog extends Modal {
 	}
 
 	protected renderBody(container: HTMLElement) {
-		new Builder(container).div({ 'class': 'file-browser-dialog'}, (bodyBuilder) => {
+		new Builder(container).div({ 'class': 'file-browser-dialog' }, (bodyBuilder) => {
 			this._bodyBuilder = bodyBuilder;
 		});
 	}

@@ -37,6 +37,14 @@
 	flex: 1 1 auto;
 }
 
+.modal .restore-dialog .file-browser {
+	width: 30px;
+}
+
+.modal .restore-dialog .file-browser .monaco-button {
+	height: 100%;
+}
+
 .modal .restore-dialog .restore-plan-section {
 	width: 100%;
 }

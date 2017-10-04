@@ -83,11 +83,27 @@ export abstract class Modal extends Disposable implements IThemable {
 
 	private _modalOptions: IModalOptions;
 	private _backButton: Button;
+	private _workbenchContainer: HTMLElement;
+
 	/**
 	 * Get the back button, only available after render and if the hasBackButton option is true
 	 */
 	protected get backButton(): Button {
 		return this._backButton;
+	}
+
+	/**
+	 * Set the dialog to have wide layout dynamically.
+	 * Temporary solution to render file browser as wide or narrow layout.
+	 * This will be removed once backup dialog is changed to wide layout.
+	 * (hyoshi - 10/2/2017 tracked by https://github.com/Microsoft/carbon/issues/1836)
+	 */
+	public setWide(isWide: boolean): void {
+		if (this._builder.hasClass('wide') && isWide === false) {
+			this._builder.removeClass('wide');
+		} else if (!this._builder.hasClass('wide') && isWide === true) {
+			this._builder.addClass('wide');
+		}
 	}
 
 	/**
@@ -107,16 +123,14 @@ export abstract class Modal extends Disposable implements IThemable {
 		super();
 		this._modalOptions = options || Object.create(null);
 		mixin(this._modalOptions, defaultOptions, false);
+		this._workbenchContainer = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 	}
 
 	/**
 	 * Build and render the modal, will call {@link Modal#renderBody}
 	 */
 	public render() {
-		let documentContainer = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
-
 		let modalBodyClass = (this._modalOptions.isAngular === false ? 'modal-body' : 'modal-body-and-footer');
-
 		let parts: Array<HTMLElement> = [];
 		// This modal header section refers to the header of of the dialog
 		// will not be rendered if the title is passed in as undefined
@@ -191,7 +205,7 @@ export abstract class Modal extends Disposable implements IThemable {
 		}
 
 		// The builder builds the dialog. It append header, body and footer sections.
-		this._builder = $(documentContainer).div({ class: builderClass, 'role': 'dialog' }, (dialogContainer) => {
+		this._builder = $().div({ class: builderClass, 'role': 'dialog' }, (dialogContainer) => {
 			this._modalDialog = dialogContainer.div({ class: 'modal-dialog ', role: 'document' }, (modalDialog) => {
 				modalDialog.div({ class: 'modal-content' }, (modelContent) => {
 					parts.forEach((part) => {
@@ -200,7 +214,6 @@ export abstract class Modal extends Disposable implements IThemable {
 				});
 			});
 		});
-		this._builder.hide();
 
 		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
 	}
@@ -229,8 +242,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Shows the modal and attaches key listeners
 	 */
 	protected show() {
-		this._builder.show();
-
+		this._builder.appendTo(this._workbenchContainer);
 		this._keydownListener = DOM.addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			if (DOM.isAncestor(<HTMLElement>e.target, this._builder.getHTMLElement())) {
 				let event = new StandardKeyboardEvent(e);
@@ -246,7 +258,6 @@ export abstract class Modal extends Disposable implements IThemable {
 		});
 
 		this.layout(DOM.getTotalHeight(this._builder.getHTMLElement()));
-
 		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ModalDialogOpened, { name: this._name });
 	}
 
@@ -259,7 +270,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Hides the modal and removes key listeners
 	 */
 	protected hide() {
-		this._builder.hide();
+		this._builder.offDOM();
 		this._keydownListener.dispose();
 		this._resizeListener.dispose();
 		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ModalDialogClosed, { name: this._name });

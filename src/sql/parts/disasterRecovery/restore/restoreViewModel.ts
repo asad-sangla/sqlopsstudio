@@ -45,6 +45,7 @@ export class RestoreViewModel {
 	public databaseList: string[];
 	public readHeaderFromMedia: boolean;
 	public selectedBackupSets: string[];
+	public defaultBackupFolder: string;
 
 	private _onSetLastBackupTaken = new Emitter<string>();
 	public onSetLastBackupTaken: Event<string> = this._onSetLastBackupTaken.event;
@@ -204,16 +205,20 @@ export class RestoreViewModel {
  	* Update options with restore config info. The option values will be both default and current values.
  	*/
 	public updateOptionWithConfigInfo(configInfo: { [key: string]: any }): void {
-		if (configInfo && configInfo['sourceDatabaseNamesWithBackupSets']) {
-			let databaseList = configInfo['sourceDatabaseNamesWithBackupSets'];
-			if (types.isStringArray(databaseList)) {
-				this.databaseList = databaseList;
-				this.databaseList.unshift('');
-				this.readHeaderFromMedia = false;
-				this.updateSourceDatabaseNames(this.databaseList, this.sourceDatabaseName);
-			}
-		}
 		if (configInfo) {
+			if (configInfo['sourceDatabaseNamesWithBackupSets']) {
+				let databaseList = configInfo['sourceDatabaseNamesWithBackupSets'];
+				if (types.isStringArray(databaseList)) {
+					this.databaseList = databaseList;
+					this.databaseList.unshift('');
+					this.readHeaderFromMedia = false;
+					this.updateSourceDatabaseNames(this.databaseList, this.sourceDatabaseName);
+				}
+			}
+			if (configInfo['defaultBackupFolder']) {
+				this.defaultBackupFolder = configInfo['defaultBackupFolder'];
+			}
+
 			for (var key in configInfo) {
 				let optionElement = this._optionsMap[key];
 				if (optionElement) {

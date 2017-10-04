@@ -25,6 +25,7 @@ export class FileBrowserDialogController implements IFileBrowserDialogController
 		expandPath: string,
 		fileFilters: [{label: string, filters: string[]}],
 		fileValidationServiceType: string,
+		isWide: boolean,
 		handleOnOk: (path: string) => void
 	) {
 		if (!this._fileBrowserDialog) {
@@ -33,6 +34,7 @@ export class FileBrowserDialogController implements IFileBrowserDialogController
 			this._fileBrowserDialog.render();
 		}
 
+		this._fileBrowserDialog.setWide(isWide);
 		this._fileBrowserDialog.open(ownerUri, expandPath, fileFilters,	fileValidationServiceType);
 	}
 }
