@@ -83,7 +83,6 @@ export abstract class Modal extends Disposable implements IThemable {
 
 	private _modalOptions: IModalOptions;
 	private _backButton: Button;
-	private _workbenchContainer: HTMLElement;
 
 	/**
 	 * Get the back button, only available after render and if the hasBackButton option is true
@@ -123,7 +122,6 @@ export abstract class Modal extends Disposable implements IThemable {
 		super();
 		this._modalOptions = options || Object.create(null);
 		mixin(this._modalOptions, defaultOptions, false);
-		this._workbenchContainer = withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement;
 	}
 
 	/**
@@ -242,7 +240,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Shows the modal and attaches key listeners
 	 */
 	protected show() {
-		this._builder.appendTo(this._workbenchContainer);
+		this._builder.appendTo(withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement);
 		this._keydownListener = DOM.addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			if (DOM.isAncestor(<HTMLElement>e.target, this._builder.getHTMLElement())) {
 				let event = new StandardKeyboardEvent(e);
