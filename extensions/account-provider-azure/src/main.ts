@@ -6,7 +6,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {AzureAccountProviderService} from './azureAccountProviderService';
+import {AzureAccountProviderService} from './account-provider/azureAccountProviderService';
 
 export function activate(context: vscode.ExtensionContext): void {
 	const accountProviderService = new AzureAccountProviderService(context);
