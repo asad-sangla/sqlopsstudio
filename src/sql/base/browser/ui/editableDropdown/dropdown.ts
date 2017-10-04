@@ -150,7 +150,7 @@ export class Dropdown extends Disposable {
 			placeholder: this._options.placeholder
 		});
 
-		$(this._input.inputElement).on(DOM.EventType.FOCUS, () => {
+		this._register($(this._input.inputElement).on(DOM.EventType.FOCUS, () => {
 			this._onFocus.fire();
 			this._contextView.show({
 				getAnchor: () => this.$input.getHTMLElement(),
@@ -163,19 +163,24 @@ export class Dropdown extends Disposable {
 					if (!DOM.isAncestor(activeElement, this.$el.getHTMLElement())) {
 						this.$list.offDOM();
 						this._onBlur.fire();
+						this._contextView.hide();
 					}
 				}
 			});
-		});
+		}));
 
-		$(this._input.inputElement).on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+		this._register($(this._input.inputElement).on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter)) {
 				if (this._input.validate()) {
 					this._onValueChange.fire(this._input.value);
 				}
+			} else if (event.keyCode === KeyCode.Escape) {
+				this.$list.offDOM();
+				this._onBlur.fire();
+				this._contextView.hide();
 			}
-		});
+		}));
 
 		this._list = new List(this.$list.getHTMLElement(), new Delegate(), [new Renderer()]);
 		if (this._values) {
