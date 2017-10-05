@@ -4,8 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/serverGroupDialog';
 import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
@@ -21,7 +19,7 @@ import Event, { Emitter } from 'vs/base/common/event';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { localize } from 'vs/nls';
 
-import { Modal } from 'sql/parts/common/modal/modal';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { ServerGroupViewModel } from 'sql/parts/registeredServer/serverGroupDialog/serverGroupViewModel';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';

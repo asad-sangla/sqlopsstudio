@@ -5,13 +5,27 @@
 
 .monaco-shell .modal {
 	background-color: rgba(204, 204, 204, 0.6);
+	right: 0;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	position: absolute;
+	z-index: 500;
+}
+
+.modal .modal-header {
+	padding: 15px;
+}
+
+.modal .modal-footer {
+	padding: 15px;
 }
 
 .monaco-shell .modal.flyout-dialog .modal-dialog {
 	margin: auto auto auto auto;
 	height: 100%;
 	width: 500px;
-	right: -18px;
+	right: 0;
 	position: absolute;
 	overflow-y: hidden;
 }
@@ -21,9 +35,7 @@
 }
 
 .monaco-shell .modal.flyout-dialog .modal-content {
-	background-color: #F3F3F3;
 	height: 100%;
-	width: calc(100% - 20px);
 	font-size: 11px;
 }
 

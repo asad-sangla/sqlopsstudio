@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import 'vs/css!sql/media/icons/common-icons';
-import 'vs/css!sql/parts/common/modal/media/modal';
+import 'vs/css!./media/modal';
 import { IThemable } from 'vs/platform/theme/common/styler';
 import { Color } from 'vs/base/common/color';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
@@ -212,8 +212,6 @@ export abstract class Modal extends Disposable implements IThemable {
 				});
 			});
 		});
-
-		jQuery(this._builder.getHTMLElement()).modal({ backdrop: false, keyboard: false });
 	}
 
 	/**

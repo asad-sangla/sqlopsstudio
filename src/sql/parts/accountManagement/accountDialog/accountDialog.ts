@@ -5,8 +5,6 @@
 
 'use strict';
 
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/accountDialog';
 import 'vs/css!sql/parts/accountManagement/common/media/accountActions';
 import * as DOM from 'vs/base/browser/dom';
@@ -27,7 +25,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 import * as data from 'data';
-import { Modal } from 'sql/parts/common/modal/modal';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { AccountViewModel } from 'sql/parts/accountManagement/accountDialog/accountViewModel';
 import { AddAccountAction } from 'sql/parts/accountManagement/common/accountActions';

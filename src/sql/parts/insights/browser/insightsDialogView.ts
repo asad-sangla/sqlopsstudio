@@ -5,7 +5,7 @@
 import 'vs/css!sql/parts/insights/browser/media/insightsDialog';
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { Modal } from 'sql/parts/common/modal/modal';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { IInsightsConfigDetails } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { attachModalDialogStyler, attachTableStyler } from 'sql/common/theme/styler';
 import { ITaskRegistry, Extensions as TaskExtensions } from 'sql/platform/tasks/taskRegistry';

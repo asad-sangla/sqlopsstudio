@@ -14,7 +14,7 @@ import { Taskbar } from 'sql/base/browser/ui/taskbar/taskbar';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { ComponentHostDirective } from 'sql/parts/dashboard/common/componentHost.directive';
 import { IGridDataSet } from 'sql/parts/grid/common/interfaces';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { IInsightData, IInsightsView, IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';

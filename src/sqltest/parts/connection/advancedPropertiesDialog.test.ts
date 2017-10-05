@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import { OptionsDialog } from 'sql/parts/common/modal/optionsDialog';
+import { OptionsDialog } from 'sql/base/browser/ui/modal/optionsDialog';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { Builder, $ } from 'vs/base/browser/builder';
 import data = require('data');

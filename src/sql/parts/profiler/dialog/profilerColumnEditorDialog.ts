@@ -5,7 +5,7 @@
 'use strict';
 import 'vs/css!./media/profilerDialog';
 
-import { Modal } from 'sql/parts/common/modal/modal';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { ProfilerInput } from 'sql/parts/profiler/editor/profilerInput';
 

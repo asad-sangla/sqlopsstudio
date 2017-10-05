@@ -2,16 +2,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/connectionDialog';
 
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { Modal } from 'sql/parts/common/modal/modal';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { IConnectionManagementService, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';

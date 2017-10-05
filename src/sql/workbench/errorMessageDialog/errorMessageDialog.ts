@@ -4,12 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!./media/errorMessageDialog';
-import { Modal } from 'sql/parts/common/modal/modal';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { Builder } from 'vs/base/browser/builder';
 import Severity from 'vs/base/common/severity';
 import { clipboard } from 'electron';

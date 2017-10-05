@@ -2,9 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
-import { Modal } from 'sql/parts/common/modal/modal';
+
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { BackupModule } from 'sql/parts/disasterRecovery/backup/backup.module';
 import { BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.component';

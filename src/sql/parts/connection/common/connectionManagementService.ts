@@ -174,7 +174,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// temporarily close splash screen when a connection provider has been registered
 		// @todo remove this code once a proper initialization event is available (karlb 4/1/2017)
 		++this._providerCount;
-		if (this._providerCount > 0 && typeof splash !== 'undefined') {
+		if (this._providerCount === 1 && typeof splash !== 'undefined') {
 			hideSplash();
 
 			// show the Registered Server viewlet

@@ -5,19 +5,17 @@
 
 'use strict';
 
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/optionsDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { FixedCollapsibleView } from 'sql/platform/views/fixedCollapsibleView';
 import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from './dialogHelper';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
-import { IModalOptions, Modal } from 'sql/parts/common/modal/modal';
-import * as OptionsDialogHelper from 'sql/parts/common/modal/optionsDialogHelper';
+import { IModalOptions, Modal } from './modal';
+import * as OptionsDialogHelper from './optionsDialogHelper';
 import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import * as styler from 'vs/platform/theme/common/styler';

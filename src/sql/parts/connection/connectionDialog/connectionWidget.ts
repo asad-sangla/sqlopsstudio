@@ -5,8 +5,6 @@
 
 'use strict';
 
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/sqlConnection';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
@@ -14,7 +12,7 @@ import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';

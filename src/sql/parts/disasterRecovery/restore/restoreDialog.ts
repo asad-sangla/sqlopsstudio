@@ -4,8 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!./media/restoreDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import dom = require('vs/base/browser/dom');
@@ -27,8 +25,8 @@ import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectio
 import { CheckboxSelectColumn } from 'sql/base/browser/ui/table/plugins/checkboxSelectColumn.plugin';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
-import { Modal } from 'sql/parts/common/modal/modal';
+import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { attachModalDialogStyler, attachTableStyler, attachInputBoxStyler, attachSelectBoxStyler, attachEditableDropdownStyler } from 'sql/common/theme/styler';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import { ServiceOptionType } from 'sql/parts/connection/common/connectionManagement';

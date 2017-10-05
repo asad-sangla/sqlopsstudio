@@ -5,14 +5,12 @@
 
 'use strict';
 
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
 import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!./media/fileBrowserDialog';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
-import { Modal } from 'sql/parts/common/modal/modal';
+import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import { FileNode } from 'sql/parts/fileBrowser/common/fileNode';
@@ -53,7 +51,7 @@ export class FileBrowserDialog extends Modal {
 		@IContextViewService private _contextViewService: IContextViewService,
 		@ITelemetryService telemetryService: ITelemetryService
 	) {
-		super(title, TelemetryKeys.Backup, partService, telemetryService, {isFlyout: true, hasTitleIcon: false, hasBackButton: true});
+		super(title, TelemetryKeys.Backup, partService, telemetryService, { isFlyout: true, hasTitleIcon: false, hasBackButton: true });
 
 		this._fileBrowserTreeView = this._instantiationService.createInstance(FileBrowserTreeView);
 		this._fileBrowserTreeView.setOnClickedCallback((arg) => this.onClicked(arg));
@@ -108,7 +106,7 @@ export class FileBrowserDialog extends Modal {
 
 	public open(ownerUri: string,
 		expandPath: string,
-		fileFilters: [ {label: string, filters: string[]} ],
+		fileFilters: [{ label: string, filters: string[] }],
 		fileValidationServiceType: string,
 	) {
 		this._viewModel.initialize(ownerUri, expandPath, fileFilters, fileValidationServiceType);
@@ -182,7 +180,7 @@ export class FileBrowserDialog extends Modal {
 			if (DialogHelper.isNullOrWhiteSpace(errorMessage)) {
 				errorMessage = 'The provided path is invalid.';
 			}
-			this._filePathInputBox.showMessage({type: MessageType.ERROR, content: errorMessage});
+			this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
 		}
 	}
 

@@ -54,9 +54,6 @@ export class CreateDatabaseComponent implements ITaskDialogComponent {
         this._adminService = this._bootstrapService.adminService;
 	}
 
-	ngOnInit() {
-    }
-
     private getDatabaseInfo(form: NgForm): data.DatabaseInfo {
         return <data.DatabaseInfo>{
             options: {

@@ -151,7 +151,6 @@ require('slickgrid/slick.grid');
 require('slickgrid/slick.editors');;
 require('reflect-metadata');
 require('zone.js');
-require('bootstrap');
 
 const _ = require('underscore')._;
 

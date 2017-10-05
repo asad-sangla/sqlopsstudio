@@ -4,8 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-import 'vs/css!sql/media/bootstrap';
-import 'vs/css!sql/media/bootstrap-theme';
+
 import 'vs/css!./media/firewallRuleDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import * as DOM from 'vs/base/browser/dom';
@@ -22,7 +21,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import * as data from 'data';
 
-import { Modal } from 'sql/parts/common/modal/modal';
+import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { FirewallRuleViewModel } from 'sql/parts/accountManagement/firewallRuleDialog/firewallRuleViewModel';
 import { AccountPicker } from 'sql/parts/accountManagement/accountPicker/accountPicker';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';

@@ -5,7 +5,7 @@
 
 'use strict';
 import { IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import * as TypeChecker from 'vs/base/common/types';
 import { localize } from 'vs/nls';
 

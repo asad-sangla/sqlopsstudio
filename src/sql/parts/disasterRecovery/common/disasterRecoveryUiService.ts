@@ -7,7 +7,7 @@
 
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { OptionsDialog } from 'sql/parts/common/modal/optionsDialog';
+import { OptionsDialog } from 'sql/base/browser/ui/modal/optionsDialog';
 import { BackupDialog } from 'sql/parts/disasterRecovery/backup/backupDialog';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';

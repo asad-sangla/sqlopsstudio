@@ -7,7 +7,7 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IDisasterRecoveryService, IRestoreDialogController, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
-import { OptionsDialog } from 'sql/parts/common/modal/optionsDialog';
+import { OptionsDialog } from 'sql/base/browser/ui/modal/optionsDialog';
 import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
 import { MssqlRestoreInfo } from 'sql/parts/disasterRecovery/restore/mssqlRestoreInfo';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';

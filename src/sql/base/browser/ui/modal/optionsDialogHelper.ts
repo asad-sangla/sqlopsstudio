@@ -5,7 +5,7 @@
 
 'use strict';
 
-import * as DialogHelper from 'sql/parts/common/modal/dialogHelper';
+import * as DialogHelper from './dialogHelper';
 import { Builder } from 'vs/base/browser/builder';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
