@@ -104,9 +104,6 @@ export class RestoreDialog extends Modal {
 	private _onCancel = new Emitter<void>();
 	public onCancel: Event<void> = this._onCancel.event;
 
-	private _onDatabaseChanged = new Emitter<string>();
-	public onDatabaseChanged: Event<string> = this._onDatabaseChanged.event;
-
 	private _onDatabaseListFocused = new Emitter<void>();
 	public onDatabaseListFocused: Event<void> = this._onDatabaseListFocused.event;
 
@@ -210,14 +207,18 @@ export class RestoreDialog extends Modal {
 
 				inputContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
 					// Get the bootstrap params and perform the bootstrap
+					inputCellContainer.style('width', '100%');
 					this._databaseDropdown = new Dropdown(inputCellContainer.getHTMLElement(), this._contextViewService, this._themeService,
 						{
-							strictSelection: false,
-							width: 130
+							strictSelection: false
 						}
 					);
 					this._databaseDropdown.onValueChange(s => {
 						this.databaseSelected(s);
+					});
+
+					this._databaseDropdown.onBlur(() => {
+						this.databaseSelected(this._databaseDropdown.value);
 					});
 
 					this._databaseDropdown.onFocus(() => {
@@ -550,11 +551,11 @@ export class RestoreDialog extends Modal {
 
 		this._register(this._browseFileButton.addListener('click', () => {
 			this._bootstrapService.fileBrowserDialogService.showDialog(this._ownerUri,
-			this.viewModel.defaultBackupFolder,
-			BackupConstants.fileFiltersSet,
-			FileValidationConstants.restore,
-			true,
-			filepath => this.handleOnBrowseFile(filepath))
+				this.viewModel.defaultBackupFolder,
+				BackupConstants.fileFiltersSet,
+				FileValidationConstants.restore,
+				true,
+				filepath => this.handleOnBrowseFile(filepath));
 		}));
 
 		this._register(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
@@ -701,7 +702,7 @@ export class RestoreDialog extends Modal {
 	}
 
 	private updateTargetDatabaseName(value: string) {
-		this._onDatabaseChanged.fire(value);
+		this._databaseDropdown.value = value;
 	}
 
 	private updateRestoreOption(optionParam: RestoreOptionParam) {

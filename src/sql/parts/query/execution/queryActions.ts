@@ -402,8 +402,7 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this.$databaseListDropdown = $('.databaseListDropdown');
 		this._dropdown = new Dropdown(this.$databaseListDropdown.getHTMLElement(), contextViewProvider, themeService, {
 			strictSelection: true,
-			placeholder: nls.localize("selectDatabase", "Select Database"),
-			width: 155
+			placeholder: nls.localize("selectDatabase", "Select Database")
 		});
 		this._dropdown.onValueChange(s => this.databaseSelected(s));
 	}

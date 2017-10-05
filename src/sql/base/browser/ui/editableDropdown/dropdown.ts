@@ -25,10 +25,6 @@ export interface IDropdownOptions extends IDropdownStyles {
 	 */
 	strictSelection?: boolean;
 	/**
-	 * Width of the dropdown, defaults to 200
-	 */
-	width?: number;
-	/**
 	 * Maximum height of the dropdown, defaults to 500
 	 */
 	maxHeight?: number;
@@ -59,7 +55,6 @@ const errorMessage = nls.localize('editableDropdown.errorValidate', "Must be an 
 
 const defaults: IDropdownOptions = {
 	strictSelection: true,
-	width: 200,
 	maxHeight: 300,
 	errorMessage: errorMessage,
 	contextBorder: Color.fromHex('#696969')
@@ -137,9 +132,9 @@ export class Dropdown extends Disposable {
 		this._contextView = new ContextView(document.body);
 		this._options = mixin(opt, defaults, false) as IDropdownOptions;
 		this._values = this._options.values;
-		this.$el = $('.dropdown').appendTo(container);
+		this.$el = $('.dropdown').style('width', '100%').appendTo(container);
 
-		this.$input = $('.dropdown-input').appendTo(this.$el);
+		this.$input = $('.dropdown-input').style('width', '100%').appendTo(this.$el);
 		this.$list = $('.dropdown-list');
 
 		this._input = new InputBox(this.$input.getHTMLElement(), contextViewService, {
@@ -169,16 +164,33 @@ export class Dropdown extends Disposable {
 			});
 		}));
 
+		this._register($(this._input.inputElement).on(DOM.EventType.BLUR, () => {
+			if (!this._list.isDOMFocused) {
+				this._onBlur.fire();
+			}
+		}));
+
 		this._register($(this._input.inputElement).on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter)) {
 				if (this._input.validate()) {
 					this._onValueChange.fire(this._input.value);
 				}
+				e.stopPropagation();
 			} else if (event.keyCode === KeyCode.Escape) {
+				if (this.$list.getHTMLElement().parentElement) {
+					this._input.validate();
+					this.$list.offDOM();
+					this._onBlur.fire();
+					this._contextView.hide();
+					e.stopPropagation();
+				}
+			} else if (event.keyCode === KeyCode.Tab) {
+				this._input.validate();
 				this.$list.offDOM();
 				this._onBlur.fire();
 				this._contextView.hide();
+				e.stopPropagation();
 			}
 		}));
 
@@ -186,7 +198,7 @@ export class Dropdown extends Disposable {
 		if (this._values) {
 			this._list.splice(0, this._list.length, this._values.map(i => { return { label: i }; }));
 			let height = this._list.length * 22 > this._options.maxHeight ? this._options.maxHeight : this._list.length * 22;
-			this.$list.style('height', height + 'px').style('width', this._options.width + 'px');
+			this.$list.style('height', height + 'px').style('width', DOM.getContentWidth(this.$input.getHTMLElement()) + 'px');
 		}
 
 		this._list.onSelectionChange(e => {
@@ -201,7 +213,7 @@ export class Dropdown extends Disposable {
 			if (this._values) {
 				this._list.splice(0, this._list.length, this._values.filter(i => i.includes(e)).map(i => { return { label: i }; }));
 				let height = this._list.length * 22 > this._options.maxHeight ? this._options.maxHeight : this._list.length * 22;
-				this.$list.style('height', height + 'px').style('width', this._options.width + 'px');
+				this.$list.style('height', height + 'px').style('width', DOM.getContentWidth(this.$input.getHTMLElement()) + 'px');
 				this._list.layout(parseInt(this.$list.style('height')));
 			}
 		});
@@ -218,7 +230,7 @@ export class Dropdown extends Disposable {
 		this._values = vals;
 		this._list.splice(0, this._list.length, this._values.map(i => { return { label: i }; }));
 		let height = this._list.length * 22 > this._options.maxHeight ? this._options.maxHeight : this._list.length * 22;
-		this.$list.style('height', height + 'px').style('width', this._options.width + 'px');
+		this.$list.style('height', height + 'px').style('width', DOM.getContentWidth(this.$input.getHTMLElement()) + 'px');
 		this._list.layout(parseInt(this.$list.style('height')));
 		this.input.validate();
 	}
