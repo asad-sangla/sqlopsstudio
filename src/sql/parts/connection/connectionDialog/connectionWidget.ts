@@ -311,6 +311,9 @@ export class ConnectionWidget {
 			if (connectionInfo.authenticationType !== null && connectionInfo.authenticationType !== undefined) {
 				var authTypeDisplayName = this.getAuthTypeDisplayName(connectionInfo.authenticationType);
 				this._authTypeSelectBox.selectWithOptionName(authTypeDisplayName);
+			}
+
+			if (this._authTypeSelectBox) {
 				this.onAuthTypeSelected(this._authTypeSelectBox.value);
 			}
 		}
