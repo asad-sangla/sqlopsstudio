@@ -23,6 +23,7 @@ import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { ISlickRange } from 'angular2-slickgrid';
 import * as Utils from 'sql/parts/connection/common/utils';
+import { error as consoleError } from 'sql/base/common/log';
 
 import { IMessageService } from 'vs/platform/message/common/message';
 import Severity from 'vs/base/common/severity';
@@ -405,7 +406,7 @@ export default class QueryRunner {
 			self._queryManagementService.disposeQuery(self.uri).then(result => {
 				resolve();
 			}, error => {
-				console.error('Failed disposing query: ' + error);
+				consoleError('Failed disposing query: ' + error);
 				reject(error);
 			});
 		});

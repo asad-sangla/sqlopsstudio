@@ -6,6 +6,7 @@
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { Subscription } from 'rxjs/Subscription';
 import { Subject } from 'rxjs/Subject';
+import { warn } from 'sql/base/common/log';
 
 const ANGULAREVENTING_SERVICE_ID = 'angularEventingService';
 export const IAngularEventingService = createDecorator<IAngularEventingService>(ANGULAREVENTING_SERVICE_ID);
@@ -46,7 +47,7 @@ export class AngularEventingService implements IAngularEventingService {
 
 	public sendAngularEvent(uri: string, event: string): void {
 		if (!this._angularMap.has(uri)) {
-			console.error('Got request to send an event to a dashboard that has not started listening');
+			warn('Got request to send an event to a dashboard that has not started listening');
 		} else {
 			this._angularMap.get(uri).next(event);
 		}

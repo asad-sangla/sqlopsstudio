@@ -12,6 +12,7 @@ import {
 import { ComponentHostDirective } from './componentHost.directive';
 import { WidgetConfig, WIDGET_CONFIG, IDashboardWidget } from './dashboardWidget';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
+import { error } from 'sql/base/common/log';
 import * as ACTIONS from './actions';
 
 /* Widgets */
@@ -75,7 +76,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 	private loadWidget(): void {
 		if (Object.keys(this._config.widget).length !== 1) {
-			console.error('Exactly 1 widget must be defined per space');
+			error('Exactly 1 widget must be defined per space');
 			return;
 		}
 		let key = Object.keys(this._config.widget)[0];
@@ -85,7 +86,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 			let widgetRegistry = <IInsightRegistry>Registry.as(Extensions.InsightContribution);
 			let config = widgetRegistry.getRegisteredExtensionInsights(key);
 			if (config === undefined) {
-				console.error('Could not find selector', key);
+				error('Could not find selector', key);
 				return;
 			}
 			selector = componentMap['insights-widget'];
@@ -111,7 +112,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 				this._changeref.detectChanges();
 			}
 		} catch (e) {
-			console.error('Error rendering widget', key, e);
+			error('Error rendering widget', key, e);
 			return;
 		}
 		let el = <HTMLElement>componentRef.location.nativeElement;

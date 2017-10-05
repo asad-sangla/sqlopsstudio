@@ -18,6 +18,7 @@ import * as pfs from 'vs/base/node/pfs';
 import * as nls from 'vs/nls';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { error } from 'sql/base/common/log';
 
 export class InsightsDialogController {
 	private _queryRunner: QueryRunner;
@@ -64,7 +65,7 @@ export class InsightsDialogController {
 					);
 				});
 			} else {
-				console.error('Error reading details Query: ', input);
+				error('Error reading details Query: ', input);
 				this._messageService.show(Severity.Error, nls.localize("insightsConfigError", "There was an error parsing the insight config; could not find query array/string or queryfile"));
 				return Promise.resolve();
 			}

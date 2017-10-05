@@ -16,6 +16,7 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { BaseActionContext } from 'sql/workbench/common/actions';
 import { GetExplorerActions } from './explorerActions';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
+import { warn } from 'sql/base/common/log';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
@@ -252,7 +253,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 					}
 				});
 			} else {
-				console.log('Unknown dashboard context: ', self._config.context);
+				warn('Unknown dashboard context: ', self._config.context);
 			}
 		}
 		self._changeRef.detectChanges();

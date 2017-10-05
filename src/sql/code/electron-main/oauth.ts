@@ -9,13 +9,14 @@ import * as electron from 'electron';
 import * as urlLib from 'url';
 import { IWindowsMainService } from 'vs/platform/windows/electron-main/windows';
 import { dispose, IDisposable } from 'vs/base/common/lifecycle';
+import { warn } from 'sql/base/common/log';
 
 export class ProxyOAuthHandler {
 	_serviceBrand: any;
 
 	private disposables: IDisposable[] = [];
 
-	constructor(@IWindowsMainService private windowsService: IWindowsMainService) {
+	constructor( @IWindowsMainService private windowsService: IWindowsMainService) {
 		let self = this;
 		electron.ipcMain.on('oauth', (event, args) => {
 			self.onOAuthRequest(event, args);
@@ -34,7 +35,7 @@ export class ProxyOAuthHandler {
 	private onOAuthRequest(event, args) {
 		// Verify the arguments are correct
 		if (!args || args['eventId'] === undefined) {
-			console.warn('Received OAuth request with invalid arguments');
+			warn('Received OAuth request with invalid arguments');
 			return;
 		}
 		let eventId: string = args['eventId'];
@@ -68,7 +69,7 @@ export class ProxyOAuthHandler {
 			if (error !== undefined) {
 				// We received an error
 				ProxyOAuthHandler.sendOAuthResponse(event, eventId, error, null);
-			} else if(code) {
+			} else if (code) {
 				// We received a successful authorization code
 				ProxyOAuthHandler.sendOAuthResponse(event, eventId, null, code);
 			} else {
@@ -90,7 +91,7 @@ export class ProxyOAuthHandler {
 		// will-navigate, did-get-redirect-request -> OAuth redirected back to the redirect URL
 		authWindow.on('closed', () => { ProxyOAuthHandler.sendOAuthResponse(event, eventId, 'User cancelled authentication', null); });
 		authWindow.webContents.on('will-navigate', (event, url) => { onCallback(event, url); });
-		authWindow.webContents.on('did-get-redirect-request', (event, oldUrl, newUrl) => { onCallback(event, newUrl);	});
+		authWindow.webContents.on('did-get-redirect-request', (event, oldUrl, newUrl) => { onCallback(event, newUrl); });
 
 		// Load the URL
 		authWindow.loadURL(url);

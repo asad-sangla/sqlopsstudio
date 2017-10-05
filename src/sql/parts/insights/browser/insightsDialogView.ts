@@ -32,6 +32,7 @@ import { IAction } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as types from 'vs/base/common/types';
+import { error } from 'sql/base/common/log';
 
 /* Regex that matches the form `${value}` */
 export const insertValueRegex: RegExp = /\${(.*?)\}/;
@@ -231,7 +232,7 @@ export class InsightsDialogView extends Modal {
 		if (match && match.length > 0) {
 			let index = this._model.columns.indexOf(match[1]);
 			if (index === -1) {
-				console.error('Could not find column', match[1]);
+				error('Could not find column', match[1]);
 			} else {
 				database = database.replace(match[0], element.data[index]);
 			}
@@ -241,7 +242,7 @@ export class InsightsDialogView extends Modal {
 		if (match && match.length > 0) {
 			let index = this._model.columns.indexOf(match[1]);
 			if (index === -1) {
-				console.error('Could not find column', match[1]);
+				error('Could not find column', match[1]);
 			} else {
 				server = server.replace(match[0], element.data[index]);
 			}
@@ -251,7 +252,7 @@ export class InsightsDialogView extends Modal {
 		if (match && match.length > 0) {
 			let index = this._model.columns.indexOf(match[1]);
 			if (index === -1) {
-				console.error('Could not find column', match[1]);
+				error('Could not find column', match[1]);
 			} else {
 				user = user.replace(match[0], element.data[index]);
 			}

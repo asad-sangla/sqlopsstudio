@@ -27,6 +27,7 @@ import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import * as strings from 'vs/base/common/strings';
 import { clone } from 'vs/base/common/objects';
+import { error } from 'sql/base/common/log';
 
 import * as rangy from 'sql/base/node/rangy';
 
@@ -182,7 +183,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 					self.handleResultSet(self, event);
 					break;
 				default:
-					console.error('Unexpected query event type "' + event.type + '" sent');
+					error('Unexpected query event type "' + event.type + '" sent');
 					break;
 			}
 			self._cd.detectChanges();

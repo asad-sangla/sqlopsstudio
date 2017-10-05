@@ -19,6 +19,7 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/
 import { EditDataComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
 import { EditDataGridActionProvider } from 'sql/parts/grid/views/editData/editDataGridActions';
+import { error } from 'sql/base/common/log';
 
 import { clone } from 'vs/base/common/objects';
 
@@ -99,7 +100,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 					self.handleEditSessionReady(self, event);
 					break;
 				default:
-					console.error('Unexpected query event type "' + event.type + '" sent');
+					error('Unexpected query event type "' + event.type + '" sent');
 					break;
 			}
 			self._cd.detectChanges();

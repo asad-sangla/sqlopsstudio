@@ -27,6 +27,7 @@ import { ResultsVisibleContext, ResultsGridFocussedContext, ResultsMessagesFocus
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import * as rangy from 'sql/base/node/rangy';
+import { error } from 'sql/base/common/log';
 
 import { IAction } from 'vs/base/common/actions';
 import { ResolvedKeybinding } from 'vs/base/common/keyCodes';
@@ -164,7 +165,7 @@ export abstract class GridParentComponent {
 					self.sendSaveRequest(SaveFormat.EXCEL);
 					break;
 				default:
-					console.error('Unexpected grid content event type "' + type + '" sent');
+					error('Unexpected grid content event type "' + type + '" sent');
 					break;
 			}
 		});

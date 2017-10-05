@@ -9,6 +9,7 @@ import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from '
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
+import { error } from 'sql/base/common/log';
 
 import { properties } from './propertiesJson';
 
@@ -260,6 +261,6 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 
 	// overwrittable console.error for testing
 	private consoleError(message?: any, ...optionalParams: any[]): void {
-		console.error(message, optionalParams);
+		error(message, optionalParams);
 	}
 }

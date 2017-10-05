@@ -19,6 +19,7 @@ import { AccountDialogController } from 'sql/parts/accountManagement/accountDial
 import { AccountListStatusbarItem } from 'sql/parts/accountManagement/accountListStatusbar/accountListStatusbarItem';
 import { AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { warn } from 'sql/base/common/log';
 
 export class AccountManagementService implements IAccountManagementService {
 	// CONSTANTS ///////////////////////////////////////////////////////////
@@ -309,7 +310,7 @@ export class AccountManagementService implements IAccountManagementService {
 	private onOAuthResponse(args: object): void {
 		// Verify the arguments are correct
 		if (!args || args['eventId'] === undefined) {
-			console.warn('Received invalid OAuth event response args');
+			warn('Received invalid OAuth event response args');
 			return;
 		}
 
@@ -317,7 +318,7 @@ export class AccountManagementService implements IAccountManagementService {
 		let eventId: string = args['eventId'];
 		let eventCallbacks = this._oAuthCallbacks[eventId];
 		if (!eventCallbacks) {
-			console.warn('Received OAuth event response for non-existent eventId');
+			warn('Received OAuth event response for non-existent eventId');
 			return;
 		}
 
