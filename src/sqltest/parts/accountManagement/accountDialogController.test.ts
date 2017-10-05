@@ -33,7 +33,7 @@ suite('Account Management Dialog Controller Tests', () => {
 		instantiationService = TypeMoq.Mock.ofType(InstantiationService, TypeMoq.MockBehavior.Strict);
 		instantiationService.setup(x => x.createInstance<AccountViewModel>(TypeMoq.It.isValue(AccountViewModel)))
 			.returns(() => mockAccountViewModel.object);
-		instantiationService.setup(x => x.createInstance<AccountListRenderer>(TypeMoq.It.isValue(AccountListRenderer), TypeMoq.It.isAnyString()))
+		instantiationService.setup(x => x.createInstance<AccountListRenderer>(TypeMoq.It.isValue(AccountListRenderer)))
 			.returns(() => undefined);
 
 		// Create a mock account dialog
