@@ -240,13 +240,11 @@ export abstract class Modal extends Disposable implements IThemable {
 	protected show() {
 		this._builder.appendTo(withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement);
 		this._keydownListener = DOM.addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			if (DOM.isAncestor(<HTMLElement>e.target, this._builder.getHTMLElement())) {
-				let event = new StandardKeyboardEvent(e);
-				if (event.equals(KeyCode.Enter)) {
-					this.onAccept(event);
-				} else if (event.equals(KeyCode.Escape)) {
-					this.onClose(event);
-				}
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Enter)) {
+				this.onAccept(event);
+			} else if (event.equals(KeyCode.Escape)) {
+				this.onClose(event);
 			}
 		});
 		this._resizeListener = DOM.addDisposableListener(window, DOM.EventType.RESIZE, (e: KeyboardEvent) => {
@@ -327,7 +325,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Return background color of header and footer
 	 */
 	protected get headerAndFooterBackground(): string {
-		return this._dialogHeaderAndFooterBackground ? this._dialogHeaderAndFooterBackground.toString(): null;
+		return this._dialogHeaderAndFooterBackground ? this._dialogHeaderAndFooterBackground.toString() : null;
 	}
 
 	/**
