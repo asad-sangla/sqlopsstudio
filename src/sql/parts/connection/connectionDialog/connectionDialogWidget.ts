@@ -21,7 +21,7 @@ import * as styler from 'vs/platform/theme/common/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import Event, { Emitter } from 'vs/base/common/event';
-import { Builder } from 'vs/base/browser/builder';
+import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { DefaultController, ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
 import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
@@ -61,6 +61,7 @@ export class ConnectionDialogWidget extends Modal {
 	private _providerTypeSelectBox: SelectBox;
 	private _newConnectionParams: INewConnectionParams;
 	private _recentConnectionTree: ITree;
+	private $connectionUIContainer: Builder;
 
 	private _onInitDialog = new Emitter<void>();
 	public onInitDialog: Event<void> = this._onInitDialog.event;
@@ -114,7 +115,8 @@ export class ConnectionDialogWidget extends Modal {
 			});
 		});
 
-		this._bodyBuilder.div({ class: 'connection-provider-info', id: 'connectionProviderInfo' });
+		this.$connectionUIContainer = $('.connection-provider-info#connectionProviderInfo');
+		this.$connectionUIContainer.appendTo(this._bodyBuilder);
 
 		let self = this;
 		this._register(self._themeService.onDidColorThemeChange(e => self.updateTheme(e)));
@@ -160,8 +162,8 @@ export class ConnectionDialogWidget extends Modal {
 
 	private onProviderTypeSelected(selectedProviderType: string) {
 		// Show connection form based on server type
-		jQuery('#connectionProviderInfo').empty();
-		this._onShowUiComponent.fire({ selectedProviderType: selectedProviderType, container: jQuery('#connectionProviderInfo').get(0) });
+		this.$connectionUIContainer.empty();
+		this._onShowUiComponent.fire({ selectedProviderType: selectedProviderType, container: this.$connectionUIContainer.getHTMLElement() });
 		this.initDialog();
 	}
 
