@@ -321,8 +321,8 @@
     },
     "html-query-plan": {
       "version": "1.0.0",
-      "from": "git://github.com/anthonydresser/html-query-plan.git#v2.2.1",
-      "resolved": "git://github.com/anthonydresser/html-query-plan.git#7de7777ae5be433b5766113c3b3c493cf570cced"
+      "from": "git://github.com/anthonydresser/html-query-plan.git#v2.2.5",
+      "resolved": "git://github.com/anthonydresser/html-query-plan.git#fbf8beac00b3870c0d3f4e95de979f7f1ec7af5d"
     },
     "http-proxy-agent": {
       "version": "0.2.7",
