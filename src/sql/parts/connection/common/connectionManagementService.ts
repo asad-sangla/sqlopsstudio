@@ -46,7 +46,7 @@ import { IWorkspaceConfigurationService } from 'vs/workbench/services/configurat
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import Event, { Emitter } from 'vs/base/common/event';
 import { IEditorGroupService } from 'vs/workbench/services/group/common/groupService';
-import { EditorGroup } from "vs/workbench/common/editor/editorStacksModel";
+import { EditorGroup } from 'vs/workbench/common/editor/editorStacksModel';
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
@@ -486,9 +486,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private showDashboardForConnectionManagementInfo(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
 		const self = this;
 		return new Promise<boolean>((resolve, reject) => {
-			let dashboardInput: DashboardInput = self._instantiationService ? self._instantiationService.createInstance(DashboardInput, uri, connection) : undefined;
+			let dashboardInput: DashboardInput = self._instantiationService ? self._instantiationService.createInstance(DashboardInput, connection) : undefined;
 			// if dashboard uri is already open, focus on that tab
-			let found = self.focusDashboard(uri);
+			let found = self.focusDashboard(dashboardInput.uri);
 			if (!found) {
 				self._editorService.openEditor(dashboardInput, { pinned: true }, false);
 			}
@@ -511,7 +511,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (group instanceof EditorGroup) {
 					group.getEditors().map(editor => {
 						if (editor instanceof DashboardInput) {
-							if (editor.getUri() === uri) {
+							if (editor.uri === uri) {
 								// change focus to the matched editor
 								let position = model.positionOfGroup(group);
 								this._editorGroupService.activateGroup(model.groupAt(position));
@@ -536,7 +536,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (group instanceof EditorGroup) {
 					group.getEditors().map(editor => {
 						if (editor instanceof DashboardInput) {
-							if (editor.getUri() === uri && this._editorGroupService instanceof EditorPart) {
+							if (editor.uri === uri && this._editorGroupService instanceof EditorPart) {
 								// close matched editor
 								let position = model.positionOfGroup(group);
 								this._editorGroupService.closeEditor(position, editor);
