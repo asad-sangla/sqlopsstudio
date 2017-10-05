@@ -144,6 +144,8 @@ import { ISqlOAuthService } from 'sql/common/sqlOAuthService';
 import { SqlOAuthService } from 'sql/common/browser/sqlOAuthServiceImpl';
 import { IClipboardService as sqlIClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ClipboardService as sqlClipboardService } from 'sql/platform/clipboard/electron-browser/clipboardService';
+import { IResourceManagementService } from 'sql/parts/accountManagement/common/interfaces';
+import { ResourceManagementService } from 'sql/parts/accountManagement/common/resourceManagementService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -705,6 +707,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IDisasterRecoveryService, this.instantiationService.createInstance(DisasterRecoveryService));
 		serviceCollection.set(IDisasterRecoveryUiService, this.instantiationService.createInstance(DisasterRecoveryUiService));
 		serviceCollection.set(IRestoreDialogController, this.instantiationService.createInstance(RestoreDialogController));
+		serviceCollection.set(IResourceManagementService, this.instantiationService.createInstance(ResourceManagementService));
 		serviceCollection.set(IFileBrowserService, this.instantiationService.createInstance(FileBrowserService));
 		serviceCollection.set(IFileBrowserDialogController, this.instantiationService.createInstance(FileBrowserDialogController));
 		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));

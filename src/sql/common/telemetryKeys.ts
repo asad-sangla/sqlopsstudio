@@ -22,6 +22,7 @@ export const RunQuery = 'RunQuery';
 export const RunQueryStatement = 'RunQueryStatement';
 export const CancelQuery = 'CancelQuery';
 export const NewQuery = 'NewQuery';
+export const FirewallRuleRequested = 'FirewallRuleCreated';
 
 
 // Telemetry Properties

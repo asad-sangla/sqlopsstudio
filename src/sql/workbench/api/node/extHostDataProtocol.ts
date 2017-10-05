@@ -510,4 +510,25 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 				: Promise.resolve(undefined);
 		});
 	}
+
+	/**
+	 * Create a firewall rule
+	 */
+	public $createFirewallRule(handle: number, account: data.Account, firewallRuleInfo: data.FirewallRuleInfo): Thenable<data.CreateFirewallRuleResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.resourceProvider ? provider.resourceProvider.createFirewallRule(account, firewallRuleInfo)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
+	 * Handle firewall rule
+	 */
+	public $handleFirewallRule(handle: number, errorCode: number, errorMessage: string, connectionTypeId: string): Thenable<data.HandleFirewallRuleResponse> {
+		return this._runWithProvider(handle, provider => {
+			return provider.resourceProvider ? provider.resourceProvider.handleFirewallRule(errorCode, errorMessage, connectionTypeId)
+				: Promise.resolve(undefined);
+		});
+	}
+
 }

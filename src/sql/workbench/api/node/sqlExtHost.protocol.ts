@@ -272,6 +272,16 @@ export abstract class ExtHostDataProtocolShape {
 	 * Close file browser
 	 */
 	$closeFileBrowser(handle: number, ownerUri: string): Thenable<data.FileBrowserCloseResponse> { throw ni(); }
+
+	/**
+	 * Create a firewall rule
+	 */
+	$createFirewallRule(handle: number, account: data.Account, firewallRuleInfo: data.FirewallRuleInfo): Thenable<data.CreateFirewallRuleResponse> { throw ni(); }
+
+	/**
+	 * Handle firewall rule
+	 */
+	$handleFirewallRule(handle: number, errorCode: number, errorMessage: string, connectionTypeId: string): Thenable<data.HandleFirewallRuleResponse> { throw ni(); }
 }
 
 /**

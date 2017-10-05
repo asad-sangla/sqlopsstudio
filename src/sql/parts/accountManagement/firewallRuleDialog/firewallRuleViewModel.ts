@@ -10,14 +10,13 @@
  */
 export class FirewallRuleViewModel {
 	public isIPAddressSelected: boolean;
-	public fromSubnetIPRange: string;
-	public toSubnetIPRange: string;
 
 	private _defaultIPAddress: string;
 	private _defaultFromSubnetIPRange: string;
 	private _defaultToSubnetIPRange: string;
+	private _fromSubnetIPRange: string;
+	private _toSubnetIPRange: string;
 
-	// todo: integrate the view model with firewall rule service
 	constructor() {
 		this.isIPAddressSelected = true;
 	}
@@ -32,5 +31,29 @@ export class FirewallRuleViewModel {
 
 	public get defaultToSubnetIPRange(): string {
 		return this._defaultToSubnetIPRange;
+	}
+
+	public set fromSubnetIPRange(IPAddress: string) {
+		this._fromSubnetIPRange = IPAddress;
+	}
+
+	public get fromSubnetIPRange(): string {
+		if (this._fromSubnetIPRange) {
+			return this._fromSubnetIPRange;
+		} else {
+			return this._defaultFromSubnetIPRange;
+		}
+	}
+
+	public set toSubnetIPRange(IPAddress: string) {
+		this._toSubnetIPRange = IPAddress;
+	}
+
+	public get toSubnetIPRange(): string {
+		if (this._toSubnetIPRange) {
+			return this._toSubnetIPRange;
+		} else {
+			return this._defaultToSubnetIPRange;
+		}
 	}
 }

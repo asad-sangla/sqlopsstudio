@@ -100,6 +100,10 @@ export interface Converter {
 	asRestoreResponse(params: ls.RestoreResponse): data.RestoreResponse;
 
 	asRestoreConfigInfo(params: ls.RestoreConfigInfoResponse): data.RestoreConfigInfo;
+
+	asCreateFirewallRuleResponse(params: ls.CreateFirewallRuleResponse): data.CreateFirewallRuleResponse;
+
+	asHandleFirewallRuleResponse(params: ls.HandleFirewallRuleResponse): data.HandleFirewallRuleResponse;
 }
 
 export interface URIConverter {
@@ -685,6 +689,20 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
+	function asCreateFirewallRuleResponse(params: ls.CreateFirewallRuleResponse): data.CreateFirewallRuleResponse {
+		return <data.CreateFirewallRuleResponse>{
+			result: params.result,
+			errorMessage: params.errorMessage
+		};
+	}
+
+	function asHandleFirewallRuleResponse(params: ls.HandleFirewallRuleResponse): data.HandleFirewallRuleResponse {
+		return <data.HandleFirewallRuleResponse>{
+			result: params.result,
+			ipAddress: params.ipAddress
+		};
+	}
+
 	return {
 		asUri,
 		asDiagnostics,
@@ -729,7 +747,9 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asTaskInfo,
 		asRestorePlanResponse,
 		asRestoreResponse,
-		asRestoreConfigInfo
+		asRestoreConfigInfo,
+		asCreateFirewallRuleResponse,
+		asHandleFirewallRuleResponse
 	};
 }
 

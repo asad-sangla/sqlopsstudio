@@ -20,6 +20,7 @@ import { attachButtonStyler, attachInputBoxStyler } from 'vs/platform/theme/comm
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
+import * as data from 'data';
 
 import { Modal } from 'sql/parts/common/modal/modal';
 import { FirewallRuleViewModel } from 'sql/parts/accountManagement/firewallRuleDialog/firewallRuleViewModel';
@@ -34,6 +35,7 @@ export class FirewallRuleDialog extends Modal {
 	private _closeButton: Button;
 	private _fromRangeinputBox: InputBox;
 	private _toRangeinputBox: InputBox;
+	private _accountPicker: AccountPicker;
 
 	private _helpLink: HTMLElement;
 	private _IPAddressInput: HTMLElement;
@@ -248,6 +250,10 @@ export class FirewallRuleDialog extends Modal {
 
 	public createFirewallRule() {
 		this._onCreateFirewallRule.fire();
+	}
+
+	public get selectedAccount(): data.Account {
+		return this._accountPicker.selectedAccount;
 	}
 
 	public open() {

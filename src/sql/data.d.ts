@@ -457,6 +457,8 @@ declare module 'data' {
 		taskServicesProvider: TaskServicesProvider;
 
 		fileBrowserProvider: FileBrowserProvider;
+
+		resourceProvider: ResourceProvider;
 	}
 
 	/**
@@ -1242,5 +1244,32 @@ declare module 'data' {
 		 * @param accountKey - Key that uniquely identifies the account to clear
 		 */
 		clear(accountKey: AccountKey): Thenable<void>;
+	}
+
+	// Resource provider interfaces  -----------------------------------------------------------------------
+
+	/**
+	 * Represents a provider of resource
+	 */
+	export interface ResourceProvider {
+		createFirewallRule(account: Account, firewallruleInfo: FirewallRuleInfo): Thenable<CreateFirewallRuleResponse>;
+		handleFirewallRule(errorCode: number, errorMessage: string, connectionTypeId: string): Thenable<HandleFirewallRuleResponse>;
+	}
+
+	export interface FirewallRuleInfo {
+		startIpAddress: string;
+		endIpAddress: string;
+		serverName: string;
+		securityTokenMappings: {};
+	}
+
+	export interface CreateFirewallRuleResponse {
+		result: boolean;
+		errorMessage: string;
+	}
+
+	export interface HandleFirewallRuleResponse {
+		result: boolean;
+		ipAddress: string;
 	}
 }
