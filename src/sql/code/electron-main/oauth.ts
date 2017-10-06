@@ -79,7 +79,7 @@ export class ProxyOAuthHandler {
 
 			// We got an error or a code, so we should close the window without redirecting
 			authWindow.removeAllListeners('closed');
-			setImmediate(() => { authWindow.close(); });
+			authWindow.close();
 			webEvent.preventDefault();
 		}
 

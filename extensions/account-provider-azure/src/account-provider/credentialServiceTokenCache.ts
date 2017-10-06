@@ -25,7 +25,7 @@ export default class CredentialServiceTokenCache implements adal.TokenCache {
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
-	public add(entries: adal.TokenCacheEntry[], callback: (error?: Error) => void) {
+	public add(entries: adal.TokenCacheEntry[], callback: (error?: Error) => void): void {
 		let self = this;
 
 		this.doOperation(() => {
@@ -39,7 +39,7 @@ export default class CredentialServiceTokenCache implements adal.TokenCache {
 		});
 	}
 
-	public find(query: adal.TokenCacheQuery, callback: (error: Error, results: adal.TokenCacheEntry[]) => void) {
+	public find(query: adal.TokenCacheQuery, callback: (error: Error, results: adal.TokenCacheEntry[]) => void): void {
 		let self = this;
 
 		this.doOperation(() => {
@@ -56,7 +56,7 @@ export default class CredentialServiceTokenCache implements adal.TokenCache {
 		});
 	}
 
-	public remove(entries: adal.TokenCacheEntry[], callback: (error?: Error) => void) {
+	public remove(entries: adal.TokenCacheEntry[], callback: (error?: Error) => void): void {
 		let self = this;
 
 		this.doOperation(() => {
@@ -71,23 +71,23 @@ export default class CredentialServiceTokenCache implements adal.TokenCache {
 	}
 
 	// PRIVATE METHODS /////////////////////////////////////////////////////
-	private static findByKeyHelper(entry1: adal.TokenCacheEntry, entry2: adal.TokenCacheEntry) {
+	private static findByKeyHelper(entry1: adal.TokenCacheEntry, entry2: adal.TokenCacheEntry): boolean {
 		return entry1._authority === entry2._authority
 			&& entry1._clientId === entry2._clientId
 			&& entry1.userId === entry2.userId
 			&& entry1.resource === entry2.resource;
 	}
 
-	private static findByPartial(entry: adal.TokenCacheEntry, query: object) {
-		Object.keys(query).forEach(key => {
+	private static findByPartial(entry: adal.TokenCacheEntry, query: object): boolean {
+		for (let key in query) {
 			if (entry[key] === undefined || entry[key] !== query[key]) {
 				return false;
 			}
-		});
+		}
 		return true;
 	}
 
-	private doOperation<T>(op: () => Thenable<T>) {
+	private doOperation<T>(op: () => Thenable<T>): void {
 		// Initialize the active operation to an empty promise if necessary
 		let activeOperation = this._activeOperation || Promise.resolve<any>(null);
 
@@ -101,7 +101,6 @@ export default class CredentialServiceTokenCache implements adal.TokenCache {
 
 		// Point the current active operation to this one
 		this._activeOperation = activeOperation;
-		return <Promise<T>>this._activeOperation;
 	}
 
 	private addToCache(cache: CredentialReadResult, entries: adal.TokenCacheEntry[]): CredentialReadResult {
@@ -183,9 +182,9 @@ export default class CredentialServiceTokenCache implements adal.TokenCache {
 					};
 				});
 			})
-			.then(null, (err) => {
+			.then(null, err => {
 				// If reading the token cache fails, we'll just assume the tokens are garbage
-				// TODO: Log error
+				console.error(`Failed to read token cache from credential service ${err}`);
 				return CredentialServiceTokenCache.NullCredentialReadResult;
 			});
 	}

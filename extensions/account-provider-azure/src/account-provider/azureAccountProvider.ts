@@ -107,7 +107,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 			+ `?client_id=${this.metadata.settings.clientId}`                                     // Specify the client ID
 			+ `&response_type=code`                                                               // Request the authorization code grant flow
 			+ (userId ? (msa ? '&domain_hint=live.com' : '&msafed=0') : '')                       // Optimize prompt given existing MSA or org ID
-			+ ((!userId || !silent) ? '&prompt=login' : '')                                       // Require login if not silent
+			+ ((!userId && !silent) ? '&prompt=login' : '')                                       // Require login if not silent
 			+ (userId ? `&login_hint=${encodeURIComponent(userId)}` : '')                         // Show login hint if we have an existing user ID
 			+ (this.metadata.settings.siteId ? `&site_id=${this.metadata.settings.siteId}` : '')  // Site ID to use as brand on the prompt
 			+ '&display=popup'                                                                    // Causes a popup version of the UI to be shown
@@ -236,7 +236,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 		// Lookup each tenant ID that was provided
 		let getTenantPromises: Thenable<Tenant>[] = [];
 		for (let tenantId of tenantIds) {
-			let promise = this.authenticate(tenantId, msa, userId, true)
+			let promise = this.authenticate(tenantId, msa, userId, false)
 				.then((response) => self.getTenantDisplayName(msa, response.tenantId, response.userId))
 				.then((displayName) => {
 					return <Tenant>{
