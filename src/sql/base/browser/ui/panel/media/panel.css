@@ -52,3 +52,7 @@
 .tab > .tabLabel.active {
 	border-bottom: 1px solid;
 }
+
+tab.fullsize > :first-child {
+	height: calc(100% - 38px);
+}

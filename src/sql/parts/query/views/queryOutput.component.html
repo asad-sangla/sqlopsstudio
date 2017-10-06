@@ -18,9 +18,9 @@
 		</div>
 	</tab>
 
-	<tab *ngIf="hasQueryPlan" [title]="topOperationsTitle">
+	<tab *ngIf="hasQueryPlan" class="fullsize" [title]="topOperationsTitle">
 		<div id="topOperationsDiv" class="fullsize">
-			<top-operations-component #topOperationsComponent class="fullsize" style="display: block"></top-operations-component>
+			<top-operations-component #topOperationsComponent class="fullsize" style="display: block" [queryParameters]="queryParameters"></top-operations-component>
 		</div>
 	</tab>
 

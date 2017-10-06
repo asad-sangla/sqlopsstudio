@@ -3,13 +3,18 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { ElementRef, Component, Inject, forwardRef, OnDestroy } from '@angular/core';
+import { ElementRef, Component, Inject, forwardRef, OnDestroy, Input, OnInit } from '@angular/core';
+import { Subscription, Subject } from 'rxjs/Rx';
 
 import { PlanXmlParser, PlanNode } from 'sql/parts/queryPlan/planXmlParser';
 import { TabChild } from 'sql/base/browser/ui/panel/tab.component';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { attachTableStyler } from 'sql/common/theme/styler';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
+import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
+import { DataService } from 'sql/parts/grid/services/dataService';
+import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 
 import { localize } from 'vs/nls';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
@@ -21,10 +26,12 @@ export const TOP_OPERATIONS_SELECTOR: string = 'top-operations-component';
 	template: '',
 	providers: [{ provide: TabChild, useExisting: forwardRef(() => TopOperationsComponent) }]
 })
-export class TopOperationsComponent extends TabChild implements OnDestroy {
+export class TopOperationsComponent extends TabChild implements OnDestroy, OnInit {
 
 	private _operations: Array<PlanNode> = [];
 	private _table: Table<any>;
+	private _dataService: DataService;
+	private toDispose: Array<IDisposable> = [];
 	private _columns: Array<Slick.Column<any>> = [
 		{ name: localize('topOperations.operation', 'Operation'), field: 'operation' },
 		{ name: localize('topOperations.object', 'Object'), field: 'object' },
@@ -43,13 +50,27 @@ export class TopOperationsComponent extends TabChild implements OnDestroy {
 		{ name: localize('topOperations.partitioned', 'Partitioned'), field: 'partitioned' }
 	];
 
+	@Input() public queryParameters: QueryComponentParams;
+
 	private _disposables: Array<IDisposable> = [];
 
 	constructor(
 		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef,
-		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService
+		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
+
 	) {
 		super();
+	}
+
+	ngOnInit() {
+		this._dataService = this.queryParameters.dataService;
+		this.subscribeWithDispose(this._dataService.gridContentObserver, (type) => {
+			switch (type) {
+				case GridContentEvents.ResizeContents:
+					this.layout();
+					break;
+			}
+		});
 	}
 
 	ngOnDestroy() {
@@ -85,9 +106,16 @@ export class TopOperationsComponent extends TabChild implements OnDestroy {
 	}
 
 	public layout(): void {
-		setTimeout(() => {
-			this._table.resizeCanvas();
-			this._table.autosizeColumns();
-		});
+		if (this._table) {
+			setTimeout(() => {
+				this._table.resizeCanvas();
+				this._table.autosizeColumns();
+			});
+		}
+	}
+
+	protected subscribeWithDispose<T>(subject: Subject<T>, event: (value: any) => void): void {
+		let sub: Subscription = subject.subscribe(event);
+		this.toDispose.push(toDisposableSubscription(sub));
 	}
 }
