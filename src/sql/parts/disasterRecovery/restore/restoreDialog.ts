@@ -98,8 +98,8 @@ export class RestoreDialog extends Modal {
 	private _onRestore = new Emitter<boolean>();
 	public onRestore: Event<boolean> = this._onRestore.event;
 
-	private _onValidate = new Emitter<void>();
-	public onValidate: Event<void> = this._onValidate.event;
+	private _onValidate = new Emitter<boolean>();
+	public onValidate: Event<boolean> = this._onValidate.event;
 
 	private _onCancel = new Emitter<void>();
 	public onCancel: Event<void> = this._onCancel.event;
@@ -546,7 +546,7 @@ export class RestoreDialog extends Modal {
 		this._register(attachTableStyler(this._restorePlanTable, this._themeService));
 
 		this._register(this._filePathInputBox.onLoseFocus(params => {
-			this.onFilePathChanged(params);
+			this.onFilePathLoseFocus(params);
 		}));
 
 		this._register(this._browseFileButton.addListener('click', () => {
@@ -555,7 +555,7 @@ export class RestoreDialog extends Modal {
 				BackupConstants.fileFiltersSet,
 				FileValidationConstants.restore,
 				true,
-				filepath => this.handleOnBrowseFile(filepath));
+				filepath => this.onFileBrowsed(filepath));
 		}));
 
 		this._register(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
@@ -567,28 +567,37 @@ export class RestoreDialog extends Modal {
 		}));
 	}
 
-	private handleOnBrowseFile(filepath: string) {
+	private onFileBrowsed(filepath: string) {
+		var oldFilePath = this._filePathInputBox.value;
 		if (DialogHelper.isNullOrWhiteSpace(this._filePathInputBox.value)) {
 			this._filePathInputBox.value = filepath;
 		} else {
 			this._filePathInputBox.value = this._filePathInputBox.value + ', ' + filepath;
 		}
+
+		if (oldFilePath !== this._filePathInputBox.value) {
+			this.onFilePathChanged(this._filePathInputBox.value);
+		}
 	}
 
-	private onFilePathChanged(params: OnLoseFocusParams) {
+	private onFilePathLoseFocus(params: OnLoseFocusParams) {
 		if (params.value) {
 			if (params.hasChanged || (this.viewModel.filePath !== params.value)) {
-				this.viewModel.filePath = params.value;
-				this.viewModel.selectedBackupSets = null;
-				this.validateRestore();
+				this.onFilePathChanged(params.value);
 			}
 		}
+	}
+
+	private onFilePathChanged(filePath: string) {
+		this.viewModel.filePath = filePath;
+		this.viewModel.selectedBackupSets = null;
+		this.validateRestore(true);
 	}
 
 	private onSourceDatabaseChanged(selectedDatabase: string) {
 		this.viewModel.sourceDatabaseName = selectedDatabase;
 		this.viewModel.selectedBackupSets = null;
-		this.validateRestore();
+		this.validateRestore(true);
 	}
 
 	private onRestoreFromChanged(selectedRestoreFrom: string) {
@@ -606,9 +615,9 @@ export class RestoreDialog extends Modal {
 		return this._restoreFromSelectBox.value === this._databaseTitle;
 	}
 
-	public validateRestore(): void {
+	public validateRestore(overwriteTargetDatabase: boolean = false): void {
 		this.showSpinner();
-		this._onValidate.fire();
+		this._onValidate.fire(overwriteTargetDatabase);
 	}
 
 	public restore(isScriptOnly: boolean): void {

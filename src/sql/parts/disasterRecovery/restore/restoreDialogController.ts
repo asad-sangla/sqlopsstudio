@@ -47,9 +47,9 @@ export class RestoreDialogController implements IRestoreDialogController {
 		restoreDialog.close();
 	}
 
-	private handleMssqlOnValidateFile(): void {
+	private handleMssqlOnValidateFile(overwriteTargetDatabase: boolean = false): void {
 		let restoreDialog = this._restoreDialogs[this._currentProvider] as RestoreDialog;
-		this._disasterRecoveryService.getRestorePlan(this._ownerUri, this.setRestoreOption()).then(restorePlanResponse => {
+		this._disasterRecoveryService.getRestorePlan(this._ownerUri, this.setRestoreOption(overwriteTargetDatabase)).then(restorePlanResponse => {
 			this._sessionId = restorePlanResponse.sessionId;
 
 			if (restorePlanResponse.canRestore) {
@@ -82,7 +82,7 @@ export class RestoreDialogController implements IRestoreDialogController {
 		});
 	}
 
-	private setRestoreOption(): data.RestoreInfo {
+	private setRestoreOption(overwriteTargetDatabase: boolean = false): data.RestoreInfo {
 		let restoreInfo = undefined;
 
 		let providerId: string = this.getCurrentProviderId();
@@ -105,6 +105,7 @@ export class RestoreDialogController implements IRestoreDialogController {
 			if (restoreDialog.viewModel.targetDatabaseName) {
 				restoreInfo.targetDatabaseName = restoreDialog.viewModel.targetDatabaseName;
 			}
+			restoreInfo.overwriteTargetDatabase = overwriteTargetDatabase;
 
 			// Set other restore options
 			restoreDialog.viewModel.getRestoreAdvancedOptions(restoreInfo.options);
@@ -145,7 +146,7 @@ export class RestoreDialogController implements IRestoreDialogController {
 						newRestoreDialog = this._instantiationService.createInstance(RestoreDialog, this.getRestoreOption());
 						newRestoreDialog.onCancel(() => { });
 						newRestoreDialog.onRestore((isScriptOnly) => this.handleOnRestore(isScriptOnly));
-						newRestoreDialog.onValidate(() => this.handleMssqlOnValidateFile());
+						newRestoreDialog.onValidate((overwriteTargetDatabase) => this.handleMssqlOnValidateFile(overwriteTargetDatabase));
 						newRestoreDialog.onDatabaseListFocused(() => this.fetchDatabases(provider));
 					} else {
 						newRestoreDialog = this._instantiationService.createInstance(

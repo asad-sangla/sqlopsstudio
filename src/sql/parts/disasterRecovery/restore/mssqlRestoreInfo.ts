@@ -87,4 +87,12 @@ export class MssqlRestoreInfo implements data.RestoreInfo {
 	public set readHeaderFromMedia(value: boolean) {
 		this.options['readHeaderFromMedia'] = value;
 	}
+
+	public get overwriteTargetDatabase(): boolean {
+		return this.options['overwriteTargetDatabase'];
+	}
+
+	public set overwriteTargetDatabase(value: boolean) {
+		this.options['overwriteTargetDatabase'] = value;
+	}
 }
