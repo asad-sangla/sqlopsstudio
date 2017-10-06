@@ -220,6 +220,7 @@ export class QueryModelService implements IQueryModelService {
 
 			// If the query is not in progress, we can reuse the query runner
 			queryRunner = existingRunner;
+			info.selection = [];
 		} else {
 			// We do not have a query runner for this editor, so create a new one
 			// and map it to the results uri
