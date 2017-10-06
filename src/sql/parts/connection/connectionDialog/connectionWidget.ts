@@ -30,6 +30,7 @@ import { localize } from 'vs/nls';
 export class ConnectionWidget {
 	private _builder: Builder;
 	private _serverGroupSelectBox: SelectBox;
+	private _previousGroupOption: string;
 	private _serverGroupOptions: IConnectionProfileGroup[];
 	private _serverNameInputBox: InputBox;
 	private _databaseNameInputBox: InputBox;
@@ -91,6 +92,7 @@ export class ConnectionWidget {
 	public createConnectionWidget(container: HTMLElement): void {
 		this._serverGroupOptions = [this.DefaultServerGroup];
 		this._serverGroupSelectBox = new SelectBox(this._serverGroupOptions.map(g => g.name), this.DefaultServerGroup.name);
+		this._previousGroupOption = this._serverGroupSelectBox.value;
 		this._builder = $().div({ class: 'connection-table' }, (modelTableContent) => {
 			modelTableContent.element('table', { class: 'connection-table-content' }, (tableContainer) => {
 				this._tableContainer = tableContainer;
@@ -222,7 +224,11 @@ export class ConnectionWidget {
 
 	private onGroupSelected(selectedGroup: string) {
 		if (selectedGroup === this._addNewServerGroup.name) {
+			// Select previous non-AddGroup option in case AddServerGroup dialog is cancelled
+			this._serverGroupSelectBox.selectWithOptionName(this._previousGroupOption);
 			this._callbacks.onCreateNewServerGroup();
+		} else {
+			this._previousGroupOption = selectedGroup;
 		}
 	}
 
@@ -266,6 +272,7 @@ export class ConnectionWidget {
 		this._serverGroupSelectBox.setOptions(this._serverGroupOptions.map(g => g.name));
 		if (groupName) {
 			this._serverGroupSelectBox.selectWithOptionName(groupName);
+			this._previousGroupOption = this._serverGroupSelectBox.value;
 		}
 	}
 
@@ -300,6 +307,7 @@ export class ConnectionWidget {
 				groupName = this.NoneServerGroup.name;
 			}
 			this._serverGroupSelectBox.selectWithOptionName(groupName);
+			this._previousGroupOption = this._serverGroupSelectBox.value;
 
 			// To handle the empty password case
 			if (this.getModelValue(connectionInfo.password) === '') {
