@@ -6,7 +6,6 @@
 'use strict';
 import 'vs/css!./media/restoreDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
-import dom = require('vs/base/browser/dom');
 import { Button } from 'vs/base/browser/ui/button/button';
 import Event, { Emitter } from 'vs/base/common/event';
 import { Widget } from 'vs/base/browser/ui/widget';
@@ -35,6 +34,7 @@ import { RestoreViewModel, RestoreOptionParam, SouceDatabaseNamesParam } from 's
 import * as FileValidationConstants from 'sql/parts/fileBrowser/common/fileValidationServiceConstants';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { Dropdown } from 'sql/base/browser/ui/editableDropdown/dropdown';
+import { TabbedPanel, PanelTabIdentifier } from 'sql/base/browser/ui/panel/panel';
 import * as data from 'data';
 
 interface FileListElement {
@@ -65,6 +65,9 @@ export class RestoreDialog extends Modal {
 	private _restoreFromSelectBox: SelectBox;
 	private _sourceDatabaseSelectBox: SelectBox;
 
+	private _panel: TabbedPanel;
+	private _generalTabId: PanelTabIdentifier;
+
 	// File option
 	private readonly _relocateDatabaseFilesOption = 'relocateDbFiles';
 	private readonly _relocatedDataFileFolderOption = 'dataFileFolder';
@@ -84,8 +87,6 @@ export class RestoreDialog extends Modal {
 
 	private readonly _closeExistingConnectionsOption = 'closeExistingConnections';
 
-	// elements
-	private _generalTabElement: HTMLElement;
 	private _restoreFromBackupFileElement: HTMLElement;
 
 	private _fileListTable: Table<FileListElement>;
@@ -251,17 +252,14 @@ export class RestoreDialog extends Modal {
 		});
 
 		// Content in general tab
-		let generalContentElement: HTMLElement;
-		$().div({ class: 'restore-dialog tab-pane active', id: 'restore-general' }, (builder) => {
-			generalContentElement = builder.getHTMLElement();
-			builder.append(sourceElement);
-			builder.append(destinationElement);
-			builder.append(restorePlanElement);
-		});
+		let generalTab = $('.restore-dialog');
+		generalTab.append(sourceElement);
+		generalTab.append(destinationElement);
+		generalTab.append(restorePlanElement);
 
 		// Content in file tab
 		let fileContentElement: HTMLElement;
-		$().div({ class: 'restore-dialog tab-pane', id: 'restore-file' }, (builder) => {
+		$().div({ class: 'restore-dialog'}, (builder) => {
 			fileContentElement = builder.getHTMLElement();
 
 			// Restore database file as section
@@ -309,7 +307,7 @@ export class RestoreDialog extends Modal {
 
 		// Content in options tab
 		let optionsContentElement: HTMLElement;
-		$().div({ class: 'restore-dialog tab-pane', id: 'restore-options' }, (builder) => {
+		$().div({ class: 'restore-dialog' }, (builder) => {
 			optionsContentElement = builder.getHTMLElement();
 
 			// Restore options section
@@ -342,29 +340,42 @@ export class RestoreDialog extends Modal {
 			});
 		});
 
-		let tabElement;
-		let fileTableElement: HTMLElement;
-		// create General, Files, and Options tabs
-		$().div({ class: 'backup-dialog-tab' }, (rootContainer) => {
-			tabElement = rootContainer.getHTMLElement();
-			rootContainer.element('ul', { class: 'nav nav-tabs' }, (listContainer) => {
-				this._generalTabElement = this.createTabList(listContainer, 'active general-tab', 'a.general', '#restore-general', localize('generalTitle', 'General'));
-				fileTableElement = this.createTabList(listContainer, 'files-tab', 'a.file', '#restore-file', localize('filesTitle', 'Files'));
-				this.createTabList(listContainer, 'options-tab', 'a.options', '#restore-options', localize('optionsTitle', 'Options'));
-			});
+		this._panel = new TabbedPanel(container);
+		this._generalTabId = this._panel.pushTab({
+			identifier: 'general',
+			title: localize('generalTitle', 'General'),
+			view: {
+				render: c => {
+					generalTab.appendTo(c);
+				},
+				layout: () => {}
+			}
 		});
 
-		new Builder(container).div({ class: 'restore-dialog' }, (builder) => {
-			builder.append(tabElement);
-			builder.div({ class: 'tab-content' }, (contentContainer) => {
-				contentContainer.append(generalContentElement);
-				contentContainer.append(fileContentElement);
-				contentContainer.append(optionsContentElement);
-			});
+		let fileTab = this._panel.pushTab({
+			identifier: 'fileContent',
+			title: localize('filesTitle', 'Files'),
+			view: {
+				layout: () => {},
+				render: c => {
+					c.appendChild(fileContentElement);
+				}
+			}
 		});
 
-		jQuery(fileTableElement).on('shown.bs.tab', () => {
-			if (this._fileListTable) {
+		this._panel.pushTab({
+			identifier: 'options',
+			title: localize('optionsTitle', 'Options'),
+			view: {
+				layout: () => {},
+				render: c => {
+					c.appendChild(optionsContentElement);
+				}
+			}
+		});
+
+		this._panel.onTabChange(c => {
+			if (c === fileTab && this._fileListTable) {
 				this._fileListTable.resizeCanvas();
 				this._fileListTable.autosizeColumns();
 			}
@@ -380,19 +391,6 @@ export class RestoreDialog extends Modal {
 
 	public set databaseListOptions(vals: string[]) {
 		this._databaseDropdown.values = vals;
-	}
-
-	private createTabList(container: Builder, className: string, linkClassName: string, linkId: string, tabTitle: string): HTMLElement {
-		let atag: HTMLElement;
-		container.element('li', { class: className }, (linkContainer) => {
-			atag = dom.$(linkClassName);
-			atag.setAttribute('data-toggle', 'tab');
-			atag.setAttribute('href', linkId);
-			atag.textContent = tabTitle;
-			linkContainer.append(atag);
-		});
-
-		return atag;
 	}
 
 	private createLabelElement(container: Builder, content: string, isHeader?: boolean) {
@@ -657,7 +655,7 @@ export class RestoreDialog extends Modal {
 		this._sourceDatabaseSelectBox.select(0);
 		this._restorePlanData.clear();
 		this._fileListData.clear();
-		this._generalTabElement.click();
+		this._panel.showTab(this._generalTabId);
 		this.removeErrorMessage();
 	}
 
