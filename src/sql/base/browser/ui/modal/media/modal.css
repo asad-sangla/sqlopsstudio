@@ -13,6 +13,12 @@
 	z-index: 500;
 }
 
+.monaco-shell .modal:not(.flyout-dialog) .modal-dialog {
+	margin: auto;
+	width: 400px;
+	height: 400px;
+}
+
 .modal .modal-header {
 	padding: 15px;
 }
