@@ -12,7 +12,7 @@ import { Builder, Dimension } from 'vs/base/browser/builder';
 import { Viewlet } from 'vs/workbench/browser/viewlet';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { IAction } from 'vs/base/common/actions';
-import { addStandardDisposableListener, toggleClass } from 'vs/base/browser/dom';
+import { toggleClass } from 'vs/base/browser/dom';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
@@ -24,8 +24,6 @@ import { IConnectionsViewlet, IConnectionManagementService, VIEWLET_ID } from 's
 import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeView';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { KeyCode } from 'vs/base/common/keyCodes';
-import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { ClearSearchAction, AddServerAction, AddServerGroupAction, ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 
 export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
@@ -41,6 +39,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	private _addServerAction: IAction;
 	private _addServerGroupAction: IAction;
 	private _activeConnectionsFilterAction: ActiveConnectionsFilterAction;
+	private _searchTerm: string;
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -86,18 +85,16 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 						actions: [this._clearSearchAction]
 					}
 				);
+				this._searchTerm = '';
 
-				this._toDisposeViewlet.push(addStandardDisposableListener(this._searchBox.inputElement, 'keydown', (e: IKeyboardEvent) => {
-					const isEscape = e.equals(KeyCode.Escape);
-					const isEnter = e.equals(KeyCode.Enter);
-					if (isEscape || isEnter) {
-						e.preventDefault();
-						e.stopPropagation();
-						if (isEnter) {
-							this.search(this._searchBox.value);
-						}
+				this._searchBox.onDidChange(() => {
+					if (this._searchTerm.length < this._searchBox.value.length) {
+						this._searchTerm += this._searchBox.value;
+					} else {
+						this._searchTerm = this._searchBox.value;
 					}
-				}));
+					this.search(this._searchTerm);
+				});
 
 				// Theme styler
 				this._toDisposeViewlet.push(attachInputBoxStyler(this._searchBox, this._themeService));
@@ -147,9 +144,11 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 	}
 
 	public clearSearch() {
+		this._searchTerm = '';
 		this._serverTreeView.refreshTree();
 		this._searchBox.value = '';
 		this._clearSearchAction.enabled = false;
+		this._searchBox.focus();
 	}
 
 	public dispose(): void {
