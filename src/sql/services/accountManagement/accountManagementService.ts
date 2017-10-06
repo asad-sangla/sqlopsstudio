@@ -83,36 +83,36 @@ export class AccountManagementService implements IAccountManagementService {
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
+	/**
+	 * Asks the requested provider to prompt for an account
+	 * @param {string} providerId ID of the provider to ask to prompt for an account
+	 * @return {Thenable<Account>} Promise to return an account
+	 */
 	public addAccount(providerId: string): Thenable<data.Account> {
 		let self = this;
 
-		// Get the account provider
-		let provider = this._providers[providerId];
-		if (provider === undefined) {
-			return Promise.reject(new Error(nls.localize('accountManagementNoProvider', 'Account provider does not exist'))).then();
-		}
-
-		// Prompt for a new account
-		return provider.provider.prompt()
-			.then(account => self._accountStore.addOrUpdate(account))
-			.then(result => {
-				if (result.accountAdded) {
-					// Add the account to the list
-					self._providers[providerId].accounts.push(result.changedAccount);
-				}
-				if (result.accountModified) {
-					// Find the updated account and splice the updated on in
-					let indexToRemove: number = self._providers[providerId].accounts.findIndex(account => {
-						return account.key.accountId === result.changedAccount.key.accountId;
-					});
-					if (indexToRemove >= 0) {
-						self._providers[providerId].accounts.splice(indexToRemove, 1, result.changedAccount);
+		return this.doWithProvider(providerId, (provider) => {
+			return provider.provider.prompt()
+				.then(account => self._accountStore.addOrUpdate(account))
+				.then(result => {
+					if (result.accountAdded) {
+						// Add the account to the list
+						provider.accounts.push(result.changedAccount);
 					}
-				}
+					if (result.accountModified) {
+						// Find the updated account and splice the updated on in
+						let indexToRemove: number = provider.accounts.findIndex(account => {
+							return account.key.accountId === result.changedAccount.key.accountId;
+						});
+						if (indexToRemove >= 0) {
+							provider.accounts.splice(indexToRemove, 1, result.changedAccount);
+						}
+					}
 
-				self.fireAccountListUpdate(providerId, result.accountAdded);
-				return result.changedAccount;
-			});
+					self.fireAccountListUpdate(provider, result.accountAdded);
+					return result.changedAccount;
+				});
+		});
 	}
 
 	/**
@@ -138,17 +138,31 @@ export class AccountManagementService implements IAccountManagementService {
 
 		// 1) Get the accounts from the store
 		// 2) Update our local cache of accounts
-		return this._accountStore.getAccountsByProvider(providerId)
-			.then(accounts => {
-				self._providers[providerId].accounts = accounts;
-				return accounts;
-			});
+		return this.doWithProvider(providerId, provider => {
+			return self._accountStore.getAccountsByProvider(provider.metadata.id)
+				.then(accounts => {
+					self._providers[providerId].accounts = accounts;
+					return accounts;
+				});
+		});
+	}
+
+	/**
+	 * Generates a security token by asking the account's provider
+	 * @param {Account} account Account to generate security token for
+	 * @return {Thenable<{}>} Promise to return the security token
+	 */
+	public getSecurityToken(account: data.Account): Thenable<{}> {
+		return this.doWithProvider(account.key.providerId, provider => {
+			return provider.provider.getSecurityToken(account);
+		});
 	}
 
 	/**
 	 * Removes an account from the account store and clears sensitive data in the provider
 	 * @param {AccountKey} accountKey Key for the account to remove
-	 * @returns {Thenable<void>} Promise that's resolved when the account is removed
+	 * @returns {Thenable<void>} Promise with result of account removal, true if account was
+	 *                           removed, false otherwise.
 	 */
 	public removeAccount(accountKey: data.AccountKey): Thenable<boolean> {
 		let self = this;
@@ -156,26 +170,28 @@ export class AccountManagementService implements IAccountManagementService {
 		// Step 1) Remove the account
 		// Step 2) Clear the sensitive data from the provider (regardless of whether the account was removed)
 		// Step 3) Update the account cache and fire an event
-		return this._accountStore.remove(accountKey)
-			.then(result => {
-				self._providers[accountKey.providerId].provider.clear(accountKey);
-				return result;
-			})
-			.then(result => {
-				if (!result) {
+		return this.doWithProvider(accountKey.providerId, provider => {
+			return this._accountStore.remove(accountKey)
+				.then(result => {
+					provider.provider.clear(accountKey);
 					return result;
-				}
+				})
+				.then(result => {
+					if (!result) {
+						return result;
+					}
 
-				let indexToRemove: number = self._providers[accountKey.providerId].accounts.findIndex(account => {
-					return account.key.accountId === accountKey.accountId;
+					let indexToRemove: number = provider.accounts.findIndex(account => {
+						return account.key.accountId === accountKey.accountId;
+					});
+
+					if (indexToRemove >= 0) {
+						provider.accounts.splice(indexToRemove, 1);
+						self.fireAccountListUpdate(provider, false);
+					}
+					return result;
 				});
-
-				if (indexToRemove >= 0) {
-					self._providers[accountKey.providerId].accounts.splice(indexToRemove, 1);
-					self.fireAccountListUpdate(accountKey.providerId, false);
-				}
-				return result;
-			});
+		});
 	}
 
 	// UI METHODS //////////////////////////////////////////////////////////
@@ -285,10 +301,20 @@ export class AccountManagementService implements IAccountManagementService {
 	// TODO: Support for orphaned accounts (accounts with no provider)
 
 	// PRIVATE HELPERS /////////////////////////////////////////////////////
-	private fireAccountListUpdate(providerId: string, sort: boolean) {
+	private doWithProvider<T>(providerId: string, op: (provider: AccountProviderWithMetadata) => Thenable<T>): Thenable<T> {
+		// Make sure the provider exists before attempting to retrieve accounts
+		let provider = this._providers[providerId];
+		if (!provider) {
+			return Promise.reject(new Error(nls.localize('accountManagementNoProvider', 'Account provider does not exist'))).then();
+		}
+
+		return op(provider);
+	}
+
+	private fireAccountListUpdate(provider: AccountProviderWithMetadata, sort: boolean) {
 		// Step 1) Get and sort the list
 		if (sort) {
-			this._providers[providerId].accounts.sort((a: data.Account, b: data.Account) => {
+			provider.accounts.sort((a: data.Account, b: data.Account) => {
 				if (a.displayInfo.displayName < b.displayInfo.displayName) {
 					return -1;
 				}
@@ -301,8 +327,8 @@ export class AccountManagementService implements IAccountManagementService {
 
 		// Step 2) Fire the event
 		let eventArg: UpdateAccountListEventParams = {
-			providerId: providerId,
-			accountList: this._providers[providerId].accounts
+			providerId: provider.metadata.id,
+			accountList: provider.accounts
 		};
 		this._updateAccountListEmitter.fire(eventArg);
 	}

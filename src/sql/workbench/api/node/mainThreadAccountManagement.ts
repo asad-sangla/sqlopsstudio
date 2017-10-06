@@ -45,6 +45,12 @@ export class MainThreadAccountManagement extends MainThreadAccountManagementShap
 
 		// Create the account provider that interfaces with the extension via the proxy and register it
 		let accountProvider: data.AccountProvider = {
+			clear(accountKey: data.AccountKey): Thenable<void> {
+				return self._proxy.$clear(handle, accountKey);
+			},
+			getSecurityToken(account: data.Account): Thenable<{}> {
+				return self._proxy.$getSecurityToken(handle, account);
+			},
 			initialize(restoredAccounts: data.Account[]): Thenable<data.Account[]> {
 				return self._proxy.$initialize(handle, restoredAccounts);
 			},
@@ -53,9 +59,6 @@ export class MainThreadAccountManagement extends MainThreadAccountManagementShap
 			},
 			refresh(account: data.Account): Thenable<data.Account> {
 				return self._proxy.$refresh(handle, account);
-			},
-			clear(accountKey: data.AccountKey): Thenable<void> {
-				return self._proxy.$clear(handle, accountKey);
 			}
 		};
 		this._accountManagementService.registerProvider(providerMetadata, accountProvider);

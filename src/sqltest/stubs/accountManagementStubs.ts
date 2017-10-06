@@ -30,6 +30,10 @@ export class AccountManagementTestService implements IAccountManagementService {
 		return undefined;
 	}
 
+	getSecurityToken(account: data.Account): Thenable<{}> {
+		return undefined;
+	}
+
 	removeAccount(accountKey: data.AccountKey): Thenable<boolean> {
 		return undefined;
 	}
@@ -58,6 +62,10 @@ export class AccountManagementTestService implements IAccountManagementService {
 export class AccountProviderStub implements data.AccountProvider {
 	clear(account: data.AccountKey): Thenable<void> {
 		return Promise.resolve();
+	}
+
+	getSecurityToken(account: data.Account): Thenable<{}> {
+		return Promise.resolve({});
 	}
 
 	initialize(storedAccounts: data.Account[]): Thenable<data.Account[]> {

@@ -100,9 +100,68 @@ export interface Settings {
 	redirectUri?: string;
 }
 
+/**
+ *
+ */
 export interface AzureAccountProviderMetadata extends data.AccountProviderMetadata {
 	/**
 	 * Azure specific account provider settings.
 	 */
 	settings: Settings;
 }
+
+/**
+ * Properties specific to an Azure account
+ */
+export interface AzureAccountProperties {
+	/**
+	 * Whether or not the account is a Microsoft account
+	 */
+	isMsAccount: boolean;
+
+	/**
+	 * A list of tenants (aka directories) that the account belongs to
+	 */
+	tenants: Tenant[];
+}
+
+/**
+ * Override of the Account type to enforce properties that are AzureAccountProperties
+ */
+export interface AzureAccount extends data.Account {
+	/**
+	 * AzureAccountProperties specifically used for Azure accounts
+	 */
+	properties: AzureAccountProperties;
+}
+
+/**
+ * Token returned from a request for an access token
+ */
+export interface AzureAccountSecurityToken {
+	/**
+	 * Access token, itself
+	 */
+	token: string;
+
+	/**
+	 * Date that the token expires on
+	 */
+	expiresOn: Date;
+
+	/**
+	 * Name of the resource the token is good for (ie, management.core.windows.net)
+	 */
+	resource: string;
+
+	/**
+	 * Type of the token (pretty much always 'Bearer')
+	 */
+	tokenType: string;
+}
+
+/**
+ * Azure account security token maps a tenant ID to the information returned from a request to get
+ * an access token. The list of tenants correspond to the tenants in the account properties.
+ */
+export type AzureAccountSecurityTokenCollection = {[tenantId: string]: AzureAccountSecurityToken};

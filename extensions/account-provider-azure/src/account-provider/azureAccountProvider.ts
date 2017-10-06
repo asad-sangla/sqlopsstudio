@@ -12,7 +12,14 @@ import * as data from 'data';
 import * as request from 'request';
 import * as nls from 'vscode-nls';
 import CredentialServiceTokenCache from './credentialServiceTokenCache';
-import { Arguments, AzureAccountProviderMetadata, Tenant } from './interfaces';
+import {
+	Arguments,
+	AzureAccount,
+	AzureAccountProviderMetadata,
+	AzureAccountSecurityToken,
+	AzureAccountSecurityTokenCollection,
+	Tenant
+} from './interfaces';
 
 const localize = nls.loadMessageBundle();
 
@@ -44,6 +51,15 @@ export class AzureAccountProvider implements data.AccountProvider {
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
+	clear(accountKey: data.AccountKey): Thenable<void> {
+		throw new Error('Not implemented');
+	}
+
+	getSecurityToken(account: AzureAccount): Thenable<AzureAccountSecurityTokenCollection> {
+		let self = this;
+		return this.doIfInitialized(() => self.getAccessTokens(account));
+	}
+
 	initialize(restoredAccounts: data.Account[]): Thenable<data.Account[]> {
 		let self = this;
 
@@ -64,18 +80,14 @@ export class AzureAccountProvider implements data.AccountProvider {
 			});
 	}
 
-	prompt(): Thenable<data.Account> {
+	prompt(): Thenable<AzureAccount> {
 		let self = this;
 		return this.doIfInitialized(() => self.signIn());
 	}
 
-	refresh(account: data.Account): Thenable<data.Account> {
+	refresh(account: AzureAccount): Thenable<AzureAccount> {
 		let self = this;
 		return this.doIfInitialized(() => self.signIn(account.properties.isMsAccount, account.key.accountId));
-	}
-
-	clear(accountKey: data.AccountKey): Thenable<void> {
-		throw new Error('Not implemented');
 	}
 
 	// PRIVATE METHODS /////////////////////////////////////////////////////
@@ -134,24 +146,69 @@ export class AzureAccountProvider implements data.AccountProvider {
 			: Promise.reject(localize('accountProviderNotInitialized', 'Account provider not initialized, cannot perform action'));
 	}
 
+	private getAccessTokens(account: AzureAccount): Thenable<AzureAccountSecurityTokenCollection> {
+		let self = this;
+
+		// TODO: Could we add some better typing here?
+		let accessTokenPromises: Thenable<void>[] = [];
+		let tokenCollection: AzureAccountSecurityTokenCollection = {};
+		for (let tenant of account.properties.tenants) {
+			let promise = new Promise<void>((resolve, reject) => {
+				// TODO: use urijs to generate this URI
+				let authorityUrl = `${self.metadata.settings.host}/${tenant.id}`;
+				let context = new adal.AuthenticationContext(authorityUrl, null, self._tokenCache);
+
+				// TODO: This is where we should mark the account as stale
+				context.acquireToken(
+					self.metadata.settings.armResource.id,
+					tenant.userId,
+					self.metadata.settings.clientId,
+					(error: adal.ErrorResponse, response: adal.SuccessResponse) => {
+						// Handle errors first
+						if (error) {
+							reject(error);
+							return;
+						}
+
+						// Generate a token object and add it to the collection
+						let token: AzureAccountSecurityToken = {
+							expiresOn: response.expiresOn,
+							resource: response.resource,
+							token: response.accessToken,
+							tokenType: response.tokenType
+						};
+						tokenCollection[tenant.id] = token;
+						resolve();
+					}
+				);
+			});
+			accessTokenPromises.push(promise);
+		}
+
+		// Wait until all the tokens have been acquired then return the collection
+		return Promise.all(accessTokenPromises)
+			.then(() => tokenCollection);
+	}
+
 	private getTenantDisplayName(msa: boolean, tenantId: string, userId: string): Thenable<string> {
+		let self = this;
 		if(msa) {
-			return Promise.resolve('Microsoft Account');		// TODO: Localize
+			return Promise.resolve(localize('microsoftAccountDisplayName', 'Microsoft Account'));
 		}
 
 		return new Promise<string>((resolve, reject) => {
 			// Get an access token to the AAD graph resource
 			// TODO: Use urijs to generate this URI
-			let authorityUrl = `${this.metadata.settings.host}/${tenantId}`;
-			let context = new adal.AuthenticationContext(authorityUrl, null, this._tokenCache);
-			context.acquireToken(this.metadata.settings.graphResource.id, userId, this.metadata.settings.clientId, (error, response) => {
+			let authorityUrl = `${self.metadata.settings.host}/${tenantId}`;
+			let context = new adal.AuthenticationContext(authorityUrl, null, self._tokenCache);
+			context.acquireToken(self.metadata.settings.graphResource.id, userId, self.metadata.settings.clientId, (error, response) => {
 				if (error) {
 					reject(error);
 					return;
 				}
 
 				request.get(
-					`${this.metadata.settings.graphResource.endpoint}/${tenantId}/tenantDetails?api-version=2013-04-05`,
+					`${self.metadata.settings.graphResource.endpoint}/${tenantId}/tenantDetails?api-version=2013-04-05`,
 					{
 						headers: {
 							'Content-Type': 'application/json',
@@ -240,7 +297,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 		});
 	}
 
-	private signIn(msa?: boolean, userId?: string) {
+	private signIn(msa?: boolean, userId?: string): Thenable<AzureAccount> {
 		let self = this;
 
 		// Initial authentication is via the common/discovery tenant
@@ -268,7 +325,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 				return this.getTenantIds(userId)
 					.then(tenantIds => self.getTenants(msa, userId, tenantIds, response.tenantId))
 					.then(tenants => {
-						return <data.Account>{
+						return <AzureAccount>{
 							key: {
 								providerId: self.metadata.id,
 								accountId: userId

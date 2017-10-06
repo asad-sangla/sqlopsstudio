@@ -1121,7 +1121,6 @@ declare module 'data' {
 		dark: string;
 	}
 
-
 	/**
 	 * Represents display information for an account.
 	 */
@@ -1224,6 +1223,13 @@ declare module 'data' {
 		 * @return {Thenable<Account[]>} Account objects after being rehydrated (if necessary)
 		 */
 		initialize(storedAccounts: Account[]): Thenable<Account[]>;
+
+		/**
+		 * Generates a security token for the provided account
+		 * @param {Account} account The account to generate a security token for
+		 * @return {Thenable<{}>} Promise to return a security token object
+		 */
+		getSecurityToken(account: Account): Thenable<{}>;
 
 		/**
 		 * Prompts the user to enter account information.

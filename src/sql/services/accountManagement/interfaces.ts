@@ -21,6 +21,7 @@ export interface IAccountManagementService {
 	addAccount(providerId: string): Thenable<data.Account>;
 	getAccountProviderMetadata(): Thenable<data.AccountProviderMetadata[]>;
 	getAccountsForProvider(providerId: string): Thenable<data.Account[]>;
+	getSecurityToken(account: data.Account): Thenable<{}>;
 	removeAccount(accountKey: data.AccountKey): Thenable<boolean>;
 
 	// UI METHODS //////////////////////////////////////////////////////////

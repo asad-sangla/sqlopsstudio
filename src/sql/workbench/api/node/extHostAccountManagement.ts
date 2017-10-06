@@ -31,12 +31,12 @@ export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 		return this._withProvider(handle, (provider: data.AccountProvider) => provider.clear(accountKey));
 	}
 
-	public $initialize(handle: number, restoredAccounts: data.Account[]): Thenable<data.Account[]> {
-		return this._withProvider(handle, (provider: data.AccountProvider) => provider.initialize(restoredAccounts));
+	public $getSecurityToken(handle: number, account: data.Account): Thenable<{}> {
+		return this._withProvider(handle, (provider: data.AccountProvider) => provider.getSecurityToken(account));
 	}
 
-	public $performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
-		return this._proxy.$performOAuthAuthorization(url, silent);
+	public $initialize(handle: number, restoredAccounts: data.Account[]): Thenable<data.Account[]> {
+		return this._withProvider(handle, (provider: data.AccountProvider) => provider.initialize(restoredAccounts));
 	}
 
 	public $prompt(handle: number): Thenable<data.Account> {
@@ -48,6 +48,10 @@ export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 	}
 
 	// - EXTENSION HOST AVAILABLE METHODS //////////////////////////////////
+	public $performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
+		return this._proxy.$performOAuthAuthorization(url, silent);
+	}
+
 	public $registerAccountProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): Disposable {
 		let self = this;
 
