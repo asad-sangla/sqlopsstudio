@@ -37,7 +37,8 @@ suite('SQL Connection Tree Action tests', () => {
 	let errorMessageService: TypeMoq.Mock<ErrorMessageServiceStub>;
 	let connectionResult: IConnectionResult = {
 		connected: true,
-		error: ''
+		errorMessage: undefined,
+		errorCode: undefined
 	};
 	setup(() => {
 		errorMessageService = TypeMoq.Mock.ofType(ErrorMessageServiceStub, TypeMoq.MockBehavior.Loose);

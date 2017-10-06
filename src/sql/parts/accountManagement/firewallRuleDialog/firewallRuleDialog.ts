@@ -55,7 +55,7 @@ export class FirewallRuleDialog extends Modal {
 		@IContextViewService private _contextViewService: IContextViewService,
 		@ITelemetryService telemetryService: ITelemetryService
 	) {
-		super(localize('createNewFirewallRule', 'Create new firewall rule'), TelemetryKeys.FireWallRule, partService, telemetryService, { isFlyout: true, hasBackButton: true });
+		super(localize('createNewFirewallRule', 'Create new firewall rule'), TelemetryKeys.FireWallRule, partService, telemetryService, { isFlyout: true, hasBackButton: true, hasSpinner: true });
 
 		// view model
 		this.viewModel = this._instantiationService.createInstance(FirewallRuleViewModel);
@@ -92,8 +92,8 @@ export class FirewallRuleDialog extends Modal {
 			let azureAccountLabel = localize('azureAccount', 'Azure account');
 			this.createLabelElement(azureAccountContainer, azureAccountLabel, true);
 			azureAccountContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-				let accountPicker = this._instantiationService.createInstance(AccountPicker, this._providerId);
-				accountPicker.render(inputCellContainer.getHTMLElement());
+				this._accountPicker = this._instantiationService.createInstance(AccountPicker, this._providerId);
+				this._accountPicker.render(inputCellContainer.getHTMLElement());
 			});
 		});
 
@@ -248,6 +248,7 @@ export class FirewallRuleDialog extends Modal {
 	}
 
 	public createFirewallRule() {
+		this.showSpinner();
 		this._onCreateFirewallRule.fire();
 	}
 

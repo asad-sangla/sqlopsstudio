@@ -41,7 +41,7 @@ suite('ConnectionDialogService tests', () => {
 			querySelection: undefined
 		};
 		mockConnectionManagementService.setup(x => x.connectAndSaveProfile(undefined, TypeMoq.It.is(_ => true), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(
-			() => Promise.resolve(<IConnectionResult>{ connected: true, error: undefined }));
+			() => Promise.resolve(<IConnectionResult>{ connected: true, errorMessage: undefined, errorCode: undefined }));
 
 		// If I call handleDefaultOnConnect with the given parameters
 		(connectionDialogService as any).handleDefaultOnConnect(connectionParams, undefined);

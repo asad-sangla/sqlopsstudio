@@ -5,7 +5,6 @@
 
 'use strict';
 
-import { TPromise } from 'vs/base/common/winjs.base';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import * as data from 'data';
 
@@ -31,7 +30,7 @@ export interface IResourceManagementService {
 	/**
 	 * Create a firewall rule
 	 */
-	createFirewallRule(connectionUri: string, selectedAccount: data.Account, firewallruleInfo: data.FirewallRuleInfo, resourceProviderId: string): Thenable<data.CreateFirewallRuleResponse>;
+	createFirewallRule(selectedAccount: data.Account, firewallruleInfo: data.FirewallRuleInfo, resourceProviderId: string): Thenable<data.CreateFirewallRuleResponse>;
 
 	/**
 	 * handle a firewall rule
@@ -41,6 +40,6 @@ export interface IResourceManagementService {
 	/**
 	 * Show firewall rule dialog
 	 */
-	showFirewallRuleDialog(connection: IConnectionProfile): TPromise<void>;
+	showFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Thenable<boolean>;
 }
 

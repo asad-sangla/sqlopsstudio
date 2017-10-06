@@ -65,7 +65,7 @@ export class AccountPicker extends Disposable {
 	 * Get the selected account
 	 */
 	public get selectedAccount(): data.Account {
-		return this._accountList && this._accountList.length >= 0
+		return this._accountList && this._accountList.length > 0
 			? this._accountList.getSelectedElements()[0]
 			: undefined;
 	}

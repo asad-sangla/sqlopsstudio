@@ -55,7 +55,7 @@ export class TreeSelectionHandler {
 				self.handleTreeItemSelected(connectionManagementService, objectExplorerService, isDoubleClick, selection);
 			}
 			self._clicks = 0;
-			self._doubleClickTimeoutId  = -1;
+			self._doubleClickTimeoutId = -1;
 		}, 300);
 	}
 
@@ -72,6 +72,7 @@ export class TreeSelectionHandler {
 			params: undefined,
 			saveTheConnection: false,
 			showConnectionDialogOnError: true,
+			showFirewallRuleOnError: true,
 			showDashboard: isDoubleClick // only show the dashboard if the action is double click
 		};
 		if (selection && selection.length > 0 && (selection[0] instanceof ConnectionProfile)) {

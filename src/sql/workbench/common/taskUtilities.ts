@@ -86,7 +86,8 @@ export function connectIfNotAlreadyConnected(connectionProfile: IConnectionProfi
 				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.executeQuery, input: undefined },
 				saveTheConnection: false,
 				showDashboard: false,
-				showConnectionDialogOnError: false
+				showConnectionDialogOnError: false,
+				showFirewallRuleOnError: true
 			};
 			connectionService.connect(connectionProfile, uri, options).then(() => {
 				setTimeout(function () {
@@ -116,7 +117,8 @@ export function scriptSelect(connectionProfile: IConnectionProfile, metadata: da
 							params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.executeQuery, input: owner },
 							saveTheConnection: false,
 							showDashboard: false,
-							showConnectionDialogOnError: true
+							showConnectionDialogOnError: true,
+							showFirewallRuleOnError: true
 						};
 						connectionService.connect(connectionProfile, owner.uri, options).then(() => {
 							resolve();
@@ -146,7 +148,8 @@ export function editData(connectionProfile: IConnectionProfile, tableName: strin
 				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.none, input: owner },
 				saveTheConnection: false,
 				showDashboard: false,
-				showConnectionDialogOnError: true
+				showConnectionDialogOnError: true,
+				showFirewallRuleOnError: true
 			};
 			connectionService.connect(connectionProfile, owner.uri, options).then(() => {
 				resolve();
@@ -198,7 +201,8 @@ export function newQuery(connectionProfile: IConnectionProfile, connectionServic
 				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.none, input: owner },
 				saveTheConnection: false,
 				showDashboard: false,
-				showConnectionDialogOnError: true
+				showConnectionDialogOnError: true,
+				showFirewallRuleOnError: true
 			};
 			connectionService.connect(connectionProfile, owner.uri, options).then(() => {
 				resolve();
@@ -211,7 +215,8 @@ export function replaceConnection(oldUri: string, newUri: string, connectionServ
 	return new Promise<IConnectionResult>((resolve, reject) => {
 		let defaultResult: IConnectionResult = {
 			connected: false,
-			error: undefined
+			errorMessage: undefined,
+			errorCode: undefined
 		};
 		if (connectionService) {
 			let connectionProfile = connectionService.getConnectionProfile(oldUri);
@@ -220,7 +225,8 @@ export function replaceConnection(oldUri: string, newUri: string, connectionServ
 					params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.none },
 					saveTheConnection: false,
 					showDashboard: false,
-					showConnectionDialogOnError: true
+					showConnectionDialogOnError: true,
+					showFirewallRuleOnError: true
 				};
 				connectionService.disconnect(oldUri).then(() => {
 					connectionService.connect(connectionProfile, newUri, options).then(result => {
@@ -281,8 +287,7 @@ export function openInsight(query: IInsightsConfig, profile: IConnectionProfile,
 /* Helper Methods */
 function getStartPos(script: string, operation: ScriptOperation, typeName: string): number {
 	let scriptTypeName = objectScriptMap.get(typeName).toLowerCase();
-	switch(operation)
-	{
+	switch (operation) {
 		case (ScriptOperation.Create):
 			return script.toLowerCase().indexOf(`create ${scriptTypeName}`);
 		case (ScriptOperation.Delete):

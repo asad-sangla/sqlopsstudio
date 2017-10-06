@@ -131,6 +131,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			capabilitiesService,
 			undefined,
 			editorGroupService.object,
+			undefined,
 			undefined
 		);
 		return connectionManagementService;
@@ -264,7 +265,8 @@ suite('SQL ConnectionManagementService tests', () => {
 			params: undefined,
 			saveTheConnection: true,
 			showDashboard: false,
-			showConnectionDialogOnError: false
+			showConnectionDialogOnError: false,
+			showFirewallRuleOnError: false
 		};
 
 		connect(uri, options).then(() => {
@@ -314,7 +316,8 @@ suite('SQL ConnectionManagementService tests', () => {
 			},
 			saveTheConnection: true,
 			showDashboard: false,
-			showConnectionDialogOnError: true
+			showConnectionDialogOnError: true,
+			showFirewallRuleOnError: false
 		};
 
 		connect(uri, options).then(() => {
@@ -360,12 +363,13 @@ suite('SQL ConnectionManagementService tests', () => {
 			params: undefined,
 			saveTheConnection: false,
 			showDashboard: false,
-			showConnectionDialogOnError: true
+			showConnectionDialogOnError: true,
+			showFirewallRuleOnError: false
 		};
 
 		connect(uri, options, false, connectionProfile, error).then(result => {
 			assert.equal(result.connected, expectedConnection);
-			assert.equal(result.error, expectedError);
+			assert.equal(result.errorMessage, expectedError);
 			verifyShowDialog(connectionProfile, ConnectionType.default, uri, error);
 			done();
 		}).catch(err => {
@@ -382,12 +386,13 @@ suite('SQL ConnectionManagementService tests', () => {
 			params: undefined,
 			saveTheConnection: false,
 			showDashboard: false,
-			showConnectionDialogOnError: false
+			showConnectionDialogOnError: false,
+			showFirewallRuleOnError: false
 		};
 
 		connect(uri, options, false, connectionProfile, error).then(result => {
 			assert.equal(result.connected, expectedConnection);
-			assert.equal(result.error, expectedError);
+			assert.equal(result.errorMessage, expectedError);
 			// TODO: not sure how to verify not called
 			done();
 		}).catch(err => {
@@ -404,12 +409,13 @@ suite('SQL ConnectionManagementService tests', () => {
 			params: undefined,
 			saveTheConnection: false,
 			showDashboard: false,
-			showConnectionDialogOnError: true
+			showConnectionDialogOnError: true,
+			showFirewallRuleOnError: false
 		};
 
 		connect(uri, options, false, connectionProfileWithEmptyUnsavedPassword).then(result => {
 			assert.equal(result.connected, expectedConnection);
-			assert.equal(result.error, expectedError);
+			assert.equal(result.errorMessage, expectedError);
 			verifyShowDialog(connectionProfileWithEmptyUnsavedPassword, ConnectionType.default, uri, expectedError);
 			done();
 		}).catch(err => {
@@ -425,12 +431,13 @@ suite('SQL ConnectionManagementService tests', () => {
 			params: undefined,
 			saveTheConnection: false,
 			showDashboard: false,
-			showConnectionDialogOnError: true
+			showConnectionDialogOnError: true,
+			showFirewallRuleOnError: false
 		};
 
 		connect(uri, options, false, connectionProfileWithEmptySavedPassword).then(result => {
 			assert.equal(result.connected, expectedConnection);
-			assert.equal(result.error, expectedError);
+			assert.equal(result.errorMessage, expectedError);
 			verifyShowDialog(connectionProfileWithEmptySavedPassword, ConnectionType.default, uri, expectedError, false);
 			done();
 		}).catch(err => {
@@ -457,12 +464,13 @@ suite('SQL ConnectionManagementService tests', () => {
 			},
 			saveTheConnection: true,
 			showDashboard: false,
-			showConnectionDialogOnError: true
+			showConnectionDialogOnError: true,
+			showFirewallRuleOnError: false
 		};
 
 		connect(uri, options, false, connectionProfileWithEmptyUnsavedPassword).then(result => {
 			assert.equal(result.connected, expectedConnection);
-			assert.equal(result.error, expectedError);
+			assert.equal(result.errorMessage, expectedError);
 			verifyShowDialog(connectionProfileWithEmptyUnsavedPassword, ConnectionType.editor, uri, expectedError, false);
 			done();
 		}).catch(err => {
@@ -489,12 +497,13 @@ suite('SQL ConnectionManagementService tests', () => {
 			},
 			saveTheConnection: true,
 			showDashboard: false,
-			showConnectionDialogOnError: true
+			showConnectionDialogOnError: true,
+			showFirewallRuleOnError: false
 		};
 
 		connect(uri, options, false, connectionProfileWithEmptySavedPassword).then(result => {
 			assert.equal(result.connected, expectedConnection);
-			assert.equal(result.error, expectedError);
+			assert.equal(result.errorMessage, expectedError);
 			verifyShowDialog(connectionProfileWithEmptySavedPassword, ConnectionType.editor, uri, expectedError, false);
 			done();
 		}).catch(err => {
@@ -539,7 +548,8 @@ suite('SQL ConnectionManagementService tests', () => {
 			params: undefined,
 			saveTheConnection: false,
 			showDashboard: true,
-			showConnectionDialogOnError: false
+			showConnectionDialogOnError: false,
+			showFirewallRuleOnError: false
 		};
 		let connectionManagementService = createConnectionManagementService();
 		let called = false;

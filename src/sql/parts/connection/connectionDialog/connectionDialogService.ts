@@ -116,7 +116,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 
 				// Disable password prompt during reconnect if connected with an empty password
 				if (profile.password === '' && profile.savePassword === false) {
-						profile.savePassword = true;
+					profile.savePassword = true;
 				}
 
 				this.handleDefaultOnConnect(params, profile);
@@ -148,14 +148,16 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			params: params,
 			saveTheConnection: !fromEditor,
 			showDashboard: !fromEditor,
-			showConnectionDialogOnError: false
+			showConnectionDialogOnError: false,
+			showFirewallRuleOnError: true
 		};
+
 		this._connectionManagementService.connectAndSaveProfile(connection, uri, options, params.input).then(connectionResult => {
 			this._connecting = false;
 			if (connectionResult && connectionResult.connected) {
 				this._connectionDialog.close();
 			} else {
-				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.error);
+				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.errorMessage);
 				this._connectionDialog.resetConnection();
 			}
 		}).catch(err => {

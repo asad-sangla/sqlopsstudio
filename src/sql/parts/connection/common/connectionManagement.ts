@@ -46,11 +46,17 @@ export interface IConnectionCompletionOptions {
 	 * Open the connection dialog if connection fails
 	 */
 	showConnectionDialogOnError: boolean;
+
+	/**
+	 * Open the connection firewall rule dialog if connection fails
+	 */
+	showFirewallRuleOnError: boolean;
 }
 
 export interface IConnectionResult {
 	connected: boolean;
-	error: string;
+	errorMessage: string;
+	errorCode: number;
 }
 
 export interface IConnectionCallbacks {

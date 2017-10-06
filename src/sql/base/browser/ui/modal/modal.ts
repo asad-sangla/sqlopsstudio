@@ -322,6 +322,17 @@ export abstract class Modal extends Disposable implements IThemable {
 	}
 
 	/**
+	 * Set spinner element to show or hide
+	 */
+	public set spinner(show: boolean) {
+		if (show) {
+			this.showSpinner();
+		} else {
+			this.hideSpinner();
+		}
+	}
+
+	/**
 	 * Return background color of header and footer
 	 */
 	protected get headerAndFooterBackground(): string {

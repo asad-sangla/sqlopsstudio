@@ -56,4 +56,10 @@ export class FirewallRuleViewModel {
 			return this._defaultToSubnetIPRange;
 		}
 	}
+
+	public updateDefaultValues(ipAddress: string): void {
+		this._defaultIPAddress = ipAddress;
+		this._defaultFromSubnetIPRange = ipAddress.replace(/\.[0-9]+$/g, '.0');
+		this._defaultToSubnetIPRange = ipAddress.replace(/\.[0-9]+$/g, '.255');
+	}
 }

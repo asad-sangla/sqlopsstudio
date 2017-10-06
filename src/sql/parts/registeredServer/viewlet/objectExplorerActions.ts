@@ -98,7 +98,8 @@ export class ManageConnectionAction extends Action {
 				params: undefined,
 				saveTheConnection: false,
 				showConnectionDialogOnError: true,
-				showDashboard: true
+				showDashboard: true,
+				showFirewallRuleOnError: true
 			};
 
 			// If it's a database node just open a database connection and open dashboard,

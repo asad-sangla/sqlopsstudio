@@ -51,6 +51,7 @@ import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ICommandService } from 'vs/platform/commands/common/commands';
+import { IResourceManagementService } from 'sql/parts/accountManagement/common/interfaces';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -91,7 +92,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IQuickOpenService private _quickOpenService: IQuickOpenService,
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
-		@IStatusbarService private _statusBarService: IStatusbarService
+		@IStatusbarService private _statusBarService: IStatusbarService,
+		@IResourceManagementService private _resourceManagementService: IResourceManagementService
 	) {
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
 		if (!this._connectionMemento) {
@@ -284,7 +286,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				}
 				// If the password is required and still not loaded show the dialog
 				if (!foundPassword && this._connectionStore.isPasswordRequired(newConnection)) {
-					resolve(this.showConnectionDialogOnError(connection, owner, { connected: false, error: undefined }, options));
+					resolve(this.showConnectionDialogOnError(connection, owner, { connected: false, errorMessage: undefined, errorCode: undefined }, options));
 				} else {
 					// Try to connect
 					this.connectWithOptions(newConnection, owner.uri, options, owner).then(connectionResult => {
@@ -322,7 +324,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					input: owner,
 					runQueryOnCompletion: RunQueryOnConnectionMode.none
 				};
-				this.showConnectionDialog(params, connection, connectionResult.error).then(() => {
+				this.showConnectionDialog(params, connection, connectionResult.errorMessage).then(() => {
 					resolve(connectionResult);
 				}).catch(err => {
 					reject(err);
@@ -379,7 +381,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					if (connectionResult && connectionResult.connected) {
 						resolve(this._connectionStatusManager.getOriginalOwnerUri(ownerUri));
 					} else {
-						reject(connectionResult.error);
+						reject(connectionResult.errorMessage);
 					}
 				}, error => {
 					reject(error);
@@ -400,7 +402,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 				saveTheConnection: true,
 				showDashboard: false,
 				params: undefined,
-				showConnectionDialogOnError: false
+				showConnectionDialogOnError: false,
+				showFirewallRuleOnError: true
 			};
 		}
 
@@ -428,14 +431,15 @@ export class ConnectionManagementService implements IConnectionManagementService
 				saveTheConnection: false,
 				showDashboard: false,
 				params: undefined,
-				showConnectionDialogOnError: false
+				showConnectionDialogOnError: false,
+				showFirewallRuleOnError: true
 			};
 		}
 		return new Promise<IConnectionResult>((resolve, reject) => {
 			if (callbacks.onConnectStart) {
 				callbacks.onConnectStart();
 			}
-			return this.createNewConnection(uri, connection).then(connectionResult => {
+			this.createNewConnection(uri, connection).then(connectionResult => {
 				if (connectionResult && connectionResult.connected) {
 					if (callbacks.onConnectSuccess) {
 						callbacks.onConnectSuccess(options.params);
@@ -449,13 +453,41 @@ export class ConnectionManagementService implements IConnectionManagementService
 						connection.saveProfile = false;
 						this.doActionsAfterConnectionComplete(uri, options);
 					}
-
+					resolve(connectionResult);
+				} else if (options.showFirewallRuleOnError && connectionResult && connectionResult.errorCode) {
+					this._resourceManagementService.handleFirewallRule(connectionResult.errorCode, connectionResult.errorMessage, connection.providerName).then(response => {
+						if (response.result) {
+							this._resourceManagementService.showFirewallRuleDialog(connection, response.ipAddress, response.resourceProviderId).then(success => {
+								if (success) {
+									options.showFirewallRuleOnError = false;
+									this.connectWithOptions(connection, uri, options, callbacks).then((result) => {
+										resolve(result);
+									});
+								} else {
+									if (callbacks.onConnectReject) {
+										callbacks.onConnectReject('Connection Not Accepted');
+									}
+									resolve(connectionResult);
+								}
+							});
+						} else {
+							if (callbacks.onConnectReject) {
+								callbacks.onConnectReject('Connection Not Accepted');
+							}
+							resolve(connectionResult);
+						}
+					}, () => {
+						if (callbacks.onConnectReject) {
+							callbacks.onConnectReject('Connection Not Accepted');
+						}
+						resolve(connectionResult);
+					});
 				} else {
 					if (callbacks.onConnectReject) {
 						callbacks.onConnectReject('Connection Not Accepted');
 					}
+					resolve(connectionResult);
 				}
-				resolve(connectionResult);
 			}).catch(err => {
 				reject(err);
 				if (callbacks.onConnectReject) {
@@ -808,7 +840,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			self.tryAddActiveConnection(connection, activeConnection);
 			self.addTelemetryForConnection(connection);
 		} else {
-			connection.connectHandler(false, info.messages);
+			connection.connectHandler(false, info.messages, info.errorNumber);
 		}
 
 		if (this._connectionStatusManager.isDefaultTypeUri(info.ownerUri)) {
@@ -919,13 +951,13 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise<IConnectionResult>((resolve, reject) => {
 			let connectionInfo = this._connectionStatusManager.addConnection(connection, uri);
 			// Setup the handler for the connection complete notification to call
-			connectionInfo.connectHandler = ((connectResult, error) => {
-				if (error) {
+			connectionInfo.connectHandler = ((connectResult, errorMessage, errorCode) => {
+				if (errorMessage) {
 					// Connection to the server failed
 					this._connectionStatusManager.deleteConnection(uri);
-					resolve({ connected: connectResult, error: error });
+					resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
 				} else {
-					resolve({ connected: connectResult, error: error });
+					resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
 				}
 			});
 

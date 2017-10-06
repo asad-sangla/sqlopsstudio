@@ -285,7 +285,7 @@ export class ManageAction extends Action {
 	run(actionContext: BaseActionContext): TPromise<boolean> {
 		let self = this;
 		return new TPromise<boolean>((resolve, reject) => {
-			self._connectionManagementService.connect(actionContext.profile, actionContext.uri, { showDashboard: true, saveTheConnection: false, params: undefined, showConnectionDialogOnError: false }).then(
+			self._connectionManagementService.connect(actionContext.profile, actionContext.uri, { showDashboard: true, saveTheConnection: false, params: undefined, showConnectionDialogOnError: false, showFirewallRuleOnError: true }).then(
 				() => {
 					self._angularEventingService.sendAngularEvent(actionContext.uri, 'database');
 					resolve(true);
