@@ -28,6 +28,7 @@ import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import * as strings from 'vs/base/common/strings';
 import { clone } from 'vs/base/common/objects';
 import { error } from 'sql/base/common/log';
+import { TabChild } from 'sql/base/browser/ui/panel/tab.component';
 
 import * as rangy from 'sql/base/node/rangy';
 
@@ -38,9 +39,9 @@ declare type PaneType = 'messages' | 'results';
 @Component({
 	selector: QUERY_SELECTOR,
 	host: { '(window:keydown)': 'keyEvent($event)', '(window:gridnav)': 'keyEvent($event)' },
-	templateUrl: decodeURI(require.toUrl('sql/parts/grid/views/query/query.component.html'))
+	templateUrl: decodeURI(require.toUrl('sql/parts/grid/views/query/query.component.html')),
+	providers: [{ provide: TabChild, useExisting: forwardRef(() => QueryComponent) }]
 })
-
 export class QueryComponent extends GridParentComponent implements OnInit, OnDestroy {
 	// CONSTANTS
 	// tslint:disable-next-line:no-unused-variable
@@ -584,6 +585,10 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			this.resultActive = !this.resultActive;
 		}
 		this._cd.detectChanges();
+		this.resizeGrids();
+	}
+
+	layout() {
 		this.resizeGrids();
 	}
 }
