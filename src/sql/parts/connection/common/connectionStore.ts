@@ -307,16 +307,21 @@ export class ConnectionStore {
 
 	/**
 	 * Adds a connection to the active connections list.
+	 * Connection is only added if there are no other connections with the same connection ID in the list.
 	 * Password values are stored to a separate credential store if the "savePassword" option is true
 	 *
 	 * @param {IConnectionCredentials} conn the connection to add
 	 * @returns {Promise<void>} a Promise that returns when the connection was saved
 	 */
 	public addActiveConnection(conn: IConnectionProfile): Promise<void> {
-		return this.addConnectionToMemento(conn, Constants.activeConnections, undefined, conn.savePassword).then(() => {
-			let maxConnections = this.getMaxRecentConnectionsCount();
-			return this.addConnectionToMemento(conn, Constants.recentConnections, maxConnections);
-		});
+		if(this.getActiveConnections().some(existingConn => existingConn.id === conn.id)) {
+			return Promise.resolve(undefined);
+		} else {
+			return this.addConnectionToMemento(conn, Constants.activeConnections, undefined, conn.savePassword).then(() => {
+				let maxConnections = this.getMaxRecentConnectionsCount();
+				return this.addConnectionToMemento(conn, Constants.recentConnections, maxConnections);
+			});
+		}
 	}
 
 	public addConnectionToMemento(conn: IConnectionProfile, mementoKey: string, maxConnections?: number, savePassword?: boolean): Promise<void> {
