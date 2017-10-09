@@ -273,7 +273,13 @@ export abstract class ExtHostDataProtocolShape {
 	 * Close file browser
 	 */
 	$closeFileBrowser(handle: number, ownerUri: string): Thenable<data.FileBrowserCloseResponse> { throw ni(); }
+}
 
+
+/**
+ * ResourceProvider extension host class.
+ */
+export abstract class ExtHostResourceProviderShape {
 	/**
 	 * Create a firewall rule
 	 */
@@ -283,6 +289,7 @@ export abstract class ExtHostDataProtocolShape {
 	 * Handle firewall rule
 	 */
 	$handleFirewallRule(handle: number, errorCode: number, errorMessage: string, connectionTypeId: string): Thenable<data.HandleFirewallRuleResponse> { throw ni(); }
+
 }
 
 /**
@@ -308,6 +315,11 @@ export abstract class MainThreadAccountManagementShape {
 	$unregisterAccountProvider(handle: number): Thenable<any>  { throw ni(); }
 
 	$performOAuthAuthorization(url: string, silent: boolean): Thenable<string> { throw ni(); }
+}
+
+export abstract class MainThreadResourceProviderShape {
+	$registerResourceProvider(providerMetadata: data.ResourceProviderMetadata, handle: number): Thenable<any> { throw ni(); }
+	$unregisterResourceProvider(handle: number): Thenable<any>  { throw ni(); }
 }
 
 export abstract class MainThreadDataProtocolShape {
@@ -389,12 +401,14 @@ export const SqlMainContext = {
 	MainThreadAccountManagement: createMainId<MainThreadAccountManagementShape>('MainThreadAccountManagement'),
 	MainThreadCredentialManagement: createMainId<MainThreadCredentialManagementShape>('MainThreadCredentialManagement'),
 	MainThreadDataProtocol: createMainId<MainThreadDataProtocolShape>('MainThreadDataProtocol'),
-	MainThreadSerializationProvider: createMainId<MainThreadSerializationProviderShape>('MainThreadSerializationProvider')
+	MainThreadSerializationProvider: createMainId<MainThreadSerializationProviderShape>('MainThreadSerializationProvider'),
+	MainThreadResourceProvider: createMainId<MainThreadResourceProviderShape>('MainThreadResourceProvider')
 };
 
 export const SqlExtHostContext = {
 	ExtHostAccountManagement: createExtId<ExtHostAccountManagementShape>('ExtHostAccountManagement'),
 	ExtHostCredentialManagement: createExtId<ExtHostCredentialManagementShape>('ExtHostCredentialManagement'),
 	ExtHostDataProtocol: createExtId<ExtHostDataProtocolShape>('ExtHostDataProtocol'),
-	ExtHostSerializationProvider: createExtId<ExtHostSerializationProviderShape>('ExtHostSerializationProvider')
+	ExtHostSerializationProvider: createExtId<ExtHostSerializationProviderShape>('ExtHostSerializationProvider'),
+	ExtHostResourceProvider: createExtId<ExtHostResourceProviderShape>('ExtHostResourceProvider')
 };

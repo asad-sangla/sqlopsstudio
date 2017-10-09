@@ -581,55 +581,6 @@ export interface RestoreResponse {
 	errorMessage: string;
 }
 
-// Firewall rule interfaces
-export interface CreateFirewallRuleParams {
-	account: Account;
-	serverName: string;
-	startIpAdrress: string;
-	endIpAddress: string;
-	securityTokenMappings: {};
-}
-
-export interface CreateFirewallRuleResponse {
-	result: boolean;
-	errorMessage: string;
-}
-
-export interface HandleFirewallRuleParams {
-	errorCode: number;
-	errorMessage: string;
-	connectionTypeId: string;
-}
-
-export interface HandleFirewallRuleResponse {
-	result: boolean;
-	ipAddress: string;
-}
-
-export interface Account {
-	key: AccountKey;
-	displayInfo: AccountDisplayInfo;
-	properties: any;
-	isStale: boolean;
-}
-
-export interface AccountKey {
-	providerId: string;
-	providerArgs?: any;
-	accountId: string;
-}
-
-export interface AccountDisplayInfo {
-	contextualDisplayName: string;
-	contextualLogo: AccountContextualLogo;
-	displayName: string;
-}
-
-export interface AccountContextualLogo {
-	light: string;
-	dark: string;
-}
-
 // Query Execution types
 export interface ResultSetSummary {
 	id: number;

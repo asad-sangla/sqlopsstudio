@@ -91,8 +91,6 @@ export interface Converter {
 	asRestoreParams(ownerUri: string, params: data.RestoreInfo): ls.RestoreParams;
 
 	asRestoreConfigInfoParams(ownerUri: string): ls.RestoreConfigInfoRequestParams;
-
-	asCreateFirewallRuleParams(account: data.Account, params: data.FirewallRuleInfo): ls.CreateFirewallRuleParams;
 }
 
 export interface URIConverter {
@@ -460,16 +458,6 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		};
 	}
 
-	function asCreateFirewallRuleParams(account: data.Account, params: data.FirewallRuleInfo): ls.CreateFirewallRuleParams {
-		return <ls.CreateFirewallRuleParams>{
-			account: account,
-			serverName: params.serverName,
-			startIpAdrress: params.startIpAddress,
-			endIpAddress: params.endIpAddress,
-			securityTokenMappings: params.securityTokenMappings
-		};
-	}
-
 	return {
 		asUri,
 		asTextDocumentIdentifier,
@@ -508,8 +496,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		asListTasksParams,
 		asCancelTaskParams,
 		asRestoreParams,
-		asRestoreConfigInfoParams,
-		asCreateFirewallRuleParams
+		asRestoreConfigInfoParams
 	};
 }
 

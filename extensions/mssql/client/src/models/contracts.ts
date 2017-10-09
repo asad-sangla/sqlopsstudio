@@ -67,3 +67,38 @@ export namespace DeleteCredentialRequest {
     export const type: RequestType<Credential, boolean, void> = { get method(): string { return 'credential/delete'; } };
 }
 // --------------------------------- </ Delete Credential Request > -------------------------------------------------
+
+// ------------------------------- < Resource Events > ------------------------------------
+export namespace CreateFirewallRuleRequest {
+	export const type: RequestType<CreateFirewallRuleParams, CreateFirewallRuleResponse, void> = { get method(): string { return 'resource/createFirewallRule'; } };
+}
+
+export namespace HandleFirewallRuleRequest {
+	export const type: RequestType<HandleFirewallRuleParams, HandleFirewallRuleResponse, void> = { get method(): string { return 'resource/handleFirewallRule'; } };
+}
+
+// Firewall rule interfaces
+export interface CreateFirewallRuleParams {
+	account: data.Account;
+	serverName: string;
+	startIpAddress: string;
+	endIpAddress: string;
+	securityTokenMappings: {};
+}
+
+export interface CreateFirewallRuleResponse {
+	result: boolean;
+	errorMessage: string;
+}
+
+export interface HandleFirewallRuleParams {
+	errorCode: number;
+	errorMessage: string;
+	connectionTypeId: string;
+}
+
+export interface HandleFirewallRuleResponse {
+	result: boolean;
+	ipAddress: string;
+}
+

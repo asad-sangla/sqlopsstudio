@@ -51,7 +51,7 @@ import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IResourceManagementService } from 'sql/parts/accountManagement/common/interfaces';
+import { IResourceProviderService } from 'sql/parts/accountManagement/common/interfaces';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -93,7 +93,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IQuickOpenService private _quickOpenService: IQuickOpenService,
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
 		@IStatusbarService private _statusBarService: IStatusbarService,
-		@IResourceManagementService private _resourceManagementService: IResourceManagementService
+		@IResourceProviderService private _resourceProviderService: IResourceProviderService
 	) {
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
 		if (!this._connectionMemento) {
@@ -455,9 +455,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 					}
 					resolve(connectionResult);
 				} else if (options.showFirewallRuleOnError && connectionResult && connectionResult.errorCode) {
-					this._resourceManagementService.handleFirewallRule(connectionResult.errorCode, connectionResult.errorMessage, connection.providerName).then(response => {
+					this._resourceProviderService.handleFirewallRule(connectionResult.errorCode, connectionResult.errorMessage, connection.providerName).then(response => {
 						if (response.result) {
-							this._resourceManagementService.showFirewallRuleDialog(connection, response.ipAddress, response.resourceProviderId).then(success => {
+							this._resourceProviderService.showFirewallRuleDialog(connection, response.ipAddress, response.resourceProviderId).then(success => {
 								if (success) {
 									options.showFirewallRuleOnError = false;
 									this.connectWithOptions(connection, uri, options, callbacks).then((result) => {

@@ -457,8 +457,6 @@ declare module 'data' {
 		taskServicesProvider: TaskServicesProvider;
 
 		fileBrowserProvider: FileBrowserProvider;
-
-		resourceProvider: ResourceProvider;
 	}
 
 	/**
@@ -1093,7 +1091,6 @@ declare module 'data' {
 	// ACCOUNT MANAGEMENT //////////////////////////////////////////////////
 	export namespace accounts {
 		export function registerAccountProvider(providerMetadata: AccountProviderMetadata, provider: AccountProvider): vscode.Disposable;
-		// TODO: Add register-er for resource provider
 
 		/**
 		 * Performs OAuth via the account management service and returns the resulting authorization code
@@ -1253,6 +1250,34 @@ declare module 'data' {
 	}
 
 	// Resource provider interfaces  -----------------------------------------------------------------------
+
+	// - ACCOUNT PROVIDER //////////////////////////////////////////////////
+	/**
+	 * Represents a provider of accounts.
+	 */
+	export interface ResourceProviderMetadata {
+		/**
+		 * The identifier of the provider
+		 */
+		id: string;
+
+		/**
+		 * Display name of the provider
+		 */
+		displayName: string;
+
+		/**
+		 * Optional settings that identify an instantiation of a provider
+		 */
+		settings?: {};
+	}
+
+	export namespace resources {
+		/**
+		 * Registers a resource provider that can suport 
+		 */
+		export function registerResourceProvider(providerMetadata: ResourceProviderMetadata, provider: ResourceProvider): vscode.Disposable;	
+	}
 
 	/**
 	 * Represents a provider of resource

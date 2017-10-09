@@ -8,6 +8,7 @@ import vscode = require('vscode');
 import data = require('data');
 import { Constants } from '../models/constants';
 import { Serialization } from '../serialize/serialization';
+import { AzureResourceProvider } from '../resourceProvider/resourceProvider';
 import { CredentialStore } from '../credentialstore/credentialstore';
 import {IExtensionConstants, Telemetry, SharedConstants, SqlToolsServiceClient, VscodeWrapper, Utils, PlatformInformation} from 'extensions-modules';
 import { LanguageClient } from 'dataprotocol-client';
@@ -79,6 +80,10 @@ export default class MainController implements vscode.Disposable {
         return this.createClient(['MicrosoftSqlToolsSerialization.exe', 'MicrosoftSqlToolsSerialization']);
     }
 
+    private createResourceProviderClient(): Promise<LanguageClient> {
+        return this.createClient(['SqlToolsResourceProviderService.exe', 'SqlToolsResourceProviderService']);
+    }
+
     /**
      * Initializes the extension
      */
@@ -112,6 +117,20 @@ export default class MainController implements vscode.Disposable {
                         Utils.logDebug('Cannot find Serialization executables. error: ' + error , MainController._extensionConstants.extensionConfigSectionName);
                     });
 
+                    self.createResourceProviderClient().then(rpClient => {
+                        let resourceProvider = new AzureResourceProvider(self._client, rpClient);
+                        data.resources.registerResourceProvider({
+                            displayName: 'Azure SQL Resource Provider', // TODO Localize
+                            id: 'Microsoft.Azure.SQL.ResourceProvider',
+                            settings: {
+
+                            }
+                        }, resourceProvider);
+                        Utils.logDebug('resourceProvider registered', MainController._extensionConstants.extensionConfigSectionName);
+                    }, error => {
+                        Utils.logDebug('Cannot find ResourceProvider executables. error: ' + error , MainController._extensionConstants.extensionConfigSectionName);
+                    });
+
                     self.createCredentialClient().then(credentialClient => {
 
                         self._credentialStore.languageClient = credentialClient;
@@ -132,6 +151,8 @@ export default class MainController implements vscode.Disposable {
                      }, error => {
                          Utils.logDebug('Cannot find credentials executables. error: ' + error , MainController._extensionConstants.extensionConfigSectionName);
                      });
+
+
 
                     Utils.logDebug(SharedConstants.extensionActivated, MainController._extensionConstants.extensionConfigSectionName);
                     self._initialized = true;

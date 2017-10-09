@@ -9,9 +9,10 @@ import * as data from 'data';
 import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
-import { IMessageService, IConfirmation } from 'vs/platform/message/common/message';
+import { IMessageService, IConfirmation, Severity } from 'vs/platform/message/common/message';
 
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 
 /**
  * Actions to add a new account
@@ -22,6 +23,8 @@ export class AddAccountAction extends Action {
 
 	constructor(
 		private _providerId: string,
+		@IMessageService private _messageService: IMessageService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService,
 		@IAccountManagementService private _accountManagementService: IAccountManagementService
 	) {
 		super(AddAccountAction.ID, AddAccountAction.LABEL);
@@ -35,7 +38,12 @@ export class AddAccountAction extends Action {
 			self._accountManagementService.addAccount(self._providerId)
 				.then(
 					() => { resolve(true); },
-					(err) => { reject(err); }
+					(err) => {
+						// Must handle here as this is an independent action
+						self._errorMessageService.showDialog(Severity.Error,
+							localize('addAccountFailed', 'Failed to add account'), err);
+						resolve(false);
+					}
 				);
 		});
 	}
@@ -51,6 +59,7 @@ export class RemoveAccountAction extends Action {
 	constructor(
 		private _account: data.Account,
 		@IMessageService private _messageService: IMessageService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService,
 		@IAccountManagementService private _accountManagementService: IAccountManagementService
 	) {
 		super(RemoveAccountAction.ID, RemoveAccountAction.LABEL, 'remove-account-action icon remove');
@@ -75,7 +84,12 @@ export class RemoveAccountAction extends Action {
 			self._accountManagementService.removeAccount(self._account.key)
 				.then(
 					(result) => { resolve(result); },
-					(err) => { reject(err); }
+					(err) => {
+						// Must handle here as this is an independent action
+						self._errorMessageService.showDialog(Severity.Error,
+							localize('removeAccountFailed', 'Failed to remove account'), err);
+						resolve(false);
+					}
 				);
 		});
 	}

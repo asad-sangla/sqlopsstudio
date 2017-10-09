@@ -11,6 +11,7 @@ import * as TypeMoq from 'typemoq';
 import { AddAccountAction, RemoveAccountAction } from 'sql/parts/accountManagement/common/accountActions';
 import { AccountManagementTestService } from 'sqltest/stubs/accountManagementStubs';
 import { MessageServiceStub } from 'sqltest/stubs/messageServiceStub';
+import { ErrorMessageServiceStub } from 'sqltest/stubs/errorMessageServiceStub';
 
 let testAccount = <data.Account>{
 	key: {
@@ -28,19 +29,18 @@ let testAccount = <data.Account>{
 suite('Account Management Dialog Actions Tests', () => {
 	test('AddAccount - Success', (done) => {
 		// Setup: Create an AddAccountAction object
-		let ams = getMockAccountManagementService(true);
 		let param = 'azure';
-		let action = new AddAccountAction(param, ams.object);
+		let mocks = createAddAccountAction(true, true, param);
 
 		// If: I run the action when it will resolve
-		action.run()
+		mocks.action.run()
 			.then(result => {
 				// Then:
 				// ... I should have gotten true back
 				assert.ok(result);
 
 				// ... The account management service should have gotten a add account request
-				ams.verify(x => x.addAccount(param), TypeMoq.Times.once());
+				mocks.accountMock.verify(x => x.addAccount(param), TypeMoq.Times.once());
 			})
 			.then(
 			() => done(),
@@ -50,33 +50,29 @@ suite('Account Management Dialog Actions Tests', () => {
 
 	test('AddAccount - Failure', (done) => {
 		// Setup: Create an AddAccountAction object
-		let ams = getMockAccountManagementService(false);
 		let param = 'azure';
-		let action = new AddAccountAction(param, ams.object);
+		let mocks = createAddAccountAction(false, true, param);
 
 		// If: I run the action when it will reject
-		action.run()
-			.then(
-			() => done('action resolved when it should have rejected'),
-			() => {
-				try {
-					// Then:
-					// ... The promise should have rejected
-					// ... The account management service should have gotten a add account request
-					ams.verify(x => x.addAccount(param), TypeMoq.Times.once());
-					done();
-				} catch (e) {
-					done(e);
-				}
-			}
-			);
+		mocks.action.run().then(result => {
+			// Then:
+			// ... The result should be false since the operation failed
+			assert.ok(!result);
+			// ... The account management service should have gotten a add account request
+			mocks.accountMock.verify(x => x.addAccount(param), TypeMoq.Times.once());
+			done();
+		}, error => {
+			// Should fail as rejected actions cause the debugger to crash
+			done(error);
+		});
 	});
 
 	test('RemoveAccount - Confirm Success', (done) => {
 		// Setup: Create an AddAccountAction object
 		let ams = getMockAccountManagementService(true);
 		let ms = getMockMessageService(true);
-		let action = new RemoveAccountAction(testAccount, ms.object, ams.object);
+		let es = getMockErrorMessageService();
+		let action = new RemoveAccountAction(testAccount, ms.object, es.object, ams.object);
 
 		// If: I run the action when it will resolve
 		action.run()
@@ -101,7 +97,8 @@ suite('Account Management Dialog Actions Tests', () => {
 		// Setup: Create an AddAccountAction object
 		let ams = getMockAccountManagementService(true);
 		let ms = getMockMessageService(false);
-		let action = new RemoveAccountAction(testAccount, ms.object, ams.object);
+		let es = getMockErrorMessageService();
+		let action = new RemoveAccountAction(testAccount, ms.object, es.object, ams.object);
 
 		// If: I run the action when it will resolve
 		action.run()
@@ -128,26 +125,36 @@ suite('Account Management Dialog Actions Tests', () => {
 		// Setup: Create an AddAccountAction object
 		let ams = getMockAccountManagementService(false);
 		let ms = getMockMessageService(true);
-		let action = new RemoveAccountAction(testAccount, ms.object, ams.object);
+		let es = getMockErrorMessageService();
+		let action = new RemoveAccountAction(testAccount, ms.object, es.object, ams.object);
 
 		// If: I run the action when it will reject
-		action.run()
-			.then(
-			() => done('action resolved when it should have rejected'),
-			() => {
-				try {
-					// Then:
-					// ... The promise should have rejected
-					// ... The account management service should have gotten a remove account request
-					ams.verify(x => x.removeAccount(TypeMoq.It.isValue(testAccount.key)), TypeMoq.Times.once());
-					done();
-				} catch (e) {
-					done(e);
-				}
-			}
-			);
+		action.run().then(result => {
+			// Then:
+			// ... The result should be false since the operation failed
+			assert.ok(!result);
+			// ... The account management service should have gotten a remove account request
+			ams.verify(x => x.removeAccount(TypeMoq.It.isValue(testAccount.key)), TypeMoq.Times.once());
+			done();
+		}, error => {
+			// Should fail as rejected actions cause the debugger to crash
+			done(error);
+		});
 	});
 });
+
+function createAddAccountAction(resolve: boolean, confirm: boolean, param: string): IAddActionMocks {
+	let ams = getMockAccountManagementService(resolve);
+	let mockMessageService = getMockMessageService(confirm);
+	let mockErrorMessageService = getMockErrorMessageService();
+	return {
+		accountMock: ams,
+		messageMock: mockMessageService,
+		errorMessageMock: mockErrorMessageService,
+		action: new AddAccountAction(param, mockMessageService.object,
+			mockErrorMessageService.object, ams.object)
+	};
+}
 
 function getMockAccountManagementService(resolve: boolean): TypeMoq.Mock<AccountManagementTestService> {
 	let mockAccountManagementService = TypeMoq.Mock.ofType(AccountManagementTestService);
@@ -167,4 +174,18 @@ function getMockMessageService(confirm: boolean): TypeMoq.Mock<MessageServiceStu
 		.returns(() => confirm);
 
 	return mockMessageService;
+}
+
+function getMockErrorMessageService(): TypeMoq.Mock<ErrorMessageServiceStub> {
+	let mockMessageService = TypeMoq.Mock.ofType(ErrorMessageServiceStub);
+	mockMessageService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()));
+	return mockMessageService;
+}
+
+interface IAddActionMocks
+{
+	accountMock: TypeMoq.Mock<AccountManagementTestService>;
+	messageMock: TypeMoq.Mock<MessageServiceStub>;
+	errorMessageMock: TypeMoq.Mock<ErrorMessageServiceStub>;
+	action: AddAccountAction;
 }

@@ -20,6 +20,7 @@ import { ExtHostAccountManagement } from 'sql/workbench/api/node/extHostAccountM
 import { ExtHostCredentialManagement } from 'sql/workbench/api/node/extHostCredentialManagement';
 import { ExtHostDataProtocol } from 'sql/workbench/api/node/extHostDataProtocol';
 import { ExtHostSerializationProvider } from 'sql/workbench/api/node/extHostSerializationProvider';
+import { ExtHostResourceProvider } from 'sql/workbench/api/node/extHostResourceProvider';
 import { ExtHostThreadService } from 'vs/workbench/services/thread/node/extHostThreadService';
 import * as sqlExtHostTypes from 'sql/workbench/api/node/sqlExtHostTypes';
 
@@ -43,6 +44,7 @@ export function createApiFactory(
 	const extHostCredentialManagement = threadService.set(SqlExtHostContext.ExtHostCredentialManagement, new ExtHostCredentialManagement(threadService));
 	const extHostDataProvider = threadService.set(SqlExtHostContext.ExtHostDataProtocol, new ExtHostDataProtocol(threadService));
 	const extHostSerializationProvider = threadService.set(SqlExtHostContext.ExtHostSerializationProvider, new ExtHostSerializationProvider(threadService));
+	const extHostResourceProvider = threadService.set(SqlExtHostContext.ExtHostResourceProvider, new ExtHostResourceProvider(threadService));
 
 	return {
 		vsCodeFactory: vsCodeFactory,
@@ -72,6 +74,13 @@ export function createApiFactory(
 				registerProvider(provider: data.SerializationProvider): vscode.Disposable {
 					return extHostSerializationProvider.$registerSerializationProvider(provider);
 				},
+			};
+
+			// namespace: serialization
+			const resources: typeof data.resources = {
+				registerResourceProvider(providerMetadata: data.ResourceProviderMetadata, provider: data.ResourceProvider): vscode.Disposable {
+					return extHostResourceProvider.$registerResourceProvider(providerMetadata, provider);
+				}
 			};
 
 			// namespace: dataprotocol
@@ -158,6 +167,7 @@ export function createApiFactory(
 			return {
 				accounts,
 				credentials,
+				resources,
 				serialization,
 				dataprotocol,
 				ServiceOptionType: sqlExtHostTypes.ServiceOptionType,

@@ -8,7 +8,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { IResourceManagementService, IHandleFirewallRuleResult } from 'sql/parts/accountManagement/common/interfaces';
+import { IResourceProviderService, IHandleFirewallRuleResult } from 'sql/parts/accountManagement/common/interfaces';
 import * as Constants from 'sql/common/constants';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
@@ -16,7 +16,7 @@ import { FirewallRuleDialogController } from 'sql/parts/accountManagement/firewa
 
 import * as data from 'data';
 
-export class ResourceManagementService implements IResourceManagementService {
+export class ResourceProviderService implements IResourceProviderService {
 
 	public _serviceBrand: any;
 	private _providers: { [handle: string]: data.ResourceProvider; } = Object.create(null);
@@ -64,12 +64,13 @@ export class ResourceManagementService implements IResourceManagementService {
 	 * Handle a firewall rule
 	 */
 	public handleFirewallRule(errorCode: number, errorMessage: string, connectionTypeId: string): Thenable<IHandleFirewallRuleResult> {
+		let self = this;
 		return new Promise<IHandleFirewallRuleResult>((resolve, reject) => {
 			let handleFirewallRuleResult: IHandleFirewallRuleResult;
 			let promises = [];
-			if (this._providers) {
-				for (let key in this._providers) {
-					let provider = this._providers[key];
+			if (self._providers) {
+				for (let key in self._providers) {
+					let provider = self._providers[key];
 					promises.push(provider.handleFirewallRule(errorCode, errorMessage, connectionTypeId)
 						.then(response => {
 							if (response.result) {
@@ -85,10 +86,19 @@ export class ResourceManagementService implements IResourceManagementService {
 				if (handleFirewallRuleResult) {
 					resolve(handleFirewallRuleResult);
 				} else {
-					reject({ result: false, ipAddress: undefined, resourceProviderId: undefined });
+					reject({ result: false, IPAddress: undefined, resourceProviderId: undefined });
 				}
 			});
 		});
+
+		// Mock for testing
+		// return new Promise<IHandleFirewallRuleResult>((resolve, reject) => {
+		// 	if (errorCode === 40615) {
+		// 		resolve({ result: true, ipAddress: '167.220.150', resourceProviderId: 'Azure' });
+		// 	} else {
+		// 		reject({ result: false, ipAddress: undefined, resourceProviderId: undefined });
+		// 	}
+		// });
 	}
 
 	/**
@@ -96,5 +106,9 @@ export class ResourceManagementService implements IResourceManagementService {
 	 */
 	public registerProvider(providerId: string, provider: data.ResourceProvider): void {
 		this._providers[providerId] = provider;
+	}
+
+	public unregisterProvider(providerId: string): void {
+		delete this._providers[providerId];
 	}
 }

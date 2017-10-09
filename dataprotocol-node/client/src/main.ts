@@ -30,7 +30,7 @@ import {
 	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo,
 	TaskServicesProvider, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo, TaskInfo,
 	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo, ExecutionPlanOptions,
-	RestoreConfigInfo, ResourceProvider, Account as DataAccount, FirewallRuleInfo, SerializationProvider, FileBrowserProvider, FileBrowserOpenedParams, FileBrowserExpandedParams, FileBrowserValidatedParams
+	RestoreConfigInfo, SerializationProvider, FileBrowserProvider, FileBrowserOpenedParams, FileBrowserExpandedParams, FileBrowserValidatedParams
 } from 'data';
 
 import {
@@ -60,7 +60,6 @@ import {
 	LoginInfo, CreateLoginResponse, CreateLoginParams,
 	BackupInfo, BackupResponse, BackupParams, TaskExecutionMode,
 	RestoreParams, RestoreResponse, RestorePlanResponse,
-	CreateFirewallRuleParams, CreateFirewallRuleResponse, HandleFirewallRuleParams, HandleFirewallRuleResponse,
 	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams,
 	GetDatabaseInfoResponse, GetDatabaseInfoParams,
 	BackupConfigInfoResponse, FileBrowserOpenParams, FileBrowserCloseResponse,
@@ -123,7 +122,6 @@ import {
 	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
 	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, GetDatabaseInfoRequest, BackupConfigInfoRequest,
 	RestoreRequest, RestorePlanRequest, RestoreConfigInfoRequest,
-	CreateFirewallRuleRequest, HandleFirewallRuleRequest,
 	ListTasksRequest, CancelTaskRequest, TaskStatusChangedNotification, TaskCreatedNotification,
 	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams, FileBrowserOpenRequest, FileBrowserOpenedNotification,
 	FileBrowserValidateRequest, FileBrowserValidatedNotification, FileBrowserExpandRequest, FileBrowserExpandedNotification, FileBrowserCloseRequest
@@ -2143,29 +2141,6 @@ export class LanguageClient {
 			}
 		};
 
-		let resourceProvider: ResourceProvider = {
-			createFirewallRule(account: DataAccount, firewallruleInfo: FirewallRuleInfo): Thenable<CreateFirewallRuleResponse> {
-				return self.doSendRequest(connection, CreateFirewallRuleRequest.type, self._c2p.asCreateFirewallRuleParams(account, firewallruleInfo), undefined).then(
-					self._p2c.asCreateFirewallRuleResponse,
-					error => {
-						self.logFailedRequest(CreateFirewallRuleRequest.type, error);
-						return Promise.resolve(undefined);
-					}
-				);
-			},
-
-			handleFirewallRule(errorCode: number, errorMessage: string, connectionTypeId: string):Thenable<HandleFirewallRuleResponse> {
-				let params: HandleFirewallRuleParams = { errorCode: errorCode, errorMessage: errorMessage, connectionTypeId: connectionTypeId };
-				return self.doSendRequest(connection, HandleFirewallRuleRequest.type, params, undefined).then(
-					self._p2c.asHandleFirewallRuleResponse,
-					error => {
-						self.logFailedRequest(HandleFirewallRuleRequest.type, error);
-						return Promise.resolve(undefined);
-					}
-				);
-			}
-		};
-
 		let serializationProvider: SerializationProvider = {
 			handle: 0,
 			saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<SaveResultRequestResult> {
@@ -2196,9 +2171,7 @@ export class LanguageClient {
 
 			taskServicesProvider: taskServicesProvider,
 
-			fileBrowserProvider: fileBrowserProvider,
-
-			resourceProvider: resourceProvider
+			fileBrowserProvider: fileBrowserProvider
 		}));
 
 		// Hook to the workspace-wide notifications that aren't routed to a specific provider

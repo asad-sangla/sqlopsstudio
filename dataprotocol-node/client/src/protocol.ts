@@ -27,7 +27,6 @@ import {
 	ScriptingParams, ScriptingResult, ScriptingCompleteParams,
 	BatchSummary, QueryExecuteBatchNotificationParams, ResultSetSummary, IResultMessage, ISelectionData,
 	DbCellValue, EditCell, EditRow, CreateSessionResponse, SessionCreatedParameters, ExpandParams, ExpandResponse, CloseSessionParams, CloseSessionResponse,
-	CreateFirewallRuleParams, CreateFirewallRuleResponse, HandleFirewallRuleParams, HandleFirewallRuleResponse,
 	BackupInfo, BackupParams, BackupResponse,
 	RestoreParams, RestoreResponse, RestorePlanResponse, RestoreConfigInfoRequestParams, RestoreConfigInfoResponse,
 	LoginInfo, CreateLoginParams, CreateLoginResponse, GetDatabaseInfoParams, GetDatabaseInfoResponse,
@@ -1551,13 +1550,3 @@ export namespace FileBrowserValidatedNotification {
 export namespace FileBrowserCloseRequest {
 	export const type: RequestType<FileBrowserCloseParams, FileBrowserCloseResponse, void> = { get method(): string { return 'filebrowser/close'; } };
 }
-
-// ------------------------------- < Resource Events > ------------------------------------
-export namespace CreateFirewallRuleRequest {
-	export const type: RequestType<CreateFirewallRuleParams, CreateFirewallRuleResponse, void> = { get method(): string { return 'resource/createFirewallRule'; } };
-}
-
-export namespace HandleFirewallRuleRequest {
-	export const type: RequestType<HandleFirewallRuleParams, HandleFirewallRuleResponse, void> = { get method(): string { return 'resource/handleFirewallRule'; } };
-}
-

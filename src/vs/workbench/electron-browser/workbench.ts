@@ -144,8 +144,8 @@ import { ISqlOAuthService } from 'sql/common/sqlOAuthService';
 import { SqlOAuthService } from 'sql/common/browser/sqlOAuthServiceImpl';
 import { IClipboardService as sqlIClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ClipboardService as sqlClipboardService } from 'sql/platform/clipboard/electron-browser/clipboardService';
-import { IResourceManagementService } from 'sql/parts/accountManagement/common/interfaces';
-import { ResourceManagementService } from 'sql/parts/accountManagement/common/resourceManagementService';
+import { IResourceProviderService } from 'sql/parts/accountManagement/common/interfaces';
+import { ResourceProviderService } from 'sql/parts/accountManagement/common/resourceProviderService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -692,7 +692,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IConnectionDialogService, this.instantiationService.createInstance(ConnectionDialogService));
 		serviceCollection.set(IServerGroupController, this.instantiationService.createInstance(ServerGroupController));
 		serviceCollection.set(ICredentialsService, this.instantiationService.createInstance(CredentialsService));
-		serviceCollection.set(IResourceManagementService, this.instantiationService.createInstance(ResourceManagementService));
+		serviceCollection.set(IResourceProviderService, this.instantiationService.createInstance(ResourceProviderService));
 		let connectionManagementService = this.instantiationService.createInstance(ConnectionManagementService, undefined, undefined);
 		serviceCollection.set(IConnectionManagementService, connectionManagementService);
 		serviceCollection.set(ISerializationService, this.instantiationService.createInstance(SerializationService));

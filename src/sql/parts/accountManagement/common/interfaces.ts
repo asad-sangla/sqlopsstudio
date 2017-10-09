@@ -10,8 +10,8 @@ import * as data from 'data';
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
-export const SERVICE_ID = 'resourceManagementService';
-export const IResourceManagementService = createDecorator<IResourceManagementService>(SERVICE_ID);
+export const SERVICE_ID = 'resourceProviderService';
+export const IResourceProviderService = createDecorator<IResourceProviderService>(SERVICE_ID);
 
 export interface IHandleFirewallRuleResult {
 	result: boolean;
@@ -19,13 +19,18 @@ export interface IHandleFirewallRuleResult {
 	resourceProviderId: string;
 }
 
-export interface IResourceManagementService {
+export interface IResourceProviderService {
 	_serviceBrand: any;
 
 	/**
 	 * Register a resource provider
 	 */
 	registerProvider(providerId: string, provider: data.ResourceProvider): void;
+
+	/**
+	 * Unregister a resource provider
+	 */
+	unregisterProvider(ProviderId: string): void;
 
 	/**
 	 * Create a firewall rule

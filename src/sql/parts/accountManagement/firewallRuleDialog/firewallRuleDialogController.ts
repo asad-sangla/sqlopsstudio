@@ -12,7 +12,8 @@ import * as data from 'data';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { FirewallRuleDialog } from 'sql/parts/accountManagement/firewallRuleDialog/firewallRuleDialog';
-import { IResourceManagementService } from 'sql/parts/accountManagement/common/interfaces';
+import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
+import { IResourceProviderService } from 'sql/parts/accountManagement/common/interfaces';
 import { Deferred } from 'sql/base/common/promise';
 
 export class FirewallRuleDialogController {
@@ -27,37 +28,49 @@ export class FirewallRuleDialogController {
 
 	constructor(
 		@IInstantiationService private _instantiationService: IInstantiationService,
-		@IResourceManagementService private _resourceManagementService: IResourceManagementService,
+		@IResourceProviderService private _resourceProviderService: IResourceProviderService,
 		@IConnectionManagementService private _connectionService: IConnectionManagementService,
+		@IAccountManagementService private _accountManagementService: IAccountManagementService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
 	}
 
 	private handleOnCreateFirewallRule(): void {
 		let resourceProviderId = this._resourceProviderId;
-		let firewallRuleInfo: data.FirewallRuleInfo = {
-			startIpAddress: this._firewallRuleDialog.viewModel.isIPAddressSelected ? this._firewallRuleDialog.viewModel.defaultIPAddress : this._firewallRuleDialog.viewModel.fromSubnetIPRange,
-			endIpAddress: this._firewallRuleDialog.viewModel.isIPAddressSelected ? this._firewallRuleDialog.viewModel.defaultIPAddress : this._firewallRuleDialog.viewModel.toSubnetIPRange,
-			serverName: this._connection.serverName,
-			securityTokenMappings: {} //Todo: get the security token
-		};
 
 		if (this.validateAccount()) {
-			this._resourceManagementService.createFirewallRule(this._firewallRuleDialog.selectedAccount, firewallRuleInfo, resourceProviderId).then(createFirewallRuleResponse => {
-				if (createFirewallRuleResponse.result) {
-					this._firewallRuleDialog.close();
-					this._deferredPromise.resolve(true);
-				} else {
-					this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, createFirewallRuleResponse.errorMessage);
-				}
-				this._firewallRuleDialog.spinner = false;
+			this._accountManagementService.getSecurityToken(this._firewallRuleDialog.selectedAccount).then(tokenMappings => {
+				let firewallRuleInfo: data.FirewallRuleInfo = {
+					startIpAddress: this._firewallRuleDialog.viewModel.isIPAddressSelected ? this._firewallRuleDialog.viewModel.defaultIPAddress : this._firewallRuleDialog.viewModel.fromSubnetIPRange,
+					endIpAddress: this._firewallRuleDialog.viewModel.isIPAddressSelected ? this._firewallRuleDialog.viewModel.defaultIPAddress : this._firewallRuleDialog.viewModel.toSubnetIPRange,
+					serverName: this._connection.serverName,
+					securityTokenMappings: tokenMappings
+				};
+
+				this._resourceProviderService.createFirewallRule(this._firewallRuleDialog.selectedAccount, firewallRuleInfo, resourceProviderId).then(createFirewallRuleResponse => {
+					if (createFirewallRuleResponse.result) {
+						this._firewallRuleDialog.close();
+						this._deferredPromise.resolve(true);
+					} else {
+						this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, createFirewallRuleResponse.errorMessage);
+					}
+					this._firewallRuleDialog.spinner = false;
+				}, error => {
+					this.showError(error);
+				});
 			}, error => {
-				this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, error);
-				this._firewallRuleDialog.spinner = false;
+				this.showError(error);
 			});
 		} else {
 			this._firewallRuleDialog.spinner = false;
 		}
+	}
+
+	private showError(error: any): void {
+		this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, error);
+		this._firewallRuleDialog.spinner = false;
+		// Note: intentionally not rejecting the promise as we want users to be able to choose a different account
+
 	}
 
 	private handleOnCancel(): void {
