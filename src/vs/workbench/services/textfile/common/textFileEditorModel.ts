@@ -747,7 +747,8 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 		// Check for workspace settings file
 		if (this.contextService.hasWorkspace()) {
 			return this.contextService.getWorkspace().roots.some(root => {
-				return paths.isEqualOrParent(this.resource.fsPath, path.join(root.fsPath, '.vscode'));
+				// {{SQL CARBON EDIT}}
+				return paths.isEqualOrParent(this.resource.fsPath, path.join(root.fsPath, '.carbon'));
 			});
 		}
 

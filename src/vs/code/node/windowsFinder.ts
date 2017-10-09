@@ -96,7 +96,8 @@ function findFolderWithCodeSettings(filePath: string, userHome?: string, codeSet
 	return null;
 }
 
-function hasCodeSettings(folder: string, normalizedUserHome?: string, codeSettingsFolder = '.vscode') {
+// {{SQL CARBON EDIT}}
+function hasCodeSettings(folder: string, normalizedUserHome?: string, codeSettingsFolder = '.carbon') {
 	try {
 		if ((platform.isLinux ? folder : folder.toLowerCase()) === normalizedUserHome) {
 			return fs.statSync(path.join(folder, codeSettingsFolder, 'settings.json')).isFile(); // ~/.vscode/extensions is used for extensions

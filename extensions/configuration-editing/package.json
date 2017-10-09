@@ -60,15 +60,15 @@
         "url": "vscode://schemas/locale"
       },
       {
-        "fileMatch": "/.vscode/settings.json",
+        "fileMatch": "/.carbon/settings.json",
         "url": "vscode://schemas/settings"
       },
       {
-        "fileMatch": "/.vscode/launch.json",
+        "fileMatch": "/.carbon/launch.json",
         "url": "vscode://schemas/launch"
       },
       {
-        "fileMatch": "/.vscode/tasks.json",
+        "fileMatch": "/.carbon/tasks.json",
         "url": "vscode://schemas/tasks"
       },
       {

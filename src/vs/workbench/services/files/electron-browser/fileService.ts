@@ -146,7 +146,8 @@ export class FileService implements IFileService {
 		encodingOverride.push({ resource: uri.file(this.environmentService.appSettingsHome), encoding: encoding.UTF8 });
 		if (this.contextService.hasWorkspace()) {
 			this.contextService.getWorkspace().roots.forEach(root => {
-				encodingOverride.push({ resource: uri.file(paths.join(root.fsPath, '.vscode')), encoding: encoding.UTF8 });
+				// {{SQL CARBON EDIT}}
+				encodingOverride.push({ resource: uri.file(paths.join(root.fsPath, '.carbon')), encoding: encoding.UTF8 });
 			});
 		}
 

@@ -98,7 +98,8 @@ suite('ConfigurationEditingService', () => {
 			parentDir = path.join(os.tmpdir(), 'vsctests', id);
 			workspaceDir = path.join(parentDir, 'workspaceconfig', id);
 			globalSettingsFile = path.join(workspaceDir, 'config.json');
-			workspaceSettingsDir = path.join(workspaceDir, '.vscode');
+			// {{SQL CARBON EDIT}}
+			workspaceSettingsDir = path.join(workspaceDir, '.carbon');
 			extfs.mkdirp(workspaceSettingsDir, 493, (error) => {
 				if (error) {
 					e(error);

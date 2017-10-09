@@ -75,7 +75,8 @@ export class ExtensionTipsService implements IExtensionTipsService {
 		if (!this.contextService.hasWorkspace()) {
 			return TPromise.as([]);
 		}
-		return this.fileService.resolveContent(this.contextService.toResource(paths.join('.vscode', 'extensions.json'))).then(content => { //TODO@Sandeep (https://github.com/Microsoft/vscode/issues/29242)
+		// {{SQL CARBON EDIT}}
+		return this.fileService.resolveContent(this.contextService.toResource(paths.join('.carbon', 'extensions.json'))).then(content => { //TODO@Sandeep (https://github.com/Microsoft/vscode/issues/29242)
 			const extensionsContent = <IExtensionsContent>json.parse(content.value, []);
 			if (extensionsContent.recommendations) {
 				const regEx = new RegExp(EXTENSION_IDENTIFIER_PATTERN);
