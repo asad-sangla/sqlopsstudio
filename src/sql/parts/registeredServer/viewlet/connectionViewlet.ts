@@ -88,12 +88,7 @@ export class ConnectionViewlet extends Viewlet implements IConnectionsViewlet {
 				this._searchTerm = '';
 
 				this._searchBox.onDidChange(() => {
-					if (this._searchTerm.length < this._searchBox.value.length) {
-						this._searchTerm += this._searchBox.value;
-					} else {
-						this._searchTerm = this._searchBox.value;
-					}
-					this.search(this._searchTerm);
+					this.search(this._searchBox.value);
 				});
 
 				// Theme styler
