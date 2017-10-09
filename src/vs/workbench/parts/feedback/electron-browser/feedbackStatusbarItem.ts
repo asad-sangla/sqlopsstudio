@@ -18,7 +18,7 @@ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 class TwitterFeedbackService implements IFeedbackService {
 
 	private static TWITTER_URL: string = 'https://twitter.com/intent/tweet';
-	private static VIA_NAME: string = 'carbon'; // {{SQL CARBON EDIT}}
+	private static VIA_NAME: string = 'CarbonIntTest'; // {{SQL CARBON EDIT}}
 	private static HASHTAGS: string[] = ['HappyData']; // {{SQL CARBON EDIT}}
 
 	private combineHashTagsAsString(): string {
