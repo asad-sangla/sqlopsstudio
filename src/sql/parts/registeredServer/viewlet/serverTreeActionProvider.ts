@@ -103,7 +103,11 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 	public getObjectExplorerNodeActions(tree: ITree, treeNode: TreeNode): IAction[] {
 		let actions = [];
 		if (TreeUpdateUtils.isDatabaseNode(treeNode)) {
-			actions.push(this._instantiationService.createInstance(ManageConnectionAction, ManageConnectionAction.ID, ManageConnectionAction.LABEL));
+			if (TreeUpdateUtils.isAvailableDatabaseNode(treeNode)) {
+				actions.push(this._instantiationService.createInstance(ManageConnectionAction, ManageConnectionAction.ID, ManageConnectionAction.LABEL));
+			} else {
+				return actions;
+			}
 		}
 		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL, OENewQueryAction.ICON));
 		let scriptMap: Map<NodeType, any[]> = ObjectExplorerActionUtilities.getScriptMap();

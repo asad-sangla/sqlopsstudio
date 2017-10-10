@@ -111,6 +111,12 @@
 	    background: url("Database.svg") center center no-repeat;
 }
 
+.vs .icon.database_unavailable,
+.vs-dark .icon.database_unavailable,
+.hc-black .icon.database_unavailable {
+	    background: url("Database_Unavailable.svg") center center no-repeat;
+}
+
 .vs .icon.databaseandqueueeventnotification,
 .vs-dark .icon.databaseandqueueeventnotification,
 .hc-black .icon.databaseandqueueeventnotification {

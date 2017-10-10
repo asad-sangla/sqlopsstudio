@@ -223,6 +223,14 @@ export class TreeUpdateUtils {
 	}
 
 	/**
+	 *
+	 * @param treeNode Returns true if the tree node is an available database node
+	 */
+	public static isAvailableDatabaseNode(treeNode: TreeNode): boolean {
+		return treeNode && treeNode.nodeTypeId === NodeType.Database && treeNode.nodeStatus !== 'Unavailable';
+	}
+
+	/**
 	 * Get connection profile with the current database
 	 */
 	public static getConnectionProfile(treeNode: TreeNode): ConnectionProfile {

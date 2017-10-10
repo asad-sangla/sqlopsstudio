@@ -337,7 +337,16 @@ export class ObjectExplorerService implements IObjectExplorerService {
 	}
 
 	private toTreeNode(nodeInfo: data.NodeInfo, parent: TreeNode): TreeNode {
-		return new TreeNode(nodeInfo.nodeType, nodeInfo.label, nodeInfo.isLeaf, nodeInfo.nodePath,
+		// make Database nodes with a status field non-expandable
+		let isLeaf: boolean = nodeInfo.isLeaf;
+		if (nodeInfo.nodeType === 'Database' && nodeInfo.nodeStatus) {
+			nodeInfo.label = nodeInfo.label + ' (' + nodeInfo.nodeStatus + ')';
+			isLeaf = true;
+			// set to common status so we can have a single 'Unavailable' db icon
+			nodeInfo.nodeStatus = 'Unavailable';
+		}
+
+		return new TreeNode(nodeInfo.nodeType, nodeInfo.label, isLeaf, nodeInfo.nodePath,
 			nodeInfo.nodeSubType, nodeInfo.nodeStatus, parent, nodeInfo.metadata);
 	}
 }
