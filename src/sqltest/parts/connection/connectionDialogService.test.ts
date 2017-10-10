@@ -9,6 +9,7 @@ import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/c
 import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { ConnectionType, IConnectableInput, IConnectionResult, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import { ContextKeyServiceStub } from 'sqltest/stubs/contextKeyServiceStub';
 
 import * as TypeMoq from 'typemoq';
 
@@ -22,7 +23,16 @@ suite('ConnectionDialogService tests', () => {
 		connectionDialogService = new ConnectionDialogService(undefined, undefined, undefined, undefined, undefined);
 		mockConnectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Strict, {}, {});
 		(connectionDialogService as any)._connectionManagementService = mockConnectionManagementService.object;
-		mockConnectionDialog = TypeMoq.Mock.ofType(ConnectionDialogWidget);
+		mockConnectionDialog = TypeMoq.Mock.ofType(ConnectionDialogWidget, TypeMoq.MockBehavior.Strict,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			new ContextKeyServiceStub()
+		);
 		(connectionDialogService as any)._connectionDialog = mockConnectionDialog.object;
 	});
 

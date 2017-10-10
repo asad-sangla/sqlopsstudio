@@ -7,17 +7,19 @@
 import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!./media/errorMessageDialog';
 import { Modal } from 'sql/base/browser/ui/modal/modal';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import { attachModalDialogStyler } from 'sql/common/theme/styler';
+
 import { Builder } from 'vs/base/browser/builder';
 import Severity from 'vs/base/common/severity';
-import { clipboard } from 'electron';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
-import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 
 export class ErrorMessageDialog extends Modal {
 	private _body: HTMLElement;
@@ -28,11 +30,13 @@ export class ErrorMessageDialog extends Modal {
 	public onOk: Event<void> = this._onOk.event;
 
 	constructor(
-		@IPartService partService: IPartService,
 		@IThemeService private _themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@IClipboardService private _clipboardService: IClipboardService,
+		@IPartService partService: IPartService,
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super('', TelemetryKeys.ErrorMessage, partService, telemetryService, { isFlyout: false, hasTitleIcon: true });
+		super('', TelemetryKeys.ErrorMessage, partService, telemetryService, contextKeyService, { isFlyout: false, hasTitleIcon: true });
 	}
 
 	protected renderBody(container: HTMLElement) {
@@ -44,7 +48,7 @@ export class ErrorMessageDialog extends Modal {
 	public render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
-		let copyButton = this.addFooterButton('Copy to Clipboard', () => clipboard.writeText(this._message), 'left');
+		let copyButton = this.addFooterButton('Copy to Clipboard', () => this._clipboardService.writeText(this._message), 'left');
 		copyButton.icon = 'icon scriptToClipboard';
 		attachButtonStyler(copyButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
 		let okButton = this.addFooterButton('OK', () => this.ok());

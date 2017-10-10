@@ -9,14 +9,16 @@ import { BackupModule } from 'sql/parts/disasterRecovery/backup/backup.module';
 import { BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.component';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
-import { Builder } from 'vs/base/browser/builder';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
+
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import { Builder } from 'vs/base/browser/builder';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 
 export class BackupDialog extends Modal {
 	private _bodyBuilder: Builder;
@@ -30,9 +32,10 @@ export class BackupDialog extends Modal {
 		@IThemeService private _themeService: IThemeService,
 		@IPartService partService: IPartService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super('', TelemetryKeys.Backup, partService, telemetryService, { isAngular: true, hasErrors: true });
+		super('', TelemetryKeys.Backup, partService, telemetryService, contextKeyService, { isAngular: true, hasErrors: true });
 	}
 
 	protected renderBody(container: HTMLElement) {

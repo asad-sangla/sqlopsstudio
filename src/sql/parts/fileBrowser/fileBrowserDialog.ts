@@ -16,6 +16,8 @@ import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import { FileNode } from 'sql/parts/fileBrowser/common/fileNode';
 import { FileBrowserTreeView } from 'sql/parts/fileBrowser/fileBrowserTreeView';
 import { FileBrowserViewModel } from 'sql/parts/fileBrowser/fileBrowserViewModel';
+
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { Builder } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
@@ -49,9 +51,10 @@ export class FileBrowserDialog extends Modal {
 		@IThemeService private _themeService: IThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextViewService private _contextViewService: IContextViewService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(title, TelemetryKeys.Backup, partService, telemetryService, { isFlyout: true, hasTitleIcon: false, hasBackButton: true });
+		super(title, TelemetryKeys.Backup, partService, telemetryService, contextKeyService, { isFlyout: true, hasTitleIcon: false, hasBackButton: true });
 
 		this._fileBrowserTreeView = this._instantiationService.createInstance(FileBrowserTreeView);
 		this._fileBrowserTreeView.setOnClickedCallback((arg) => this.onClicked(arg));

@@ -10,16 +10,19 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { mixin } from 'vs/base/common/objects';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-
-import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import * as TelemetryKeys from 'sql/common/telemetryKeys';
-
-/* Bad Layering */
 import { Builder, $, withElementById } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { generateUuid } from 'vs/base/common/uuid';
+import { IContextKeyService, RawContextKey, IContextKey } from 'vs/platform/contextkey/common/contextkey';
+
+import * as TelemetryUtils from 'sql/common/telemetryUtilities';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
+
+export const MODAL_SHOWING_KEY = 'modalShowing';
+export const MODAL_SHOWING_CONTEXT = new RawContextKey<Array<string>>(MODAL_SHOWING_KEY, []);
 
 export interface IModalDialogStyles {
 	dialogForeground?: Color;
@@ -84,6 +87,9 @@ export abstract class Modal extends Disposable implements IThemable {
 	private _modalOptions: IModalOptions;
 	private _backButton: Button;
 
+	private _modalShowingContext: IContextKey<Array<string>>;
+	private readonly _staticKey: string;
+
 	/**
 	 * Get the back button, only available after render and if the hasBackButton option is true
 	 */
@@ -117,11 +123,14 @@ export abstract class Modal extends Disposable implements IThemable {
 		private _name: string,
 		private _partService: IPartService,
 		private _telemetryService: ITelemetryService,
+		private _contextKeyService: IContextKeyService,
 		options?: IModalOptions
 	) {
 		super();
 		this._modalOptions = options || Object.create(null);
 		mixin(this._modalOptions, defaultOptions, false);
+		this._staticKey = generateUuid();
+		this._modalShowingContext = MODAL_SHOWING_CONTEXT.bindTo(_contextKeyService);
 	}
 
 	/**
@@ -238,13 +247,17 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Shows the modal and attaches key listeners
 	 */
 	protected show() {
+		this._modalShowingContext.get().push(this._staticKey);
 		this._builder.appendTo(withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement);
 		this._keydownListener = DOM.addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter)) {
-				this.onAccept(event);
-			} else if (event.equals(KeyCode.Escape)) {
-				this.onClose(event);
+			let context = this._modalShowingContext.get();
+			if (context[context.length - 1] === this._staticKey) {
+				let event = new StandardKeyboardEvent(e);
+				if (event.equals(KeyCode.Enter)) {
+					this.onAccept(event);
+				} else if (event.equals(KeyCode.Escape)) {
+					this.onClose(event);
+				}
 			}
 		});
 		this._resizeListener = DOM.addDisposableListener(window, DOM.EventType.RESIZE, (e: KeyboardEvent) => {
@@ -264,6 +277,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Hides the modal and removes key listeners
 	 */
 	protected hide() {
+		this._modalShowingContext.get().pop();
 		this._builder.offDOM();
 		this._keydownListener.dispose();
 		this._resizeListener.dispose();

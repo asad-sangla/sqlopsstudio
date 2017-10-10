@@ -16,6 +16,7 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { localize } from 'vs/nls';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { InputBox, OnLoseFocusParams } from 'sql/base/browser/ui/inputBox/inputBox';
@@ -114,9 +115,10 @@ export class RestoreDialog extends Modal {
 		@IThemeService private _themeService: IThemeService,
 		@IContextViewService private _contextViewService: IContextViewService,
 		@IBootstrapService private _bootstrapService: IBootstrapService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(localize('RestoreDialogTitle', 'Restore database'), TelemetryKeys.Restore, partService, telemetryService, { hasErrors: true, isWide: true, hasSpinner: true });
+		super(localize('RestoreDialogTitle', 'Restore database'), TelemetryKeys.Restore, partService, telemetryService, contextKeyService, { hasErrors: true, isWide: true, hasSpinner: true });
 		this._restoreTitle = localize('restoreTitle', 'Restore database');
 		this._databaseTitle = localize('database', 'Database');
 		this._backupFileTitle = localize('backupFile', 'Backup file');
@@ -259,7 +261,7 @@ export class RestoreDialog extends Modal {
 
 		// Content in file tab
 		let fileContentElement: HTMLElement;
-		$().div({ class: 'restore-dialog'}, (builder) => {
+		$().div({ class: 'restore-dialog' }, (builder) => {
 			fileContentElement = builder.getHTMLElement();
 
 			// Restore database file as section
@@ -348,7 +350,7 @@ export class RestoreDialog extends Modal {
 				render: c => {
 					generalTab.appendTo(c);
 				},
-				layout: () => {}
+				layout: () => { }
 			}
 		});
 
@@ -356,7 +358,7 @@ export class RestoreDialog extends Modal {
 			identifier: 'fileContent',
 			title: localize('filesTitle', 'Files'),
 			view: {
-				layout: () => {},
+				layout: () => { },
 				render: c => {
 					c.appendChild(fileContentElement);
 				}
@@ -367,7 +369,7 @@ export class RestoreDialog extends Modal {
 			identifier: 'options',
 			title: localize('optionsTitle', 'Options'),
 			view: {
-				layout: () => {},
+				layout: () => { },
 				render: c => {
 					c.appendChild(optionsContentElement);
 				}

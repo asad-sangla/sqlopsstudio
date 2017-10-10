@@ -6,27 +6,31 @@
 'use strict';
 
 import 'vs/css!./media/optionsDialog';
-import { Builder, $ } from 'vs/base/browser/builder';
-import { Button } from 'vs/base/browser/ui/button/button';
-import { Widget } from 'vs/base/browser/ui/widget';
+
 import { FixedCollapsibleView } from 'sql/platform/views/fixedCollapsibleView';
-import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
 import * as DialogHelper from './dialogHelper';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
-import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IModalOptions, Modal } from './modal';
 import * as OptionsDialogHelper from './optionsDialogHelper';
-import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
-import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
-import * as styler from 'vs/platform/theme/common/styler';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
+
+import * as data from 'data';
+
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { localize } from 'vs/nls';
-import data = require('data');
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
+import * as styler from 'vs/platform/theme/common/styler';
+import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
+import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
+import { Builder, $ } from 'vs/base/browser/builder';
+import { Button } from 'vs/base/browser/ui/button/button';
+import { Widget } from 'vs/base/browser/ui/widget';
 
 class CategoryView extends FixedCollapsibleView {
 	private _treecontainer: HTMLElement;
@@ -87,9 +91,10 @@ export class OptionsDialog extends Modal {
 		@IPartService partService: IPartService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IContextViewService private _contextViewService: IContextViewService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(title, name, partService, telemetryService, options);
+		super(title, name, partService, telemetryService, contextKeyService, options);
 	}
 
 	public render() {

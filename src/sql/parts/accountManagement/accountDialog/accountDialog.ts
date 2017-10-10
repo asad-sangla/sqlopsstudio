@@ -32,6 +32,7 @@ import { AddAccountAction } from 'sql/parts/accountManagement/common/accountActi
 import { AccountListRenderer, AccountListDelegate } from 'sql/parts/accountManagement/common/accountListRenderer';
 import { AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
 import { FixedListView } from 'sql/platform/views/fixedListView';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 
 export class AccountDialog extends Modal {
 	public static ACCOUNTLIST_HEIGHT = 77;
@@ -58,9 +59,10 @@ export class AccountDialog extends Modal {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
 		@IKeybindingService private _keybindingService: IKeybindingService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(localize('linkedAccounts', 'Linked Accounts'), TelemetryKeys.Accounts, partService, telemetryService);
+		super(localize('linkedAccounts', 'Linked Accounts'), TelemetryKeys.Accounts, partService, telemetryService, contextKeyService);
 		let self = this;
 
 		this._delegate = new AccountListDelegate(AccountDialog.ACCOUNTLIST_HEIGHT);

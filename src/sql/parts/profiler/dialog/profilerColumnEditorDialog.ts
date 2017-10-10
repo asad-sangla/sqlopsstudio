@@ -8,6 +8,7 @@ import 'vs/css!./media/profilerDialog';
 import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { ProfilerInput } from 'sql/parts/profiler/editor/profilerInput';
+import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
@@ -23,7 +24,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
 import Event, { Emitter } from 'vs/base/common/event';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import * as TelemetryKeys from 'sql/common/telemetryKeys';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 
 class EventItem {
 
@@ -312,9 +313,10 @@ export class ProfilerColumnEditorDialog extends Modal {
 	constructor(
 		@IPartService _partService: IPartService,
 		@IThemeService private _themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(nls.localize('profiler', 'Profiler'), TelemetryKeys.Profiler, _partService, telemetryService);
+		super(nls.localize('profiler', 'Profiler'), TelemetryKeys.Profiler, _partService, telemetryService, contextKeyService);
 	}
 
 	public render(): void {

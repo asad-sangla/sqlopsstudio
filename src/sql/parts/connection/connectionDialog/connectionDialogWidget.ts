@@ -13,6 +13,7 @@ import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
@@ -88,9 +89,10 @@ export class ConnectionDialogWidget extends Modal {
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IPartService _partService: IPartService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(localize('connection', 'Connection'), TelemetryKeys.Connection, _partService, telemetryService, { hasSpinner: true, hasErrors: true });
+		super(localize('connection', 'Connection'), TelemetryKeys.Connection, _partService, telemetryService, contextKeyService, { hasSpinner: true, hasErrors: true });
 	}
 
 	protected renderBody(container: HTMLElement): void {

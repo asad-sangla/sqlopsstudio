@@ -16,6 +16,7 @@ import { IInsightsDialogModel, ListResource } from 'sql/parts/insights/common/in
 import { TableCollapsibleView } from 'sql/base/browser/ui/table/tableView';
 import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
+import { error } from 'sql/base/common/log';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
@@ -32,7 +33,7 @@ import { IAction } from 'vs/base/common/actions';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as types from 'vs/base/common/types';
-import { error } from 'sql/base/common/log';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 
 /* Regex that matches the form `${value}` */
 export const insertValueRegex: RegExp = /\${(.*?)\}/;
@@ -117,9 +118,10 @@ export class InsightsDialogView extends Modal {
 		@IListService private _listService: IListService,
 		@IPartService partService: IPartService,
 		@IContextMenuService private _contextMenuService: IContextMenuService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(nls.localize("InsightsDialogTitle", "Insights"), TelemetryKeys.Insights, partService, telemetryService);
+		super(nls.localize("InsightsDialogTitle", "Insights"), TelemetryKeys.Insights, partService, telemetryService, contextKeyService);
 		this._model.onDataChange(e => this.build());
 	}
 

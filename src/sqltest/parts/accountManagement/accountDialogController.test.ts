@@ -14,6 +14,7 @@ import { AccountViewModel } from 'sql/parts/accountManagement/accountDialog/acco
 import { AccountManagementTestService } from 'sqltest/stubs/accountManagementStubs';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 import { AccountListRenderer } from 'sql/parts/accountManagement/common/accountListRenderer';
+import { ContextKeyServiceStub } from 'sqltest/stubs/contextKeyServiceStub';
 
 // SUITE STATE /////////////////////////////////////////////////////////////
 let instantiationService: TypeMoq.Mock<InstantiationService>;
@@ -37,7 +38,7 @@ suite('Account Management Dialog Controller Tests', () => {
 			.returns(() => undefined);
 
 		// Create a mock account dialog
-		let accountDialog = new AccountDialog(null, null, null, instantiationService.object, null, null, null);
+		let accountDialog = new AccountDialog(null, null, null, instantiationService.object, null, null, null, new ContextKeyServiceStub());
 		let mockAccountDialog = TypeMoq.Mock.ofInstance(accountDialog);
 		mockAccountDialog.setup(x => x.render())
 			.returns(() => undefined);

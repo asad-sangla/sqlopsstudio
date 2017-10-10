@@ -19,6 +19,8 @@ import { attachButtonStyler, attachInputBoxStyler } from 'vs/platform/theme/comm
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+
 import * as data from 'data';
 
 import { Modal } from 'sql/base/browser/ui/modal/modal';
@@ -53,9 +55,10 @@ export class FirewallRuleDialog extends Modal {
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextViewService private _contextViewService: IContextViewService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(localize('createNewFirewallRule', 'Create new firewall rule'), TelemetryKeys.FireWallRule, partService, telemetryService, { isFlyout: true, hasBackButton: true, hasSpinner: true });
+		super(localize('createNewFirewallRule', 'Create new firewall rule'), TelemetryKeys.FireWallRule, partService, telemetryService, contextKeyService, { isFlyout: true, hasBackButton: true, hasSpinner: true });
 
 		// view model
 		this.viewModel = this._instantiationService.createInstance(FirewallRuleViewModel);

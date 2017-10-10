@@ -7,7 +7,8 @@
 import { OptionsDialog } from 'sql/base/browser/ui/modal/optionsDialog';
 import { AdvancedPropertiesController } from 'sql/parts/connection/connectionDialog/advancedPropertiesController';
 import { Builder, $ } from 'vs/base/browser/builder';
-import data = require('data');
+import { ContextKeyServiceStub } from 'sqltest/stubs/contextKeyServiceStub';
+import * as data from 'data';
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 
@@ -85,7 +86,16 @@ suite('Advanced properties dialog tests', () => {
 		var isAdvancedDialogCalled = false;
 		let options: { [name: string]: any } = {};
 		let builder: Builder = $().div();
-		let advanceDialog = TypeMoq.Mock.ofType(OptionsDialog, TypeMoq.MockBehavior.Loose, builder.getHTMLElement(), {});
+		let advanceDialog = TypeMoq.Mock.ofType(OptionsDialog, TypeMoq.MockBehavior.Strict,
+			'', // title
+			'', // name
+			{}, // options
+			undefined, // partsService
+			undefined, // themeService
+			undefined, // Context view service
+			undefined, // telemetry service
+			new ContextKeyServiceStub() // contextkeyservice
+		);
 		advanceDialog.setup(x => x.open(TypeMoq.It.isAny(), TypeMoq.It.isAny())).callback(() => {
 			isAdvancedDialogCalled = true;
 		});
