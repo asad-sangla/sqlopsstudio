@@ -68,6 +68,7 @@ objectScriptMap.set("UserDefinedType", "Type");
 objectScriptMap.set("UserDefinedAggregate", "Aggregate");
 objectScriptMap.set("FullTextCatalog", "Fulltext Catalog");
 objectScriptMap.set("UserDefinedTableType", "Type");
+objectScriptMap.set("MaterializedView", "Materialized View");
 
 export enum ScriptOperation {
 	Select = 0,
