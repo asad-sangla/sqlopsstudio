@@ -75,7 +75,6 @@ export class InsightsDialogController {
 	}
 
 	private async createQuery(queryString: string, connectionProfile: IConnectionProfile): Promise<void> {
-		let self = this;
 		if (this._queryRunner) {
 			if (!this._queryRunner.hasCompleted) {
 				await this._queryRunner.cancelQuery();
@@ -92,7 +91,7 @@ export class InsightsDialogController {
 			} catch (e) {
 				return Promise.reject(e);
 			}
-			this._queryRunner = self._instantiationService.createInstance(QueryRunner, this._connectionUri, undefined);
+			this._queryRunner = this._instantiationService.createInstance(QueryRunner, this._connectionUri, undefined);
 			this.addQueryEventListeners(this._queryRunner);
 		}
 
