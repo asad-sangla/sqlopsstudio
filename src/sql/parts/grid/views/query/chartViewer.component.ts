@@ -38,10 +38,8 @@ import URI from 'vs/base/common/uri';
 import * as nls from 'vs/nls';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { mixin } from 'vs/base/common/objects';
-import paths = require('vs/base/common/paths');
-
-import path = require('path');
-import fs = require('fs');
+import * as paths from 'vs/base/common/paths';
+import * as pfs from 'vs/base/node/pfs';
 
 const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribution);
 
@@ -224,7 +222,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 		}
 		if (filePath) {
 			let buffer = self.decodeBase64Image(data);
-			fs.writeFile(filePath, buffer, (err) => {
+			pfs.writeFile(filePath, buffer, (err) => {
 				if (err) {
 					self.showError(err.message);
 				} else {
@@ -238,7 +236,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 
 	private promptForFilepath(): string {
 		let filepathPlaceHolder = PathUtilities.resolveCurrentDirectory(this.getActiveUriString(), PathUtilities.getRootPath(this._bootstrapService.workspaceContextService));
-		filepathPlaceHolder = path.join(filepathPlaceHolder, 'Chart.jpeg');
+		filepathPlaceHolder = paths.join(filepathPlaceHolder, 'Chart.jpeg');
 
 		let filePath: string = this._bootstrapService.windowService.showSaveDialog({
 			title: nls.localize('saveAsFileTitle', 'Choose Results File'),
