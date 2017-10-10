@@ -170,8 +170,12 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 				let errMsg: string = nls.localize('scriptNotFound', 'No script was returned when calling script');
 				if (result) {
 					let script: string = result.script;
-					let startPos: number = getStartPos(script, operation, metadata.metadataTypeName);
-					if (startPos > 0) {
+					let startPos: number = 0;
+					if(connectionProfile.providerName === "MSSQL")
+					{
+						startPos = getStartPos(script, operation, metadata.metadataTypeName);
+					}
+					if (startPos >= 0) {
 						script = script.substring(startPos);
 						queryEditorService.newSqlEditor(script).then(() => {
 							resolve();
