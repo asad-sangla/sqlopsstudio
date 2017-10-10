@@ -21,6 +21,8 @@ export class FirewallRuleDialogController {
 	private _firewallRuleDialog: FirewallRuleDialog;
 	private _connection: IConnectionProfile;
 	private _resourceProviderId: string;
+
+	private _addAccountErrorTitle = localize('addAccountErrorTitle', 'Error adding account');
 	private _firewallRuleErrorTitle = localize('firewallRuleError', 'Firewall rule error');
 	private _noAccountError = localize('noAccountError', 'Please add an account');
 	private _refreshAccountError = localize('refreshAccountError', 'Please refresh the account');
@@ -33,6 +35,35 @@ export class FirewallRuleDialogController {
 		@IAccountManagementService private _accountManagementService: IAccountManagementService,
 		@IErrorMessageService private _errorMessageService: IErrorMessageService
 	) {
+	}
+
+	/**
+	 * Open firewall rule dialog
+	 */
+	public openFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Promise<boolean> {
+		let self = this;
+
+		// TODO: expand support to multiple providers
+		const providerId: string = 'azurePublicCloud';
+
+		if (!this._firewallRuleDialog) {
+			this._firewallRuleDialog = this._instantiationService.createInstance(FirewallRuleDialog, providerId);
+			this._firewallRuleDialog.onCancel(this.handleOnCancel, this);
+			this._firewallRuleDialog.onCreateFirewallRule(this.handleOnCreateFirewallRule, this);
+			this._firewallRuleDialog.onAddAccountErrorEvent(msg => { self.handleOnAddAccountError(msg); });
+			this._firewallRuleDialog.render();
+		}
+		this._connection = connection;
+		this._resourceProviderId = resourceProviderId;
+		this._firewallRuleDialog.viewModel.updateDefaultValues(ipAddress);
+		this._firewallRuleDialog.open();
+		this._deferredPromise = new Deferred();
+		return this._deferredPromise.promise;
+	}
+
+	// PRIVATE HELPERS /////////////////////////////////////////////////////
+	private handleOnAddAccountError(message: string): void {
+		this._errorMessageService.showDialog(Severity.Error, this._addAccountErrorTitle, message);
 	}
 
 	private handleOnCreateFirewallRule(): void {
@@ -87,26 +118,5 @@ export class FirewallRuleDialogController {
 			this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, this._refreshAccountError);
 		}
 		return result;
-	}
-
-	/**
-	 * Open firewall rule dialog
-	 */
-	public openFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Promise<boolean> {
-		// TODO: expand support to multiple providers
-		const providerId: string = 'azurePublicCloud';
-
-		if (!this._firewallRuleDialog) {
-			this._firewallRuleDialog = this._instantiationService.createInstance(FirewallRuleDialog, providerId);
-			this._firewallRuleDialog.onCancel(this.handleOnCancel, this);
-			this._firewallRuleDialog.onCreateFirewallRule(this.handleOnCreateFirewallRule, this);
-			this._firewallRuleDialog.render();
-		}
-		this._connection = connection;
-		this._resourceProviderId = resourceProviderId;
-		this._firewallRuleDialog.viewModel.updateDefaultValues(ipAddress);
-		this._firewallRuleDialog.open();
-		this._deferredPromise = new Deferred();
-		return this._deferredPromise.promise;
 	}
 }

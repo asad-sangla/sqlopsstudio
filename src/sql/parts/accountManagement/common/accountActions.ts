@@ -6,11 +6,13 @@
 'use strict';
 
 import * as data from 'data';
+import Event, { Emitter } from 'vs/base/common/event';
 import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { IMessageService, IConfirmation, Severity } from 'vs/platform/message/common/message';
 
+import { error } from 'sql/base/common/log';
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 
@@ -18,8 +20,19 @@ import { IErrorMessageService } from 'sql/parts/connection/common/connectionMana
  * Actions to add a new account
  */
 export class AddAccountAction extends Action {
+	// CONSTANTS ///////////////////////////////////////////////////////////
 	public static ID = 'account.addLinkedAccount';
 	public static LABEL = localize('addAccount', 'Add an account');
+
+	// EVENTING ////////////////////////////////////////////////////////////
+	private _addAccountCompleteEmitter: Emitter<void>;
+	public get addAccountCompleteEvent(): Event<void> { return this._addAccountCompleteEmitter.event; }
+
+	private _addAccountErrorEmitter: Emitter<string>;
+	public get addAccountErrorEvent(): Event<string> { return this._addAccountErrorEmitter.event; }
+
+	private _addAccountStartEmitter: Emitter<void>;
+	public get addAccountStartEvent(): Event<void> { return this._addAccountStartEmitter.event; }
 
 	constructor(
 		private _providerId: string,
@@ -29,20 +42,30 @@ export class AddAccountAction extends Action {
 	) {
 		super(AddAccountAction.ID, AddAccountAction.LABEL);
 		this.class = 'add-linked-account-action';
+
+		this._addAccountCompleteEmitter = new Emitter<void>();
+		this._addAccountErrorEmitter = new Emitter<string>();
+		this._addAccountStartEmitter = new Emitter<void>();
 	}
 
 	public run(): TPromise<boolean> {
 		let self = this;
 
+		// Fire the event that we've started adding accounts
+		this._addAccountStartEmitter.fire();
+
 		return new TPromise((resolve, reject) => {
 			self._accountManagementService.addAccount(self._providerId)
 				.then(
-					() => { resolve(true); },
-					(err) => {
-						// Must handle here as this is an independent action
-						self._errorMessageService.showDialog(Severity.Error,
-							localize('addAccountFailed', 'Failed to add account'), err);
-						resolve(false);
+					() => {
+						self._addAccountCompleteEmitter.fire();
+						resolve(true);
+					},
+					err => {
+						error(`Error while adding account: ${err}`);
+						self._addAccountErrorEmitter.fire(err);
+						self._addAccountCompleteEmitter.fire();
+						reject(err);
 					}
 				);
 		});

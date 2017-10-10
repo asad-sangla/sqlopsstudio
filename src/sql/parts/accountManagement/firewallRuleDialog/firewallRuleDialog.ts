@@ -43,11 +43,15 @@ export class FirewallRuleDialog extends Modal {
 	private _subnetIPRangeInput: HTMLElement;
 	private _IPAddressElement: HTMLElement;
 
-	private _onCreateFirewallRule = new Emitter<void>();
-	public onCreateFirewallRule: Event<void> = this._onCreateFirewallRule.event;
+	// EVENTING ////////////////////////////////////////////////////////////
+	private _onAddAccountErrorEmitter: Emitter<string>;
+	public get onAddAccountErrorEvent(): Event<string> { return this._onAddAccountErrorEmitter.event; }
 
-	private _onCancel = new Emitter<void>();
-	public onCancel: Event<void> = this._onCancel.event;
+	private _onCancel: Emitter<void>;
+	public get onCancel(): Event<void> { return this._onCancel.event; }
+
+	private _onCreateFirewallRule: Emitter<void>;
+	public get onCreateFirewallRule(): Event<void> { return this._onCreateFirewallRule.event; }
 
 	constructor(
 		private _providerId: string,
@@ -58,9 +62,24 @@ export class FirewallRuleDialog extends Modal {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(localize('createNewFirewallRule', 'Create new firewall rule'), TelemetryKeys.FireWallRule, partService, telemetryService, contextKeyService, { isFlyout: true, hasBackButton: true, hasSpinner: true });
+		super(
+			localize('createNewFirewallRule', 'Create new firewall rule'),
+			TelemetryKeys.FireWallRule,
+			partService,
+			telemetryService,
+			contextKeyService,
+			{
+				isFlyout: true,
+				hasBackButton: true,
+				hasSpinner: true
+			}
+		);
 
-		// view model
+		// Setup event emitters
+		this._onAddAccountErrorEmitter = new Emitter<string>();
+		this._onCancel = new Emitter<void>();
+		this._onCreateFirewallRule = new Emitter<void>();
+
 		this.viewModel = this._instantiationService.createInstance(FirewallRuleViewModel);
 	}
 
@@ -89,13 +108,18 @@ export class FirewallRuleDialog extends Modal {
 			this._helpLink.innerHTML += localize('firewallRuleHelpDescription', 'Learn more about firewall settings');
 		});
 
+		// Create account picker with event handling
+		this._accountPicker = this._instantiationService.createInstance(AccountPicker, this._providerId);
+		this._accountPicker.addAccountCompleteEvent(() => { this.hideSpinner(); });
+		this._accountPicker.addAccountErrorEvent(msg => { this._onAddAccountErrorEmitter.fire(msg); });
+		this._accountPicker.addAccountStartEvent(() => { this.showSpinner(); });
+
 		let azureAccountSection;
 		$().div({ class: 'azure-account-section new-section' }, (azureAccountContainer) => {
 			azureAccountSection = azureAccountContainer.getHTMLElement();
 			let azureAccountLabel = localize('azureAccount', 'Azure account');
 			this.createLabelElement(azureAccountContainer, azureAccountLabel, true);
 			azureAccountContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-				this._accountPicker = this._instantiationService.createInstance(AccountPicker, this._providerId);
 				this._accountPicker.render(inputCellContainer.getHTMLElement());
 			});
 		});

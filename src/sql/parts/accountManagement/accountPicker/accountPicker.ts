@@ -7,6 +7,7 @@
 import 'vs/css!./media/accountPicker';
 import { Builder } from 'vs/base/browser/builder';
 import * as DOM from 'vs/base/browser/dom';
+import Event, { Emitter } from 'vs/base/common/event';
 import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IDropdownOptions } from 'vs/base/browser/ui/dropdown/dropdown';
 import { IListEvent } from 'vs/base/browser/ui/list/list';
@@ -32,6 +33,16 @@ export class AccountPicker extends Disposable {
 	private _refreshContainer: HTMLElement;
 	private _listContainer: HTMLElement;
 
+	// EVENTING ////////////////////////////////////////////////////////////
+	private _addAccountCompleteEmitter: Emitter<void>;
+	public get addAccountCompleteEvent(): Event<void> { return this._addAccountCompleteEmitter.event; }
+
+	private _addAccountErrorEmitter: Emitter<string>;
+	public get addAccountErrorEvent(): Event<string> { return this._addAccountErrorEmitter.event; }
+
+	private _addAccountStartEmitter: Emitter<void>;
+	public get addAccountStartEvent(): Event<void> { return this._addAccountStartEmitter.event; }
+
 	constructor(
 		private _providerId: string,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
@@ -40,6 +51,11 @@ export class AccountPicker extends Disposable {
 	) {
 		super();
 		let self = this;
+
+		// Create event emitters
+		this._addAccountCompleteEmitter = new Emitter<void>();
+		this._addAccountErrorEmitter = new Emitter<string>();
+		this._addAccountStartEmitter = new Emitter<void>();
 
 		// Create an account list
 		let delegate = new AccountListDelegate(AccountPicker.ACCOUNTPICKERLIST_HEIGHT);
@@ -80,7 +96,11 @@ export class AccountPicker extends Disposable {
 			contextViewProvider: this._contextViewService,
 			labelRenderer: (container) => this.renderLabel(container)
 		};
+
+		// Create the add account action
 		let addAccountAction = this._instantiationService.createInstance(AddAccountAction, this._providerId);
+
+
 
 		let dropdown = new DropdownList(container, option, this._listContainer, this._accountList, this._themeService, addAccountAction);
 		this._register(attachDropdownStyler(dropdown, this._themeService));

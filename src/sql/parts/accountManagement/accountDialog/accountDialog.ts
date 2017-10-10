@@ -49,8 +49,12 @@ export class AccountDialog extends Modal {
 	private _splitView: SplitView;
 	private _container: HTMLElement;
 
-	private _onCloseEvent = new Emitter<void>();
-	public onCloseEvent: Event<void> = this._onCloseEvent.event;
+	// EVENTING ////////////////////////////////////////////////////////////
+	private _onAddAccountErrorEmitter: Emitter<string>;
+	public get onAddAccountErrorEvent(): Event<string> { return this._onAddAccountErrorEmitter.event; }
+
+	private _onCloseEmitter: Emitter<void>;
+	public get onCloseEvent(): Event<void> { return this._onCloseEmitter.event; }
 
 	constructor(
 		@IPartService partService: IPartService,
@@ -62,12 +66,23 @@ export class AccountDialog extends Modal {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(localize('linkedAccounts', 'Linked Accounts'), TelemetryKeys.Accounts, partService, telemetryService, contextKeyService);
+		super(
+			localize('linkedAccounts', 'Linked Accounts'),
+			TelemetryKeys.Accounts,
+			partService,
+			telemetryService,
+			contextKeyService,
+			{ hasSpinner: true }
+		);
 		let self = this;
 
 		this._delegate = new AccountListDelegate(AccountDialog.ACCOUNTLIST_HEIGHT);
 		this._accountRenderer = this._instantiationService.createInstance(AccountListRenderer);
 		this._actionRunner = new ActionRunner();
+
+		// Setup the event emitters
+		this._onAddAccountErrorEmitter = new  Emitter<string>();
+		this._onCloseEmitter = new Emitter<void>();
 
 		// Create the view model and wire up the events
 		this.viewModel = this._instantiationService.createInstance(AccountViewModel);
@@ -106,14 +121,6 @@ export class AccountDialog extends Modal {
 		this._splitView = new SplitView(viewBody);
 	}
 
-	public showError(errorMessage: string): void {
-		this.setError(errorMessage);
-	}
-
-	public hideError() {
-		this.setError('');
-	}
-
 	private registerListeners(): void {
 		// Theme styler
 		this._register(attachButtonStyler(this._closeButton, this._themeService));
@@ -130,7 +137,7 @@ export class AccountDialog extends Modal {
 	}
 
 	public close() {
-		this._onCloseEvent.fire();
+		this._onCloseEmitter.fire();
 		this.hide();
 	}
 
@@ -148,6 +155,8 @@ export class AccountDialog extends Modal {
 
 	// PRIVATE HELPERS /////////////////////////////////////////////////////
 	private addProvider(newProvider: AccountProviderAddedEventParams) {
+		let self = this;
+
 		// Skip adding the provider if it already exists
 		if (this._providerViews[newProvider.addedProvider.id]) {
 			return;
@@ -159,6 +168,9 @@ export class AccountDialog extends Modal {
 			AddAccountAction,
 			newProvider.addedProvider.id
 		);
+		addAccountAction.addAccountCompleteEvent(() => { self.hideSpinner(); });
+		addAccountAction.addAccountErrorEvent(msg => { self._onAddAccountErrorEmitter.fire(msg); });
+		addAccountAction.addAccountStartEvent(() => { self.showSpinner(); });
 
 		// Create a fixed list view for the account provider
 		let providerViewContainer = DOM.$('.provider-view');
