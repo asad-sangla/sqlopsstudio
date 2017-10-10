@@ -14,7 +14,7 @@ export const SERVICE_ID = 'resourceProviderService';
 export const IResourceProviderService = createDecorator<IResourceProviderService>(SERVICE_ID);
 
 export interface IHandleFirewallRuleResult {
-	result: boolean;
+	canHandleFirewallRule: boolean;
 	ipAddress: string;
 	resourceProviderId: string;
 }
@@ -35,16 +35,16 @@ export interface IResourceProviderService {
 	/**
 	 * Create a firewall rule
 	 */
-	createFirewallRule(selectedAccount: data.Account, firewallruleInfo: data.FirewallRuleInfo, resourceProviderId: string): Thenable<data.CreateFirewallRuleResponse>;
+	createFirewallRule(selectedAccount: data.Account, firewallruleInfo: data.FirewallRuleInfo, resourceProviderId: string): Promise<data.CreateFirewallRuleResponse>;
 
 	/**
 	 * handle a firewall rule
 	 */
-	handleFirewallRule(errorCode: number, errorMessage: string, connectionTypeId: string): Thenable<IHandleFirewallRuleResult>;
+	handleFirewallRule(errorCode: number, errorMessage: string, connectionTypeId: string): Promise<IHandleFirewallRuleResult>;
 
 	/**
 	 * Show firewall rule dialog
 	 */
-	showFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Thenable<boolean>;
+	showFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Promise<boolean>;
 }
 

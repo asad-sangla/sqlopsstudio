@@ -31,7 +31,7 @@ export class ResourceProviderService implements IResourceProviderService {
 	/**
 	 * Opens the firewall rule dialog
 	 */
-	public showFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Thenable<boolean> {
+	public showFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Promise<boolean> {
 		let self = this;
 		// If the firewall rule dialog hasn't been defined, create a new one
 		if (!self._firewallRuleDialogController) {
@@ -44,7 +44,7 @@ export class ResourceProviderService implements IResourceProviderService {
 	/**
 	 * Create a firewall rule
 	 */
-	public createFirewallRule(selectedAccount: data.Account, firewallruleInfo: data.FirewallRuleInfo, resourceProviderId: string): Thenable<data.CreateFirewallRuleResponse> {
+	public createFirewallRule(selectedAccount: data.Account, firewallruleInfo: data.FirewallRuleInfo, resourceProviderId: string): Promise<data.CreateFirewallRuleResponse> {
 		return new Promise<data.CreateFirewallRuleResponse>((resolve, reject) => {
 			let provider = this._providers[resourceProviderId];
 			if (provider) {
@@ -63,7 +63,7 @@ export class ResourceProviderService implements IResourceProviderService {
 	/**
 	 * Handle a firewall rule
 	 */
-	public handleFirewallRule(errorCode: number, errorMessage: string, connectionTypeId: string): Thenable<IHandleFirewallRuleResult> {
+	public handleFirewallRule(errorCode: number, errorMessage: string, connectionTypeId: string): Promise<IHandleFirewallRuleResult> {
 		let self = this;
 		return new Promise<IHandleFirewallRuleResult>((resolve, reject) => {
 			let handleFirewallRuleResult: IHandleFirewallRuleResult;
@@ -74,7 +74,7 @@ export class ResourceProviderService implements IResourceProviderService {
 					promises.push(provider.handleFirewallRule(errorCode, errorMessage, connectionTypeId)
 						.then(response => {
 							if (response.result) {
-								handleFirewallRuleResult = { result: response.result, ipAddress: response.ipAddress, resourceProviderId: key };
+								handleFirewallRuleResult = { canHandleFirewallRule: response.result, ipAddress: response.ipAddress, resourceProviderId: key };
 							}
 						},
 						() => { /* Swallow failures at getting accounts, we'll just hide that provider */
@@ -86,19 +86,10 @@ export class ResourceProviderService implements IResourceProviderService {
 				if (handleFirewallRuleResult) {
 					resolve(handleFirewallRuleResult);
 				} else {
-					reject({ result: false, IPAddress: undefined, resourceProviderId: undefined });
+					reject(Constants.InvalidProvider);
 				}
 			});
 		});
-
-		// Mock for testing
-		// return new Promise<IHandleFirewallRuleResult>((resolve, reject) => {
-		// 	if (errorCode === 40615) {
-		// 		resolve({ result: true, ipAddress: '167.220.150', resourceProviderId: 'Azure' });
-		// 	} else {
-		// 		reject({ result: false, ipAddress: undefined, resourceProviderId: undefined });
-		// 	}
-		// });
 	}
 
 	/**

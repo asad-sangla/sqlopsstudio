@@ -57,6 +57,7 @@ export interface IConnectionResult {
 	connected: boolean;
 	errorMessage: string;
 	errorCode: number;
+	errorHandled?: boolean;
 }
 
 export interface IConnectionCallbacks {

@@ -92,7 +92,7 @@ export class FirewallRuleDialogController {
 	/**
 	 * Open firewall rule dialog
 	 */
-	public openFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Thenable<boolean> {
+	public openFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Promise<boolean> {
 		// TODO: expand support to multiple providers
 		const providerId: string = 'azurePublicCloud';
 

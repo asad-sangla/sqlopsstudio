@@ -27,6 +27,7 @@ import { ConnectionStatusbarItem } from 'sql/parts/connection/common/connectionS
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import { warn } from 'sql/base/common/log';
+import { IResourceProviderService } from 'sql/parts/accountManagement/common/interfaces';
 
 import * as data from 'data';
 
@@ -51,7 +52,6 @@ import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IResourceProviderService } from 'sql/parts/accountManagement/common/interfaces';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -290,7 +290,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				} else {
 					// Try to connect
 					this.connectWithOptions(newConnection, owner.uri, options, owner).then(connectionResult => {
-						if (!connectionResult.connected) {
+						if (!connectionResult.connected && !connectionResult.errorHandled) {
 							// If connection fails show the dialog
 							resolve(this.showConnectionDialogOnError(connection, owner, connectionResult, options));
 						} else {
@@ -454,45 +454,75 @@ export class ConnectionManagementService implements IConnectionManagementService
 						this.doActionsAfterConnectionComplete(uri, options);
 					}
 					resolve(connectionResult);
-				} else if (options.showFirewallRuleOnError && connectionResult && connectionResult.errorCode) {
-					this._resourceProviderService.handleFirewallRule(connectionResult.errorCode, connectionResult.errorMessage, connection.providerName).then(response => {
-						if (response.result) {
-							this._resourceProviderService.showFirewallRuleDialog(connection, response.ipAddress, response.resourceProviderId).then(success => {
-								if (success) {
-									options.showFirewallRuleOnError = false;
-									this.connectWithOptions(connection, uri, options, callbacks).then((result) => {
-										resolve(result);
-									});
-								} else {
-									if (callbacks.onConnectReject) {
-										callbacks.onConnectReject('Connection Not Accepted');
-									}
-									resolve(connectionResult);
-								}
-							});
-						} else {
-							if (callbacks.onConnectReject) {
-								callbacks.onConnectReject('Connection Not Accepted');
-							}
-							resolve(connectionResult);
-						}
-					}, () => {
+				} else if (connectionResult && connectionResult.errorMessage) {
+					this.handleConnectionError(connection, uri, options, callbacks, connectionResult).then(result => {
+						resolve(result);
+					}).catch(handleConnectionError => {
 						if (callbacks.onConnectReject) {
-							callbacks.onConnectReject('Connection Not Accepted');
+							callbacks.onConnectReject(handleConnectionError);
 						}
-						resolve(connectionResult);
+						reject(handleConnectionError);
 					});
 				} else {
 					if (callbacks.onConnectReject) {
-						callbacks.onConnectReject('Connection Not Accepted');
+						callbacks.onConnectReject(nls.localize('connectionNotAcceptedError', 'Connection Not Accepted'));
 					}
 					resolve(connectionResult);
 				}
 			}).catch(err => {
-				reject(err);
 				if (callbacks.onConnectReject) {
 					callbacks.onConnectReject(err);
 				}
+				reject(err);
+			});
+		});
+	}
+
+	private handleConnectionError(connection: IConnectionProfile, uri: string, options: IConnectionCompletionOptions, callbacks: IConnectionCallbacks, connectionResult: IConnectionResult) {
+		return new Promise<IConnectionResult>((resolve, reject) => {
+			let connectionNotAcceptedError = nls.localize('connectionNotAcceptedError', 'Connection Not Accepted');
+			if (options.showFirewallRuleOnError && connectionResult.errorCode) {
+				this.handleFirewallRuleError(connection, connectionResult).then(success => {
+					if (success) {
+						options.showFirewallRuleOnError = false;
+						this.connectWithOptions(connection, uri, options, callbacks).then((result) => {
+							resolve(result);
+						}).catch(connectionError => {
+							reject(connectionError);
+						});
+					} else {
+						if (callbacks.onConnectReject) {
+							callbacks.onConnectReject(connectionNotAcceptedError);
+						}
+						resolve(connectionResult);
+					}
+				}).catch(handleFirewallRuleError => {
+					reject(handleFirewallRuleError);
+				});
+			} else {
+				if (callbacks.onConnectReject) {
+					callbacks.onConnectReject(connectionNotAcceptedError);
+				}
+				resolve(connectionResult);
+			}
+		});
+	}
+
+	private handleFirewallRuleError(connection: IConnectionProfile, connectionResult: IConnectionResult): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			this._resourceProviderService.handleFirewallRule(connectionResult.errorCode, connectionResult.errorMessage, connection.providerName).then(response => {
+				if (response.canHandleFirewallRule) {
+					connectionResult.errorHandled = true;
+					this._resourceProviderService.showFirewallRuleDialog(connection, response.ipAddress, response.resourceProviderId).then(success => {
+						resolve(success);
+					}).catch(showFirewallRuleError => {
+						reject(showFirewallRuleError);
+					});
+				} else {
+					resolve(false);
+				}
+			}).catch(handleFirewallRuleError => {
+				reject(handleFirewallRuleError);
 			});
 		});
 	}

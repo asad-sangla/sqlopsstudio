@@ -156,6 +156,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			this._connecting = false;
 			if (connectionResult && connectionResult.connected) {
 				this._connectionDialog.close();
+			} else if (connectionResult && connectionResult.errorHandled) {
+				this._connectionDialog.resetConnection();
 			} else {
 				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.errorMessage);
 				this._connectionDialog.resetConnection();
