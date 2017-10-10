@@ -108,7 +108,7 @@ export class BackupComponent {
 	private readonly backupNameLabel: string = localize('backup.backupName', 'Backup name');
 	private readonly recoveryModelLabel: string = localize('backup.recoveryModel', 'Recovery model');
 	private readonly backupTypeLabel: string = localize('backup.backupType', 'Backup type');
-	private readonly backupDeviceLabel: string = localize('backup.backupDevice', 'Backup device');
+	private readonly backupDeviceLabel: string = localize('backup.backupDevice', 'Backup files');
 	private readonly algorithmLabel: string = localize('backup.algorithm', 'Algorithm');
 	private readonly certificateOrAsymmetricKeyLabel: string = localize('backup.certificateOrAsymmetricKey', 'Certificate or Asymmetric key');
 	private readonly mediaLabel: string = localize('backup.media', 'media');

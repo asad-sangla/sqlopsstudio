@@ -6,15 +6,16 @@
 'use strict';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IDisasterRecoveryService, IRestoreDialogController, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import { OptionsDialog } from 'sql/base/browser/ui/modal/optionsDialog';
-import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
-import { MssqlRestoreInfo } from 'sql/parts/disasterRecovery/restore/mssqlRestoreInfo';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import * as ConnectionConstants from 'sql/parts/connection/common/constants';
+import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
+import { IDisasterRecoveryService, IRestoreDialogController, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
+import { MssqlRestoreInfo } from 'sql/parts/disasterRecovery/restore/mssqlRestoreInfo';
+import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as data from 'data';
-import * as ConnectionConstants from 'sql/parts/connection/common/constants';
 
 export class RestoreDialogController implements IRestoreDialogController {
 	_serviceBrand: any;
@@ -130,52 +131,63 @@ export class RestoreDialogController implements IRestoreDialogController {
 		return options;
 	}
 
+	private handleOnClose(): void {
+		this._connectionService.disconnect(this._ownerUri);
+	}
+
 	public showDialog(connection: IConnectionProfile): TPromise<void> {
 		return new TPromise<void>((resolve, reject) => {
 			let result: void;
-			this._connectionService.connectIfNotConnected(connection).then(ownerUri => {
-				this._ownerUri = ownerUri;
 
-				this._sessionId = null;
+			this._ownerUri = this._connectionService.getConnectionId(connection)
+				+ ProviderConnectionInfo.idSeparator
+				+ 'restoreId'
+				+ ProviderConnectionInfo.nameValueSeparator
+				+ '0';
 
-				this._currentProvider = this.getCurrentProviderId();
-				if (!this._restoreDialogs[this._currentProvider]) {
-					let newRestoreDialog: RestoreDialog | OptionsDialog = undefined;
-					if (this._currentProvider === ConnectionConstants.mssqlProviderName) {
-						let provider = this._currentProvider;
-						newRestoreDialog = this._instantiationService.createInstance(RestoreDialog, this.getRestoreOption());
-						newRestoreDialog.onCancel(() => { });
-						newRestoreDialog.onRestore((isScriptOnly) => this.handleOnRestore(isScriptOnly));
-						newRestoreDialog.onValidate((overwriteTargetDatabase) => this.handleMssqlOnValidateFile(overwriteTargetDatabase));
-						newRestoreDialog.onDatabaseListFocused(() => this.fetchDatabases(provider));
-					} else {
-						newRestoreDialog = this._instantiationService.createInstance(
-							OptionsDialog, 'Restore database - ' + connection.serverName + ':' + connection.databaseName, 'RestoreOptions', undefined);
-						newRestoreDialog.onOk(() => this.handleOnRestore());
+			if (!this._connectionService.isConnected(this._ownerUri)) {
+				this._connectionService.connect(connection, this._ownerUri).then(connectionResult => {
+					this._sessionId = null;
+					this._currentProvider = this.getCurrentProviderId();
+					if (!this._restoreDialogs[this._currentProvider]) {
+						let newRestoreDialog: RestoreDialog | OptionsDialog = undefined;
+						if (this._currentProvider === ConnectionConstants.mssqlProviderName) {
+							let provider = this._currentProvider;
+							newRestoreDialog = this._instantiationService.createInstance(RestoreDialog, this.getRestoreOption());
+							newRestoreDialog.onCancel(() => { });
+							newRestoreDialog.onRestore((isScriptOnly) => this.handleOnRestore(isScriptOnly));
+							newRestoreDialog.onValidate((overwriteTargetDatabase) => this.handleMssqlOnValidateFile(overwriteTargetDatabase));
+							newRestoreDialog.onDatabaseListFocused(() => this.fetchDatabases(provider));
+						} else {
+							newRestoreDialog = this._instantiationService.createInstance(
+								OptionsDialog, 'Restore database - ' + connection.serverName + ':' + connection.databaseName, 'RestoreOptions', undefined);
+							newRestoreDialog.onOk(() => this.handleOnRestore());
+						}
+						newRestoreDialog.onCloseEvent(() => this.handleOnClose());
+						newRestoreDialog.render();
+						this._restoreDialogs[this._currentProvider] = newRestoreDialog;
 					}
-					newRestoreDialog.render();
-					this._restoreDialogs[this._currentProvider] = newRestoreDialog;
-				}
 
-				if (this._currentProvider === ConnectionConstants.mssqlProviderName) {
-					let restoreDialog = this._restoreDialogs[this._currentProvider] as RestoreDialog;
-					restoreDialog.viewModel.resetRestoreOptions(connection.databaseName);
-					this.getMssqlRestoreConfigInfo().then(() => {
-						restoreDialog.open(connection.serverName, this._ownerUri);
-						restoreDialog.validateRestore();
-					}, restoreConfigError => {
-						reject(restoreConfigError);
-					});
+					if (this._currentProvider === ConnectionConstants.mssqlProviderName) {
+						let restoreDialog = this._restoreDialogs[this._currentProvider] as RestoreDialog;
+						restoreDialog.viewModel.resetRestoreOptions(connection.databaseName);
+						this.getMssqlRestoreConfigInfo().then(() => {
+							restoreDialog.open(connection.serverName, this._ownerUri);
+							restoreDialog.validateRestore();
+						}, restoreConfigError => {
+							reject(restoreConfigError);
+						});
 
-				} else {
-					let restoreDialog = this._restoreDialogs[this._currentProvider] as OptionsDialog;
-					restoreDialog.open(this.getRestoreOption(), this._optionValues);
-				}
+					} else {
+						let restoreDialog = this._restoreDialogs[this._currentProvider] as OptionsDialog;
+						restoreDialog.open(this.getRestoreOption(), this._optionValues);
+					}
 
-				resolve(result);
-			}, error => {
-				reject(error);
-			});
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
+			}
 		});
 	}
 

@@ -106,6 +106,9 @@ export class RestoreDialog extends Modal {
 	private _onCancel = new Emitter<void>();
 	public onCancel: Event<void> = this._onCancel.event;
 
+	private _onCloseEvent = new Emitter<void>();
+	public onCloseEvent: Event<void> = this._onCloseEvent.event;
+
 	private _onDatabaseListFocused = new Emitter<void>();
 	public onDatabaseListFocused: Event<void> = this._onDatabaseListFocused.event;
 
@@ -648,6 +651,7 @@ export class RestoreDialog extends Modal {
 	public close() {
 		this.resetDialog();
 		this.hide();
+		this._onCloseEvent.fire();
 	}
 
 	private resetDialog(): void {

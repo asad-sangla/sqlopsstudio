@@ -55,11 +55,6 @@ export class FileBrowserDialog extends Modal {
 		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		super(title, TelemetryKeys.Backup, partService, telemetryService, contextKeyService, { isFlyout: true, hasTitleIcon: false, hasBackButton: true });
-
-		this._fileBrowserTreeView = this._instantiationService.createInstance(FileBrowserTreeView);
-		this._fileBrowserTreeView.setOnClickedCallback((arg) => this.onClicked(arg));
-		this._fileBrowserTreeView.setOnDoubleClickedCallback((arg) => this.onDoubleClicked(arg));
-
 		this._viewModel = this._instantiationService.createInstance(FileBrowserViewModel);
 		this._viewModel.onAddFileTree(args => this.handleOnAddFileTree(args.rootNode, args.selectedNode, args.expandedNodes));
 		this._viewModel.onPathValidate(args => this.handleOnValidate(args.succeeded, args.message));
@@ -117,7 +112,11 @@ export class FileBrowserDialog extends Modal {
 		this._fileFilterSelectBox.setOptions(this._viewModel.formattedFileFilters);
 		this._fileFilterSelectBox.select(0);
 		this._filePathInputBox.value = expandPath;
+		this.show();
 
+		this._fileBrowserTreeView = this._instantiationService.createInstance(FileBrowserTreeView);
+		this._fileBrowserTreeView.setOnClickedCallback((arg) => this.onClicked(arg));
+		this._fileBrowserTreeView.setOnDoubleClickedCallback((arg) => this.onDoubleClicked(arg));
 		this._viewModel.openFileBrowser(0);
 	}
 
@@ -130,7 +129,6 @@ export class FileBrowserDialog extends Modal {
 
 	private handleOnAddFileTree(rootNode: FileNode, selectedNode: FileNode, expandedNodes: FileNode[]) {
 		this.updateFileTree(rootNode, selectedNode, expandedNodes);
-		this.show();
 	}
 
 	private enableOkButton() {
@@ -188,6 +186,9 @@ export class FileBrowserDialog extends Modal {
 	}
 
 	private close() {
+		if (this._fileBrowserTreeView) {
+			this._fileBrowserTreeView.dispose();
+		}
 		this.hide();
 	}
 
