@@ -136,6 +136,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			this._connectionManagementService.cancelConnection(this._model);
 		}
 		this._connectionDialog.resetConnection();
+		this._connecting = false;
 	}
 
 	private handleDefaultOnConnect(params: INewConnectionParams, connection: IConnectionProfile): void {
