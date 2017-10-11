@@ -90,18 +90,24 @@ export class FileBrowserService implements IFileBrowserService {
 	}
 
 	public onFolderNodeExpanded(handle: number, fileBrowserExpandedParams: data.FileBrowserExpandedParams) {
-		if (fileBrowserExpandedParams.succeeded === true
-			&& fileBrowserExpandedParams.expandedNode
-			&& fileBrowserExpandedParams.expandedNode.children
-			&& fileBrowserExpandedParams.expandedNode.children.length > 0
-		) {
-			var expandedNode = this.convertChildren(fileBrowserExpandedParams.expandedNode, fileBrowserExpandedParams.ownerUri);
-			var expandResolve = this._expandResolveMap[fileBrowserExpandedParams.ownerUri];
-			if (expandResolve) {
-				expandResolve(expandedNode.children);
+		var expandResolve = this._expandResolveMap[fileBrowserExpandedParams.ownerUri];
+		if (expandResolve) {
+			if (fileBrowserExpandedParams.succeeded === true && fileBrowserExpandedParams.expandedNode)
+			{
+				// get the expanded folder node
+				var expandedNode = this._pathToFileNodeMap[fileBrowserExpandedParams.expandedNode.fullPath];
+				if (expandedNode) {
+					if (fileBrowserExpandedParams.expandedNode.children	&& fileBrowserExpandedParams.expandedNode.children.length > 0) {
+						expandedNode.children = this.convertChildren(expandedNode, fileBrowserExpandedParams.expandedNode.children, fileBrowserExpandedParams.ownerUri);
+					}
+					expandResolve(expandedNode.children ? expandedNode.children : []);
+					this._onExpandFolder.fire(expandedNode);
+				} else {
+					expandResolve([]);
+				}
+			} else {
+				expandResolve([]);
 			}
-
-			this._onExpandFolder.fire(expandedNode);
 		}
 	}
 
@@ -190,34 +196,27 @@ export class FileBrowserService implements IFileBrowserService {
 		return { rootNode: fileNode, selectedNode: selectedNode, expandedNodes: expandedNodes };
 	}
 
+	private convertChildren(expandedNode: FileNode, childrenToConvert: data.FileTreeNode[], ownerUri: string): FileNode[] {
+		var childrenNodes = [];
 
-	private convertChildren(fileTreeNode: data.FileTreeNode, ownerUri: string): FileNode {
-		// get the expanded folder node
-		var expandedNode = this._pathToFileNodeMap[fileTreeNode.fullPath];
+		for (var i = 0; i < childrenToConvert.length; i++) {
+			FileBrowserService.fileNodeId += 1;
+			var childNode = new FileNode(FileBrowserService.fileNodeId.toString(),
+				childrenToConvert[i].name,
+				childrenToConvert[i].fullPath,
+				childrenToConvert[i].isFile,
+				childrenToConvert[i].isExpanded,
+				ownerUri,
+				expandedNode
+			);
 
-		if (expandedNode) {
-			// convert children nodes
-			var childrenNodes = [];
-			for (var i = 0; i < fileTreeNode.children.length; i++) {
-				FileBrowserService.fileNodeId += 1;
-				var childNode = new FileNode(FileBrowserService.fileNodeId.toString(),
-					fileTreeNode.children[i].name,
-					fileTreeNode.children[i].fullPath,
-					fileTreeNode.children[i].isFile,
-					fileTreeNode.children[i].isExpanded,
-					ownerUri,
-					expandedNode
-				);
-
-				// Assume every folder has children initially
-				if (fileTreeNode.children[i].isFile === false) {
-					childNode.hasChildren = true;
-				}
-				childrenNodes.push(childNode);
+			// Assume every folder has children initially
+			if (childrenToConvert[i].isFile === false) {
+				childNode.hasChildren = true;
 			}
-			expandedNode.children = childrenNodes;
+			childrenNodes.push(childNode);
 		}
 
-		return expandedNode;
+		return childrenNodes;
 	}
 }
