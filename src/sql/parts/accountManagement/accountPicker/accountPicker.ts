@@ -32,6 +32,8 @@ export class AccountPicker extends Disposable {
 	private _accountList: List<data.Account>;
 	private _refreshContainer: HTMLElement;
 	private _listContainer: HTMLElement;
+	private _selectedAccount: data.Account;
+	private _dropdown: DropdownList;
 
 	// EVENTING ////////////////////////////////////////////////////////////
 	private _addAccountCompleteEmitter: Emitter<void>;
@@ -68,22 +70,16 @@ export class AccountPicker extends Disposable {
 		this._viewModel = this._instantiationService.createInstance(AccountPickerViewModel, this._providerId);
 		this._viewModel.updateAccountListEvent(arg => {
 			if (arg.providerId === self._providerId) {
-				this.updateAccountList(arg.accountList);
+				self.updateAccountList(arg.accountList);
 			}
 		});
-		this._viewModel.initialize()
-			.then((accounts: data.Account[]) => {
-				self.updateAccountList(accounts);
-			});
 	}
 
 	/**
 	 * Get the selected account
 	 */
 	public get selectedAccount(): data.Account {
-		return this._accountList && this._accountList.length > 0
-			? this._accountList.getSelectedElements()[0]
-			: undefined;
+		return this._selectedAccount;
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
@@ -102,11 +98,11 @@ export class AccountPicker extends Disposable {
 
 
 
-		let dropdown = new DropdownList(container, option, this._listContainer, this._accountList, this._themeService, addAccountAction);
-		this._register(attachDropdownStyler(dropdown, this._themeService));
+		this._dropdown = this._register(new DropdownList(container, option, this._listContainer, this._accountList, this._themeService, addAccountAction));
+		this._register(attachDropdownStyler(this._dropdown, this._themeService));
 		this._register(this._accountList.onSelectionChange((e: IListEvent<data.Account>) => {
 			if (e.elements.length === 1) {
-				dropdown.renderLabel();
+				this._dropdown.renderLabel();
 				this.onAccountSelectionChange(e.elements[0]);
 			}
 		}));
@@ -127,6 +123,12 @@ export class AccountPicker extends Disposable {
 		let self = this;
 		this._register(self._themeService.onDidColorThemeChange(e => self.updateTheme(e)));
 		self.updateTheme(self._themeService.getColorTheme());
+
+		// Load the initial contents of the view model
+		this._viewModel.initialize()
+			.then((accounts: data.Account[]) => {
+				self.updateAccountList(accounts);
+			});
 	}
 
 	public dispose() {
@@ -138,6 +140,7 @@ export class AccountPicker extends Disposable {
 
 	// PRIVATE HELPERS /////////////////////////////////////////////////////
 	private onAccountSelectionChange(account: data.Account) {
+		this._selectedAccount = account;
 		if (account.isStale) {
 			new Builder(this._refreshContainer).show();
 		} else {
@@ -181,16 +184,38 @@ export class AccountPicker extends Disposable {
 	}
 
 	private updateAccountList(accounts: data.Account[]): void {
+		// keep the selection to the current one
+		let selectedElements = this._accountList.getSelectedElements();
+
+		// find selected index
+		let selectedIndex: number;
+		if (selectedElements.length > 0 && accounts.length > 0) {
+			selectedIndex = accounts.findIndex((account) => {
+				return (account.key.accountId === selectedElements[0].key.accountId);
+			});
+		}
+
 		// Replace the existing list with the new one
-		// TODO: keep the selection to the current one
 		this._accountList.splice(0, this._accountList.length, accounts);
-		this._accountList.setSelection([0]);
+
+		if (this._accountList.length > 0) {
+			if (selectedIndex && selectedIndex !== -1) {
+				this._accountList.setSelection([selectedIndex]);
+			} else {
+				this._accountList.setSelection([0]);
+			}
+		} else {
+			// if the account is empty, re-render dropdown label
+			this._selectedAccount = undefined;
+			this._dropdown.renderLabel();
+		}
+
 		this._accountList.layout(this._accountList.contentHeight);
 	}
 
 	/**
 	 * Update theming that is specific to account picker
- 	 */
+	 */
 	private updateTheme(theme: IColorTheme): void {
 		let linkColor = theme.getColor(buttonBackground);
 		let link = linkColor ? linkColor.toString() : null;

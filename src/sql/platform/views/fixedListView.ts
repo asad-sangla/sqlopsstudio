@@ -64,6 +64,7 @@ export class FixedListView<T> extends CollapsibleView {
 		this._list.splice(0, this._list.length, content);
 		this._badge.setCount(this._list.length);
 		this._list.layout(this._list.contentHeight);
+		this.setFixed(this.fixedSize);
 	}
 
 	public listContentHeight(): number {

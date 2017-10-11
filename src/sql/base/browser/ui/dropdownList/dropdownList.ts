@@ -42,13 +42,15 @@ export class DropdownList extends Dropdown {
 		if (_action) {
 			let button = new Button(_contentContainer);
 			button.label = _action.label;
-			button.addListener('click', () => _action.run());
+			this.toDispose.push(DOM.addDisposableListener(button.getElement(), DOM.EventType.CLICK, () => {
+				this._action.run();
+			}));
 			attachButtonStyler(button, this._themeService);
 		}
 
 		DOM.append(this.element.getHTMLElement(), DOM.$('div.dropdown-icon'));
 
-		this.element.on([DOM.EventType.CLICK, DOM.EventType.MOUSE_DOWN, GestureEventType.Tap], (e: Event) => {
+		this.toDispose.push(this.element.on([DOM.EventType.CLICK, DOM.EventType.MOUSE_DOWN, GestureEventType.Tap], (e: Event) => {
 			DOM.EventHelper.stop(e, true); // prevent default click behaviour to trigger
 		}).on([DOM.EventType.MOUSE_DOWN, GestureEventType.Tap], (e: Event) => {
 			// We want to show the context menu on dropdown so that as a user you can press and hold the
@@ -60,13 +62,16 @@ export class DropdownList extends Dropdown {
 		}).on([DOM.EventType.KEY_DOWN], (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter)) {
-				setTimeout(() => this.show(), 100);
-			} else if (event.equals(KeyCode.DownArrow)) {
-				this._list.getHTMLElement().focus();
+				e.stopPropagation();
+				setTimeout(() => {
+					this.show();
+					this._list.getHTMLElement().focus();
+				}, 100);
 			}
-		});
+		}));
 
 		this.toDispose.push(this._list.onSelectionChange(() => {
+			// focus on the dropdown label then hide the dropdown list
 			this.element.getHTMLElement().focus();
 			this.hide();
 		}));
@@ -93,8 +98,20 @@ export class DropdownList extends Dropdown {
 	}
 
 	protected onEvent(e: Event, activeElement: HTMLElement): void {
-		if (!DOM.isAncestor(<HTMLElement>e.target, this.element.getHTMLElement()) && !DOM.isAncestor(<HTMLElement>e.target, this._list.getHTMLElement())) {
+		// If there is an event outside dropdown label and dropdown list, hide the dropdown list
+		if (!DOM.isAncestor(<HTMLElement>e.target, this.element.getHTMLElement()) && !DOM.isAncestor(<HTMLElement>e.target, this._contentContainer)) {
+			// focus on the dropdown label then hide the dropdown list
+			this.element.getHTMLElement().focus();
 			this.hide();
+			// If there is an keyboard event inside the list and key code is escape, hide the dropdown list
+		} else if (DOM.isAncestor(<HTMLElement>e.target, this._list.getHTMLElement()) && e instanceof KeyboardEvent) {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Escape)) {
+				// focus on the dropdown label then hide the dropdown list
+				this.element.getHTMLElement().focus();
+				this.hide();
+				e.stopPropagation();
+			}
 		}
 	}
 
