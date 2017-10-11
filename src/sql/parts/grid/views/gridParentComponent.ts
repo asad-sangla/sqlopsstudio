@@ -413,9 +413,7 @@ export abstract class GridParentComponent {
 			this.onScroll(0);
 		}
 		setTimeout(() => {
-			for (let grid of self.renderedDataSets) {
-				grid.resized.emit();
-			}
+			self.resizeGrids();
 			self.slickgrids.toArray()[0].setActive();
 			self._cd.detectChanges();
 		});
