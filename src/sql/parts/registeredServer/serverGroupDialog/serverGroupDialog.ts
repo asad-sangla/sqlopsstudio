@@ -352,7 +352,7 @@ export class ServerGroupDialog extends Modal {
 		this._addServerButton.enabled = this._viewModel.hasPendingChanges();
 	}
 
-	/* Overwrite esapce key behavior */
+	/* Overwrite escape key behavior */
 	protected onClose() {
 		this.cancel();
 	}

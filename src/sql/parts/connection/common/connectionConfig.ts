@@ -15,6 +15,7 @@ import { IConfigurationValue as TConfigurationValue } from 'vs/platform/configur
 import { ConnectionProfile } from './connectionProfile';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as data from 'data';
+import * as nls from 'vs/nls';
 
 import { generateUuid } from 'vs/base/common/uuid';
 
@@ -192,14 +193,20 @@ export class ConnectionConfig implements IConnectionConfig {
 				resolve(profileGroup.id);
 			} else {
 				let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
-				let result = this.saveGroup(groups, profileGroup.name, profileGroup.color, profileGroup.description);
-				groups = result.groups;
+				let sameNameGroup = groups.find(group => group.name === profileGroup.name);
+				if (sameNameGroup != null) {
+					let errMessage: string = nls.localize('invalidServerName', 'A server group with the same name already exists.');
+					reject(errMessage);
+				} else {
+					let result = this.saveGroup(groups, profileGroup.name, profileGroup.color, profileGroup.description);
+					groups = result.groups;
 
-				this.writeConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
-					resolve(result.newGroupId);
-				}).catch(err => {
-					reject(err);
-				});
+					this.writeConfiguration(Constants.connectionGroupsArrayName, groups).then(() => {
+						resolve(result.newGroupId);
+					}).catch(err => {
+						reject(err);
+					});
+				}
 			}
 		});
 	}
@@ -394,6 +401,11 @@ export class ConnectionConfig implements IConnectionConfig {
 
 	public editGroup(source: ConnectionProfileGroup): Promise<void> {
 		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+		let sameNameGroup = groups.find(group => group.name === source.name);
+		if (sameNameGroup != null) {
+			let errMessage: string = nls.localize('invalidServerName', 'A server group with the same name already exists.');
+			return Promise.reject(errMessage);
+		}
 		groups = groups.map(g => {
 			if (g.id === source.id) {
 				g.name = source.name;
@@ -491,7 +503,7 @@ export class ConnectionConfig implements IConnectionConfig {
 				value: profiles
 			};
 			this._configurationEditService.writeConfiguration(target, configValue).then(result => {
-				this._workspaceConfigurationService.reloadConfiguration().then(() => {
+					this._workspaceConfigurationService.reloadConfiguration().then(() => {
 					resolve();
 				});
 			}, (error => {

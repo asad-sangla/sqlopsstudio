@@ -37,12 +37,15 @@ export class ServerGroupController implements IServerGroupController {
 
 	private handleOnAddServerGroup(): void {
 		if (this._group) {
+			let tempGroup: ConnectionProfileGroup = this.copyConnectionProfileGroup(this._group);
 			this._group.name = this._viewModel.groupName;
 			this._group.color = this._viewModel.groupColor;
 			this._group.description = this._viewModel.groupDescription;
 			this._connectionManagementService.editGroup(this._group).then(() => {
 				this._serverGroupDialog.close();
 			}).catch(err => {
+				// rollback changes made
+				this._group = tempGroup;
 				this._errorMessageService.showDialog(Severity.Error, 'Connection Error', err);
 			});
 
@@ -63,6 +66,10 @@ export class ServerGroupController implements IServerGroupController {
 				this._errorMessageService.showDialog(Severity.Error, 'Connection Error', err);
 			});
 		}
+	}
+
+	private copyConnectionProfileGroup(group: ConnectionProfileGroup): ConnectionProfileGroup {
+		return new ConnectionProfileGroup(group.name, group.parent, group.id, group.color, group.description);
 	}
 
 	private handleOnClose(): void {
