@@ -86,7 +86,8 @@ export class ResourceProviderService implements IResourceProviderService {
 				if (handleFirewallRuleResult) {
 					resolve(handleFirewallRuleResult);
 				} else {
-					reject(Constants.InvalidProvider);
+					handleFirewallRuleResult = { canHandleFirewallRule: false, ipAddress: undefined, resourceProviderId: undefined };
+					resolve(handleFirewallRuleResult);
 				}
 			});
 		});
