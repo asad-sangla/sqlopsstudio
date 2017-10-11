@@ -113,13 +113,13 @@ export class Dropdown extends Disposable {
 		return this._input;
 	}
 
-	private _onBlur = new Emitter<void>();
+	private _onBlur = this._register(new Emitter<void>());
 	public onBlur: Event<void> = this._onBlur.event;
 
-	private _onValueChange = new Emitter<string>();
+	private _onValueChange = this._register(new Emitter<string>());
 	public onValueChange: Event<string> = this._onValueChange.event;
 
-	private _onFocus = new Emitter<void>();
+	private _onFocus = this._register(new Emitter<void>());
 	public onFocus: Event<void> = this._onFocus.event;
 
 	constructor(
@@ -145,12 +145,12 @@ export class Dropdown extends Disposable {
 			placeholder: this._options.placeholder
 		});
 
-		this._register($(this._input.inputElement).on(DOM.EventType.FOCUS, () => {
+		this._register(DOM.addDisposableListener(this._input.inputElement, DOM.EventType.FOCUS, () => {
 			this._onFocus.fire();
 			this._showList();
 		}));
 
-		this._register($(this._input.inputElement).on(DOM.EventType.BLUR, () => {
+		this._register(DOM.addDisposableListener(this._input.inputElement, DOM.EventType.BLUR, () => {
 			if (!this._list.isDOMFocused) {
 				this._onBlur.fire();
 			}
