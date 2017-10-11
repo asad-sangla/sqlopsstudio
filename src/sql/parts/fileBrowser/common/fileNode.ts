@@ -3,7 +3,7 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 'use strict';
-import * as Utils from 'sql/parts/connection/common/utils';
+import { generateUuid } from 'vs/base/common/uuid';
 
 /**
  * File/folder node in file browser
@@ -59,7 +59,7 @@ export class FileNode {
 		if (id) {
 			this.id = id;
 		} else {
-			this.id = Utils.generateGuid();
+			this.id = generateUuid();
 		}
 
 		this.name = name;

@@ -6,7 +6,6 @@
 import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { IProfilerSession, IProfilerService, ProfilerSessionID, IProfilerSessionTemplate } from 'sql/parts/profiler/service/interfaces';
 import { ProfilerState } from './profilerState';
-import * as Utils from 'sql/parts/connection/common/utils';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 import * as data from 'data';
@@ -16,6 +15,7 @@ import { EditorInput } from 'vs/workbench/common/editor';
 import { IEditorModel } from 'vs/platform/editor/common/editor';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Event, { Emitter } from 'vs/base/common/event';
+import { generateUuid } from 'vs/base/common/uuid';
 
 import * as nls from 'vs/nls';
 
@@ -47,7 +47,7 @@ export class ProfilerInput extends EditorInput implements IProfilerSession {
 			isRunning: false,
 			autoscroll: true
 		});
-		this._id = this._profilerService.registerSession(Utils.generateGuid(), this);
+		this._id = this._profilerService.registerSession(generateUuid(), this);
 		let searchFn = (val: { [x: string]: string }, exp: string): Array<number> => {
 			let ret = new Array<number>();
 			for (let i = 0; i < this._columns.length; i++) {

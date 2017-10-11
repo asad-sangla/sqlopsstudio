@@ -10,7 +10,8 @@ import { ConnectionProfileGroup } from './connectionProfileGroup';
 import * as data from 'data';
 import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
 import * as interfaces from 'sql/parts/connection/common/interfaces';
-import * as Utils from './utils';
+
+import { generateUuid } from 'vs/base/common/uuid';
 
 // Concrete implementation of the IConnectionProfile interface
 
@@ -40,12 +41,12 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			this.savePassword = false;
 			this.saveProfile = true;
 			this._groupName = ConnectionProfile.RootGroupName;
-			this._id = Utils.generateGuid();
+			this._id = generateUuid();
 		}
 	}
 
 	public generateNewId() {
-		this._id = Utils.generateGuid();
+		this._id = generateUuid();
 	}
 
 	public getParent(): ConnectionProfileGroup {
@@ -54,7 +55,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 
 	public get id(): string {
 		if (!this._id) {
-			this._id = Utils.generateGuid();
+			this._id = generateUuid();
 		}
 		return this._id;
 	}
@@ -156,10 +157,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		connectionInfo.providerName = profile.providerName;
 		connectionInfo.saveProfile = true;
 		connectionInfo.savePassword = profile.savePassword;
-		connectionInfo.id = profile.id;
-		if (!profile.id) {
-			connectionInfo.id = Utils.generateGuid();
-		}
+		connectionInfo.id = profile.id || generateUuid();
 		return connectionInfo;
 	}
 

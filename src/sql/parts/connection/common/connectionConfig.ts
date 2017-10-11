@@ -16,6 +16,8 @@ import { ConnectionProfile } from './connectionProfile';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as data from 'data';
 
+import { generateUuid } from 'vs/base/common/uuid';
+
 export interface ISaveGroupResult {
 	groups: IConnectionProfileGroup[];
 	newGroupId: string;
@@ -218,7 +220,7 @@ export class ConnectionConfig implements IConnectionConfig {
 			profiles = profiles.concat(userProfiles);
 			profiles.forEach(profile => {
 				if (!profile.id) {
-					profile.id = Utils.generateGuid();
+					profile.id = generateUuid();
 				}
 			});
 			this.writeConfiguration(Constants.connectionsArrayName, profiles, ConfigurationTarget.USER);
@@ -233,7 +235,7 @@ export class ConnectionConfig implements IConnectionConfig {
 				profiles = profiles.concat(workspaceProfiles);
 				workspaceProfiles.forEach(profile => {
 					if (!profile.id) {
-						profile.id = Utils.generateGuid();
+						profile.id = generateUuid();
 					}
 				});
 				this.writeConfiguration(Constants.connectionsArrayName, workspaceProfiles, ConfigurationTarget.WORKSPACE);
@@ -443,7 +445,7 @@ export class ConnectionConfig implements IConnectionConfig {
 				if (ConnectionProfileGroup.isRoot(newGroup.name)) {
 					newGroup.id = Utils.defaultGroupId;
 				} else {
-					newGroup.id = Utils.generateGuid();
+					newGroup.id = generateUuid();
 				}
 				let result = this.saveGroupInTree(groupTree, newGroup.id, groupNames, color, description, index + 1);
 				newGroupId = result.newGroupId;

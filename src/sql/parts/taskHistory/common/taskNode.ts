@@ -3,8 +3,8 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 'use strict';
-import * as Utils from 'sql/parts/connection/common/utils';
 import { StopWatch } from 'vs/base/common/stopwatch';
+import { generateUuid } from 'vs/base/common/uuid';
 
 export enum TaskStatus {
 	notStarted = 0,
@@ -100,11 +100,7 @@ export class TaskNode {
 	public script: string;
 
 	constructor(taskName: string, serverName: string, databaseName: string, taskId: string = undefined, taskExecutionMode: TaskExecutionMode = TaskExecutionMode.execute, isCancelable: boolean = true) {
-		if (taskId) {
-			this.id = taskId;
-		} else {
-			this.id = Utils.generateGuid();
-		}
+		this.id = taskId || generateUuid();
 
 		this.taskName = taskName;
 		this.serverName = serverName;

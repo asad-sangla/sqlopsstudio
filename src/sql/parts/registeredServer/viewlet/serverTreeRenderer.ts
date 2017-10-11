@@ -15,13 +15,6 @@ import { ITree, IRenderer } from 'vs/base/parts/tree/browser/tree';
 import { IConnectionProfileGroupTemplateData, IConnectionTemplateData, IObjectExplorerTemplateData } from 'sql/parts/registeredServer/viewlet/templateData';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
-import { InputBox, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import * as lifecycle from 'vs/base/common/lifecycle';
-import { once } from 'vs/base/common/functional';
-import { KeyCode } from 'vs/base/common/keyCodes';
-import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import * as types from 'vs/base/common/types';
-import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 
