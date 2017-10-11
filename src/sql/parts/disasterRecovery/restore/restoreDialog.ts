@@ -390,7 +390,7 @@ export class RestoreDialog extends Modal {
 	private databaseSelected(dbName: string): void {
 		if (this.viewModel.targetDatabaseName !== dbName) {
 			this.viewModel.targetDatabaseName = dbName;
-			this._onValidate.fire();
+			this.validateRestore(false);
 		}
 	}
 
@@ -437,18 +437,18 @@ export class RestoreDialog extends Modal {
 
 	private onBooleanOptionChecked(optionName: string) {
 		this.viewModel.setOptionValue(optionName, (<Checkbox>this._optionsMap[optionName]).checked);
-		this.validateRestore();
+		this.validateRestore(false);
 	}
 
 	private onCatagoryOptionChanged(optionName: string) {
 		this.viewModel.setOptionValue(optionName, (<SelectBox>this._optionsMap[optionName]).value);
-		this.validateRestore();
+		this.validateRestore(false);
 	}
 
 	private onStringOptionChanged(optionName: string, params: OnLoseFocusParams) {
 		if (params.hasChanged && params.value) {
 			this.viewModel.setOptionValue(optionName, params.value);
-			this.validateRestore();
+			this.validateRestore(false);
 		}
 	}
 
@@ -531,7 +531,7 @@ export class RestoreDialog extends Modal {
 
 		if (!isSame) {
 			this.viewModel.selectedBackupSets = selectedFiles;
-			this.validateRestore();
+			this.validateRestore(false);
 		}
 	}
 
