@@ -147,21 +147,7 @@ export class Dropdown extends Disposable {
 
 		this._register($(this._input.inputElement).on(DOM.EventType.FOCUS, () => {
 			this._onFocus.fire();
-			this._contextView.show({
-				getAnchor: () => this.$input.getHTMLElement(),
-				render: container => {
-					this.$list.appendTo(container);
-					this._list.layout(parseInt(this.$list.style('height')));
-					return { dispose: () => { } };
-				},
-				onDOMEvent: (e, activeElement) => {
-					if (!DOM.isAncestor(activeElement, this.$el.getHTMLElement())) {
-						this.$list.offDOM();
-						this._onBlur.fire();
-						this._contextView.hide();
-					}
-				}
-			});
+			this._showList();
 		}));
 
 		this._register($(this._input.inputElement).on(DOM.EventType.BLUR, () => {
@@ -170,27 +156,35 @@ export class Dropdown extends Disposable {
 			}
 		}));
 
-		this._register($(this._input.inputElement).on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			let event = new StandardKeyboardEvent(e);
-			if (event.equals(KeyCode.Enter)) {
-				if (this._input.validate()) {
-					this._onValueChange.fire(this._input.value);
-				}
-				e.stopPropagation();
-			} else if (event.keyCode === KeyCode.Escape) {
-				if (this.$list.getHTMLElement().parentElement) {
+		this._register(DOM.addStandardDisposableListener(this._input.inputElement, DOM.EventType.KEY_UP, (e: StandardKeyboardEvent) => {
+			switch (e.keyCode) {
+				case KeyCode.Enter:
+					if (this._input.validate()) {
+						this._onValueChange.fire(this._input.value);
+					}
+					e.stopPropagation();
+					break;
+				case KeyCode.Escape:
+					if (this.$list.getHTMLElement().parentElement) {
+						this._input.validate();
+						this._onBlur.fire();
+						this._contextView.hide();
+						e.stopPropagation();
+					}
+					break;
+				case KeyCode.Tab:
 					this._input.validate();
-					this.$list.offDOM();
 					this._onBlur.fire();
 					this._contextView.hide();
 					e.stopPropagation();
-				}
-			} else if (event.keyCode === KeyCode.Tab) {
-				this._input.validate();
-				this.$list.offDOM();
-				this._onBlur.fire();
-				this._contextView.hide();
-				e.stopPropagation();
+					break;
+				case KeyCode.DownArrow:
+					if (!this.$list.getHTMLElement().parentElement) {
+						this._showList();
+					}
+					this._list.getHTMLElement().focus();
+					e.stopPropagation();
+					break;
 			}
 		}));
 
@@ -224,6 +218,24 @@ export class Dropdown extends Disposable {
 		this._register(this._list);
 		this._register(this._input);
 		this._register(this._contextView);
+	}
+
+	private _showList(): void {
+		this._contextView.show({
+			getAnchor: () => this.$input.getHTMLElement(),
+			render: container => {
+				this.$list.appendTo(container);
+				this._list.layout(parseInt(this.$list.style('height')));
+				return { dispose: () => { } };
+			},
+			onDOMEvent: (e, activeElement) => {
+				if (!DOM.isAncestor(activeElement, this.$el.getHTMLElement())) {
+					this._input.validate();
+					this._onBlur.fire();
+					this._contextView.hide();
+				}
+			}
+		});
 	}
 
 	public set values(vals: string[]) {
