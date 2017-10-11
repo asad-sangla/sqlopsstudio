@@ -198,12 +198,18 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 	});
 }
 
-export function newQuery(connectionProfile: IConnectionProfile, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService): Promise<void> {
+export function newQuery(
+	connectionProfile: IConnectionProfile,
+	connectionService: IConnectionManagementService,
+	queryEditorService: IQueryEditorService,
+	sqlContent?: string,
+	executeOnOpen: RunQueryOnConnectionMode = RunQueryOnConnectionMode.none
+): Promise<void> {
 	return new Promise<void>((resolve) => {
-		queryEditorService.newSqlEditor().then((owner: IConnectableInput) => {
+		queryEditorService.newSqlEditor(sqlContent).then((owner: IConnectableInput) => {
 			// Connect our editor to the input connection
 			let options: IConnectionCompletionOptions = {
-				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: RunQueryOnConnectionMode.none, input: owner },
+				params: { connectionType: ConnectionType.editor, runQueryOnCompletion: executeOnOpen, input: owner },
 				saveTheConnection: false,
 				showDashboard: false,
 				showConnectionDialogOnError: true,

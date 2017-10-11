@@ -16,6 +16,7 @@ import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { IInsightsConfig, IInsightsView } from './interfaces';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { insertValueRegex } from 'sql/parts/insights/browser/insightsDialogView';
+import { RunInsightQueryAction } from './actions';
 
 import { SimpleExecuteResult } from 'data';
 
@@ -43,7 +44,6 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	@ViewChild(ComponentHostDirective) private componentHost: ComponentHostDirective;
 
 	private _typeKey: string;
-	private _queryString: string;
 	private _init: boolean = false;
 
 	constructor(
@@ -106,6 +106,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		if (this.insightConfig.details && (this.insightConfig.details.query || this.insightConfig.details.queryFile)) {
 			actions.push(this.dashboardService.instantiationService.createInstance(InsightAction, InsightAction.ID, InsightAction.LABEL));
 		}
+		actions.push(this.dashboardService.instantiationService.createInstance(RunInsightQueryAction, RunInsightQueryAction.ID, RunInsightQueryAction.LABEL));
 		return actions;
 	}
 
@@ -159,7 +160,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	}
 
 	private _runQuery(): Thenable<SimpleExecuteResult> {
-		return this.dashboardService.queryManagementService.runQueryAndReturn(this._queryString).then(
+		return this.dashboardService.queryManagementService.runQueryAndReturn(this.insightConfig.query as string).then(
 			result => {
 				return this._storeResult(result);
 			}
@@ -219,10 +220,8 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		this._typeKey = Object.keys(this.insightConfig.type)[0];
 
 		if (types.isStringArray(this.insightConfig.query)) {
-			this._queryString = this.insightConfig.query.join(' ');
-		} else if (types.isString(this.insightConfig.query)) {
-			this._queryString = this.insightConfig.query;
-		} else {
+			this.insightConfig.query = this.insightConfig.query.join(' ');
+		} else if (this.insightConfig.queryFile) {
 			let filePath = this.insightConfig.queryFile;
 			// check for workspace relative path
 			let match = filePath.match(insertValueRegex);
@@ -233,7 +232,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 			promises.push(new Promise((resolve, reject) => {
 				pfs.readFile(filePath).then(
 					buffer => {
-						this._queryString = buffer.toString().split(/\r?\n/).join(' ');
+						this.insightConfig.query = buffer.toString();
 						resolve();
 					},
 					error => {
