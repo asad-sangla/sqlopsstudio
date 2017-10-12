@@ -7,7 +7,6 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput, EditorModel } from 'vs/workbench/common/editor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 
 export class DashboardInput extends EditorInput {
@@ -29,11 +28,11 @@ export class DashboardInput extends EditorInput {
 	private _parentContainer: HTMLElement;
 
 	constructor(
-		private _connection: ConnectionManagementInfo,
+		private _connectionProfile: IConnectionProfile,
 		@IConnectionManagementService private _connectionService: IConnectionManagementService
 	) {
 		super();
-		this._initializedPromise = _connectionService.connectIfNotConnected(_connection.connectionProfile, 'dashboard').then(u => this._uri = u).then();
+		this._initializedPromise = _connectionService.connectIfNotConnected(_connectionProfile, 'dashboard').then(u => this._uri = u).then();
 	}
 
 	public setUniqueSelector(uniqueSelector: string): void {
@@ -45,7 +44,7 @@ export class DashboardInput extends EditorInput {
 	}
 
 	public getName(): string {
-		return this._connection.connectionProfile.serverName + ':' + this._connection.connectionProfile.databaseName;
+		return this.connectionProfile.serverName + ':' + this.connectionProfile.databaseName;
 	}
 
 	public get uri(): string {
@@ -83,8 +82,8 @@ export class DashboardInput extends EditorInput {
 		return false;
 	}
 
-	public getConnectionProfile(): IConnectionProfile {
-		return this._connection.connectionProfile;
+	public get connectionProfile(): IConnectionProfile {
+		return this._connectionProfile;
 	}
 
 	public resolve(refresh?: boolean): TPromise<EditorModel> {
@@ -97,9 +96,5 @@ export class DashboardInput extends EditorInput {
 
 	public get uniqueSelector(): string {
 		return this._uniqueSelector;
-	}
-
-	public getConnectionInfo(): ConnectionManagementInfo {
-		return this._connection;
 	}
 }

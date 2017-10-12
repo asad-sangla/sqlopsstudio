@@ -547,7 +547,7 @@ suite('SQL ConnectionManagementService tests', () => {
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
 			saveTheConnection: false,
-			showDashboard: true,
+			showDashboard: false,
 			showConnectionDialogOnError: false,
 			showFirewallRuleOnError: false
 		};

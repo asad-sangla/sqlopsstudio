@@ -90,7 +90,7 @@ export class DashboardEditor extends BaseEditor {
 	private bootstrapAngular(input: DashboardInput): void {
 		// Get the bootstrap params and perform the bootstrap
 		let params: DashboardComponentParams = {
-			connection: input.getConnectionInfo().connectionProfile,
+			connection: input.connectionProfile,
 			ownerUri: input.uri
 		};
 

@@ -200,7 +200,7 @@ export interface IConnectionManagementService {
 	 */
 	cancelEditorConnection(owner: IConnectableInput): Thenable<boolean>;
 
-	showDashboard(connection: ConnectionProfile): Promise<boolean>;
+	showDashboard(connection: ConnectionProfile): Thenable<boolean>;
 
 	closeDashboard(uri: string): void;
 

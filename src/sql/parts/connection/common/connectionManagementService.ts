@@ -530,7 +530,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	private doActionsAfterConnectionComplete(uri: string, options: IConnectionCompletionOptions, ) {
 		let connectionManagementInfo = this._connectionStatusManager.findConnection(uri);
 		if (options.showDashboard) {
-			this.showDashboardForConnectionManagementInfo(uri, connectionManagementInfo);
+			this.showDashboardForConnectionManagementInfo(connectionManagementInfo.connectionProfile);
 		}
 		this._onConnect.fire(<IConnectionParams>{
 			connectionUri: uri,
@@ -538,27 +538,23 @@ export class ConnectionManagementService implements IConnectionManagementService
 		});
 	}
 
-	public showDashboard(connection: ConnectionProfile): Promise<boolean> {
-		// TODO create new connection for dashboard
-		let uri = Utils.generateUri(connection);
-		let connectionManagementInfo = this._connectionStatusManager.findConnection(uri);
-		return this.showDashboardForConnectionManagementInfo(uri, connectionManagementInfo);
+	public showDashboard(connection: ConnectionProfile): Thenable<boolean> {
+		return this.showDashboardForConnectionManagementInfo(connection);
 	}
 
-	private showDashboardForConnectionManagementInfo(uri: string, connection: ConnectionManagementInfo): Promise<boolean> {
-		const self = this;
-		return new Promise<boolean>((resolve, reject) => {
-			let dashboardInput: DashboardInput = self._instantiationService ? self._instantiationService.createInstance(DashboardInput, connection) : undefined;
-			// if dashboard uri is already open, focus on that tab
-			let found = self.focusDashboard(dashboardInput.uri);
-			if (!found) {
-				self._editorService.openEditor(dashboardInput, { pinned: true }, false);
-			}
-			resolve(true);
-		});
+	private showDashboardForConnectionManagementInfo(connectionProfile: IConnectionProfile): Thenable<boolean> {
+		// if dashboard profile is already open, focus on that tab
+		if (!this.focusDashboard(connectionProfile)) {
+			let dashboardInput: DashboardInput = this._instantiationService ? this._instantiationService.createInstance(DashboardInput, connectionProfile) : undefined;
+			return dashboardInput.initializedPromise.then(() => {
+				this._editorService.openEditor(dashboardInput, { pinned: true }, false);
+			}).then(() => true);
+		} else {
+			return Promise.resolve(true);
+		}
 	}
 
-	private focusDashboard(uri): boolean {
+	private focusDashboard(profile: IConnectionProfile): boolean {
 		let found: boolean = false;
 		let options = {
 			preserveFocus: false,
@@ -573,7 +569,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (group instanceof EditorGroup) {
 					group.getEditors().map(editor => {
 						if (editor instanceof DashboardInput) {
-							if (editor.uri === uri) {
+							if (editor.connectionProfile === profile) {
 								// change focus to the matched editor
 								let position = model.positionOfGroup(group);
 								this._editorGroupService.activateGroup(model.groupAt(position));
