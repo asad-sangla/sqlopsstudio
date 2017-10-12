@@ -11,12 +11,10 @@ import * as adal from 'adal-node';
 import * as data from 'data';
 import * as request from 'request';
 import * as nls from 'vscode-nls';
-import CredentialServiceTokenCache from './credentialServiceTokenCache';
 import {
 	Arguments,
 	AzureAccount,
 	AzureAccountProviderMetadata,
-	AzureAccountSecurityToken,
 	AzureAccountSecurityTokenCollection,
 	Tenant
 } from './interfaces';
@@ -24,7 +22,6 @@ import {
 const localize = nls.loadMessageBundle();
 
 export class AzureAccountProvider implements data.AccountProvider {
-	private static CredentialNamespace = 'azureAccountProviderCredentials';
 	private static WorkSchoolAccountLogo: data.AccountContextualLogo = {
 		light: AzureAccountProvider.loadIcon('work_school_account.svg'),
 		dark: AzureAccountProvider.loadIcon('work_school_account_inverse.svg')
@@ -51,41 +48,45 @@ export class AzureAccountProvider implements data.AccountProvider {
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
-	clear(accountKey: data.AccountKey): Thenable<void> {
+	public clear(accountKey: data.AccountKey): Thenable<void> {
 		throw new Error('Not implemented');
 	}
 
-	getSecurityToken(account: AzureAccount): Thenable<AzureAccountSecurityTokenCollection> {
+	public clearTokenCache(): Thenable<void> {
+		return this._tokenCache.clear();
+	}
+
+	public getSecurityToken(account: AzureAccount): Thenable<AzureAccountSecurityTokenCollection> {
 		let self = this;
 		return this.doIfInitialized(() => self.getAccessTokens(account));
 	}
 
-	initialize(restoredAccounts: data.Account[]): Thenable<data.Account[]> {
+	public initialize(restoredAccounts: data.Account[]): Thenable<data.Account[]> {
 		let self = this;
 
-		return this.createTokenCache()
-			.then(() => { self._isInitialized = true; })
-			.then(() => {
-				// Rehydrate the accounts
-				restoredAccounts.forEach((account) => {
-					// Set the icon for the account
-					account.displayInfo.contextualLogo = account.properties.isMsAccount
-						? AzureAccountProvider.MicrosoftAccountLogo
-						: AzureAccountProvider.WorkSchoolAccountLogo;
+		return new Promise<data.Account[]>(resolve => {
+			// Rehydrate the accounts
+			restoredAccounts.forEach((account) => {
+				// Set the icon for the account
+				account.displayInfo.contextualLogo = account.properties.isMsAccount
+					? AzureAccountProvider.MicrosoftAccountLogo
+					: AzureAccountProvider.WorkSchoolAccountLogo;
 
-					// TODO: Set stale status based on whether we can authenticate or not
-				});
-
-				return restoredAccounts;
+				// TODO: Set stale status based on whether we can authenticate or not
 			});
+
+			self._isInitialized = true;
+
+			resolve(restoredAccounts);
+		});
 	}
 
-	prompt(): Thenable<AzureAccount> {
+	public prompt(): Thenable<AzureAccount> {
 		let self = this;
 		return this.doIfInitialized(() => self.signIn());
 	}
 
-	refresh(account: AzureAccount): Thenable<AzureAccount> {
+	public refresh(account: AzureAccount): Thenable<AzureAccount> {
 		let self = this;
 		return this.doIfInitialized(() => self.signIn(account.properties.isMsAccount, account.key.accountId));
 	}
@@ -171,13 +172,12 @@ export class AzureAccountProvider implements data.AccountProvider {
 						}
 
 						// Generate a token object and add it to the collection
-						let token: AzureAccountSecurityToken = {
+						tokenCollection[tenant.id] = {
 							expiresOn: response.expiresOn,
 							resource: response.resource,
 							token: response.accessToken,
 							tokenType: response.tokenType
 						};
-						tokenCollection[tenant.id] = token;
 						resolve();
 					}
 				);
@@ -345,21 +345,6 @@ export class AzureAccountProvider implements data.AccountProvider {
 							isStale: false
 						};
 					});
-			});
-	}
-
-	private createTokenCache(): Thenable<void> {
-		let self = this;
-
-		// Don't create a token cache if we've already defined one
-		if (this._tokenCache) {
-			return Promise.resolve();
-		}
-
-		// Get a credential provider then create the token cache from it
-		return data.credentials.getProvider(AzureAccountProvider.CredentialNamespace)
-			.then(credProvider => {
-				self._tokenCache = new CredentialServiceTokenCache(credProvider, 'tokenCache');
 			});
 	}
 }
