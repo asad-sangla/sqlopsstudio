@@ -249,9 +249,8 @@ export class OptionsDialog extends Modal {
 		body.append(optionsContentBuilder.getHTMLElement(), 0);
 		this.show();
 		var firstOptionWidget = this._optionElements[firstOption].optionWidget;
-		firstOptionWidget.focus();
-
 		this.registerStyling();
+		firstOptionWidget.focus();
 	}
 
 	protected layout(height?: number): void {
