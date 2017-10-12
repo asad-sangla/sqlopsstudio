@@ -30,6 +30,7 @@ import { attachInputBoxStyler, attachButtonStyler } from 'vs/platform/theme/comm
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
+import * as DOM from 'vs/base/browser/dom';
 
 export class FileBrowserDialog extends Modal {
 	private _viewModel: FileBrowserViewModel;
@@ -195,7 +196,7 @@ export class FileBrowserDialog extends Modal {
 	private updateFileTree(rootNode: FileNode, selectedNode: FileNode, expandedNodes: FileNode[]): void {
 		this._fileBrowserTreeView.renderBody(this._treeContainer.getHTMLElement(), rootNode, selectedNode, expandedNodes);
 		this._fileBrowserTreeView.setVisible(true);
-		this._fileBrowserTreeView.layout(800);
+		this._fileBrowserTreeView.layout(DOM.getTotalHeight(this._treeContainer.getHTMLElement()));
 	}
 
 	private registerListeners(): void {
