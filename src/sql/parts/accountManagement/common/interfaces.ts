@@ -6,6 +6,7 @@
 'use strict';
 
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import Event from 'vs/base/common/event';
 import * as data from 'data';
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
@@ -48,3 +49,13 @@ export interface IResourceProviderService {
 	showFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Promise<boolean>;
 }
 
+export const IAccountPickerService = createDecorator<IAccountPickerService>('AccountPickerService');
+export interface IAccountPickerService {
+	_serviceBrand: any;
+	renderAccountPicker(container: HTMLElement): void;
+	addAccountCompleteEvent: Event<void>;
+	addAccountErrorEvent: Event<string>;
+	addAccountStartEvent: Event<void>;
+	onAccountSelectionChangeEvent: Event<data.Account>;
+	selectedAccount: data.Account;
+}

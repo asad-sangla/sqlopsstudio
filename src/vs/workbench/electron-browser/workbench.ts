@@ -144,8 +144,9 @@ import { ISqlOAuthService } from 'sql/common/sqlOAuthService';
 import { SqlOAuthService } from 'sql/common/browser/sqlOAuthServiceImpl';
 import { IClipboardService as sqlIClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { ClipboardService as sqlClipboardService } from 'sql/platform/clipboard/electron-browser/clipboardService';
-import { IResourceProviderService } from 'sql/parts/accountManagement/common/interfaces';
+import { IResourceProviderService, IAccountPickerService } from 'sql/parts/accountManagement/common/interfaces';
 import { ResourceProviderService } from 'sql/parts/accountManagement/common/resourceProviderService';
+import { AccountPickerService } from 'sql/parts/accountManagement/accountPicker/accountPickerService';
 
 export const MessagesVisibleContext = new RawContextKey<boolean>('globalMessageVisible', false);
 export const EditorsVisibleContext = new RawContextKey<boolean>('editorIsOpen', false);
@@ -714,6 +715,7 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IInsightsDialogService, this.instantiationService.createInstance(InsightsDialogService));
 		let accountManagementService = this.instantiationService.createInstance(AccountManagementService, undefined);
 		serviceCollection.set(IAccountManagementService, accountManagementService);
+		serviceCollection.set(IAccountPickerService, this.instantiationService.createInstance(AccountPickerService));
 		serviceCollection.set(IBootstrapService, this.instantiationService.createInstance(BootstrapService));
 		serviceCollection.set(IProfilerService, this.instantiationService.createInstance(ProfilerService));
 

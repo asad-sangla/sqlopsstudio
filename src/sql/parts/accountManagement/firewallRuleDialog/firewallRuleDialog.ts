@@ -25,9 +25,9 @@ import * as data from 'data';
 
 import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { FirewallRuleViewModel } from 'sql/parts/accountManagement/firewallRuleDialog/firewallRuleViewModel';
-import { AccountPicker } from 'sql/parts/accountManagement/accountPicker/accountPicker';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
+import { IAccountPickerService } from 'sql/parts/accountManagement/common/interfaces';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 export class FirewallRuleDialog extends Modal {
@@ -36,7 +36,6 @@ export class FirewallRuleDialog extends Modal {
 	private _closeButton: Button;
 	private _fromRangeinputBox: InputBox;
 	private _toRangeinputBox: InputBox;
-	private _accountPicker: AccountPicker;
 
 	private _helpLink: HTMLElement;
 	private _IPAddressInput: HTMLElement;
@@ -54,7 +53,7 @@ export class FirewallRuleDialog extends Modal {
 	public get onCreateFirewallRule(): Event<void> { return this._onCreateFirewallRule.event; }
 
 	constructor(
-		private _providerId: string,
+		@IAccountPickerService private _accountPickerService: IAccountPickerService,
 		@IPartService partService: IPartService,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
@@ -109,10 +108,13 @@ export class FirewallRuleDialog extends Modal {
 		});
 
 		// Create account picker with event handling
-		this._accountPicker = this._instantiationService.createInstance(AccountPicker, this._providerId);
-		this._accountPicker.addAccountCompleteEvent(() => { this.hideSpinner(); });
-		this._accountPicker.addAccountErrorEvent(msg => { this._onAddAccountErrorEmitter.fire(msg); });
-		this._accountPicker.addAccountStartEvent(() => { this.showSpinner(); });
+		this._accountPickerService.addAccountCompleteEvent(() => this.hideSpinner());
+		this._accountPickerService.addAccountErrorEvent((msg) => {
+			this.hideSpinner();
+			this._onAddAccountErrorEmitter.fire(msg);
+		});
+		this._accountPickerService.addAccountStartEvent(() => this.showSpinner());
+		this._accountPickerService.onAccountSelectionChangeEvent((account) => this.onAccountSelectionChange(account));
 
 		let azureAccountSection;
 		$().div({ class: 'azure-account-section new-section' }, (azureAccountContainer) => {
@@ -120,7 +122,7 @@ export class FirewallRuleDialog extends Modal {
 			let azureAccountLabel = localize('azureAccount', 'Azure account');
 			this.createLabelElement(azureAccountContainer, azureAccountLabel, true);
 			azureAccountContainer.div({ class: 'dialog-input' }, (inputCellContainer) => {
-				this._accountPicker.render(inputCellContainer.getHTMLElement());
+				this._accountPickerService.renderAccountPicker(inputCellContainer.getHTMLElement());
 			});
 		});
 
@@ -182,9 +184,8 @@ export class FirewallRuleDialog extends Modal {
 			builder.append(firewallRuleSection);
 		});
 
-		let self = this;
-		this._register(self._themeService.onDidColorThemeChange(e => self.updateTheme(e)));
-		self.updateTheme(self._themeService.getColorTheme());
+		this._register(this._themeService.onDidColorThemeChange(e => this.updateTheme(e)));
+		this.updateTheme(this._themeService.getColorTheme());
 
 		jQuery(this._IPAddressInput).on('click', () => {
 			this.onFirewallRuleOptionSelected(true);
@@ -275,16 +276,30 @@ export class FirewallRuleDialog extends Modal {
 	}
 
 	public createFirewallRule() {
-		this.showSpinner();
-		this._onCreateFirewallRule.fire();
+		if (this._createButton.enabled) {
+			this._createButton.enabled = false;
+			this.showSpinner();
+			this._onCreateFirewallRule.fire();
+		}
 	}
 
-	public get selectedAccount(): data.Account {
-		return this._accountPicker.selectedAccount;
+	public onAccountSelectionChange(account: data.Account): void {
+		this.viewModel.selectedAccount = account;
+		if (account && !account.isStale) {
+			this._createButton.enabled = true;
+		} else {
+			this._createButton.enabled = false;
+		}
+	}
+
+	public onServiceComplete() {
+		this._createButton.enabled = true;
+		this.hideSpinner();
 	}
 
 	public open() {
 		this._IPAddressInput.click();
+		this.onAccountSelectionChange(this._accountPickerService.selectedAccount);
 		this._fromRangeinputBox.setPlaceHolder(this.viewModel.defaultFromSubnetIPRange);
 		this._toRangeinputBox.setPlaceHolder(this.viewModel.defaultToSubnetIPRange);
 		this._IPAddressElement.innerText = '(' + this.viewModel.defaultIPAddress + ')';

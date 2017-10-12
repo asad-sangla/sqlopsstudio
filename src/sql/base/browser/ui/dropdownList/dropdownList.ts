@@ -44,6 +44,7 @@ export class DropdownList extends Dropdown {
 			button.label = _action.label;
 			this.toDispose.push(DOM.addDisposableListener(button.getElement(), DOM.EventType.CLICK, () => {
 				this._action.run();
+				this.hide();
 			}));
 			attachButtonStyler(button, this._themeService);
 		}

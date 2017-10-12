@@ -28,11 +28,11 @@ import { AccountPickerViewModel } from 'sql/parts/accountManagement/accountPicke
 
 export class AccountPicker extends Disposable {
 	public static ACCOUNTPICKERLIST_HEIGHT = 47;
-	private _viewModel: AccountPickerViewModel;
+	public viewModel: AccountPickerViewModel;
 	private _accountList: List<data.Account>;
+	private _rootElement: HTMLElement;
 	private _refreshContainer: HTMLElement;
 	private _listContainer: HTMLElement;
-	private _selectedAccount: data.Account;
 	private _dropdown: DropdownList;
 
 	// EVENTING ////////////////////////////////////////////////////////////
@@ -45,6 +45,9 @@ export class AccountPicker extends Disposable {
 	private _addAccountStartEmitter: Emitter<void>;
 	public get addAccountStartEvent(): Event<void> { return this._addAccountStartEmitter.event; }
 
+	private _onAccountSelectionChangeEvent: Emitter<data.Account>;
+	public get onAccountSelectionChangeEvent(): Event<data.Account> { return this._onAccountSelectionChangeEvent.event; }
+
 	constructor(
 		private _providerId: string,
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
@@ -52,12 +55,12 @@ export class AccountPicker extends Disposable {
 		@IContextViewService private _contextViewService: IContextViewService
 	) {
 		super();
-		let self = this;
 
 		// Create event emitters
 		this._addAccountCompleteEmitter = new Emitter<void>();
 		this._addAccountErrorEmitter = new Emitter<string>();
 		this._addAccountStartEmitter = new Emitter<void>();
+		this._onAccountSelectionChangeEvent = new Emitter<data.Account>();
 
 		// Create an account list
 		let delegate = new AccountListDelegate(AccountPicker.ACCOUNTPICKERLIST_HEIGHT);
@@ -67,26 +70,27 @@ export class AccountPicker extends Disposable {
 		this._register(attachListStyler(this._accountList, this._themeService));
 
 		// Create the view model, wire up the events, and initialize with baseline data
-		this._viewModel = this._instantiationService.createInstance(AccountPickerViewModel, this._providerId);
-		this._viewModel.updateAccountListEvent(arg => {
-			if (arg.providerId === self._providerId) {
-				self.updateAccountList(arg.accountList);
+		this.viewModel = this._instantiationService.createInstance(AccountPickerViewModel, this._providerId);
+		this.viewModel.updateAccountListEvent(arg => {
+			if (arg.providerId === this._providerId) {
+				this.updateAccountList(arg.accountList);
 			}
 		});
-	}
 
-	/**
-	 * Get the selected account
-	 */
-	public get selectedAccount(): data.Account {
-		return this._selectedAccount;
+		this.createAccountPickerComponent();
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
 	/**
 	 * Render account picker
 	 */
-	public render(container: HTMLElement) {
+	public render(container: HTMLElement): void {
+		DOM.append(container, this._rootElement);
+	}
+
+	private createAccountPickerComponent() {
+		this._rootElement = DOM.$('div.account-picker-container');
+
 		// Create a dropdown for account picker
 		let option: IDropdownOptions = {
 			contextViewProvider: this._contextViewService,
@@ -95,10 +99,11 @@ export class AccountPicker extends Disposable {
 
 		// Create the add account action
 		let addAccountAction = this._instantiationService.createInstance(AddAccountAction, this._providerId);
+		addAccountAction.addAccountCompleteEvent(() => this._addAccountCompleteEmitter.fire());
+		addAccountAction.addAccountErrorEvent((msg) => this._addAccountErrorEmitter.fire(msg));
+		addAccountAction.addAccountStartEvent(() => this._addAccountStartEmitter.fire());
 
-
-
-		this._dropdown = this._register(new DropdownList(container, option, this._listContainer, this._accountList, this._themeService, addAccountAction));
+		this._dropdown = this._register(new DropdownList(this._rootElement, option, this._listContainer, this._accountList, this._themeService, addAccountAction));
 		this._register(attachDropdownStyler(this._dropdown, this._themeService));
 		this._register(this._accountList.onSelectionChange((e: IListEvent<data.Account>) => {
 			if (e.elements.length === 1) {
@@ -108,7 +113,7 @@ export class AccountPicker extends Disposable {
 		}));
 
 		// Create refresh account action
-		this._refreshContainer = DOM.append(container, DOM.$('div.refresh-container'));
+		this._refreshContainer = DOM.append(this._rootElement, DOM.$('div.refresh-container'));
 		DOM.append(this._refreshContainer, DOM.$('div.icon warning'));
 		let actionBar = new ActionBar(this._refreshContainer, { animated: false });
 		actionBar.push(new RefreshAccountAction(RefreshAccountAction.ID, RefreshAccountAction.LABEL), { icon: false, label: true });
@@ -120,14 +125,13 @@ export class AccountPicker extends Disposable {
 			new Builder(this._refreshContainer).hide();
 		}
 
-		let self = this;
-		this._register(self._themeService.onDidColorThemeChange(e => self.updateTheme(e)));
-		self.updateTheme(self._themeService.getColorTheme());
+		this._register(this._themeService.onDidColorThemeChange(e => this.updateTheme(e)));
+		this.updateTheme(this._themeService.getColorTheme());
 
 		// Load the initial contents of the view model
-		this._viewModel.initialize()
+		this.viewModel.initialize()
 			.then((accounts: data.Account[]) => {
-				self.updateAccountList(accounts);
+				this.updateAccountList(accounts);
 			});
 	}
 
@@ -140,12 +144,13 @@ export class AccountPicker extends Disposable {
 
 	// PRIVATE HELPERS /////////////////////////////////////////////////////
 	private onAccountSelectionChange(account: data.Account) {
-		this._selectedAccount = account;
-		if (account.isStale) {
+		this.viewModel.selectedAccount = account;
+		if (account && account.isStale) {
 			new Builder(this._refreshContainer).show();
 		} else {
 			new Builder(this._refreshContainer).hide();
 		}
+		this._onAccountSelectionChangeEvent.fire(account);
 	}
 
 	private renderLabel(container: HTMLElement): IDisposable {
@@ -206,7 +211,7 @@ export class AccountPicker extends Disposable {
 			}
 		} else {
 			// if the account is empty, re-render dropdown label
-			this._selectedAccount = undefined;
+			this.onAccountSelectionChange(undefined);
 			this._dropdown.renderLabel();
 		}
 

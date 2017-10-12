@@ -24,8 +24,6 @@ export class FirewallRuleDialogController {
 
 	private _addAccountErrorTitle = localize('addAccountErrorTitle', 'Error adding account');
 	private _firewallRuleErrorTitle = localize('firewallRuleError', 'Firewall rule error');
-	private _noAccountError = localize('noAccountError', 'Please add an account');
-	private _refreshAccountError = localize('refreshAccountError', 'Please refresh the account');
 	private _deferredPromise: Deferred<boolean>;
 
 	constructor(
@@ -41,16 +39,11 @@ export class FirewallRuleDialogController {
 	 * Open firewall rule dialog
 	 */
 	public openFirewallRuleDialog(connection: IConnectionProfile, ipAddress: string, resourceProviderId: string): Promise<boolean> {
-		let self = this;
-
-		// TODO: expand support to multiple providers
-		const providerId: string = 'azurePublicCloud';
-
 		if (!this._firewallRuleDialog) {
-			this._firewallRuleDialog = this._instantiationService.createInstance(FirewallRuleDialog, providerId);
+			this._firewallRuleDialog = this._instantiationService.createInstance(FirewallRuleDialog);
 			this._firewallRuleDialog.onCancel(this.handleOnCancel, this);
 			this._firewallRuleDialog.onCreateFirewallRule(this.handleOnCreateFirewallRule, this);
-			this._firewallRuleDialog.onAddAccountErrorEvent(msg => { self.handleOnAddAccountError(msg); });
+			this._firewallRuleDialog.onAddAccountErrorEvent(this.handleOnAddAccountError, this);
 			this._firewallRuleDialog.render();
 		}
 		this._connection = connection;
@@ -69,54 +62,38 @@ export class FirewallRuleDialogController {
 	private handleOnCreateFirewallRule(): void {
 		let resourceProviderId = this._resourceProviderId;
 
-		if (this.validateAccount()) {
-			this._accountManagementService.getSecurityToken(this._firewallRuleDialog.selectedAccount).then(tokenMappings => {
-				let firewallRuleInfo: data.FirewallRuleInfo = {
-					startIpAddress: this._firewallRuleDialog.viewModel.isIPAddressSelected ? this._firewallRuleDialog.viewModel.defaultIPAddress : this._firewallRuleDialog.viewModel.fromSubnetIPRange,
-					endIpAddress: this._firewallRuleDialog.viewModel.isIPAddressSelected ? this._firewallRuleDialog.viewModel.defaultIPAddress : this._firewallRuleDialog.viewModel.toSubnetIPRange,
-					serverName: this._connection.serverName,
-					securityTokenMappings: tokenMappings
-				};
+		this._accountManagementService.getSecurityToken(this._firewallRuleDialog.viewModel.selectedAccount).then(tokenMappings => {
+			let firewallRuleInfo: data.FirewallRuleInfo = {
+				startIpAddress: this._firewallRuleDialog.viewModel.isIPAddressSelected ? this._firewallRuleDialog.viewModel.defaultIPAddress : this._firewallRuleDialog.viewModel.fromSubnetIPRange,
+				endIpAddress: this._firewallRuleDialog.viewModel.isIPAddressSelected ? this._firewallRuleDialog.viewModel.defaultIPAddress : this._firewallRuleDialog.viewModel.toSubnetIPRange,
+				serverName: this._connection.serverName,
+				securityTokenMappings: tokenMappings
+			};
 
-				this._resourceProviderService.createFirewallRule(this._firewallRuleDialog.selectedAccount, firewallRuleInfo, resourceProviderId).then(createFirewallRuleResponse => {
-					if (createFirewallRuleResponse.result) {
-						this._firewallRuleDialog.close();
-						this._deferredPromise.resolve(true);
-					} else {
-						this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, createFirewallRuleResponse.errorMessage);
-					}
-					this._firewallRuleDialog.spinner = false;
-				}, error => {
-					this.showError(error);
-				});
+			this._resourceProviderService.createFirewallRule(this._firewallRuleDialog.viewModel.selectedAccount, firewallRuleInfo, resourceProviderId).then(createFirewallRuleResponse => {
+				if (createFirewallRuleResponse.result) {
+					this._firewallRuleDialog.close();
+					this._deferredPromise.resolve(true);
+				} else {
+					this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, createFirewallRuleResponse.errorMessage);
+				}
+				this._firewallRuleDialog.onServiceComplete();
 			}, error => {
 				this.showError(error);
 			});
-		} else {
-			this._firewallRuleDialog.spinner = false;
-		}
+		}, error => {
+			this.showError(error);
+		});
 	}
 
 	private showError(error: any): void {
 		this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, error);
-		this._firewallRuleDialog.spinner = false;
+		this._firewallRuleDialog.onServiceComplete();
 		// Note: intentionally not rejecting the promise as we want users to be able to choose a different account
-
 	}
 
 	private handleOnCancel(): void {
 		this._deferredPromise.resolve(false);
 	}
 
-	private validateAccount(): boolean {
-		let result = true;
-		if (!this._firewallRuleDialog.selectedAccount) {
-			result = false;
-			this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, this._noAccountError);
-		} else if (this._firewallRuleDialog.selectedAccount.isStale) {
-			result = false;
-			this._errorMessageService.showDialog(Severity.Error, this._firewallRuleErrorTitle, this._refreshAccountError);
-		}
-		return result;
-	}
 }

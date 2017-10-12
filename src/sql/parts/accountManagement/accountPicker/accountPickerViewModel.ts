@@ -18,6 +18,8 @@ export class AccountPickerViewModel {
 	private _updateAccountListEmitter: Emitter<UpdateAccountListEventParams>;
 	public get updateAccountListEvent(): Event<UpdateAccountListEventParams> { return this._updateAccountListEmitter.event; }
 
+	public selectedAccount: data.Account;
+
 	constructor(
 		private _providerId: string,
 		@IAccountManagementService private _accountManagementService: IAccountManagementService

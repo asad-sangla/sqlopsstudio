@@ -4,12 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+import * as data from 'data';
 
 /**
  * View model for firewall rule dialog
  */
 export class FirewallRuleViewModel {
 	public isIPAddressSelected: boolean;
+	public selectedAccount: data.Account;
 
 	private _defaultIPAddress: string;
 	private _defaultFromSubnetIPRange: string;
