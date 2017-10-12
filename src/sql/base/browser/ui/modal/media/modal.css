@@ -15,8 +15,8 @@
 
 .monaco-shell .modal:not(.flyout-dialog) .modal-dialog {
 	margin: auto;
-	width: 400px;
-	height: 400px;
+	width: 640px;
+	height: 480px;
 }
 
 .modal .modal-header {
