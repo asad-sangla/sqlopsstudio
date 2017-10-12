@@ -573,6 +573,12 @@
 	    background: url("User.svg") center center no-repeat;
 }
 
+.vs .icon.user_disabled,
+.vs-dark .icon.user_disabled,
+.hc-black .icon.user_disabled {
+	    background: url("User_Disabled.svg") center center no-repeat;
+}
+
 .vs .icon.userdefineddatatype,
 .vs-dark .icon.userdefineddatatype,
 .hc-black .icon.userdefineddatatype {
