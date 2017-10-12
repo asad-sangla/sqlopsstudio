@@ -193,9 +193,9 @@ export class ConnectionConfig implements IConnectionConfig {
 				resolve(profileGroup.id);
 			} else {
 				let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
-				let sameNameGroup = groups.find(group => group.name === profileGroup.name);
-				if (sameNameGroup != null) {
-					let errMessage: string = nls.localize('invalidServerName', 'A server group with the same name already exists.');
+				let sameNameGroup = groups ? groups.find(group => group.name === profileGroup.name) : undefined;
+				if (sameNameGroup) {
+					let errMessage: string = nls.localize('invalidServerName', "A server group with the same name already exists.");
 					reject(errMessage);
 				} else {
 					let result = this.saveGroup(groups, profileGroup.name, profileGroup.color, profileGroup.description);
@@ -401,9 +401,9 @@ export class ConnectionConfig implements IConnectionConfig {
 
 	public editGroup(source: ConnectionProfileGroup): Promise<void> {
 		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
-		let sameNameGroup = groups.find(group => group.name === source.name);
-		if (sameNameGroup != null) {
-			let errMessage: string = nls.localize('invalidServerName', 'A server group with the same name already exists.');
+		let sameNameGroup = groups ? groups.find(group => group.name === source.name && group.id !== source.id) : undefined;
+		if (sameNameGroup) {
+			let errMessage: string = nls.localize('invalidServerName', "A server group with the same name already exists.");
 			return Promise.reject(errMessage);
 		}
 		groups = groups.map(g => {
