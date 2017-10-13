@@ -91,6 +91,8 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 	 * Handle a drop in the server tree.
 	 */
 	public drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: DragMouseEvent): void {
+		TreeUpdateUtils.isInDragAndDrop = false;
+
 		let targetConnectionProfileGroup: ConnectionProfileGroup = this.getTargetGroup(targetElement);
 
 		const source = data.getData()[0];
@@ -110,8 +112,6 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 				});
 			}
 		}
-
-		TreeUpdateUtils.isInDragAndDrop = false;
 
 		return;
 	}
