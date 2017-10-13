@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-*  Copyright (c) Microsoft Corporation. All rights reserved.
-*  Licensed under the MIT License. See License.txt in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 import { Injectable, forwardRef, Inject } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { DashboardServiceInterface } from './dashboardServiceInterface.service';
-import { MenuItem } from 'sql/parts/dashboard/common/breadcrumb.component';
+import { MenuItem, IBreadcrumbService } from 'sql/base/browser/ui/breadcrumb/interfaces';
 
 export enum BreadcrumbClass {
 	DatabasePage,
@@ -16,12 +16,12 @@ export enum BreadcrumbClass {
 };
 
 @Injectable()
-export class BreadcrumbService {
+export class BreadcrumbService implements IBreadcrumbService {
 	public breadcrumbItem: Subject<MenuItem[]>;
 	private itemBreadcrums: MenuItem[];
 	private _connection: ConnectionManagementInfo;
 
-	constructor(@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) {
+	constructor( @Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface) {
 		let self = this;
 		self._bootstrap.connectionManagementService.onDidChangeConnection((e: ConnectionManagementInfo) => {
 			self._connection = e;
