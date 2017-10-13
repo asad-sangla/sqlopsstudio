@@ -16,12 +16,11 @@ import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
-import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import Severity from 'vs/base/common/severity';
 import data = require('data');
 import nls = require('vs/nls');
-import fs = require('fs');
 import os = require('os');
 import path = require('path');
 

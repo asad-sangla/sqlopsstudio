@@ -10,13 +10,14 @@ import { IInsightsConfigDetails } from 'sql/parts/dashboard/widgets/insights/int
 import { attachModalDialogStyler, attachTableStyler } from 'sql/common/theme/styler';
 import { ITaskRegistry, Extensions as TaskExtensions } from 'sql/platform/tasks/taskRegistry';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { ITaskActionContext } from 'sql/workbench/common/actions';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
-import { IInsightsDialogModel, ListResource } from 'sql/parts/insights/common/interfaces';
+import { IInsightsDialogModel, ListResource, IInsightDialogActionContext } from 'sql/parts/insights/common/interfaces';
 import { TableCollapsibleView } from 'sql/base/browser/ui/table/tableView';
 import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
 import { error } from 'sql/base/common/log';
+import { Table } from 'sql/base/browser/ui/table/table';
+import { CopyInsightDialogSelectionAction } from 'sql/parts/insights/common/insightDialogActions';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
@@ -76,7 +77,9 @@ export class InsightsDialogView extends Modal {
 	private _disposables: IDisposable[] = [];
 	private _splitView: SplitView;
 	private _container: HTMLElement;
+	private _topTable: Table<ListResource>;
 	private _topTableData: TableDataView<ListResource>;
+	private _bottomTable: Table<ListResource>;
 	private _bottomTableData: TableDataView<ListResource>;
 	private _topColumns: Array<Slick.Column<ListResource>> = [
 		{
@@ -98,6 +101,7 @@ export class InsightsDialogView extends Modal {
 			id: 'value'
 		}
 	];
+
 	private _bottomColumns: Array<Slick.Column<ListResource>> = [
 		{
 			name: nls.localize("label", "Label"),
@@ -133,12 +137,15 @@ export class InsightsDialogView extends Modal {
 		this._topTableData = new TableDataView();
 		this._bottomTableData = new TableDataView();
 
-		let topTable = new TableCollapsibleView(nls.localize("insights.dialog.chartData", "Chart Data"), { sizing: ViewSizing.Flexible, ariaHeaderLabel: 'title' }, this._topTableData, this._topColumns, { forceFitColumns: true });
-		topTable.addContainerClass('insights');
-		topTable.table.setSelectionModel(new RowSelectionModel<ListResource>());
-		let bottomTable = new TableCollapsibleView(nls.localize("insights.dialog.queryData", "Query Data"), { sizing: ViewSizing.Flexible, ariaHeaderLabel: 'title' }, this._bottomTableData, this._bottomColumns, { forceFitColumns: true });
+		let topTableView = new TableCollapsibleView(nls.localize("insights.dialog.chartData", "Chart Data"), { sizing: ViewSizing.Flexible, ariaHeaderLabel: 'title' }, this._topTableData, this._topColumns, { forceFitColumns: true });
+		this._topTable = topTableView.table;
+		topTableView.addContainerClass('insights');
+		this._topTable.setSelectionModel(new RowSelectionModel<ListResource>());
+		let bottomTableView = new TableCollapsibleView(nls.localize("insights.dialog.queryData", "Query Data"), { sizing: ViewSizing.Flexible, ariaHeaderLabel: 'title' }, this._bottomTableData, this._bottomColumns, { forceFitColumns: true });
+		this._bottomTable = bottomTableView.table;
+		this._bottomTable.setSelectionModel(new RowSelectionModel<ListResource>());
 
-		this._disposables.push(topTable.table.onSelectedRowsChanged((e: DOMEvent, data: Slick.OnSelectedRowsChangedEventArgs<ListResource>) => {
+		this._disposables.push(this._topTable.onSelectedRowsChanged((e: DOMEvent, data: Slick.OnSelectedRowsChangedEventArgs<ListResource>) => {
 			if (data.rows.length === 1) {
 				let element = this._topTableData.getItem(data.rows[0]);
 				let resourceArray: ListResource[] = [];
@@ -150,19 +157,27 @@ export class InsightsDialogView extends Modal {
 			}
 		}));
 
-		this._disposables.push(bottomTable.table.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
+		this._disposables.push(this._topTable.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
 			this._contextMenuService.showContextMenu({
 				getAnchor: () => e.target as HTMLElement,
 				getActions: () => this.insightActions,
-				getActionsContext: () => this.insightContext(this._bottomTableData.getItem(bottomTable.table.getCellFromEvent(e).row))
+				getActionsContext: () => this.topInsightContext(this._topTableData.getItem(this._topTable.getCellFromEvent(e).row), this._topTable.getCellFromEvent(e))
 			});
 		}));
 
-		this._splitView.addView(topTable);
-		this._splitView.addView(bottomTable);
+		this._disposables.push(this._bottomTable.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
+			this._contextMenuService.showContextMenu({
+				getAnchor: () => e.target as HTMLElement,
+				getActions: () => TPromise.as([this._instantiationService.createInstance(CopyInsightDialogSelectionAction, CopyInsightDialogSelectionAction.ID, CopyInsightDialogSelectionAction.LABEL)]),
+				getActionsContext: () => this.bottomInsightContext(this._bottomTableData.getItem(this._bottomTable.getCellFromEvent(e).row), this._bottomTable.getCellFromEvent(e))
+			});
+		}));
 
-		this._disposables.push(attachTableStyler(topTable.table, this._themeService));
-		this._disposables.push(attachTableStyler(bottomTable.table, this._themeService));
+		this._splitView.addView(topTableView);
+		this._splitView.addView(bottomTableView);
+
+		this._disposables.push(attachTableStyler(this._topTable, this._themeService));
+		this._disposables.push(attachTableStyler(this._bottomTable, this._themeService));
 	}
 
 	public render() {
@@ -222,10 +237,10 @@ export class InsightsDialogView extends Modal {
 	}
 
 	/**
-	 * Creates the context that should be passed to the action passed on the selected element
+	 * Creates the context that should be passed to the action passed on the selected element for the top table
 	 * @param element
 	 */
-	private insightContext(element: ListResource): ITaskActionContext {
+	private topInsightContext(element: ListResource, cell: Slick.Cell): IInsightDialogActionContext {
 		let database = this._insight.actions.database || this._connectionProfile.databaseName;
 		let server = this._insight.actions.server || this._connectionProfile.serverName;
 		let user = this._insight.actions.user || this._connectionProfile.userName;
@@ -265,6 +280,20 @@ export class InsightsDialogView extends Modal {
 		profile.databaseName = database;
 		profile.serverName = server;
 		profile.userName = user;
-		return { profile };
+
+		let cellData = element.data[cell.cell];
+
+		return { profile, cellData };
+	}
+
+	/**
+	 * Creates the context that should be passed to the action passed on the selected element for the bottom table
+	 * @param element
+	 */
+	private bottomInsightContext(element: ListResource, cell: Slick.Cell): IInsightDialogActionContext {
+
+		let cellData = element[this._bottomColumns[cell.cell].id];
+
+		return { profile: undefined, cellData };
 	}
 }

@@ -12,7 +12,7 @@ import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
-import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import * as Constants from 'sql/common/constants';
 import { ObjectMetadata } from 'data';

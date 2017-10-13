@@ -16,7 +16,7 @@ import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
-import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
 import { ISqlOAuthService } from 'sql/common/sqlOAuthService';
 import { IFileBrowserService, IFileBrowserDialogController } from 'sql/parts/fileBrowser/common/interfaces';
 import { IClipboardService } from 'sql/platform/clipboard/common/clipboardService';

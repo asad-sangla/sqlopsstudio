@@ -20,7 +20,7 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
-import { IInsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
 import { IPropertiesConfig } from 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 

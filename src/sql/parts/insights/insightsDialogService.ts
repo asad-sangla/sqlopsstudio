@@ -2,21 +2,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { InsightsDialogController } from './node/insightsDialogController';
-import { InsightsDialogView } from './browser/insightsDialogView';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+
+import { InsightsDialogController } from 'sql/parts/insights/node/insightsDialogController';
+import { InsightsDialogView } from 'sql/parts/insights/browser/insightsDialogView';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
-import { IInsightsDialogModel } from './common/interfaces';
-import { InsightsDialogModel } from './common/insightsDialogModel';
-
-export const IInsightsDialogService = createDecorator<IInsightsDialogService>('insightsDialogService');
-
-export interface IInsightsDialogService {
-	_serviceBrand: any;
-	show(input: IInsightsConfig, connectionProfile: IConnectionProfile): void;
-	close();
-}
+import { IInsightsDialogModel, IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
+import { InsightsDialogModel } from 'sql/parts/insights/common/insightsDialogModel';
 
 export class InsightsDialogService implements IInsightsDialogService {
 	_serviceBrand: any;

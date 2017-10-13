@@ -145,6 +145,10 @@ export class Table<T extends Slick.SlickData> implements IThemable {
 		this._grid.setActiveCell(row, cell);
 	}
 
+	get activeCell(): Slick.Cell {
+		return this._grid.getActiveCell();
+	}
+
 	registerPlugin(plugin: Slick.Plugin<T>): void {
 		this._grid.registerPlugin(plugin);
 	}

@@ -135,7 +135,8 @@ import { IDisasterRecoveryService, IDisasterRecoveryUiService, IRestoreDialogCon
 import { IFileBrowserService, IFileBrowserDialogController } from 'sql/parts/fileBrowser/common/interfaces';
 import { FileBrowserService } from 'sql/parts/fileBrowser/common/fileBrowserService';
 import { FileBrowserDialogController } from 'sql/parts/fileBrowser/fileBrowserDialogController';
-import { IInsightsDialogService, InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
+import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
+import { InsightsDialogService } from 'sql/parts/insights/insightsDialogService';
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
 import { AccountManagementService } from 'sql/services/accountManagement/accountManagementService';
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';

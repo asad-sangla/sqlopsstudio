@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import Event from 'vs/base/common/event';
-import { IInsightsConfigDetails } from 'sql/parts/dashboard/widgets/insights/interfaces';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+
+import { IInsightsConfigDetails, IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ITaskActionContext } from 'sql/workbench/common/actions';
 
 export interface IInsightsDialogModel {
 	rows: string[][];
@@ -20,4 +24,16 @@ export interface ListResource {
 	data?: string[];
 	stateColor?: string;
 	stateIcon?: string;
+}
+
+export const IInsightsDialogService = createDecorator<IInsightsDialogService>('insightsDialogService');
+
+export interface IInsightsDialogService {
+	_serviceBrand: any;
+	show(input: IInsightsConfig, connectionProfile: IConnectionProfile): void;
+	close();
+}
+
+export interface IInsightDialogActionContext extends ITaskActionContext {
+	cellData: string;
 }
