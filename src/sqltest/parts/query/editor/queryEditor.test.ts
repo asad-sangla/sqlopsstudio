@@ -5,25 +5,28 @@
 
 'use strict';
 
-import { EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { TestMessageService, TestEditorGroupService } from 'vs/workbench/test/workbenchTestServices';
 import { IEditorDescriptor, EditorInput } from 'vs/workbench/common/editor';
 import { TPromise } from 'vs/base/common/winjs.base';
 import URI from 'vs/base/common/uri';
+import * as DOM from 'vs/base/browser/dom';
+import { Memento } from 'vs/workbench/common/memento';
+import { Builder } from 'vs/base/browser/builder';
+import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
+
 import { QueryResultsInput } from 'sql/parts/query/common/queryResultsInput';
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
-import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { INewConnectionParams, ConnectionType, RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
-import { Memento } from 'vs/workbench/common/memento';
-import { Builder } from 'vs/base/browser/builder';
 import { RunQueryAction, ListDatabasesActionItem } from 'sql/parts/query/execution/queryActions';
+import { EditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
+
 import { TestThemeService } from 'sqltest/stubs/themeTestService';
-import * as DOM from 'vs/base/browser/dom';
+
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 
@@ -328,11 +331,9 @@ suite('SQL QueryEditor Tests', () => {
 			// Setup hook to capture calls to create the listDatabase action
 			queryActionInstantiationService.setup(x => x.createInstance(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
 				.returns((definition, editor, action, selectBox) => {
-					if (definition.ID) {
-						if (definition.ID === 'listDatabaseQueryActionItem') {
-							let item = new ListDatabasesActionItem(editor, action, queryConnectionService.object, undefined, undefined, undefined);
-							return item;
-						}
+					if (definition.ID === 'listDatabaseQueryActionItem') {
+						let item = new ListDatabasesActionItem(editor, action, queryConnectionService.object, undefined, undefined, undefined);
+						return item;
 					}
 					// Default
 					return new RunQueryAction(undefined, undefined, undefined);

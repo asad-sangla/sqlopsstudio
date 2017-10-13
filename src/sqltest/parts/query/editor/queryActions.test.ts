@@ -4,6 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+import { TPromise } from 'vs/base/common/winjs.base';
+
+import { ISelectionData } from 'data';
 
 import { IConnectionManagementService, ConnectionType, INewConnectionParams, RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
@@ -16,9 +19,9 @@ import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryModelService } from 'sql/parts/query/execution/queryModelService';
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { TPromise } from 'vs/base/common/winjs.base';
-import { ISelectionData } from 'data';
+
 import { TestThemeService } from 'sqltest/stubs/themeTestService';
+
 import * as TypeMoq from 'typemoq';
 import * as assert from 'assert';
 

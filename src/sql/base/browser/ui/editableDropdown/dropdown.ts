@@ -3,6 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import 'vs/css!./media/dropdownList';
+
+import { ToggleDropdownAction } from './actions';
+
 import { IContextViewProvider, ContextView } from 'vs/base/browser/ui/contextview/contextview';
 import { mixin } from 'vs/base/common/objects';
 import { Builder, $ } from 'vs/base/browser/builder';
@@ -142,11 +146,11 @@ export class Dropdown extends Disposable {
 				showMessage: false,
 				validation: v => this._inputValidator(v)
 			},
-			placeholder: this._options.placeholder
+			placeholder: this._options.placeholder,
+			actions: [new ToggleDropdownAction(() => this._showList())]
 		});
 
 		this._register(DOM.addDisposableListener(this._input.inputElement, DOM.EventType.FOCUS, () => {
-			this._onFocus.fire();
 			this._showList();
 		}));
 
@@ -199,7 +203,7 @@ export class Dropdown extends Disposable {
 			if (e.elements.length === 1) {
 				this.value = e.elements[0].label;
 				this._onValueChange.fire(e.elements[0].label);
-				this.$list.offDOM();
+				this._contextView.hide();
 			}
 		});
 
@@ -212,6 +216,7 @@ export class Dropdown extends Disposable {
 			}
 		});
 
+		this._register(this._contextView);
 		this._register(this.$el);
 		this._register(this.$input);
 		this._register(this.$list);
@@ -221,6 +226,7 @@ export class Dropdown extends Disposable {
 	}
 
 	private _showList(): void {
+		this._onFocus.fire();
 		this._contextView.show({
 			getAnchor: () => this.$input.getHTMLElement(),
 			render: container => {
@@ -261,7 +267,7 @@ export class Dropdown extends Disposable {
 
 	public blur() {
 		this._input.blur();
-		this.$list.offDOM();
+		this._contextView.hide();
 	}
 
 	style(style: IListStyles & IInputBoxStyles & IDropdownStyles) {

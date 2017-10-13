@@ -28,7 +28,6 @@
 }
 
 .carbon-taskbar .monaco-action-bar li {
-	height: 28px;
 	display: flex;
 	align-items: center;
 }
