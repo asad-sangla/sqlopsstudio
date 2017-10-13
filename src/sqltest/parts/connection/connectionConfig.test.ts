@@ -866,5 +866,61 @@ suite('SQL ConnectionConfig tests', () => {
 		}).then(() => done(), (err) => done(err));
 	});
 
+	test('fixConnectionIds should replace duplicate ids with new ones', (done) => {
+		let profiles: IConnectionProfileStore[] = [
+			{
+				options: {},
+				groupId: '1',
+				id: '1',
+				providerName: undefined,
+				savePassword: true,
+			}, {
+				options: {},
+				groupId: '1',
+				id: '2',
+				providerName: undefined,
+				savePassword: true,
+			}, {
+				options: {},
+				groupId: '1',
+				id: '3',
+				providerName: undefined,
+				savePassword: true,
+			}, {
+				options: {},
+				groupId: '1',
+				id: '2',
+				providerName: undefined,
+				savePassword: true,
+			}, {
+				options: {},
+				groupId: '1',
+				id: '4',
+				providerName: undefined,
+				savePassword: true,
+			}, {
+				options: {},
+				groupId: '1',
+				id: '3',
+				providerName: undefined,
+				savePassword: true,
+			}, {
+				options: {},
+				groupId: '1',
+				id: '2',
+				providerName: undefined,
+				savePassword: true,
+			}
+		];
+
+		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
+		config.fixConnectionIds(profiles);
+		let ids = profiles.map(x => x.id);
+		for (var index = 0; index < ids.length; index++) {
+			var id = ids[index];
+			assert.equal(ids.lastIndexOf(id), index);
+		}
+		done();
+	});
 });
 

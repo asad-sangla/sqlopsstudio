@@ -211,6 +211,49 @@ export class ConnectionConfig implements IConnectionConfig {
 		});
 	}
 
+	private getConnectionProfilesForTarget(configTarget: ConfigurationTarget): IConnectionProfileStore[] {
+		let configs = this.getConfiguration(Constants.connectionsArrayName);
+		let profiles: IConnectionProfileStore[];
+		if (configs) {
+			if (configTarget === ConfigurationTarget.USER) {
+				profiles = <IConnectionProfileStore[]>configs.user;
+			} else if (configTarget === ConfigurationTarget.WORKSPACE) {
+				profiles = <IConnectionProfileStore[]>configs.workspace;
+			}
+			if (profiles) {
+				if(this.fixConnectionIds(profiles)) {
+					this.writeConfiguration(Constants.connectionsArrayName, profiles, configTarget);
+				}
+			} else {
+				profiles = [];
+			}
+		}
+
+		return profiles;
+	}
+
+	/**
+	 * Replace duplicate ids with new ones. Sets id for the profiles without id
+	 * @param profiles
+	 */
+	public fixConnectionIds(profiles: IConnectionProfileStore[]): boolean {
+		let idsCache: { [label: string]: boolean } = {};
+		let changed: boolean = false;
+		for (var index = 0; index < profiles.length; index++) {
+			var profile = profiles[index];
+			if (!profile.id) {
+				profile.id = generateUuid();
+				changed = true;
+			}
+		 	if (profile.id in idsCache) {
+					profile.id = generateUuid();
+					changed = true;
+			}
+			idsCache[profile.id] = true;
+		}
+		return changed;
+	}
+
 	/**
 	 * Get a list of all connections in the connection config. Connections returned
 	 * are sorted first by whether they were found in the user/workspace settings,
@@ -221,31 +264,17 @@ export class ConnectionConfig implements IConnectionConfig {
 		//TODO: have to figure out how to sort connections for all provider
 		// Read from user settings
 
-		let userProfiles = this.getConfiguration(Constants.connectionsArrayName).user as IConnectionProfileStore[];
-
+		let userProfiles: IConnectionProfileStore[] = this.getConnectionProfilesForTarget(ConfigurationTarget.USER);
 		if (userProfiles !== undefined) {
 			profiles = profiles.concat(userProfiles);
-			profiles.forEach(profile => {
-				if (!profile.id) {
-					profile.id = generateUuid();
-				}
-			});
-			this.writeConfiguration(Constants.connectionsArrayName, profiles, ConfigurationTarget.USER);
 		}
 
 		if (getWorkspaceConnections) {
 			// Read from workspace settings
 
-			let workspaceProfiles = this.getConfiguration(Constants.connectionsArrayName).workspace as IConnectionProfileStore[];
-
+			let workspaceProfiles: IConnectionProfileStore[] = this.getConnectionProfilesForTarget(ConfigurationTarget.WORKSPACE);
 			if (workspaceProfiles !== undefined) {
 				profiles = profiles.concat(workspaceProfiles);
-				workspaceProfiles.forEach(profile => {
-					if (!profile.id) {
-						profile.id = generateUuid();
-					}
-				});
-				this.writeConfiguration(Constants.connectionsArrayName, workspaceProfiles, ConfigurationTarget.WORKSPACE);
 			}
 		}
 
