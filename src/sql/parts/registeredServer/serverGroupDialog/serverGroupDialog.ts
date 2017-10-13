@@ -36,6 +36,7 @@ export class ServerGroupDialog extends Modal {
 	private _groupNameInputBox: InputBox;
 	private _groupDescriptionInputBox: InputBox;
 	private _viewModel: ServerGroupViewModel;
+	private _skipGroupNameValidation: boolean = false;
 	private $serverGroupContainer: Builder;
 
 	private _onAddServerGroup = new Emitter<void>();
@@ -84,7 +85,7 @@ export class ServerGroupDialog extends Modal {
 			let errorMessage = localize('MissingGroupNameError', 'Group name is required.');
 			this._groupNameInputBox = new InputBox(inputCellContainer.getHTMLElement(), this._contextViewService, {
 				validationOptions: {
-					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: errorMessage }) : null
+					validation: (value: string) => !value && !this._skipGroupNameValidation ? ({ type: MessageType.ERROR, content: errorMessage }) : null
 				}
 			});
 		});
@@ -329,7 +330,11 @@ export class ServerGroupDialog extends Modal {
 	// initialize the view based on the current state of the view model
 	private initializeView(): void {
 		this.title = this._viewModel.getDialogTitle();
+
+		this._skipGroupNameValidation = true;
 		this._groupNameInputBox.value = this._viewModel.groupName;
+		this._skipGroupNameValidation = false;
+
 		this._groupDescriptionInputBox.value = this._viewModel.groupDescription;
 
 		this.updateView();
@@ -369,6 +374,7 @@ export class ServerGroupDialog extends Modal {
 
 	public close() {
 		this.hide();
+		this._groupNameInputBox.hideMessage();
 		this._onCloseEvent.fire();
 	}
 
