@@ -130,7 +130,7 @@ suite('SQL Connection Tree Action tests', () => {
 		var actionContext = new ObjectExplorerActionsContext();
 		actionContext.treeNode = treeNode;
 		manageConnectionAction.run(actionContext).then((value) => {
-			connectionManagementService.verify(x => x.connect(TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny()), TypeMoq.Times.once());
+			connectionManagementService.verify(x => x.showDashboard(TypeMoq.It.isAny()), TypeMoq.Times.once());
 		}).then(() => done(), (err) => done(err));
 	});
 

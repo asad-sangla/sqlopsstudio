@@ -89,12 +89,12 @@ export class TreeSelectionHandler {
 					this.onTreeActionStateChange(false);
 				});
 			}
-		} else if (selection && selection.length > 0 && (selection[0] instanceof TreeNode)) {
+		} else if (isDoubleClick && selection && selection.length > 0 && (selection[0] instanceof TreeNode)) {
 			let treeNode = <TreeNode>selection[0];
 			if (TreeUpdateUtils.isAvailableDatabaseNode(treeNode)) {
 				connectionProfile = TreeUpdateUtils.getConnectionProfile(treeNode);
 				if (connectionProfile) {
-					TreeUpdateUtils.connectIfNotConnected(connectionProfile, options, connectionManagementService);
+					connectionManagementService.showDashboard(connectionProfile);
 				}
 			}
 		}

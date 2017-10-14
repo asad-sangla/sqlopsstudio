@@ -285,7 +285,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					}
 				}
 				// If the password is required and still not loaded show the dialog
-				if (!foundPassword && this._connectionStore.isPasswordRequired(newConnection)) {
+				if (!foundPassword && this._connectionStore.isPasswordRequired(newConnection) && !newConnection.password) {
 					resolve(this.showConnectionDialogOnError(connection, owner, { connected: false, errorMessage: undefined, errorCode: undefined }, options));
 				} else {
 					// Try to connect

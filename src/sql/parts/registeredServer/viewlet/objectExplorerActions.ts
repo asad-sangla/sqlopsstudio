@@ -104,8 +104,8 @@ export class ManageConnectionAction extends Action {
 
 			// If it's a database node just open a database connection and open dashboard,
 			// the node is already from an open OE session we don't need to create new session
-			if (TreeUpdateUtils.isDatabaseNode(this._objectExplorerTreeNode)) {
-				TreeUpdateUtils.connectIfNotConnected(this._connectionProfile, options, this._connectionManagementService).then(() => {
+			if (TreeUpdateUtils.isAvailableDatabaseNode(this._objectExplorerTreeNode)) {
+				this._connectionManagementService.showDashboard(this._connectionProfile).then(() => {
 					resolve(true);
 				}, error => {
 					reject(error);
