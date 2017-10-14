@@ -74,4 +74,8 @@ export class InputBox extends vsInputBox {
 		this.inputBorder = this.disabledInputBorder;
 		this.applyStyles();
 	}
+
+	public isEnabled(): boolean {
+		return !this.inputElement.hasAttribute('disabled');
+	}
 }

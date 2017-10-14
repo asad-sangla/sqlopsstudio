@@ -110,12 +110,9 @@ export class Dropdown extends Disposable {
 	private _list: List<ListResource>;
 	private _values: string[];
 	private _options: IDropdownOptions;
+	private _toggleAction: ToggleDropdownAction;
 	// we have to create our own contextview since otherwise inputbox will override ours
 	private _contextView: ContextView;
-
-	public get input(): InputBox {
-		return this._input;
-	}
 
 	private _onBlur = this._register(new Emitter<void>());
 	public onBlur: Event<void> = this._onBlur.event;
@@ -141,13 +138,15 @@ export class Dropdown extends Disposable {
 		this.$input = $('.dropdown-input').style('width', '100%').appendTo(this.$el);
 		this.$list = $('.dropdown-list');
 
+		this._toggleAction = new ToggleDropdownAction(() => this._showList());
+
 		this._input = new InputBox(this.$input.getHTMLElement(), contextViewService, {
 			validationOptions: {
 				showMessage: false,
 				validation: v => this._inputValidator(v)
 			},
 			placeholder: this._options.placeholder,
-			actions: [new ToggleDropdownAction(() => this._showList())]
+			actions: [this._toggleAction]
 		});
 
 		this._register(DOM.addDisposableListener(this._input.inputElement, DOM.EventType.FOCUS, () => {
@@ -226,22 +225,24 @@ export class Dropdown extends Disposable {
 	}
 
 	private _showList(): void {
-		this._onFocus.fire();
-		this._contextView.show({
-			getAnchor: () => this.$input.getHTMLElement(),
-			render: container => {
-				this.$list.appendTo(container);
-				this._list.layout(parseInt(this.$list.style('height')));
-				return { dispose: () => { } };
-			},
-			onDOMEvent: (e, activeElement) => {
-				if (!DOM.isAncestor(activeElement, this.$el.getHTMLElement())) {
-					this._input.validate();
-					this._onBlur.fire();
-					this._contextView.hide();
+		if (this._input.isEnabled) {
+			this._onFocus.fire();
+			this._contextView.show({
+				getAnchor: () => this.$input.getHTMLElement(),
+				render: container => {
+					this.$list.appendTo(container);
+					this._list.layout(parseInt(this.$list.style('height')));
+					return { dispose: () => { } };
+				},
+				onDOMEvent: (e, activeElement) => {
+					if (!DOM.isAncestor(activeElement, this.$el.getHTMLElement())) {
+						this._input.validate();
+						this._onBlur.fire();
+						this._contextView.hide();
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	public set values(vals: string[]) {
@@ -250,7 +251,7 @@ export class Dropdown extends Disposable {
 		let height = this._list.length * 22 > this._options.maxHeight ? this._options.maxHeight : this._list.length * 22;
 		this.$list.style('height', height + 'px').style('width', DOM.getContentWidth(this.$input.getHTMLElement()) + 'px');
 		this._list.layout(parseInt(this.$list.style('height')));
-		this.input.validate();
+		this._input.validate();
 	}
 
 	public get value(): string {
@@ -293,5 +294,14 @@ export class Dropdown extends Disposable {
 		}
 
 		return undefined;
+	}
+
+	public set enabled(val: boolean) {
+		this._input.setEnabled(val);
+		this._toggleAction.enabled = val;
+	}
+
+	public get enabled(): boolean {
+		return this._input.isEnabled();
 	}
 }

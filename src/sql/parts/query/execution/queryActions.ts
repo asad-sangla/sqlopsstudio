@@ -496,7 +496,7 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	private updateConnection(databaseName: string) {
 		this._isConnected = true;
-		this._dropdown.input.enable();
+		this._dropdown.enabled = true;
 		this._currentDatabaseName = databaseName;
 		if (this._currentDatabaseName) {
 		}
@@ -505,7 +505,7 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	public onDisconnect(): void {
 		this._isConnected = false;
-		this._dropdown.input.disable();
+		this._dropdown.enabled = false;
 		this._currentDatabaseName = undefined;
 		this._dropdown.value = '';
 	}
