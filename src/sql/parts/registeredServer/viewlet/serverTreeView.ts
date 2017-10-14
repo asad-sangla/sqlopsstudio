@@ -70,6 +70,7 @@ export class ServerTreeView {
 		this.messages.hide();
 
 		if (!this._connectionManagementService.hasRegisteredServers()) {
+			this._activeConnectionsFilterAction.enabled = false;
 			this._buttonSection = $('div.button-section').appendTo(container);
 			var connectButton = new Button(this._buttonSection);
 			connectButton.label = 'Add Connection';
@@ -120,6 +121,7 @@ export class ServerTreeView {
 	private handleAddConnectionProfile(newProfile: IConnectionProfile) {
 		if (this._buttonSection) {
 			this._buttonSection.getHTMLElement().style.display = 'none';
+			this._activeConnectionsFilterAction.enabled = true;
 		}
 		let currentSelections = this._tree.getSelection();
 		let currentSelectedElement = currentSelections && currentSelections.length >= 1 ? currentSelections[0] : undefined;
@@ -246,16 +248,17 @@ export class ServerTreeView {
 			if (!filteredResults || !filteredResults[0]) {
 				this.messages.show();
 				this.messages.domFocus();
+			} else {
+				let treeInput = filteredResults[0];
+				this._tree.setInput(treeInput).done(() => {
+					if (this.messages.isHidden()) {
+						self._tree.getFocus();
+						self._tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
+					} else {
+						self._tree.clearFocus();
+					}
+				}, errors.onUnexpectedError);
 			}
-			let treeInput = filteredResults[0];
-			this._tree.setInput(treeInput).done(() => {
-				if (this.messages.isHidden()) {
-					self._tree.getFocus();
-					self._tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
-				} else {
-					self._tree.clearFocus();
-				}
-			}, errors.onUnexpectedError);
 		} else {
 			//no op
 		}
