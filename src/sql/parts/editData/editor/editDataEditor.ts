@@ -132,6 +132,13 @@ export class EditDataEditor extends BaseEditor {
 	 */
 	public layout(dimension: Dimension): void {
 		this._dimension = dimension;
+		let input: EditDataInput = <EditDataInput>this.input;
+		if (input) {
+			let uri: string = input.uri;
+			if (uri) {
+				this._queryModelService.resizeResultsets(uri);
+			}
+		}
 	}
 
 	public dispose(): void {
