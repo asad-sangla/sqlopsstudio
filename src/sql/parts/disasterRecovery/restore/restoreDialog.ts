@@ -384,6 +384,9 @@ export class RestoreDialog extends Modal {
 				this._fileListTable.resizeCanvas();
 				this._fileListTable.autosizeColumns();
 			}
+			if (c !== this._generalTabId) {
+				this._restoreFromSelectBox.hideMessage();
+			}
 		});
 	}
 
