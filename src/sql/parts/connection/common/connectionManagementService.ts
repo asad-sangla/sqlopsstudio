@@ -272,10 +272,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			this._connectionStore.addSavedPassword(connection).then(result => {
 				let newConnection = result.profile;
 				let foundPassword = result.savedCred;
-				// If the connection request came from an editor, it already has a password
-				if (options && options.params && options.params.connectionType === ConnectionType.editor) {
-					foundPassword = true;
-				}
+
 				// If there is no password, try to load it from an existing connection
 				if (!foundPassword && this._connectionStore.isPasswordRequired(newConnection)) {
 					let existingConnection = this._connectionStatusManager.findConnectionProfile(connection);
