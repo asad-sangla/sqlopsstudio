@@ -76,12 +76,7 @@ let defaultVal = [
 	{
 		name: 'Tasks',
 		widget: {
-			'tasks-widget': {
-				'tasks': {
-					'restore': null,
-					'new-query': null
-				}
-			}
+			'tasks-widget': {}
 		},
 		gridItemConfig: {
 			sizex: 2,

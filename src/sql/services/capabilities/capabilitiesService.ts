@@ -108,9 +108,17 @@ export class CapabilitiesService implements ICapabilitiesService {
 			let featureName: string = action.id;
 			switch (featureName) {
 				case Constants.BackupFeatureName:
-					return !isMssql || !isCloud;
+					if (isMssql) {
+						return connectionManagementInfo.connectionProfile.databaseName && !isCloud;
+					} else {
+						return !!connectionManagementInfo.connectionProfile.databaseName;
+					}
 				case Constants.RestoreFeatureName:
-					return !isMssql || !isCloud;
+					if (isMssql) {
+						return !isCloud;
+					} else {
+						return !!connectionManagementInfo.connectionProfile.databaseName;
+					}
 				default:
 					return true;
 			}

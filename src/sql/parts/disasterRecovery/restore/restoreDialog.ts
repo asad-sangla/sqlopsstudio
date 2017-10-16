@@ -492,11 +492,15 @@ export class RestoreDialog extends Modal {
 		return inputBox;
 	}
 
-	public onValidateResponseFail(errorMessage: string) {
+	private resetRestoreContent(): void {
 		this._restorePlanData.clear();
 		this._fileListData.clear();
 		this._restoreButton.enabled = false;
 		this._scriptButton.enabled = false;
+	}
+
+	public onValidateResponseFail(errorMessage: string) {
+		this.resetRestoreContent();
 		if (this.isRestoreFromDatabaseSelected) {
 			this._sourceDatabaseSelectBox.showMessage({ type: MessageType.ERROR, content: errorMessage });
 		} else {
@@ -615,6 +619,7 @@ export class RestoreDialog extends Modal {
 			this.viewModel.onRestoreFromChanged(false);
 			new Builder(this._restoreFromBackupFileElement).hide();
 		}
+		this.resetRestoreContent();
 	}
 
 	private get isRestoreFromDatabaseSelected(): boolean {
@@ -662,17 +667,15 @@ export class RestoreDialog extends Modal {
 		this._restoreFromSelectBox.selectWithOptionName(this._databaseTitle);
 		this.onRestoreFromChanged(this._databaseTitle);
 		this._sourceDatabaseSelectBox.select(0);
-		this._restorePlanData.clear();
-		this._fileListData.clear();
 		this._panel.showTab(this._generalTabId);
 		this.removeErrorMessage();
+		this.resetRestoreContent();
 	}
 
 	public open(serverName: string, ownerUri: string) {
 		this.title = this._restoreTitle + ' - ' + serverName;
 		this._ownerUri = ownerUri;
-		this._restoreButton.enabled = false;
-		this._scriptButton.enabled = false;
+
 		this.show();
 		this._filePathInputBox.focus();
 	}
@@ -712,9 +715,7 @@ export class RestoreDialog extends Modal {
 			dbNames = databaseNamesParam.databaseNames;
 		}
 		this._sourceDatabaseSelectBox.setOptions(dbNames);
-		if (databaseNamesParam.selectedDatabase) {
-			this._sourceDatabaseSelectBox.selectWithOptionName(databaseNamesParam.selectedDatabase);
-		}
+		this._sourceDatabaseSelectBox.selectWithOptionName(databaseNamesParam.selectedDatabase);
 	}
 
 	private updateTargetDatabaseName(value: string) {
