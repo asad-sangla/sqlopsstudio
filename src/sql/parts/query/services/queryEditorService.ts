@@ -34,6 +34,11 @@ export class QueryEditorService implements IQueryEditorService {
 
 	public _serviceBrand: any;
 
+	private static CHANGE_UNSUPPORTED_ERROR_MESSAGE = nls.localize(
+		'queryEditorServiceChangeUnsupportedError',
+		'Change Language Mode is not supported for unsaved queries'
+	);
+
 	private static CHANGE_ERROR_MESSAGE = nls.localize(
 		'queryEditorServiceChangeError',
 		'Please save or discard changes before switching to/from the SQL Language Mode'
@@ -175,6 +180,13 @@ export class QueryEditorService implements IQueryEditorService {
 			return Promise.resolve(model);
 		}
 
+		let uri: URI = QueryEditorService._getEditorChangeUri(editor.input, changingToSql);
+		if(uri.scheme === UNTITLED_SCHEMA && editor.input instanceof QueryInput)
+		{
+			QueryEditorService.messageService.show(Severity.Error, QueryEditorService.CHANGE_UNSUPPORTED_ERROR_MESSAGE);
+			return Promise.resolve(undefined);
+		}
+
 		// Return undefined to notify the calling funciton to not perform the language change
 		// TODO change this - tracked by issue #727
 		if (editor.input.isDirty()) {
@@ -191,7 +203,6 @@ export class QueryEditorService implements IQueryEditorService {
 
 		// Return a promise that will resovle when the old editor has been replaced by a new editor
 		return new Promise<IModel>((resolve, reject) => {
-			let uri: URI = QueryEditorService._getEditorChangeUri(editor.input, changingToSql);
 			let newEditorInput = QueryEditorService._getNewEditorInput(changingToSql, editor.input, uri);
 
 			// Override queryEditorCheck to not open this file in a QueryEditor
