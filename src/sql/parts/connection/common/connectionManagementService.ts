@@ -52,6 +52,7 @@ import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ICommandService } from 'vs/platform/commands/common/commands';
+import { Deferred } from 'sql/base/common/promise';
 
 export class ConnectionManagementService implements IConnectionManagementService {
 
@@ -116,6 +117,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onConnectRequestSent = new Emitter<void>();
 		this._onLanguageFlavorChanged = new Emitter<data.DidChangeLanguageFlavorParams>();
 
+		this._onProvidersReady = new Deferred();
+
 		// Register Statusbar item
 		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
 			ConnectionStatusbarItem,
@@ -167,6 +170,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._onLanguageFlavorChanged.event;
 	}
 
+	private _onProvidersReady: Deferred<void>;
+
+	private onProvidersReady(): Promise<void> {
+		return this._onProvidersReady.promise;
+	}
+
 	private _providerCount: number = 0;
 
 	// Connection Provider Registration
@@ -176,6 +185,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		// temporarily close splash screen when a connection provider has been registered
 		// @todo remove this code once a proper initialization event is available (karlb 4/1/2017)
 		++this._providerCount;
+
+		this._onProvidersReady.resolve();
+
 		if (this._providerCount === 1 && typeof splash !== 'undefined') {
 			hideSplash();
 
@@ -754,12 +766,14 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._uriToProvider[uri] = connection.providerName;
 
 		return new Promise<boolean>((resolve, reject) => {
-			this._providers[connection.providerName].connect(uri, connectionInfo);
-			this._onConnectRequestSent.fire();
+			this.onProvidersReady().then(() => {
+				this._providers[connection.providerName].connect(uri, connectionInfo);
+				this._onConnectRequestSent.fire();
 
-			// TODO make this generic enough to handle non-SQL languages too
-			this.doChangeLanguageFlavor(uri, 'sql', connection.providerName);
-			resolve(true);
+				// TODO make this generic enough to handle non-SQL languages too
+				this.doChangeLanguageFlavor(uri, 'sql', connection.providerName);
+				resolve(true);
+			});
 		});
 	}
 
@@ -972,20 +986,22 @@ export class ConnectionManagementService implements IConnectionManagementService
 		const self = this;
 
 		return new Promise<IConnectionResult>((resolve, reject) => {
-			let connectionInfo = this._connectionStatusManager.addConnection(connection, uri);
-			// Setup the handler for the connection complete notification to call
-			connectionInfo.connectHandler = ((connectResult, errorMessage, errorCode) => {
-				if (errorMessage) {
-					// Connection to the server failed
-					this._connectionStatusManager.deleteConnection(uri);
-					resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
-				} else {
-					resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
-				}
-			});
+			this._capabilitiesService.onCapabilitiesReady().then(() => {
+				let connectionInfo = this._connectionStatusManager.addConnection(connection, uri);
+				// Setup the handler for the connection complete notification to call
+				connectionInfo.connectHandler = ((connectResult, errorMessage, errorCode) => {
+					if (errorMessage) {
+						// Connection to the server failed
+						this._connectionStatusManager.deleteConnection(uri);
+						resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
+					} else {
+						resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
+					}
+				});
 
-			// send connection request
-			self.sendConnectRequest(connection, uri);
+				// send connection request
+				self.sendConnectRequest(connection, uri);
+			})
 		});
 	}
 

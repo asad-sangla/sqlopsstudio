@@ -320,14 +320,15 @@ export default class SqlToolsServiceClient {
                     let serverOptions: ServerOptions = languageClientHelper ?
                         languageClientHelper.createServerOptions(serverPath, runtimeId) : this.createServerOptions(serverPath);
 
-                        // Options to control the language client
+                    // Options to control the language client
                     let clientOptions: LanguageClientOptions = {
                         documentSelector: [SqlToolsServiceClient._constants.languageId],
                         providerId: '',
                         synchronize: {
                             configurationSection: SqlToolsServiceClient._constants.extensionConfigSectionName
                         },
-                        errorHandler: new LanguageClientErrorHandler(SqlToolsServiceClient._constants)
+                        errorHandler: new LanguageClientErrorHandler(SqlToolsServiceClient._constants),
+                        serverConnectionMetadata: this._config.getConfigValue(Constants.serverConnectionMetadata)
                     };
 
                     // cache the client instance for later use
@@ -384,7 +385,8 @@ export default class SqlToolsServiceClient {
             synchronize: {
                 configurationSection: SqlToolsServiceClient._constants.extensionConfigSectionName
             },
-            errorHandler: new LanguageClientErrorHandler(SqlToolsServiceClient._constants)
+            errorHandler: new LanguageClientErrorHandler(SqlToolsServiceClient._constants),
+            serverConnectionMetadata: this._config.getConfigValue(Constants.serverConnectionMetadata)
         };
 
         // cache the client instance for later use

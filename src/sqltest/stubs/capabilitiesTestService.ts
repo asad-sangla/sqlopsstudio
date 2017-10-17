@@ -120,5 +120,9 @@ export class CapabilitiesTestService implements ICapabilitiesService {
 	public isFeatureAvailable(featureName: Action, connectionManagementInfo: ConnectionManagementInfo): boolean {
 		return true;
 	}
+
+	public onCapabilitiesReady(): Promise<void> {
+		return Promise.resolve(null);
+	}
 }
 
