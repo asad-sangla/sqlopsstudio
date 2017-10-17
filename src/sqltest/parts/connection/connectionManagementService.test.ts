@@ -445,39 +445,6 @@ suite('SQL ConnectionManagementService tests', () => {
 		});
 	});
 
-	test('connect from editor with empty password when it is required and unsaved should not open the dialog', done => {
-		let uri = 'editor 3';
-		let expectedConnection: boolean = true;
-		let expectedError: string = undefined;
-		let options: IConnectionCompletionOptions = {
-			params: {
-				connectionType: ConnectionType.editor,
-				input: {
-					onConnectSuccess: undefined,
-					onConnectReject: undefined,
-					onConnectStart: undefined,
-					onDisconnect: undefined,
-					uri: uri
-				},
-				querySelection: undefined,
-				runQueryOnCompletion: RunQueryOnConnectionMode.none
-			},
-			saveTheConnection: true,
-			showDashboard: false,
-			showConnectionDialogOnError: true,
-			showFirewallRuleOnError: false
-		};
-
-		connect(uri, options, false, connectionProfileWithEmptyUnsavedPassword).then(result => {
-			assert.equal(result.connected, expectedConnection);
-			assert.equal(result.errorMessage, expectedError);
-			verifyShowDialog(connectionProfileWithEmptyUnsavedPassword, ConnectionType.editor, uri, expectedError, false);
-			done();
-		}).catch(err => {
-			done(err);
-		});
-	});
-
 	test('connect from editor when empty password when it is required and saved should not open the dialog', done => {
 		let uri = 'editor 3';
 		let expectedConnection: boolean = true;
