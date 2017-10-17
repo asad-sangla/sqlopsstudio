@@ -288,7 +288,10 @@ function packageTask(platform, arch, opts) {
 		// {{SQL CARBON EDIT}}
 		const sources = es.merge(src, localExtensions, localExtensionDependencies)
 			.pipe(util.setExecutableBit(['**/*.sh']))
-			.pipe(filter(['**', '!**/*.js.map']));
+			.pipe(filter(['**',
+						  '!**/*.js.map',
+						  '!extensions/**/node_modules/**/{test, tests}/**',
+						  '!extensions/**/node_modules/**/test.js']));
 
 		let version = packageJson.version;
 		const quality = product.quality;
@@ -312,10 +315,13 @@ function packageTask(platform, arch, opts) {
 		// TODO the API should be copied to `out` during compile, not here
 		const api = gulp.src('src/vs/vscode.d.ts').pipe(rename('out/vs/vscode.d.ts'));
 		// {{SQL CARBON EDIT}}
-    const dataApi = gulp.src('src/vs/data.d.ts').pipe(rename('out/sql/data.d.ts'));
+    	const dataApi = gulp.src('src/vs/data.d.ts').pipe(rename('out/sql/data.d.ts'));
 
 		const depsSrc = _.flatten(dependencies
-			.map(function (d) { return ['node_modules/' + d + '/**', '!node_modules/' + d + '/**/{test,tests}/**']; }));
+			.map(function (d) { return ['node_modules/' + d + '/**',
+										'!node_modules/' + d + '/**/{test,tests,testing}/**',
+										'!node_modules/' + d + '/**/test.*',
+										'!node_modules/' + d + '/**/*.test.*']}));
 
 		const deps = gulp.src(depsSrc, { base: '.', dot: true })
 			.pipe(filter(['**', '!**/package-lock.json']))
@@ -328,10 +334,12 @@ function packageTask(platform, arch, opts) {
 			.pipe(util.cleanNodeModule('windows-foreground-love', ['binding.gyp', 'build/**', 'src/**'], ['**/*.node']))
 			.pipe(util.cleanNodeModule('windows-process-tree', ['binding.gyp', 'build/**', 'src/**'], ['**/*.node']))
 			.pipe(util.cleanNodeModule('gc-signals', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node', 'src/index.js']))
-			.pipe(util.cleanNodeModule('v8-profiler', ['binding.gyp', 'build/**', 'src/**', 'deps/**'], ['**/*.node', 'src/index.js']))
-			.pipe(util.cleanNodeModule('node-pty', ['binding.gyp', 'build/**', 'src/**', 'tools/**'], ['build/Release/**']))
+			.pipe(util.cleanNodeModule('v8-profiler', ['binding.gyp', 'build/**', 'src/**', 'deps/**', 'tools/**'], ['**/*.node', 'src/index.js']))
+			.pipe(util.cleanNodeModule('node-pty', ['binding.gyp', 'build/**', 'src/**', 'tools/**', 'deps/**'], ['build/Release/*.node']))
 			.pipe(util.cleanNodeModule('nsfw', ['binding.gyp', 'build/**', 'src/**', 'openpa/**', 'includes/**'], ['**/*.node', '**/*.a']))
-			.pipe(util.cleanNodeModule('vsda', ['binding.gyp', 'README.md', 'build/**', '*.bat', '*.sh', '*.cpp', '*.h'], ['build/Release/vsda.node']));
+			.pipe(util.cleanNodeModule('vsda', ['binding.gyp', 'README.md', 'build/**', '*.bat', '*.sh', '*.cpp', '*.h'], ['build/Release/vsda.node']))
+			.pipe(util.cleanNodeModule('pty.js', ['binding.gyp', 'src/**', 'test-windows/**', 'deps/**', 'build/**'], ['build/Release/pty.node']))
+			.pipe(util.cleanNodeModule('keytar', ['binding.gyp', 'build/**', 'src/**', ['**/*.node']]))
 
 		let all = es.merge(
 			packageJsonStream,
