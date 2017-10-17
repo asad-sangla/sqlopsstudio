@@ -653,10 +653,11 @@ export class CodeMenu {
 	private setViewMenu(viewMenu: Electron.Menu): void {
 	        // {{SQL CARBON EDIT}}
 		const servers = this.createMenuItem(nls.localize({ key: 'miViewRegisteredServers', comment: ['&& denotes a mnemonic'] }, "&&Servers"), 'workbench.view.connections');
+		const tasks = this.createMenuItem(nls.localize({ key: 'miViewTasks', comment: ['&& denotes a mnemonic'] }, "&&Tasks"), 'workbench.view.taskHistory');
 		const explorer = this.createMenuItem(nls.localize({ key: 'miViewExplorer', comment: ['&& denotes a mnemonic'] }, "&&Explorer"), 'workbench.view.explorer');
 		const search = this.createMenuItem(nls.localize({ key: 'miViewSearch', comment: ['&& denotes a mnemonic'] }, "&&Search"), 'workbench.view.search');
+		const scm = this.createMenuItem(nls.localize({ key: 'miViewSCM', comment: ['&& denotes a mnemonic'] }, "S&&CM"), 'workbench.view.scm');
 		// {{SQL CARBON EDIT}}
-		// const scm = this.createMenuItem(nls.localize({ key: 'miViewSCM', comment: ['&& denotes a mnemonic'] }, "S&&CM"), 'workbench.view.scm');
 		// const debug = this.createMenuItem(nls.localize({ key: 'miViewDebug', comment: ['&& denotes a mnemonic'] }, "&&Debug"), 'workbench.view.debug');
 		// const extensions = this.createMenuItem(nls.localize({ key: 'miViewExtensions', comment: ['&& denotes a mnemonic'] }, "E&&xtensions"), 'workbench.view.extensions');
 		const output = this.createMenuItem(nls.localize({ key: 'miToggleOutput', comment: ['&& denotes a mnemonic'] }, "&&Output"), 'workbench.action.output.toggleOutput');
@@ -727,10 +728,11 @@ export class CodeMenu {
 			commands,
 			__separator__(),
 			servers,
+			tasks,
 			explorer,
 			search,
+			scm,
 			// {{SQL CARBON EDIT}}
-			// scm,
 			// debug,
 			// extensions,
 			additionalViewlets,
