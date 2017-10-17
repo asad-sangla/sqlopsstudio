@@ -49,7 +49,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	private firstRender = true;
 	private totalElapsedTimeSpan: number;
 	private complete = false;
-	private newRow: { exists: boolean, rowIndex: number } = { exists: false, rowIndex: undefined };
+	private newRow: { exists: boolean, rowIndex: number, reverted: boolean } = { exists: false, rowIndex: undefined, reverted: false };
 	private idMapping: { [row: number]: number } = {};
 
 	// Edit Data functions
@@ -155,8 +155,12 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		};
 
 		this.onCellEditBegin = (event: { row: number, column: number }): void => {
-			// Check if we tried to leave our 'create row' session
-			if (this.leaveCreateRow(event.row)) {
+
+			if (this.newRow && this.newRow.reverted) {
+				this.newRow.reverted = false;
+			} else if (this.leaveCreateRow(event.row)) {
+				// Check if we tried to leave our 'create row' session
+
 				// Try to commit pending edits if we have left
 				self.dataService.commitEdit().then(result => {
 					this.setGridClean();
@@ -456,6 +460,10 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 			this.loadDataFunction,
 			index => { return { values: [] }; }
 		);
+
+		if (this.newRow) {
+			this.newRow.reverted = true;
+		}
 
 		// refresh results view
 		this.onScroll(0);
