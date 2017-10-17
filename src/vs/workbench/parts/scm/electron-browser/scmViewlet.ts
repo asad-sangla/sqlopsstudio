@@ -549,7 +549,8 @@ export class SCMViewlet extends PersistentViewsViewlet {
 		await super.create(parent);
 
 		parent.addClass('scm-viewlet', 'empty');
-		append(parent.getHTMLElement(), $('div.empty-message', null, localize('no open repo', "There are no source controls active.")));
+		// {{SQL CARBON EDIT}}
+		append(parent.getHTMLElement(), $('div.empty-message', null, localize('no open repo', "There are no active source control providers")));
 
 		this.scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
 		this.scmService.onDidRemoveRepository(this.onDidRemoveRepository, this, this.disposables);
@@ -608,7 +609,8 @@ export class SCMViewlet extends PersistentViewsViewlet {
 			}
 		}
 
-		result.push(this.instantiationService.createInstance(InstallAdditionalSCMProvidersAction));
+		// {{SQL CARBON EDIT}}
+		// result.push(this.instantiationService.createInstance(InstallAdditionalSCMProvidersAction));
 
 		return result;
 	}
