@@ -551,6 +551,26 @@ export class ConnectionManagementService implements IConnectionManagementService
 		}
 	}
 
+	private isSameConnectionProfile(profile1: IConnectionProfile, profile2: IConnectionProfile): boolean {
+		// both are undefined
+		if (!profile1 && !profile2) {
+			return true;
+		}
+
+		// only one is undefined
+		if (!profile1 || !profile2) {
+			return false;
+		}
+
+		// compare all the connection's "identity" properties
+		return profile1.serverName === profile2.serverName &&
+			profile1.databaseName === profile2.databaseName &&
+			profile1.authenticationType === profile2.authenticationType &&
+			profile1.userName === profile2.userName &&
+			profile1.providerName === profile2.providerName &&
+			profile1.groupFullName === profile2.groupFullName;
+	}
+
 	private focusDashboard(profile: IConnectionProfile): boolean {
 		let found: boolean = false;
 		let options = {
@@ -566,7 +586,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (group instanceof EditorGroup) {
 					group.getEditors().map(editor => {
 						if (editor instanceof DashboardInput) {
-							if (editor.connectionProfile === profile) {
+							if (this.isSameConnectionProfile(editor.connectionProfile, profile)) {
 								// change focus to the matched editor
 								let position = model.positionOfGroup(group);
 								this._editorGroupService.activateGroup(model.groupAt(position));
