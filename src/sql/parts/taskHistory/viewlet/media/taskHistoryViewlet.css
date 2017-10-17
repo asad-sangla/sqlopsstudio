@@ -3,10 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.server-explorer-viewlet  .monaco-action-bar .action-label {
-	margin-right: 0;
-	margin-left: 0.3em;
-	line-height: 15px;
+.empty-task-message {
+	padding: 10px 22px 0 22px;
+	opacity: 0.5;
 }
 
 .monaco-tree .monaco-tree-rows > .monaco-tree-row > .content > .task-group {

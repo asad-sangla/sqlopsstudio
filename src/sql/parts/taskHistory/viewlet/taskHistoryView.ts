@@ -8,23 +8,29 @@ import errors = require('vs/base/common/errors');
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import Severity from 'vs/base/common/severity';
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
-import { TaskHistoryRenderer } from 'sql/parts/taskHistory/viewlet/taskHistoryRenderer';
-import { TaskHistoryDataSource } from 'sql/parts/taskHistory/viewlet/taskHistoryDataSource';
-import { TaskHistoryController } from 'sql/parts/taskHistory/viewlet/taskHistoryController';
-import { TaskHistoryActionProvider } from 'sql/parts/taskHistory/viewlet/taskHistoryActionProvider';
-import { DefaultFilter, DefaultDragAndDrop, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
-import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
-import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
-import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import * as builder from 'vs/base/browser/builder';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { DefaultFilter, DefaultDragAndDrop, DefaultAccessibilityProvider } from 'vs/base/parts/tree/browser/treeDefaults';
+import { localize } from 'vs/nls';
+
+import { TaskHistoryRenderer } from 'sql/parts/taskHistory/viewlet/taskHistoryRenderer';
+import { TaskHistoryDataSource } from 'sql/parts/taskHistory/viewlet/taskHistoryDataSource';
+import { TaskHistoryController } from 'sql/parts/taskHistory/viewlet/taskHistoryController';
+import { TaskHistoryActionProvider } from 'sql/parts/taskHistory/viewlet/taskHistoryActionProvider';
+import { ITaskService } from 'sql/parts/taskHistory/common/taskService';
+import { TaskNode, TaskStatus } from 'sql/parts/taskHistory/common/taskNode';
+import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+
+const $ = builder.$;
 
 /**
  * TaskHistoryView implements the dynamic tree view.
  */
 export class TaskHistoryView {
+	private _messages: builder.Builder;
 	private _tree: ITree;
 	private _toDispose: IDisposable[] = [];
 
@@ -40,22 +46,27 @@ export class TaskHistoryView {
 	 * Render the view body
 	 */
 	public renderBody(container: HTMLElement): void {
+		// Add div to display no task executed message
+		this._messages = $('div.empty-task-message').appendTo(container);
+		let noTaskMessage = localize('noTaskMessage', 'No task history to display. Try backup or restore task to view its execution status.');
+		$('span').text(noTaskMessage).appendTo(this._messages);
+
 		this._tree = this.createTaskHistoryTree(container, this._instantiationService);
 		this._toDispose.push(this._tree.addListener('selection', (event) => this.onSelected(event)));
 
 		// Theme styler
 		this._toDispose.push(attachListStyler(this._tree, this._themeService));
 
-		const self = this;
 		this._toDispose.push(this._taskService.onAddNewTask(args => {
-			self.refreshTree();
+			this._messages.hide();
+			this.refreshTree();
 		}));
 		this._toDispose.push(this._taskService.onTaskComplete(task => {
-			self.updateTask(task);
+			this.updateTask(task);
 		}));
 
 		// Refresh Tree when these events are emitted
-		self.refreshTree();
+		this.refreshTree();
 	}
 
 	/**
