@@ -270,10 +270,10 @@ export class RestoreDialog extends Modal {
 			// Restore database file as section
 			builder.div({ class: 'new-section' }, (sectionContainer) => {
 				this.createLabelElement(sectionContainer, localize('restoreDatabaseFileAs', 'Restore database files as'), true);
-				this.creatOptionControl(sectionContainer, this._relocateDatabaseFilesOption);
+				this.createOptionControl(sectionContainer, this._relocateDatabaseFilesOption);
 				sectionContainer.div({ class: 'sub-section' }, (subSectionContainer) => {
-					this.creatOptionControl(subSectionContainer, this._relocatedDataFileFolderOption);
-					this.creatOptionControl(subSectionContainer, this._relocatedLogFileFolderOption);
+					this.createOptionControl(subSectionContainer, this._relocatedDataFileFolderOption);
+					this.createOptionControl(subSectionContainer, this._relocatedLogFileFolderOption);
 				});
 			});
 
@@ -318,30 +318,30 @@ export class RestoreDialog extends Modal {
 			// Restore options section
 			builder.div({ class: 'new-section' }, (sectionContainer) => {
 				this.createLabelElement(sectionContainer, localize('restoreOptions', 'Restore options'), true);
-				this.creatOptionControl(sectionContainer, this._withReplaceDatabaseOption);
-				this.creatOptionControl(sectionContainer, this._withKeepReplicationOption);
-				this.creatOptionControl(sectionContainer, this._withRestrictedUserOption);
-				this.creatOptionControl(sectionContainer, this._recoveryStateOption);
+				this.createOptionControl(sectionContainer, this._withReplaceDatabaseOption);
+				this.createOptionControl(sectionContainer, this._withKeepReplicationOption);
+				this.createOptionControl(sectionContainer, this._withRestrictedUserOption);
+				this.createOptionControl(sectionContainer, this._recoveryStateOption);
 
 				sectionContainer.div({ class: 'sub-section' }, (subSectionContainer) => {
-					this.creatOptionControl(subSectionContainer, this._standbyFileOption);
+					this.createOptionControl(subSectionContainer, this._standbyFileOption);
 				});
 			});
 
 			// Tail-Log backup section
 			builder.div({ class: 'new-section' }, (sectionContainer) => {
 				this.createLabelElement(sectionContainer, localize('taillogBackup', 'Tail-Log backup'), true);
-				this.creatOptionControl(sectionContainer, this._takeTaillogBackupOption);
+				this.createOptionControl(sectionContainer, this._takeTaillogBackupOption);
 				sectionContainer.div({ class: 'sub-section' }, (subSectionContainer) => {
-					this.creatOptionControl(subSectionContainer, this._tailLogWithNoRecoveryOption);
-					this.creatOptionControl(subSectionContainer, this._tailLogBackupFileOption);
+					this.createOptionControl(subSectionContainer, this._tailLogWithNoRecoveryOption);
+					this.createOptionControl(subSectionContainer, this._tailLogBackupFileOption);
 				});
 			});
 
 			// Server connections section
 			builder.div({ class: 'new-section' }, (sectionContainer) => {
 				this.createLabelElement(sectionContainer, localize('serverConnection', 'Server connections'), true);
-				this.creatOptionControl(sectionContainer, this._closeExistingConnectionsOption);
+				this.createOptionControl(sectionContainer, this._closeExistingConnectionsOption);
 			});
 		});
 
@@ -411,7 +411,7 @@ export class RestoreDialog extends Modal {
 		});
 	}
 
-	private creatOptionControl(container: Builder, optionName: string): void {
+	private createOptionControl(container: Builder, optionName: string): void {
 		let option = this.viewModel.getOptionMetadata(optionName);
 		let propertyWidget: any;
 		switch (option.valueType) {
