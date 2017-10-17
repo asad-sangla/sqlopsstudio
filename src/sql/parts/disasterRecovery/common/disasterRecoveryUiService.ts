@@ -5,17 +5,21 @@
 
 'use strict';
 
+import { TPromise } from 'vs/base/common/winjs.base';
+import Event, { Emitter } from 'vs/base/common/event';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IPartService } from 'vs/workbench/services/part/common/partService';
+import * as data from 'data';
+
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { OptionsDialog } from 'sql/base/browser/ui/modal/optionsDialog';
 import { BackupDialog } from 'sql/parts/disasterRecovery/backup/backupDialog';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { TPromise } from 'vs/base/common/winjs.base';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IPartService } from 'vs/workbench/services/part/common/partService';
 import ConnectionUtils = require('sql/parts/connection/common/utils');
-import data = require('data');
+import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
+import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 
 export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	public _serviceBrand: any;
@@ -24,13 +28,18 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	private _optionsMap: { [providerName: string]: data.ServiceOption[] } = {};
 	private _optionValues: { [optionName: string]: any } = {};
 	private _connectionUri: string;
+	private static _connectionUniqueId: number = 0;
+
+	private _onShowBackupEvent: Emitter<DashboardComponentParams>;
+	public get onShowBackupEvent(): Event<DashboardComponentParams> { return this._onShowBackupEvent.event; }
 
 	constructor( @IInstantiationService private _instantiationService: IInstantiationService,
 		@IPartService private _partService: IPartService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@IDisasterRecoveryService private _disasterRecoveryService: IDisasterRecoveryService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService) {
-	}
+			this._onShowBackupEvent = new Emitter<DashboardComponentParams>();
+		}
 
 	public showBackup(connection: IConnectionProfile): Promise<any> {
 		let self = this;
@@ -74,6 +83,20 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 			if (backupOptions) {
 				(backupDialog as OptionsDialog).open(backupOptions, self._optionValues);
 			} else {
+				let uri = this._connectionManagementService.getConnectionId(connection)
+					+ ProviderConnectionInfo.idSeparator
+					+ 'backupId'
+					+ ProviderConnectionInfo.nameValueSeparator
+					+ DisasterRecoveryUiService._connectionUniqueId;
+
+				DisasterRecoveryUiService._connectionUniqueId++;
+
+				// Create connection if needed
+				if (!this._connectionManagementService.isConnected(uri)) {
+					this._connectionManagementService.connect(connection, uri).then(() => {
+						this._onShowBackupEvent.fire({connection: connection, ownerUri: uri});
+					});
+				}
 				(backupDialog as BackupDialog).open(connection);
 			}
 		});

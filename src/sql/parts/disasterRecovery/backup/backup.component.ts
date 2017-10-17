@@ -101,6 +101,7 @@ export class BackupComponent {
 	@ViewChild('checksumContainer', { read: ElementRef }) checksumElement;
 	@ViewChild('continueOnErrorContainer', { read: ElementRef }) continueOnErrorElement;
 	@ViewChild('encryptErrorContainer', { read: ElementRef }) encryptErrorElement;
+	@ViewChild('inProgressContainer', { read: ElementRef }) inProgressElement;
 	@ViewChild('modalFooterContainer', { read: ElementRef }) modalFooterElement;
 	@ViewChild('scriptButtonContainer', { read: ElementRef }) scriptButtonElement;
 
@@ -191,11 +192,9 @@ export class BackupComponent {
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeDetectorRef: ChangeDetectorRef,
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
 	) {
-		let dashboardParameters: DashboardComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
-		this.connection = dashboardParameters.connection;
-		this._uri = dashboardParameters.ownerUri;
 		this._disasterRecoveryService = _bootstrapService.disasterRecoveryService;
 		this._disasterRecoveryUiService = _bootstrapService.disasterRecoveryUiService;
+		this._disasterRecoveryUiService.onShowBackupEvent((param) => this.onGetBackupConfigInfo(param));
 	}
 
 	ngOnInit() {
@@ -203,17 +202,149 @@ export class BackupComponent {
 
 		this.addFooterButtons();
 
+		this.recoveryBox = new InputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
+		// Set backup type
+		this.backupTypeSelectBox = new SelectBox([], '');
+		this.backupTypeSelectBox.render(this.backupTypeElement.nativeElement);
+
+		// Set copy-only check box
+		this.copyOnlyCheckBox = new Checkbox({
+			actionClassName: 'backup-checkbox',
+			title: this.copyOnlyLabel,
+			isChecked: false,
+			onChange: (viaKeyboard) => { }
+		});
+
+		this.copyOnlyElement.nativeElement.appendChild(this.copyOnlyCheckBox.domNode);
+
+		// Encryption checkbox
+		this.encryptCheckBox = new Checkbox({
+			actionClassName: 'backup-checkbox',
+			title: 'Encryption',
+			isChecked: false,
+			onChange: (viaKeyboard) => self.onChangeEncrypt()
+		});
+		this.encryptElement.nativeElement.appendChild(this.encryptCheckBox.domNode);
+
+		// Verify backup checkbox
+		this.verifyCheckBox = new Checkbox({
+			actionClassName: 'backup-checkbox',
+			title: 'Verify',
+			isChecked: false,
+			onChange: (viaKeyboard) => { }
+		});
+		this.verifyElement.nativeElement.appendChild(this.verifyCheckBox.domNode);
+
+		// Perform checksum checkbox
+		this.checksumCheckBox = new Checkbox({
+			actionClassName: 'backup-checkbox',
+			title: 'Perform checksum',
+			isChecked: false,
+			onChange: (viaKeyboard) => { }
+		});
+		this.checksumElement.nativeElement.appendChild(this.checksumCheckBox.domNode);
+
+		// Continue on error checkbox
+		this.continueOnErrorCheckBox = new Checkbox({
+			actionClassName: 'backup-checkbox',
+			title: 'Continue on error',
+			isChecked: false,
+			onChange: (viaKeyboard) => { }
+		});
+		this.continueOnErrorElement.nativeElement.appendChild(this.continueOnErrorCheckBox.domNode);
+
+		// Set backup name
+		this.backupNameBox = new InputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
+		this.backupNameBox.focus();
+
+		// Set backup path list
+		this.pathListBox = new ListBox([], '', this._bootstrapService.contextViewService);
+		this.pathListBox.render(this.pathElement.nativeElement);
+
+		// Set backup path add/remove buttons
+		this.addPathButton = new Button(this.addPathElement.nativeElement);
+		this.addPathButton.label = '+';
+
+		this.removePathButton = new Button(this.removePathElement.nativeElement);
+		this.removePathButton.label = '-';
+
+		// Set compression
+		this.compressionSelectBox = new SelectBox(this.compressionOptions, this.compressionOptions[0]);
+		this.compressionSelectBox.render(this.compressionElement.nativeElement);
+
+		// Set encryption
+		this.algorithmSelectBox = new SelectBox(this.encryptionAlgorithms, this.encryptionAlgorithms[0]);
+		this.algorithmSelectBox.render(this.encryptionAlgorithmElement.nativeElement);
+		this.encryptorSelectBox = new SelectBox([], '');
+		this.encryptorSelectBox.render(this.encryptorElement.nativeElement);
+
+		// Set media
+		this.mediaNameBox = new InputBox(this.mediaNameElement.nativeElement,
+			this._bootstrapService.contextViewService,
+			{
+				validationOptions: {
+					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: localize('backup.mediaNameRequired', 'Media name is required') }) : null
+				}
+			});
+
+		this.mediaDescriptionBox = new InputBox(this.mediaDescriptionElement.nativeElement, this._bootstrapService.contextViewService);
+
+		// Set backup retain days
+		this.backupRetainDaysBox = new InputBox(this.backupDaysElement.nativeElement,
+			this._bootstrapService.contextViewService,
+			{
+				placeholder: '0',
+				type: 'number'
+			});
+
+		// disable elements
+		this.recoveryBox.disable();
+		this.mediaNameBox.disable();
+		this.mediaDescriptionBox.disable();
+
+		this.registerListeners();
+	}
+
+	private onGetBackupConfigInfo(param: DashboardComponentParams) {
+		// Show spinner
+		this.showSpinner();
+		this.scriptButton.enabled = false;
+		this.backupButton.enabled = false;
+
+		// Reset backup values
+		this.backupNameBox.value = '';
+		this.pathListBox.setOptions([], 0);
+
+		this.connection = param.connection;
+		this._uri = param.ownerUri;
+
 		// Get backup configuration info
 		this._disasterRecoveryService.getBackupConfigInfo(this._uri).then(configInfo => {
 			if (configInfo) {
-				self.defaultNewBackupFolder = configInfo.defaultBackupFolder;
-				self.recoveryModel = configInfo.recoveryModel;
-				self.backupEncryptors = configInfo.backupEncryptors;
-				self.initialize(true);
+				this.defaultNewBackupFolder = configInfo.defaultBackupFolder;
+				this.recoveryModel = configInfo.recoveryModel;
+				this.backupEncryptors = configInfo.backupEncryptors;
+				this.initialize(true);
 			} else {
-				self.initialize(false);
+				this.initialize(false);
 			}
+			// Hide spinner
+			this.hideSpinner();
 		});
+	}
+
+	/**
+	 * Show spinner in the backup dialog
+	 */
+	private showSpinner(): void {
+		this.inProgressElement.nativeElement.style.visibility = 'visible';
+	}
+
+	/**
+	 * Hide spinner in the backup dialog
+	 */
+	private hideSpinner(): void {
+		this.inProgressElement.nativeElement.style.visibility = 'hidden';
 	}
 
 	private addFooterButtons(): void {
@@ -260,61 +391,10 @@ export class BackupComponent {
 
 			// Set recovery model
 			this.setControlsForRecoveryModel();
-			this.recoveryBox = new InputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
 
 			// Set backup type
-			this.backupTypeSelectBox = new SelectBox(this.backupTypeOptions, this.backupTypeOptions[0]);
-			this.backupTypeSelectBox.render(this.backupTypeElement.nativeElement);
-			this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged());
+			this.backupTypeSelectBox.setOptions(this.backupTypeOptions, 0);
 
-			// Set copy-only check box
-			this.copyOnlyCheckBox = new Checkbox({
-				actionClassName: 'backup-checkbox',
-				title: this.copyOnlyLabel,
-				isChecked: false,
-				onChange: (viaKeyboard) => { }
-			});
-			this.copyOnlyElement.nativeElement.appendChild(this.copyOnlyCheckBox.domNode);
-
-			// Encryption checkbox
-			let self = this;
-			this.encryptCheckBox = new Checkbox({
-				actionClassName: 'backup-checkbox',
-				title: 'Encryption',
-				isChecked: false,
-				onChange: (viaKeyboard) => self.onChangeEncrypt()
-			});
-			this.encryptElement.nativeElement.appendChild(this.encryptCheckBox.domNode);
-
-			// Verify backup checkbox
-			this.verifyCheckBox = new Checkbox({
-				actionClassName: 'backup-checkbox',
-				title: 'Verify',
-				isChecked: false,
-				onChange: (viaKeyboard) => { }
-			});
-			this.verifyElement.nativeElement.appendChild(this.verifyCheckBox.domNode);
-
-			// Perform checksum checkbox
-			this.checksumCheckBox = new Checkbox({
-				actionClassName: 'backup-checkbox',
-				title: 'Perform checksum',
-				isChecked: false,
-				onChange: (viaKeyboard) => { }
-			});
-			this.checksumElement.nativeElement.appendChild(this.checksumCheckBox.domNode);
-
-			// Continue on error checkbox
-			this.continueOnErrorCheckBox = new Checkbox({
-				actionClassName: 'backup-checkbox',
-				title: 'Continue on error',
-				isChecked: false,
-				onChange: (viaKeyboard) => { }
-			});
-			this.continueOnErrorElement.nativeElement.appendChild(this.continueOnErrorCheckBox.domNode);
-
-			// Set backup name
-			this.backupNameBox = new InputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
 			this.setDefaultBackupName();
 			this.backupNameBox.focus();
 
@@ -324,28 +404,11 @@ export class BackupComponent {
 			for (var i in this.backupPathTypePairs) {
 				pathlist.push(i);
 			}
-			this.pathListBox = new ListBox(pathlist, pathlist[0], this._bootstrapService.contextViewService);
-			this.pathListBox.render(this.pathElement.nativeElement);
-
-			// Set backup path add/remove buttons
-			this.addPathButton = new Button(this.addPathElement.nativeElement);
-			this.addPathButton.label = '+';
-			this.addPathButton.addListener('click', () => this.onAddClick());
-
-			this.removePathButton = new Button(this.removePathElement.nativeElement);
-			this.removePathButton.label = '-';
-			this.removePathButton.addListener('click', () => this.onRemoveClick());
-
-			// Set compression
-			this.compressionSelectBox = new SelectBox(this.compressionOptions, this.compressionOptions[0]);
-			this.compressionSelectBox.render(this.compressionElement.nativeElement);
+			this.pathListBox.setOptions(pathlist, 0);
 
 			// Set encryption
-			this.algorithmSelectBox = new SelectBox(this.encryptionAlgorithms, this.encryptionAlgorithms[0]);
-			this.algorithmSelectBox.render(this.encryptionAlgorithmElement.nativeElement);
 			var encryptorItems = this.populateEncryptorCombo();
-			this.encryptorSelectBox = new SelectBox(encryptorItems, encryptorItems[0]);
-			this.encryptorSelectBox.render(this.encryptorElement.nativeElement);
+			this.encryptorSelectBox.setOptions(encryptorItems, 0);
 
 			// If no encryptor is provided, disable encrypt checkbox and show warning
 			if (encryptorItems.length === 0) {
@@ -354,51 +417,7 @@ export class BackupComponent {
 				this.errorIconElement.nativeElement.style.content = 'url(' + iconFilePath + ')';
 				this.errorMessage = localize('backup.noEncryptorError', "No certificate or asymmetric key is available");
 			}
-
-			// Set media
-			this.mediaNameBox = new InputBox(this.mediaNameElement.nativeElement,
-				this._bootstrapService.contextViewService,
-				{
-					validationOptions: {
-						validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: localize('backup.mediaNameRequired', 'Media name is required') }) : null
-					}
-				}
-			);
-
-			this._toDispose.push(this.mediaNameBox.onDidChange(mediaName => {
-				this.mediaNameChanged(mediaName);
-			}));
-
-			this.mediaDescriptionBox = new InputBox(this.mediaDescriptionElement.nativeElement, this._bootstrapService.contextViewService);
-
-			// Set backup retain days
-			this.backupRetainDaysBox = new InputBox(this.backupDaysElement.nativeElement,
-				this._bootstrapService.contextViewService,
-				{
-					placeholder: '0',
-					type: 'number'
-				});
-
 			this.setTLogOptions();
-
-			// apply theme
-			this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachListBoxStyler(this.pathListBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
-			this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
-			this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
-			this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
 
 			// disable elements
 			this.recoveryBox.disable();
@@ -413,6 +432,34 @@ export class BackupComponent {
 		}
 
 		this._changeDetectorRef.detectChanges();
+	}
+
+	private registerListeners(): void {
+		// Theme styler
+		this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachInputBoxStyler(this.recoveryBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachSelectBoxStyler(this.backupTypeSelectBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachListBoxStyler(this.pathListBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachButtonStyler(this.addPathButton, this._bootstrapService.themeService));
+		this._toDispose.push(attachButtonStyler(this.removePathButton, this._bootstrapService.themeService));
+		this._toDispose.push(attachSelectBoxStyler(this.compressionSelectBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachSelectBoxStyler(this.algorithmSelectBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachSelectBoxStyler(this.encryptorSelectBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
+		this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
+
+		this._toDispose.push(this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged()));
+		this._toDispose.push(this.addPathButton.addListener('click', () => this.onAddClick()));
+		this._toDispose.push(this.removePathButton.addListener('click', () => this.onRemoveClick()));
+		this._toDispose.push(this.mediaNameBox.onDidChange(mediaName => {
+			this.mediaNameChanged(mediaName);
+		}));
 	}
 
 	/*

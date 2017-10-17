@@ -7,11 +7,9 @@ import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { BackupModule } from 'sql/parts/disasterRecovery/backup/backup.module';
 import { BACKUP_SELECTOR } from 'sql/parts/disasterRecovery/backup/backup.component';
-import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
-import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
@@ -25,7 +23,6 @@ export class BackupDialog extends Modal {
 	private _backupTitle: string;
 	private _uniqueSelector: string;
 	private _moduleRef: any;
-	private static _connectionUniqueId: number = 0;
 
 	constructor(
 		@IBootstrapService private _bootstrapService: IBootstrapService,
@@ -47,22 +44,20 @@ export class BackupDialog extends Modal {
 	public render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
+
+		// Add angular component template to dialog body
+		this.bootstrapAngular(this._bodyBuilder.getHTMLElement());
 	}
 
 	/**
 	 * Get the bootstrap params and perform the bootstrap
 	 */
-	private bootstrapAngular(uri: string, connection: IConnectionProfile, bodyContainer: HTMLElement) {
-		let params: DashboardComponentParams = {
-			connection: connection,
-			ownerUri: uri
-		};
-
+	private bootstrapAngular(bodyContainer: HTMLElement) {
 		this._uniqueSelector = this._bootstrapService.bootstrap(
 			BackupModule,
 			bodyContainer,
 			BACKUP_SELECTOR,
-			params,
+			undefined,
 			undefined,
 			(moduleRef) => this._moduleRef = moduleRef);
 	}
@@ -84,34 +79,20 @@ export class BackupDialog extends Modal {
 	 * Clean up the module and DOM element and close the dialog
 	 */
 	public close() {
-		this._moduleRef.destroy();
-		this._bodyBuilder.empty();
 		this.hide();
+	}
+
+	public dispose(): void {
+		super.dispose();
+		if (this._moduleRef) {
+			this._moduleRef.destroy();
+		}
 	}
 
 	/**
 	 * Open the dialog
 	 */
-	public async open(connection: IConnectionProfile) {
-		let uri = this._connectionManagementService.getConnectionId(connection)
-			+ ProviderConnectionInfo.idSeparator
-			+ 'backupId'
-			+ ProviderConnectionInfo.nameValueSeparator
-			+ BackupDialog._connectionUniqueId;
-
-		BackupDialog._connectionUniqueId++;
-
-		// Create connection if needed
-		if (!this._connectionManagementService.isConnected(uri)) {
-			try {
-				await this._connectionManagementService.connect(connection, uri);
-			} catch (e) {
-				return Promise.reject(e);
-			}
-		}
-
-		// Add angular component template to dialog body
-		this.bootstrapAngular(uri, connection, this._bodyBuilder.getHTMLElement());
+	public open(connection: IConnectionProfile) {
 		this._backupTitle = 'Backup database - ' + connection.serverName + ':' + connection.databaseName;
 		this.title = this._backupTitle;
 		this.show();

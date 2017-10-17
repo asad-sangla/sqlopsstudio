@@ -7,7 +7,10 @@
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import Event from 'vs/base/common/event';
 import data = require('data');
+
+import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 
@@ -29,6 +32,11 @@ export interface IDisasterRecoveryUiService {
 	 * Show backup wizard
 	 */
 	showBackup(connection: IConnectionProfile): Promise<any>;
+
+	/**
+	 * On show backup event
+	 */
+	onShowBackupEvent: Event<DashboardComponentParams>;
 
 	/**
 	 * Close backup wizard
