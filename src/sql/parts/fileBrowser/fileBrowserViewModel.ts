@@ -59,4 +59,8 @@ export class FileBrowserViewModel {
 			this._fileBrowserService.openFileBrowser(this._ownerUri, this._expandPath, this._fileFilters[filterIndex].filters);
 		}
 	}
+
+	public closeFileBrowser() {
+		this._fileBrowserService.closeFileBrowser(this._ownerUri);
+	}
 }

@@ -92,13 +92,13 @@ export class FileBrowserService implements IFileBrowserService {
 	public onFolderNodeExpanded(handle: number, fileBrowserExpandedParams: data.FileBrowserExpandedParams) {
 		var expandResolve = this._expandResolveMap[fileBrowserExpandedParams.ownerUri];
 		if (expandResolve) {
-			if (fileBrowserExpandedParams.succeeded === true && fileBrowserExpandedParams.expandedNode)
+			if (fileBrowserExpandedParams.succeeded === true)
 			{
 				// get the expanded folder node
-				var expandedNode = this._pathToFileNodeMap[fileBrowserExpandedParams.expandedNode.fullPath];
+				var expandedNode = this._pathToFileNodeMap[fileBrowserExpandedParams.expandPath];
 				if (expandedNode) {
-					if (fileBrowserExpandedParams.expandedNode.children	&& fileBrowserExpandedParams.expandedNode.children.length > 0) {
-						expandedNode.children = this.convertChildren(expandedNode, fileBrowserExpandedParams.expandedNode.children, fileBrowserExpandedParams.ownerUri);
+					if (fileBrowserExpandedParams.children	&& fileBrowserExpandedParams.children.length > 0) {
+						expandedNode.children = this.convertChildren(expandedNode, fileBrowserExpandedParams.children, fileBrowserExpandedParams.ownerUri);
 					}
 					expandResolve(expandedNode.children ? expandedNode.children : []);
 					this._onExpandFolder.fire(expandedNode);

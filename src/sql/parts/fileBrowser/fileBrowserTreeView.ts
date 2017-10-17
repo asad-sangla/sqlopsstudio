@@ -162,7 +162,9 @@ export class FileBrowserTreeView {
 	 * dispose the file browser tree view
 	 */
 	public dispose(): void {
-		this._tree.dispose();
+		if (this._tree) {
+			this._tree.dispose();
+		}
 		this._toDispose = dispose(this._toDispose);
 	}
 }

@@ -55,7 +55,7 @@ export class FileBrowserDialog extends Modal {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(title, TelemetryKeys.Backup, partService, telemetryService, contextKeyService, { isFlyout: true, hasTitleIcon: false, hasBackButton: true });
+		super(title, TelemetryKeys.Backup, partService, telemetryService, contextKeyService, { isFlyout: true, hasTitleIcon: false, hasBackButton: true, hasSpinner: true });
 		this._viewModel = this._instantiationService.createInstance(FileBrowserViewModel);
 		this._viewModel.onAddFileTree(args => this.handleOnAddFileTree(args.rootNode, args.selectedNode, args.expandedNodes));
 		this._viewModel.onPathValidate(args => this.handleOnValidate(args.succeeded, args.message));
@@ -73,6 +73,7 @@ export class FileBrowserDialog extends Modal {
 	public render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
+
 		if (this.backButton) {
 			this._register(this.backButton.addListener('click', () => this.close()));
 			this._register(attachButtonStyler(this.backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND }));
@@ -113,6 +114,7 @@ export class FileBrowserDialog extends Modal {
 		this._fileFilterSelectBox.setOptions(this._viewModel.formattedFileFilters);
 		this._fileFilterSelectBox.select(0);
 		this._filePathInputBox.value = expandPath;
+		this.showSpinner();
 		this.show();
 
 		this._fileBrowserTreeView = this._instantiationService.createInstance(FileBrowserTreeView);
@@ -130,6 +132,7 @@ export class FileBrowserDialog extends Modal {
 
 	private handleOnAddFileTree(rootNode: FileNode, selectedNode: FileNode, expandedNodes: FileNode[]) {
 		this.updateFileTree(rootNode, selectedNode, expandedNodes);
+		this.hideSpinner();
 	}
 
 	private enableOkButton() {
@@ -191,6 +194,7 @@ export class FileBrowserDialog extends Modal {
 			this._fileBrowserTreeView.dispose();
 		}
 		this.hide();
+		this._viewModel.closeFileBrowser();
 	}
 
 	private updateFileTree(rootNode: FileNode, selectedNode: FileNode, expandedNodes: FileNode[]): void {
@@ -199,9 +203,14 @@ export class FileBrowserDialog extends Modal {
 		this._fileBrowserTreeView.layout(DOM.getTotalHeight(this._treeContainer.getHTMLElement()));
 	}
 
+	private onFilterSelectChanged(filterIndex) {
+		this.showSpinner();
+		this._viewModel.openFileBrowser(filterIndex);
+	}
+
 	private registerListeners(): void {
 		this._register(this._fileFilterSelectBox.onDidSelect(selection => {
-			this._viewModel.openFileBrowser(selection.index);
+			this.onFilterSelectChanged(selection.index);
 		}));
 		this._register(this._filePathInputBox.onDidChange(e => {
 			this.onFilePathChange(e);

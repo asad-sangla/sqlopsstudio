@@ -518,7 +518,8 @@ export interface FileBrowserExpandParams {
 
 export interface FileBrowserExpandedParams {
 	ownerUri: string;
-	expandedNode: FileTreeNode;
+	expandPath: string;
+	children: FileTreeNode[];
 	succeeded: boolean;
 	message: string;
 }

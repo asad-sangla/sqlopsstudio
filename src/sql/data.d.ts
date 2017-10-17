@@ -1073,7 +1073,8 @@ declare module 'data' {
 
 	export interface FileBrowserExpandedParams {
 		ownerUri: string;
-		expandedNode: FileTreeNode;
+		expandPath: string;
+		children: FileTreeNode[];
 		succeeded: boolean;
 		message: string;
 	}
@@ -1274,9 +1275,9 @@ declare module 'data' {
 
 	export namespace resources {
 		/**
-		 * Registers a resource provider that can suport 
+		 * Registers a resource provider that can suport
 		 */
-		export function registerResourceProvider(providerMetadata: ResourceProviderMetadata, provider: ResourceProvider): vscode.Disposable;	
+		export function registerResourceProvider(providerMetadata: ResourceProviderMetadata, provider: ResourceProvider): vscode.Disposable;
 	}
 
 	/**
