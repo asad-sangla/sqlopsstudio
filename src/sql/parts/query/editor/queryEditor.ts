@@ -122,6 +122,28 @@ export class QueryEditor extends BaseEditor {
 		}
 	}
 
+	// PROPERTIES //////////////////////////////////////////////////////////
+	/**
+	 * Returns the URI of this editor if it is connected.
+	 * @returns {string} URI of the editor if connected, undefined otherwise
+	 */
+	public get connectedUri(): string {
+		return this._connectionManagementService.isConnected(this.uri)
+			? this.uri
+			: undefined;
+	}
+
+	/**
+	 * Returns the URI of this editor if an input is associated with it
+	 * @return {string} URI of this if input is associated, undefined otherwise
+	 */
+	get uri(): string {
+		let input: QueryInput = <QueryInput>this.input;
+		return input
+			? input.getQueryResultsInputResource()
+			: undefined;
+	}
+
 	private _onModelSaved(event: TextFileModelChangeEvent): void {
 		if (event.resource.toString() !== this.uri) {
 			TaskUtilities.replaceConnection(this.uri, event.resource.toString(), this._connectionManagementService).then(result => {
@@ -371,11 +393,6 @@ export class QueryEditor extends BaseEditor {
 	 */
 	public cancelQuery(): void {
 		this._cancelQueryAction.run();
-	}
-
-	get uri(): string {
-		let input: QueryInput = <QueryInput>this.input;
-		return input ? input.getQueryResultsInputResource() : undefined;
 	}
 
 	// PRIVATE METHODS ////////////////////////////////////////////////////////////

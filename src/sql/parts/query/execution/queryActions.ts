@@ -3,24 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Action, IActionItem, IActionRunner } from 'vs/base/common/actions';
-import { TPromise } from 'vs/base/common/winjs.base';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
-import { EventEmitter } from 'vs/base/common/eventEmitter';
-import { IMessageService, Severity } from 'vs/platform/message/common/message';
-import {
-	IConnectionManagementService, INewConnectionParams, ConnectionType,
-	RunQueryOnConnectionMode
-} from 'sql/parts/connection/common/connectionManagement';
-import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
-import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ISelectionData } from 'data';
 import * as nls from 'vs/nls';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Dropdown } from 'sql/base/browser/ui/editableDropdown/dropdown';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { Action, IActionItem, IActionRunner } from 'vs/base/common/actions';
+import { EventEmitter } from 'vs/base/common/eventEmitter';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { TPromise } from 'vs/base/common/winjs.base';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { IMessageService, Severity } from 'vs/platform/message/common/message';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+
+import { ISelectionData } from 'data';
+import {
+	IConnectionManagementService,
+	IConnectionParams,
+	INewConnectionParams,
+	ConnectionType,
+	RunQueryOnConnectionMode
+} from 'sql/parts/connection/common/connectionManagement';
+import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
+import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 
 /**
  * Action class that query-based Actions will extend. This base class automatically handles activating and
@@ -405,20 +408,16 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 			placeholder: nls.localize("selectDatabase", "Select Database")
 		});
 		this._dropdown.onValueChange(s => this.databaseSelected(s));
+
+		// Register event handlers
+		let self = this;
+		this._toDispose.push(this._dropdown.onFocus(() => { self.onDropdownFocus(); }));
+		this._toDispose.push(this._connectionManagementService.onConnectionChanged(params => { self.onConnectionChanged(params); }));
 	}
 
+	// PUBLIC METHODS //////////////////////////////////////////////////////
 	public render(container: HTMLElement): void {
 		this.$databaseListDropdown.appendTo(container);
-		this._dropdown.onFocus(() => {
-			let uri = this.getConnectedQueryEditorUri(this._editor);
-			if (uri) {
-				this._connectionManagementService.listDatabases(uri).then(result => {
-					if (result && result.databaseNames) {
-						this._dropdown.values = result.databaseNames;
-					}
-				});
-			}
-		});
 	}
 
 	public style(styles) {
@@ -445,62 +444,10 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this._toDispose = dispose(this._toDispose);
 	}
 
-	public databasesSelectedOnLostFocus(dbName: string): void {
-	}
-
-	/**
-	 * Returns the URI of the given editor if it is not undefined and is connected.
-	 */
-	private getConnectedQueryEditorUri(editor: QueryEditor): string {
-		if (!editor || !editor.uri) {
-			return undefined;
-		}
-		return this._connectionManagementService.isConnected(editor.uri) ? editor.uri : undefined;
-	}
-
-	public databaseSelected(dbName: string): void {
-		let self = this;
-		let uri = this.getConnectedQueryEditorUri(this._editor);
-		if (uri) {
-			let profile = this._connectionManagementService.getConnectionProfile(uri);
-			if (profile) {
-				this._connectionManagementService.changeDatabase(this._editor.uri, dbName).then(result => {
-					if (!result) {
-						// Change database failed. Ideally would revert to original, but for now reflect actual
-						// behavior by notifying of a disconnect. Note: we should ideally handle this via global notification
-						// to simplify control flow
-						self.showChangeDatabaseFailed();
-					}
-				}, error => {
-					self.showChangeDatabaseFailed();
-				});
-			}
-		}
-	}
-
-	private showChangeDatabaseFailed() {
-		this.onDisconnect();
-		this._messageService.show(Severity.Error, 'Failed to change database');
-	}
-
+	// EVENT HANDLERS FROM EDITOR //////////////////////////////////////////
 	public onConnected(): void {
 		let dbName = this.getCurrentDatabaseName();
 		this.updateConnection(dbName);
-	}
-
-	public onConnectionChanged(updatedConnection: IConnectionProfile): void {
-		if (updatedConnection) {
-			this.updateConnection(updatedConnection.databaseName);
-		}
-	}
-
-	private updateConnection(databaseName: string) {
-		this._isConnected = true;
-		this._dropdown.enabled = true;
-		this._currentDatabaseName = databaseName;
-		if (this._currentDatabaseName) {
-		}
-		this._dropdown.value = databaseName;
 	}
 
 	public onDisconnect(): void {
@@ -510,8 +457,37 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		this._dropdown.value = '';
 	}
 
+	// PRIVATE HELPERS /////////////////////////////////////////////////////
+	private databaseSelected(dbName: string): void {
+		let self = this;
+		let uri = this._editor.connectedUri;
+		if (!uri) {
+			return;
+		}
+
+		let profile = this._connectionManagementService.getConnectionProfile(uri);
+		if (!profile) {
+			return;
+		}
+
+		this._connectionManagementService.changeDatabase(this._editor.uri, dbName)
+			.then(
+				result => {
+					if (!result) {
+						// Change database failed. Ideally would revert to original, but for now reflect actual
+						// behavior by notifying of a disconnect. Note: we should ideally handle this via global notification
+						// to simplify control flow
+						self.showChangeDatabaseFailed();
+					}
+				},
+				error => {
+					self.showChangeDatabaseFailed();
+				}
+			);
+	}
+
 	private getCurrentDatabaseName() {
-		let uri = this.getConnectedQueryEditorUri(this._editor);
+		let uri = this._editor.connectedUri;
 		if (uri) {
 			let profile = this._connectionManagementService.getConnectionProfile(uri);
 			if (profile) {
@@ -521,7 +497,48 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 		return undefined;
 	}
 
-	// TESTING PROPERTIES ////////////////////////////////////////////////////////////
+	private onConnectionChanged(connParams: IConnectionParams): void {
+		if (!connParams) {
+			return;
+		}
+
+		let uri = this._editor.connectedUri;
+		if (uri !== connParams.connectionUri) {
+			return;
+		}
+
+		this.updateConnection(connParams.connectionProfile.databaseName);
+	}
+
+	private onDropdownFocus(): void {
+		let self = this;
+
+		let uri = self._editor.connectedUri;
+		if (!uri) {
+			return;
+		}
+
+		self._connectionManagementService.listDatabases(uri)
+			.then(result => {
+				if (result && result.databaseNames) {
+					this._dropdown.values = result.databaseNames;
+				}
+			});
+	}
+
+	private showChangeDatabaseFailed() {
+		this.onDisconnect();
+		this._messageService.show(Severity.Error, 'Failed to change database');
+	}
+
+	private updateConnection(databaseName: string) {
+		this._isConnected = true;
+		this._dropdown.enabled = true;
+		this._currentDatabaseName = databaseName;
+		this._dropdown.value = databaseName;
+	}
+
+	// TESTING PROPERTIES //////////////////////////////////////////////////
 	public get currentDatabaseName(): string {
 		return this._currentDatabaseName;
 	}

@@ -4,11 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
+import { Emitter } from 'vs/base/common/event';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 import { ISelectionData } from 'data';
 
-import { IConnectionManagementService, ConnectionType, INewConnectionParams, RunQueryOnConnectionMode } from 'sql/parts/connection/common/connectionManagement';
+import {
+	IConnectionManagementService,
+	IConnectionParams,
+	INewConnectionParams,
+	ConnectionType,
+	RunQueryOnConnectionMode
+} from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogService } from 'sql/parts/connection/connectionDialog/connectionDialogService';
 import {
 	RunQueryAction, CancelQueryAction, ListDatabasesActionItem,
@@ -42,7 +49,10 @@ suite('SQL QueryAction Tests', () => {
 
 		// Setup a reusable mock QueryEditor
 		editor = TypeMoq.Mock.ofType(QueryEditor, TypeMoq.MockBehavior.Strict, undefined, new TestThemeService());
+		editor.setup(x => x.connectedUri).returns(() => testUri);
 		editor.setup(x => x.currentQueryInput).returns(() => testQueryInput.object);
+		editor.setup(x => x.uri).returns(() => testUri);
+
 		editor.setup(x => x.getSelection()).returns(() => undefined);
 		editor.setup(x => x.getSelection(false)).returns(() => undefined);
 		editor.setup(x => x.isSelectionEmpty()).returns(() => false);
@@ -452,8 +462,6 @@ suite('SQL QueryAction Tests', () => {
 			databaseName: databaseName
 		});
 
-		editor.setup(x => x.uri).returns(() => testUri);
-
 		// If I query without having initialized anything, state should be clear
 		listItem = new ListDatabasesActionItem(editor.object, undefined, connectionManagementService.object, undefined, undefined, undefined);
 
@@ -475,5 +483,85 @@ suite('SQL QueryAction Tests', () => {
 		assert.equal(listItem.currentDatabaseName, undefined, 'do not expect dropdown to have entries unless connected');
 
 		done();
+	});
+
+	test('ListDatabaseItem - null event params', () => {
+		// Setup:
+		// ... Create event emitter we can use to trigger db changed event
+		let dbChangedEmitter = new Emitter<IConnectionParams>();
+
+		// ... Create mock connection management service
+		let databaseName = 'foobar';
+		let cms = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {});
+		cms.callBase = true;
+		cms.setup(x => x.onConnectionChanged).returns(() => dbChangedEmitter.event);
+		cms.setup(x => x.getConnectionProfile(TypeMoq.It.isAny())).returns(() => <IConnectionProfile>{ databaseName: databaseName });
+
+		// ... Create a database dropdown that has been connected
+		let listItem = new ListDatabasesActionItem(editor.object, undefined, cms.object, null, null, null);
+		listItem.onConnected();
+
+		// If: I raise a connection changed event
+		let eventParams = null;
+		dbChangedEmitter.fire(eventParams);
+
+		// Then: The selected database should not have changed
+		assert.equal(listItem.currentDatabaseName, databaseName);
+	});
+
+	test('ListDatabaseItem - wrong uri', () => {
+		// Setup:
+		// ... Create event emitter we can use to trigger db changed event
+		let dbChangedEmitter = new Emitter<IConnectionParams>();
+
+		// ... Create mock connection management service that will not claim it's connected
+		let databaseName = 'foobar';
+		let cms = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {});
+		cms.callBase = true;
+		cms.setup(x => x.onConnectionChanged).returns(() => dbChangedEmitter.event);
+		cms.setup(x => x.getConnectionProfile(TypeMoq.It.isAny())).returns(() => <IConnectionProfile>{ databaseName: databaseName });
+
+		// ... Create a database dropdown that has been connected
+		let listItem = new ListDatabasesActionItem(editor.object, undefined, cms.object, null, null, null);
+		listItem.onConnected();
+
+		// If: I raise a connection changed event for the 'wrong' URI
+		let eventParams = <IConnectionParams> {
+			connectionProfile: {
+				databaseName: 'foobarbaz'
+			},
+			connectionUri: 'foobarUri'
+		};
+		dbChangedEmitter.fire(eventParams);
+
+		// Then: The selected database should not have changed
+		assert.equal(listItem.currentDatabaseName, databaseName);
+	});
+
+	test('ListDatabaseItem - updates when connected and uri matches', () => {
+		// Setup:
+		// ... Create event emitter we can use to trigger db changed event
+		let dbChangedEmitter = new Emitter<IConnectionParams>();
+
+		// ... Create mock connection management service
+		let cms = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Loose, {}, {});
+		cms.callBase = true;
+		cms.setup(x => x.onConnectionChanged).returns(() => dbChangedEmitter.event);
+
+		// ... Create a database dropdown
+		let listItem = new ListDatabasesActionItem(editor.object, undefined, cms.object, null, null, null);
+
+		// If: I raise a connection changed event
+		let eventParams = <IConnectionParams> {
+			connectionProfile: {
+				databaseName: 'foobarbaz'
+			},
+			connectionUri: editor.object.uri
+		};
+		dbChangedEmitter.fire(eventParams);
+
+		// Then:
+		// ... The connection should have changed to the provided database
+		assert.equal(listItem.currentDatabaseName, eventParams.connectionProfile.databaseName);
 	});
 });
