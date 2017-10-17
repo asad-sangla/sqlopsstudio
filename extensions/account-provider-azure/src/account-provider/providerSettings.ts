@@ -18,7 +18,7 @@ const publicAzureSettings = {
 		id: 'azurePublicCloud',
 		settings: <Settings>{
 			host: 'https://login.microsoftonline.com',
-			clientId: 'e52434c1-5f93-425b-bcd0-97fecbf68f22',
+			clientId: 'TBD',
 			signInResourceId: 'https://management.core.windows.net/',
 			graphResource: {
 				id: 'https://graph.windows.net/',
@@ -40,7 +40,7 @@ const usGovAzureSettings = {
 		id: 'usGovAzureCloud',
 		settings: <Settings> {
 			host: 'https://login.microsoftonline.com/',
-			clientId: 'e52434c1-5f93-425b-bcd0-97fecbf68f22',
+			clientId: 'TBD',
 			signInResourceId: 'https://management.core.usgovcloudapi.net/',
 			graphResource: {
 				id: 'https://graph.usgovcloudapi.net/',
@@ -62,7 +62,7 @@ const chinaAzureSettings = {
 		id: 'chinaAzureCloud',
 		settings: <Settings> {
 			host: 'https://login.chinacloudapi.cn/',
-			clientId: 'e52434c1-5f93-425b-bcd0-97fecbf68f22',
+			clientId: 'TBD',
 			signInResourceId: 'https://management.core.chinacloudapi.cn/',
 			graphResource: {
 				id: 'https://graph.chinacloudapi.cn/',
@@ -84,7 +84,7 @@ const germanyAzureSettings = {
 		id: 'germanyAzureCloud',
 		settings: <Settings> {
 			host: 'https://login.microsoftazure.de/',
-			clientId: 'e52434c1-5f93-425b-bcd0-97fecbf68f22',
+			clientId: 'TBD',
 			signInResourceId: 'https://management.core.cloudapi.de/',
 			graphResource: {
 				id: 'https://graph.cloudapi.de/',
@@ -99,4 +99,4 @@ const germanyAzureSettings = {
 	}
 };
 
-export default [publicAzureSettings, chinaAzureSettings, germanyAzureSettings, usGovAzureSettings];
+export default [publicAzureSettings/*, chinaAzureSettings, germanyAzureSettings, usGovAzureSettings*/];
