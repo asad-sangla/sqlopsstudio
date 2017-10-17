@@ -1023,6 +1023,9 @@ export class WatchExpressionsDragAndDrop extends DefaultDragAndDrop {
 			this.debugService.moveWatchExpression(draggedElement.getId(), position);
 		}
 	}
+
+	// {{SQL CARBON EDIT}}
+	public dropAbort(tree: ITree, data: IDragAndDropData): void { }
 }
 
 // breakpoints

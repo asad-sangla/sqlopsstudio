@@ -867,6 +867,9 @@ export class FileDragAndDrop extends SimpleFileResourceDragAndDrop {
 		promise.done(null, errors.onUnexpectedError);
 	}
 
+	// {{SQL CARBON EDIT}}
+	public dropAbort(tree: ITree, data: IDragAndDropData): void { }
+
 	private handleExternalDrop(tree: ITree, data: DesktopDragAndDropData, target: FileStat | Model, originalEvent: DragMouseEvent): TPromise<void> {
 		const droppedResources = extractResources(originalEvent.browserEvent as DragEvent, true);
 

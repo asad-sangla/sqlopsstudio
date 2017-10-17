@@ -1546,7 +1546,11 @@ export class TreeView extends HeightMap {
 			this.currentDragAndDropData.update(event);
 			this.context.dnd.drop(this.context.tree, this.currentDragAndDropData, this.currentDropElement, event);
 			this.onDragEnd(e);
+		} else {
+			// {{SQL CARBON EDIT}}
+			this.context.dnd.dropAbort(this.context.tree, this.currentDragAndDropData);
 		}
+
 		this.cancelDragAndDropScrollInterval();
 	}
 
@@ -1554,6 +1558,9 @@ export class TreeView extends HeightMap {
 		if (this.currentDropTarget) {
 			this.currentDropTargets.forEach(i => i.dropTarget = false);
 			this.currentDropTargets = [];
+		} else {
+			// {{SQL CARBON EDIT}}
+			this.context.dnd.dropAbort(this.context.tree, this.currentDragAndDropData);
 		}
 
 		if (this.currentDropPromise) {

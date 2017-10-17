@@ -606,6 +606,14 @@ export interface IDragAndDrop {
 	 * Handles the action of dropping sources into target.
 	 */
 	drop(tree: ITree, data: IDragAndDropData, targetElement: any, originalEvent: Mouse.DragMouseEvent): void;
+
+
+	// {{SQL CARBON EDIT}}
+	/**
+	 * Handles the action of canceled drag-and-drop activities
+	 */
+	dropAbort(tree: ITree, data: IDragAndDropData): void;
+
 }
 
 export interface IFilter {

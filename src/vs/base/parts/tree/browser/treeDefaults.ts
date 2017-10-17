@@ -393,6 +393,9 @@ export class DefaultDragAndDrop implements _.IDragAndDrop {
 	public drop(tree: _.ITree, data: _.IDragAndDropData, targetElement: any, originalEvent: mouse.DragMouseEvent): void {
 		return;
 	}
+
+	// {{SQL CARBON EDIT}}
+	public dropAbort(tree: _.ITree, data: _.IDragAndDropData): void { }
 }
 
 export class DefaultFilter implements _.IFilter {

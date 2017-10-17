@@ -506,4 +506,7 @@ export class DragAndDrop extends DefaultDragAndDrop {
 			}
 		}
 	}
+
+	// {{SQL CARBON EDIT}}
+	public dropAbort(tree: ITree, data: IDragAndDropData): void { }
 }

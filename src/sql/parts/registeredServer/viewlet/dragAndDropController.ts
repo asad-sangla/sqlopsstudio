@@ -116,6 +116,10 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 		return;
 	}
 
+	public dropAbort(tree: ITree, data: IDragAndDropData): void {
+		TreeUpdateUtils.isInDragAndDrop = false;
+	}
+
 	private getTargetGroup(targetElement: any): ConnectionProfileGroup {
 		let targetConnectionProfileGroup: ConnectionProfileGroup;
 		if (targetElement instanceof ConnectionProfile) {
@@ -198,4 +202,5 @@ export class RecentConnectionsDragAndDrop implements IDragAndDrop {
 		// No op
 	}
 
+	public dropAbort(tree: ITree, data: IDragAndDropData): void { }
 }
