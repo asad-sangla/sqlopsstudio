@@ -22,7 +22,6 @@ import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insi
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { DataType, ILineConfig } from 'sql/parts/dashboard/widgets/insights/views/charts/types/lineChart.component';
 import * as PathUtilities from 'sql/common/pathUtilities';
-import { ThemeUtilities } from 'sql/common/themeUtilities';
 import { IChartViewActionContext, CopyAction, CreateInsightAction, SaveImageAction } from 'sql/parts/grid/views/query/chartViewerActions';
 
 /* Insights */
@@ -186,8 +185,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 	}
 
 	public copyChart(): void {
-		let imageFormat = this.getImageFormatForCopy();
-		let data = this._chartComponent.getCanvasData(imageFormat);
+		let data = this._chartComponent.getCanvasData();
 		if (!data) {
 			this.showError(this.chartNotFoundError);
 			return;
@@ -196,39 +194,22 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 		this._bootstrapService.clipboardService.writeImageDataUrl(data);
 	}
 
-	/**
-	 * Gets the correct image format for copying. Due to canvas + write to data URL
-	 * complexities, things render incorrectly depending on the theme since PNG gives
-	 * a transparent / light background and JPEG puts in a dark background on copy.
-	 * This does not affect saving the image.
-	 *
-	 * @private
-	 * @returns {string}
-	 * @memberof ChartViewerComponent
-	 */
-	private getImageFormatForCopy(): string {
-		let currentTheme = this._bootstrapService.themeService.getColorTheme();
-		return ThemeUtilities.isLightTheme(currentTheme) ? 'png' : 'jpeg';
-	}
-
 	public saveChart(): void {
 		let filePath = this.promptForFilepath();
-		let format = paths.extname(filePath);
-		let self = this;
-		let data = this._chartComponent.getCanvasData(format);
+		let data = this._chartComponent.getCanvasData();
 		if (!data) {
 			this.showError(this.chartNotFoundError);
 			return;
 		}
 		if (filePath) {
-			let buffer = self.decodeBase64Image(data);
-			pfs.writeFile(filePath, buffer, (err) => {
+			let buffer = this.decodeBase64Image(data);
+			pfs.writeFile(filePath, buffer).then(undefined, (err) => {
 				if (err) {
-					self.showError(err.message);
+					this.showError(err.message);
 				} else {
 					let fileUri = URI.from({ scheme: PathUtilities.FILE_SCHEMA, path: filePath });
-					self._bootstrapService.windowsService.openExternal(fileUri.toString());
-					self._bootstrapService.messageService.show(Severity.Info, nls.localize('chartSaved', 'Saved Chart to path: {0}', filePath));
+					this._bootstrapService.windowsService.openExternal(fileUri.toString());
+					this._bootstrapService.messageService.show(Severity.Info, nls.localize('chartSaved', 'Saved Chart to path: {0}', filePath));
 				}
 			});
 		}
@@ -236,7 +217,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 
 	private promptForFilepath(): string {
 		let filepathPlaceHolder = PathUtilities.resolveCurrentDirectory(this.getActiveUriString(), PathUtilities.getRootPath(this._bootstrapService.workspaceContextService));
-		filepathPlaceHolder = paths.join(filepathPlaceHolder, 'Chart.jpeg');
+		filepathPlaceHolder = paths.join(filepathPlaceHolder, 'chart.png');
 
 		let filePath: string = this._bootstrapService.windowService.showSaveDialog({
 			title: nls.localize('saveAsFileTitle', 'Choose Results File'),

@@ -104,7 +104,6 @@ export abstract class ChartInsight implements IInsightsView, OnDestroy {
 	private _options: any = {};
 
 	@ViewChild(BaseChartDirective) private _chart: BaseChartDirective;
-	@ViewChild('canvas', { read: ElementRef }) private _canvas: ElementRef;
 
 	protected _defaultConfig = defaultChartConfig;
 	protected _disposables: Array<IDisposable> = [];
@@ -166,17 +165,12 @@ export abstract class ChartInsight implements IInsightsView, OnDestroy {
 		this._chart.ngOnChanges({});
 	}
 
-	public getCanvasData(format?: string): any {
-		if (!format) {
-			format = 'png';
+	public getCanvasData(): string {
+		if (this._chart && this._chart.chart) {
+			return this._chart.chart.toBase64Image();
+		} else {
+			return undefined;
 		}
-
-		if (this._canvas) {
-			let canvasElement = <HTMLCanvasElement>$(this._canvas.nativeElement).get(0);
-			let canvasData = canvasElement.toDataURL('image/' + format);
-			return canvasData;
-		}
-		return undefined;
 	}
 
 	@Input() set data(data: IInsightData) {
