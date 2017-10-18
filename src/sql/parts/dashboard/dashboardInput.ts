@@ -28,7 +28,7 @@ export class DashboardInput extends EditorInput {
 	private _parentContainer: HTMLElement;
 
 	constructor(
-		private _connectionProfile: IConnectionProfile,
+		_connectionProfile: IConnectionProfile,
 		@IConnectionManagementService private _connectionService: IConnectionManagementService
 	) {
 		super();
@@ -95,7 +95,7 @@ export class DashboardInput extends EditorInput {
 	}
 
 	public get connectionProfile(): IConnectionProfile {
-		return this._connectionProfile;
+		return this._connectionService.getConnectionProfile(this._uri);
 	}
 
 	public resolve(refresh?: boolean): TPromise<EditorModel> {
@@ -108,5 +108,16 @@ export class DashboardInput extends EditorInput {
 
 	public get uniqueSelector(): string {
 		return this._uniqueSelector;
+	}
+
+	public matches(otherinput: any): boolean {
+		if (otherinput instanceof DashboardInput) {
+			if (this.connectionProfile
+				&& otherinput.connectionProfile
+				&& this.connectionProfile.getOptionsKey() === otherinput.connectionProfile.getOptionsKey()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

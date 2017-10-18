@@ -59,9 +59,13 @@ export class ConnectionStatusManager {
 	}
 
 	public deleteConnection(id: string): void {
-		const self = this;
-		if (this.findConnection(id)) {
-			delete self._connections[id];
+		let info = this.findConnection(id);
+		if (info) {
+			for (let key in this._connections) {
+				if (this._connections[key].connectionId === info.connectionId) {
+					delete this._connections[key];
+				}
+			}
 		}
 	}
 
@@ -109,8 +113,8 @@ export class ConnectionStatusManager {
 				connectionInfo.connectionProfile.groupId = connection.groupId;
 				newId = Utils.generateUri(connection);
 				if (newId !== id) {
-					this._connections[newId] = connectionInfo;
 					this.deleteConnection(id);
+					this._connections[newId] = connectionInfo;
 				}
 			}
 			connectionInfo.connectionProfile.id = connection.id;

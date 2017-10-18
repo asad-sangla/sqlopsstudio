@@ -159,6 +159,7 @@ suite('SQL ConnectionStatusManager tests', () => {
 	test('updateConnection should update the connection info', () => {
 		let expected = connectionProfile.groupId + '1';
 		let expectedConnectionId = 'new id';
+		connections.addConnection(connectionProfile, connection1Id);
 
 		let updatedConnection = Object.assign({}, connectionProfile, { groupId: expected, getOptionsKey: () => connectionProfile.getOptionsKey() + expected, id: expectedConnectionId });
 		let actualId = connections.updateConnectionProfile(updatedConnection, connection1Id);
