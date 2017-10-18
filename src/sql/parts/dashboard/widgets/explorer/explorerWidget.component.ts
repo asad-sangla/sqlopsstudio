@@ -136,6 +136,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		if (selectionBackground) {
 			let selectionString = selectionBackground.toString();
 			collector.addRule(`.explorer-widget .explorer-table .explorer-row.selected { background-color: ${selectionString} }`);
+			collector.addRule(`.explorer-widget .explorer-table .explorer-row.selected { color: white }`);
 		}
 		if (contrastBorder) {
 			let contrastBorderString = activeContrastBorder.toString();
