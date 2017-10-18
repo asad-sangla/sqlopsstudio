@@ -49,10 +49,6 @@ export const databaseDashboardPropertiesSchema: IJSONSchema = {
 						},
 						default: [
 							{
-								displayName: nls.localize('status', 'Status'),
-								value: 'databaseState'
-							},
-							{
 								displayName: nls.localize('recoveryModel', 'Recovery Model'),
 								value: 'recoveryModel'
 							},
@@ -71,7 +67,7 @@ export const databaseDashboardPropertiesSchema: IJSONSchema = {
 								]
 							},
 							{
-								displayName: nls.localize('compatabilityLevel', 'Compatability Level'),
+								displayName: nls.localize('compatibilityLevel', 'Compatibility Level'),
 								value: 'compatibilityLevel'
 							},
 							{

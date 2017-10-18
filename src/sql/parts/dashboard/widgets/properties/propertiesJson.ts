@@ -19,10 +19,6 @@ export const properties: Array<ProviderProperties> = [
 				},
 				databaseProperties: [
 					{
-						displayName: nls.localize('status', 'Status'),
-						value: 'databaseState'
-					},
-					{
 						displayName: nls.localize('recoveryModel', 'Recovery Model'),
 						value: 'recoveryModel'
 					},
@@ -41,7 +37,7 @@ export const properties: Array<ProviderProperties> = [
 						]
 					},
 					{
-						displayName: nls.localize('compatabilityLevel', 'Compatability Level'),
+						displayName: nls.localize('compatibilityLevel', 'Compatibility Level'),
 						value: 'compatibilityLevel'
 					},
 					{

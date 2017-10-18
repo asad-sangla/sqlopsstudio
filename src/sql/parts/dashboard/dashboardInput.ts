@@ -44,7 +44,19 @@ export class DashboardInput extends EditorInput {
 	}
 
 	public getName(): string {
-		return this.connectionProfile.serverName + ':' + this.connectionProfile.databaseName;
+		let name = this.connectionProfile.serverName;
+		if (this.connectionProfile.databaseName
+			&& !this.isMasterMssql())
+		{
+			// Only add DB name if this is a non-default, non-master connection
+			name = name + ':' + this.connectionProfile.databaseName;
+		}
+		return name;
+	}
+
+	private isMasterMssql(): boolean {
+		return this.connectionProfile.providerName.toLowerCase() === 'mssql'
+			&& this.connectionProfile.databaseName.toLowerCase() === 'master';
 	}
 
 	public get uri(): string {
