@@ -11,6 +11,7 @@ import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { ViewletRegistry, Extensions as ViewletExtensions, ViewletDescriptor, ToggleViewletAction } from 'vs/workbench/browser/viewlet';
 import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/workbench/common/actionRegistry';
 import { IWorkbenchEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IViewlet } from 'vs/workbench/common/viewlet';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
@@ -28,25 +29,33 @@ export class StatusUpdater implements ext.IWorkbenchContribution {
 
 	constructor(
 		@IActivityBarService private activityBarService: IActivityBarService,
-		@ITaskService private _taskService: ITaskService
+		@ITaskService private _taskService: ITaskService,
+		@IViewletService private _viewletService: IViewletService
 	) {
 		this.toDispose = [];
-		let self = this;
 
 		this.toDispose.push(this._taskService.onAddNewTask(args => {
-			self.onServiceChange();
+			this.showTasksViewlet();
+			this.onServiceChange();
 		}));
 
 		this.toDispose.push(this._taskService.onTaskComplete(task => {
-			self.onServiceChange();
+			this.onServiceChange();
 		}));
 
 	}
 
+	private showTasksViewlet(): void {
+		let activeViewlet: IViewlet = this._viewletService.getActiveViewlet();
+		if (!activeViewlet || activeViewlet.getId() !== VIEWLET_ID) {
+			this._viewletService.openViewlet(VIEWLET_ID, true);
+		}
+	}
+
 	private onServiceChange(): void {
 		lifecycle.dispose(this.badgeHandle);
-		let NumOfInProgressTask = this._taskService.getNumberOfInProgressTasks();
-		let badge = new NumberBadge(NumOfInProgressTask, n => localize('inProgressTasksChangesBadge', '{0} in progress tasks', n));
+		let numOfInProgressTask: number = this._taskService.getNumberOfInProgressTasks();
+		let badge: NumberBadge = new NumberBadge(numOfInProgressTask, n => localize('inProgressTasksChangesBadge', "{0} in progress tasks", n));
 		this.badgeHandle = this.activityBarService.showActivity(VIEWLET_ID, badge, 'taskhistory-viewlet-label');
 	}
 
