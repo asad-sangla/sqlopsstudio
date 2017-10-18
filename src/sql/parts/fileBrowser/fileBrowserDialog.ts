@@ -75,7 +75,10 @@ export class FileBrowserDialog extends Modal {
 		attachModalDialogStyler(this, this._themeService);
 
 		if (this.backButton) {
-			this._register(this.backButton.addListener('click', () => this.close()));
+
+			this._register(DOM.addDisposableListener(this.backButton.getElement(), DOM.EventType.CLICK, () => {
+				this.close();
+			}));
 			this._register(attachButtonStyler(this.backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND }));
 		}
 

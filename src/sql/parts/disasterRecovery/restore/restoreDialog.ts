@@ -36,6 +36,7 @@ import * as FileValidationConstants from 'sql/parts/fileBrowser/common/fileValid
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
 import { Dropdown } from 'sql/base/browser/ui/editableDropdown/dropdown';
 import { TabbedPanel, PanelTabIdentifier } from 'sql/base/browser/ui/panel/panel';
+import * as DOM from 'vs/base/browser/dom';
 import * as data from 'data';
 
 interface FileListElement {
@@ -559,13 +560,8 @@ export class RestoreDialog extends Modal {
 			this.onFilePathLoseFocus(params);
 		}));
 
-		this._register(this._browseFileButton.addListener('click', () => {
-			this._bootstrapService.fileBrowserDialogService.showDialog(this._ownerUri,
-				this.viewModel.defaultBackupFolder,
-				BackupConstants.fileFiltersSet,
-				FileValidationConstants.restore,
-				true,
-				filepath => this.onFileBrowsed(filepath));
+		this._register(DOM.addDisposableListener(this._browseFileButton.getElement(), DOM.EventType.CLICK, () => {
+			this.onFileBrowserRequested();
 		}));
 
 		this._register(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
@@ -575,6 +571,15 @@ export class RestoreDialog extends Modal {
 		this._register(this._restoreFromSelectBox.onDidSelect(selectedRestoreFrom => {
 			this.onRestoreFromChanged(selectedRestoreFrom.selected);
 		}));
+	}
+
+	private onFileBrowserRequested(): void {
+		this._bootstrapService.fileBrowserDialogService.showDialog(this._ownerUri,
+			this.viewModel.defaultBackupFolder,
+			BackupConstants.fileFiltersSet,
+			FileValidationConstants.restore,
+			true,
+			filepath => this.onFileBrowsed(filepath));
 	}
 
 	private onFileBrowsed(filepath: string) {
