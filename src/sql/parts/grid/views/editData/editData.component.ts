@@ -258,11 +258,13 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	onRevertRow(): (index: number) => void {
 		const self = this;
 		return (index: number): void => {
-			self.dataService.revertRow(index).then(() => {
-				self.dataService.commitEdit().then(() => {
-					self.refreshResultsets();
-				});
-			});
+			// Force focus to the first cell (completing any active edit operation)
+			self.focusCell(index, 0, false);
+
+			// Perform a revert row operation
+			self.dataService.revertRow(index)
+				.then(() => {	self.dataService.commitEdit(); })
+				.then(() => {	self.refreshResultsets(); });
 		};
 	}
 
@@ -474,10 +476,10 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		}, this.scrollTimeOutTime);
 	}
 
-	private focusCell(row: number, column: number): void {
+	private focusCell(row: number, column: number, forceEdit: boolean=true): void {
 		let slick: any = this.slickgrids.toArray()[0];
 		let grid = slick._grid;
-		grid.gotoCell(row, column, true);
+		grid.gotoCell(row, column, forceEdit);
 	}
 
 	private getMaxHeight(rowCount: number): any {
