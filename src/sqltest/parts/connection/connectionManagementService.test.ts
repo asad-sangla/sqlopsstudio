@@ -132,6 +132,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined,
 			editorGroupService.object,
 			undefined,
+			undefined,
 			undefined
 		);
 		return connectionManagementService;
