@@ -53,8 +53,10 @@ export class PanelComponent implements AfterContentInit, OnInit {
 	}
 
 	ngAfterContentInit(): void {
-		this._activeTab = this._tabs.first;
-		this._activeTab.active = true;
+		if (this._tabs && this._tabs.length > 0) {
+			this._activeTab = this._tabs.first;
+			this._activeTab.active = true;
+		}
 	}
 
 	/**
@@ -73,7 +75,7 @@ export class PanelComponent implements AfterContentInit, OnInit {
 	 */
 	selectTab(tab: TabComponent);
 	selectTab(input: TabComponent | number | string) {
-		if (this._tabs) {
+		if (this._tabs && this._tabs.length > 0) {
 			let tab: TabComponent;
 			if (input instanceof TabComponent) {
 				tab = input;
@@ -84,7 +86,10 @@ export class PanelComponent implements AfterContentInit, OnInit {
 			}
 
 			this._zone.run(() => {
-				this._activeTab.active = false;
+				if (this._activeTab) {
+					this._activeTab.active = false;
+				}
+
 				this._activeTab = tab;
 				this._activeTab.active = true;
 			});
