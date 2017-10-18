@@ -50,6 +50,7 @@ import { IEditorGroupService } from 'vs/workbench/services/group/common/groupSer
 import { EditorGroup } from 'vs/workbench/common/editor/editorStacksModel';
 import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
+import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 import { IStatusbarService } from 'vs/platform/statusbar/common/statusbar';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 
@@ -93,7 +94,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IQuickOpenService private _quickOpenService: IQuickOpenService,
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
 		@IStatusbarService private _statusBarService: IStatusbarService,
-		@IResourceProviderService private _resourceProviderService: IResourceProviderService
+		@IResourceProviderService private _resourceProviderService: IResourceProviderService,
+		@IViewletService private _viewletService: IViewletService
 	) {
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
 		if (!this._connectionMemento) {
@@ -184,7 +186,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 			let startupConfig = this._workspaceConfigurationService.getConfiguration('startup');
 			let showServerViewlet = <boolean>startupConfig['alwaysShowServersView'];
 			if (showServerViewlet) {
-				this._commandService.executeCommand('workbench.view.connections', {});
+				// only show the Servers viewlet if there isn't another active viewlet
+				if (!this._viewletService.getActiveViewlet()) {
+					this._commandService.executeCommand('workbench.view.connections', {});
+				}
 			}
 		}
 	}
