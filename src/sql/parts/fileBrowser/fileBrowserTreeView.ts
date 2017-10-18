@@ -5,6 +5,7 @@
 
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { FileBrowserDataSource } from 'sql/parts/fileBrowser/fileBrowserDataSource';
+import { FileBrowserController } from 'sql/parts/fileBrowser/fileBrowserController';
 import { FileBrowserRenderer } from 'sql/parts/fileBrowser/fileBrowserRenderer';
 import { IFileBrowserService } from 'sql/parts/fileBrowser/common/interfaces';
 import { FileNode } from 'sql/parts/fileBrowser/common/fileNode';
@@ -67,7 +68,7 @@ export class FileBrowserTreeView {
 	public createFileBrowserTree(treeContainer: HTMLElement, instantiationService: IInstantiationService): Tree {
 		const dataSource = instantiationService.createInstance(FileBrowserDataSource);
 		const renderer = instantiationService.createInstance(FileBrowserRenderer);
-		const controller = new DefaultController();
+		const controller = instantiationService.createInstance(FileBrowserController);
 		const dnd = new DefaultDragAndDrop();
 		const filter = new DefaultFilter();
 		const sorter = null;

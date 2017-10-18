@@ -110,10 +110,11 @@ export class FileBrowserDialog extends Modal {
 		fileValidationServiceType: string,
 	) {
 		this._viewModel.initialize(ownerUri, expandPath, fileFilters, fileValidationServiceType);
-		this._isFolderSelected = true;
 		this._fileFilterSelectBox.setOptions(this._viewModel.formattedFileFilters);
 		this._fileFilterSelectBox.select(0);
 		this._filePathInputBox.value = expandPath;
+		this._isFolderSelected = true;
+		this.enableOkButton();
 		this.showSpinner();
 		this.show();
 
@@ -193,6 +194,7 @@ export class FileBrowserDialog extends Modal {
 		if (this._fileBrowserTreeView) {
 			this._fileBrowserTreeView.dispose();
 		}
+		this._onOk.dispose();
 		this.hide();
 		this._viewModel.closeFileBrowser();
 	}
