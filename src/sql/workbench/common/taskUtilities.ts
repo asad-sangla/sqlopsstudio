@@ -176,7 +176,7 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 					}
 					if (startPos >= 0) {
 						script = script.substring(startPos);
-						queryEditorService.newSqlEditor(script).then(() => {
+						queryEditorService.newSqlEditor(script, connectionProfile.providerName).then(() => {
 							resolve();
 						}).catch(editorError => {
 							reject(editorError);

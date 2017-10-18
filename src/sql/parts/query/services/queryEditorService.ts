@@ -68,7 +68,7 @@ export class QueryEditorService implements IQueryEditorService {
 	/**
 	 * Creates new untitled document for SQL query and opens in new editor tab
 	 */
-	public newSqlEditor(sqlContent?: string): Promise<IConnectableInput> {
+	public newSqlEditor(sqlContent?: string, connectionProviderName?: string): Promise<IConnectableInput> {
 		return new Promise<IConnectableInput>((resolve, reject) => {
 			try {
 				// Create file path and file URI
@@ -86,7 +86,7 @@ export class QueryEditorService implements IQueryEditorService {
 				//input.resolve().then(model => this.backupFileService.backupResource(resource, model.getValue(), model.getVersionId())).done(null, errors.onUnexpectedError);
 
 				const queryResultsInput: QueryResultsInput = this._instantiationService.createInstance(QueryResultsInput, docUri.toString());
-				let queryInput: QueryInput = this._instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput);
+				let queryInput: QueryInput = this._instantiationService.createInstance(QueryInput, fileInput.getName(), '', fileInput, queryResultsInput, connectionProviderName);
 
 				this._editorService.openEditor(queryInput, { pinned: true })
 					.then((editor) => {
@@ -286,7 +286,7 @@ export class QueryEditorService implements IQueryEditorService {
 		let newEditorInput: IEditorInput = undefined;
 		if (changingToSql) {
 			const queryResultsInput: QueryResultsInput = QueryEditorService.instantiationService.createInstance(QueryResultsInput, uri.toString());
-			let queryInput: QueryInput = QueryEditorService.instantiationService.createInstance(QueryInput, input.getName(), '', input, queryResultsInput);
+			let queryInput: QueryInput = QueryEditorService.instantiationService.createInstance(QueryInput, input.getName(), '', input, queryResultsInput, undefined);
 			newEditorInput = queryInput;
 		} else {
 			let uriCopy: URI = URI.from( { scheme: uri.scheme, authority: uri.authority, path: uri.path, query: uri.query, fragment: uri.fragment } );

@@ -43,6 +43,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		private _description: string,
 		private _sql: UntitledEditorInput,
 		private _results: QueryResultsInput,
+		private _connectionProviderName: string,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		@IQueryModelService private _queryModelService: IQueryModelService,
 		@IQueryEditorService private _queryEditorService: IQueryEditorService
@@ -87,7 +88,11 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 				}
 			}));
 			if (self.uri) {
-				this._connectionManagementService.ensureDefaultLanguageFlavor(self.uri);
+				if (this._connectionProviderName) {
+					this._connectionManagementService.doChangeLanguageFlavor(self.uri, 'sql', this._connectionProviderName);
+				} else {
+					this._connectionManagementService.ensureDefaultLanguageFlavor(self.uri);
+				}
 			}
 		}
 

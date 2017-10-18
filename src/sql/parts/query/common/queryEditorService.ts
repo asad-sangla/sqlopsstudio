@@ -22,7 +22,7 @@ export interface IQueryEditorService {
 	_serviceBrand: any;
 
 	// Creates new untitled document for SQL queries and opens it in a new editor tab
-	newSqlEditor(sqlContent?: string): Promise<IConnectableInput>;
+	newSqlEditor(sqlContent?: string, connectionProviderName?: string): Promise<IConnectableInput>;
 
 	// Creates a new query plan document
 	newQueryPlanEditor(xmlShowPlan: string): Promise<any>;
