@@ -21,7 +21,7 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 						<span style="padding: 5px; display: flex; align-items: center">
 							<span *ngIf="item.icon" class="icon" style="display: inline-block; margin-right: 5px" [ngClass]="item.icon"></span>
 							<span *ngIf="last" style="">{{item.label}}</span>
-							<a href="#" *ngIf="!last" [routerLink]="item.routerLink">{{item.label}}</a>
+							<a class="router-link" *ngIf="!last" (click)="route(item.routerLink)">{{item.label}}</a>
 						</span>
 						<span *ngIf="!last" class="icon chevron-right"></span>
 					</ng-template>
@@ -49,5 +49,9 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
 	private updateCrumb(items: MenuItem[]) {
 		this.menuItems = items;
 		this._changeRef.detectChanges();
+	}
+
+	public route(link: any[]): void {
+		this._router.navigate(link);
 	}
 }

@@ -18,7 +18,7 @@ export interface MenuItem {
 	icon?: string;
 	command?: (event?: any) => void;
 	url?: string;
-	routerLink?: any;
+	routerLink?: any[];
 	eventEmitter?: EventEmitter<any>;
 	items?: MenuItem[];
 	expanded?: boolean;

@@ -31,7 +31,7 @@
 			<span class="boxCol content vertBox">
 				<div class="boxRow content maxHeight" *ngFor="let icon of dataIcons">
 					<div *ngIf="icon.showCondition()" class="gridIconContainer">
-						<a class="gridIcon" href="#"
+						<a class="gridIcon" style="cursor: pointer;"
 						(click)="icon.functionality(dataSet.batchId, dataSet.resultId, i)"
 						[title]="icon.hoverText()" [ngClass]="icon.icon()">
 						</a>
@@ -57,7 +57,7 @@
 				<ng-template ngFor let-message [ngForOf]="messages">
 					<tr class='messageRow'>
 						<td><span *ngIf="message.link">[{{message.time}}]</span></td>
-						<td class="resultsMessageValue" [class.errorMessage]="message.isError" [class.batchMessage]="!message.link">{{message.message}} <a class="queryLink" *ngIf="message.link" href="#" (click)="onSelectionLinkClicked(message.batchId)">{{message.link.text}}</a>
+						<td class="resultsMessageValue" [class.errorMessage]="message.isError" [class.batchMessage]="!message.link">{{message.message}} <a class="queryLink" *ngIf="message.link" (click)="onSelectionLinkClicked(message.batchId)">{{message.link.text}}</a>
 						</td>
 					</tr>
 				</ng-template>
