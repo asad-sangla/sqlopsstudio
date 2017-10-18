@@ -293,6 +293,7 @@ export interface INewConnectionParams {
 	input?: IConnectableInput;
 	runQueryOnCompletion?: RunQueryOnConnectionMode;
 	querySelection?: ISelectionData;
+	showDashboard?: boolean;
 }
 
 export interface IConnectableInput {

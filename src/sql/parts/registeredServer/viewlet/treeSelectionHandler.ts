@@ -33,12 +33,20 @@ export class TreeSelectionHandler {
 			this.progressRunner = null;
 		}
 	}
+
+	private isMouseEvent(event: any): boolean {
+		return event && event.payload && event.payload.origin === 'mouse';
+	}
+
 	/**
 	 * Handle selection of tree element
 	 */
 	public onTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService) {
 		let self = this;
-		this._clicks++;
+
+		if (this.isMouseEvent(event)) {
+			this._clicks++;
+		}
 
 		// clear pending click timeouts to avoid sending multiple events on double-click
 		if (this._doubleClickTimeoutId !== -1) {

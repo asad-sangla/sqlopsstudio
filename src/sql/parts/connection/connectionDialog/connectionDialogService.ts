@@ -148,7 +148,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		let options: IConnectionCompletionOptions = {
 			params: params,
 			saveTheConnection: !fromEditor,
-			showDashboard: !fromEditor,
+			showDashboard: params.showDashboard !== undefined ? params.showDashboard : !fromEditor,
 			showConnectionDialogOnError: false,
 			showFirewallRuleOnError: true
 		};

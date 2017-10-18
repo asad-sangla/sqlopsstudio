@@ -324,7 +324,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 				let params: INewConnectionParams = options && options.params ? options.params : {
 					connectionType: this._connectionStatusManager.isDefaultTypeUri(owner.uri) ? ConnectionType.default : ConnectionType.editor,
 					input: owner,
-					runQueryOnCompletion: RunQueryOnConnectionMode.none
+					runQueryOnCompletion: RunQueryOnConnectionMode.none,
+					showDashboard: options.showDashboard
 				};
 				this.showConnectionDialog(params, connection, connectionResult.errorMessage).then(() => {
 					resolve(connectionResult);
