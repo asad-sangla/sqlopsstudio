@@ -85,9 +85,9 @@ class Renderer implements IRenderer<ListResource, TableTemplate> {
 	get templateId(): string { return Renderer.TEMPLATE_ID; }
 
 	renderTemplate(container: HTMLElement): TableTemplate {
-		const row = DOM.$('div.list-row');
+		const row = $('div.list-row').style('height', '22px').style('padding-left', '5px').getHTMLElement();
 		DOM.append(container, row);
-		const label = DOM.$('span.label');
+		const label = $('span.label').style('margin', 'auto').getHTMLElement();
 		DOM.append(row, label);
 
 		return { label };
