@@ -60,7 +60,7 @@ export class TreeSelectionHandler {
 			// don't send tree update events while dragging
 			if (!TreeUpdateUtils.isInDragAndDrop) {
 				let isDoubleClick = self._clicks > 1;
-				self.handleTreeItemSelected(connectionManagementService, objectExplorerService, isDoubleClick, selection);
+				self.handleTreeItemSelected(connectionManagementService, objectExplorerService, isDoubleClick, selection, tree);
 			}
 			self._clicks = 0;
 			self._doubleClickTimeoutId = -1;
@@ -74,7 +74,7 @@ export class TreeSelectionHandler {
 	 * @param isDoubleClick
 	 * @param selection
 	 */
-	private handleTreeItemSelected(connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isDoubleClick: boolean, selection: any[]): void {
+	private handleTreeItemSelected(connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isDoubleClick: boolean, selection: any[], tree: ITree): void {
 		let connectionProfile: ConnectionProfile = undefined;
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
@@ -89,7 +89,7 @@ export class TreeSelectionHandler {
 			if (connectionProfile) {
 				this.onTreeActionStateChange(true);
 
-				TreeUpdateUtils.connectAndCreateOeSession(connectionProfile, options, connectionManagementService, objectExplorerService).then(sessionCreated => {
+				TreeUpdateUtils.connectAndCreateOeSession(connectionProfile, options, connectionManagementService, objectExplorerService, tree).then(sessionCreated => {
 					if (!sessionCreated) {
 						this.onTreeActionStateChange(false);
 					}

@@ -82,10 +82,12 @@ export class ServerTreeController extends treedefaults.DefaultController {
 			actionContext = new ObjectExplorerActionsContext();
 			actionContext.container = event.target;
 			actionContext.treeNode = <TreeNode>element;
+			actionContext.tree = tree;
 		} else if (element instanceof ConnectionProfile) {
 			actionContext = new ObjectExplorerActionsContext();
 			actionContext.container = event.target;
 			actionContext.connectionProfile = <ConnectionProfile>element;
+			actionContext.tree = tree;
 		} else {
 			actionContext = element;
 		}

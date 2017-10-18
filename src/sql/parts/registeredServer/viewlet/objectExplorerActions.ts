@@ -7,6 +7,7 @@
 import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
+import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
@@ -23,6 +24,7 @@ export class ObjectExplorerActionsContext {
 	public treeNode: TreeNode;
 	public connectionProfile: ConnectionProfile;
 	public container: HTMLElement;
+	public tree: ITree;
 }
 
 export class OENewQueryAction extends NewQueryAction {
@@ -111,7 +113,7 @@ export class ManageConnectionAction extends Action {
 					reject(error);
 				});
 			} else {
-				TreeUpdateUtils.connectAndCreateOeSession(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService).then(() => {
+				TreeUpdateUtils.connectAndCreateOeSession(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService, actionContext.tree).then(() => {
 					resolve(true);
 				}, error => {
 					reject(error);

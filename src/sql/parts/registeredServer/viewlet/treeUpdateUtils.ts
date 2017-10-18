@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
-import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionCompletionOptions, IConnectionCallbacks } from 'sql/parts/connection/common/connectionManagement';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
@@ -111,10 +111,25 @@ export class TreeUpdateUtils {
 	public static connectIfNotConnected(
 		connection: ConnectionProfile,
 		options: IConnectionCompletionOptions,
-		connectionManagementService: IConnectionManagementService): TPromise<ConnectionProfile> {
+		connectionManagementService: IConnectionManagementService,
+		tree: ITree): TPromise<ConnectionProfile> {
 		return new TPromise<ConnectionProfile>((resolve, reject) => {
 			if (!connectionManagementService.isConnected(undefined, connection)) {
-				connectionManagementService.connect(connection, undefined, options).then(result => {
+				let callbacks: IConnectionCallbacks = undefined;
+				if (tree) {
+					// Show the spinner in OE by adding the 'loading' trait to the connection, and set up callbacks to hide the spinner
+					tree.addTraits('loading', [connection]);
+					callbacks = {
+						onConnectStart: undefined,
+						onConnectReject: () => {
+							tree.collapse(connection);
+							tree.removeTraits('loading', [connection]);
+						},
+						onConnectSuccess: () => tree.removeTraits('loading', [connection]),
+						onDisconnect: undefined
+					};
+				}
+				connectionManagementService.connect(connection, undefined, options, callbacks).then(result => {
 					if (result.connected) {
 						let existingConnection = connectionManagementService.findExistingConnection(connection);
 						resolve(existingConnection);
@@ -147,9 +162,9 @@ export class TreeUpdateUtils {
 	 * @param objectExplorerService Object explorer service instance
 	 */
 	public static connectAndCreateOeSession(connection: ConnectionProfile, options: IConnectionCompletionOptions,
-		connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService): TPromise<boolean> {
+		connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, tree: ITree): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
-			TreeUpdateUtils.connectIfNotConnected(connection, options, connectionManagementService).then(connectedConnection => {
+			TreeUpdateUtils.connectIfNotConnected(connection, options, connectionManagementService, tree).then(connectedConnection => {
 				var rootNode: TreeNode = objectExplorerService.getObjectExplorerNode(connectedConnection);
 				if (!rootNode) {
 					objectExplorerService.updateObjectExplorerNodes(connectedConnection).then(() => {
