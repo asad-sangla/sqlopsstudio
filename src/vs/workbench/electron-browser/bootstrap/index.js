@@ -118,29 +118,6 @@ function registerListeners(enableDeveloperTools) {
 }
 
 // {{SQL CARBON EDIT}}
-const splash = new remote.BrowserWindow({
-	width: 600,
-	height: 450,
-	modal: true,
-	show: false,
-	titleBarStyle: 'hidden',
-	frame: false,
-	resizable: false,
-	movable: false,
-	parent: remote.getCurrentWindow()
-});
-
-var configuration = JSON.parse(parseURLQueryArgs()['config'] || '{}') || {};
-splash.once('ready-to-show', function () {
-	splash.show();
-});
-splash.loadURL(uriFromPath(configuration.appRoot + '/out/sql/workbench/electron-browser/splashscreen/splashscreen.html'));
-
-// eslint-disable-next-line
-function hideSplash() {
-	splash.hide();
-	remote.getCurrentWebContents().focus();
-}
 
 /* eslint-disable */
 

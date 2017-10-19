@@ -28,6 +28,7 @@ import * as LanguageServiceContracts from '../models/contracts/languageService';
 import * as SharedConstants from '../models/constants';
 import * as utils from '../models/utils';
 var path = require('path');
+import ServiceStatus from './serviceStatus';
 
 let opener = require('opener');
 let _channel: OutputChannel = undefined;
@@ -151,6 +152,8 @@ export default class SqlToolsServiceClient {
     private _downloadProvider: ServiceDownloadProvider;
     private _vscodeWrapper: VscodeWrapper;
 
+    private _serviceStatus: ServiceStatus;
+
     constructor(
             private _server: ServerProvider,
             private _logger: Logger,
@@ -160,6 +163,7 @@ export default class SqlToolsServiceClient {
         if (!this._vscodeWrapper) {
             this._vscodeWrapper = new VscodeWrapper(SqlToolsServiceClient.constants);
         }
+        this._serviceStatus = new ServiceStatus(SqlToolsServiceClient._constants.serviceName);
     }
 
     // gets or creates the singleton service client instance
@@ -331,6 +335,7 @@ export default class SqlToolsServiceClient {
                         serverConnectionMetadata: this._config.getConfigValue(Constants.serverConnectionMetadata)
                     };
 
+                    this._serviceStatus.showServiceLoading();
                     // cache the client instance for later use
                     client = new LanguageClient(SqlToolsServiceClient._constants.serviceName, serverOptions, clientOptions);
 
@@ -343,6 +348,8 @@ export default class SqlToolsServiceClient {
 
                         context.subscriptions.push(disposable);
                     }
+                    client.onReady().then(this._serviceStatus.showServiceLoaded);
+
                     resolve(client);
                 }
             }, error => {
@@ -389,10 +396,12 @@ export default class SqlToolsServiceClient {
             serverConnectionMetadata: this._config.getConfigValue(Constants.serverConnectionMetadata)
         };
 
+        this._serviceStatus.showServiceLoading();
         // cache the client instance for later use
         let client = new LanguageClient(SqlToolsServiceClient._constants.serviceName, serverOptions, clientOptions);
         client.onReady().then( () => {
             this.checkServiceCompatibility();
+            this._serviceStatus.showServiceLoaded();
             client.onNotification(LanguageServiceContracts.TelemetryNotification.type, this.handleLanguageServiceTelemetryNotification());
             client.onNotification(LanguageServiceContracts.StatusChangedNotification.type, this.handleLanguageServiceStatusNotification());
         });

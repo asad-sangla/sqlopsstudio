@@ -191,8 +191,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		this._onProvidersReady.resolve();
 
 		if (this._providerCount === 1 && typeof splash !== 'undefined') {
-			hideSplash();
-
 			// show the Registered Server viewlet
 
 			let startupConfig = this._workspaceConfigurationService.getConfiguration('startup');
