@@ -20,7 +20,9 @@ import { ExtensionTipsService } from 'vs/workbench/parts/extensions/electron-bro
 import { ExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/node/extensionsWorkbenchService';
 import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
+import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
+import { AddServerGroupAction, AddServerAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 
 // Singletons
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService);
@@ -48,6 +50,26 @@ actionRegistry.registerWorkbenchAction(
 		ClearRecentConnectionsAction.LABEL
 	),
 	ClearRecentConnectionsAction.LABEL
+);
+
+actionRegistry.registerWorkbenchAction(
+	new SyncActionDescriptor(
+		AddServerGroupAction,
+		AddServerGroupAction.ID,
+		AddServerGroupAction.LABEL,
+		{ primary: KeyChord(KeyMod.Shift | KeyCode.KEY_S, KeyMod.Shift | KeyCode.KEY_G) }
+	),
+	AddServerGroupAction.LABEL
+);
+
+actionRegistry.registerWorkbenchAction(
+	new SyncActionDescriptor(
+		AddServerAction,
+		AddServerAction.ID,
+		AddServerAction.LABEL,
+		{ primary: KeyChord(KeyMod.Shift | KeyCode.KEY_S, KeyMod.Shift | KeyCode.KEY_C) }
+	),
+	AddServerAction.LABEL
 );
 
 let configurationRegistry = <IConfigurationRegistry>Registry.as(ConfigExtensions.Configuration);
