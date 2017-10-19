@@ -343,29 +343,15 @@ export class ObjectExplorerActionUtilities {
 		var scriptMap = new Map<NodeType, any[]>();
 		var basicScripting = [OEScriptCreateAction, OEScriptDeleteAction];
 		scriptMap.set(NodeType.AggregateFunction, basicScripting);
-		scriptMap.set(NodeType.ApplicationRole, basicScripting);
-		scriptMap.set(NodeType.Column, basicScripting);
-		scriptMap.set(NodeType.DatabaseRole, basicScripting);
-		scriptMap.set(NodeType.DatabaseTrigger, basicScripting);
-		scriptMap.set(NodeType.Index, basicScripting);
 		scriptMap.set(NodeType.PartitionFunction, basicScripting);
 		scriptMap.set(NodeType.ScalarValuedFunction, basicScripting);
 		scriptMap.set(NodeType.Schema, basicScripting);
-		scriptMap.set(NodeType.Sequence, basicScripting);
-		scriptMap.set(NodeType.ServerLevelServerRole, basicScripting);
-		scriptMap.set(NodeType.ServerLevelServerTrigger, basicScripting);
 		scriptMap.set(NodeType.StoredProcedure, basicScripting);
-		scriptMap.set(NodeType.Synonym, basicScripting);
 		scriptMap.set(NodeType.Table, [OEScriptSelectAction, OEEditDataAction, OEScriptCreateAction, OEScriptDeleteAction]);
 		scriptMap.set(NodeType.TableValuedFunction, basicScripting);
-		scriptMap.set(NodeType.Trigger, basicScripting);
 		scriptMap.set(NodeType.User, basicScripting);
-		scriptMap.set(NodeType.UserDefinedDataType, basicScripting);
 		scriptMap.set(NodeType.UserDefinedTableType, basicScripting);
-		scriptMap.set(NodeType.UserDefinedTableTypeColumn, basicScripting);
-		scriptMap.set(NodeType.UserDefinedType, basicScripting);
 		scriptMap.set(NodeType.View, [OEScriptSelectAction, OEScriptCreateAction, OEScriptDeleteAction]);
-		scriptMap.set(NodeType.XmlSchemaCollection, basicScripting);
 		return scriptMap;
 	}
 }
