@@ -131,6 +131,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return false;
 	}
 
+	isProfileConnecting(connectionProfile: IConnectionProfile): boolean {
+		return false;
+	}
+
 	findExistingConnection(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): ConnectionProfile {
 		return undefined;
 	}

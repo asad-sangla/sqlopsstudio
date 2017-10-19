@@ -1144,7 +1144,11 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return connectionManagement && !connectionManagement.connecting;
 	}
 
-	// Is a certain file URI currently connecting
+	public isProfileConnecting(connectionProfile: IConnectionProfile): boolean {
+		let connectionManagement = this._connectionStatusManager.findConnectionProfile(connectionProfile);
+		return connectionManagement && connectionManagement.connecting;
+	}
+
 	private isConnecting(fileUri: string): boolean {
 		return this._connectionStatusManager.isConnecting(fileUri);
 	}

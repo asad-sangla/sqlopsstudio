@@ -160,6 +160,11 @@ export interface IConnectionManagementService {
 	 */
 	isProfileConnected(connectionProfile: IConnectionProfile): boolean;
 
+	/**
+	 * Returns true if the connection profile is connecting
+	 */
+	isProfileConnecting(connectionProfile: IConnectionProfile): boolean;
+
 	isRecent(connectionProfile: ConnectionProfile): boolean;
 
 	isConnected(fileUri: string, connectionProfile?: ConnectionProfile): boolean;

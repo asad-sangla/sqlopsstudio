@@ -55,6 +55,7 @@ suite('SQL Connection Tree Action tests', () => {
 		connectionManagementService.setup(x => x.findExistingConnection(TypeMoq.It.isAny())).returns(() => undefined);
 		connectionManagementService.setup(x => x.showDashboard(TypeMoq.It.isAny())).returns(() => undefined);
 		connectionManagementService.setup(x => x.isProfileConnected(TypeMoq.It.isAny())).returns(() => isConnectedReturnValue);
+		connectionManagementService.setup(x => x.isProfileConnecting(TypeMoq.It.isAny())).returns(() => false);
 		connectionManagementService.setup(x => x.showConnectionDialog(undefined, TypeMoq.It.isAny())).returns(() => new Promise<void>((resolve, reject) => resolve()));
 		connectionManagementService.setup(x => x.onConnect).returns(() => new Emitter<IConnectionParams>().event);
 		connectionManagementService.setup(x => x.onDisconnect).returns(() => new Emitter<any>().event);

@@ -114,31 +114,38 @@ export class TreeUpdateUtils {
 		connectionManagementService: IConnectionManagementService,
 		tree: ITree): TPromise<ConnectionProfile> {
 		return new TPromise<ConnectionProfile>((resolve, reject) => {
-			if (!connectionManagementService.isConnected(undefined, connection)) {
-				let callbacks: IConnectionCallbacks = undefined;
-				if (tree) {
-					// Show the spinner in OE by adding the 'loading' trait to the connection, and set up callbacks to hide the spinner
-					tree.addTraits('loading', [connection]);
-					callbacks = {
-						onConnectStart: undefined,
-						onConnectReject: () => {
-							tree.collapse(connection);
-							tree.removeTraits('loading', [connection]);
-						},
-						onConnectSuccess: () => tree.removeTraits('loading', [connection]),
-						onDisconnect: undefined
-					};
-				}
-				connectionManagementService.connect(connection, undefined, options, callbacks).then(result => {
-					if (result.connected) {
-						let existingConnection = connectionManagementService.findExistingConnection(connection);
-						resolve(existingConnection);
-					} else {
-						reject('connection failed');
+			if (!connectionManagementService.isProfileConnected(connection)) {
+				// don't try to reconnect if currently connecting
+				if (connectionManagementService.isProfileConnecting(connection)) {
+					resolve(undefined);
+
+				// else if we aren't connected or connecting then try to connect
+				} else {
+					let callbacks: IConnectionCallbacks = undefined;
+					if (tree) {
+						// Show the spinner in OE by adding the 'loading' trait to the connection, and set up callbacks to hide the spinner
+						tree.addTraits('loading', [connection]);
+						callbacks = {
+							onConnectStart: undefined,
+							onConnectReject: () => {
+								tree.collapse(connection);
+								tree.removeTraits('loading', [connection]);
+							},
+							onConnectSuccess: () => tree.removeTraits('loading', [connection]),
+							onDisconnect: undefined
+						};
 					}
-				}, connectionError => {
-					reject(connectionError);
-				});
+					connectionManagementService.connect(connection, undefined, options, callbacks).then(result => {
+						if (result.connected) {
+							let existingConnection = connectionManagementService.findExistingConnection(connection);
+							resolve(existingConnection);
+						} else {
+							reject('connection failed');
+						}
+					}, connectionError => {
+						reject(connectionError);
+					});
+				}
 			} else {
 				let existingConnection = connectionManagementService.findExistingConnection(connection);
 				if (options && options.showDashboard) {
@@ -165,15 +172,19 @@ export class TreeUpdateUtils {
 		connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, tree: ITree): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TreeUpdateUtils.connectIfNotConnected(connection, options, connectionManagementService, tree).then(connectedConnection => {
-				var rootNode: TreeNode = objectExplorerService.getObjectExplorerNode(connectedConnection);
-				if (!rootNode) {
-					objectExplorerService.updateObjectExplorerNodes(connectedConnection).then(() => {
-						rootNode = objectExplorerService.getObjectExplorerNode(connectedConnection);
-						resolve(true);
-						// The oe request is sent. an event will be raised when the session is created
-					}, error => {
-						reject('session failed');
-					});
+				if (connectedConnection) {
+					var rootNode: TreeNode = objectExplorerService.getObjectExplorerNode(connectedConnection);
+					if (!rootNode) {
+						objectExplorerService.updateObjectExplorerNodes(connectedConnection).then(() => {
+							rootNode = objectExplorerService.getObjectExplorerNode(connectedConnection);
+							resolve(true);
+							// The oe request is sent. an event will be raised when the session is created
+						}, error => {
+							reject('session failed');
+						});
+					} else {
+						resolve(false);
+					}
 				} else {
 					resolve(false);
 				}
