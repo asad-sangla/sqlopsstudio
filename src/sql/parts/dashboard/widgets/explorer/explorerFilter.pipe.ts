@@ -18,11 +18,6 @@ export class ExplorerFilter implements PipeTransform {
 			return items;
 		}
 
-		if (!filter && typeof items[0] !== 'string') {
-			return [];
-		}
-
-
 		// format filter string for clean filter, no white space and lower case
 		let filterString = filter.trim().toLowerCase();
 
