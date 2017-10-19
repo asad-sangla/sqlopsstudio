@@ -89,15 +89,11 @@
 
 .vs .icon.in-progress {
 	content: url("loading.svg");
-	width: 25px;
-	height: 25px;
 }
 
 .vs-dark .icon.in-progress,
 .hc-black .icon.in-progress {
 	content: url("loading_inverse.svg");
-	width: 25px;
-	height: 25px;
 }
 
 .vs .icon.scriptToClipboard,

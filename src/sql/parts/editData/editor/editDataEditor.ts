@@ -52,6 +52,8 @@ export class EditDataEditor extends BaseEditor {
 	private _stopRefreshTableAction: StopRefreshTableAction;
 	private _refreshTableAction: RefreshTableAction;
 	private _changeMaxRowsAction: ChangeMaxRowsAction;
+	private _spinnerElement: HTMLElement;
+	private _initialized: boolean = false;
 
 	constructor(
 		@ITelemetryService _telemetryService: ITelemetryService,
@@ -93,7 +95,9 @@ export class EditDataEditor extends BaseEditor {
 	public setInput(newInput: EditDataInput, options?: EditorOptions): TPromise<void> {
 		let oldInput = <EditDataInput>this.input;
 		if (!newInput.setup) {
+			this._initialized = false;
 			this._register(newInput.updateTaskbar((owner) => this._updateTaskbar(owner)));
+			this._register(newInput.editorInitializing((initializing) => this.onEditorInitializingChanged(initializing)));
 			this._register(newInput.showTableView(() => this._showTableView()));
 			newInput.onRowDropDownSet(this._changeMaxRowsActionItem.defaultRowCount);
 			newInput.setupComplete();
@@ -101,6 +105,33 @@ export class EditDataEditor extends BaseEditor {
 
 		return super.setInput(newInput, options)
 			.then(() => this._updateInput(oldInput, newInput, options));
+	}
+
+	private onEditorInitializingChanged(initializing: boolean): void {
+		if (initializing) {
+			this.showSpinner();
+		} else {
+			this._initialized = true;
+			this.hideSpinner();
+		}
+	}
+
+	/**
+	 * Show the spinner element that shows something is happening, hidden by default
+	 */
+	public showSpinner(): void {
+		setTimeout(() => {
+			if (!this._initialized) {
+				this._spinnerElement.style.visibility = 'visible';
+			}
+		}, 200);
+	}
+
+	/**
+	 * Hide the spinner element to show that something was happening, hidden by default
+	 */
+	public hideSpinner(): void {
+		this._spinnerElement.style.visibility = 'hidden';
 	}
 
 	/**
@@ -200,13 +231,15 @@ export class EditDataEditor extends BaseEditor {
 		let separator = Taskbar.createTaskbarSeparator();
 		let textSeperator = Taskbar.createTaskbarText(nls.localize('maxRowTaskbar', 'Max Rows:'));
 
+		this._spinnerElement = Taskbar.createTaskbarSpinner();
 		// Set the content in the order we desire
 		let content: ITaskbarContent[] = [
 			{ action: this._stopRefreshTableAction },
 			{ action: this._refreshTableAction },
 			{ element: separator },
 			{ element: textSeperator },
-			{ action: this._changeMaxRowsAction }
+			{ action: this._changeMaxRowsAction },
+			{ element: this._spinnerElement }
 		];
 		this._taskbar.setContent(content);
 	}

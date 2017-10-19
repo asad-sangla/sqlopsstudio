@@ -67,6 +67,16 @@ export class Taskbar {
 	}
 
 	/**
+	 * Creates an HTML spinner.
+	 */
+	public static createTaskbarSpinner(): HTMLElement {
+		let spinnerContainer = document.createElement('div');
+		spinnerContainer.className = 'taskbar-progress icon in-progress ';
+		spinnerContainer.style.visibility = 'hidden';
+		return spinnerContainer;
+	}
+
+	/**
 	 * Creates an HTML text separator.
 	 */
 	public static createTaskbarText(inputText: string): HTMLElement {

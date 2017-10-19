@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { TPromise } from 'vs/base/common/winjs.base';
-import { EditorInput,  EditorModel } from 'vs/workbench/common/editor';
+import { EditorInput, EditorModel } from 'vs/workbench/common/editor';
 import { IConnectionManagementService, IConnectableInput, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
@@ -23,6 +23,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	private _hasBootstrapped: boolean;
 	private _editorContainer: HTMLElement;
 	private _updateTaskbar: Emitter<EditDataInput>;
+	private _editorInitializing: Emitter<boolean>;
 	private _showTableView: Emitter<EditDataInput>;
 	private _refreshButtonEnabled: boolean;
 	private _stopButtonEnabled: boolean;
@@ -41,6 +42,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 		this._hasBootstrapped = false;
 		this._updateTaskbar = new Emitter<EditDataInput>();
 		this._showTableView = new Emitter<EditDataInput>();
+		this._editorInitializing = new Emitter<boolean>();
 		this._setup = false;
 		this._stopButtonEnabled = false;
 		this._refreshButtonEnabled = false;
@@ -77,13 +79,14 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	public get schemaName(): string { return this._schemaName; }
 	public get uri(): string { return this._uri.toString(); }
 	public get updateTaskbar(): Event<EditDataInput> { return this._updateTaskbar.event; }
+	public get editorInitializing(): Event<boolean> { return this._editorInitializing.event; }
 	public get showTableView(): Event<EditDataInput> { return this._showTableView.event; }
 	public get stopButtonEnabled(): boolean { return this._stopButtonEnabled; }
 	public get refreshButtonEnabled(): boolean { return this._refreshButtonEnabled; }
 	public get container(): HTMLElement { return this._editorContainer; }
 	public get hasBootstrapped(): boolean { return this._hasBootstrapped; }
 	public get visible(): boolean { return this._visible; }
-	public get setup(): boolean{ return this._setup; }
+	public get setup(): boolean { return this._setup; }
 	public get rowLimit(): number { return this._rowLimit; }
 	public get objectType(): string { return this._objectType; }
 	public getTypeId(): string { return EditDataInput.ID; }
@@ -92,7 +95,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	public getResource(): URI { return this._uri; }
 	public getName(): string { return this._uri.path; }
 	public supportsSplitEditor(): boolean { return false; }
-	public setupComplete(){ this._setup = true; }
+	public setupComplete() { this._setup = true; }
 	public set container(container: HTMLElement) {
 		this._disposeContainer();
 		this._editorContainer = container;
@@ -100,6 +103,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 
 	// State Update Callbacks
 	public initEditStart(): void {
+		this._editorInitializing.fire(true);
 		this._refreshButtonEnabled = false;
 		this._stopButtonEnabled = true;
 		this._updateTaskbar.fire(this);
@@ -114,6 +118,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 			this._stopButtonEnabled = false;
 			this._messageService.show(Severity.Error, result.message);
 		}
+		this._editorInitializing.fire(false);
 		this._updateTaskbar.fire(this);
 	}
 
@@ -123,7 +128,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 
 	public onConnectReject(error?: string): void {
 		if (error) {
-			this._messageService.show(Severity.Error, nls.localize('connectionFailure','Edit Data Session Failed To Connect'));
+			this._messageService.show(Severity.Error, nls.localize('connectionFailure', 'Edit Data Session Failed To Connect'));
 		}
 	}
 
@@ -160,7 +165,7 @@ export class EditDataInput extends EditorInput implements IConnectableInput {
 	}
 
 	private _disposeContainer() {
-		if(this._editorContainer && this._editorContainer.parentElement) {
+		if (this._editorContainer && this._editorContainer.parentElement) {
 			this._editorContainer.parentElement.removeChild(this._editorContainer);
 			this._editorContainer = null;
 		}

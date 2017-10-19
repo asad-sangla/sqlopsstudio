@@ -27,6 +27,11 @@
 	padding: 15px;
 }
 
+.modal .icon.in-progress {
+	width: 25px;
+	height: 25px;
+}
+
 .monaco-shell .modal.flyout-dialog .modal-dialog {
 	margin: auto auto auto auto;
 	height: 100%;

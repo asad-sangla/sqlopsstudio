@@ -27,6 +27,13 @@
 	flex-wrap: wrap;
 }
 
+.taskbar-progress {
+	padding-left: 5px;
+	padding-top: 5px;
+	width: 15px;
+	height: 15px;
+}
+
 .carbon-taskbar .monaco-action-bar li {
 	display: flex;
 	align-items: center;
