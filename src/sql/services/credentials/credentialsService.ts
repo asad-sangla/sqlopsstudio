@@ -8,6 +8,7 @@
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import data = require('data');
+import { Deferred } from 'sql/base/common/promise';
 
 export const SERVICE_ID = 'credentialsService';
 
@@ -43,6 +44,8 @@ export class CredentialsService implements ICredentialsService {
 
 	private _lastHandle: number;
 
+	private _onServerEventsReady: Deferred<void> = new Deferred<void>();
+
 	constructor() {
 	}
 
@@ -51,6 +54,8 @@ export class CredentialsService implements ICredentialsService {
 
 		this._serverEvents[handle] = events;
 
+		this._onServerEventsReady.resolve();
+
 		return {
 			dispose: () => {
 			}
@@ -58,20 +63,16 @@ export class CredentialsService implements ICredentialsService {
 	}
 
 	public saveCredential(credentialId: string, password: string): Thenable<boolean> {
-		if (this._serverEvents === undefined || this._serverEvents[this._lastHandle] === undefined) {
-			return undefined;
-		}
-
-		return this._serverEvents[this._lastHandle].onSaveCredential(credentialId, password);
+		return this._onServerEventsReady.promise.then(() => this._serverEvents[this._lastHandle].onSaveCredential(credentialId, password));
 	}
 
 	public readCredential(credentialId: string): Thenable<data.Credential> {
-		return this._serverEvents[this._lastHandle].onReadCredential(credentialId);
+		return this._onServerEventsReady.promise.then(() => this._serverEvents[this._lastHandle].onReadCredential(credentialId));
 	}
 
 	public deleteCredential(credentialId: string): Thenable<boolean> {
-		return this._serverEvents[this._lastHandle].onDeleteCredential(credentialId);
-	 }
+		return this._onServerEventsReady.promise.then(() => this._serverEvents[this._lastHandle].onDeleteCredential(credentialId));
+	}
 
 	public dispose(): void {
 		this.disposables = dispose(this.disposables);

@@ -23,3 +23,4 @@ export const configDebugSourcePath = 'debugSourcePath';
 export const neverShowAgain = "Don't show again";
 export const ignorePlatformWarning = 'ignorePlatformWarning';
 export const usingDefaultPlatformMessage = "Unknown platform detected, defaulting to Linux_x64 platform";
+export const serverConnectionMetadata = "serverConnectionMetadata";

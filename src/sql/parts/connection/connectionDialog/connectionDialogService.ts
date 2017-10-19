@@ -266,30 +266,37 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		connectionManagementService: IConnectionManagementService,
 		params: INewConnectionParams,
 		model?: IConnectionProfile,
-		error?: string): TPromise<void> {
+		error?: string): Thenable<void> {
 
 		this._connectionManagementService = connectionManagementService;
 		this._params = params;
 		this._inputModel = model;
 
-		// only create the provider maps first time the dialog gets called
-		if (this._providerTypes.length === 0) {
-			let capabilities = this._capabilitiesService.getCapabilities();
-			capabilities.forEach(c => {
-				this.cacheCapabilities(c);
-			});
-		}
-
-		this.updateModelServerCapabilities(model);
-		// If connecting from a query editor set "save connection" to false
-		if (params && params.input && params.connectionType === ConnectionType.editor) {
-			this._model.saveProfile = false;
-		}
-
-		return this.showDialogWithModel().then(() => {
-			if (error && error !== '') {
-				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, error);
+		return new Promise<void>((resolve, reject) => {
+			// only create the provider maps first time the dialog gets called
+			let capabilitiesPromise: Promise<void> = Promise.resolve();
+			if (this._providerTypes.length === 0) {
+				capabilitiesPromise = this._capabilitiesService.onCapabilitiesReady().then(() => {
+					let capabilities = this._capabilitiesService.getCapabilities();
+					capabilities.forEach(c => {
+						this.cacheCapabilities(c);
+					});
+				});
 			}
+
+			capabilitiesPromise.then(success => {
+				this.updateModelServerCapabilities(model);
+				// If connecting from a query editor set "save connection" to false
+				if (params && params.input && params.connectionType === ConnectionType.editor) {
+					this._model.saveProfile = false;
+				}
+
+				resolve(this.showDialogWithModel().then(() => {
+					if (error && error !== '') {
+						this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, error);
+					}
+				}));
+			}, err => reject(err));
 		});
 	}
 

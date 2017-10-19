@@ -12,6 +12,7 @@ import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import data = require('data');
 import Event, { Emitter } from 'vs/base/common/event';
 import { Action } from 'vs/base/common/actions';
+import { Deferred } from 'sql/base/common/promise';
 
 export const SERVICE_ID = 'capabilitiesService';
 export const HOST_NAME = 'carbon';
@@ -45,6 +46,11 @@ export interface ICapabilitiesService {
 	 */
 	onProviderRegisteredEvent: Event<data.DataProtocolServerCapabilities>;
 
+	/**
+	 * Promise fulfilled when Capabilities are ready
+	 */
+	onCapabilitiesReady(): Promise<void>;
+
 }
 
 /**
@@ -69,9 +75,22 @@ export class CapabilitiesService implements ICapabilitiesService {
 
 	private disposables: IDisposable[] = [];
 
+	private _onCapabilitiesReady: Deferred<void>;
+
+	// Due to absence of a way to infer the number of expected data tools extensions from the package.json, this is being hard-coded
+	// TODO: a better mechanism to populate the expected number of capabilities
+	private _expectedCapabilitiesCount: number = 2;
+
+	private _registeredCapabilities: number = 0;
+
 	constructor() {
 		this._onProviderRegistered = new Emitter<data.DataProtocolServerCapabilities>();
 		this.disposables.push(this._onProviderRegistered);
+		this._onCapabilitiesReady = new Deferred();
+	}
+
+	public onCapabilitiesReady(): Promise<void> {
+		return this._onCapabilitiesReady.promise;
 	}
 
 	/**
@@ -92,7 +111,15 @@ export class CapabilitiesService implements ICapabilitiesService {
 		provider.getServerCapabilities(this._clientCapabilties).then(serverCapabilities => {
 			this._capabilities.push(serverCapabilities);
 			this._onProviderRegistered.fire(serverCapabilities);
+			this._registeredCapabilities++;
+			this.resolveCapabilitiesIfReady();
 		});
+	}
+
+	private resolveCapabilitiesIfReady(): void {
+		if (this._registeredCapabilities === this._expectedCapabilitiesCount) {
+			this._onCapabilitiesReady.resolve();
+		}
 	}
 
 	/**
