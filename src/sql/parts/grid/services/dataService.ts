@@ -121,6 +121,7 @@ export class DataService {
 			}, error => {
 				// Start our editQueue over due to the rejected promise
 				self.editQueue = Promise.resolve();
+				self._queryModel.showCommitError(error.message);
 				return Promise.reject(error);
 			});
 		});

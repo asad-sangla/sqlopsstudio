@@ -177,6 +177,10 @@ export class QueryModelService implements IQueryModelService {
 	public showError(uri: string, message: string): void {
 	}
 
+	public showCommitError(error: string): void {
+		this._messageService.show(Severity.Error, nls.localize('commitEditFailed', 'Commit row failed: ') + error);
+	}
+
 	public isRunningQuery(uri: string): boolean {
 		return !this._queryInfoMap.has(uri)
 			? false

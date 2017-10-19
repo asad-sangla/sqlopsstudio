@@ -49,6 +49,7 @@ export interface IQueryModelService {
 	setEditorSelection(uri: string, index: number): void;
 	showWarning(uri: string, message: string): void;
 	showError(uri: string, message: string): void;
+	showCommitError(error: string): void;
 
 	onRunQueryStart: Event<string>;
 	onRunQueryComplete: Event<string>;
