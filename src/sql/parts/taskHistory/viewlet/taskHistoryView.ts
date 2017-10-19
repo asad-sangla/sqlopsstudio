@@ -46,8 +46,15 @@ export class TaskHistoryView {
 	 * Render the view body
 	 */
 	public renderBody(container: HTMLElement): void {
+
+		let taskNode = this._taskService.getAllTasks();
+
 		// Add div to display no task executed message
 		this._messages = $('div.empty-task-message').appendTo(container);
+
+		if (taskNode && taskNode.hasChildren) {
+			this._messages.hide();
+		}
 		let noTaskMessage = localize('noTaskMessage', 'No task history to display. Try backup or restore task to view its execution status.');
 		$('span').text(noTaskMessage).appendTo(this._messages);
 
