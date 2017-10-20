@@ -56,8 +56,7 @@ actionRegistry.registerWorkbenchAction(
 	new SyncActionDescriptor(
 		AddServerGroupAction,
 		AddServerGroupAction.ID,
-		AddServerGroupAction.LABEL,
-		{ primary: KeyChord(KeyMod.Shift | KeyCode.KEY_S, KeyMod.Shift | KeyCode.KEY_G) }
+		AddServerGroupAction.LABEL
 	),
 	AddServerGroupAction.LABEL
 );
@@ -66,8 +65,7 @@ actionRegistry.registerWorkbenchAction(
 	new SyncActionDescriptor(
 		AddServerAction,
 		AddServerAction.ID,
-		AddServerAction.LABEL,
-		{ primary: KeyChord(KeyMod.Shift | KeyCode.KEY_S, KeyMod.Shift | KeyCode.KEY_C) }
+		AddServerAction.LABEL
 	),
 	AddServerAction.LABEL
 );

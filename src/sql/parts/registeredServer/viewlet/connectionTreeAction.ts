@@ -221,7 +221,7 @@ export class AddServerAction extends Action {
  */
 export class AddServerGroupAction extends Action {
 	public static ID = 'registeredServers.addServerGroup';
-	public static LABEL = localize('addServerGroup', 'Add Server Group');
+	public static LABEL = localize('addServerGroup', 'New Server Group');
 
 	constructor(
 		id: string,
