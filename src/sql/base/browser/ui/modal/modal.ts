@@ -260,7 +260,7 @@ export abstract class Modal extends Disposable implements IThemable {
 				}
 			}
 		});
-		this._resizeListener = DOM.addDisposableListener(window, DOM.EventType.RESIZE, (e: KeyboardEvent) => {
+		this._resizeListener = DOM.addDisposableListener(window, DOM.EventType.RESIZE, (e: Event) => {
 			this.layout(DOM.getTotalHeight(this._builder.getHTMLElement()));
 		});
 

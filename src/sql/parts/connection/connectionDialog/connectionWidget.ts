@@ -10,7 +10,7 @@ import { Builder, $ } from 'vs/base/browser/builder';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
-import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
+import { Checkbox } from 'sql/base/browser/ui/checkbox/defaultCheckbox';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { IConnectionComponentCallbacks } from 'sql/parts/connection/connectionDialog/connectionDialogService';
@@ -184,12 +184,12 @@ export class ConnectionWidget {
 		return button;
 	}
 
-	private appendCheckbox(container: Builder, label: string, checkboxClass: string, cellContainerClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
+	private appendCheckbox(container: Builder, label: string, checkboxClass: string, cellContainerClass: string, isChecked: boolean): Checkbox {
 		let checkbox: Checkbox;
 		container.element('tr', {}, (rowContainer) => {
 			rowContainer.element('td');
 			rowContainer.element('td', { class: cellContainerClass }, (inputCellContainer) => {
-				checkbox = DialogHelper.createCheckBox(inputCellContainer, label, checkboxClass, isChecked, onCheck);
+				checkbox = new Checkbox(inputCellContainer.getHTMLElement(), { label, checked: isChecked });
 			});
 		});
 		return checkbox;
@@ -203,7 +203,6 @@ export class ConnectionWidget {
 		this._toDispose.push(attachInputBoxStyler(this._passwordInputBox, this._themeService));
 		this._toDispose.push(styler.attachSelectBoxStyler(this._serverGroupSelectBox, this._themeService));
 		this._toDispose.push(styler.attachButtonStyler(this._advancedButton, this._themeService));
-		this._toDispose.push(styler.attachCheckboxStyler(this._rememberPasswordCheckBox, this._themeService));
 
 		if (this._authTypeSelectBox) {
 			// Theme styler
@@ -243,11 +242,11 @@ export class ConnectionWidget {
 			this._passwordInputBox.value = '';
 
 			this._rememberPasswordCheckBox.checked = false;
-			this._rememberPasswordCheckBox.disable();
+			this._rememberPasswordCheckBox.enabled = false;
 		} else {
 			this._userNameInputBox.enable();
 			this._passwordInputBox.enable();
-			this._rememberPasswordCheckBox.enable();
+			this._rememberPasswordCheckBox.enabled = true;
 		}
 	}
 
@@ -357,7 +356,7 @@ export class ConnectionWidget {
 		this._databaseNameInputBox.disable();
 		this._userNameInputBox.disable();
 		this._passwordInputBox.disable();
-		this._rememberPasswordCheckBox.disable();
+		this._rememberPasswordCheckBox.enabled = false;
 		if (this._authTypeSelectBox) {
 			this._authTypeSelectBox.disable();
 		}
@@ -378,7 +377,7 @@ export class ConnectionWidget {
 		if (!currentAuthType || currentAuthType.showUsernameAndPassword) {
 			this._userNameInputBox.enable();
 			this._passwordInputBox.enable();
-			this._rememberPasswordCheckBox.enable();
+			this._rememberPasswordCheckBox.enabled = true;
 		}
 	}
 
