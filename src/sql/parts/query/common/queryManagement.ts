@@ -141,9 +141,18 @@ export class QueryManagementService implements IQueryManagementService {
 		};
 	}
 
-	private addTelemetry(eventName: string, ownerUri: string, data?: TelemetryUtils.IConnectionTelemetryData): void {
+	private addTelemetry(eventName: string, ownerUri: string, runOptions?: data.ExecutionPlanOptions): void {
 		let providerId: string = this._connectionService.getProviderIdFromUri(ownerUri);
-		TelemetryUtils.addTelemetry(this._telemetryService, eventName, Object.assign({}, data, { provider: providerId }));
+		let data: TelemetryUtils.IConnectionTelemetryData = {
+			provider: providerId,
+		};
+		if (runOptions) {
+			data = Object.assign({}, data, {
+				displayEstimatedQueryPlan: runOptions.displayEstimatedQueryPlan,
+				displayActualQueryPlan: runOptions.displayActualQueryPlan
+			});
+		}
+		TelemetryUtils.addTelemetry(this._telemetryService, eventName, data);
 	}
 
 	private _runAction<T>(uri: string, action: (handler: QueryRequestHandler) => Thenable<T>): Thenable<T> {

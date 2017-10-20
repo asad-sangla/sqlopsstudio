@@ -30,7 +30,6 @@ export function generateUserId(): Promise<string> {
 }
 
 export interface IConnectionTelemetryData extends ITelemetryData {
-	connection?: IConnectionProfile;
 	provider?: string;
 }
 
@@ -43,7 +42,11 @@ export interface IConnectionTelemetryData extends ITelemetryData {
  * @param telemetryEventName Telemetry event name
  * @param data Telemetry data
  */
-export function addTelemetry(telemetryService: ITelemetryService, telemetryEventName: string, data?: IConnectionTelemetryData): Promise<void> {
+export function addTelemetry(
+	telemetryService: ITelemetryService,
+	telemetryEventName: string,
+	data?: IConnectionTelemetryData,
+	connection?: IConnectionProfile): Promise<void> {
 	return new Promise<void>(resolve => {
 		try {
 			let telData: ITelemetryData = data === undefined ? {} : data;
@@ -51,8 +54,8 @@ export function addTelemetry(telemetryService: ITelemetryService, telemetryEvent
 			if (telData && telData.provider === undefined) {
 
 				let provider: string = '';
-				if (telData.connection) {
-					provider = telData.connection.providerName;
+				if (connection) {
+					provider = connection.providerName;
 				}
 				telData.provider = provider;
 			}

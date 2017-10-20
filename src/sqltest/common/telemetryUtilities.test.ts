@@ -40,10 +40,9 @@ suite('SQL Telemetry Utilities tests', () => {
 
 	test('addTelemetry should add provider id using the connection', (done) => {
 		let data: TelemetryUtils.IConnectionTelemetryData = {
-			connection: connectionProfile
 		};
 
-		TelemetryUtils.addTelemetry(telemetryService.object, telemetryKey, data).then(() => {
+		TelemetryUtils.addTelemetry(telemetryService.object, telemetryKey, data, connectionProfile).then(() => {
 			telemetryService.verify(x => x.publicLog(TypeMoq.It.is(a => a === telemetryKey), TypeMoq.It.is(b => b.provider === providerName)), TypeMoq.Times.once());
 			done();
 		}).catch(err => {
@@ -54,13 +53,12 @@ suite('SQL Telemetry Utilities tests', () => {
 
 	test('addTelemetry should pass the telemetry data to telemetry service', (done) => {
 		let data: TelemetryUtils.IConnectionTelemetryData = {
-			connection: connectionProfile,
 			target: 'target',
 			from: 'from'
 		};
 		data.test1 = '1';
 
-		TelemetryUtils.addTelemetry(telemetryService.object, telemetryKey, data).then(() => {
+		TelemetryUtils.addTelemetry(telemetryService.object, telemetryKey, data, connectionProfile).then(() => {
 			telemetryService.verify(x => x.publicLog(
 				TypeMoq.It.is(a => a === telemetryKey),
 				TypeMoq.It.is(b => b.provider === providerName
@@ -93,7 +91,7 @@ suite('SQL Telemetry Utilities tests', () => {
 		};
 		data.provider = providerName + '1';
 
-		TelemetryUtils.addTelemetry(telemetryService.object, telemetryKey, data).then(() => {
+		TelemetryUtils.addTelemetry(telemetryService.object, telemetryKey, data, connectionProfile).then(() => {
 			telemetryService.verify(x => x.publicLog(TypeMoq.It.is(a => a === telemetryKey), TypeMoq.It.is(b => b.provider === data.provider)), TypeMoq.Times.once());
 			done();
 		}).catch(err => {

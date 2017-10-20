@@ -1207,7 +1207,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 */
 	public deleteConnection(connection: ConnectionProfile): Promise<boolean> {
 
-		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.DeleteConnection, { connection: connection });
+		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.DeleteConnection, {}, connection);
 		// Disconnect if connected
 		let uri = Utils.generateUri(connection);
 		if (this.isConnected(uri)) {
