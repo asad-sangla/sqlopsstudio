@@ -17,6 +17,7 @@ import { DatabaseInfo, ServerInfo } from 'data';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { EventType, addDisposableListener } from 'vs/base/browser/dom';
+import * as types from 'vs/base/common/types';
 import * as nls from 'vs/nls';
 
 import * as ConnectionConstants from 'sql/parts/connection/common/constants';
@@ -30,7 +31,7 @@ export interface FlavorProperties {
 	condition?: {
 		field: string;
 		operator: '==' | '<=' | '>=' | '!=';
-		value: string;
+		value: string | boolean;
 	};
 	databaseProperties: Array<Property>;
 	serverProperties: Array<Property>;
@@ -80,29 +81,16 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 			this.consoleError = consoleError;
 		}
 		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
-		if (this._connection.providerId !== ConnectionConstants.mssqlProviderName || !this._connection.serverInfo.isCloud) {
-			this._disposables.push(toDisposableSubscription(this._bootstrap.adminService.databaseInfo.subscribe(
-				data => {
-					this._databaseInfo = data;
-					_changeRef.detectChanges();
-					this.parseProperties();
-					if (this._hasInit) {
-						this.handleClipping();
-					}
-				},
-				error => {
-					(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.properties.error', "Unable to load dashboard properties");
-				}
-			)));
-		} else {
-			this._databaseInfo = {
-				options: {}
-			};
+		this._disposables.push(toDisposableSubscription(this._bootstrap.adminService.databaseInfo.subscribe(data => {
+			this._databaseInfo = data;
+			_changeRef.detectChanges();
 			this.parseProperties();
 			if (this._hasInit) {
 				this.handleClipping();
 			}
-		}
+		}, error => {
+			(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.properties.error', "Unable to load dashboard properties");
+		})));
 	}
 
 	ngOnInit() {
@@ -258,7 +246,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		if (infoObject) {
 			val = infoObject[propertyValue];
 		}
-		if (val === undefined) {
+		if (types.isUndefinedOrNull(val)) {
 			val = defaultVal;
 		}
 		return val;

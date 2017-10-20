@@ -6,6 +6,9 @@
 import { ProviderProperties } from './propertiesWidget.component';
 import * as nls from 'vs/nls';
 
+let azureEditionDisplayName = nls.localize('azureEdition', 'Edition');
+let azureType = nls.localize('azureType', 'Type');
+
 export const properties: Array<ProviderProperties> = [
 	{
 		provider: 'MSSQL',
@@ -15,7 +18,7 @@ export const properties: Array<ProviderProperties> = [
 				condition: {
 					field: 'isCloud',
 					operator: '!=',
-					value: 'true'
+					value: true
 				},
 				databaseProperties: [
 					{
@@ -61,6 +64,42 @@ export const properties: Array<ProviderProperties> = [
 					{
 						displayName: nls.localize('osVersion', 'OS Version'),
 						value: 'osVersion'
+					}
+				]
+			},
+			{
+				flavor: 'cloud',
+				condition: {
+					field: 'isCloud',
+					operator: '==',
+					value: true
+				},
+				databaseProperties: [
+					{
+						displayName: azureEditionDisplayName,
+						value: 'azureEdition'
+					},
+					{
+						displayName: nls.localize('serviceLevelObjective', 'Pricing Tier'),
+						value: 'serviceLevelObjective'
+					},
+					{
+						displayName: nls.localize('compatibilityLevel', 'Compatibility Level'),
+						value: 'compatibilityLevel'
+					},
+					{
+						displayName: nls.localize('owner', 'Owner'),
+						value: 'owner'
+					}
+				],
+				serverProperties: [
+					{
+						displayName: nls.localize('version', 'Version'),
+						value: 'serverVersion'
+					},
+					{
+						displayName: azureType,
+						value: 'serverEdition'
 					}
 				]
 			}

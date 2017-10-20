@@ -8,6 +8,7 @@ import { NgGridConfig } from 'angular2-grid';
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
+import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 
 import * as types from 'vs/base/common/types';
 import { Severity } from 'vs/platform/message/common/message';
@@ -68,14 +69,18 @@ export abstract class DashboardPage {
 	) { }
 
 	protected init() {
-		let tempWidgets = this.dashboardService.getSettings(this.context).widgets;
-		let properties = this.getProperties();
-		this._configModifiers.forEach((cb) => {
-			tempWidgets = cb.apply(this, [tempWidgets]);
-			properties = properties ? cb.apply(this, [properties]) : undefined;
-		});
-		this.widgets = tempWidgets;
-		this.propertiesWidget = properties ? properties[0] : undefined;
+		if (!this.dashboardService.connectionManagementService.connectionInfo) {
+			this.dashboardService.messageService.show(Severity.Warning, nls.localize('missingConnectionInfo', 'No connection information could be found for this dashboard'));
+		} else {
+			let tempWidgets = this.dashboardService.getSettings(this.context).widgets;
+			let properties = this.getProperties();
+			this._configModifiers.forEach((cb) => {
+				tempWidgets = cb.apply(this, [tempWidgets]);
+				properties = properties ? cb.apply(this, [properties]) : undefined;
+			});
+			this.widgets = tempWidgets;
+			this.propertiesWidget = properties ? properties[0] : undefined;
+		}
 	}
 
 	protected abstract propertiesWidget: WidgetConfig;
@@ -86,8 +91,9 @@ export abstract class DashboardPage {
 	 * @param config widgets to filter
 	 */
 	private filterWidgets(config: WidgetConfig[]): Array<WidgetConfig> {
-		let edition = this.dashboardService.connectionManagementService.connectionInfo.serverInfo.engineEditionId;
-		let provider = this.dashboardService.connectionManagementService.connectionInfo.providerId;
+		let connectionInfo: ConnectionManagementInfo = this.dashboardService.connectionManagementService.connectionInfo;
+		let edition = connectionInfo.serverInfo.engineEditionId;
+		let provider = connectionInfo.providerId;
 
 		// filter by provider
 		return config.filter((item) => {
@@ -142,7 +148,8 @@ export abstract class DashboardPage {
 	 * @param widgets Array of widgets to add edition onto
 	 */
 	protected addEdition(config: WidgetConfig[]): Array<WidgetConfig> {
-		let edition = this.dashboardService.connectionManagementService.connectionInfo.serverInfo.engineEditionId;
+		let connectionInfo: ConnectionManagementInfo = this.dashboardService.connectionManagementService.connectionInfo;
+		let edition = connectionInfo.serverInfo.engineEditionId;
 		return config.map((item) => {
 			if (item.edition === undefined) {
 				item.edition = edition;
@@ -170,7 +177,9 @@ export abstract class DashboardPage {
 	 * @param config Array of widgets to validate
 	 */
 	protected validateConfig(config: WidgetConfig[]): Array<WidgetConfig> {
-		return config.map((widget) => {
+		return config.filter(widget => {
+			return !types.isUndefinedOrNull(widget);
+		}).map((widget) => {
 			if (widget.gridItemConfig === undefined) {
 				widget.gridItemConfig = {};
 			}

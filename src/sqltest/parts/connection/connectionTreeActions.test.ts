@@ -32,6 +32,7 @@ import { Emitter } from 'vs/base/common/event';
 import Severity from 'vs/base/common/severity';
 import { ObjectExplorerActionsContext, ManageConnectionAction } from 'sql/parts/registeredServer/viewlet/objectExplorerActions';
 import { IConnectionResult, IConnectionParams } from 'sql/parts/connection/common/connectionManagement';
+import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeSelectionHandler';
 
 suite('SQL Connection Tree Action tests', () => {
 	let errorMessageService: TypeMoq.Mock<ErrorMessageServiceStub>;
@@ -50,10 +51,10 @@ suite('SQL Connection Tree Action tests', () => {
 		let connectionManagementService = TypeMoq.Mock.ofType(TestConnectionManagementService, TypeMoq.MockBehavior.Strict);
 		connectionManagementService.callBase = true;
 		connectionManagementService.setup(x => x.isConnected(undefined, TypeMoq.It.isAny())).returns(() => isConnectedReturnValue);
-		connectionManagementService.setup(x => x.connect(TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny())).returns(() => Promise.resolve(connectionResult));
+		connectionManagementService.setup(x => x.connect(TypeMoq.It.isAny(), undefined, TypeMoq.It.isAny(), undefined)).returns(() => Promise.resolve(connectionResult));
 		connectionManagementService.setup(x => x.disconnect(TypeMoq.It.isAny())).returns(() => Promise.resolve(true));
 		connectionManagementService.setup(x => x.findExistingConnection(TypeMoq.It.isAny())).returns(() => undefined);
-		connectionManagementService.setup(x => x.showDashboard(TypeMoq.It.isAny())).returns(() => undefined);
+		connectionManagementService.setup(x => x.showDashboard(TypeMoq.It.isAny())).returns(() => Promise.resolve(true));
 		connectionManagementService.setup(x => x.isProfileConnected(TypeMoq.It.isAny())).returns(() => isConnectedReturnValue);
 		connectionManagementService.setup(x => x.isProfileConnecting(TypeMoq.It.isAny())).returns(() => false);
 		connectionManagementService.setup(x => x.showConnectionDialog(undefined, TypeMoq.It.isAny())).returns(() => new Promise<void>((resolve, reject) => resolve()));
@@ -81,8 +82,14 @@ suite('SQL Connection Tree Action tests', () => {
 
 		let connectionManagementService = createConnectionManagementService(isConnectedReturnValue);
 		let objectExplorerService = createObjectExplorerService(connectionManagementService.object);
+		let treeSelectionMock = TypeMoq.Mock.ofType(TreeSelectionHandler);
+		let instantiationService = TypeMoq.Mock.ofType(InstantiationService, TypeMoq.MockBehavior.Loose);
+		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny())).returns((input) => {
+			return treeSelectionMock.object;
+		});
 
-		let manageConnectionAction: ManageConnectionAction = new ManageConnectionAction(ManageConnectionAction.ID, ManageConnectionAction.LABEL, connectionManagementService.object, objectExplorerService.object);
+		let manageConnectionAction: ManageConnectionAction = new ManageConnectionAction(ManageConnectionAction.ID,
+			ManageConnectionAction.LABEL, connectionManagementService.object, instantiationService.object, objectExplorerService.object);
 		let connection: ConnectionProfile = new ConnectionProfile(undefined, {
 			savePassword: false,
 			groupFullName: 'testGroup',
@@ -109,8 +116,14 @@ suite('SQL Connection Tree Action tests', () => {
 		let isConnectedReturnValue: boolean = false;
 		let connectionManagementService = createConnectionManagementService(isConnectedReturnValue);
 		let objectExplorerService = createObjectExplorerService(connectionManagementService.object);
+		let treeSelectionMock = TypeMoq.Mock.ofType(TreeSelectionHandler);
+		let instantiationService = TypeMoq.Mock.ofType(InstantiationService, TypeMoq.MockBehavior.Loose);
+		instantiationService.setup(x => x.createInstance(TypeMoq.It.isAny())).returns((input) => {
+			return treeSelectionMock.object;
+		});
 
-		let manageConnectionAction: ManageConnectionAction = new ManageConnectionAction(ManageConnectionAction.ID, ManageConnectionAction.LABEL, connectionManagementService.object, objectExplorerService.object);
+		let manageConnectionAction: ManageConnectionAction = new ManageConnectionAction(ManageConnectionAction.ID,
+			ManageConnectionAction.LABEL, connectionManagementService.object, instantiationService.object, objectExplorerService.object);
 		let connection: ConnectionProfile = new ConnectionProfile(undefined, {
 			savePassword: false,
 			groupFullName: 'testGroup',

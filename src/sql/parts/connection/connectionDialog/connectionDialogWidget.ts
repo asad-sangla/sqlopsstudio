@@ -283,7 +283,7 @@ export class ConnectionDialogWidget extends Modal {
 		this._onInitDialog.fire();
 	}
 
-	public resetConnection() {
+	public resetConnection(): void {
 		this.hideSpinner();
 		this._connectButton.enabled = true;
 		this._providerTypeSelectBox.enable();

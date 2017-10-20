@@ -65,6 +65,7 @@ export class ManageConnectionAction extends Action {
 
 	private _connectionProfile: ConnectionProfile;
 	private _objectExplorerTreeNode: TreeNode;
+	private _treeSelectionHandler: TreeSelectionHandler;
 
 	protected _container: HTMLElement;
 
@@ -72,54 +73,63 @@ export class ManageConnectionAction extends Action {
 		id: string,
 		label: string,
 		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
+		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IObjectExplorerService private _objectExplorerService?: IObjectExplorerService,
 	) {
 		super(id, label);
 	}
 
 	run(actionContext: ObjectExplorerActionsContext): TPromise<any> {
-		return new TPromise<boolean>((resolve, reject) => {
-			if (actionContext instanceof ObjectExplorerActionsContext) {
-				//set objectExplorerTreeNode for context menu clicks
-				this._connectionProfile = actionContext.connectionProfile;
-				this._objectExplorerTreeNode = actionContext.treeNode;
-				if (this._connectionProfile === undefined && TreeUpdateUtils.isDatabaseNode(this._objectExplorerTreeNode)) {
-					this._connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
-				}
-				this._container = actionContext.container;
-				resolve(true);
-			}
-
-			if (!this._connectionProfile) {
-				// This should never happens. There should be always a valid connection if the manage action is called for
-				// a OE node or a database node
-				resolve(true);
-			}
-
-			let options: IConnectionCompletionOptions = {
-				params: undefined,
-				saveTheConnection: false,
-				showConnectionDialogOnError: true,
-				showDashboard: true,
-				showFirewallRuleOnError: true
-			};
-
-			// If it's a database node just open a database connection and open dashboard,
-			// the node is already from an open OE session we don't need to create new session
-			if (TreeUpdateUtils.isAvailableDatabaseNode(this._objectExplorerTreeNode)) {
-				this._connectionManagementService.showDashboard(this._connectionProfile).then(() => {
-					resolve(true);
-				}, error => {
-					reject(error);
-				});
-			} else {
-				TreeUpdateUtils.connectAndCreateOeSession(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService, actionContext.tree).then(() => {
-					resolve(true);
-				}, error => {
-					reject(error);
-				});
-			}
+		this._treeSelectionHandler = this._instantiationService.createInstance(TreeSelectionHandler);
+		this._treeSelectionHandler.onTreeActionStateChange(true);
+		let promise = new TPromise<boolean>((resolve, reject) => {
+			this.doManage(actionContext).then((success) => {
+				this.done();
+				resolve(success);
+			}, error => {
+				this.done();
+				reject(error);
+			});
 		});
+		return promise;
+	}
+
+	private doManage(actionContext: ObjectExplorerActionsContext): Thenable<boolean> {
+		if (actionContext instanceof ObjectExplorerActionsContext) {
+			//set objectExplorerTreeNode for context menu clicks
+			this._connectionProfile = actionContext.connectionProfile;
+			this._objectExplorerTreeNode = actionContext.treeNode;
+			if (this._connectionProfile === undefined && TreeUpdateUtils.isDatabaseNode(this._objectExplorerTreeNode)) {
+				this._connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+			}
+			this._container = actionContext.container;
+		}
+
+		if (!this._connectionProfile) {
+			// This should never happen. There should be always a valid connection if the manage action is called for
+			// an OE node or a database node
+			return TPromise.wrap(true);
+		}
+
+		let options: IConnectionCompletionOptions = {
+			params: undefined,
+			saveTheConnection: false,
+			showConnectionDialogOnError: true,
+			showDashboard: true,
+			showFirewallRuleOnError: true
+		};
+
+		// If it's a database node just open a database connection and open dashboard,
+		// the node is already from an open OE session we don't need to create new session
+		if (TreeUpdateUtils.isAvailableDatabaseNode(this._objectExplorerTreeNode)) {
+			return this._connectionManagementService.showDashboard(this._connectionProfile);
+		} else {
+			return TreeUpdateUtils.connectAndCreateOeSession(this._connectionProfile, options, this._connectionManagementService, this._objectExplorerService, actionContext.tree);
+		}
+	}
+
+	private done() {
+		this._treeSelectionHandler.onTreeActionStateChange(false);
 	}
 
 	dispose(): void {

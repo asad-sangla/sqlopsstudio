@@ -431,20 +431,23 @@ suite('Account Management Service Tests:', () => {
 			);
 	});
 
-	test('Unregister provider - success', () => {
+	test('Unregister provider - success', done => {
 		// Setup:
 		// ... Create ams
 		let mocks = getTestState();
 
 		// ... Register a provider to remove
 		let mockProvider = getMockAccountProvider();
-		mocks.accountManagementService.registerProvider(noAccountProvider, mockProvider.object);
+		mocks.accountManagementService.registerProvider(noAccountProvider, mockProvider.object)
+		.then((success) => {
+			// If: I remove an account provider
+			mocks.accountManagementService.unregisterProvider(noAccountProvider);
 
-		// If: I remove an account provider
-		mocks.accountManagementService.unregisterProvider(noAccountProvider);
+				// Then: The provider removed event should have fired
+				mocks.eventVerifierProviderRemoved.assertFired(noAccountProvider);
+		}, error => {
+		}).then(() => done(), err => done(err));
 
-		// Then: The provider removed event should have fired
-		mocks.eventVerifierProviderRemoved.assertFired(noAccountProvider);
 	});
 });
 

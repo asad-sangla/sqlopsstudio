@@ -59,7 +59,9 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 
 		this._parseConfig().then(() => {
 			if (!this._checkStorage()) {
-				this._runQuery().then(
+				let promise = this._runQuery();
+				this.queryObv = Observable.fromPromise(promise);
+				promise.then(
 					result => {
 						if (this._init) {
 							this._updateChild(result);
@@ -75,10 +77,9 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 						}
 					}
 				);
-				this.queryObv = Observable.fromPromise(this._runQuery());
 			}
 		}, error => {
-			throw new Error(error);
+			this.showError(error);
 		});
 	}
 
@@ -86,8 +87,12 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		this._init = true;
 		if (this.queryObv) {
 			this._disposables.push(toDisposableSubscription(this.queryObv.subscribe(
-				result => this._updateChild(result),
-				error => this.showError(error)
+				result => {
+					this._updateChild(result);
+				},
+				error => {
+					this.showError(error);
+				}
 			)));
 		}
 	}
@@ -163,6 +168,9 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		return this.dashboardService.queryManagementService.runQueryAndReturn(this.insightConfig.query as string).then(
 			result => {
 				return this._storeResult(result);
+			},
+			error => {
+				throw error;
 			}
 		);
 	}

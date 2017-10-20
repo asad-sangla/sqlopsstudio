@@ -10,6 +10,7 @@ import { ConnectionDialogWidget } from 'sql/parts/connection/connectionDialog/co
 import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 import { ConnectionType, IConnectableInput, IConnectionResult, INewConnectionParams } from 'sql/parts/connection/common/connectionManagement';
 import { ContextKeyServiceStub } from 'sqltest/stubs/contextKeyServiceStub';
+import { ErrorMessageServiceStub } from 'sqltest/stubs/errorMessageServiceStub';
 
 import * as TypeMoq from 'typemoq';
 
@@ -20,7 +21,8 @@ suite('ConnectionDialogService tests', () => {
 	let mockConnectionDialog: TypeMoq.Mock<ConnectionDialogWidget>;
 
 	setup(() => {
-		connectionDialogService = new ConnectionDialogService(undefined, undefined, undefined, undefined, undefined);
+		let errorMessageService = getMockErrorMessageService();
+		connectionDialogService = new ConnectionDialogService(undefined, undefined, undefined, errorMessageService.object, undefined);
 		mockConnectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Strict, {}, {});
 		(connectionDialogService as any)._connectionManagementService = mockConnectionManagementService.object;
 		mockConnectionDialog = TypeMoq.Mock.ofType(ConnectionDialogWidget, TypeMoq.MockBehavior.Strict,
@@ -33,10 +35,17 @@ suite('ConnectionDialogService tests', () => {
 			undefined,
 			new ContextKeyServiceStub()
 		);
+		mockConnectionDialog.setup(c => c.resetConnection());
 		(connectionDialogService as any)._connectionDialog = mockConnectionDialog.object;
 	});
 
-	function testHandleDefaultOnConnectUri(isEditor: boolean) {
+	function getMockErrorMessageService(): TypeMoq.Mock<ErrorMessageServiceStub> {
+		let mockMessageService = TypeMoq.Mock.ofType(ErrorMessageServiceStub);
+		mockMessageService.setup(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()));
+		return mockMessageService;
+	}
+
+	function testHandleDefaultOnConnectUri(isEditor: boolean): Thenable<void> {
 		let testUri = 'test_uri';
 		let connectionParams = <INewConnectionParams>{
 			connectionType: isEditor ? ConnectionType.editor : ConnectionType.default,
@@ -54,20 +63,25 @@ suite('ConnectionDialogService tests', () => {
 			() => Promise.resolve(<IConnectionResult>{ connected: true, errorMessage: undefined, errorCode: undefined }));
 
 		// If I call handleDefaultOnConnect with the given parameters
-		(connectionDialogService as any).handleDefaultOnConnect(connectionParams, undefined);
-
-		// Then the Connection Management Service's connect method was called with the expected URI
-		let expectedUri = isEditor ? testUri : undefined;
-		mockConnectionManagementService.verify(
-			x => x.connectAndSaveProfile(undefined, TypeMoq.It.is(uri => uri === expectedUri), TypeMoq.It.isAny(), TypeMoq.It.isAny()),
-			TypeMoq.Times.once());
+		let thenable: Thenable<void> = (connectionDialogService as any).handleDefaultOnConnect(connectionParams, undefined);
+		return thenable.then(() => {
+			// Then the Connection Management Service's connect method was called with the expected URI
+			let expectedUri = isEditor ? testUri : undefined;
+			mockConnectionManagementService.verify(
+				x => x.connectAndSaveProfile(undefined, TypeMoq.It.is(uri => uri === expectedUri), TypeMoq.It.isAny(), TypeMoq.It.isAny()),
+				TypeMoq.Times.once());
+		});
 	}
 
-	test('handleDefaultOnConnect uses params URI for editor connections', () => {
-		testHandleDefaultOnConnectUri(true);
+	test('handleDefaultOnConnect uses params URI for editor connections', done => {
+		testHandleDefaultOnConnectUri(true).then(() => done(), err => {
+			done(err);
+		});
 	});
 
-	test('handleDefaultOnConnect uses undefined URI for non-editor connections', () => {
-		testHandleDefaultOnConnectUri(false);
+	test('handleDefaultOnConnect uses undefined URI for non-editor connections', done => {
+		testHandleDefaultOnConnectUri(false).then(() => done(), err => {
+			done(err);
+		});
 	});
 });

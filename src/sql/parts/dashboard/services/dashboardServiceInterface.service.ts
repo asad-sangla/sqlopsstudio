@@ -23,6 +23,7 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
 import { IPropertiesConfig } from 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
+import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 
 import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
@@ -235,6 +236,10 @@ export class DashboardServiceInterface implements OnDestroy {
 	 */
 	public getUnderlyingUri(): string {
 		return this._uri;
+	}
+
+	public getOriginalConnectionProfile(): IConnectionProfile {
+		return this._bootstrapParams.connection;
 	}
 
 	/**
