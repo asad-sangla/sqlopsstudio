@@ -288,7 +288,10 @@ function packageTask(platform, arch, opts) {
 		// {{SQL CARBON EDIT}}
 		const sources = es.merge(src, localExtensions, localExtensionDependencies)
 			.pipe(util.setExecutableBit(['**/*.sh']))
-			.pipe(filter(['**','!**/*.js.map']));
+			.pipe(filter(['**',
+						  '!**/*.js.map',
+						  '!extensions/**/node_modules/**/{test, tests}/**',
+						  '!extensions/**/node_modules/**/test.js']));
 
 		let version = packageJson.version;
 		const quality = product.quality;
@@ -315,7 +318,10 @@ function packageTask(platform, arch, opts) {
     	const dataApi = gulp.src('src/vs/data.d.ts').pipe(rename('out/sql/data.d.ts'));
 
 		const depsSrc = _.flatten(dependencies
-			.map(function (d) { return ['node_modules/' + d + '/**', '!node_modules/' + d + '/**/{test,tests}/**']; }));
+			.map(function (d) { return ['node_modules/' + d + '/**',
+										'!node_modules/' + d + '/**/{test,tests}/**',
+										'!node_modules/' + d + '/**/test.*',
+										'!node_modules/' + d + '/**/*.test.*']; }));
 
 		const deps = gulp.src(depsSrc, { base: '.', dot: true })
 			.pipe(filter(['**', '!**/package-lock.json']))
