@@ -24,6 +24,10 @@ export class ConnectionProviderStub implements data.ConnectionProvider {
 		return undefined;
 	}
 
+	changeDatabase(connectionUri: string, newDatabase: string): Thenable<boolean> {
+		return undefined;
+	}
+
 	registerOnConnectionComplete(handler: (connSummary: data.ConnectionInfoSummary) => any) {
 		return undefined;
 	}

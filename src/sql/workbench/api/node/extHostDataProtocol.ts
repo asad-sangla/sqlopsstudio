@@ -86,6 +86,13 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		});
 	}
 
+	$changeDatabase(handle: number, connectionUri: string, newDatabase: string): Thenable<boolean> {
+		return this._runWithProvider(handle, provider => {
+			return provider.connectionProvider ? provider.connectionProvider.changeDatabase(connectionUri, newDatabase)
+				: undefined;
+		});
+	}
+
 	$listDatabases(handle: number, connectionUri: string): Thenable<data.ListDatabasesResult> {
 		return this._runWithProvider(handle, provider => {
 			return provider.connectionProvider ? provider.connectionProvider.listDatabases(connectionUri)

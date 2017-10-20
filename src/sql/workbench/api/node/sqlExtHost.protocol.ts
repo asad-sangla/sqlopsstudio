@@ -40,6 +40,11 @@ export abstract class ExtHostDataProtocolShape {
 	$cancelConnect(handle: number, connectionUri: string): Thenable<boolean> { throw ni(); }
 
 	/**
+	 * Change the database for the connection.
+	 */
+	$changeDatabase(handle: number, connectionUri: string, newDatabase: string): Thenable<boolean> { throw ni(); }
+
+	/**
 	 * List databases for a data source using the provided connectionUri string.
 	 * @param handle the handle to use when looking up a provider
 	 * @param connectionUri URI identifying a connected resource

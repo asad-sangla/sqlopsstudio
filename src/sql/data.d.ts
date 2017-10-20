@@ -166,6 +166,8 @@ declare module 'data' {
 
 		listDatabases(connectionUri: string): Thenable<ListDatabasesResult>;
 
+		changeDatabase(connectionUri: string, newDatabase: string): Thenable<boolean>;
+
 		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any);
 
 		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);

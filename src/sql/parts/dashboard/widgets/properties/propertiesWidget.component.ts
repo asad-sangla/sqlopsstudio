@@ -17,6 +17,7 @@ import { DatabaseInfo, ServerInfo } from 'data';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { EventType, addDisposableListener } from 'vs/base/browser/dom';
+import * as nls from 'vs/nls';
 
 import * as ConnectionConstants from 'sql/parts/connection/common/constants';
 
@@ -78,22 +79,26 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		if (consoleError) {
 			this.consoleError = consoleError;
 		}
-		let self = this;
 		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
-		if (self._connection.providerId !== ConnectionConstants.mssqlProviderName || !self._connection.serverInfo.isCloud) {
-			self._disposables.push(toDisposableSubscription(self._bootstrap.adminService.databaseInfo.subscribe(data => {
-				self._databaseInfo = data;
-				_changeRef.detectChanges();
-				self.parseProperties();
-				if (self._hasInit) {
-					self.handleClipping();
+		if (this._connection.providerId !== ConnectionConstants.mssqlProviderName || !this._connection.serverInfo.isCloud) {
+			this._disposables.push(toDisposableSubscription(this._bootstrap.adminService.databaseInfo.subscribe(
+				data => {
+					this._databaseInfo = data;
+					_changeRef.detectChanges();
+					this.parseProperties();
+					if (this._hasInit) {
+						this.handleClipping();
+					}
+				},
+				error => {
+					(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.properties.error', "Unable to load dashboard properties");
 				}
-			})));
+			)));
 		} else {
-			self._databaseInfo = {
+			this._databaseInfo = {
 				options: {}
 			};
-			self.parseProperties();
+			this.parseProperties();
 			if (this._hasInit) {
 				this.handleClipping();
 			}

@@ -1168,26 +1168,22 @@ export class ConnectionManagementService implements IConnectionManagementService
 	}
 
 	public changeDatabase(connectionUri: string, databaseName: string): Thenable<boolean> {
-		let self = this;
-		let profile = this.getConnectionProfile(connectionUri);
-		if (profile) {
-			// TODO should we clone this before altering? What happens if it fails?
-			profile.databaseName = databaseName;
-			return this.createNewConnection(connectionUri, profile).then(result => {
-				if (!result || !result.connected) {
-					// Note: Ideally this wouldn't disconnect on failure, but that's a separate issue that should
-					// be addressed in the future
-					self._notifyDisconnected(profile, connectionUri);
-					return false;
-				}
-				self._notifyConnectionChanged(profile, connectionUri);
-				return true;
-			}, err => {
-				self._notifyDisconnected(profile, connectionUri);
-				return false;
+		if (this.isConnected(connectionUri)) {
+			let providerId: string = this.getProviderIdFromUri(connectionUri);
+			if (!providerId) {
+				return Promise.resolve(false);
+			}
+
+			return new Promise<boolean>((resolve, reject) => {
+				let provider = this._providers[providerId];
+				provider.changeDatabase(connectionUri, databaseName).then(result => {
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
 			});
 		}
-		return Promise.resolve(undefined);
+		return Promise.resolve(false);
 	}
 
 	public editGroup(group: ConnectionProfileGroup): Promise<any> {

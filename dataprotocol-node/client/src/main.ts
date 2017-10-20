@@ -94,6 +94,7 @@ import {
 	ConnectionRequest, ConnectParams,
 	DisconnectRequest, DisconnectParams,
 	CancelConnectRequest, CancelConnectParams,
+	ChangeDatabaseParams, ChangeDatabaseRequest,
 	ListDatabasesRequest, ListDatabasesParams, ListDatabasesResult,
 	ConnectionChangedNotification, ConnectionChangedParams,
 	ConnectionCompleteNotification, IntelliSenseReadyNotification,
@@ -1405,6 +1406,23 @@ export class LanguageClient {
 					},
 					(error) => {
 						self.logFailedRequest(CancelConnectRequest.type, error);
+						return Promise.resolve(false);
+					}
+				);
+			},
+
+			changeDatabase(connUri: string, newDatabase: string): Thenable<boolean> {
+				let params: ChangeDatabaseParams = {
+					ownerUri: connUri,
+					newDatabase: newDatabase
+				};
+
+				return self.sendRequest(ChangeDatabaseRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(ChangeDatabaseRequest.type, error);
 						return Promise.resolve(false);
 					}
 				);

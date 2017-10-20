@@ -76,6 +76,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			disconnect(connectionUri: string): Thenable<boolean> {
 				return self._proxy.$disconnect(handle, connectionUri);
 			},
+			changeDatabase(connectionUri: string, newDatabase: string): Thenable<boolean> {
+				return self._proxy.$changeDatabase(handle, connectionUri, newDatabase);
+			},
 			cancelConnect(connectionUri: string): Thenable<boolean> {
 				return self._proxy.$cancelConnect(handle, connectionUri);
 			},

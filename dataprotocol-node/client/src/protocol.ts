@@ -1027,6 +1027,17 @@ export namespace CancelConnectRequest {
 	export const type: RequestType<CancelConnectParams, CancelConnectResult, void> = { get method(): string { return 'connection/cancelconnect'; } };
 }
 
+// ------------------------------- < Change Database Request > -------------------------------------
+
+export class ChangeDatabaseParams {
+	public ownerUri: string;
+	public newDatabase: string;
+}
+
+export namespace ChangeDatabaseRequest {
+	export const type: RequestType<ChangeDatabaseParams, boolean, void> = { get method(): string { return 'connection/changedatabase'; } };
+}
+
 // ------------------------------- < List Databases Request > ---------------------------------------
 
 // List databases request format

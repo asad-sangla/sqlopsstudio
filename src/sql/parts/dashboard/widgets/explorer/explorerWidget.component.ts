@@ -92,7 +92,8 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
 		@Inject(forwardRef(() => Router)) private _router: Router,
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
-		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig
+		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig,
+		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef
 	) {
 		super();
 		this.isCloud = _bootstrap.connectionManagementService.connectionInfo.serverInfo.isCloud;
@@ -147,23 +148,32 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	}
 
 	private init(): void {
-		let self = this;
-		if (self._config.context === 'database') {
-			self._disposables.push(toDisposableSubscription(self._bootstrap.metadataService.metadata.subscribe((data) => {
-				if (data) {
-					self.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
-					self.tableData.sort(ExplorerWidget.schemaSort);
-					if (self.tableData.length > 0) {
-						self.selectedRow = self.tableData[0];
+		if (this._config.context === 'database') {
+			this._disposables.push(toDisposableSubscription(this._bootstrap.metadataService.metadata.subscribe(
+				data => {
+					if (data) {
+						this.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
+						this.tableData.sort(ExplorerWidget.schemaSort);
+						if (this.tableData.length > 0) {
+							this.selectedRow = this.tableData[0];
+						}
 					}
+					this._changeRef.detectChanges();
+				},
+				error => {
+					(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.explorer.objectError', "Unable to load objects");
 				}
-				self._changeRef.detectChanges();
-			})));
+			)));
 		} else {
-			self._disposables.push(toDisposableSubscription(self._bootstrap.metadataService.databaseNames.subscribe((data) => {
-				self.tableData = data;
-				self._changeRef.detectChanges();
-			})));
+			this._disposables.push(toDisposableSubscription(this._bootstrap.metadataService.databaseNames.subscribe(
+				data => {
+					this.tableData = data;
+					this._changeRef.detectChanges();
+				},
+				error => {
+					(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.explorer.databaseError', "Unable to load databases");
+				}
+			)));
 		}
 	}
 
