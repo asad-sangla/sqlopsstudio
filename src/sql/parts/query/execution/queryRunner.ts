@@ -455,13 +455,15 @@ export default class QueryRunner {
 			};
 		});
 
-		let p = tasks[0]();
-		for (let i = 1; i < tasks.length; i++) {
-			p = p.then(tasks[i]);
+		if (tasks.length > 0) {
+			let p = tasks[0]();
+			for (let i = 1; i < tasks.length; i++) {
+				p = p.then(tasks[i]);
+			}
+			p.then(() => {
+				WorkbenchUtils.executeCopy(copyString);
+			});
 		}
-		p.then(() => {
-			WorkbenchUtils.executeCopy(copyString);
-		});
 	}
 
 	private shouldIncludeHeaders(includeHeaders: boolean): boolean {

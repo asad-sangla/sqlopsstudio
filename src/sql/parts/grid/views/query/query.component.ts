@@ -221,6 +221,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		self.hasQueryPlan = false;
 		self.sentPlans = new Map<number, string>();
 		self.queryExecutionStatus.emit('start');
+		self.firstRender = true;
 	}
 
 	handleComplete(self: QueryComponent, event: any): void {
