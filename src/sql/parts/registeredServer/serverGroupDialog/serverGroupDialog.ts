@@ -78,8 +78,8 @@ export class ServerGroupDialog extends Modal {
 		});
 		// Connection Group Name
 		this._bodyBuilder.div({ class: 'dialog-label' }, (labelContainer) => {
-			let connectionGroupNameLabel = localize('connectionGroupName', 'Connection group name');
-			labelContainer.innerHtml(connectionGroupNameLabel);
+			let serverGroupNameLabel = localize('connectionGroupName', 'Server group name');
+			labelContainer.innerHtml(serverGroupNameLabel);
 		});
 		this._bodyBuilder.div({ class: 'input-divider' }, (inputCellContainer) => {
 			let errorMessage = localize('MissingGroupNameError', 'Group name is required.');
