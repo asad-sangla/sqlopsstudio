@@ -42,8 +42,6 @@ export class TreeSelectionHandler {
 	 * Handle selection of tree element
 	 */
 	public onTreeSelect(event: any, tree: ITree, connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService) {
-		let self = this;
-
 		if (this.isMouseEvent(event)) {
 			this._clicks++;
 		}
@@ -53,17 +51,19 @@ export class TreeSelectionHandler {
 			clearTimeout(this._doubleClickTimeoutId);
 		}
 
+		let isKeyboard = event && event.payload && event.payload.origin === 'keyboard';
+
 		// grab the current selection for use later
 		let selection = tree.getSelection();
 
-		this._doubleClickTimeoutId = setTimeout(function () {
+		this._doubleClickTimeoutId = setTimeout(() => {
 			// don't send tree update events while dragging
 			if (!TreeUpdateUtils.isInDragAndDrop) {
-				let isDoubleClick = self._clicks > 1;
-				self.handleTreeItemSelected(connectionManagementService, objectExplorerService, isDoubleClick, selection, tree);
+				let isDoubleClick = this._clicks > 1;
+				this.handleTreeItemSelected(connectionManagementService, objectExplorerService, isDoubleClick, isKeyboard, selection, tree);
 			}
-			self._clicks = 0;
-			self._doubleClickTimeoutId = -1;
+			this._clicks = 0;
+			this._doubleClickTimeoutId = -1;
 		}, 300);
 	}
 
@@ -72,9 +72,10 @@ export class TreeSelectionHandler {
 	 * @param connectionManagementService
 	 * @param objectExplorerService
 	 * @param isDoubleClick
+	 * @param isKeyboard
 	 * @param selection
 	 */
-	private handleTreeItemSelected(connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isDoubleClick: boolean, selection: any[], tree: ITree): void {
+	private handleTreeItemSelected(connectionManagementService: IConnectionManagementService, objectExplorerService: IObjectExplorerService, isDoubleClick: boolean, isKeyboard: boolean, selection: any[], tree: ITree): void {
 		let connectionProfile: ConnectionProfile = undefined;
 		let options: IConnectionCompletionOptions = {
 			params: undefined,
@@ -105,6 +106,10 @@ export class TreeSelectionHandler {
 					connectionManagementService.showDashboard(connectionProfile);
 				}
 			}
+		}
+
+		if (isKeyboard) {
+			tree.toggleExpansion(selection[0]);
 		}
 	}
 }
