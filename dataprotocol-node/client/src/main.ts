@@ -2123,8 +2123,8 @@ export class LanguageClient {
 		};
 
 		let fileBrowserProvider: FileBrowserProvider = {
-			openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean> {
-				let params: FileBrowserOpenParams = { ownerUri: ownerUri, expandPath: expandPath, fileFilters: fileFilters };
+			openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[], changeFilter: boolean): Thenable<boolean> {
+				let params: FileBrowserOpenParams = { ownerUri: ownerUri, expandPath: expandPath, fileFilters: fileFilters, changeFilter: changeFilter };
 				return self.sendRequest(FileBrowserOpenRequest.type, params, undefined).then(
 					(result) => {
 						return result;

@@ -1048,7 +1048,7 @@ declare module 'data' {
 	// File browser interfaces  -----------------------------------------------------------------------
 
 	export interface FileBrowserProvider {
-		openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean>;
+		openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[], changeFilter: boolean): Thenable<boolean>;
 		registerOnFileBrowserOpened(handler: (response: FileBrowserOpenedParams) => any);
 		expandFolderNode(ownerUri: string, expandPath: string): Thenable<boolean>;
 		registerOnFolderNodeExpanded(handler: (response: FileBrowserExpandedParams) => any);

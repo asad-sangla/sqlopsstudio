@@ -54,9 +54,9 @@ export class FileBrowserViewModel {
 		this._fileBrowserService.validateFilePaths(this._ownerUri, this._fileValidationServiceType, selectedFiles);
 	}
 
-	public openFileBrowser(filterIndex: number) {
+	public openFileBrowser(filterIndex: number, changeFilter: boolean) {
 		if (this._fileFilters[filterIndex]) {
-			this._fileBrowserService.openFileBrowser(this._ownerUri, this._expandPath, this._fileFilters[filterIndex].filters);
+			this._fileBrowserService.openFileBrowser(this._ownerUri, this._expandPath, this._fileFilters[filterIndex].filters, changeFilter);
 		}
 	}
 

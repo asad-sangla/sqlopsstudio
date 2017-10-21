@@ -124,7 +124,7 @@ export class FileBrowserDialog extends Modal {
 		this._fileBrowserTreeView = this._instantiationService.createInstance(FileBrowserTreeView);
 		this._fileBrowserTreeView.setOnClickedCallback((arg) => this.onClicked(arg));
 		this._fileBrowserTreeView.setOnDoubleClickedCallback((arg) => this.onDoubleClicked(arg));
-		this._viewModel.openFileBrowser(0);
+		this._viewModel.openFileBrowser(0, false);
 	}
 
 	/* enter key */
@@ -210,7 +210,7 @@ export class FileBrowserDialog extends Modal {
 
 	private onFilterSelectChanged(filterIndex) {
 		this.showSpinner();
-		this._viewModel.openFileBrowser(filterIndex);
+		this._viewModel.openFileBrowser(filterIndex, true);
 	}
 
 	private registerListeners(): void {

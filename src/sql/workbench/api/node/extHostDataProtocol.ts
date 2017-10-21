@@ -464,9 +464,9 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	/**
 	 * Open a file browser
 	 */
-	public $openFileBrowser(handle: number, ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean> {
+	public $openFileBrowser(handle: number, ownerUri: string, expandPath: string, fileFilters: string[], changeFilter: boolean): Thenable<boolean> {
 		return this._runWithProvider(handle, provider => {
-			return provider.fileBrowserProvider ? provider.fileBrowserProvider.openFileBrowser(ownerUri, expandPath, fileFilters)
+			return provider.fileBrowserProvider ? provider.fileBrowserProvider.openFileBrowser(ownerUri, expandPath, fileFilters, changeFilter)
 				: Promise.resolve(undefined);
 		});
 	}

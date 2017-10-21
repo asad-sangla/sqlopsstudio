@@ -249,8 +249,8 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		});
 
 		this._fileBrowserService.registerProvider(providerId, <data.FileBrowserProvider>{
-			openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean> {
-				return self._proxy.$openFileBrowser(handle, ownerUri, expandPath, fileFilters);
+			openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[], changeFilter: boolean): Thenable<boolean> {
+				return self._proxy.$openFileBrowser(handle, ownerUri, expandPath, fileFilters, changeFilter);
 			},
 			expandFolderNode(ownerUri: string, expandPath: string): Thenable<boolean> {
 				return self._proxy.$expandFolderNode(handle, ownerUri, expandPath);

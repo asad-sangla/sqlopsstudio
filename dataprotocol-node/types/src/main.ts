@@ -488,7 +488,8 @@ export interface RestoreDatabaseFileInfo {
 export interface FileBrowserOpenParams {
     ownerUri: string;
     expandPath: string;
-    fileFilters: string[];
+	fileFilters: string[];
+	changeFilter: boolean;
 }
 
 export interface FileTreeNode {

@@ -23,7 +23,7 @@ export class FileBrowserService implements IFileBrowserService {
 	private _onExpandFolder = new Emitter<FileNode>();
 	private _onPathValidate = new Emitter<data.FileBrowserValidatedParams>();
 	private _pathToFileNodeMap: { [path: string]: FileNode } = {};
-	private _expandResolveMap: { [ownerUri: string]: any }  = {};
+	private _expandResolveMap: { [key: string]: any }  = {};
 	static fileNodeId: number = 0;
 
 	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService,
@@ -46,11 +46,11 @@ export class FileBrowserService implements IFileBrowserService {
 		return this._onPathValidate.event;
 	}
 
-	public openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean> {
+	public openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[], changeFilter: boolean): Thenable<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
 			let provider = this.getProvider(ownerUri);
 		    if (provider) {
-				provider.openFileBrowser(ownerUri, expandPath, fileFilters).then(result => {
+				provider.openFileBrowser(ownerUri, expandPath, fileFilters, changeFilter).then(result => {
 					resolve(result);
 				}, error => {
 					reject(error);
@@ -79,7 +79,8 @@ export class FileBrowserService implements IFileBrowserService {
 			let provider = this.getProvider(fileNode.ownerUri);
 		    if (provider) {
 				provider.expandFolderNode(fileNode.ownerUri, fileNode.fullPath).then(result => {
-					self._expandResolveMap[fileNode.ownerUri] = resolve;
+					var mapKey = self.generateResolveMapKey(fileNode.ownerUri, fileNode.fullPath);
+					self._expandResolveMap[mapKey] = resolve;
 				}, error => {
 					reject(error);
 				});
@@ -90,7 +91,8 @@ export class FileBrowserService implements IFileBrowserService {
 	}
 
 	public onFolderNodeExpanded(handle: number, fileBrowserExpandedParams: data.FileBrowserExpandedParams) {
-		var expandResolve = this._expandResolveMap[fileBrowserExpandedParams.ownerUri];
+		var mapKey = this.generateResolveMapKey(fileBrowserExpandedParams.ownerUri, fileBrowserExpandedParams.expandPath);
+		var expandResolve = this._expandResolveMap[mapKey];
 		if (expandResolve) {
 			if (fileBrowserExpandedParams.succeeded === true)
 			{
@@ -138,6 +140,9 @@ export class FileBrowserService implements IFileBrowserService {
 		return Promise.resolve(undefined);
 	}
 
+	private generateResolveMapKey(ownerUri: string, expandPath: string): string {
+		return ownerUri + ':' + expandPath;
+	}
 	private getProvider(connectionUri: string): data.FileBrowserProvider {
 		let providerId: string = this._connectionService.getProviderIdFromUri(connectionUri);
 		if (providerId) {

@@ -40,7 +40,7 @@ export interface IFileBrowserService {
 	/**
 	 * Open file browser
 	 */
-	openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[]): Thenable<boolean>;
+	openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[], changeFilter: boolean): Thenable<boolean>;
 
 	/**
 	 * Event called when file browser is opened
