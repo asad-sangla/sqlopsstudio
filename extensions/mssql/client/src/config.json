@@ -420,7 +420,7 @@
 							"isIdentity": false,
 							"name": "failoverPartner",
 							"displayName": "Failover partner",
-							"description": "the name or network address of the instance of SQL Server that acts as a failover partner",
+							"description": "The name or network address of the instance of SQL Server that acts as a failover partner",
 							"groupName": " Source",
 							"valueType": "string",
 							"defaultValue": null,
