@@ -1340,10 +1340,10 @@ export class LanguageClient {
 	 */
 	private onConnectionReadyNotification<P>(type: NotificationType<P>, handler: NotificationHandler<P>): void {
 		this.onReady().then(() => {
-				this.resolveConnection().then((connection) => {
-					connection.onNotification(type, handler);
-				});
-			}
+			this.resolveConnection().then((connection) => {
+				connection.onNotification(type, handler);
+			});
+		}
 		);
 	}
 
@@ -2017,7 +2017,7 @@ export class LanguageClient {
 						self.logFailedRequest(ScriptingRequest.type, error);
 						return Promise.resolve(undefined);
 					}
-				);
+					);
 			},
 
 			scriptAsCreate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult> {
@@ -2062,6 +2062,19 @@ export class LanguageClient {
 						return Promise.resolve(undefined);
 					}
 					);
+			},
+
+			registerOnScriptingComplete(handler: (scriptingCompleteResult: ScriptingCompleteResult) => any) {
+				self.onConnectionReadyNotification(ScriptingCompleteNotification.type, (params: ScriptingCompleteResult) => {
+					handler({
+						canceled: params.canceled,
+						errorDetails: params.errorDetails,
+						errorMessage: params.errorMessage,
+						hasError: params.hasError,
+						success: params.success,
+						operationId: params.operationId
+					});
+				});
 			},
 		};
 

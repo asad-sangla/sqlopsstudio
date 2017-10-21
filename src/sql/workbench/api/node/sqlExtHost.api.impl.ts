@@ -156,6 +156,11 @@ export function createApiFactory(
 						extHostDataProvider.$onFilePathsValidated(provider.handle, response);
 					});
 
+					// Scripting callbacks
+					provider.scriptingProvider.registerOnScriptingComplete((response: data.ScriptingCompleteResult) => {
+						extHostDataProvider.$onScriptingComplete(provider.handle, response);
+					});
+
 					// Complete registration
 					return extHostDataProvider.$registerProvider(provider);
 				},

@@ -8,7 +8,7 @@ import { localize } from 'vs/nls';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
-import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IConnectionCompletionOptions, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction, ScriptDeleteAction } from 'sql/workbench/common/actions';
@@ -217,9 +217,10 @@ export class OEScriptCreateAction extends ScriptCreateAction {
 		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
 		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
 		@IScriptingService protected _scriptingService: IScriptingService,
-		@IInstantiationService private _instantiationService: IInstantiationService
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IErrorMessageService protected _errorMessageService: IErrorMessageService
 	) {
-		super(id, label, _queryEditorService, _connectionManagementService, _scriptingService);
+		super(id, label, _queryEditorService, _connectionManagementService, _scriptingService, _errorMessageService);
 	}
 
 	public run(actionContext: any): TPromise<boolean> {
@@ -253,9 +254,10 @@ export class OEScriptDeleteAction extends ScriptDeleteAction {
 		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
 		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
 		@IScriptingService protected _scriptingService: IScriptingService,
-		@IInstantiationService private _instantiationService: IInstantiationService
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IErrorMessageService protected _errorMessageService: IErrorMessageService
 	) {
-		super(id, label, _queryEditorService, _connectionManagementService, _scriptingService);
+		super(id, label, _queryEditorService, _connectionManagementService, _scriptingService, _errorMessageService);
 	}
 
 	public run(actionContext: any): TPromise<boolean> {

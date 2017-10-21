@@ -317,14 +317,14 @@ export abstract class ExtHostSerializationProviderShape {
 
 export abstract class MainThreadAccountManagementShape {
 	$registerAccountProvider(providerMetadata: data.AccountProviderMetadata, handle: number): Thenable<any> { throw ni(); }
-	$unregisterAccountProvider(handle: number): Thenable<any>  { throw ni(); }
+	$unregisterAccountProvider(handle: number): Thenable<any> { throw ni(); }
 
 	$performOAuthAuthorization(url: string, silent: boolean): Thenable<string> { throw ni(); }
 }
 
 export abstract class MainThreadResourceProviderShape {
 	$registerResourceProvider(providerMetadata: data.ResourceProviderMetadata, handle: number): Thenable<any> { throw ni(); }
-	$unregisterResourceProvider(handle: number): Thenable<any>  { throw ni(); }
+	$unregisterResourceProvider(handle: number): Thenable<any> { throw ni(); }
 }
 
 export abstract class MainThreadDataProtocolShape {
@@ -345,6 +345,7 @@ export abstract class MainThreadDataProtocolShape {
 	$onFileBrowserOpened(handle: number, response: data.FileBrowserOpenedParams): void { throw ni(); }
 	$onFolderNodeExpanded(handle: number, response: data.FileBrowserExpandedParams): void { throw ni(); }
 	$onFilePathsValidated(handle: number, response: data.FileBrowserValidatedParams): void { throw ni(); }
+	$onScriptingComplete(handle: number, message: data.ScriptingCompleteResult): void { throw ni(); }
 
 	/**
 	 * Callback when a session has completed initialization

@@ -367,6 +367,10 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		});
 	}
 
+	public $onScriptingComplete(handle: number, scriptingCompleteResult: data.ScriptingCompleteResult): void {
+		this._proxy.$onScriptingComplete(handle, scriptingCompleteResult);
+	}
+
 	/**
 	 * Create a new database on the provided connection
 	 */

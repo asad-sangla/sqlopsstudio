@@ -150,7 +150,8 @@ export class ScriptCreateAction extends Action {
 		id: string, label: string,
 		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
 		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
-		@IScriptingService protected _scriptingService: IScriptingService
+		@IScriptingService protected _scriptingService: IScriptingService,
+		@IErrorMessageService protected _errorMessageService: IErrorMessageService
 	) {
 		super(id, label);
 	}
@@ -165,6 +166,7 @@ export class ScriptCreateAction extends Action {
 				this._queryEditorService,
 				this._scriptingService,
 				ScriptOperation.Create,
+				this._errorMessageService
 			).then(
 				result => {
 					resolve(true);
@@ -185,7 +187,8 @@ export class ScriptDeleteAction extends Action {
 		id: string, label: string,
 		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
 		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
-		@IScriptingService protected _scriptingService: IScriptingService
+		@IScriptingService protected _scriptingService: IScriptingService,
+		@IErrorMessageService protected _errorMessageService: IErrorMessageService
 	) {
 		super(id, label);
 	}
@@ -199,7 +202,8 @@ export class ScriptDeleteAction extends Action {
 				this._connectionManagementService,
 				this._queryEditorService,
 				this._scriptingService,
-				ScriptOperation.Delete
+				ScriptOperation.Delete,
+				this._errorMessageService
 			).then(
 				result => {
 					resolve(true);

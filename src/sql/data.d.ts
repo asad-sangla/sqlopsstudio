@@ -417,6 +417,8 @@ declare module 'data' {
 		scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
 
 		scriptAsDelete(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
+
+		registerOnScriptingComplete(handler: (scriptingCompleteResult: ScriptingCompleteResult) => any);
 	}
 
 	export interface ScriptingCompleteResult {
@@ -429,6 +431,8 @@ declare module 'data' {
 		canceled: boolean;
 
 		success: boolean;
+
+		operationId: string;
 	}
 	/**
 	 * Data Management Protocol main provider class that DMP extensions should implement.

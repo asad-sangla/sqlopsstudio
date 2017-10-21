@@ -161,7 +161,12 @@ export function editData(connectionProfile: IConnectionProfile, tableName: strin
 /**
  * Script the object as a statement based on the provided action (except Select)
  */
-export function script(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string, connectionService: IConnectionManagementService, queryEditorService: IQueryEditorService, scriptingService: IScriptingService, operation: ScriptOperation): Promise<void> {
+export function script(connectionProfile: IConnectionProfile, metadata: data.ObjectMetadata, ownerUri: string,
+	connectionService: IConnectionManagementService,
+	queryEditorService: IQueryEditorService,
+	scriptingService: IScriptingService,
+	operation: ScriptOperation,
+	errorMessageService: IErrorMessageService): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		connectIfNotAlreadyConnected(connectionProfile, connectionService).then(connectionResult => {
 			let paramDetails = getScriptingParamDetails(connectionService, ownerUri, metadata);
@@ -170,8 +175,7 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 				if (result) {
 					let script: string = result.script;
 					let startPos: number = 0;
-					if(connectionProfile.providerName === "MSSQL")
-					{
+					if (connectionProfile.providerName === "MSSQL") {
 						startPos = getStartPos(script, operation, metadata.metadataTypeName);
 					}
 					if (startPos >= 0) {
@@ -183,6 +187,10 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 						});
 					}
 					else {
+						let operationResult = scriptingService.getOperationFailedResult(result.operationId);
+						if (errorMessageService && operationResult && operationResult.hasError && operationResult.errorMessage) {
+							errorMessageService.showDialog(Severity.Error, '', operationResult.errorMessage);
+						}
 						reject(errMsg.concat(operation.toString(), "on object", metadata.metadataTypeName));
 					}
 				} else {
@@ -296,15 +304,20 @@ export function openInsight(query: IInsightsConfig, profile: IConnectionProfile,
 
 /* Helper Methods */
 function getStartPos(script: string, operation: ScriptOperation, typeName: string): number {
-	let scriptTypeName = objectScriptMap.get(typeName).toLowerCase();
-	switch (operation) {
-		case (ScriptOperation.Create):
-			return script.toLowerCase().indexOf(`create ${scriptTypeName}`);
-		case (ScriptOperation.Delete):
-			return script.toLowerCase().indexOf(`drop ${scriptTypeName}`);
-		default:
-			/* script wasn't found for that object */
-			return -1;
+	let objectTypeName = objectScriptMap.get(typeName);
+	if (objectTypeName && script) {
+		let scriptTypeName = objectTypeName.toLowerCase();
+		switch (operation) {
+			case (ScriptOperation.Create):
+				return script.toLowerCase().indexOf(`create ${scriptTypeName}`);
+			case (ScriptOperation.Delete):
+				return script.toLowerCase().indexOf(`drop ${scriptTypeName}`);
+			default:
+				/* script wasn't found for that object */
+				return -1;
+		}
+	} else {
+		return -1;
 	}
 }
 

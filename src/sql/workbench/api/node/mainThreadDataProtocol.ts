@@ -8,7 +8,8 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import {
 	SqlExtHostContext, ExtHostDataProtocolShape,
-	MainThreadDataProtocolShape, SqlMainContext } from 'sql/workbench/api/node/sqlExtHost.protocol';
+	MainThreadDataProtocolShape, SqlMainContext
+} from 'sql/workbench/api/node/sqlExtHost.protocol';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
@@ -296,6 +297,11 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	}
 	public $onEditSessionReady(handle: number, ownerUri: string, success: boolean, message: string): void {
 		this._queryManagementService.onEditSessionReady(ownerUri, success, message);
+	}
+
+	// Script Handlers
+	public $onScriptingComplete(handle: number, scriptingCompleteResult: data.ScriptingCompleteResult): void {
+		this._scriptingService.onScriptingComplete(handle, scriptingCompleteResult);
 	}
 
 	//OE handlers
