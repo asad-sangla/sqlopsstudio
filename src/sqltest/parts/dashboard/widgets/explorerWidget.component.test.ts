@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ExplorerWidget, ObjectMetadataWrapper } from 'sql/parts/dashboard/widgets/explorer/explorerWidget.component';
+import { ObjectMetadataWrapper } from 'sql/parts/dashboard/widgets/explorer/explorerWidget.component';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 
 import * as assert from 'assert';
@@ -50,7 +50,7 @@ suite('Explorer Widget Tests', () => {
 			]);
 
 		// If I sort the object metadata wrapper list using ExplorerWidget's sort function
-		let sortedMetadata = testMetadata.slice().sort((ExplorerWidget as any).schemaSort);
+		let sortedMetadata = testMetadata.slice().sort(ObjectMetadataWrapper.sort);
 
 		// Then the resulting list is sorted by type, with Table > View > Stored Procedures > Function, then by name
 		let expectedList = [testMetadata[1], testMetadata[4], testMetadata[0], testMetadata[2], testMetadata[3]];

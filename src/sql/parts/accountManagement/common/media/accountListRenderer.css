@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.list-row {
+.list-row.account-picker-list {
 	display: flex;
 	align-items: flex-start;
 }
 
-.list-row .label {
+.list-row.account-picker-list .label {
 	flex: 1 1 auto;
 	margin-left: 15px;
 }
 
-.list-row .label .contextual-display-name {
+.list-row.account-picker-list .label .contextual-display-name {
 	font-size: 15px;
 }
 
-.list-row .label .content {
+.list-row.account-picker-list .label .content {
 	opacity: 0.7;
 }
 

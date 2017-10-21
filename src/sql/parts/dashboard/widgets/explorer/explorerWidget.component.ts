@@ -5,6 +5,7 @@
 
 import 'vs/css!sql/media/objectTypes/objecttypes';
 import 'vs/css!sql/media/icons/common-icons';
+import 'vs/css!./media/explorerWidget';
 
 import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
@@ -17,27 +18,45 @@ import { BaseActionContext } from 'sql/workbench/common/actions';
 import { GetExplorerActions } from './explorerActions';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { warn } from 'sql/base/common/log';
+import { MultipleRequestDelayer } from 'sql/base/common/async';
 
 import { IDisposable } from 'vs/base/common/lifecycle';
-import * as colors from 'vs/platform/theme/common/colorRegistry';
-import { registerThemingParticipant, ICssStyleCollector, ITheme } from 'vs/platform/theme/common/themeService';
 import { InputBox, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
-import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
+import { attachInputBoxStyler, attachListStyler } from 'vs/platform/theme/common/styler';
 import * as nls from 'vs/nls';
+import { List } from 'vs/base/browser/ui/list/listWidget';
+import { IDelegate, IRenderer } from 'vs/base/browser/ui/list/list';
+import * as types from 'vs/base/common/types';
+import { $, getContentHeight } from 'vs/base/browser/dom';
+import { Delayer } from 'vs/base/common/async';
 
 import { ObjectMetadata } from 'data';
 
-export class ObjectMetadataWrapper {
-	public metadata: ObjectMetadata;
+export class ObjectMetadataWrapper implements ObjectMetadata {
+	public metadataType: MetadataType;
+	public metadataTypeName: string;
+	public urn: string;
+	public name: string;
+	public schema: string;
 
-	public isEqualTo(wrapper: ObjectMetadataWrapper): boolean {
-		if (!wrapper) {
+	constructor(from?: ObjectMetadata) {
+		if (from) {
+			this.metadataType = from.metadataType;
+			this.metadataTypeName = from.metadataTypeName;
+			this.urn = from.urn;
+			this.name = from.name;
+			this.schema = from.schema;
+		}
+	}
+
+	public matches(other: ObjectMetadataWrapper): boolean {
+		if (!other) {
 			return false;
 		}
 
-		return this.metadata.metadataType === wrapper.metadata.metadataType
-			&& this.metadata.schema === wrapper.metadata.schema
-			&& this.metadata.name === wrapper.metadata.name;
+		return this.metadataType === other.metadataType
+			&& this.schema === other.schema
+			&& this.name === other.name;
 	}
 
 	public static createFromObjectMetadata(objectMetadata: ObjectMetadata[]): ObjectMetadataWrapper[] {
@@ -45,21 +64,111 @@ export class ObjectMetadataWrapper {
 			return undefined;
 		}
 
-		let wrapperArray = new Array(objectMetadata.length);
-		for (let i = 0; i < objectMetadata.length; ++i) {
-			wrapperArray[i] = <ObjectMetadataWrapper>{
-				metadata: objectMetadata[i]
-			};
+		return objectMetadata.map(m => new ObjectMetadataWrapper(m));
+	}
+
+
+	// custom sort : Table > View > Stored Procedures > Function
+	public static sort(metadataWrapper1: ObjectMetadataWrapper, metadataWrapper2: ObjectMetadataWrapper): number {
+		let metadata1 = metadataWrapper1;
+		let metadata2 = metadataWrapper2;
+		if (metadata1.metadataType < metadata2.metadataType) {
+			return -1;
+		} else if (metadata1.metadataType === metadata2.metadataType) {
+			return metadata1.name.localeCompare(metadata2.name);
+		} else {
+			return 1;
 		}
-		return wrapperArray;
 	}
 }
 
-interface Colors {
-	selectionColor: string;
-	hoverColor: string;
-	backgroundColor: string;
-	border: string;
+declare type ListResource = string | ObjectMetadataWrapper;
+
+enum TemplateIds {
+	STRING = 'string',
+	METADATA = 'metadata'
+}
+
+interface IListTemplate {
+	icon?: HTMLElement;
+	label: HTMLElement;
+}
+
+class Delegate implements IDelegate<ListResource> {
+	getHeight(element: ListResource): number {
+		return 22;
+	}
+
+	getTemplateId(element: ListResource): string {
+		if (element instanceof ObjectMetadataWrapper) {
+			return TemplateIds.METADATA.toString();
+		} else if (types.isString(element)) {
+			return TemplateIds.STRING.toString();
+		} else {
+			return '';
+		}
+	}
+}
+
+class StringRenderer implements IRenderer<string, IListTemplate> {
+	public readonly templateId = TemplateIds.STRING.toString();
+
+	renderTemplate(container: HTMLElement): IListTemplate {
+		let row = $('.list-row');
+		let icon = $('.icon.database');
+		let label = $('.label');
+		row.appendChild(icon);
+		row.appendChild(label);
+		container.appendChild(row);
+		return { icon, label };
+	}
+
+	renderElement(element: string, index: number, templateData: IListTemplate): void {
+		templateData.label.innerText = element;
+	}
+
+	disposeTemplate(templateData: IListTemplate): void {
+		// no op
+	}
+}
+
+class MetadataRenderer implements IRenderer<ObjectMetadataWrapper, IListTemplate> {
+	public readonly templateId = TemplateIds.METADATA.toString();
+
+	renderTemplate(container: HTMLElement): IListTemplate {
+		let row = $('.list-row');
+		let icon = $('.icon');
+		let label = $('.label');
+		row.appendChild(icon);
+		row.appendChild(label);
+		container.appendChild(row);
+		return { icon, label };
+	}
+
+	renderElement(element: ObjectMetadataWrapper, index: number, templateData: IListTemplate): void {
+		if (element && element) {
+			switch (element.metadataType) {
+				case MetadataType.Function:
+					templateData.icon.classList.add('scalarvaluedfunction');
+					break;
+				case MetadataType.SProc:
+					templateData.icon.classList.add('stored-procedure');
+					break;
+				case MetadataType.Table:
+					templateData.icon.classList.add('table');
+					break;
+				case MetadataType.View:
+					templateData.icon.classList.add('view');
+					break;
+			}
+
+			templateData.label.innerText = element.schema + '.' + element.name;
+		}
+	}
+
+	disposeTemplate(templateData: IListTemplate): void {
+		// no op
+	}
 }
 
 @Component({
@@ -68,25 +177,17 @@ interface Colors {
 })
 export class ExplorerWidget extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
 
-	private tableData: ObjectMetadataWrapper[] | string[];
-	private selectedRow: ObjectMetadataWrapper;
-	private isCloud: boolean;
-	//tslint:disable-next-line
-	private dataType = MetadataType;
-	private filterString = '';
-	private selected: number;
-	private hovered: number;
+	private _isCloud: boolean;
+	private _tableData: ListResource[];
 	private _disposables: Array<IDisposable> = [];
-	//tslint:disable-next-line
-	private filterArray = [
-		'view',
-		'table',
-		'proc',
-		'func'
-	];
+	private _input: InputBox;
+	private _table: List<ListResource>;
+	private _lastClickedItem: ListResource;
+	private _filterDelayer = new Delayer<void>(200);
+	private _dblClickDelayer = new MultipleRequestDelayer<void>(500);
 
-	@ViewChild('input') private inputContainer: ElementRef;
-	private input: InputBox;
+	@ViewChild('input') private _inputContainer: ElementRef;
+	@ViewChild('table') private _tableContainer: ElementRef;
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) private _bootstrap: DashboardServiceInterface,
@@ -96,7 +197,7 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		@Inject(forwardRef(() => ElementRef)) private _el: ElementRef
 	) {
 		super();
-		this.isCloud = _bootstrap.connectionManagementService.connectionInfo.serverInfo.isCloud;
+		this._isCloud = _bootstrap.connectionManagementService.connectionInfo.serverInfo.isCloud;
 		this.init();
 	}
 
@@ -104,47 +205,32 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		let inputOptions: IInputOptions = {
 			placeholder: this._config.context === 'database' ? nls.localize('seachObjects', 'Search by name of type (a:, t:, v:, f:, or sp:)') : nls.localize('searchDatabases', 'Search databases')
 		};
-		this.input = new InputBox(this.inputContainer.nativeElement, this._bootstrap.contextViewService, inputOptions);
-		this._disposables.push(this.input.onDidChange(e => {
-			if (this.filterString !== e) {
-				this.filterString = e;
-				this._changeRef.detectChanges();
+		this._input = new InputBox(this._inputContainer.nativeElement, this._bootstrap.contextViewService, inputOptions);
+		this._disposables.push(this._input.onDidChange(e => {
+			this._filterDelayer.trigger(() => {
+				this._table.splice(0, this._table.length, this._filterTable(e));
+			});
+		}));
+		this._table = new List<ListResource>(this._tableContainer.nativeElement, new Delegate(), [new MetadataRenderer(), new StringRenderer()]);
+		this._disposables.push(this._table.onContextMenu(e => {
+			this.handleContextMenu(e.element, e.index, e.anchor);
+		}));
+		this._disposables.push(this._table.onSelectionChange(e => {
+			if (e.elements.length > 0 && this._lastClickedItem === e.elements[0]) {
+				this._dblClickDelayer.trigger(() => this.handleItemDoubleClick(e.elements[0]));
+			} else {
+				this._lastClickedItem = e.elements.length > 0 ? e.elements[0] : undefined;
 			}
 		}));
-		this._disposables.push(registerThemingParticipant(this.registerThemeing));
-		this._disposables.push(this.input);
-		this._disposables.push(attachInputBoxStyler(this.input, this._bootstrap.themeService));
+		this._table.layout(getContentHeight(this._tableContainer.nativeElement));
+		this._disposables.push(this._input);
+		this._disposables.push(attachInputBoxStyler(this._input, this._bootstrap.themeService));
+		this._disposables.push(this._table);
+		this._disposables.push(attachListStyler(this._table, this._bootstrap.themeService));
 	}
 
 	ngOnDestroy() {
 		this._disposables.forEach(i => i.dispose());
-	}
-
-	private registerThemeing(theme: ITheme, collector: ICssStyleCollector) {
-		let selectionBackground = theme.getColor(colors.listActiveSelectionBackground);
-		let hoverColor = theme.getColor(colors.listHoverBackground);
-		let backgroundColor = theme.getColor(colors.editorBackground);
-		let contrastBorder = theme.getColor(colors.contrastBorder);
-		let activeContrastBorder = theme.getColor(colors.activeContrastBorder);
-		if (backgroundColor) {
-			let backgroundString = backgroundColor.toString();
-			collector.addRule(`.explorer-widget .explorer-table .explorer-row { background-color: ${backgroundString} }`);
-		}
-		if (hoverColor) {
-			let hoverString = hoverColor.toString();
-			collector.addRule(`.explorer-widget .explorer-table .explorer-row.hover { background-color: ${hoverString} }`);
-		}
-		if (selectionBackground) {
-			let selectionString = selectionBackground.toString();
-			collector.addRule(`.explorer-widget .explorer-table .explorer-row.selected { background-color: ${selectionString} }`);
-			collector.addRule(`.explorer-widget .explorer-table .explorer-row.selected { color: white }`);
-		}
-		if (contrastBorder) {
-			let contrastBorderString = activeContrastBorder.toString();
-			collector.addRule(`.explorer-widget .explorer-table .explorer-row { border: 1px solid transparent}`);
-			collector.addRule(`.explorer-widget .explorer-table .explorer-row.hover { border: 1px dotted ${contrastBorderString} }`);
-			collector.addRule(`.explorer-widget .explorer-table .explorer-row.selected { border: 1px solid ${contrastBorderString} }`);
-		}
 	}
 
 	private init(): void {
@@ -152,13 +238,10 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 			this._disposables.push(toDisposableSubscription(this._bootstrap.metadataService.metadata.subscribe(
 				data => {
 					if (data) {
-						this.tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
-						this.tableData.sort(ExplorerWidget.schemaSort);
-						if (this.tableData.length > 0) {
-							this.selectedRow = this.tableData[0];
-						}
+						this._tableData = ObjectMetadataWrapper.createFromObjectMetadata(data.objectMetadata);
+						this._tableData.sort(ObjectMetadataWrapper.sort);
+						this._table.splice(0, this._table.length, this._tableData);
 					}
-					this._changeRef.detectChanges();
 				},
 				error => {
 					(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.explorer.objectError', "Unable to load objects");
@@ -167,8 +250,8 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		} else {
 			this._disposables.push(toDisposableSubscription(this._bootstrap.metadataService.databaseNames.subscribe(
 				data => {
-					this.tableData = data;
-					this._changeRef.detectChanges();
+					this._tableData = data;
+					this._table.splice(0, this._table.length, this._tableData);
 				},
 				error => {
 					(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.explorer.databaseError', "Unable to load databases");
@@ -177,47 +260,18 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 		}
 	}
 
-	// custom sort : Table > View > Stored Procedures > Function
-	private static schemaSort(metadataWrapper1: ObjectMetadataWrapper, metadataWrapper2: ObjectMetadataWrapper): number {
-		let metadata1 = metadataWrapper1.metadata;
-		let metadata2 = metadataWrapper2.metadata;
-		if (metadata1.metadataType < metadata2.metadataType) {
-			return -1;
-		} else if (metadata1.metadataType === metadata2.metadataType) {
-			return metadata1.name.localeCompare(metadata2.name);
-		} else {
-			return 1;
-		}
-	}
-
-	//tslint:disable-next-line
-	private handleFilterMenu(filterVal: string): void {
-		this.filterString = filterVal + ':' + this.filterString;
-	}
-
-	//tslint:disable-next-line
-	private handleHover(index: number, enter: boolean): void {
-		if (this.hovered === index && !enter) {
-			this.hovered = undefined;
-		} else {
-			this.hovered = index;
-		}
-
-		this._changeRef.detectChanges();
-	}
-
 	/**
 	 * Handles action when an item is double clicked in the explorer widget
 	 * @param val If on server page, explorer objects will be strings representing databases;
 	 * If on databasepage, explorer objects will be ObjectMetadataWrapper representing object types;
 	 *
 	 */
-	//tslint:disable-next-line
-	private handleItemDoubleClick(val: string | ObjectMetadataWrapper): void {
-		let self = this;
-		self._bootstrap.connectionManagementService.changeDatabase(val as string).then(result => {
-			self._router.navigate(['database-dashboard']);
-		});
+	private handleItemDoubleClick(val: ListResource): void {
+		if (types.isString(val)) {
+			this._bootstrap.connectionManagementService.changeDatabase(val as string).then(result => {
+				this._router.navigate(['database-dashboard']);
+			});
+		}
 	}
 
 	/**
@@ -227,46 +281,102 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 	 * @param index Index of the value in the array the ngFor template is built from
 	 * @param event Click event
 	 */
-	//tslint:disable-next-line
-	private handleItemClick(val: string | ObjectMetadataWrapper, index: number, event: any): void {
-		let self = this;
-		self.selected = index;
+	private handleContextMenu(val: ListResource, index: number, anchor: HTMLElement | { x: number, y: number }): void {
 		// event will exist if the context menu span was clicked
 		if (event) {
-			if (self._config.context === 'server') {
-				let anchor = { x: event.pageX + 1, y: event.pageY };
-				let newProfile = <IConnectionProfile>Object.create(self._bootstrap.connectionManagementService.connectionInfo.connectionProfile);
+			if (this._config.context === 'server') {
+				let newProfile = <IConnectionProfile>Object.create(this._bootstrap.connectionManagementService.connectionInfo.connectionProfile);
 				newProfile.databaseName = val as string;
-				self._bootstrap.contextMenuService.showContextMenu({
+				this._bootstrap.contextMenuService.showContextMenu({
 					getAnchor: () => anchor,
-					getActions: () => GetExplorerActions(undefined, self.isCloud, self._bootstrap),
+					getActions: () => GetExplorerActions(undefined, this._isCloud, this._bootstrap),
 					getActionsContext: () => {
 						return <BaseActionContext>{
-							uri: self._bootstrap.getUnderlyingUri(),
+							uri: this._bootstrap.getUnderlyingUri(),
 							profile: newProfile,
-							connInfo: self._bootstrap.connectionManagementService.connectionInfo,
+							connInfo: this._bootstrap.connectionManagementService.connectionInfo,
 							databasename: val as string
 						};
 					}
 				});
-			} else if (self._config.context === 'database') {
+			} else if (this._config.context === 'database') {
 				let object = val as ObjectMetadataWrapper;
-				let anchor = { x: event.pageX + 1, y: event.pageY };
-				self._bootstrap.contextMenuService.showContextMenu({
+				this._bootstrap.contextMenuService.showContextMenu({
 					getAnchor: () => anchor,
-					getActions: () => GetExplorerActions(object.metadata.metadataType, self.isCloud, self._bootstrap),
+					getActions: () => GetExplorerActions(object.metadataType, this._isCloud, this._bootstrap),
 					getActionsContext: () => {
 						return <BaseActionContext>{
-							object: object.metadata,
-							uri: self._bootstrap.getUnderlyingUri(),
-							profile: self._bootstrap.connectionManagementService.connectionInfo.connectionProfile
+							object: object,
+							uri: this._bootstrap.getUnderlyingUri(),
+							profile: this._bootstrap.connectionManagementService.connectionInfo.connectionProfile
 						};
 					}
 				});
 			} else {
-				warn('Unknown dashboard context: ', self._config.context);
+				warn('Unknown dashboard context: ', this._config.context);
 			}
 		}
-		self._changeRef.detectChanges();
+		this._changeRef.detectChanges();
+	}
+
+	private _filterTable(val: string): ListResource[] {
+		let items = this._tableData;
+		if (!items) {
+			return items;
+		}
+
+		// format filter string for clean filter, no white space and lower case
+		let filterString = val.trim().toLowerCase();
+
+		// handle case when passed a string array
+		if (types.isString(items[0])) {
+			let _items = <string[]>items;
+			return _items.filter(item => {
+				return item.toLowerCase().includes(filterString);
+			});
+		}
+
+		// make typescript compiler happy
+		let objectItems = items as ObjectMetadataWrapper[];
+
+		// determine is a filter is applied
+		let metadataType: MetadataType;
+
+		if (val.includes(':')) {
+			let filterArray = filterString.split(':');
+
+			if (filterArray.length > 2) {
+				filterString = filterArray.slice(1, filterArray.length - 1).join(':');
+			} else {
+				filterString = filterArray[1];
+			}
+
+			switch (filterArray[0].toLowerCase()) {
+				case 'v':
+					metadataType = MetadataType.View;
+					break;
+				case 't':
+					metadataType = MetadataType.Table;
+					break;
+				case 'sp':
+					metadataType = MetadataType.SProc;
+					break;
+				case 'f':
+					metadataType = MetadataType.Function;
+					break;
+				case 'a':
+					return objectItems;
+				default:
+					break;
+			}
+		}
+
+		return objectItems.filter(item => {
+			if (metadataType !== undefined) {
+				return item.metadataType === metadataType && (item.schema + '.' + item.name).toLowerCase().includes(filterString);
+			} else {
+				return (item.schema + '.' + item.name).toLowerCase().includes(filterString);
+			}
+		});
 	}
 }

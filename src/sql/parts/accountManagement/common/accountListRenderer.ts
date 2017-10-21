@@ -54,7 +54,7 @@ export class AccountPickerListRenderer implements IRenderer<data.Account, Accoun
 	public renderTemplate(container: HTMLElement): AccountListTemplate {
 		const tableTemplate: AccountListTemplate = Object.create(null);
 		const badge = DOM.$('div.badge');
-		tableTemplate.root = DOM.append(container, DOM.$('div.list-row'));
+		tableTemplate.root = DOM.append(container, DOM.$('div.list-row.account-picker-list'));
 		tableTemplate.icon = DOM.append(tableTemplate.root, DOM.$('div.icon'));
 		DOM.append(tableTemplate.icon, badge);
 		tableTemplate.badgeContent = DOM.append(badge, DOM.$('div.badge-content'));

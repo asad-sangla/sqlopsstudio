@@ -39,11 +39,9 @@ let pageComponents = [ServerDashboardPage, DatabaseDashboardPage];
 /* Widget Components */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
 import { ExplorerWidget } from 'sql/parts/dashboard/widgets/explorer/explorerWidget.component';
-import { ExplorerFilter } from 'sql/parts/dashboard/widgets/explorer/explorerFilter.pipe';
 import { TasksWidget } from 'sql/parts/dashboard/widgets/tasks/tasksWidget.component';
 import { InsightsWidget } from 'sql/parts/dashboard/widgets/insights/insightsWidget.component';
 let widgetComponents = [PropertiesWidgetComponent, ExplorerWidget, TasksWidget, InsightsWidget];
-let widgetFilters = [ExplorerFilter];
 
 /* Insights */
 let insightComponents = Registry.as<IInsightRegistry>(Extensions.InsightContribution).getAllCtors();
@@ -66,7 +64,6 @@ const appRoutes: Routes = [
 		...baseComponents,
 		...pageComponents,
 		...widgetComponents,
-		...widgetFilters,
 		...insightComponents
 	],
 	// also for widgets
