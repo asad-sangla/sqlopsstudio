@@ -7,9 +7,10 @@
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeView';
+import { ConnectionManagementService } from 'sql/parts/connection/common/connectionManagementService';
 
 import { Tree } from 'vs/base/parts/tree/browser/treeImpl';
-import { TestInstantiationService } from "vs/platform/instantiation/test/common/instantiationServiceMock";
+import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
 
 import * as TypeMoq from 'typemoq';
 
@@ -21,11 +22,14 @@ suite('ServerTreeView onAddConnectionProfile handler tests', () => {
 
 	setup(() => {
 		let instantiationService = new TestInstantiationService();
-		serverTreeView = new ServerTreeView(undefined, instantiationService, undefined, undefined, undefined);
+		let mockConnectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Strict, {}, {});
+		mockConnectionManagementService.setup(x => x.getConnectionGroups()).returns(x => []);
+		serverTreeView = new ServerTreeView(mockConnectionManagementService.object, instantiationService, undefined, undefined, undefined);
 		let tree = <Tree>{
 			clearSelection() { },
 			getSelection() { },
-			select(selection) { }
+			select(selection) { },
+			reveal(reveal) { }
 		};
 		mockTree = TypeMoq.Mock.ofInstance(tree);
 		(serverTreeView as any)._tree = mockTree.object;

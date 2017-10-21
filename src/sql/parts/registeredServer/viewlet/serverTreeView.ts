@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/serverTreeActions';
-import errors = require('vs/base/common/errors');
+import * as errors from 'vs/base/common/errors';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import ConnectionUtils = require('sql/parts/connection/common/utils');
+import * as ConnectionUtils from 'sql/parts/connection/common/utils';
 import { ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import * as builder from 'vs/base/browser/builder';
@@ -23,7 +23,6 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import * as data from 'data';
 
 const $ = builder.$;
 
@@ -119,6 +118,14 @@ export class ServerTreeView {
 	}
 
 	private handleAddConnectionProfile(newProfile: IConnectionProfile) {
+		if (newProfile) {
+			let groups = this._connectionManagementService.getConnectionGroups();
+			let profile = ConnectionUtils.findProfileInGroup(newProfile, groups);
+			if (profile) {
+				newProfile = profile;
+			}
+		}
+
 		if (this._buttonSection) {
 			this._buttonSection.getHTMLElement().style.display = 'none';
 			this._activeConnectionsFilterAction.enabled = true;
@@ -131,6 +138,7 @@ export class ServerTreeView {
 		}
 		this.refreshTree();
 		if (newProfile && !newProfileIsSelected) {
+			this._tree.reveal(newProfile);
 			this._tree.select(newProfile);
 		}
 	}

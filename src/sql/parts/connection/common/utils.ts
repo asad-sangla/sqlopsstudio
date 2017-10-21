@@ -6,6 +6,8 @@
 'use strict';
 
 import { IConnectionProfile } from './interfaces';
+import { ConnectionProfile } from './connectionProfile';
+import { ConnectionProfileGroup } from './connectionProfileGroup';
 
 // CONSTANTS //////////////////////////////////////////////////////////////////////////////////////
 const msInH = 3.6e6;
@@ -122,4 +124,23 @@ export function generateUriWithPrefix(connection: IConnectionProfile, prefix: st
 	let uri = prefix + (id ? id : connection.serverName + ':' + connection.databaseName);
 
 	return uri;
+}
+
+export function findProfileInGroup(og: IConnectionProfile, groups: ConnectionProfileGroup[]): ConnectionProfile {
+	for (let group of groups) {
+		for (let conn of group.connections) {
+			if (conn.id === og.id) {
+				return conn;
+			}
+		}
+
+		if (group.hasChildren()) {
+			let potentialReturn = findProfileInGroup(og, group.children);
+			if (potentialReturn) {
+				return potentialReturn;
+			}
+		}
+	}
+
+	return undefined;
 }
