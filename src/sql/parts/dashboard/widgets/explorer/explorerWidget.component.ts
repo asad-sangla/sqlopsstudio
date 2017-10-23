@@ -69,15 +69,27 @@ export class ObjectMetadataWrapper implements ObjectMetadata {
 
 
 	// custom sort : Table > View > Stored Procedures > Function
-	public static sort(metadataWrapper1: ObjectMetadataWrapper, metadataWrapper2: ObjectMetadataWrapper): number {
-		let metadata1 = metadataWrapper1;
-		let metadata2 = metadataWrapper2;
+	public static sort(metadata1: ObjectMetadataWrapper, metadata2: ObjectMetadataWrapper): number {
+		// compare the object type
 		if (metadata1.metadataType < metadata2.metadataType) {
 			return -1;
-		} else if (metadata1.metadataType === metadata2.metadataType) {
-			return metadata1.name.localeCompare(metadata2.name);
-		} else {
+		} else if (metadata1.metadataType > metadata2.metadataType) {
 			return 1;
+
+		// otherwise compare the schema
+		} else {
+			let schemaCompare: number = metadata1.schema && metadata2.schema
+				? metadata1.schema.localeCompare(metadata2.schema)
+				// schemas are not expected to be undefined, but if they are then compare using object names
+				: 0;
+
+			if (schemaCompare !== 0) {
+				return schemaCompare;
+
+			// otherwise compare the object name
+			} else {
+				return metadata1.name.localeCompare(metadata2.name);
+			}
 		}
 	}
 }
