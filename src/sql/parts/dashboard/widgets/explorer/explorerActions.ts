@@ -27,8 +27,6 @@ export function GetExplorerActions(type: MetadataType, isCloud: boolean, dashboa
 		return TPromise.as(actions);
 	}
 
-	actions.push(dashboardService.instantiationService.createInstance(ScriptCreateAction, ScriptCreateAction.ID, ScriptCreateAction.LABEL));
-
 	if (type === MetadataType.View || type === MetadataType.Table) {
 		actions.push(dashboardService.instantiationService.createInstance(ScriptSelectAction, ScriptSelectAction.ID, ScriptSelectAction.LABEL));
 	}
@@ -36,6 +34,8 @@ export function GetExplorerActions(type: MetadataType, isCloud: boolean, dashboa
 	if (type === MetadataType.Table) {
 		actions.push(dashboardService.instantiationService.createInstance(EditDataAction, EditDataAction.ID, EditDataAction.LABEL));
 	}
+
+	actions.push(dashboardService.instantiationService.createInstance(ScriptCreateAction, ScriptCreateAction.ID, ScriptCreateAction.LABEL));
 
 	return TPromise.as(actions);
 }
