@@ -78,7 +78,7 @@ export class FileBrowserTreeView {
 			dataSource, renderer, controller, dnd, filter, sorter, accessibilityProvider
 		}, {
 				indentPixels: 10,
-				twistiePixels: 20,
+				twistiePixels: 12,
 				ariaLabel: nls.localize({ key: 'regTreeAriaLabel', comment: ['FileBrowserTree'] }, 'File browser tree')
 			});
 	}

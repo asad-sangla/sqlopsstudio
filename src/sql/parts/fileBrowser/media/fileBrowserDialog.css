@@ -39,3 +39,20 @@
 	height: 22px;
 	line-height: 22px;
 }
+
+.file-browser-dialog .show-file-icons .monaco-tree-row .content {
+	display: flex;
+}
+
+.file-browser-dialog .monaco-tree .monaco-tree-rows.show-twisties > .monaco-tree-row.has-children > .content:before {
+	background-size: 16px;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	padding-right: 6px;
+	width: 16px;
+	height: 22px;
+	display: inline-block;
+	vertical-align: top;
+	content: ' ';
+	position: initial;
+}
