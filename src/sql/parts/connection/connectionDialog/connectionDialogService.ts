@@ -216,6 +216,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private handleFillInConnectionInputs(connectionInfo: IConnectionProfile): void {
 		this._connectionManagementService.addSavedPassword(connectionInfo).then(connectionWithPassword => {
 			var model = this.createModel(connectionWithPassword);
+			this._model = model;
 			this.uiController.fillInConnectionInputs(model);
 		});
 		this._connectionDialog.updateProvider(this._providerNameToDisplayNameMap[connectionInfo.providerName]);
