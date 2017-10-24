@@ -9,7 +9,9 @@ import { NgGridConfig } from 'angular2-grid';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
+import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 
+import { Registry } from 'vs/platform/registry/common/platform';
 import * as types from 'vs/base/common/types';
 import { Severity } from 'vs/platform/message/common/message';
 import * as nls from 'vs/nls';
@@ -57,7 +59,9 @@ export abstract class DashboardPage {
 
 	// a set of config modifiers
 	private readonly _configModifiers: Array<(item: Array<WidgetConfig>) => Array<WidgetConfig>> = [
-		this.validateConfig,
+		this.removeEmpty,
+		this.initExtensionConfigs,
+		this.validateGridConfig,
 		this.addProvider,
 		this.addEdition,
 		this.addContext,
@@ -176,14 +180,51 @@ export abstract class DashboardPage {
 	 * Validates configs to make sure nothing will error out and returns the modified widgets
 	 * @param config Array of widgets to validate
 	 */
-	protected validateConfig(config: WidgetConfig[]): Array<WidgetConfig> {
+	protected removeEmpty(config: WidgetConfig[]): Array<WidgetConfig> {
 		return config.filter(widget => {
 			return !types.isUndefinedOrNull(widget);
-		}).map((widget) => {
+		});
+	}
+
+	/**
+	 * Validates configs to make sure nothing will error out and returns the modified widgets
+	 * @param config Array of widgets to validate
+	 */
+	protected validateGridConfig(config: WidgetConfig[]): Array<WidgetConfig> {
+		return config.map((widget) => {
 			if (widget.gridItemConfig === undefined) {
 				widget.gridItemConfig = {};
 			}
 			return widget;
+		});
+	}
+
+	protected initExtensionConfigs(configurations: WidgetConfig[]): Array<WidgetConfig> {
+		let widgetRegistry = <IInsightRegistry>Registry.as(Extensions.InsightContribution);
+		return configurations.map((config) => {
+			if (config.widget && Object.keys(config.widget).length === 1) {
+				let key = Object.keys(config.widget)[0];
+				let insightConfig = widgetRegistry.getRegisteredExtensionInsights(key);
+				if (insightConfig !== undefined) {
+					// Setup the default properties for this extension if needed
+					if (!config.provider && insightConfig.provider) {
+						config.provider = insightConfig.provider;
+					}
+					if (!config.name && insightConfig.name) {
+						config.name = insightConfig.name;
+					}
+					if (!config.edition && insightConfig.edition) {
+						config.edition = insightConfig.edition;
+					}
+					if (!config.gridItemConfig && insightConfig.gridItemConfig) {
+						config.gridItemConfig = {
+							sizex: insightConfig.gridItemConfig.x,
+							sizey: insightConfig.gridItemConfig.y
+						};
+					}
+				}
+			}
+			return config;
 		});
 	}
 

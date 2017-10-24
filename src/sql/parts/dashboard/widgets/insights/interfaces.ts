@@ -42,9 +42,18 @@ export interface IInsightsView {
 	init?: () => void;
 }
 
+export interface ISize {
+	x: number;
+	y: number;
+}
+
 export interface IInsightsConfig {
 	cacheId?: string;
 	type: any;
+	name?: string;
+	provider?: string;
+	edition?: number | Array<number>;
+	gridItemConfig?: ISize;
 	query?: string | Array<string>;
 	queryFile?: string;
 	details?: IInsightsConfigDetails;

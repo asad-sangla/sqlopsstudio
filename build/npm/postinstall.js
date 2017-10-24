@@ -42,6 +42,7 @@ const extensions = [
 	'markdown',
 	'merge-conflict',
 	'account-provider-azure',
+	'insights-default'
 ];
 
 extensions.forEach(extension => npmInstall(`extensions/${extension}`));

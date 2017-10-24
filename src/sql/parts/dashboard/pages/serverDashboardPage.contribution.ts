@@ -93,75 +93,16 @@ let defaultVal = [
 		}
 	},
 	{
-		provider: 'MSSQL',
 		widget: {
-			'insights-widget': {
-				cacheId: '0c7cba8b-c87a-4bcc-ae54-2f40a5503a90',
-				type: {
-					'count': {}
-				},
-				query: [
-					'declare @condition tinyint;',
-					'SET @condition = 24;',
-					'with backupInsight_cte (database_id, last_backup, health_check)',
-					'as',
-					'(',
-					'select',
-					'd.database_id,',
-					'max(b.backup_start_date) AS last_backup,',
-					'case',
-					'when (datediff( hh , max(b.backup_start_date) , getdate()) < @condition) then 1 else 0',
-					'end as health_check',
-					'from sys.databases as d',
-					'left join msdb..backupset as b on d.name = b.database_name',
-					'group by d.database_id',
-					')',
-					'select',
-					'sum(health_check) Healthy,',
-					'sum(case when health_check = 0 AND last_backup IS NOT NULL then 1 else 0 end) Attention,',
-					'sum(case when health_check = 0 then 1 else 0 end) Unheathly',
-					'from backupInsight_cte'
-				],
-				details: {
-					query: [
-						'declare @condition tinyint;',
-						'SET @condition = 24;',
-						'select',
-						'd.name,',
-						'max(b.backup_start_date) AS last_backup,',
-						'case',
-						'when (datediff( hh , max(b.backup_start_date) , getdate()) < @condition) then 1 else 0',
-						'end as health_check',
-						'from sys.databases as d',
-						'left join msdb..backupset as b on d.name = b.database_name',
-						'group by d.name',
-					],
-					label: {
-						column: 'name',
-						icon: 'database',
-						state: [
-							{
-								condition: {
-									if: 'equals',
-									equals: '1'
-								},
-								color: 'green'
-							},
-							{
-								condition: {
-									if: 'equals',
-									equals: '0'
-								},
-								color: 'red'
-							}
-						]
-					},
-					value: 'health_check',
-					actions: {
-						types: ['backup', 'restore'],
-						database: '${name}'
-					}
-				}
+			'backup-history-server-insight': {
+				cacheId: '0c7cba8b-c87a-4bcc-ae54-2f40a5503a90'
+			}
+		}
+	},
+	{
+		widget: {
+			'all-database-size-server-insight': {
+				cacheId: '1d7cba8b-c87a-4bcc-ae54-2f40a5503a90'
 			}
 		}
 	}

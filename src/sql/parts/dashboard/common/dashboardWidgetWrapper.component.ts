@@ -80,17 +80,10 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 			return;
 		}
 		let key = Object.keys(this._config.widget)[0];
-		let selector = componentMap[key];
-
+		let selector = this.getOrCreateSelector(key);
 		if (selector === undefined) {
-			let widgetRegistry = <IInsightRegistry>Registry.as(Extensions.InsightContribution);
-			let config = widgetRegistry.getRegisteredExtensionInsights(key);
-			if (config === undefined) {
-				error('Could not find selector', key);
-				return;
-			}
-			selector = componentMap['insights-widget'];
-			this._config.widget['insights-widget'] = config;
+			error('Could not find selector', key);
+			return;
 		}
 
 		let componentFactory = this._componentFactoryResolver.resolveComponentFactory(selector);
@@ -121,6 +114,31 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 		el.style.overflow = 'hidden';
 		el.style.flex = '1 1 auto';
 		el.style.position = 'relative';
+	}
+
+	/**
+	 * Attempts to get the selector for a given key, and if none is defined tries
+	 * to load it from the widget registry and configure as needed
+	 *
+	 * @private
+	 * @param {string} key
+	 * @returns {Type<IDashboardWidget>}
+	 * @memberof DashboardWidgetWrapper
+	 */
+	private getOrCreateSelector(key: string): Type<IDashboardWidget> {
+		let selector = componentMap[key];
+		if (selector === undefined) {
+			// Load the widget from the registry
+			let widgetRegistry = <IInsightRegistry>Registry.as(Extensions.InsightContribution);
+			let insightConfig = widgetRegistry.getRegisteredExtensionInsights(key);
+			if (insightConfig === undefined) {
+				return undefined;
+			}
+			// Save the widget for future use
+			selector = componentMap['insights-widget'];
+			this._config.widget['insights-widget'] = insightConfig;
+		}
+		return selector;
 	}
 
 	//tslint:disable-next-line
