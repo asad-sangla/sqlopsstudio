@@ -73,7 +73,7 @@ export class StatusUpdater implements ext.IWorkbenchContribution {
 // Viewlet Action
 export class TaskHistoryViewletAction extends ToggleViewletAction {
 	public static ID = VIEWLET_ID;
-	public static LABEL = nls.localize({ key: 'showTaskHistory', comment: ['Show task history'] }, 'Show task history');
+	public static LABEL = nls.localize({ key: 'showTaskHistory', comment: ['Show Task History'] }, 'Show Task History');
 
 	constructor(
 		id: string,

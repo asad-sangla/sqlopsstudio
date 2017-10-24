@@ -19,7 +19,7 @@ import { VIEWLET_ID } from 'sql/parts/connection/common/connectionManagement';
 // Viewlet Action
 export class OpenConnectionsViewletAction extends ToggleViewletAction {
 	public static ID = VIEWLET_ID;
-	public static LABEL = 'Show Connections';
+	public static LABEL = 'Show Servers';
 
 	constructor(
 		id: string,
