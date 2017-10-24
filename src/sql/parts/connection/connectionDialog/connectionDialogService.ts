@@ -114,6 +114,16 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				}
 				profile = result.connection;
 
+				// append the port to the server name for SQL Server connections
+				if (this.getCurrentProviderName() === Constants.mssqlProviderName) {
+					let portPropertyName: string = 'port';
+					let portOption: string = profile.options[portPropertyName];
+					if (portOption && portOption.indexOf(',') === -1) {
+						profile.serverName = profile.serverName + ',' + portOption;
+					}
+					profile.options[portPropertyName] = undefined;
+				}
+
 				// Disable password prompt during reconnect if connected with an empty password
 				if (profile.password === '' && profile.savePassword === false) {
 					profile.savePassword = true;
