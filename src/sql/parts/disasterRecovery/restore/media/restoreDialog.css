@@ -54,6 +54,7 @@
 	height: 500px;
 	margin-bottom: 15px;
 	overflow: hidden;
+	box-sizing: border-box;
 }
 
 .modal .restore-dialog .restore-list .backup-table-content .restore-data {
