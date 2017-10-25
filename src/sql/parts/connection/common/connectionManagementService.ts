@@ -192,15 +192,16 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 		this._onProvidersReady.resolve();
 
-		if (this._providerCount === 1 && typeof splash !== 'undefined') {
+		if (this._providerCount === 1) {
 			// show the Registered Server viewlet
-
 			let startupConfig = this._workspaceConfigurationService.getConfiguration('startup');
-			let showServerViewlet = <boolean>startupConfig['alwaysShowServersView'];
-			if (showServerViewlet) {
-				// only show the Servers viewlet if there isn't another active viewlet
-				if (!this._viewletService.getActiveViewlet()) {
-					this._commandService.executeCommand('workbench.view.connections', {});
+			if (startupConfig) {
+ 				let showServerViewlet = <boolean>startupConfig['alwaysShowServersView'];
+				if (showServerViewlet) {
+					// only show the Servers viewlet if there isn't another active viewlet
+					if (!this._viewletService.getActiveViewlet()) {
+						this._commandService.executeCommand('workbench.view.connections', {});
+					}
 				}
 			}
 		}
