@@ -187,6 +187,8 @@ export class InputBox extends Widget {
 		if (this.options.actions) {
 			this.actionbar = this._register(new ActionBar(this.element));
 			this.actionbar.push(this.options.actions, { icon: true, label: false });
+			// {{SQL CARBON EDIT}} Canidate for addition to vscode
+			this.input.style.paddingRight = (this.options.actions.length * 22) + 'px';
 		}
 
 		this.applyStyles();
