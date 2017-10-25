@@ -154,6 +154,9 @@ export default class SqlToolsServiceClient {
 
     private _serviceStatus: ServiceStatus;
 
+    private _languageClientStartTime: number = undefined;
+    private _installationTime: number = undefined;
+
     constructor(
             private _server: ServerProvider,
             private _logger: Logger,
@@ -188,10 +191,11 @@ export default class SqlToolsServiceClient {
     // initialize the Service Client instance by launching
     // out-of-proc server through the LanguageClient
     public initialize(context: ExtensionContext): Promise<ServerInitializationResult> {
-         this._logger.appendLine(SqlToolsServiceClient._constants.serviceInitializing);
-         return PlatformInformation.getCurrent(SqlToolsServiceClient._constants.getRuntimeId).then( platformInfo => {
+        this._logger.appendLine(SqlToolsServiceClient._constants.serviceInitializing);
+        this._languageClientStartTime = Date.now();
+        return PlatformInformation.getCurrent(SqlToolsServiceClient._constants.getRuntimeId).then( platformInfo => {
             return this.initializeForPlatform(platformInfo, context);
-         });
+        });
     }
 
     public initializeForPlatform(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {
@@ -235,7 +239,9 @@ export default class SqlToolsServiceClient {
                     if (_channel !== undefined) {
                         _channel.show();
                     }
+                    let installationStartTime = Date.now();
                     this._server.downloadServerFiles(platformInfo.runtimeId).then ( installedServerPath => {
+                        this._installationTime = Date.now() - installationStartTime;
                         this.initializeLanguageClient(installedServerPath, context, platformInfo.runtimeId);
                         resolve(new ServerInitializationResult(true, true, installedServerPath));
                     }).catch(downloadErr => {
@@ -334,7 +340,6 @@ export default class SqlToolsServiceClient {
                         errorHandler: new LanguageClientErrorHandler(SqlToolsServiceClient._constants),
                         serverConnectionMetadata: this._config.getConfigValue(Constants.serverConnectionMetadata)
                     };
-
                     this._serviceStatus.showServiceLoading();
                     // cache the client instance for later use
                     client = new LanguageClient(SqlToolsServiceClient._constants.serviceName, serverOptions, clientOptions);
@@ -404,12 +409,26 @@ export default class SqlToolsServiceClient {
             this._serviceStatus.showServiceLoaded();
             client.onNotification(LanguageServiceContracts.TelemetryNotification.type, this.handleLanguageServiceTelemetryNotification());
             client.onNotification(LanguageServiceContracts.StatusChangedNotification.type, this.handleLanguageServiceStatusNotification());
+
+            // Report the language client startup time
+            let endTime = Date.now();
+            let installationTime = this._installationTime || 0;
+            let totalTime = endTime - this._languageClientStartTime;
+            let processStartupTime = totalTime - installationTime;
+            Telemetry.sendTelemetryEvent('startup/LanguageClientStarted', {
+                installationTime: String(installationTime),
+                processStartupTime: String(processStartupTime),
+                totalTime: String(totalTime),
+                beginningTimestamp: String(this._languageClientStartTime)
+            });
+            this._languageClientStartTime = undefined;
+            this._installationTime = undefined;
         });
 
         return client;
     }
 
-     private handleLanguageServiceTelemetryNotification(): NotificationHandler<LanguageServiceContracts.TelemetryParams> {
+    private handleLanguageServiceTelemetryNotification(): NotificationHandler<LanguageServiceContracts.TelemetryParams> {
         return (event: LanguageServiceContracts.TelemetryParams): void => {
             Telemetry.sendTelemetryEvent(event.params.eventName, event.params.properties, event.params.measures);
         };

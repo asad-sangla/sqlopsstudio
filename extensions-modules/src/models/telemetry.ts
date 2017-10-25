@@ -39,6 +39,7 @@ export class Telemetry {
 	private static platformInformation: PlatformInformation;
 	private static disabled: boolean;
 	private static _getRuntimeId: (platform: string, architecture: string, distribution: LinuxDistribution) => Runtime;
+	private static eventPrefix: string = 'xplattool';
 
 	public static get getRuntimeId() {
 		return this._getRuntimeId;
@@ -119,7 +120,7 @@ export class Telemetry {
 			}
 
 			// Only adding the method name and the fist line of the stack trace. We don't add the error message because it might have PII
-			this.sendTelemetryEvent('Exception', { methodName: methodName, errorLine: firstLine });
+			this.sendTelemetryEvent(this.eventPrefix + '/Exception', { methodName: methodName, errorLine: firstLine });
 			Utils.logDebug('Unhandled Exception occurred. error: ' + err + ' method: ' + methodName, extensionConfigName);
 		} catch (telemetryErr) {
 			// If sending telemetry event fails ignore it so it won't break the extension
@@ -153,7 +154,7 @@ export class Telemetry {
 			properties['distribution'] = (this.platformInformation && this.platformInformation.distribution) ?
 				`${this.platformInformation.distribution.name}, ${this.platformInformation.distribution.version}` : '';
 
-			this.reporter.sendTelemetryEvent(eventName, properties, measures);
+			this.reporter.sendTelemetryEvent(this.eventPrefix + '/' + eventName, properties, measures);
 		});
 	}
 }
