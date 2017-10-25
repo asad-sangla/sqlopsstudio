@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import {
 	Component, Inject, ViewContainerRef, forwardRef, AfterContentInit,
-	ComponentFactoryResolver, ViewChild, OnDestroy
+	ComponentFactoryResolver, ViewChild, OnDestroy, ChangeDetectorRef
 } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
@@ -32,6 +32,7 @@ const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribu
 @Component({
 	selector: 'insights-widget',
 	template: `
+				<div *ngIf="error" style="text-align: center; padding-top: 20px">{{error}}</div>
 				<div style="margin: 10px; width: calc(100% - 20px); height: calc(100% - 20px)">
 					<ng-template component-host></ng-template>
 				</div>`,
@@ -46,11 +47,14 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	private _typeKey: string;
 	private _init: boolean = false;
 
+	public error: string;
+
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
 		@Inject(forwardRef(() => DashboardServiceInterface)) private dashboardService: DashboardServiceInterface,
 		@Inject(WIDGET_CONFIG) protected _config: WidgetConfig,
-		@Inject(forwardRef(() => ViewContainerRef)) private viewContainerRef: ViewContainerRef
+		@Inject(forwardRef(() => ViewContainerRef)) private viewContainerRef: ViewContainerRef,
+		@Inject(forwardRef(() => ChangeDetectorRef)) private _cd: ChangeDetectorRef
 	) {
 		super();
 		this.insightConfig = <IInsightsConfig>this._config.widget['insights-widget'];
@@ -102,8 +106,8 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	}
 
 	private showError(error: string): void {
-		let element = <HTMLElement>this.viewContainerRef.element.nativeElement;
-		element.innerText = error;
+		this.error = error;
+		this._cd.detectChanges();
 	}
 
 	get actions(): Array<Action> {
