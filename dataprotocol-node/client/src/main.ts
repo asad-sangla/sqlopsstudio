@@ -122,7 +122,7 @@ import {
 	ObjectExplorerCreateSessionRequest, ObjectExplorerExpandRequest, ObjectExplorerRefreshRequest, ObjectExplorerCloseSessionRequest,
 	ObjectExplorerCreateSessionCompleteNotification, ObjectExplorerExpandCompleteNotification,
 	CreateDatabaseRequest, CreateLoginRequest, BackupRequest, DefaultDatabaseInfoRequest, GetDatabaseInfoRequest, BackupConfigInfoRequest,
-	RestoreRequest, RestorePlanRequest, RestoreConfigInfoRequest,
+	RestoreRequest, RestorePlanRequest, CancelRestorePlanRequest, RestoreConfigInfoRequest,
 	ListTasksRequest, CancelTaskRequest, TaskStatusChangedNotification, TaskCreatedNotification,
 	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams, FileBrowserOpenRequest, FileBrowserOpenedNotification,
 	FileBrowserValidateRequest, FileBrowserValidatedNotification, FileBrowserExpandRequest, FileBrowserExpandedNotification, FileBrowserCloseRequest
@@ -1928,6 +1928,17 @@ export class LanguageClient {
 					self._p2c.asRestoreConfigInfo,
 					error => {
 						self.logFailedRequest(RestorePlanRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+				);
+			},
+			cancelRestorePlan(ownerUri: string, restoreInfo: RestoreInfo): Thenable<boolean> {
+				return self.sendRequest(CancelRestorePlanRequest.type, self._c2p.asRestoreParams(ownerUri, restoreInfo), undefined).then(
+					(result) => {
+						return result;
+					},
+					error => {
+						self.logFailedRequest(CancelRestorePlanRequest.type, error);
 						return Promise.resolve(undefined);
 					}
 				);

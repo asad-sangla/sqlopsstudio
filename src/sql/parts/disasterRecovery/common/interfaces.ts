@@ -75,6 +75,11 @@ export interface IDisasterRecoveryService {
 	 * Gets restore config Info
 	 */
 	getRestoreConfigInfo(connectionUri: string): Thenable<data.RestoreConfigInfo>;
+
+	/**
+	 * Cancel restore plan
+	 */
+	cancelRestorePlan(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<boolean>;
 }
 
 export const IRestoreDialogController = createDecorator<IRestoreDialogController>('restoreDialogService');

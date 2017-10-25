@@ -253,6 +253,11 @@ export abstract class ExtHostDataProtocolShape {
 	$getRestorePlan(handle: number, connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<data.RestorePlanResponse> { throw ni(); }
 
 	/**
+	 * Cancels a plan
+	 */
+	$cancelRestorePlan(handle: number, connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<boolean> { throw ni(); }
+
+	/**
 	 * Gets restore config Info
 	 */
 	$getRestoreConfigInfo(handle: number, connectionUri: string): Thenable<data.RestoreConfigInfo> { throw ni(); }

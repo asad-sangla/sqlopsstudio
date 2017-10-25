@@ -122,6 +122,25 @@ export class DisasterRecoveryService implements IDisasterRecoveryService {
 	}
 
 	/**
+	 * Cancels a restore plan
+	 */
+	cancelRestorePlan(connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			let providerResult = this.getProvider(connectionUri);
+			if (providerResult) {
+				providerResult.provider.cancelRestorePlan(connectionUri, restoreInfo).then(result => {
+					resolve(result);
+				}, error => {
+					reject(error);
+				});
+			} else {
+				reject(Constants.InvalidProvider);
+
+			}
+		});
+	}
+
+	/**
 	 * Register a disaster recovery provider
 	 */
 	public registerProvider(providerId: string, provider: data.DisasterRecoveryProvider): void {

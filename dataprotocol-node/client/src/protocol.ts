@@ -1528,6 +1528,10 @@ export namespace RestorePlanRequest {
 	export const type: RequestType<RestoreParams, RestorePlanResponse, void> = { get method(): string { return 'disasterrecovery/restoreplan'; } };
 }
 
+export namespace CancelRestorePlanRequest {
+	export const type: RequestType<RestoreParams, boolean, void> = { get method(): string { return 'disasterrecovery/cancelrestoreplan'; } };
+}
+
 export namespace RestoreConfigInfoRequest {
 	export const type: RequestType<RestoreConfigInfoRequestParams, RestoreConfigInfoResponse, void> = { get method(): string { return 'disasterrecovery/restoreconfiginfo'; } };
 }

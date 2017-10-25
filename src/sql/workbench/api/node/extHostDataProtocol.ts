@@ -452,6 +452,16 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	}
 
 	/**
+	 * cancels a restore plan
+	 */
+	public $cancelRestorePlan(handle: number, connectionUri: string, restoreInfo: data.RestoreInfo): Thenable<boolean> {
+		return this._runWithProvider(handle, provider => {
+			return provider.disasterRecoveryProvider ? provider.disasterRecoveryProvider.cancelRestorePlan(connectionUri, restoreInfo)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
 	 * Gets restore config Info
 	 */
 	public $getRestoreConfigInfo(handle: number, connectionUri: string): Thenable<data.RestoreConfigInfo> {

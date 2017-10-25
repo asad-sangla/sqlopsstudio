@@ -133,6 +133,14 @@ export class RestoreDialogController implements IRestoreDialogController {
 		this._connectionService.disconnect(this._ownerUri);
 	}
 
+	private handleOnCancel(): void {
+		let restoreInfo = new MssqlRestoreInfo();
+		restoreInfo.sessionId = this._sessionId;
+		this._disasterRecoveryService.cancelRestorePlan(this._ownerUri, restoreInfo).then(() => {
+			this._connectionService.disconnect(this._ownerUri);
+		});
+	}
+
 	public showDialog(connection: IConnectionProfile): TPromise<void> {
 		return new TPromise<void>((resolve, reject) => {
 			let result: void;
@@ -152,7 +160,7 @@ export class RestoreDialogController implements IRestoreDialogController {
 						if (this._currentProvider === ConnectionConstants.mssqlProviderName) {
 							let provider = this._currentProvider;
 							newRestoreDialog = this._instantiationService.createInstance(RestoreDialog, this.getRestoreOption());
-							newRestoreDialog.onCancel(() => { });
+							newRestoreDialog.onCancel(() => this.handleOnCancel());
 							newRestoreDialog.onRestore((isScriptOnly) => this.handleOnRestore(isScriptOnly));
 							newRestoreDialog.onValidate((overwriteTargetDatabase) => this.handleMssqlOnValidateFile(overwriteTargetDatabase));
 							newRestoreDialog.onDatabaseListFocused(() => this.fetchDatabases(provider));
