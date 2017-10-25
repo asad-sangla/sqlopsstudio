@@ -633,6 +633,8 @@ export class RestoreDialog extends Modal {
 
 	public validateRestore(overwriteTargetDatabase: boolean = false): void {
 		this.showSpinner();
+		this._restoreButton.enabled = false;
+		this._scriptButton.enabled = false;
 		this._onValidate.fire(overwriteTargetDatabase);
 	}
 
