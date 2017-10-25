@@ -71,7 +71,7 @@ export class ServiceInstaller {
 	* Installs the service for the given platform if it's not already installed.
 	*/
 	public installService(): Promise<String> {
-		return PlatformInformation.getCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
+		return PlatformInformation.getCurrent(this._extensionConstants.getRuntimeId, this._extensionConstants.extensionName).then(platformInfo => {
 			if (platformInfo.isValidRuntime()) {
 				return this._serverProvider.getOrDownloadServer(platformInfo.runtimeId);
 			} else {
@@ -86,7 +86,7 @@ export class ServiceInstaller {
 	public getServiceInstallDirectory(runtime: Runtime): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
 			if (runtime === undefined) {
-				PlatformInformation.getCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
+				PlatformInformation.getCurrent(this._extensionConstants.getRuntimeId, this._extensionConstants.extensionName).then(platformInfo => {
 					if (platformInfo.isValidRuntime()) {
 						resolve(this._downloadProvider.getInstallDirectory(platformInfo.runtimeId));
 					} else {
@@ -108,7 +108,7 @@ export class ServiceInstaller {
 	public getServiceInstallDirectoryRoot(runtime: Runtime): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
 			if (runtime === undefined) {
-				PlatformInformation.getCurrent(this._extensionConstants.getRuntimeId).then(platformInfo => {
+				PlatformInformation.getCurrent(this._extensionConstants.getRuntimeId, this._extensionConstants.extensionName).then(platformInfo => {
 					if (platformInfo.isValidRuntime()) {
 						let directoryPath: string = this._downloadProvider.getInstallDirectoryRoot(platformInfo, this._extensionConstants.extensionName);
 						directoryPath = directoryPath.replace('\\{#version#}', '');

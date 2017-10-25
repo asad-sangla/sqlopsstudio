@@ -190,12 +190,14 @@ export default class SqlToolsServiceClient {
 
     // initialize the Service Client instance by launching
     // out-of-proc server through the LanguageClient
-    public initialize(context: ExtensionContext): Promise<ServerInitializationResult> {
-        this._logger.appendLine(SqlToolsServiceClient._constants.serviceInitializing);
-        this._languageClientStartTime = Date.now();
-        return PlatformInformation.getCurrent(SqlToolsServiceClient._constants.getRuntimeId).then( platformInfo => {
+    public initialize(context: ExtensionContext): Promise<any> {
+         this._logger.appendLine(SqlToolsServiceClient._constants.serviceInitializing);
+         this._languageClientStartTime = Date.now();
+         return PlatformInformation.getCurrent(SqlToolsServiceClient._constants.getRuntimeId, SqlToolsServiceClient._constants.extensionName).then(platformInfo => {
             return this.initializeForPlatform(platformInfo, context);
-        });
+         }).catch(err => {
+            this._vscodeWrapper.showErrorMessage(err)
+         });
     }
 
     public initializeForPlatform(platformInfo: PlatformInformation, context: ExtensionContext): Promise<ServerInitializationResult> {

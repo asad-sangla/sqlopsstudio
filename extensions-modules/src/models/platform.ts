@@ -119,7 +119,8 @@ export class PlatformInformation {
         return result;
     }
 
-    public static getCurrent(getRuntimeId: (platform: string, architecture: string, distribution: LinuxDistribution) => Runtime): Promise<PlatformInformation> {
+    public static getCurrent(getRuntimeId: (platform: string, architecture: string, distribution: LinuxDistribution) => Runtime,
+                                            extensionName: string): Promise<any> {
         let platform = os.platform();
         let architecturePromise: Promise<string>;
         let distributionPromise: Promise<LinuxDistribution>;
@@ -131,6 +132,10 @@ export class PlatformInformation {
                 break;
 
             case 'darwin':
+                let osVersion = os.release();
+                if (parseFloat(osVersion) < 16.0 && extensionName === 'mssql') {
+                    return Promise.reject('The current version of macOS is not supported. Only macOS Sierra and above (>= 10.12) are supported.')
+                }
                 architecturePromise = PlatformInformation.getUnixArchitecture();
                 distributionPromise = Promise.resolve(undefined);
                 break;
@@ -141,7 +146,7 @@ export class PlatformInformation {
                 break;
 
             default:
-                throw new Error(`Unsupported platform: ${platform}`);
+                return Promise.reject(`Unsupported platform: ${platform}`);
         }
 
         return architecturePromise.then( arch => {

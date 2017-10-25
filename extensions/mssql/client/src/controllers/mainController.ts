@@ -67,7 +67,7 @@ export default class MainController implements vscode.Disposable {
     }
 
     private createClient( executableFiles: string[]):  Promise<LanguageClient> {
-         return PlatformInformation.getCurrent(SqlToolsServiceClient.constants.getRuntimeId).then( platformInfo => {
+         return PlatformInformation.getCurrent(SqlToolsServiceClient.constants.getRuntimeId, SqlToolsServiceClient.constants.extensionName).then( platformInfo => {
             return SqlToolsServiceClient.instance.createClient(this._context, platformInfo.runtimeId, undefined, executableFiles);
          });
     }
