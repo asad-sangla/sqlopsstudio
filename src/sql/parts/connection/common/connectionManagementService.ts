@@ -28,6 +28,7 @@ import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import { warn } from 'sql/base/common/log';
 import { IResourceProviderService } from 'sql/parts/accountManagement/common/interfaces';
+import { IAngularEventingService, AngularEventType } from 'sql/services/angularEventing/angularEventingService';
 
 import * as data from 'data';
 
@@ -96,7 +97,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
 		@IStatusbarService private _statusBarService: IStatusbarService,
 		@IResourceProviderService private _resourceProviderService: IResourceProviderService,
-		@IViewletService private _viewletService: IViewletService
+		@IViewletService private _viewletService: IViewletService,
+		@IAngularEventingService private _angularEventing: IAngularEventingService
 	) {
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
 		if (!this._connectionMemento) {
@@ -581,15 +583,19 @@ export class ConnectionManagementService implements IConnectionManagementService
 				if (group instanceof EditorGroup) {
 					group.getEditors().map(editor => {
 						if (editor instanceof DashboardInput) {
-							if (editor.connectionProfile
-								&& profile
-								&& editor.connectionProfile.getOptionsKey() === profile.getOptionsKey()) {
+							if (DashboardInput.profileMatches(profile, editor.connectionProfile)) {
+								editor.connectionProfile.databaseName = profile.databaseName;
 								// change focus to the matched editor
 								let position = model.positionOfGroup(group);
 								this._editorGroupService.activateGroup(model.groupAt(position));
 								this._editorService.openEditor(editor, options, position)
 									.done(() => {
 										this._editorGroupService.activateGroup(model.groupAt(position));
+										if (!profile.databaseName || Utils.isMaster(profile)) {
+											this._angularEventing.sendAngularEvent(editor.uri, AngularEventType.NAV_SERVER);
+										} else {
+											this._angularEventing.sendAngularEvent(editor.uri, AngularEventType.NAV_DATABASE);
+										}
 										found = true;
 									}, errors.onUnexpectedError);
 							}
@@ -1006,7 +1012,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 				// send connection request
 				self.sendConnectRequest(connection, uri);
-			})
+			});
 		});
 	}
 

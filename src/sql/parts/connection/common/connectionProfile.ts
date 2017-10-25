@@ -5,7 +5,6 @@
 
 'use strict';
 
-import { IConnectionProfile } from './interfaces';
 import { ConnectionProfileGroup } from './connectionProfileGroup';
 import * as data from 'data';
 import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
@@ -43,6 +42,16 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			this._groupName = ConnectionProfile.RootGroupName;
 			this._id = generateUuid();
 		}
+	}
+
+	public matches(other: interfaces.IConnectionProfile): boolean {
+		return other
+			&& this.providerName === other.providerName
+			&& this.serverName === other.serverName
+			&& this.databaseName === other.databaseName
+			&& this.userName === other.userName
+			&& this.authenticationType === other.authenticationType
+			&& this.groupFullName === other.groupFullName;
 	}
 
 	public generateNewId() {
@@ -124,12 +133,13 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		}
 	}
 
-	public toIConnectionProfile(): IConnectionProfile {
-		let result: IConnectionProfile = {
+	public toIConnectionProfile(): interfaces.IConnectionProfile {
+		let result: interfaces.IConnectionProfile = {
 			serverName: this.serverName,
 			databaseName: this.databaseName,
 			authenticationType: this.authenticationType,
 			getOptionsKey: undefined,
+			matches: undefined,
 			groupId: this.groupId,
 			groupFullName: this.groupFullName,
 			password: this.password,
@@ -161,7 +171,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		return connectionInfo;
 	}
 
-	public static convertToConnectionProfile(serverCapabilities: data.DataProtocolServerCapabilities, conn: IConnectionProfile): ConnectionProfile {
+	public static convertToConnectionProfile(serverCapabilities: data.DataProtocolServerCapabilities, conn: interfaces.IConnectionProfile): ConnectionProfile {
 		if (conn) {
 			let connectionProfile: ConnectionProfile = undefined;
 			let connectionProfileInstance = conn as ConnectionProfile;
@@ -180,7 +190,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 
 	public static convertToProfileStore(
 		serverCapabilities: data.DataProtocolServerCapabilities,
-		connectionProfile: IConnectionProfile): interfaces.IConnectionProfileStore {
+		connectionProfile: interfaces.IConnectionProfile): interfaces.IConnectionProfileStore {
 		if (connectionProfile) {
 			let connectionInfo = ConnectionProfile.convertToConnectionProfile(serverCapabilities, connectionProfile);
 			let profile: interfaces.IConnectionProfileStore = {

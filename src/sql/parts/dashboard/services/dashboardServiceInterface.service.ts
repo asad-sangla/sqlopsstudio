@@ -24,6 +24,7 @@ import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
 import { IPropertiesConfig } from 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { AngularEventType } from 'sql/services/angularEventing/angularEventingService';
 
 import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
@@ -227,7 +228,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._connectionManagementService = new SingleConnectionManagementService(this._bootstrapService.connectionManagementService, this._uri);
 		this._adminService = new SingleAdminService(this._bootstrapService.adminService, this._uri);
 		this._queryManagementService = new SingleQueryManagementService(this._bootstrapService.queryManagementService, this._uri);
-		this._disposables.push(toDisposableSubscription(this._bootstrapService.angularEventingService.onAngularEvent(this._uri, this.handleDashboardEvent)));
+		this._disposables.push(toDisposableSubscription(this._bootstrapService.angularEventingService.onAngularEvent(this._uri, (event) => this.handleDashboardEvent(event))));
 	}
 
 	/**
@@ -251,14 +252,14 @@ export class DashboardServiceInterface implements OnDestroy {
 		return config[type];
 	}
 
-	private get handleDashboardEvent(): (event: string) => void {
-		let self = this;
-		return function (event: string): void {
-			if (event === 'database') {
-				self._router.navigate(['database-dashboard']);
-			} else if (event === 'server') {
-				self._router.navigate(['server-dashboard']);
-			}
-		};
+	private handleDashboardEvent(event: AngularEventType): void {
+		switch (event) {
+			case AngularEventType.NAV_DATABASE:
+				this._router.navigate(['database-dashboard']);
+				break;
+			case AngularEventType.NAV_SERVER:
+				this._router.navigate(['server-dashboard']);
+				break;
+		}
 	}
 }

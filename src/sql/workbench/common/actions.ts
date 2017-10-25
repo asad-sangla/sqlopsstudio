@@ -11,7 +11,7 @@ import { ConnectionManagementInfo } from 'sql/parts/connection/common/connection
 import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
-import { IAngularEventingService } from 'sql/services/angularEventing/angularEventingService';
+import { IAngularEventingService, AngularEventType } from 'sql/services/angularEventing/angularEventingService';
 import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import * as Constants from 'sql/common/constants';
@@ -291,7 +291,7 @@ export class ManageAction extends Action {
 		return new TPromise<boolean>((resolve, reject) => {
 			self._connectionManagementService.connect(actionContext.profile, actionContext.uri, { showDashboard: true, saveTheConnection: false, params: undefined, showConnectionDialogOnError: false, showFirewallRuleOnError: true }).then(
 				() => {
-					self._angularEventingService.sendAngularEvent(actionContext.uri, 'database');
+					self._angularEventingService.sendAngularEvent(actionContext.uri, AngularEventType.NAV_DATABASE);
 					resolve(true);
 				},
 				error => {

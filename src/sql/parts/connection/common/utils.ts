@@ -144,3 +144,7 @@ export function findProfileInGroup(og: IConnectionProfile, groups: ConnectionPro
 
 	return undefined;
 }
+
+export function isMaster(profile: IConnectionProfile): boolean {
+	return profile.providerName.toLowerCase() === 'mssql' && profile.databaseName.toLowerCase() === 'master';
+}

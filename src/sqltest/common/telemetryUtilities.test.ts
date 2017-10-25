@@ -22,6 +22,7 @@ suite('SQL Telemetry Utilities tests', () => {
 		serverName: '',
 		authenticationType: '',
 		getOptionsKey: () => '',
+		matches: undefined,
 		groupFullName: '',
 		groupId: '',
 		id: '',

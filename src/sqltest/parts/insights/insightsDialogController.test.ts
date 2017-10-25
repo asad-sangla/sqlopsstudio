@@ -60,6 +60,7 @@ suite('Insights Dialog Controller Tests', () => {
 			groupFullName: '',
 			groupId: '',
 			getOptionsKey: () => '',
+			matches: undefined,
 			providerName: '',
 			saveProfile: true,
 			id: '',

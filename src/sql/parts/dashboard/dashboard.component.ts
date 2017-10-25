@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 
 import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import * as Utils from 'sql/parts/connection/common/utils';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
@@ -34,16 +35,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 		self._subs.push(self._bootstrapService.themeService.onDidColorThemeChange(e => self.updateTheme(e)));
 		self.updateTheme(self._bootstrapService.themeService.getColorTheme());
 		let profile: IConnectionProfile = self._bootstrapService.getOriginalConnectionProfile();
-		if (profile && (!profile.databaseName || self.isMasterMssql(profile))) {
+		if (profile && (!profile.databaseName || Utils.isMaster(profile))) {
 			// Route to the server page as this is the default database
 			self._router.navigate(['server-dashboard']);
 		}
-	}
-
-
-	private isMasterMssql(profile: IConnectionProfile): boolean {
-		return profile.providerName.toLowerCase() === 'mssql'
-			&& profile.databaseName.toLowerCase() === 'master';
 	}
 
 	ngOnDestroy() {

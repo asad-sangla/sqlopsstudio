@@ -11,6 +11,11 @@ import { warn } from 'sql/base/common/log';
 const ANGULAREVENTING_SERVICE_ID = 'angularEventingService';
 export const IAngularEventingService = createDecorator<IAngularEventingService>(ANGULAREVENTING_SERVICE_ID);
 
+export enum AngularEventType {
+	NAV_DATABASE,
+	NAV_SERVER
+}
+
 export interface IAngularEventingService {
 	_serviceBrand: any;
 	/**
@@ -19,24 +24,24 @@ export interface IAngularEventingService {
 	 * @param cb Listening function
 	 * @returns
 	 */
-	onAngularEvent(uri: string, cb: (event: string) => void): Subscription;
+	onAngularEvent(uri: string, cb: (event: AngularEventType) => void): Subscription;
 
 	/**
 	 * Send an event to the dashboard; no op if the dashboard has not started listening yet
 	 * @param uri Uri of the dashboard to send the event to
 	 * @param event event to send
 	 */
-	sendAngularEvent(uri: string, event: string): void;
+	sendAngularEvent(uri: string, event: AngularEventType): void;
 }
 
 export class AngularEventingService implements IAngularEventingService {
 	public _serviceBrand: any;
-	private _angularMap = new Map<string, Subject<string>>();
+	private _angularMap = new Map<string, Subject<AngularEventType>>();
 
-	public onAngularEvent(uri: string, cb: (event: string) => void): Subscription {
-		let subject: Subject<string>;
+	public onAngularEvent(uri: string, cb: (event: AngularEventType) => void): Subscription {
+		let subject: Subject<AngularEventType>;
 		if (!this._angularMap.has(uri)) {
-			subject = new Subject<string>();
+			subject = new Subject<AngularEventType>();
 			this._angularMap.set(uri, subject);
 		} else {
 			subject = this._angularMap.get(uri);
@@ -45,7 +50,7 @@ export class AngularEventingService implements IAngularEventingService {
 		return sub;
 	}
 
-	public sendAngularEvent(uri: string, event: string): void {
+	public sendAngularEvent(uri: string, event: AngularEventType): void {
 		if (!this._angularMap.has(uri)) {
 			warn('Got request to send an event to a dashboard that has not started listening');
 		} else {

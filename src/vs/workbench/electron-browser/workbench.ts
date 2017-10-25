@@ -687,6 +687,7 @@ export class Workbench implements IPartService {
 
 		// {{SQL CARBON EDIT}}
 		// SQL Tools services
+		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
 		serviceCollection.set(ISqlOAuthService, this.instantiationService.createInstance(SqlOAuthService));
 		serviceCollection.set(sqlIClipboardService, this.instantiationService.createInstance(sqlClipboardService));
 		serviceCollection.set(ICapabilitiesService, this.instantiationService.createInstance(CapabilitiesService));
@@ -712,7 +713,6 @@ export class Workbench implements IPartService {
 		serviceCollection.set(IRestoreDialogController, this.instantiationService.createInstance(RestoreDialogController));
 		serviceCollection.set(IFileBrowserService, this.instantiationService.createInstance(FileBrowserService));
 		serviceCollection.set(IFileBrowserDialogController, this.instantiationService.createInstance(FileBrowserDialogController));
-		serviceCollection.set(IAngularEventingService, this.instantiationService.createInstance(AngularEventingService));
 		serviceCollection.set(IInsightsDialogService, this.instantiationService.createInstance(InsightsDialogService));
 		let accountManagementService = this.instantiationService.createInstance(AccountManagementService, undefined);
 		serviceCollection.set(IAccountManagementService, accountManagementService);

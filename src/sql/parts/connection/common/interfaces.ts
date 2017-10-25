@@ -18,6 +18,7 @@ export interface IConnectionProfile extends data.ConnectionInfo {
 	groupFullName: string;
 	groupId: string;
 	getOptionsKey(): string;
+	matches(profile: IConnectionProfile): boolean;
 	providerName: string;
 	saveProfile: boolean;
 	id: string;

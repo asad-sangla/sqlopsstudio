@@ -46,8 +46,7 @@ export class DashboardInput extends EditorInput {
 	public getName(): string {
 		let name = this.connectionProfile.serverName;
 		if (this.connectionProfile.databaseName
-			&& !this.isMasterMssql())
-		{
+			&& !this.isMasterMssql()) {
 			// Only add DB name if this is a non-default, non-master connection
 			name = name + ':' + this.connectionProfile.databaseName;
 		}
@@ -111,13 +110,17 @@ export class DashboardInput extends EditorInput {
 	}
 
 	public matches(otherinput: any): boolean {
-		if (otherinput instanceof DashboardInput) {
-			if (this.connectionProfile
-				&& otherinput.connectionProfile
-				&& this.connectionProfile.getOptionsKey() === otherinput.connectionProfile.getOptionsKey()) {
-				return true;
-			}
-		}
-		return false;
+		return otherinput instanceof DashboardInput
+			&& DashboardInput.profileMatches(this.connectionProfile, otherinput.connectionProfile);
+	}
+
+	// similar to the default profile match but without databasename
+	public static profileMatches(profile1: IConnectionProfile, profile2: IConnectionProfile): boolean {
+		return profile1 && profile2
+			&& profile1.providerName === profile2.providerName
+			&& profile1.serverName === profile2.serverName
+			&& profile1.userName === profile2.userName
+			&& profile1.authenticationType === profile2.authenticationType
+			&& profile1.groupFullName === profile2.groupFullName;
 	}
 }

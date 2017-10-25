@@ -8,7 +8,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { IConnectionManagementService, IConnectionCompletionOptions, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
+import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { ServerTreeView } from 'sql/parts/registeredServer/viewlet/serverTreeView';
 import { ConnectionViewlet } from 'sql/parts/registeredServer/viewlet/connectionViewlet';
@@ -206,6 +206,7 @@ export class AddServerAction extends Action {
 			groupFullName: element.fullName,
 			savePassword: undefined,
 			getOptionsKey: undefined,
+			matches: undefined,
 			providerName: '',
 			options: {},
 			saveProfile: true,
