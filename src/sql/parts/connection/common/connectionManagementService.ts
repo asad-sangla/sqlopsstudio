@@ -1181,13 +1181,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 				return Promise.resolve(false);
 			}
 
-			return new Promise<boolean>((resolve, reject) => {
-				let provider = this._providers[providerId];
-				provider.changeDatabase(connectionUri, databaseName).then(result => {
-					resolve(result);
-				}, error => {
-					reject(error);
-				});
+			let provider = this._providers[providerId];
+			return provider.changeDatabase(connectionUri, databaseName).then(result => {
+				if (result) {
+					this.getConnectionProfile(connectionUri).databaseName = databaseName;
+				}
+				return result;
 			});
 		}
 		return Promise.resolve(false);

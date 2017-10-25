@@ -459,7 +459,6 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 	// PRIVATE HELPERS /////////////////////////////////////////////////////
 	private databaseSelected(dbName: string): void {
-		let self = this;
 		let uri = this._editor.connectedUri;
 		if (!uri) {
 			return;
@@ -472,17 +471,16 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 
 		this._connectionManagementService.changeDatabase(this._editor.uri, dbName)
 			.then(
-				result => {
-					if (!result) {
-						// Change database failed. Ideally would revert to original, but for now reflect actual
-						// behavior by notifying of a disconnect. Note: we should ideally handle this via global notification
-						// to simplify control flow
-						self.showChangeDatabaseFailed();
-					}
-				},
-				error => {
-					self.showChangeDatabaseFailed();
+			result => {
+				if (!result) {
+					this.resetDatabaseName();
+					this._messageService.show(Severity.Error, nls.localize('changeDatabase.failed', "Failed to change database"));
 				}
+			},
+			error => {
+				this.resetDatabaseName();
+				this._messageService.show(Severity.Error, nls.localize('changeDatabase.failedWithError', "Failed to change database {0}", error));
+			}
 			);
 	}
 
@@ -495,6 +493,10 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 			}
 		}
 		return undefined;
+	}
+
+	private resetDatabaseName() {
+		this._dropdown.value = this.getCurrentDatabaseName();
 	}
 
 	private onConnectionChanged(connParams: IConnectionParams): void {
@@ -524,11 +526,6 @@ export class ListDatabasesActionItem extends EventEmitter implements IActionItem
 					this._dropdown.values = result.databaseNames;
 				}
 			});
-	}
-
-	private showChangeDatabaseFailed() {
-		this.onDisconnect();
-		this._messageService.show(Severity.Error, 'Failed to change database');
 	}
 
 	private updateConnection(databaseName: string) {
