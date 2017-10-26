@@ -102,21 +102,21 @@
                                 {
                                     "condition": {
                                         "if": "equals",
-                                        "equals": "0"
+                                        "equals": "No backup found"
                                     },
                                     "color": "red"
                                 },
                                 {
                                     "condition": {
                                         "if": "equals",
-                                        "equals": "1"
+                                        "equals": "Older than 24hrs"
                                     },
                                     "color": "orange"
                                 },
                                 {
                                     "condition": {
                                         "if": "equals",
-                                        "equals": "2"
+                                        "equals": "Within 24hrs"
                                     },
                                     "color": "green"
                                 }

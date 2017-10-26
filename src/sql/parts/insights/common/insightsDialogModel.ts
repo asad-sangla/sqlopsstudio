@@ -40,6 +40,12 @@ export class InsightsDialogModel implements IInsightsDialogModel {
 		return this._columns;
 	}
 
+	public reset(): void {
+		this._columns = [];
+		this._rows = [];
+		this._onDataChangeEmitter.fire();
+	}
+
 	public getListResources(labelIndex: number, valueIndex: number): ListResource[] {
 		return this.rows.map((item) => {
 			let label = item[labelIndex];

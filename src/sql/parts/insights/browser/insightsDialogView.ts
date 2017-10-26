@@ -39,6 +39,9 @@ import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 /* Regex that matches the form `${value}` */
 export const insertValueRegex: RegExp = /\${(.*?)\}/;
 
+const labelDisplay = nls.localize("item", "Item");
+const valueDisplay = nls.localize("value", "Value");
+
 function stateFormatter(row: number, cell: number, value: any, columnDef: Slick.Column<ListResource>, resource: ListResource): string {
 	// template
 	const icon = DOM.$('span.icon-span');
@@ -72,6 +75,7 @@ function stateFormatter(row: number, cell: number, value: any, columnDef: Slick.
 }
 
 export class InsightsDialogView extends Modal {
+
 	private _connectionProfile: IConnectionProfile;
 	private _insight: IInsightsConfigDetails;
 	private _disposables: IDisposable[] = [];
@@ -83,7 +87,7 @@ export class InsightsDialogView extends Modal {
 	private _bottomTableData: TableDataView<ListResource>;
 	private _topColumns: Array<Slick.Column<ListResource>> = [
 		{
-			name: nls.localize("state", "State"),
+			name: '',
 			field: 'state',
 			id: 'state',
 			width: 20,
@@ -91,12 +95,12 @@ export class InsightsDialogView extends Modal {
 			formatter: stateFormatter
 		},
 		{
-			name: nls.localize("label", "Label"),
+			name: labelDisplay,
 			field: 'label',
 			id: 'label'
 		},
 		{
-			name: nls.localize("value", "Value"),
+			name: valueDisplay,
 			field: 'value',
 			id: 'value'
 		}
@@ -104,7 +108,7 @@ export class InsightsDialogView extends Modal {
 
 	private _bottomColumns: Array<Slick.Column<ListResource>> = [
 		{
-			name: nls.localize("label", "Label"),
+			name: nls.localize("property", "Property"),
 			field: 'label',
 			id: 'label'
 		},
@@ -129,6 +133,32 @@ export class InsightsDialogView extends Modal {
 		this._model.onDataChange(e => this.build());
 	}
 
+	private updateTopColumns(): void{
+		let labelName = this.labelColumnName ? this.labelColumnName :labelDisplay;
+		let valueName = this._insight.value ? this._insight.value : valueDisplay;
+		this._topColumns = [
+			{
+				name: '',
+				field: 'state',
+				id: 'state',
+				width: 20,
+				resizable: false,
+				formatter: stateFormatter
+			},
+			{
+				name: labelName,
+				field: 'label',
+				id: 'label'
+			},
+			{
+				name: valueName,
+				field: 'value',
+				id: 'value'
+			}
+		];
+		this._topTable.columns = this._topColumns;
+	}
+
 	protected renderBody(container: HTMLElement) {
 		this._container = container;
 
@@ -136,12 +166,11 @@ export class InsightsDialogView extends Modal {
 
 		this._topTableData = new TableDataView();
 		this._bottomTableData = new TableDataView();
-
-		let topTableView = new TableCollapsibleView(nls.localize("insights.dialog.chartData", "Chart Data"), { sizing: ViewSizing.Flexible, ariaHeaderLabel: 'title' }, this._topTableData, this._topColumns, { forceFitColumns: true });
+		let topTableView = new TableCollapsibleView(nls.localize("insights.dialog.items", "Items"), { sizing: ViewSizing.Flexible, ariaHeaderLabel: 'title' }, this._topTableData, this._topColumns, { forceFitColumns: true });
 		this._topTable = topTableView.table;
 		topTableView.addContainerClass('insights');
 		this._topTable.setSelectionModel(new RowSelectionModel<ListResource>());
-		let bottomTableView = new TableCollapsibleView(nls.localize("insights.dialog.queryData", "Query Data"), { sizing: ViewSizing.Flexible, ariaHeaderLabel: 'title' }, this._bottomTableData, this._bottomColumns, { forceFitColumns: true });
+		let bottomTableView = new TableCollapsibleView(nls.localize("insights.dialog.itemDetails", "Item Details"), { sizing: ViewSizing.Flexible, ariaHeaderLabel: 'title' }, this._bottomTableData, this._bottomColumns, { forceFitColumns: true });
 		this._bottomTable = bottomTableView.table;
 		this._bottomTable.setSelectionModel(new RowSelectionModel<ListResource>());
 
@@ -198,13 +227,14 @@ export class InsightsDialogView extends Modal {
 		}
 		this._insight = input;
 		this._connectionProfile = connectionProfile;
+		this.updateTopColumns();
 		this.show();
 	}
 
 	private build(): void {
 		let labelIndex: number;
 		let valueIndex: number;
-		let columnName = typeof this._insight.label === 'object' ? this._insight.label.column : this._insight.label;
+		let columnName = this.labelColumnName;
 		if (this._insight.label === undefined || (labelIndex = this._model.columns.indexOf(columnName)) === -1) {
 			labelIndex = 0;
 		}
@@ -217,6 +247,16 @@ export class InsightsDialogView extends Modal {
 		this._topTableData.push(inputArray);
 		this.layout();
 	}
+
+	public reset(): void {
+		this._topTableData.clear();
+		this._bottomTableData.clear();
+	}
+
+	private get labelColumnName(): string {
+		return typeof this._insight.label === 'object' ? this._insight.label.column : this._insight.label;
+	}
+
 
 	public close() {
 		this.hide();

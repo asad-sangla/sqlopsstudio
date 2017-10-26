@@ -26,6 +26,9 @@ export class InsightsDialogService implements IInsightsDialogService {
 			this._insightsDialogController = this._instantiationService.createInstance(InsightsDialogController, this._insightsDialogModel);
 			this._insightsDialogView = this._instantiationService.createInstance(InsightsDialogView, this._insightsDialogModel);
 			this._insightsDialogView.render();
+		} else {
+			this._insightsDialogModel.reset();
+			this._insightsDialogView.reset();
 		}
 
 		this._insightsDialogModel.insight = input.details;

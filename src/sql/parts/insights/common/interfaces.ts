@@ -13,6 +13,7 @@ export interface IInsightsDialogModel {
 	rows: string[][];
 	columns: string[];
 	getListResources(labelIndex: number, valueIndex: number): ListResource[];
+	reset(): void;
 	onDataChange: Event<void>;
 	insight: IInsightsConfigDetails;
 }
