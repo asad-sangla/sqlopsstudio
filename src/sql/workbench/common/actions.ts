@@ -304,7 +304,7 @@ export class ManageAction extends Action {
 
 export class InsightAction extends Action {
 	public static ID = 'showInsight';
-	public static LABEL = nls.localize('showInsight', 'Show Insight');
+	public static LABEL = nls.localize('showDetails', 'Show Details');
 
 	constructor(
 		id: string, label: string,

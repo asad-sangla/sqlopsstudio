@@ -1,6 +1,6 @@
 # UX Pattern for Insights Flyout
 
-When a user clicks 'Show insight' on the insight widget, a flyout slides in on the right.
+When a user clicks 'Show Details' on the insight widget, a flyout slides in on the right.
 
 The top section shows a key value pair.
 
