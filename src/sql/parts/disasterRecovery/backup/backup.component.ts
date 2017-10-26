@@ -26,6 +26,7 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { localize } from 'vs/nls';
 import * as DOM from 'vs/base/browser/dom';
+import * as types from 'vs/base/common/types';
 
 export const BACKUP_SELECTOR: string = 'backup-component';
 
@@ -291,11 +292,22 @@ export class BackupComponent {
 		this.mediaDescriptionBox = new InputBox(this.mediaDescriptionElement.nativeElement, this._bootstrapService.contextViewService);
 
 		// Set backup retain days
+		let invalidInputMessage = localize('invalidInput', 'Invalid input. Value must be greater than or equal 0.');
 		this.backupRetainDaysBox = new InputBox(this.backupDaysElement.nativeElement,
 			this._bootstrapService.contextViewService,
 			{
 				placeholder: '0',
-				type: 'number'
+				type: 'number',
+				min: '0',
+				validationOptions: {
+					validation: (value: string) => {
+						if (types.isNumber(Number(value)) && Number(value) < 0) {
+							return { type: MessageType.ERROR, content: invalidInputMessage };
+						} else {
+							return null;
+						}
+					}
+				}
 			});
 
 		// disable elements

@@ -28,6 +28,9 @@ export interface IInputOptions extends IInputBoxStyles {
 	validationOptions?: IInputValidationOptions;
 	flexibleHeight?: boolean;
 	actions?: IAction[];
+
+	// {{SQL CARBON EDIT}} Canidate for addition to vscode
+	min?: string;
 }
 
 export interface IInputBoxStyles {
@@ -158,6 +161,11 @@ export class InputBox extends Widget {
 		} else {
 			this.input.type = this.options.type || 'text';
 			this.input.setAttribute('wrap', 'off');
+		}
+
+		// {{SQL CARBON EDIT}} Canidate for addition to vscode
+		if (this.options.min) {
+			this.input.min = this.options.min;
 		}
 
 		if (this.ariaLabel) {
