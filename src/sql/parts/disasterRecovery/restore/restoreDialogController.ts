@@ -6,6 +6,8 @@
 'use strict';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import * as types from 'vs/base/common/types';
+
 import { OptionsDialog } from 'sql/base/browser/ui/modal/optionsDialog';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
@@ -53,21 +55,33 @@ export class RestoreDialogController implements IRestoreDialogController {
 		this._disasterRecoveryService.getRestorePlan(this._ownerUri, this.setRestoreOption(overwriteTargetDatabase)).then(restorePlanResponse => {
 			this._sessionId = restorePlanResponse.sessionId;
 
-			if (restorePlanResponse.canRestore) {
-				restoreDialog.enableRestoreButton(true);
-			} else {
-				restoreDialog.enableRestoreButton(false);
-			}
-
 			if (restorePlanResponse.errorMessage) {
 				restoreDialog.onValidateResponseFail(restorePlanResponse.errorMessage);
 			} else {
 				restoreDialog.removeErrorMessage();
 				restoreDialog.viewModel.onRestorePlanResponse(restorePlanResponse);
 			}
+
+			if (restorePlanResponse.canRestore && !this.isEmptyBackupset()) {
+				restoreDialog.enableRestoreButton(true);
+			} else {
+				restoreDialog.enableRestoreButton(false);
+			}
 		}, error => {
 			restoreDialog.showError(error);
 		});
+	}
+
+	/**
+	 * Temporary fix for bug #2506: Restore button not disabled when there's not backup set to restore
+	 * Will remove this function once there is a fix in the service (bug #2572)
+	 */
+	private isEmptyBackupset(): boolean {
+		let restoreDialog = this._restoreDialogs[this._currentProvider] as RestoreDialog;
+		if (!types.isUndefinedOrNull(restoreDialog.viewModel.selectedBackupSets) && restoreDialog.viewModel.selectedBackupSets.length === 0) {
+			return true;
+		}
+		return false;
 	}
 
 	private getMssqlRestoreConfigInfo(): Promise<void> {
