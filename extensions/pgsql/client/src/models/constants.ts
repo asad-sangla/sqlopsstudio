@@ -55,6 +55,7 @@ export class Constants implements IExtensionConstants {
     public readonly configDebugServerPort = 'debugServerPort';
     public readonly localSourceFilename = 'pgsqltoolsservice/pgtoolsservice_main.py';
     public readonly installFolderName = 'pgsqltoolsservice';
+    public readonly telemetryExtensionName = 'carbon-pgsql';
 
     // localizable strings
     public readonly configMyConnectionsNoServerName = 'Missing server name in user preferences connection: ';

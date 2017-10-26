@@ -42,6 +42,7 @@ export interface IExtensionConstants {
     serviceCrashMessage: string;
     serviceCrashLink: string;
     installFolderName: string;
+    telemetryExtensionName: string;
 
     getRuntimeId(platform: string, architecture: string, distribution: LinuxDistribution): Runtime;
 

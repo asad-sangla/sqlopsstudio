@@ -52,6 +52,7 @@ export class Constants implements IExtensionConstants {
     public readonly configLogDebugInfo = 'logDebugInfo';
     public readonly providerId = 'MSSQL';
     public readonly installFolderName = 'sqltoolsservice';
+    public readonly telemetryExtensionName = 'carbon-mssql';
 
     // localizable strings
     public readonly configMyConnectionsNoServerName = 'Missing server name in user preferences connection: ';
