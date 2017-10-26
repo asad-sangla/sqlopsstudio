@@ -61,7 +61,7 @@
             {
                 "id": "all-database-size-server-insight",
                 "contrib": {
-                    "name": "Database Size",
+                    "name": "Database Size (MB)",
                     "provider": "MSSQL",
                     "edition": [0,1,2,3,4],
                     "gridItemConfig": {
@@ -73,7 +73,7 @@
                             "dataDirection": "vertical",
                             "dataType": "number",
                             "legendPosition": "none",
-                            "labelFirstColumn": true
+                            "columnsAsLabels": true
                         }
                     },
                     "queryFile": "./sql/db_size.sql"
