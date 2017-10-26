@@ -88,14 +88,16 @@ suite('Common Editor Config', () => {
 		let config = new TestWrappingConfiguration({
 			wordWrap: <any>true
 		});
-		assertWrapping(config, true, 81);
+		// {{SQL CARBON EDIT}}
+		assertWrapping(config, true, 89);
 	});
 
 	test('wordWrap on', () => {
 		let config = new TestWrappingConfiguration({
 			wordWrap: 'on'
 		});
-		assertWrapping(config, true, 81);
+		// {{SQL CARBON EDIT}}
+		assertWrapping(config, true, 89);
 	});
 
 	test('wordWrap on without minimap', () => {
@@ -113,7 +115,8 @@ suite('Common Editor Config', () => {
 			wordWrap: 'on',
 			wordWrapColumn: 10
 		});
-		assertWrapping(config, true, 81);
+		// {{SQL CARBON EDIT}}
+		assertWrapping(config, true, 89);
 	});
 
 	test('wordWrap off', () => {

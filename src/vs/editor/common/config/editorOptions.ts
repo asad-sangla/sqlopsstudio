@@ -2169,7 +2169,8 @@ export const EDITOR_DEFAULTS: IValidatedEditorOptions = {
 			mouseWheelScrollSensitivity: 1,
 		},
 		minimap: {
-			enabled: true,
+			// {{SQL CARBON EDIT}}
+			enabled: false,
 			showSlider: 'mouseover',
 			renderCharacters: true,
 			maxColumn: 120
