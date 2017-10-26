@@ -187,11 +187,13 @@ export class InsightsDialogView extends Modal {
 		}));
 
 		this._disposables.push(this._topTable.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
-			this._contextMenuService.showContextMenu({
-				getAnchor: () => e.target as HTMLElement,
-				getActions: () => this.insightActions,
-				getActionsContext: () => this.topInsightContext(this._topTableData.getItem(this._topTable.getCellFromEvent(e).row), this._topTable.getCellFromEvent(e))
-			});
+			if (this.hasActions()) {
+				this._contextMenuService.showContextMenu({
+					getAnchor: () => e.target as HTMLElement,
+					getActions: () => this.insightActions,
+					getActionsContext: () => this.topInsightContext(this._topTableData.getItem(this._topTable.getCellFromEvent(e).row), this._topTable.getCellFromEvent(e))
+				});
+			}
 		}));
 
 		this._disposables.push(this._bottomTable.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
@@ -260,6 +262,11 @@ export class InsightsDialogView extends Modal {
 
 	public close() {
 		this.hide();
+	}
+
+	private hasActions(): boolean {
+		return !!(this._insight && this._insight.actions && this._insight.actions.types
+			&& this._insight.actions.types.length > 0);
 	}
 
 	private get insightActions(): TPromise<IAction[]> {
