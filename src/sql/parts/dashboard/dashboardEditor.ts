@@ -5,7 +5,7 @@
 
 import * as DOM from 'vs/base/browser/dom';
 import { TPromise } from 'vs/base/common/winjs.base';
-import { Dimension, Builder } from 'vs/base/browser/builder';
+import { Dimension, Builder, $ } from 'vs/base/browser/builder';
 import { EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -41,6 +41,7 @@ export class DashboardEditor extends BaseEditor {
 	 */
 	public createEditor(parent: Builder): void {
 	}
+
 	/**
 	 * Sets focus on this editor. Specifically, it sets the focus on the hosted text editor.
 	 */
@@ -55,7 +56,7 @@ export class DashboardEditor extends BaseEditor {
 	}
 
 	public setInput(input: DashboardInput, options: EditorOptions): TPromise<void> {
-		if (this.input instanceof DashboardInput && this.input.matches(input)) {
+		if (this.input && this.input.matches(input)) {
 			return TPromise.as(undefined);
 		}
 
@@ -63,24 +64,17 @@ export class DashboardEditor extends BaseEditor {
 
 		super.setInput(input, options);
 
+		$(parentElement).empty();
+
 		if (!input.hasBootstrapped) {
-			this._disposeEditors();
 			let container = DOM.$<HTMLElement>('.dashboardEditor');
 			container.style.height = '100%';
 			this._dashboardContainer = DOM.append(parentElement, container);
 			this.input.container = this._dashboardContainer;
 			return TPromise.wrap(input.initializedPromise.then(() => this.bootstrapAngular(input)));
 		} else {
-			this._disposeEditors();
 			this._dashboardContainer = DOM.append(parentElement, this.input.container);
 			return TPromise.as<void>(null);
-		}
-	}
-
-	private _disposeEditors(): void {
-		if (this._dashboardContainer) {
-			this._dashboardContainer.remove();
-			this._dashboardContainer = null;
 		}
 	}
 
