@@ -173,6 +173,10 @@ export class TreeUpdateUtils {
 		return new TPromise<boolean>((resolve, reject) => {
 			TreeUpdateUtils.connectIfNotConnected(connection, options, connectionManagementService, tree).then(connectedConnection => {
 				if (connectedConnection) {
+					// append group ID and original display name to build unique OE session ID
+					connectedConnection.options['groupId'] = connection.groupId;
+					connectedConnection.options['databaseDisplayName'] = connection.databaseName;
+
 					var rootNode: TreeNode = objectExplorerService.getObjectExplorerNode(connectedConnection);
 					if (!rootNode) {
 						objectExplorerService.updateObjectExplorerNodes(connectedConnection).then(() => {
