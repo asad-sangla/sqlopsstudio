@@ -37,6 +37,9 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IStorageService } from 'vs/platform/storage/common/storage';
+import Event, { Emitter } from 'vs/base/common/event';
+import Severity from 'vs/base/common/severity';
+import * as nls from 'vs/nls';
 
 const DASHBOARD_SETTINGS = 'dashboard';
 
@@ -68,9 +71,8 @@ export class SingleConnectionManagementService {
 	) { }
 
 	public changeDatabase(name: string): Thenable<boolean> {
-		let self = this;
 		return this._connectionService.changeDatabase(this._uri, name).then((result) => {
-			self._onDidChangeConnection.next(self.connectionInfo);
+			this._onDidChangeConnection.next(this.connectionInfo);
 			return result;
 		});
 	}
@@ -136,6 +138,9 @@ export class DashboardServiceInterface implements OnDestroy {
 	private _workspaceContextService: IWorkspaceContextService;
 	private _storageService: IStorageService;
 	private _capabilitiesService: ICapabilitiesService;
+
+	private _updatePage = new Emitter<void>();
+	public readonly onUpdatePage: Event<void> = this._updatePage.event;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
@@ -255,7 +260,22 @@ export class DashboardServiceInterface implements OnDestroy {
 	private handleDashboardEvent(event: AngularEventType): void {
 		switch (event) {
 			case AngularEventType.NAV_DATABASE:
-				this._router.navigate(['database-dashboard']);
+				this.connectionManagementService.changeDatabase(this.connectionManagementService.connectionInfo.connectionProfile.databaseName).then(
+					result => {
+						if (result) {
+							if (this._router.url === '/database-dashboard') {
+								this._updatePage.fire();
+							} else {
+								this._router.navigate(['database-dashboard']);
+							}
+						} else {
+							this.messageService.show(Severity.Error, nls.localize('dashboard.changeDatabaseFailure', "Failed to change database"));
+						}
+					},
+					() => {
+						this.messageService.show(Severity.Error, nls.localize('dashboard.changeDatabaseFailure', "Failed to change database"));
+					}
+				);
 				break;
 			case AngularEventType.NAV_SERVER:
 				this._router.navigate(['server-dashboard']);
