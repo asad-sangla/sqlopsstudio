@@ -14,7 +14,7 @@ import 'vs/css!./media/editData';
 
 import { ElementRef, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject, forwardRef, EventEmitter } from '@angular/core';
 import { IGridDataRow, VirtualizedCollection } from 'angular2-slickgrid';
-import { IMessage, IGridDataSet } from 'sql/parts/grid/common/interfaces';
+import { IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import * as Services from 'sql/parts/grid/services/sharedServices';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { EditDataComponentParams } from 'sql/services/bootstrap/bootstrapParams';
@@ -34,23 +34,23 @@ export const EDITDATA_SELECTOR: string = 'editdata-component';
 
 export class EditDataComponent extends GridParentComponent implements OnInit, OnDestroy {
 	// CONSTANTS
-	// tslint:disable:no-unused-variable
 	private scrollTimeOutTime = 200;
 	private windowSize = 50;
-	// tslint:enable
 
 	// FIELDS
 	// All datasets
 	private dataSet: IGridDataSet;
-	private messages: IMessage[] = [];
 	private scrollTimeOut: number;
 	private messagesAdded = false;
 	private scrollEnabled = true;
 	private firstRender = true;
 	private totalElapsedTimeSpan: number;
 	private complete = false;
-	private newRow: { exists: boolean, rowIndex: number, reverted: boolean } = { exists: false, rowIndex: undefined, reverted: false };
 	private idMapping: { [row: number]: number } = {};
+
+	private currentCell: { row: number, column: number } = null;
+	private rowEditInProgress: boolean = false;
+	private removingNewRow: boolean = false;
 
 	// Edit Data functions
 	public onCellEditEnd: (event: { row: number, column: number, newValue: any }) => void;
@@ -119,7 +119,6 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	}
 
 	handleStart(self: EditDataComponent, event: any): void {
-		self.messages = [];
 		self.dataSet = undefined;
 		self.placeHolderDataSets = [];
 		self.renderedDataSets = self.placeHolderDataSets;
@@ -137,71 +136,23 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 			// Update the cell accordingly
 			self.dataService.updateCell(this.idMapping[event.row], event.column, event.newValue)
 				.then(
-				result => {
-					self.setCellDirtyState(event.row, event.column + 1, result.cell.isDirty);
-					self.setRowDirtyState(event.row, result.isRowDirty);
-				},
-				error => {
-					if (!this.newRow.exists) {
-						this.setGridClean();
-						this.refreshResultsets();
-					} else {
-						self.setCellDirtyState(event.row, event.column + 1, true);
-						self.setRowDirtyState(event.row, true);
+					result => {
+						self.setCellDirtyState(event.row, event.column + 1, result.cell.isDirty);
+						self.setRowDirtyState(event.row, result.isRowDirty);
+						self.rowEditInProgress = true;
+					},
+					error => {
+						// On error updating cell, jump back to the cell that was being edited
+						self.focusCell(event.row, event.column + 1);
 					}
-					this.focusCell(event.row, event.column + 1);
-				}
 				);
 		};
 
-		this.onCellEditBegin = (event: { row: number, column: number }): void => {
+		this.onCellEditBegin = (event: { row: number, column: number }): void => { };
 
-			if (this.newRow && this.newRow.reverted) {
-				this.newRow.reverted = false;
-			} else if (this.leaveCreateRow(event.row)) {
-				// Check if we tried to leave our 'create row' session
+		this.onRowEditBegin = (event: { row: number }): void => { };
 
-				// Try to commit pending edits if we have left
-				self.dataService.commitEdit().then(result => {
-					this.setGridClean();
-					this.newRow.exists = false;
-					// If we tried to leave into the null row then start a new edition session
-					if (this.isNullRow(event.row)) {
-						this.addRow(event.row, 1);
-					}
-				}, error => {
-					// Upon error prevent user from leaving the create session
-					this.focusCell(this.dataSet.totalRows - 2, event.column + 1);
-				});
-
-				// If we started editing a new cell in a 'new row' and we are not in a create session
-			} else if (this.isNullRow(event.row) && !this.newRow.exists) {
-				// Add a new row to slickgrid
-				this.addRow(event.row, 1);
-			}
-		};
-
-		this.onRowEditBegin = (event: { row: number }): void => {
-
-		};
-
-		this.onRowEditEnd = (event: { row: number }): void => {
-			// Check if we left a new row
-			if (!this.newRow.exists) {
-				self.dataService.commitEdit().then(result => {
-					this.setGridClean();
-				}, error => {
-					// TODO create formal slickgrid api for these actions
-					this.setGridClean();
-					this.dataService.revertRow(self.idMapping[event.row])
-						.then(
-						result => {
-							this.refreshResultsets();
-							this.focusCell(event.row, 1);
-						});
-				});
-			}
-		};
+		this.onRowEditEnd = (event: { row: number }): void => { };
 
 		this.onIsColumnEditable = (column: number): boolean => {
 			let result = false;
@@ -268,6 +219,41 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		};
 	}
 
+	onCellSelect(row: number, column: number): void {
+		let self = this;
+
+		// TODO: We can skip this step if we're allowing multiple commits
+		if (this.rowEditInProgress) {
+			// We're in the middle of a row edit, so we need to commit if we move to a different row
+			if (row !== this.currentCell.row) {
+				this.dataService.commitEdit()
+					.then(
+						result => {
+							// Committing was successful. Clean the grid, turn off the row edit flag, then select again
+							self.setGridClean();
+							self.rowEditInProgress = false;
+							self.onCellSelect(row, column);
+						}, error => {
+							// Committing failed, so jump back to the last selected cell
+							self.focusCell(self.currentCell.row, self.currentCell.column);
+						}
+					);
+				return;
+			}
+		} else {
+			// We're not in the middle of a row edit, so we can move anywhere
+			// Checking for removing new row makes sure we don't re-add the new row after we've
+			// jumped to the first cell of the "new row"
+			if (this.isNullRow(row) && !this.removingNewRow) {
+				// We moved into the "new row", add another new row
+				this.addRow(row, column);
+			}
+		}
+
+		// Set the cell we moved to as the current cell
+		this.currentCell = { row: row, column: column };
+	}
+
 	handleComplete(self: EditDataComponent, event: any): void {
 		self.totalElapsedTimeSpan = event.data;
 		self.complete = true;
@@ -331,6 +317,16 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		self.placeHolderDataSets.push(undefinedDataSet);
 		self.messagesAdded = true;
 		self.onScroll(0);
+
+		// HACK: unsafe reference to the slickgrid object
+		// TODO: Reimplement by adding selectCell event to angular2-slickgrid
+		self._cd.detectChanges();
+		let slick: any = self.slickgrids.toArray()[0];
+		let grid: Slick.Grid<any> = slick._grid;
+
+		grid.onActiveCellChanged.subscribe((event: Slick.EventData, data: Slick.OnActiveCellChangedEventArgs<any>) => {
+			self.onCellSelect(data.row, data.cell);
+		});
 	}
 
 	/**
@@ -369,11 +365,17 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	protected tryHandleKeyEvent(e): boolean {
 		let handled: boolean = false;
 		// If the esc key was pressed while in a create session
-		if (e.keyCode === jQuery.ui.keyCode.ESCAPE && this.newRow.exists) {
+		let currentNewRowIndex = this.dataSet.totalRows - 2;
+
+		if (e.keyCode === jQuery.ui.keyCode.ESCAPE && this.currentCell.row === currentNewRowIndex) {
 			// revert our last new row
-			this.dataService.revertRow(this.idMapping[this.newRow.rowIndex]);
-			this.newRow.exists = false;
-			this.removeRow(this.newRow.rowIndex - 1, 1);
+			this.removingNewRow = true;
+
+			this.dataService.revertRow(this.idMapping[currentNewRowIndex])
+				.then(() => {
+					this.removeRow(currentNewRowIndex, 0);
+					this.rowEditInProgress = false;
+				});
 			handled = true;
 		}
 		return handled;
@@ -385,12 +387,6 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	private isNullRow(row: number): boolean {
 		// Null row is always at index (totalRows - 1)
 		return (row === this.dataSet.totalRows - 1);
-	}
-
-	// Checks if the input row is leaving a create row session
-	private leaveCreateRow(row: number): boolean {
-		// Temp row is always at index (totalRows -1) when it exists
-		return (this.newRow.exists && !(row === this.dataSet.totalRows - 2));
 	}
 
 	// Adds CSS classes to slickgrid cells to indicate a dirty state
@@ -428,10 +424,11 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 	// Adds an extra row to the end of slickgrid (just for rendering purposes)
 	// Then sets the focused call afterwards
 	private addRow(row: number, column: number): void {
+		// Add a new row to the edit session in the tools service
 		this.dataService.createRow();
-		this.newRow.rowIndex = row;
-		this.newRow.exists = true;
+
 		// Adding an extra row for 'new row' functionality
+		this.rowEditInProgress = true;
 		this.dataSet.totalRows++;
 		this.dataSet.maxHeight = this.getMaxHeight(this.dataSet.totalRows);
 		this.dataSet.minHeight = this.getMinHeight(this.dataSet.totalRows);
@@ -441,12 +438,12 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 			this.loadDataFunction,
 			index => { return { values: [] }; }
 		);
+
 		// Refresh grid
 		this.onScroll(0);
 
-		// Set focused cell
+		// Mark the row as dirty once the scroll has completed
 		setTimeout(() => {
-			this.focusCell(row, column);
 			this.setRowDirtyState(row, true);
 		}, this.scrollTimeOutTime);
 	}
@@ -463,16 +460,13 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 			index => { return { values: [] }; }
 		);
 
-		if (this.newRow) {
-			this.newRow.reverted = true;
-		}
-
 		// refresh results view
 		this.onScroll(0);
 
-		// focus the above row
+		// Set focus to the row index column of the removed row
 		setTimeout(() => {
-			this.focusCell(row, column);
+			this.focusCell(row, 0);
+			this.removingNewRow = false;
 		}, this.scrollTimeOutTime);
 	}
 
