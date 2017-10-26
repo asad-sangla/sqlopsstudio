@@ -6,7 +6,8 @@
 'use strict';
 
 import * as data from 'data';
-import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
+import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
+import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { FileBrowserTree } from 'sql/parts/fileBrowser/common/fileBrowserTree';
 import { FileNode } from 'sql/parts/fileBrowser/common/fileNode';
 import { FileBrowserDialog } from 'sql/parts/fileBrowser/fileBrowserDialog';
@@ -14,6 +15,7 @@ import { IFileBrowserService } from 'sql/parts/fileBrowser/common/interfaces';
 import * as Constants from 'sql/common/constants';
 import Event, { Emitter } from 'vs/base/common/event';
 import Severity from 'vs/base/common/severity';
+import { localize } from 'vs/nls';
 import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class FileBrowserService implements IFileBrowserService {
@@ -27,7 +29,8 @@ export class FileBrowserService implements IFileBrowserService {
 	static fileNodeId: number = 0;
 
 	constructor(@IConnectionManagementService private _connectionService: IConnectionManagementService,
-		@IInstantiationService private _instantiationService: IInstantiationService) {
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IErrorMessageService private _errorMessageService: IErrorMessageService) {
 	}
 
 	public registerProvider(providerId: string, provider: data.FileBrowserProvider): void {
@@ -69,6 +72,11 @@ export class FileBrowserService implements IFileBrowserService {
 		) {
 			var fileTree = this.convertFileTree(null, fileBrowserOpenedParams.fileTree.rootNode, fileBrowserOpenedParams.fileTree.selectedNode.fullPath, fileBrowserOpenedParams.ownerUri);
 			this._onAddFileTree.fire({rootNode: fileTree.rootNode, selectedNode: fileTree.selectedNode, expandedNodes: fileTree.expandedNodes});
+		} else {
+			let genericErrorMessage = localize('fileBrowserErrorMessage', 'An error occured while loading the file browser.');
+			let errorDialogTitle = localize('fileBrowserErrorDialogTitle', 'File Browser Error');
+			let errorMessage = DialogHelper.isNullOrWhiteSpace(fileBrowserOpenedParams.message) ? genericErrorMessage : fileBrowserOpenedParams.message;
+			this._errorMessageService.showDialog(Severity.Error, errorDialogTitle, errorMessage);
 		}
 	}
 
