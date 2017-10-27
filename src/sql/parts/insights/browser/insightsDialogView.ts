@@ -23,7 +23,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
 import { SplitView, ViewSizing } from 'vs/base/browser/ui/splitview/splitview';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IListService } from 'vs/platform/list/browser/listService';
@@ -35,6 +35,7 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as types from 'vs/base/common/types';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { Button } from 'vs/base/browser/ui/button/button';
 
 /* Regex that matches the form `${value}` */
 export const insertValueRegex: RegExp = /\${(.*?)\}/;
@@ -78,13 +79,13 @@ export class InsightsDialogView extends Modal {
 
 	private _connectionProfile: IConnectionProfile;
 	private _insight: IInsightsConfigDetails;
-	private _disposables: IDisposable[] = [];
 	private _splitView: SplitView;
 	private _container: HTMLElement;
 	private _topTable: Table<ListResource>;
 	private _topTableData: TableDataView<ListResource>;
 	private _bottomTable: Table<ListResource>;
 	private _bottomTableData: TableDataView<ListResource>;
+	private _taskButtonDisposables: IDisposable[] = [];
 	private _topColumns: Array<Slick.Column<ListResource>> = [
 		{
 			name: '',
@@ -133,8 +134,8 @@ export class InsightsDialogView extends Modal {
 		this._model.onDataChange(e => this.build());
 	}
 
-	private updateTopColumns(): void{
-		let labelName = this.labelColumnName ? this.labelColumnName :labelDisplay;
+	private updateTopColumns(): void {
+		let labelName = this.labelColumnName ? this.labelColumnName : labelDisplay;
 		let valueName = this._insight.value ? this._insight.value : valueDisplay;
 		this._topColumns = [
 			{
@@ -174,7 +175,7 @@ export class InsightsDialogView extends Modal {
 		this._bottomTable = bottomTableView.table;
 		this._bottomTable.setSelectionModel(new RowSelectionModel<ListResource>());
 
-		this._disposables.push(this._topTable.onSelectedRowsChanged((e: DOMEvent, data: Slick.OnSelectedRowsChangedEventArgs<ListResource>) => {
+		this._register(this._topTable.onSelectedRowsChanged((e: DOMEvent, data: Slick.OnSelectedRowsChangedEventArgs<ListResource>) => {
 			if (data.rows.length === 1) {
 				let element = this._topTableData.getItem(data.rows[0]);
 				let resourceArray: ListResource[] = [];
@@ -183,10 +184,13 @@ export class InsightsDialogView extends Modal {
 				}
 				this._bottomTableData.clear();
 				this._bottomTableData.push(resourceArray);
+				this._enableTaskButtons(true);
+			} else {
+				this._enableTaskButtons(false);
 			}
 		}));
 
-		this._disposables.push(this._topTable.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
+		this._register(this._topTable.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
 			if (this.hasActions()) {
 				this._contextMenuService.showContextMenu({
 					getAnchor: () => e.target as HTMLElement,
@@ -196,7 +200,7 @@ export class InsightsDialogView extends Modal {
 			}
 		}));
 
-		this._disposables.push(this._bottomTable.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
+		this._register(this._bottomTable.onContextMenu((e: DOMEvent, data: Slick.OnContextMenuEventArgs<any>) => {
 			this._contextMenuService.showContextMenu({
 				getAnchor: () => e.target as HTMLElement,
 				getActions: () => TPromise.as([this._instantiationService.createInstance(CopyInsightDialogSelectionAction, CopyInsightDialogSelectionAction.ID, CopyInsightDialogSelectionAction.LABEL)]),
@@ -207,15 +211,15 @@ export class InsightsDialogView extends Modal {
 		this._splitView.addView(topTableView);
 		this._splitView.addView(bottomTableView);
 
-		this._disposables.push(attachTableStyler(this._topTable, this._themeService));
-		this._disposables.push(attachTableStyler(this._bottomTable, this._themeService));
+		this._register(attachTableStyler(this._topTable, this._themeService));
+		this._register(attachTableStyler(this._bottomTable, this._themeService));
 	}
 
 	public render() {
 		super.render();
 		let button = this.addFooterButton('Close', () => this.close());
-		this._disposables.push(attachButtonStyler(button, this._themeService));
-		this._disposables.push(attachModalDialogStyler(this, this._themeService));
+		this._register(attachButtonStyler(button, this._themeService));
+		this._register(attachModalDialogStyler(this, this._themeService));
 	}
 
 	protected layout(height?: number): void {
@@ -247,6 +251,28 @@ export class InsightsDialogView extends Modal {
 		let inputArray = this._model.getListResources(labelIndex, valueIndex);
 		this._topTableData.clear();
 		this._topTableData.push(inputArray);
+		if (this._insight.actions && this._insight.actions.types) {
+			const taskRegistry = Registry.as<ITaskRegistry>(TaskExtensions.TaskContribution);
+			let tasks = taskRegistry.idToCtorMap;
+			for (let action of this._insight.actions.types) {
+				let ctor = tasks[action];
+				if (ctor) {
+					let button = this.addFooterButton(ctor.LABEL, () => {
+						let element = this._topTable.getSelectedRows();
+						let resource: ListResource;
+						if (element && element.length > 0) {
+							resource = this._topTableData.getItem(element[0]);
+						} else {
+							return;
+						}
+						this._instantiationService.createInstance(ctor, ctor.ID, ctor.LABEL, ctor.ICON).run(this.topInsightContext(resource));
+					}, 'left');
+					button.enabled = false;
+					this._taskButtonDisposables.push(button);
+					this._taskButtonDisposables.push(attachButtonStyler(button, this._themeService));
+				}
+			}
+		}
 		this.layout();
 	}
 
@@ -262,6 +288,8 @@ export class InsightsDialogView extends Modal {
 
 	public close() {
 		this.hide();
+		dispose(this._taskButtonDisposables);
+		this._taskButtonDisposables = [];
 	}
 
 	private hasActions(): boolean {
@@ -287,7 +315,7 @@ export class InsightsDialogView extends Modal {
 	 * Creates the context that should be passed to the action passed on the selected element for the top table
 	 * @param element
 	 */
-	private topInsightContext(element: ListResource, cell: Slick.Cell): IInsightDialogActionContext {
+	private topInsightContext(element: ListResource, cell?: Slick.Cell): IInsightDialogActionContext {
 		let database = this._insight.actions.database || this._connectionProfile.databaseName;
 		let server = this._insight.actions.server || this._connectionProfile.serverName;
 		let user = this._insight.actions.user || this._connectionProfile.userName;
@@ -328,9 +356,7 @@ export class InsightsDialogView extends Modal {
 		profile.serverName = server;
 		profile.userName = user;
 
-		let cellData = element.data[cell.cell];
-
-		return { profile, cellData };
+		return { profile, cellData: undefined };
 	}
 
 	/**
@@ -342,5 +368,14 @@ export class InsightsDialogView extends Modal {
 		let cellData = element[this._bottomColumns[cell.cell].id];
 
 		return { profile: undefined, cellData };
+	}
+
+	private _enableTaskButtons(val: boolean): void {
+		for (let index = 0; index < this._taskButtonDisposables.length; index++) {
+			let element = this._taskButtonDisposables[index];
+			if (element instanceof Button) {
+				element.enabled = val;
+			}
+		}
 	}
 }
