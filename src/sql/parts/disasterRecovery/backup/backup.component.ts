@@ -320,8 +320,7 @@ export class BackupComponent {
 	private onGetBackupConfigInfo(param: DashboardComponentParams) {
 		// Show spinner
 		this.showSpinner();
-		this.scriptButton.enabled = false;
-		this.backupButton.enabled = false;
+		this.backupEnabled = false;
 
 		// Reset backup values
 		this.backupNameBox.value = '';
@@ -373,7 +372,7 @@ export class BackupComponent {
 		this._toDispose.push(this.addButtonClickHandler(this.backupButton, () => this.onOk()));
 
 		this._toDispose.push(attachButtonStyler(this.backupButton, this._bootstrapService.themeService));
-		this.backupButton.enabled = false;
+		this.backupEnabled = false;
 
 		// Set cancel footer button
 		this.cancelButton = new Button(this.cancelButtonElement.nativeElement);
@@ -392,8 +391,7 @@ export class BackupComponent {
 		this.backupTypeOptions = [];
 
 		if (isMetadataPopulated) {
-			this.scriptButton.enabled = true;
-			this.backupButton.enabled = true;
+			this.backupEnabled = true;
 
 			// Set recovery model
 			this.setControlsForRecoveryModel();
@@ -568,12 +566,17 @@ export class BackupComponent {
 		this.enableMediaInput(this.isFormatChecked);
 		if (this.isFormatChecked) {
 			if (!this.mediaNameBox.value) {
-				this.backupButton.enabled = false;
+				this.backupEnabled = false;
 			}
 		} else {
 			this.enableBackupButton();
 		}
 		this.detectChange();
+	}
+
+	private set backupEnabled(value: boolean) {
+		this.backupButton.enabled = value;
+		this.scriptButton.enabled = value;
 	}
 
 	private onAdvancedClick(): void {
@@ -657,7 +660,7 @@ export class BackupComponent {
 
 		this.pathListBox.remove();
 		if (this.pathListBox.count === 0) {
-			this.backupButton.enabled = false;
+			this.backupEnabled = false;
 
 			// show input validation error
 			this.pathListBox.setValidation(false, { content: localize('backup.backupFileRequired', 'Backup file path is required'), type: MessageType.ERROR });
@@ -810,14 +813,14 @@ export class BackupComponent {
 	private enableBackupButton(): void {
 		if (!this.backupButton.enabled) {
 			if (this.pathListBox.count > 0 && (!this.isFormatChecked || this.mediaNameBox.value)) {
-				this.backupButton.enabled = true;
+				this.backupEnabled = true;
 			}
 		}
 	}
 
 	private mediaNameChanged(mediaName: string): void {
 		if (!mediaName) {
-			this.backupButton.enabled = false;
+			this.backupEnabled = false;
 		} else {
 			this.enableBackupButton();
 		}
