@@ -131,7 +131,7 @@ export class ConnectionConfig implements IConnectionConfig {
 					var sameProfileInList = profiles.find(value => {
 						let providerCapabilities = this.getCapabilities(value.providerName);
 						let providerConnectionProfile = ConnectionProfile.createFromStoredProfile(value, providerCapabilities);
-						return providerConnectionProfile.getOptionsKey() === connectionProfile.getOptionsKey();
+						return providerConnectionProfile.matches(connectionProfile);
 					});
 					if (sameProfileInList) {
 						profiles = profiles.filter(value => value !== sameProfileInList);

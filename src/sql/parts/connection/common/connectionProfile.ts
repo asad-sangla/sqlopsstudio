@@ -9,7 +9,7 @@ import { ConnectionProfileGroup } from './connectionProfileGroup';
 import * as data from 'data';
 import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
 import * as interfaces from 'sql/parts/connection/common/interfaces';
-
+import { equalsIgnoreCase } from 'vs/base/common/strings';
 import { generateUuid } from 'vs/base/common/uuid';
 
 // Concrete implementation of the IConnectionProfile interface
@@ -47,11 +47,11 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	public matches(other: interfaces.IConnectionProfile): boolean {
 		return other
 			&& this.providerName === other.providerName
-			&& this.serverName === other.serverName
-			&& this.databaseName === other.databaseName
-			&& this.userName === other.userName
+			&& equalsIgnoreCase(this.serverName, other.serverName)
+			&& equalsIgnoreCase(this.databaseName, other.databaseName)
+			&& equalsIgnoreCase(this.userName, other.userName)
 			&& this.authenticationType === other.authenticationType
-			&& this.groupFullName === other.groupFullName;
+			&& this.groupId === other.groupId;
 	}
 
 	public generateNewId() {
