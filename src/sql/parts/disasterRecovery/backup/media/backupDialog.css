@@ -26,7 +26,7 @@
 
 .advanced-header {
 	padding-top: 15px;
-	font-size: 12px;
+	font-size: 14px;
 }
 
 input[type="radio"] {
@@ -45,4 +45,14 @@ input[type="radio"] {
 .backup-dialog .option {
 	width: 100%;
 	padding-bottom: 7px;
+}
+
+.backup-dialog .icon.warning {
+	width: 15px;
+	height: 15px;
+	float: left;
+}
+
+.backup-dialog .warning-message{
+	padding-left: 20px;
 }

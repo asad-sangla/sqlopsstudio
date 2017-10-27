@@ -16,6 +16,8 @@ import nls = require('vs/nls');
 const $ = dom.$;
 
 export interface ISelectBoxStyles extends vsISelectBoxStyles {
+	disabledSelectBackground?: Color,
+	disabledSelectForeground?: Color,
 	inputValidationInfoBorder?: Color;
 	inputValidationInfoBackground?: Color;
 	inputValidationWarningBorder?: Color;
@@ -74,6 +76,8 @@ export class SelectBox extends vsSelectBox {
 		this.enabledSelectBackground = this.selectBackground;
 		this.enabledSelectForeground = this.selectForeground;
 		this.enabledSelectBorder = this.selectBorder;
+		this.disabledSelectBackground = styles.disabledSelectBackground;
+		this.disabledSelectForeground = styles.disabledSelectForeground;
 		this.inputValidationInfoBorder = styles.inputValidationInfoBorder;
 		this.inputValidationInfoBackground = styles.inputValidationInfoBackground;
 		this.inputValidationWarningBorder = styles.inputValidationWarningBorder;

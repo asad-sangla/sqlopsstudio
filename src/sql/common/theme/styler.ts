@@ -73,7 +73,9 @@ export function attachSelectBoxStyler(widget: IThemable, themeService: IThemeSer
 	{
 		selectBackground?: cr.ColorIdentifier,
 		selectForeground?: cr.ColorIdentifier,
-		selectBorder?: cr.ColorIdentifier
+		selectBorder?: cr.ColorIdentifier,
+		disabledSelectBackground?: cr.ColorIdentifier,
+		disabledSelectForeground?: cr.ColorIdentifier,
 		inputValidationInfoBorder?: cr.ColorIdentifier,
 		inputValidationInfoBackground?: cr.ColorIdentifier,
 		inputValidationWarningBorder?: cr.ColorIdentifier,
@@ -85,6 +87,8 @@ export function attachSelectBoxStyler(widget: IThemable, themeService: IThemeSer
 		selectBackground: (style && style.selectBackground) || cr.selectBackground,
 		selectForeground: (style && style.selectForeground) || cr.selectForeground,
 		selectBorder: (style && style.selectBorder) || cr.selectBorder,
+		disabledSelectBackground: (style && style.disabledSelectBackground) || sqlcolors.disabledInputBackground,
+		disabledSelectForeground: (style && style.disabledSelectForeground) || sqlcolors.disabledInputForeground,
 		inputValidationInfoBorder: (style && style.inputValidationInfoBorder) || cr.inputValidationInfoBorder,
 		inputValidationInfoBackground: (style && style.inputValidationInfoBackground) || cr.inputValidationInfoBackground,
 		inputValidationWarningBorder: (style && style.inputValidationWarningBorder) || cr.inputValidationWarningBorder,

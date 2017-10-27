@@ -69,16 +69,14 @@
 						<div class="indent">
 							<div class="option" #encryptCheckContainer>Encrypt backup
 							</div>
-							<div class="option" #encryptErrorContainer>
-								<div class="errorIcon" style="padding-right: 4px">
-									<img class="error-icon" #errorIcon>
+							<div class="option" #encryptWarningContainer>
+								<div class="icon warning">
 								</div>
-								<div>
-									{{errorMessage}}
+								<div class="warning-message">
+									{{noEncryptorWarning}}
 								</div>
 							</div>
-
-							<div style="display: none" #encryptContainer>
+							<div #encryptContainer>
 								<div class="dialog-label">
 									{{algorithmLabel}}
 								</div>
@@ -94,7 +92,7 @@
 
 						<!-- Overwrite media -->
 						<div class="dialog-label advanced-header">
-							{{media}}
+							{{mediaLabel}}
 						</div>
 						<div class="radio-indent">
 							<div class="option">

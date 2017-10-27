@@ -12,7 +12,7 @@ import { ListBox } from 'sql/base/browser/ui/listBox/listBox';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { ModalFooterStyle } from 'sql/base/browser/ui/modal/modal';
-import { attachListBoxStyler, attachInputBoxStyler } from 'sql/common/theme/styler';
+import { attachListBoxStyler, attachInputBoxStyler, attachSelectBoxStyler } from 'sql/common/theme/styler';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as BackupConstants from 'sql/parts/disasterRecovery/backup/constants';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
@@ -22,7 +22,7 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { attachButtonStyler, attachSelectBoxStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
 import { localize } from 'vs/nls';
 import * as DOM from 'vs/base/browser/dom';
 import * as types from 'vs/base/common/types';
@@ -80,7 +80,6 @@ export class BackupComponent {
 	@ViewChild('pathContainer', { read: ElementRef }) pathElement;
 	@ViewChild('backupTypeContainer', { read: ElementRef }) backupTypeElement;
 	@ViewChild('backupsetName', { read: ElementRef }) backupNameElement;
-	@ViewChild('errorIcon', { read: ElementRef }) errorIconElement;
 	@ViewChild('compressionContainer', { read: ElementRef }) compressionElement;
 	@ViewChild('tlogOption', { read: ElementRef }) tlogOptionElement;
 	@ViewChild('algorithmContainer', { read: ElementRef }) encryptionAlgorithmElement;
@@ -101,7 +100,7 @@ export class BackupComponent {
 	@ViewChild('verifyContainer', { read: ElementRef }) verifyElement;
 	@ViewChild('checksumContainer', { read: ElementRef }) checksumElement;
 	@ViewChild('continueOnErrorContainer', { read: ElementRef }) continueOnErrorElement;
-	@ViewChild('encryptErrorContainer', { read: ElementRef }) encryptErrorElement;
+	@ViewChild('encryptWarningContainer', { read: ElementRef }) encryptWarningElement;
 	@ViewChild('inProgressContainer', { read: ElementRef }) inProgressElement;
 	@ViewChild('modalFooterContainer', { read: ElementRef }) modalFooterElement;
 	@ViewChild('scriptButtonContainer', { read: ElementRef }) scriptButtonElement;
@@ -113,7 +112,7 @@ export class BackupComponent {
 	private readonly backupDeviceLabel: string = localize('backup.backupDevice', 'Backup files');
 	private readonly algorithmLabel: string = localize('backup.algorithm', 'Algorithm');
 	private readonly certificateOrAsymmetricKeyLabel: string = localize('backup.certificateOrAsymmetricKey', 'Certificate or Asymmetric key');
-	private readonly mediaLabel: string = localize('backup.media', 'media');
+	private readonly mediaLabel: string = localize('backup.media', 'Media');
 	private readonly mediaOptionLabel: string = localize('backup.mediaOption', 'Backup to the existing media set');
 	private readonly mediaOptionFormatLabel: string = localize('backup.mediaOptionFormat', 'Backup to a new media set');
 	private readonly existingMediaAppendLabel: string = localize('backup.existingMediaAppend', 'Append to the existing backup set');
@@ -132,6 +131,9 @@ export class BackupComponent {
 	private readonly encryptionLabel: string = localize('backup.encryption', 'Encryption');
 	private readonly transactionLogLabel: string = localize('backup.transactionLog', 'Transaction log');
 	private readonly reliabilityLabel: string = localize('backup.reliability', 'Reliability');
+	private readonly mediaNameRequiredError: string = localize('backup.mediaNameRequired', 'Media name is required');
+	private readonly noEncryptorWarning: string = localize('backup.noEncryptorWarning', "No certificate or asymmetric key is available");
+
 	// tslint:enable:no-unused-variable
 
 	private _disasterRecoveryService: IDisasterRecoveryService;
@@ -145,6 +147,7 @@ export class BackupComponent {
 	private recoveryModel: string;
 	private backupEncryptors;
 	private containsBackupToUrl: boolean;
+	private fileBrowserDialog: FileBrowserDialog;
 	private errorMessage: string;
 
 	// UI element disable flag
@@ -283,7 +286,7 @@ export class BackupComponent {
 			this._bootstrapService.contextViewService,
 			{
 				validationOptions: {
-					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: localize('backup.mediaNameRequired', 'Media name is required') }) : null
+					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: this.mediaNameRequiredError }) : null
 				}
 			});
 
@@ -414,13 +417,23 @@ export class BackupComponent {
 			var encryptorItems = this.populateEncryptorCombo();
 			this.encryptorSelectBox.setOptions(encryptorItems, 0);
 
-			// If no encryptor is provided, disable encrypt checkbox and show warning
 			if (encryptorItems.length === 0) {
+				// Disable encryption checkbox
 				this.encryptCheckBox.disable();
-				let iconFilePath = require.toUrl('sql/workbench/errorMessageDialog/media/status-warning.svg');
-				this.errorIconElement.nativeElement.style.content = 'url(' + iconFilePath + ')';
-				this.errorMessage = localize('backup.noEncryptorError', "No certificate or asymmetric key is available");
+
+				// Show warning instead of algorithm select boxes
+				(<HTMLElement>this.encryptWarningElement.nativeElement).style.display = 'inline';
+				(<HTMLElement>this.encryptContainerElement.nativeElement).style.display = 'none';
 			}
+			else {
+				// Show algorithm select boxes instead of warning
+				(<HTMLElement>this.encryptWarningElement.nativeElement).style.display = 'none';
+				(<HTMLElement>this.encryptContainerElement.nativeElement).style.display = 'inline';
+
+				// Disable the algorithm select boxes since encryption is not checked by default
+				this.setEncryptOptionsEnabled(false);
+			}
+
 			this.setTLogOptions();
 
 			// disable elements
@@ -549,14 +562,14 @@ export class BackupComponent {
 
 	private onChangeEncrypt(): void {
 		if (this.encryptCheckBox.checked) {
-			(<HTMLElement>this.encryptContainerElement.nativeElement).style.display = 'inline';
+			this.setEncryptOptionsEnabled(true);
 
-			// Enable media options
+			// Force to choose format media option since otherwise encryption cannot be done
 			if (!this.isFormatChecked) {
 				this.onChangeMediaFormat();
 			}
 		} else {
-			(<HTMLElement>this.encryptContainerElement.nativeElement).style.display = 'none';
+			this.setEncryptOptionsEnabled(false);
 		}
 		this.isEncryptChecked = this.encryptCheckBox.checked;
 		this.detectChange();
@@ -566,8 +579,10 @@ export class BackupComponent {
 		this.isFormatChecked = !this.isFormatChecked;
 		this.enableMediaInput(this.isFormatChecked);
 		if (this.isFormatChecked) {
-			if (!this.mediaNameBox.value) {
+			if (DialogHelper.isNullOrWhiteSpace(this.mediaNameBox.value)) {
 				this.backupEnabled = false;
+        this.backupButton.enabled = false;        
+				this.mediaNameBox.showMessage({ type: MessageType.ERROR, content: this.mediaNameRequiredError });				
 			}
 		} else {
 			this.enableBackupButton();
@@ -816,6 +831,19 @@ export class BackupComponent {
 			if (this.pathListBox.count > 0 && (!this.isFormatChecked || this.mediaNameBox.value)) {
 				this.backupEnabled = true;
 			}
+		}
+	}
+
+	private setEncryptOptionsEnabled(enabled: boolean): void {
+		if (enabled)
+		{
+			this.algorithmSelectBox.enable();
+			this.encryptorSelectBox.enable();
+		}
+		else
+		{
+			this.algorithmSelectBox.disable();
+			this.encryptorSelectBox.disable();
 		}
 	}
 
