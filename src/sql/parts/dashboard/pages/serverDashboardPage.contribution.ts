@@ -79,13 +79,13 @@ let defaultVal = [
 			'tasks-widget': {}
 		},
 		gridItemConfig: {
-			sizex: 2,
+			sizex: 1,
 			sizey: 1
 		}
 	},
 	{
 		gridItemConfig: {
-			sizex: 2,
+			sizex: 1,
 			sizey: 2
 		},
 		widget: {

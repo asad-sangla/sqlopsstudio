@@ -135,7 +135,7 @@ export const databaseDashboardSettingSchema: IJSONSchema = {
 		{
 			name: 'Tasks',
 			gridItemConfig: {
-				sizex: 2,
+				sizex: 1,
 				sizey: 1
 			},
 			widget: {
@@ -144,7 +144,7 @@ export const databaseDashboardSettingSchema: IJSONSchema = {
 		},
 		{
 			gridItemConfig: {
-				sizex: 2,
+				sizex: 1,
 				sizey: 2
 			},
 			widget: {
