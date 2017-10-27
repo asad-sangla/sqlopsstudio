@@ -453,6 +453,33 @@ export class BackupComponent {
 		this._changeDetectorRef.detectChanges();
 	}
 
+	/**
+	 * Reset dialog controls to their initial state.
+	 */
+	private resetDialog(): void {
+		this.isFormatChecked = false;
+		this.isEncryptChecked = false;
+
+		this.copyOnlyCheckBox.checked = false;
+		this.copyOnlyCheckBox.enable();
+		this.compressionSelectBox.setOptions(this.compressionOptions, 0);
+		this.encryptCheckBox.checked = false;
+		this.encryptCheckBox.enable();
+		this.onChangeEncrypt();
+
+		this.mediaNameBox.value = '';
+		this.mediaDescriptionBox.value = '';
+		this.checksumCheckBox.checked = false;
+		this.verifyCheckBox.checked = false;
+		this.continueOnErrorCheckBox.checked = false;
+		this.backupRetainDaysBox.value = '0';
+		this.algorithmSelectBox.setOptions(this.encryptionAlgorithms, 0);
+		this.selectedInitOption = this.existingMediaOptions[0];
+		this.collapseAdvancedOptions();
+		this.containsBackupToUrl = false;
+		this.pathListBox.setValidation(true);
+	}
+
 	private registerListeners(): void {
 		// Theme styler
 		this._toDispose.push(attachInputBoxStyler(this.backupNameBox, this._bootstrapService.themeService));
@@ -490,17 +517,22 @@ export class BackupComponent {
 	*/
 	private onScript(): void {
 		this._disasterRecoveryService.backup(this._uri, this.createBackupInfo(), TaskExecutionMode.script);
-		this._disasterRecoveryUiService.closeBackup();
+		this.close();
 	}
 
 	private onOk(): void {
 		this._disasterRecoveryService.backup(this._uri, this.createBackupInfo(), TaskExecutionMode.executeAndScript);
-		this._disasterRecoveryUiService.closeBackup();
+		this.close();
 	}
 
 	private onCancel(): void {
-		this._disasterRecoveryUiService.closeBackup();
+		this.close();
 		this._bootstrapService.connectionManagementService.disconnect(this._uri);
+	}
+
+	private close(): void {
+		this._disasterRecoveryUiService.closeBackup();
+		this.resetDialog();
 	}
 
 	private onChangeTlog(): void {
@@ -540,17 +572,26 @@ export class BackupComponent {
 	private onAdvancedClick(): void {
 		if (this.advancedHeaderElement.nativeElement.style['aria-expanded']) {
 			// collapse
-			this.advancedHeaderElement.nativeElement.className = 'header collapsible collapsed';
-			this.advancedBodyElement.nativeElement.style = 'display: none';
-			this.advancedHeaderElement.nativeElement.style['aria-expanded'] = false;
+			this.collapseAdvancedOptions();
 		} else {
 			// expand
-			this.advancedHeaderElement.nativeElement.className = 'header collapsible';
-			this.advancedBodyElement.nativeElement.style = 'display: inline';
-			this.advancedHeaderElement.nativeElement.style['aria-expanded'] = true;
+			this.expandAdvancedOptions();
 		}
 
 		this.detectChange();
+	}
+
+	private collapseAdvancedOptions() {
+		this.advancedHeaderElement.nativeElement.className = 'header collapsible collapsed';
+		this.advancedBodyElement.nativeElement.style = 'display: none';
+		this.advancedHeaderElement.nativeElement.style['aria-expanded'] = false;
+	}
+
+
+	private expandAdvancedOptions() {
+		this.advancedHeaderElement.nativeElement.className = 'header collapsible';
+		this.advancedBodyElement.nativeElement.style = 'display: inline';
+		this.advancedHeaderElement.nativeElement.style['aria-expanded'] = true;
 	}
 
 	private onBackupTypeChanged(): void {
