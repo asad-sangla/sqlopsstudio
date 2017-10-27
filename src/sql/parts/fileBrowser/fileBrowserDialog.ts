@@ -27,7 +27,7 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { attachInputBoxStyler, attachButtonStyler } from 'vs/platform/theme/common/styler';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
@@ -49,7 +49,7 @@ export class FileBrowserDialog extends Modal {
 
 	constructor(title: string,
 		@IPartService partService: IPartService,
-		@IThemeService private _themeService: IThemeService,
+		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IContextViewService private _contextViewService: IContextViewService,
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -84,7 +84,6 @@ export class FileBrowserDialog extends Modal {
 
 		this._bodyBuilder.div({ class: 'tree-view' }, (treeContainer) => {
 			this._treeContainer = treeContainer;
-			this._treeContainer.style('background-color', this.headerAndFooterBackground);
 		});
 
 		this._bodyBuilder.div({ class: 'option-section' }, (tableWrapper) => {
@@ -105,6 +104,7 @@ export class FileBrowserDialog extends Modal {
 		this._cancelButton = this.addFooterButton(localize('discard', 'Discard'), () => this.close());
 
 		this.registerListeners();
+		this.updateTheme();
 	}
 
 	public open(ownerUri: string,
@@ -228,5 +228,14 @@ export class FileBrowserDialog extends Modal {
 		this._register(attachInputBoxStyler(this._filePathInputBox, this._themeService));
 		this._register(attachButtonStyler(this._okButton, this._themeService));
 		this._register(attachButtonStyler(this._cancelButton, this._themeService));
+
+		this._register(this._themeService.onDidColorThemeChange(e => this.updateTheme()));
+	}
+
+	// Update theming that is specific to file browser
+	private updateTheme(): void {
+		if (this._treeContainer) {
+			this._treeContainer.style('background-color', this.headerAndFooterBackground);
+		}
 	}
 }
