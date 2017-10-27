@@ -65,7 +65,7 @@ export class ServerTreeView {
 	public renderBody(container: HTMLElement): void {
 		// Add div to display no connections found message and hide it by default
 		this.messages = $('div.title').appendTo(container);
-		$('span').text('No connections found.').appendTo(this.messages);
+		$('span').style('padding-left', '10px').text('No connections found.').appendTo(this.messages);
 		this.messages.hide();
 
 		if (!this._connectionManagementService.hasRegisteredServers()) {
@@ -250,6 +250,7 @@ export class ServerTreeView {
 		// Clear other action views if user switched between two views
 		this.clearOtherActions(view);
 		let root = TreeUpdateUtils.getTreeInput(this._connectionManagementService);
+		let treeInput: ConnectionProfileGroup = null;
 		if (root) {
 			// Filter results based on view
 			let filteredResults = this.filterConnections([root], view);
@@ -257,16 +258,16 @@ export class ServerTreeView {
 				this.messages.show();
 				this.messages.domFocus();
 			} else {
-				let treeInput = filteredResults[0];
-				this._tree.setInput(treeInput).done(() => {
-					if (this.messages.isHidden()) {
-						self._tree.getFocus();
-						self._tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
-					} else {
-						self._tree.clearFocus();
-					}
-				}, errors.onUnexpectedError);
+				treeInput = filteredResults[0];
 			}
+			this._tree.setInput(treeInput).done(() => {
+				if (this.messages.isHidden()) {
+					self._tree.getFocus();
+					self._tree.expandAll(ConnectionProfileGroup.getSubgroups(treeInput));
+				} else {
+					self._tree.clearFocus();
+				}
+			}, errors.onUnexpectedError);
 		} else {
 			//no op
 		}
