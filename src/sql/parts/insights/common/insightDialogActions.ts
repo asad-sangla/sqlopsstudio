@@ -12,7 +12,7 @@ import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService
 
 export class CopyInsightDialogSelectionAction extends Action {
 	public static ID = 'workbench.action.insights.copySelection';
-	public static LABEL = nls.localize('workbench.action.insights.copySelection', "Copy Selection");
+	public static LABEL = nls.localize('workbench.action.insights.copySelection', "Copy Cell");
 
 	constructor(
 		id: string, label: string,
