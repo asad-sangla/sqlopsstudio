@@ -120,6 +120,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public getDescription(): string { return this._description; }
 	public supportsSplitEditor(): boolean { return false; }
 	public getModeId(): string { return QueryInput.SCHEMA; }
+	public revert(): TPromise<boolean> { return this._sql.revert(); }
 
 	public matches(otherInput: any): boolean {
 		if (otherInput instanceof QueryInput) {
