@@ -427,6 +427,7 @@ export class BackupComponent {
 			this.recoveryBox.disable();
 			this.mediaNameBox.disable();
 			this.mediaDescriptionBox.disable();
+			this.recoveryBox.value = this.recoveryModel;
 
 			// show warning message if latest backup file path contains url
 			if (this.containsBackupToUrl) {
