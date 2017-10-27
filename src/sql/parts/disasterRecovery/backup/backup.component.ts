@@ -16,7 +16,6 @@ import { attachListBoxStyler, attachInputBoxStyler } from 'sql/common/theme/styl
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as BackupConstants from 'sql/parts/disasterRecovery/backup/constants';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
-import { FileBrowserDialog } from 'sql/parts/fileBrowser/fileBrowserDialog';
 import FileValidationConstants = require('sql/parts/fileBrowser/common/fileValidationServiceConstants');
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
@@ -147,7 +146,6 @@ export class BackupComponent {
 	private backupEncryptors;
 	private containsBackupToUrl: boolean;
 	private errorMessage: string;
-	private fileBrowserDialog: FileBrowserDialog;
 
 	// UI element disable flag
 	private disableFileComponent: boolean;
@@ -165,7 +163,7 @@ export class BackupComponent {
 
 	private compressionOptions = [BackupConstants.defaultCompression, BackupConstants.compressionOn, BackupConstants.compressionOff];
 	private encryptionAlgorithms = [BackupConstants.aes128, BackupConstants.aes192, BackupConstants.aes256, BackupConstants.tripleDES];
-	private existingMediaOptions = ["append", "overwrite"];
+	private existingMediaOptions = ['append', 'overwrite'];
 	private backupTypeOptions: string[];
 
 	private backupTypeSelectBox: SelectBox;
@@ -316,6 +314,7 @@ export class BackupComponent {
 		this.mediaDescriptionBox.disable();
 
 		this.registerListeners();
+		this.updateTheme();
 	}
 
 	private onGetBackupConfigInfo(param: DashboardComponentParams) {
@@ -381,13 +380,6 @@ export class BackupComponent {
 		this.cancelButton.label = localize('cancel', 'Cancel');
 		this._toDispose.push(this.addButtonClickHandler(this.cancelButton, () => this.onCancel()));
 		this._toDispose.push(attachButtonStyler(this.cancelButton, this._bootstrapService.themeService));
-
-		// set modal footer style
-		let footerHtmlElement: HTMLElement = <HTMLElement>this.modalFooterElement.nativeElement;
-		footerHtmlElement.style.backgroundColor = ModalFooterStyle.backgroundColor;
-		footerHtmlElement.style.borderTopWidth = ModalFooterStyle.borderTopWidth;
-		footerHtmlElement.style.borderTopStyle = ModalFooterStyle.borderTopStyle;
-		footerHtmlElement.style.borderTopColor = ModalFooterStyle.borderTopColor;
 	}
 
 	private initialize(isMetadataPopulated: boolean): void {
@@ -501,6 +493,18 @@ export class BackupComponent {
 		this._toDispose.push(this.mediaNameBox.onDidChange(mediaName => {
 			this.mediaNameChanged(mediaName);
 		}));
+
+		this._toDispose.push(this._bootstrapService.themeService.onDidColorThemeChange(e => this.updateTheme()));
+	}
+
+	// Update theming that is specific to backup dialog
+	private updateTheme(): void {
+		// set modal footer style
+		let footerHtmlElement: HTMLElement = <HTMLElement>this.modalFooterElement.nativeElement;
+		footerHtmlElement.style.backgroundColor = ModalFooterStyle.backgroundColor;
+		footerHtmlElement.style.borderTopWidth = ModalFooterStyle.borderTopWidth;
+		footerHtmlElement.style.borderTopStyle = ModalFooterStyle.borderTopStyle;
+		footerHtmlElement.style.borderTopColor = ModalFooterStyle.borderTopColor;
 	}
 
 	private addButtonClickHandler(button: Button, handler: () => void): lifecycle.IDisposable {
