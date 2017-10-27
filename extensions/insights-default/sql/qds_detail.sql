@@ -1,3 +1,7 @@
+declare @qds_status int = (SELECT actual_state 
+FROM sys.database_query_store_options)  
+if @qds_status > 0
+Begin
 WITH SlowestQry AS( 
     SELECT TOP 5  
         q.query_id, 
@@ -32,3 +36,6 @@ FROM SlowestQry tq
 WHERE rs.last_execution_time > DATEADD(week, -1, GETUTCDATE())   
 AND is_internal_query = 0 
 order by q.query_id, rs.max_duration desc
+END
+else 
+select 0 as [query_id], getdate() as [QDS is not enabled], 0 as  [max_duration]
