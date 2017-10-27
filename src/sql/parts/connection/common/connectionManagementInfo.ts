@@ -57,6 +57,11 @@ export class ConnectionManagementInfo {
 	public connecting: boolean;
 
 	/**
+	 * Whether the connection should be deleted after connection is complete.
+	 */
+	public deleted: boolean;
+
+	/**
 	 * Information about the connected server.
 	 */
 	serverInfo: data.ServerInfo;

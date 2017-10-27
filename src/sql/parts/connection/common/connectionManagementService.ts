@@ -1002,12 +1002,18 @@ export class ConnectionManagementService implements IConnectionManagementService
 				let connectionInfo = this._connectionStatusManager.addConnection(connection, uri);
 				// Setup the handler for the connection complete notification to call
 				connectionInfo.connectHandler = ((connectResult, errorMessage, errorCode) => {
-					if (errorMessage) {
-						// Connection to the server failed
+					let connectionMngInfo = this._connectionStatusManager.findConnection(uri);
+					if (connectionMngInfo && connectionMngInfo.deleted) {
 						this._connectionStatusManager.deleteConnection(uri);
-						resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
+						resolve({ connected: connectResult, errorMessage: undefined, errorCode: undefined, errorHandled: true });
 					} else {
-						resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
+						if (errorMessage) {
+							// Connection to the server failed
+							this._connectionStatusManager.deleteConnection(uri);
+							resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
+						} else {
+							resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
+						}
 					}
 				});
 
@@ -1212,7 +1218,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.DeleteConnection, {}, connection);
 		// Disconnect if connected
 		let uri = Utils.generateUri(connection);
-		if (this.isConnected(uri)) {
+		if (this.isConnected(uri) || this.isConnecting(uri)) {
 			this.doDisconnect(uri, connection).then((result) => {
 				if (result) {
 					// Remove profile from configuration
@@ -1235,7 +1241,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				this._onDeleteConnectionProfile.fire();
 				Promise.resolve(true);
 			}).catch(err => {
-				// Reject promise if error occured writing to settings
+				// Reject promise if error ocurred writing to settings
 				Promise.reject(err);
 			});
 		}

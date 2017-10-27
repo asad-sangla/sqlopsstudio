@@ -63,7 +63,11 @@ export class ConnectionStatusManager {
 		if (info) {
 			for (let key in this._connections) {
 				if (this._connections[key].connectionId === info.connectionId) {
-					delete this._connections[key];
+					if (this._connections[key].connecting) {
+						this._connections[key].deleted = true;
+					} else {
+						delete this._connections[key];
+					}
 				}
 			}
 		}
