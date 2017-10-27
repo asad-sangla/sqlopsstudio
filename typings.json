@@ -10,7 +10,6 @@
     "@angular/platform-browser-dynamic": "npm:@angular/platform-browser-dynamic/platform-browser-dynamic.d.ts",
     "@angular/router": "npm:@angular/router/router.d.ts",
     "@angular/upgrade": "npm:@angular/upgrade/index.d.ts",
-    "angular-in-memory-web-api": "npm:angular-in-memory-web-api/index.d.ts",
     "angular2-slickgrid": "npm:angular2-slickgrid/index.d.ts",
     "angular2-grid": "npm:angular2-grid/main.d.ts",
     "ng2-chart2": "npm:ng2-charts/ng2-charts.d.ts",

@@ -62,11 +62,6 @@
       "from": "agent-base@>=1.0.1 <1.1.0",
       "resolved": "https://registry.npmjs.org/agent-base/-/agent-base-1.0.2.tgz"
     },
-    "angular-in-memory-web-api": {
-      "version": "0.3.2",
-      "from": "angular-in-memory-web-api@>=0.3.2 <0.4.0",
-      "resolved": "https://registry.npmjs.org/angular-in-memory-web-api/-/angular-in-memory-web-api-0.3.2.tgz"
-    },
     "angular2-slickgrid": {
       "version": "1.3.4",
       "from": "git://github.com/Microsoft/angular2-slickgrid.git#1.3.5",
