@@ -48,6 +48,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 	private _actions: Array<Action>;
 	private _component: IDashboardWidget;
 
+	@ViewChild('header', { read: ElementRef }) private header: ElementRef;
 	@ViewChild(ComponentHostDirective) componentHost: ComponentHostDirective;
 
 	constructor(
@@ -153,6 +154,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 	private updateTheme(theme: IColorTheme): void {
 		let el = <HTMLElement>this._ref.nativeElement;
+		let headerEl: HTMLElement = this.header.nativeElement;
 		let borderColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true);
 		let backgroundColor = theme.getColor(colors.editorBackground, true);
 		let foregroundColor = theme.getColor(themeColors.SIDE_BAR_FOREGROUND, true);
@@ -175,14 +177,21 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 			el.style.color = foregroundColor.toString();
 		}
 
+		let borderString = undefined;
 		if (border) {
-			el.style.borderColor = border.toString();
+			borderString = border.toString();
+			el.style.borderColor = borderString;
 			el.style.borderWidth = '1px';
 			el.style.borderStyle = 'solid';
 		} else if (borderColor) {
+			borderString = borderColor.toString();
 			el.style.border = '3px solid ' + borderColor.toString();
 		} else {
 			el.style.border = 'none';
+		}
+
+		if (borderString) {
+			headerEl.style.backgroundColor = borderString;
 		}
 
 	}

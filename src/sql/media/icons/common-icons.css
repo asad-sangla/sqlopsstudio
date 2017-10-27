@@ -145,3 +145,12 @@
 .hc-black .icon.refresh  {
 	background-image: url('refresh_inverse.svg');
 }
+
+.hc-black .icon.toggle-more,
+.vs-dark .icon.toggle-more {
+	background: url('ellipsis-inverse.svg') center center no-repeat;
+}
+
+.vs .icon.toggle-more {
+	background: url('ellipsis.svg') center center no-repeat;
+}
