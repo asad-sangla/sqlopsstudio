@@ -17,6 +17,7 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as BackupConstants from 'sql/parts/disasterRecovery/backup/constants';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import FileValidationConstants = require('sql/parts/fileBrowser/common/fileValidationServiceConstants');
+import { FileBrowserDialog } from 'sql/parts/fileBrowser/fileBrowserDialog';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
@@ -581,8 +582,8 @@ export class BackupComponent {
 		if (this.isFormatChecked) {
 			if (DialogHelper.isNullOrWhiteSpace(this.mediaNameBox.value)) {
 				this.backupEnabled = false;
-        this.backupButton.enabled = false;        
-				this.mediaNameBox.showMessage({ type: MessageType.ERROR, content: this.mediaNameRequiredError });				
+        this.backupButton.enabled = false;
+				this.mediaNameBox.showMessage({ type: MessageType.ERROR, content: this.mediaNameRequiredError });
 			}
 		} else {
 			this.enableBackupButton();
