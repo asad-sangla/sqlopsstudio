@@ -561,7 +561,9 @@ export class RestoreDialog extends Modal {
 		}));
 
 		this._register(DOM.addDisposableListener(this._browseFileButton.getElement(), DOM.EventType.CLICK, () => {
-			this.onFileBrowserRequested();
+			if (this._browseFileButton.enabled) {
+				this.onFileBrowserRequested();
+			}
 		}));
 
 		this._register(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {

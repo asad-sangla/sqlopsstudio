@@ -364,27 +364,22 @@ export class BackupComponent {
 		// Set script footer button
 		this.scriptButton = new Button(this.scriptButtonElement.nativeElement);
 		this.scriptButton.label = localize('script', 'Script');
-		this._toDispose.push(DOM.addDisposableListener(this.scriptButton.getElement(), DOM.EventType.CLICK, () => {
-			this.onScript();
-		}));
+		this._toDispose.push(this.addButtonClickHandler(this.scriptButton, () => this.onScript()));
 		this._toDispose.push(attachButtonStyler(this.scriptButton, this._bootstrapService.themeService));
 		this.scriptButton.enabled = false;
 
 		// Set backup footer button
 		this.backupButton = new Button(this.backupButtonElement.nativeElement);
 		this.backupButton.label = localize('backup', 'Backup');
-		this._toDispose.push(DOM.addDisposableListener(this.backupButton.getElement(), DOM.EventType.CLICK, () => {
-			this.onOk();
-		}));
+		this._toDispose.push(this.addButtonClickHandler(this.backupButton, () => this.onOk()));
+
 		this._toDispose.push(attachButtonStyler(this.backupButton, this._bootstrapService.themeService));
 		this.backupButton.enabled = false;
 
 		// Set cancel footer button
 		this.cancelButton = new Button(this.cancelButtonElement.nativeElement);
 		this.cancelButton.label = localize('cancel', 'Cancel');
-		this._toDispose.push(DOM.addDisposableListener(this.cancelButton.getElement(), DOM.EventType.CLICK, () => {
-			this.onCancel();
-		}));
+		this._toDispose.push(this.addButtonClickHandler(this.cancelButton, () => this.onCancel()));
 		this._toDispose.push(attachButtonStyler(this.cancelButton, this._bootstrapService.themeService));
 
 		// set modal footer style
@@ -501,15 +496,23 @@ export class BackupComponent {
 		this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
 
 		this._toDispose.push(this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged()));
-		this._toDispose.push(DOM.addDisposableListener(this.addPathButton.getElement(), DOM.EventType.CLICK, () => {
-			this.onAddClick();
-		}));
-		this._toDispose.push(DOM.addDisposableListener(this.removePathButton.getElement(), DOM.EventType.CLICK, () => {
-			this.onRemoveClick();
-		}));
+		this._toDispose.push(this.addButtonClickHandler(this.addPathButton,() => this.onAddClick()));
+		this._toDispose.push(this.addButtonClickHandler(this.removePathButton, () =>  this.onRemoveClick()));
 		this._toDispose.push(this.mediaNameBox.onDidChange(mediaName => {
 			this.mediaNameChanged(mediaName);
 		}));
+	}
+
+	private addButtonClickHandler(button: Button, handler: () => void): lifecycle.IDisposable {
+		if (button && handler) {
+			return DOM.addDisposableListener(button.getElement(), DOM.EventType.CLICK, () => {
+				if (button.enabled) {
+					handler();
+				}
+			});
+		} else {
+			return undefined;
+		}
 	}
 
 	/*
