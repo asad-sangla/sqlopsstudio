@@ -24,6 +24,9 @@ export interface WidgetConfig {
 	widget: Object;
 	background_color?: string;
 	border?: string;
+	fontSize?: string;
+	fontWeight?: string;
+	padding?:string;
 }
 
 export abstract class DashboardWidget {

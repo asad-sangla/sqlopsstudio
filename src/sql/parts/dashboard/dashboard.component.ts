@@ -48,7 +48,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 	}
 
 	private updateTheme(theme: IColorTheme): void {
-		this.header.nativeElement.style.borderBottomColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true).toString();
+		let headerEl = <HTMLElement> this.header.nativeElement;
+		headerEl.style.borderBottomColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true).toString();
+		headerEl.style.borderBottomWidth = '1px';
+		headerEl.style.borderBottomStyle = 'solid';
+
 	}
 
 }

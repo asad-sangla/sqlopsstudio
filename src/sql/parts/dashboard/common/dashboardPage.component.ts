@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef } from '@angular/core';
+import { Component, Inject, forwardRef, ViewChild, ElementRef } from '@angular/core';
 import { NgGridConfig } from 'angular2-grid';
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -14,6 +14,9 @@ import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insi
 import { Registry } from 'vs/platform/registry/common/platform';
 import * as types from 'vs/base/common/types';
 import { Severity } from 'vs/platform/message/common/message';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
+import * as colors from 'vs/platform/theme/common/colorRegistry';
 import * as nls from 'vs/nls';
 
 /**
@@ -56,6 +59,9 @@ export abstract class DashboardPage {
 		'prefer_new': false,        //  When adding new items, will use that items position ahead of existing items
 		'limit_to_screen': true,   //  When resizing the screen, with this true and auto_resize false, the grid will re-arrange to fit the screen size. Please note, at present this only works with cascade direction up.
 	};
+	private _themeDispose: IDisposable;
+
+	@ViewChild('propertyContainer', { read: ElementRef }) private propertyContainer: ElementRef;
 
 	// a set of config modifiers
 	private readonly _configModifiers: Array<(item: Array<WidgetConfig>) => Array<WidgetConfig>> = [
@@ -84,6 +90,21 @@ export abstract class DashboardPage {
 			});
 			this.widgets = tempWidgets;
 			this.propertiesWidget = properties ? properties[0] : undefined;
+		}
+	}
+
+	protected baseInit(): void {
+		let self = this;
+		self._themeDispose = self.dashboardService.themeService.onDidColorThemeChange((event: IColorTheme) => {
+			self.updateTheme(event);
+		});
+		self.updateTheme(self.dashboardService.themeService.getColorTheme());
+
+	}
+
+	protected baseDestroy(): void {
+		if (this._themeDispose) {
+			this._themeDispose.dispose();
 		}
 	}
 
@@ -245,5 +266,18 @@ export abstract class DashboardPage {
 		} else {
 			return undefined;
 		}
+	}
+
+	private updateTheme(theme: IColorTheme): void {
+		let propsEl: HTMLElement = this.propertyContainer.nativeElement;
+		let widgetShadowColor = theme.getColor(colors.widgetShadow);
+		if (widgetShadowColor) {
+			// Box shadow on bottom only.
+			// The below settings fill the shadow across the whole page
+			propsEl.style.boxShadow = `-5px 5px 10px -5px ${widgetShadowColor}`;
+			propsEl.style.marginRight = '-10px';
+			propsEl.style.marginBottom = '5px';
+		}
+
 	}
 }

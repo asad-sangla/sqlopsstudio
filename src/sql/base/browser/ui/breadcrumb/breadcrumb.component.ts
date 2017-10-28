@@ -16,12 +16,13 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 @Component({
 	selector: 'breadcrumb',
 	template: `
-				<span style="display: flex; flex-flow: row; align-items: center">
-					<ng-template ngFor let-item let-last="last" [ngForOf]="menuItems">
+				<span style="display: flex; flex-flow: row; align-items: center; margin: 10px">
+					<ng-template ngFor let-item let-first="first" let-last="last" [ngForOf]="menuItems">
 						<span style="padding: 5px; display: flex; align-items: center">
 							<span *ngIf="item.icon" class="icon" style="display: inline-block; margin-right: 5px" [ngClass]="item.icon"></span>
+							<span *ngIf="first" style="font-weight: 200">{{item.label}}</span>
 							<span *ngIf="last" style="">{{item.label}}</span>
-							<a class="router-link" *ngIf="!last" (click)="route(item.routerLink)">{{item.label}}</a>
+							<a class="router-link" *ngIf="!last && !first" (click)="route(item.routerLink)" style=" font-weight: 200" >{{item.label}}</a>
 						</span>
 						<span *ngIf="!last" class="icon chevron-right"></span>
 					</ng-template>

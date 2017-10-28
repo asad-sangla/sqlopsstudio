@@ -192,7 +192,18 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 		if (borderString) {
 			headerEl.style.backgroundColor = borderString;
+		} else {
+			headerEl.style.backgroundColor = '';
 		}
 
+		if (this._config.fontSize) {
+			headerEl.style.fontSize = this._config.fontSize;
+		}
+		if (this._config.fontWeight) {
+			headerEl.style.fontWeight = this._config.fontWeight;
+		}
+		if (this._config.padding) {
+			headerEl.style.padding = this._config.padding;
+		}
 	}
 }

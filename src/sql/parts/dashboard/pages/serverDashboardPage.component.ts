@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OnInit, Inject, forwardRef, ChangeDetectorRef } from '@angular/core';
+import { OnInit, Inject, forwardRef, OnDestroy, ChangeDetectorRef } from '@angular/core';
 
 import { DashboardPage } from 'sql/parts/dashboard/common/dashboardPage.component';
 import { BreadcrumbClass } from 'sql/parts/dashboard/services/breadcrumb.service';
@@ -12,16 +12,20 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 
 import * as colors from 'vs/platform/theme/common/colorRegistry';
+import * as nls from 'vs/nls';
 
-export class ServerDashboardPage extends DashboardPage implements OnInit {
+export class ServerDashboardPage extends DashboardPage implements OnInit, OnDestroy {
 	protected propertiesWidget: WidgetConfig = {
-		name: 'Server Properties',
-		icon: 'server-page',
+		name: nls.localize('serverPageName', 'SERVER DASHBOARD'),
 		widget: {
 			'properties-widget': undefined
 		},
 		context: 'server',
 		background_color: colors.editorBackground,
+		border: 'none',
+		fontSize: '14px',
+		fontWeight: '200',
+		padding: '5px 0 0 0',
 		provider: undefined,
 		edition: undefined
 	};
@@ -44,5 +48,11 @@ export class ServerDashboardPage extends DashboardPage implements OnInit {
 
 	ngOnInit() {
 		this.breadcrumbService.setBreadcrumbs(BreadcrumbClass.ServerPage);
+		this.dashboardService.connectionManagementService.connectionInfo.connectionProfile.databaseName = null;
+		this.baseInit();
+	}
+
+	ngOnDestroy() {
+		this.baseDestroy();
 	}
 }
