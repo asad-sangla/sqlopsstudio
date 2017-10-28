@@ -20,6 +20,7 @@ import { IConnectionManagementService } from 'sql/parts/connection/common/connec
 import ConnectionUtils = require('sql/parts/connection/common/utils');
 import { ProviderConnectionInfo } from 'sql/parts/connection/common/providerConnectionInfo';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
+import * as Utils from 'sql/parts/connection/common/utils';
 
 export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 	public _serviceBrand: any;
@@ -85,7 +86,7 @@ export class DisasterRecoveryUiService implements IDisasterRecoveryUiService {
 			} else {
 				let uri = this._connectionManagementService.getConnectionId(connection)
 					+ ProviderConnectionInfo.idSeparator
-					+ 'backupId'
+					+ Utils.ConnectionUriBackupIdAttributeName
 					+ ProviderConnectionInfo.nameValueSeparator
 					+ DisasterRecoveryUiService._connectionUniqueId;
 

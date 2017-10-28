@@ -24,6 +24,8 @@ export const uriPrefixes = {
 // FUNCTIONS //////////////////////////////////////////////////////////////////////////////////////
 
 export const defaultGroupId = 'C777F06B-202E-4480-B475-FA416154D458';
+export const ConnectionUriBackupIdAttributeName = 'backupId';
+export const ConnectionUriRestoreIdAttributeName = 'restoreId';
 
 /**
  * Takes a string in the format of HH:MM:SS.MS and returns a number representing the time in

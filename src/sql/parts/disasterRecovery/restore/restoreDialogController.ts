@@ -17,6 +17,7 @@ import { IDisasterRecoveryService, IRestoreDialogController, TaskExecutionMode }
 import { MssqlRestoreInfo } from 'sql/parts/disasterRecovery/restore/mssqlRestoreInfo';
 import { RestoreDialog } from 'sql/parts/disasterRecovery/restore/restoreDialog';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
+import * as Utils from 'sql/parts/connection/common/utils';
 import * as data from 'data';
 
 export class RestoreDialogController implements IRestoreDialogController {
@@ -161,7 +162,7 @@ export class RestoreDialogController implements IRestoreDialogController {
 
 			this._ownerUri = this._connectionService.getConnectionId(connection)
 				+ ProviderConnectionInfo.idSeparator
-				+ 'restoreId'
+				+ Utils.ConnectionUriRestoreIdAttributeName
 				+ ProviderConnectionInfo.nameValueSeparator
 				+ '0';
 

@@ -18,6 +18,7 @@ import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUt
 import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeSelectionHandler';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import * as Utils from 'sql/parts/connection/common/utils';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
@@ -95,7 +96,7 @@ export class ServerTreeView {
 		})
 		);
 		this._toDispose.push(this._connectionManagementService.onDisconnect((connectionParams) => {
-			if (self.isDefaultTypeUri(connectionParams.connectionUri)) {
+			if (self.isObjectExplorerConnectionUri(connectionParams.connectionUri)) {
 				self.deleteObjectExplorerNodeAndRefreshTree(connectionParams.connectionProfile);
 			}
 		}));
@@ -113,8 +114,10 @@ export class ServerTreeView {
 		self.refreshTree();
 	}
 
-	private isDefaultTypeUri(uri: string): boolean {
-		return uri && uri.startsWith(ConnectionUtils.uriPrefixes.default);
+	private isObjectExplorerConnectionUri(uri: string): boolean {
+		let isBackupRestoreUri: boolean = uri.indexOf(Utils.ConnectionUriBackupIdAttributeName) >= 0 ||
+		uri.indexOf(Utils.ConnectionUriRestoreIdAttributeName) >= 0;
+		return uri && uri.startsWith(ConnectionUtils.uriPrefixes.default) && !isBackupRestoreUri;
 	}
 
 	private handleAddConnectionProfile(newProfile: IConnectionProfile) {
