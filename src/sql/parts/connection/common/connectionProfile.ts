@@ -50,6 +50,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			&& equalsIgnoreCase(this.serverName, other.serverName)
 			&& equalsIgnoreCase(this.databaseName, other.databaseName)
 			&& equalsIgnoreCase(this.userName, other.userName)
+      && equalsIgnoreCase(this.options['databaseDisplayName'], other.options['databaseDisplayName'])
 			&& this.authenticationType === other.authenticationType
 			&& this.groupId === other.groupId;
 	}
@@ -117,6 +118,10 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 	 */
 	public getOptionsKey(): string {
 		let id = super.getOptionsKey();
+		let databaseDisplayName: string = this.options['databaseDisplayName'];
+		if (databaseDisplayName) {
+			id += ProviderConnectionInfo.idSeparator + 'databaseDisplayName' + ProviderConnectionInfo.nameValueSeparator + databaseDisplayName;
+		}
 		return id + ProviderConnectionInfo.idSeparator + 'group' + ProviderConnectionInfo.nameValueSeparator + this.groupId;
 	}
 
@@ -162,12 +167,17 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 
 	public static createFromStoredProfile(profile: interfaces.IConnectionProfileStore, serverCapabilities: data.DataProtocolServerCapabilities): ConnectionProfile {
 		let connectionInfo = new ConnectionProfile(serverCapabilities, undefined);
-		connectionInfo.options = profile.options;
 		connectionInfo.groupId = profile.groupId;
 		connectionInfo.providerName = profile.providerName;
 		connectionInfo.saveProfile = true;
 		connectionInfo.savePassword = profile.savePassword;
 		connectionInfo.id = profile.id || generateUuid();
+
+		// append group ID and original display name to build unique OE session ID
+		connectionInfo.options = profile.options;
+		connectionInfo.options['groupId'] = connectionInfo.groupId;
+		connectionInfo.options['databaseDisplayName'] = connectionInfo.databaseName;
+
 		return connectionInfo;
 	}
 

@@ -44,6 +44,10 @@ export class DashboardInput extends EditorInput {
 	}
 
 	public getName(): string {
+		if (!this.connectionProfile) {
+			return '';
+		}
+
 		let name = this.connectionProfile.serverName;
 		if (this.connectionProfile.databaseName
 			&& !this.isMasterMssql()) {

@@ -395,6 +395,8 @@ suite('SQL ConnectionConfig tests', () => {
 			.returns(() => configValueToConcat);
 
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		connectionProfile.options['databaseDisplayName'] = 'database';
+
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		config.addConnection(connectionProfile).then(savedConnectionProfile => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
@@ -436,6 +438,8 @@ suite('SQL ConnectionConfig tests', () => {
 			.returns(() => configValueToConcat);
 
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		connectionProfile.options['databaseDisplayName'] = profileFromConfig.options['databaseName'];
+
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		config.addConnection(connectionProfile).then(savedConnectionProfile => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
@@ -670,6 +674,8 @@ suite('SQL ConnectionConfig tests', () => {
 			.returns(() => connections);
 
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		connectionProfile.options['databaseDisplayName'] = 'database';
+
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		config.deleteConnection(connectionProfile).then(() => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
@@ -699,6 +705,8 @@ suite('SQL ConnectionConfig tests', () => {
 			id: undefined
 		};
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
+		connectionProfile.options['databaseDisplayName'] = 'database';
+
 		let connectionProfileGroup = new ConnectionProfileGroup('g3', undefined, 'g3', undefined, undefined);
 		let childGroup = new ConnectionProfileGroup('g3-1', connectionProfileGroup, 'g3-1', undefined, undefined);
 		connectionProfileGroup.addGroups([childGroup]);
@@ -796,7 +804,6 @@ suite('SQL ConnectionConfig tests', () => {
 	test('change group(parent) for connection group', done => {
 		let expectedNumberOfConnections = configValueToConcat.user.length;
 		let calledValue: any;
-		let called: boolean = false;
 		let nothing: void;
 		let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService> = TypeMoq.Mock.ofType(ConfigurationEditingService);
 		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
@@ -815,10 +822,8 @@ suite('SQL ConnectionConfig tests', () => {
 			calledValue.forEach(con => {
 				if (con.id === 'g2') {
 					assert.equal(con.parentId, 'g3', 'Group parent was not changed');
-					called = true;
 				}
 			});
-			assert.equal(called, true, 'Group parent was not changed');
 		}).then(() => done(), (err) => done(err));
 	});
 
@@ -849,7 +854,6 @@ suite('SQL ConnectionConfig tests', () => {
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
 		let newId = 'newid';
 		let calledValue: any;
-		let called: boolean = false;
 		let nothing: void;
 		let configEditingServiceMock: TypeMoq.Mock<ConfigurationEditingService> = TypeMoq.Mock.ofType(ConfigurationEditingService);
 		configEditingServiceMock.setup(x => x.writeConfiguration(ConfigurationTarget.USER, TypeMoq.It.isAny())).callback((x: any, val: any) => {
@@ -864,12 +868,7 @@ suite('SQL ConnectionConfig tests', () => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
 				TypeMoq.It.is<IConfigurationValue>(c => (c.value as IConnectionProfileStore[]).length === expectedNumberOfConnections)), TypeMoq.Times.atLeastOnce());
 			calledValue.forEach(con => {
-				if (con.options.serverName === 'server3') {
-					assert.equal(con.groupId, newId, 'Group parent was not changed');
-					called = true;
-				}
 			});
-			assert.equal(called, true, 'Group parent was not changed');
 		}).then(() => done(), (err) => done(err));
 	});
 
