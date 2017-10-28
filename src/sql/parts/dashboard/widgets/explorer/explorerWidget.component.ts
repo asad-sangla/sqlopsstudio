@@ -76,7 +76,7 @@ export class ObjectMetadataWrapper implements ObjectMetadata {
 		} else if (metadata1.metadataType > metadata2.metadataType) {
 			return 1;
 
-		// otherwise compare the schema
+			// otherwise compare the schema
 		} else {
 			let schemaCompare: number = metadata1.schema && metadata2.schema
 				? metadata1.schema.localeCompare(metadata2.schema)
@@ -86,7 +86,7 @@ export class ObjectMetadataWrapper implements ObjectMetadata {
 			if (schemaCompare !== 0) {
 				return schemaCompare;
 
-			// otherwise compare the object name
+				// otherwise compare the object name
 			} else {
 				return metadata1.name.localeCompare(metadata2.name);
 			}
@@ -149,7 +149,7 @@ class MetadataRenderer implements IRenderer<ObjectMetadataWrapper, IListTemplate
 
 	renderTemplate(container: HTMLElement): IListTemplate {
 		let row = $('.list-row');
-		let icon = $('.icon');
+		let icon = $('div');
 		let label = $('.label');
 		row.appendChild(icon);
 		row.appendChild(label);
@@ -161,16 +161,16 @@ class MetadataRenderer implements IRenderer<ObjectMetadataWrapper, IListTemplate
 		if (element && element) {
 			switch (element.metadataType) {
 				case MetadataType.Function:
-					templateData.icon.classList.add('scalarvaluedfunction');
+					templateData.icon.className = 'icon scalarvaluedfunction';
 					break;
 				case MetadataType.SProc:
-					templateData.icon.classList.add('stored-procedure');
+					templateData.icon.className = 'icon stored-procedure';
 					break;
 				case MetadataType.Table:
-					templateData.icon.classList.add('table');
+					templateData.icon.className = 'icon table';
 					break;
 				case MetadataType.View:
-					templateData.icon.classList.add('view');
+					templateData.icon.className = 'icon view';
 					break;
 			}
 
