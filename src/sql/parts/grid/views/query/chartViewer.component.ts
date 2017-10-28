@@ -163,7 +163,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 	}
 
 	public columnsAsLabelsChanged(): void {
-		this._chartConfig.columnsAsLabels = this.labelFirstColumnCheckBox.checked;
+		this._chartConfig.columnsAsLabels = this.columnsAsLabelsCheckBox.checked;
 		this.initChart();
 	}
 
