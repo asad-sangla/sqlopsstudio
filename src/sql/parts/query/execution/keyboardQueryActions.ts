@@ -89,3 +89,29 @@ export class CancelQueryKeyboardAction extends Action {
 		return TPromise.as(null);
 	}
 }
+
+/**
+ * Refresh the IntelliSense cache
+ */
+export class RefreshIntellisenseKeyboardAction extends Action {
+	public static ID = 'refreshIntellisenseKeyboardAction';
+	public static LABEL = nls.localize('refreshIntellisenseKeyboardAction', 'Refresh IntelliSense Cache');
+
+	constructor(
+		id: string,
+		label: string,
+		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService
+	) {
+		super(id, label);
+		this.enabled = true;
+	}
+
+	public run(): TPromise<void> {
+		let editor = this._editorService.getActiveEditor();
+		if (editor && editor instanceof QueryEditor) {
+			let queryEditor: QueryEditor = editor;
+			queryEditor.rebuildIntelliSenseCache();
+		}
+		return TPromise.as(null);
+	}
+}

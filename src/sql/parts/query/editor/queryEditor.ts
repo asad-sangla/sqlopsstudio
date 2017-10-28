@@ -391,6 +391,10 @@ export class QueryEditor extends BaseEditor {
 		this._cancelQueryAction.run();
 	}
 
+	public rebuildIntelliSenseCache(): void {
+		this._connectionManagementService.rebuildIntelliSenseCache(this.connectedUri);
+	}
+
 	// PRIVATE METHODS ////////////////////////////////////////////////////////////
 
 	/**

@@ -85,6 +85,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			},
 			listDatabases(connectionUri: string): Thenable<data.ListDatabasesResult> {
 				return self._proxy.$listDatabases(handle, connectionUri);
+			},
+			rebuildIntelliSenseCache(connectionUri: string): Thenable<void> {
+				return self._proxy.$rebuildIntelliSenseCache(handle, connectionUri);
 			}
 		});
 

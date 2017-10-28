@@ -90,6 +90,7 @@ import {
 	DocumentOnTypeFormattingRequest, DocumentOnTypeFormattingParams,
 	RenameRequest, RenameParams,
 	DocumentLinkRequest, DocumentLinkResolveRequest, DocumentLinkParams,
+	RebuildIntelliSenseNotification, RebuildIntelliSenseParams,
 	CapabiltiesDiscoveryRequest,
 	ConnectionRequest, ConnectParams,
 	DisconnectRequest, DisconnectParams,
@@ -1442,6 +1443,15 @@ export class LanguageClient {
 						return Promise.resolve(undefined);
 					}
 				);
+			},
+
+			rebuildIntelliSenseCache(connectionUri: string): Thenable<void> {
+				let params: RebuildIntelliSenseParams = {
+					ownerUri: connectionUri
+				};
+
+				self.sendNotification(RebuildIntelliSenseNotification.type, params);
+				return Promise.resolve(undefined);
 			},
 
 			registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any) {

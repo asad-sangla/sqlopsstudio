@@ -229,4 +229,8 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	connectIfNotConnected(connection: IConnectionProfile, purpose?: 'dashboard' | 'insights' | 'connection'): Promise<string> {
 		return undefined;
 	}
+
+	rebuildIntelliSenseCache(uri: string): Thenable<void> {
+		return undefined;
+	}
 }

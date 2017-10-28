@@ -168,6 +168,8 @@ declare module 'data' {
 
 		changeDatabase(connectionUri: string, newDatabase: string): Thenable<boolean>;
 
+		rebuildIntelliSenseCache(connectionUri: string): Thenable<void>;
+
 		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any);
 
 		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any);

@@ -100,6 +100,13 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		});
 	}
 
+	$rebuildIntelliSenseCache(handle: number, connectionUri: string): Thenable<void> {
+		return this._runWithProvider(handle, provider => {
+			return provider.connectionProvider ? provider.connectionProvider.rebuildIntelliSenseCache(connectionUri)
+				: undefined;
+		});
+	}
+
 	$onConnectComplete(handle: number, connectionInfoSummary: data.ConnectionInfoSummary): void {
 		this._proxy.$onConnectionComplete(handle, connectionInfoSummary);
 	}

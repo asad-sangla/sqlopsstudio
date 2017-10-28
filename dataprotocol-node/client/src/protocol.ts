@@ -937,6 +937,24 @@ export namespace DocumentLinkResolveRequest {
 	export const type: RequestType<DocumentLink, DocumentLink, void> = { get method() { return 'documentLink/resolve'; } };
 }
 
+//---- Refresh IntelliSense ----------------------------------------
+
+/**
+ * Notification sent when the an IntelliSense cache invalidation is requested
+ */
+export namespace RebuildIntelliSenseNotification {
+	export const type: NotificationType<RebuildIntelliSenseParams> = { get method(): string { return 'textDocument/rebuildIntelliSense'; } };
+}
+
+/**
+ * Rebuild IntelliSense notification parameters
+ */
+export class RebuildIntelliSenseParams {
+	/**
+	 * URI identifying the text document
+	 */
+	public ownerUri: string;
+}
 
 // ------------------------------- < Connect Request > ----------------------------------------------
 

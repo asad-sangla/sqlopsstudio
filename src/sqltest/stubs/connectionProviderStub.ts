@@ -28,6 +28,10 @@ export class ConnectionProviderStub implements data.ConnectionProvider {
 		return undefined;
 	}
 
+	rebuildIntelliSenseCache(connectionUri: string): Thenable<void> {
+		return undefined;
+	}
+
 	registerOnConnectionComplete(handler: (connSummary: data.ConnectionInfoSummary) => any) {
 		return undefined;
 	}

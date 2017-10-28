@@ -243,6 +243,11 @@ export interface IConnectionManagementService {
 	 * @memberof IConnectionManagementService
 	 */
 	getProviderNames(): string[];
+
+	/**
+	 * Refresh the IntelliSense cache for the connection with the given URI
+	 */
+	rebuildIntelliSenseCache(uri: string): Thenable<void>;
 }
 
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');

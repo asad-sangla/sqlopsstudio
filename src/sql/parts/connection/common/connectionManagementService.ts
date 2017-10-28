@@ -1289,4 +1289,20 @@ export class ConnectionManagementService implements IConnectionManagementService
 			connectionProfile: connectionProfile
 		});
 	}
+
+	/**
+	 * Rebuild the IntelliSense cache for the connection with the given URI
+	 */
+	public rebuildIntelliSenseCache(connectionUri: string): Thenable<void> {
+		if (this.isConnected(connectionUri)) {
+			let providerId: string = this.getProviderIdFromUri(connectionUri);
+			if (!providerId) {
+				return Promise.reject('No provider corresponding to the given URI');
+			}
+
+			let provider = this._providers[providerId];
+			return provider.rebuildIntelliSenseCache(connectionUri);
+		}
+		return Promise.reject('The given URI is not currently connected');
+	}
 }

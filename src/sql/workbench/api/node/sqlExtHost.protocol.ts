@@ -141,6 +141,11 @@ export abstract class ExtHostDataProtocolShape {
 	$disposeQuery(handle: number, ownerUri: string): Thenable<void> { throw ni(); }
 
 	/**
+	 * Refreshes the IntelliSense cache
+	 */
+	$rebuildIntelliSenseCache(handle: number, ownerUri: string): Thenable<void> { throw ni(); }
+
+	/**
 	 * Callback when a query has completed
 	 */
 	$onQueryComplete(handle: number, result: data.QueryExecuteCompleteNotificationResult): void { throw ni(); }
