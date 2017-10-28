@@ -6,8 +6,6 @@
 /* Node Modules */
 import { Injectable, Inject, forwardRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs/Subject';
-import { Subscription } from 'rxjs/Subscription';
 import { Observable } from 'rxjs/Observable';
 
 /* SQL imports */
@@ -63,26 +61,17 @@ export class SingleConnectionMetadataService {
 /* Wrapper for a connection service that contains the uri string to use on each request */
 export class SingleConnectionManagementService {
 
-	private _onDidChangeConnection = new Subject<ConnectionManagementInfo>();
-
 	constructor(
 		private _connectionService: IConnectionManagementService,
 		private _uri: string
 	) { }
 
 	public changeDatabase(name: string): Thenable<boolean> {
-		return this._connectionService.changeDatabase(this._uri, name).then((result) => {
-			this._onDidChangeConnection.next(this.connectionInfo);
-			return result;
-		});
+		return this._connectionService.changeDatabase(this._uri, name);
 	}
 
 	public get connectionInfo(): ConnectionManagementInfo {
 		return this._connectionService.getConnectionInfo(this._uri);
-	}
-
-	public onDidChangeConnection(cb: (con: ConnectionManagementInfo) => void): Subscription {
-		return this._onDidChangeConnection.subscribe(cb);
 	}
 }
 

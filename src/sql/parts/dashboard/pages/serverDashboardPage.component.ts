@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OnInit, Inject, forwardRef } from '@angular/core';
+import { OnInit, Inject, forwardRef, ChangeDetectorRef } from '@angular/core';
 
 import { DashboardPage } from 'sql/parts/dashboard/common/dashboardPage.component';
 import { BreadcrumbClass } from 'sql/parts/dashboard/services/breadcrumb.service';
@@ -30,14 +30,19 @@ export class ServerDashboardPage extends DashboardPage implements OnInit {
 
 	constructor(
 		@Inject(forwardRef(() => IBreadcrumbService)) private breadcrumbService: IBreadcrumbService,
-		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface
+		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface,
+		@Inject(forwardRef(() => ChangeDetectorRef)) cd: ChangeDetectorRef
 	) {
 		super(dashboardService);
-		this.init();
+		// revert back to default database
+		this.dashboardService.connectionManagementService.changeDatabase('master').then(() => {
+			this.dashboardService.connectionManagementService.connectionInfo.connectionProfile.databaseName = undefined;
+			this.init();
+			cd.detectChanges();
+		});
 	}
 
 	ngOnInit() {
 		this.breadcrumbService.setBreadcrumbs(BreadcrumbClass.ServerPage);
-		this.dashboardService.connectionManagementService.connectionInfo.connectionProfile.databaseName = null;
 	}
 }

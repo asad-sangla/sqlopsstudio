@@ -6,6 +6,8 @@
 import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput, EditorModel } from 'vs/workbench/common/editor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
+import { IDisposable } from 'vs/base/common/lifecycle';
+
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 
@@ -16,6 +18,7 @@ export class DashboardInput extends EditorInput {
 	public static SCHEMA: string = 'sqldashboard';
 
 	private _initializedPromise: Thenable<void>;
+	private _onConnectionChanged: IDisposable;
 
 	public get initializedPromise(): Thenable<void> {
 		return this._initializedPromise;
@@ -32,7 +35,19 @@ export class DashboardInput extends EditorInput {
 		@IConnectionManagementService private _connectionService: IConnectionManagementService
 	) {
 		super();
-		this._initializedPromise = _connectionService.connectIfNotConnected(_connectionProfile, 'dashboard').then(u => this._uri = u).then();
+		this._initializedPromise = _connectionService.connectIfNotConnected(_connectionProfile, 'dashboard').then(
+			u => {
+				this._uri = u;
+				let info = this._connectionService.getConnectionInfo(u);
+				if (info) {
+					this._onConnectionChanged = this._connectionService.onConnectionChanged(e => {
+						if (e.connectionUri === u) {
+							this._onDidChangeLabel.fire();
+						}
+					});
+				}
+			}
+		);
 	}
 
 	public setUniqueSelector(uniqueSelector: string): void {
@@ -68,6 +83,9 @@ export class DashboardInput extends EditorInput {
 
 	public dispose(): void {
 		this._disposeContainer();
+		if (this._onConnectionChanged) {
+			this._onConnectionChanged.dispose();
+		}
 		this._connectionService.disconnect(this._uri);
 		super.dispose();
 	}
