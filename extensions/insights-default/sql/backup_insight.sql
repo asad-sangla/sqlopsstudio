@@ -10,7 +10,7 @@ with
         group by d.database_id
     )
 select
-    sum(health_check) [Within 24hrs],
-    sum(case when health_check = 0 AND last_backup IS NOT NULL then 1 else 0 end) [Older than 24hrs],
-    sum(case when health_check = 0 AND last_backup IS NULL then 1 else 0 end) [No backup found]
+    coalesce(sum(health_check),0) [Within 24hrs],
+    coalesce(sum(case when health_check = 0 AND last_backup IS NOT NULL then 1 else 0 end),0) [Older than 24hrs],
+    coalesce(sum(case when health_check = 0 AND last_backup IS NULL then 1 else 0 end),0) [No backup found]
 from backupInsight_cte

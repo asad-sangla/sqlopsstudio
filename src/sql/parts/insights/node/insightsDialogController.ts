@@ -132,7 +132,9 @@ export class InsightsDialogController {
 		// currently only support 1 batch set 1 resultset
 		if (batches.length > 0) {
 			let batch = batches[0];
-			if (batch.resultSetSummaries.length > 0) {
+			if (batch.resultSetSummaries.length > 0
+				&& batch.resultSetSummaries[0].rowCount > 0
+			) {
 				let resultset = batch.resultSetSummaries[0];
 				this._columns = resultset.columnInfo;
 				let rows: QueryExecuteSubsetResult;
@@ -145,6 +147,7 @@ export class InsightsDialogController {
 				this.updateModel();
 			}
 		}
+		// TODO issue #2746 should ideally show a warning inside the dialog if have no data
 	}
 
 	private updateModel(): void {
