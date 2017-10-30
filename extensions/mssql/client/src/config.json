@@ -990,11 +990,11 @@
 								"objectType": null,
 								"categoryValues": [
 									{
-										"displayName": "RESTORE WITH RECOVERTY",
+										"displayName": "RESTORE WITH RECOVERY",
 										"name": "WithRecovery"
 									},
 									{
-										"displayName": "RESTORE WITH NORECOVERTY",
+										"displayName": "RESTORE WITH NORECOVERY",
 										"name": "WithNoRecovery"
 									},
 									{
@@ -1056,7 +1056,7 @@
 							{
 								"name": "tailLogWithNoRecovery",
 								"displayName": "Tail Log With NoRecovery",
-								"description": "Leave source database in the restoring state(WITH NORECOVERTY)",
+								"description": "Leave source database in the restoring state(WITH NORECOVERY)",
 								"groupName": "Tail-Log backup",
 								"valueType": "boolean",
 								"defaultValue": null,
