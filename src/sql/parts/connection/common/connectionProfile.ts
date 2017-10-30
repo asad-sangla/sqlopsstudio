@@ -42,6 +42,9 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			this._groupName = ConnectionProfile.RootGroupName;
 			this._id = generateUuid();
 		}
+
+		this.options['groupId'] = this.groupId;
+		this.options['databaseDisplayName'] = this.databaseName;
 	}
 
 	public matches(other: interfaces.IConnectionProfile): boolean {
@@ -50,7 +53,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 			&& equalsIgnoreCase(this.serverName, other.serverName)
 			&& equalsIgnoreCase(this.databaseName, other.databaseName)
 			&& equalsIgnoreCase(this.userName, other.userName)
-      && equalsIgnoreCase(this.options['databaseDisplayName'], other.options['databaseDisplayName'])
+			&& equalsIgnoreCase(this.options['databaseDisplayName'], other.options['databaseDisplayName'])
 			&& this.authenticationType === other.authenticationType
 			&& this.groupId === other.groupId;
 	}
@@ -122,6 +125,7 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 		if (databaseDisplayName) {
 			id += ProviderConnectionInfo.idSeparator + 'databaseDisplayName' + ProviderConnectionInfo.nameValueSeparator + databaseDisplayName;
 		}
+
 		return id + ProviderConnectionInfo.idSeparator + 'group' + ProviderConnectionInfo.nameValueSeparator + this.groupId;
 	}
 
@@ -167,17 +171,18 @@ export class ConnectionProfile extends ProviderConnectionInfo implements interfa
 
 	public static createFromStoredProfile(profile: interfaces.IConnectionProfileStore, serverCapabilities: data.DataProtocolServerCapabilities): ConnectionProfile {
 		let connectionInfo = new ConnectionProfile(serverCapabilities, undefined);
+		connectionInfo.options = profile.options;
+
+		// append group ID and original display name to build unique OE session ID
+ 		connectionInfo.options = profile.options;
+ 		connectionInfo.options['groupId'] = connectionInfo.groupId;
+ 		connectionInfo.options['databaseDisplayName'] = connectionInfo.databaseName;
+
 		connectionInfo.groupId = profile.groupId;
 		connectionInfo.providerName = profile.providerName;
 		connectionInfo.saveProfile = true;
 		connectionInfo.savePassword = profile.savePassword;
 		connectionInfo.id = profile.id || generateUuid();
-
-		// append group ID and original display name to build unique OE session ID
-		connectionInfo.options = profile.options;
-		connectionInfo.options['groupId'] = connectionInfo.groupId;
-		connectionInfo.options['databaseDisplayName'] = connectionInfo.databaseName;
-
 		return connectionInfo;
 	}
 

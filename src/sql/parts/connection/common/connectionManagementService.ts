@@ -429,6 +429,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private connectWithOptions(connection: IConnectionProfile, uri: string, options?: IConnectionCompletionOptions, callbacks?: IConnectionCallbacks):
 		Promise<IConnectionResult> {
+		connection.options['groupId'] = connection.groupId;
+		connection.options['databaseDisplayName'] = connection.databaseName;
+
 		if (!uri) {
 			uri = Utils.generateUri(connection);
 		}

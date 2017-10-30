@@ -396,7 +396,6 @@ suite('SQL ConnectionConfig tests', () => {
 
 		let connectionProfile = new ConnectionProfile(msSQLCapabilities, newProfile);
 		connectionProfile.options['databaseDisplayName'] = 'database';
-
 		let config = new ConnectionConfig(configEditingServiceMock.object, workspaceConfigurationServiceMock.object, capabilitiesService.object);
 		config.addConnection(connectionProfile).then(savedConnectionProfile => {
 			configEditingServiceMock.verify(y => y.writeConfiguration(ConfigurationTarget.USER,
