@@ -574,13 +574,14 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		for (let i = 0; i < params.metadata.length; ++i) {
 			let metadata: ls.ObjectMetadata = params.metadata[i];
 
-			// the display string should come from the provider
-			// this is temporary mapping (3/13 karlb)
 			let metadataTypeName: string;
-			if (metadata.metadataType === ls.MetadataType.View) {
+			if (metadata.metadataTypeName) {
+				// Read from the provider since it's defined
+				metadataTypeName = metadata.metadataTypeName;
+			} else if (metadata.metadataType === ls.MetadataType.View) {
 				metadataTypeName = 'View';
 			} else if (metadata.metadataType === ls.MetadataType.SProc) {
-				metadataTypeName = 'Procedure';
+				metadataTypeName = 'StoredProcedure';
 			} else if (metadata.metadataType === ls.MetadataType.Function) {
 				metadataTypeName = 'Function';
 			} else {

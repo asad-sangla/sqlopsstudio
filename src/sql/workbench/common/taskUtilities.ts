@@ -77,6 +77,25 @@ export enum ScriptOperation {
 	Delete = 4
 }
 
+export function GetScriptOperationName(operation: ScriptOperation) {
+	let defaultName: string = ScriptOperation[operation];
+	switch(operation) {
+		case ScriptOperation.Select:
+			return nls.localize('selectOperationName', 'Select');
+		case ScriptOperation.Create:
+			return nls.localize('createOperationName', 'Create');
+		case ScriptOperation.Insert:
+			return nls.localize('insertOperationName', 'Insert');
+		case ScriptOperation.Update:
+			return nls.localize('updateOperationName', 'Update');
+		case ScriptOperation.Delete:
+			return nls.localize('deleteOperationName', 'Delete');
+		default:
+			// return the raw, non-localized string name
+			return defaultName;
+	}
+}
+
 export function connectIfNotAlreadyConnected(connectionProfile: IConnectionProfile, connectionService: IConnectionManagementService): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		let connectionID = connectionService.getConnectionId(connectionProfile);
@@ -127,7 +146,7 @@ export function scriptSelect(connectionProfile: IConnectionProfile, metadata: da
 						reject(editorError);
 					});
 				} else {
-					let errMsg: string = nls.localize('scriptNotFound', 'No script was returned when calling select script on object ');
+					let errMsg: string = nls.localize('scriptSelectNotFound', 'No script was returned when calling select script on object ');
 					reject(errMsg.concat(metadata.metadataTypeName));
 				}
 			}, scriptError => {
@@ -171,7 +190,6 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 		connectIfNotAlreadyConnected(connectionProfile, connectionService).then(connectionResult => {
 			let paramDetails = getScriptingParamDetails(connectionService, ownerUri, metadata);
 			scriptingService.script(ownerUri, metadata, operation, paramDetails).then(result => {
-				let errMsg: string = nls.localize('scriptNotFound', 'No script was returned when calling script');
 				if (result) {
 					let script: string = result.script;
 					let startPos: number = 0;
@@ -187,14 +205,20 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 						});
 					}
 					else {
+						let scriptNotFoundMsg = nls.localize('scriptNotFoundForObject', 'No script was returned when scripting as {0} on object {1}',
+													GetScriptOperationName(operation), metadata.metadataTypeName);
 						let operationResult = scriptingService.getOperationFailedResult(result.operationId);
-						if (errorMessageService && operationResult && operationResult.hasError && operationResult.errorMessage) {
-							errorMessageService.showDialog(Severity.Error, '', operationResult.errorMessage);
+						if (operationResult && operationResult.hasError && operationResult.errorMessage) {
+							scriptNotFoundMsg = operationResult.errorMessage;
 						}
-						reject(errMsg.concat(operation.toString(), "on object", metadata.metadataTypeName));
+						if (errorMessageService) {
+							let title = nls.localize('scriptingFailed', 'Scripting Failed');
+							errorMessageService.showDialog(Severity.Error, title, scriptNotFoundMsg);
+						}
+						reject(scriptNotFoundMsg);
 					}
 				} else {
-					reject(errMsg);
+					reject(nls.localize('scriptNotFound', 'No script was returned when scripting as {0}', GetScriptOperationName(operation)));
 				}
 			}, scriptingError => {
 				reject(scriptingError);
