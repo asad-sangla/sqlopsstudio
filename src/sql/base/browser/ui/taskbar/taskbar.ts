@@ -38,21 +38,16 @@ export class Taskbar {
 	private options: IToolBarOptions;
 	private actionBar: ActionBar;
 	private lookupKeybindings: boolean;
-	private _domNode: HTMLElement;
-
-	public get domNode(): HTMLElement {
-		return this._domNode;
-	}
 
 	constructor(container: HTMLElement, contextMenuProvider: IContextMenuProvider, options: IToolBarOptions = { orientation: ActionsOrientation.HORIZONTAL }) {
 		this.options = options;
 		this.lookupKeybindings = typeof this.options.getKeyBinding === 'function' && typeof this.options.getKeyBinding === 'function';
 
-		this._domNode = document.createElement('div');
-		this._domNode.className = 'monaco-toolbar carbon-taskbar';
-		container.appendChild(this._domNode);
+		let element = document.createElement('div');
+		element.className = 'monaco-toolbar carbon-taskbar';
+		container.appendChild(element);
 
-		this.actionBar = new ActionBar($(this._domNode), {
+		this.actionBar = new ActionBar($(element), {
 			orientation: options.orientation,
 			ariaLabel: options.ariaLabel,
 			actionItemProvider: (action: Action) => {
