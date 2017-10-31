@@ -24,5 +24,6 @@
 	"sendASmile": {
 		"reportIssueUrl": "https://github.com/Microsoft/carbon/issues/new?labels=customer%20reported%20issue",
 		"requestFeatureUrl": "https://github.com/Microsoft/carbon/issues/new?labels=feature-request"
-	}
+	},
+	"releaseNotesUrl": "https://go.microsoft.com/fwlink/?linkid=862039"
 }

@@ -206,6 +206,8 @@ export class ProductContribution implements IWorkbenchContribution {
 		@IMessageService messageService: IMessageService,
 		@IWorkbenchEditorService editorService: IWorkbenchEditorService
 	) {
+		// {{SQL CARBON EDIT}}
+		/*
 		const lastVersion = storageService.get(ProductContribution.KEY, StorageScope.GLOBAL, '');
 
 		// was there an update? if so, open release notes
@@ -235,6 +237,7 @@ export class ProductContribution implements IWorkbenchContribution {
 		}
 
 		storageService.store(ProductContribution.KEY, pkg.version, StorageScope.GLOBAL);
+		*/
 	}
 }
 
