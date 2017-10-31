@@ -13,6 +13,7 @@ import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from '
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ITaskRegistry, Extensions, ActionICtor } from 'sql/platform/tasks/taskRegistry';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ITaskActionContext } from 'sql/workbench/common/actions';
 
 /* VS imports */
 import { IDisposable } from 'vs/base/common/lifecycle';
@@ -105,5 +106,12 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		let posx = (this._size * (Math.floor(index / 2))) + marginx;
 		let posy = (this._size * (index % this._rows)) + marginy;
 		return 'translate(' + posx + 'px, ' + posy + 'px)';
+	}
+
+	public runTask(task: Action) {
+		let context: ITaskActionContext = {
+			profile: this._profile
+		};
+		task.run(context);
 	}
 }

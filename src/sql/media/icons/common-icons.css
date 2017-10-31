@@ -154,3 +154,21 @@
 .vs .icon.toggle-more {
 	background: url('ellipsis.svg') center center no-repeat;
 }
+
+.hc-black .icon.new-query,
+.vs-dark .icon.new-query {
+	background: url('newquery_inverse.svg') center center no-repeat;
+}
+
+.vs .icon.new-query {
+	background: url('newquery.svg') center center no-repeat;
+}
+
+.hc-black .icon.configure-dashboard,
+.vs-dark .icon.configure-dashboard {
+	background: url('configdashboard_inverse.svg') center center no-repeat;
+}
+
+.vs .icon.configure-dashboard {
+	background: url('configdashboard.svg') center center no-repeat;
+}

@@ -17,8 +17,11 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import * as Constants from 'sql/common/constants';
 import { ObjectMetadata } from 'data';
 import { ScriptOperation } from 'sql/workbench/common/taskUtilities';
+
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
+import { IWindowsService } from 'vs/platform/windows/common/windows';
+
 import * as nls from 'vs/nls';
 
 export class TaskAction extends Action {
@@ -49,7 +52,7 @@ export interface InsightActionContext extends BaseActionContext {
 export class NewQueryAction extends TaskAction {
 	public static ID = 'newQuery';
 	public static LABEL = nls.localize('newQuery', 'New Query');
-	public static ICON = 'file';
+	public static ICON = 'new-query';
 
 	constructor(
 		id: string, label: string, icon: string,
@@ -338,6 +341,29 @@ export class NewDatabaseAction extends TaskAction {
 	run(actionContext: ITaskActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.showCreateDatabase(actionContext.profile, this._adminService, this._errorMessageService);
+		});
+	}
+}
+
+export class ConfigureDashboardAction extends TaskAction {
+	public static ID = 'configureDashboard';
+	public static LABEL = nls.localize('configureDashboard', 'Configure');
+	public static ICON = 'configure-dashboard';
+	private static readonly configHelpUri = 'https://aka.ms/sqldashboardconfig';
+	constructor(
+		id: string, label: string, icon: string,
+		@IWindowsService private _windowsService
+	) {
+		super(id, label, icon);
+	}
+
+	run(actionContext: ITaskActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			this._windowsService.openExternal(ConfigureDashboardAction.configHelpUri).then((result) => {
+				resolve(result);
+			}, err => {
+				resolve(err);
+			});
 		});
 	}
 }
