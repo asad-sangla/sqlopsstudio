@@ -318,11 +318,6 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		self.messagesAdded = true;
 		self.onScroll(0);
 
-		// Reset selected cell state
-		this.currentCell = null;
-		this.rowEditInProgress = false;
-		this.removingNewRow = false;
-
 		// HACK: unsafe reference to the slickgrid object
 		// TODO: Reimplement by adding selectCell event to angular2-slickgrid
 		self._cd.detectChanges();
