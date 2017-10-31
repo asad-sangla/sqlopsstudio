@@ -5,10 +5,12 @@
 
 'use strict';
 
+import { localize } from 'vs/nls';
+import Severity from 'vs/base/common/severity';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+
 import { IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { ErrorMessageDialog } from 'sql/workbench/errorMessageDialog/errorMessageDialog';
-import Severity from 'vs/base/common/severity';;
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class ErrorMessageService implements IErrorMessageService {
 
@@ -34,6 +36,22 @@ export class ErrorMessageService implements IErrorMessageService {
 			this._errorDialog.render();
 		}
 
-		return this._errorDialog.open(severity, headerTitle, message);
+		let title = headerTitle ? headerTitle : this.getDefaultTitle(severity);
+		return this._errorDialog.open(severity, title, message);
+	}
+
+	private getDefaultTitle(severity: Severity) {
+		let defaultTitle: string;
+		switch (severity) {
+			case Severity.Error:
+				defaultTitle = localize('error', 'Error');
+				break;
+			case Severity.Warning:
+				defaultTitle = localize('warning', 'Warning');
+				break;
+			case Severity.Info:
+				defaultTitle = localize('info', 'Info');
+		}
+		return defaultTitle;
 	}
 }

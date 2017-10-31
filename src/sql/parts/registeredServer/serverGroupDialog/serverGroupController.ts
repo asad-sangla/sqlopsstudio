@@ -46,7 +46,7 @@ export class ServerGroupController implements IServerGroupController {
 			}).catch(err => {
 				// rollback changes made
 				this._group = tempGroup;
-				this._errorMessageService.showDialog(Severity.Error, 'Connection Error', err);
+				this._errorMessageService.showDialog(Severity.Error, '', err);
 			});
 
 		} else {
@@ -63,7 +63,7 @@ export class ServerGroupController implements IServerGroupController {
 				}
 				this._serverGroupDialog.close();
 			}).catch(err => {
-				this._errorMessageService.showDialog(Severity.Error, 'Connection Error', err);
+				this._errorMessageService.showDialog(Severity.Error, '', err);
 			});
 		}
 	}
