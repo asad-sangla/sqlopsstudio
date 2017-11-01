@@ -478,6 +478,10 @@ export class BackupComponent {
 		this.collapseAdvancedOptions();
 		this.containsBackupToUrl = false;
 		this.pathListBox.setValidation(true);
+
+		this.cancelButton.applyStyles();
+		this.scriptButton.applyStyles();
+		this.backupButton.applyStyles();
 	}
 
 	private registerListeners(): void {

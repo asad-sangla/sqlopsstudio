@@ -108,7 +108,8 @@ export class Button extends EventEmitter {
 		this.applyStyles();
 	}
 
-	private applyStyles(): void {
+	// {{SQL CARBON EDIT}} -- removed 'private' access modifier
+	applyStyles(): void {
 		if (this.$el) {
 			const background = this.buttonBackground ? this.buttonBackground.toString() : null;
 			const foreground = this.buttonForeground ? this.buttonForeground.toString() : null;

@@ -80,6 +80,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	private _modalTitleIcon: HTMLElement;
 	private _leftFooter: Builder;
 	private _rightFooter: Builder;
+	private _footerButtons: Button[];
 
 	private _keydownListener: IDisposable;
 	private _resizeListener: IDisposable;
@@ -131,6 +132,7 @@ export abstract class Modal extends Disposable implements IThemable {
 		mixin(this._modalOptions, defaultOptions, false);
 		this._staticKey = generateUuid();
 		this._modalShowingContext = MODAL_SHOWING_CONTEXT.bindTo(_contextKeyService);
+		this._footerButtons = [];
 	}
 
 	/**
@@ -277,6 +279,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Hides the modal and removes key listeners
 	 */
 	protected hide() {
+		this._footerButtons.forEach(button => button.applyStyles());
 		this._modalShowingContext.get().pop();
 		this._builder.offDOM();
 		this._keydownListener.dispose();
@@ -299,6 +302,7 @@ export abstract class Modal extends Disposable implements IThemable {
 		} else {
 			footerButton.appendTo(this._rightFooter);
 		}
+		this._footerButtons.push(button);
 		return button;
 	}
 
