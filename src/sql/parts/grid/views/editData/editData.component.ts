@@ -133,13 +133,14 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		};
 
 		this.onCellEditEnd = (event: { row: number, column: number, newValue: any }): void => {
+			self.rowEditInProgress = true;
+
 			// Update the cell accordingly
 			self.dataService.updateCell(this.idMapping[event.row], event.column, event.newValue)
 				.then(
 					result => {
 						self.setCellDirtyState(event.row, event.column + 1, result.cell.isDirty);
 						self.setRowDirtyState(event.row, result.isRowDirty);
-						self.rowEditInProgress = true;
 					},
 					error => {
 						// On error updating cell, jump back to the cell that was being edited
