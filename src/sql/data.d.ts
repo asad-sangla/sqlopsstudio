@@ -949,9 +949,7 @@ declare module 'data' {
 	// Disaster Recovery interfaces  -----------------------------------------------------------------------
 
 	export interface BackupConfigInfo {
-		databaseInfo: {};
 		recoveryModel: string;
-		latestBackups: {};
 		defaultBackupFolder: string;
 		backupEncryptors: {};
 	}

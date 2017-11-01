@@ -334,13 +334,7 @@ export interface DatabaseInfo {
 }
 
 export interface BackupConfigInfo {
-	/**
-	 * default database options
-	 */
-	databaseInfo: {};
-
 	recoveryModel: string;
-	latestBackups: {};
 	defaultBackupFolder: string;
 	backupEncryptors: {};
 }
