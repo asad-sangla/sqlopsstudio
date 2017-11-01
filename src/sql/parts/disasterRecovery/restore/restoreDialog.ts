@@ -167,7 +167,8 @@ export class RestoreDialog extends Modal {
 			let validationOptions: IInputOptions = {
 				validationOptions: {
 					validation: (value: string) => !value ? ({ type: MessageType.ERROR, content: errorMessage }) : null
-				}
+				},
+				placeholder: localize('multipleBackupFilePath', 'Please enter one or more file paths separated by commas')
 			};
 
 			filePathContainer.div({ class: 'dialog-input-section' }, (inputContainer) => {
