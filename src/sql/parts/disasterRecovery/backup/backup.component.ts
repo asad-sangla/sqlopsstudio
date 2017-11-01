@@ -501,10 +501,13 @@ export class BackupComponent {
 		this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
 
 		this._toDispose.push(this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged()));
-		this._toDispose.push(this.addButtonClickHandler(this.addPathButton,() => this.onAddClick()));
-		this._toDispose.push(this.addButtonClickHandler(this.removePathButton, () =>  this.onRemoveClick()));
+		this._toDispose.push(this.addButtonClickHandler(this.addPathButton, () => this.onAddClick()));
+		this._toDispose.push(this.addButtonClickHandler(this.removePathButton, () => this.onRemoveClick()));
 		this._toDispose.push(this.mediaNameBox.onDidChange(mediaName => {
 			this.mediaNameChanged(mediaName);
+		}));
+		this._toDispose.push(this.backupRetainDaysBox.onDidChange(days => {
+			this.backupRetainDaysChanged(days);
 		}));
 
 		this._toDispose.push(this._bootstrapService.themeService.onDidColorThemeChange(e => this.updateTheme()));
@@ -582,7 +585,7 @@ export class BackupComponent {
 		if (this.isFormatChecked) {
 			if (DialogHelper.isNullOrWhiteSpace(this.mediaNameBox.value)) {
 				this.backupEnabled = false;
-        this.backupButton.enabled = false;
+				this.backupButton.enabled = false;
 				this.mediaNameBox.showMessage({ type: MessageType.ERROR, content: this.mediaNameRequiredError });
 			}
 		} else {
@@ -829,20 +832,17 @@ export class BackupComponent {
 
 	private enableBackupButton(): void {
 		if (!this.backupButton.enabled) {
-			if (this.pathListBox.count > 0 && (!this.isFormatChecked || this.mediaNameBox.value)) {
+			if (this.pathListBox.count > 0 && (!this.isFormatChecked || this.mediaNameBox.value) && this.backupRetainDaysBox.validate()) {
 				this.backupEnabled = true;
 			}
 		}
 	}
 
 	private setEncryptOptionsEnabled(enabled: boolean): void {
-		if (enabled)
-		{
+		if (enabled) {
 			this.algorithmSelectBox.enable();
 			this.encryptorSelectBox.enable();
-		}
-		else
-		{
+		} else {
 			this.algorithmSelectBox.disable();
 			this.encryptorSelectBox.disable();
 		}
@@ -850,6 +850,14 @@ export class BackupComponent {
 
 	private mediaNameChanged(mediaName: string): void {
 		if (!mediaName) {
+			this.backupEnabled = false;
+		} else {
+			this.enableBackupButton();
+		}
+	}
+
+	private backupRetainDaysChanged(days: string): void {
+		if (!this.backupRetainDaysBox.validate()) {
 			this.backupEnabled = false;
 		} else {
 			this.enableBackupButton();
