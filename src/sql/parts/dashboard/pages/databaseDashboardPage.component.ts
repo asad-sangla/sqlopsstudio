@@ -41,7 +41,7 @@ export class DatabaseDashboardPage extends DashboardPage implements OnInit, OnDe
 	) {
 		super(dashboardService);
 		this._dispose.push(dashboardService.onUpdatePage(() => {
-			this.init();
+			this.refresh(true);
 			this._cd.detectChanges();
 		}));
 		this.init();

@@ -20,8 +20,6 @@ import { EventType, addDisposableListener } from 'vs/base/browser/dom';
 import * as types from 'vs/base/common/types';
 import * as nls from 'vs/nls';
 
-import * as ConnectionConstants from 'sql/parts/connection/common/constants';
-
 export interface PropertiesConfig {
 	properties: Array<Property>;
 }
@@ -80,17 +78,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 		if (consoleError) {
 			this.consoleError = consoleError;
 		}
-		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
-		this._disposables.push(toDisposableSubscription(this._bootstrap.adminService.databaseInfo.subscribe(data => {
-			this._databaseInfo = data;
-			_changeRef.detectChanges();
-			this.parseProperties();
-			if (this._hasInit) {
-				this.handleClipping();
-			}
-		}, error => {
-			(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.properties.error', "Unable to load dashboard properties");
-		})));
+		this.init();
 	}
 
 	ngOnInit() {
@@ -101,6 +89,24 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 
 	ngOnDestroy() {
 		this._disposables.forEach(i => i.dispose());
+	}
+
+	public refresh(): void {
+		this.init();
+	}
+
+	private init(): void {
+		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
+		this._disposables.push(toDisposableSubscription(this._bootstrap.adminService.databaseInfo.subscribe(data => {
+			this._databaseInfo = data;
+			this._changeRef.detectChanges();
+			this.parseProperties();
+			if (this._hasInit) {
+				this.handleClipping();
+			}
+		}, error => {
+			(<HTMLElement>this._el.nativeElement).innerText = nls.localize('dashboard.properties.error', "Unable to load dashboard properties");
+		})));
 	}
 
 	private handleClipping(): void {

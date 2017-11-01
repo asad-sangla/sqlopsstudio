@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, Inject, forwardRef, ViewChild, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { NgGridConfig } from 'angular2-grid';
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
+import { DashboardWidgetWrapper } from 'sql/parts/dashboard/common/dashboardWidgetWrapper.component';
 
 import { Registry } from 'vs/platform/registry/common/platform';
 import * as types from 'vs/base/common/types';
@@ -62,6 +63,8 @@ export abstract class DashboardPage {
 	private _themeDispose: IDisposable;
 
 	@ViewChild('propertyContainer', { read: ElementRef }) private propertyContainer: ElementRef;
+	@ViewChild('properties') private _properties: DashboardWidgetWrapper;
+	@ViewChildren(DashboardWidgetWrapper) private _widgets: QueryList<DashboardWidgetWrapper>;
 
 	// a set of config modifiers
 	private readonly _configModifiers: Array<(item: Array<WidgetConfig>) => Array<WidgetConfig>> = [
@@ -278,6 +281,20 @@ export abstract class DashboardPage {
 			propsEl.style.marginRight = '-10px';
 			propsEl.style.marginBottom = '5px';
 		}
+	}
 
+	public refresh(refreshConfig: boolean = false): void {
+		if (refreshConfig) {
+			this.init();
+			if (this._properties) {
+				this._properties.refresh();
+			}
+		} else {
+			if (this._widgets) {
+				this._widgets.forEach(item => {
+					item.refresh();
+				});
+			}
+		}
 	}
 }

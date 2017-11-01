@@ -75,6 +75,12 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 		this._themeDispose.dispose();
 	}
 
+	public refresh(): void {
+		if (this._component && this._component.refresh) {
+			this._component.refresh();
+		}
+	}
+
 	private loadWidget(): void {
 		if (Object.keys(this._config.widget).length !== 1) {
 			error('Exactly 1 widget must be defined per space');
