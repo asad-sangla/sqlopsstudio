@@ -11,26 +11,28 @@ import 'vs/css!sql/parts/grid/media/styles';
 import 'vs/css!sql/parts/grid/media/slick.grid';
 import 'vs/css!sql/parts/grid/media/slickGrid';
 
-import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
-import * as Services from 'sql/parts/grid/services/sharedServices';
-
 import {
 	ElementRef, QueryList, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject,
 	ViewChildren, forwardRef, EventEmitter, Input
 } from '@angular/core';
 import { IGridDataRow, SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
+import * as rangy from 'sql/base/node/rangy';
+
+import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
+import * as Services from 'sql/parts/grid/services/sharedServices';
 import { IGridIcon, IMessage, IRange, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
 import { GridActionProvider } from 'sql/parts/grid/views/gridActions';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
-import * as strings from 'vs/base/common/strings';
-import { clone } from 'vs/base/common/objects';
 import { error } from 'sql/base/common/log';
 import { TabChild } from 'sql/base/browser/ui/panel/tab.component';
 
-import * as rangy from 'sql/base/node/rangy';
+
+import * as strings from 'vs/base/common/strings';
+import { clone } from 'vs/base/common/objects';
+import * as DOM from 'vs/base/browser/dom';
 
 export const QUERY_SELECTOR: string = 'query-component';
 
@@ -528,7 +530,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	 */
 	navigateToGrid(targetIndex: number): boolean {
 		// check if the target index is valid
-		if (targetIndex >= this.renderedDataSets.length || targetIndex < 0) {
+		if (targetIndex >= this.renderedDataSets.length || targetIndex < 0 || !this.hasFocus()) {
 			return false;
 		}
 
@@ -560,6 +562,10 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		}
 
 		return true;
+	}
+
+	public hasFocus(): boolean {
+		return DOM.isAncestor(document.activeElement, this._el.nativeElement);
 	}
 
 	resizeGrids(): void {
