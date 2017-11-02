@@ -92,12 +92,21 @@ export class TaskHistoryRenderer implements IRenderer {
 					taskStatus = localize('canceling', "canceling");
 					break;
 			}
+			// Set hover text for icon to same as task status
+			templateData.icon.title = taskStatus;
+
+			// Determine the task title and set hover text equal to that
 			templateData.title.textContent = taskNode.taskName + ' ' + taskStatus;
+			templateData.title.title = templateData.title.textContent;
+
+			// Determine the target name and set hover text equal to that
 			let description = taskNode.serverName;
 			if (taskNode.databaseName) {
 				description += ' | ' + taskNode.databaseName;
 			}
 			templateData.description.textContent = description;
+			templateData.description.title = templateData.description.textContent;
+
 			this.timer(taskNode, templateData);
 			let self = this;
 			setInterval(function () {
@@ -125,7 +134,7 @@ export class TaskHistoryRenderer implements IRenderer {
 			}
 		}
 		templateData.time.textContent = timeLabel;
-		templateData.root.title = timeLabel;
+		templateData.time.title = timeLabel;
 	}
 
 	public disposeTemplate(tree: ITree, templateId: string, templateData: any): void {
