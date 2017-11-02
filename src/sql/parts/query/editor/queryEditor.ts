@@ -808,6 +808,7 @@ export class QueryEditor extends BaseEditor {
 		let editor = this._sqlEditor.getControl();
 		editor.revealRange(rangeConversion);
 		editor.setSelection(rangeConversion);
+		editor.focus();
 	}
 
 	// TESTING PROPERTIES ////////////////////////////////////////////////////////////
