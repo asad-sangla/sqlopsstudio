@@ -7,6 +7,9 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { EditorInput, EditorModel } from 'vs/workbench/common/editor';
 import { UntitledEditorInput } from 'vs/workbench/common/editor/untitledEditorInput';
 import { IDisposable } from 'vs/base/common/lifecycle';
+import URI from 'vs/base/common/uri';
+import { IModelService } from 'vs/editor/common/services/modelService';
+import { IModeService } from 'vs/editor/common/services/modeService';
 
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
@@ -32,9 +35,21 @@ export class DashboardInput extends EditorInput {
 
 	constructor(
 		_connectionProfile: IConnectionProfile,
-		@IConnectionManagementService private _connectionService: IConnectionManagementService
+		@IConnectionManagementService private _connectionService: IConnectionManagementService,
+		@IModeService modeService: IModeService,
+		@IModelService model: IModelService
 	) {
 		super();
+		// TODO; possible refactor
+		// basically this is mimicing creating a "model" (the backing model for text for editors)
+		// for dashboard, even though there is no backing text. We need this so that we can
+		// tell the icon theme services that we are a dashboard resource, therefore loading the correct icon
+
+		// vscode has a comment that Mode's will eventually be removed (not sure the state of this comment)
+		// so this might be able to be undone when that happens
+		if (!model.getModel(this.getResource())) {
+			model.createModel('', modeService.getMode('dashboard'), this.getResource());
+		}
 		this._initializedPromise = _connectionService.connectIfNotConnected(_connectionProfile, 'dashboard').then(
 			u => {
 				this._uri = u;
@@ -56,6 +71,13 @@ export class DashboardInput extends EditorInput {
 
 	public getTypeId(): string {
 		return UntitledEditorInput.ID;
+	}
+
+	public getResource(): URI {
+		return URI.from({
+			scheme: 'dashboard',
+			path: '.dashboard'
+		});
 	}
 
 	public getName(): string {

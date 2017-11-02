@@ -184,6 +184,12 @@
 			"fontCharacter": "\\E018",
 			"fontColor": "#cc3e44"
 		},
+		"_dashboard_light": {
+			"iconPath": "./dashboard.svg"
+		},
+		"_dashboard": {
+			"iconPath": "./dashboard_inverse.svg"
+		},
 		"_db_light": {
 			"fontCharacter": "\\E019",
 			"fontColor": "#aac7a"
@@ -1110,7 +1116,8 @@
 		"htaccess": "_config",
 		"key": "_lock",
 		"cert": "_lock",
-		"ds_store": "_ignored"
+		"ds_store": "_ignored",
+		"dashbord": "_dashboard"
 	},
 	"fileNames": {
 		"mix": "_hex",
@@ -1158,6 +1165,7 @@
 		"cpp": "_cpp",
 		"csharp": "_c-sharp",
 		"css": "_css",
+		"dashboard": "_dashboard",
 		"dockerfile": "_docker",
 		"fsharp": "_f-sharp",
 		"go": "_go2",
@@ -1337,7 +1345,8 @@
 			"htaccess": "_config_light",
 			"key": "_lock_light",
 			"cert": "_lock_light",
-			"ds_store": "_ignored_light"
+			"ds_store": "_ignored_light",
+			"dashboard": "_dashboard_light"
 		},
 		"languageIds": {
 			"bat": "_windows_light",
@@ -1346,6 +1355,7 @@
 			"cpp": "_cpp_light",
 			"csharp": "_c-sharp_light",
 			"css": "_css_light",
+			"dashboard": "_dashboard_light",
 			"dockerfile": "_docker_light",
 			"fsharp": "_f-sharp_light",
 			"go": "_go2_light",
