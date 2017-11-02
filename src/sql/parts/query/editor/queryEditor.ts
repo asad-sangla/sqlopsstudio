@@ -7,7 +7,7 @@ import 'vs/css!sql/parts/query/editor/media/queryEditor';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as strings from 'vs/base/common/strings';
 import * as DOM from 'vs/base/browser/dom';
-import { Builder, Dimension } from 'vs/base/browser/builder';
+import { Builder, Dimension, withElementById } from 'vs/base/browser/builder';
 
 import { EditorInput, EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor, EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
@@ -668,6 +668,12 @@ export class QueryEditor extends BaseEditor {
 		let parent: ClientRect = this.getContainer().getHTMLElement().getBoundingClientRect();
 
 		let sqlEditorHeight = splitPointTop - (parent.top + this._taskbarHeight);
+
+		let titleBar = withElementById('workbench.parts.titlebar');
+		if (titleBar) {
+			sqlEditorHeight += DOM.getContentHeight(titleBar.getHTMLElement());
+		}
+
 		let queryResultsEditorHeight = parent.bottom - splitPointTop;
 
 		this._sqlEditorContainer.style.height = `${sqlEditorHeight}px`;
