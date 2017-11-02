@@ -43,6 +43,8 @@
 
 .monaco-shell .modal.flyout-dialog.wide .modal-dialog {
 	width: 1200px;
+	max-width: 95%;
+	min-width: 400px;
 }
 
 .monaco-shell .modal.flyout-dialog .modal-content {
