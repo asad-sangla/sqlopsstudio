@@ -930,10 +930,11 @@ export class ReportIssueAction extends Action {
 		// Avoid backticks, these can trigger XSS detectors. (https://github.com/Microsoft/vscode/issues/13098)
 		const osVersion = `${os.type()} ${os.arch()} ${os.release()}`;
 		const queryStringPrefix = baseUrl.indexOf('?') === -1 ? '?' : '&';
+
+		// {{SQL CARBON EDIT}}
 		const body = encodeURIComponent(
-			`- VSCode Version: ${name} ${version}${isPure ? '' : ' **[Unsupported]**'} (${product.commit || 'Commit unknown'}, ${product.date || 'Date unknown'})
+			`- SQL Operations Studio Version: ${name} ${version}${isPure ? '' : ' **[Unsupported]**'} (${product.commit || 'Commit unknown'}, ${product.date || 'Date unknown'})
 - OS Version: ${osVersion}
-- Extensions: ${areExtensionsDisabled ? 'Extensions are disabled' : this.generateExtensionTable(extensions)}
 ---
 
 Steps to Reproduce:
