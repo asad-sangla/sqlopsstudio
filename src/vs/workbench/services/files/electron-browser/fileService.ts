@@ -147,7 +147,7 @@ export class FileService implements IFileService {
 		if (this.contextService.hasWorkspace()) {
 			this.contextService.getWorkspace().roots.forEach(root => {
 				// {{SQL CARBON EDIT}}
-				encodingOverride.push({ resource: uri.file(paths.join(root.fsPath, '.carbon')), encoding: encoding.UTF8 });
+				encodingOverride.push({ resource: uri.file(paths.join(root.fsPath, '.sqlops')), encoding: encoding.UTF8 });
 			});
 		}
 

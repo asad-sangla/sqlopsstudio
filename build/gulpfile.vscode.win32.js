@@ -16,7 +16,7 @@ const product = require('../product.json');
 
 const repoPath = path.dirname(__dirname);
 // {{SQL CARBON EDIT}}
-const buildPath = arch => path.join(path.dirname(repoPath), `carbon-win32-${arch}`);
+const buildPath = arch => path.join(path.dirname(repoPath), `sqlops-win32-${arch}`);
 const zipDir = arch => path.join(repoPath, '.build', `win32-${arch}`, 'archive');
 const zipPath = arch => path.join(zipDir(arch), `VSCode-win32-${arch}.zip`);
 const setupDir = arch => path.join(repoPath, '.build', `win32-${arch}`, 'setup');

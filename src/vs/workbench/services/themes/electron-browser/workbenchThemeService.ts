@@ -45,7 +45,7 @@ import { IBroadcastService } from 'vs/platform/broadcast/electron-browser/broadc
 // implementation
   // {{SQL CARBON EDIT}}
 const DEFAULT_THEME_ID = 'vs sql-theme-carbon-themes-light_carbon-json';
-const DEFAULT_THEME_SETTING_VALUE = 'Default Light Carbon';
+const DEFAULT_THEME_SETTING_VALUE = 'Default Light SQL Operations Studio';
 
 const PERSISTED_THEME_STORAGE_KEY = 'colorThemeData';
 

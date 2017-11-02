@@ -38,7 +38,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 		const parentDir = path.join(os.tmpdir(), 'vsctests', id);
 		const workspaceDir = path.join(parentDir, 'workspaceconfig', id);
 		// {{SQL CARBON EDIT}}
-		const workspaceSettingsDir = path.join(workspaceDir, '.carbon');
+		const workspaceSettingsDir = path.join(workspaceDir, '.sqlops');
 		const globalSettingsFile = path.join(workspaceDir, 'config.json');
 
 		extfs.mkdirp(workspaceSettingsDir, 493, (error) => {
@@ -169,7 +169,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 		createWorkspace((workspaceDir, globalSettingsFile, cleanUp) => {
 			return createService(workspaceDir, globalSettingsFile).then(service => {
 				// {{SQL CARBON EDIT}}
-				fs.writeFileSync(path.join(workspaceDir, '.carbon', 'settings.json'), '{ "testworkbench.editor.icons": true }');
+				fs.writeFileSync(path.join(workspaceDir, '.sqlops', 'settings.json'), '{ "testworkbench.editor.icons": true }');
 
 				service.reloadConfiguration().then(() => {
 					const config = service.getConfiguration<{ testworkbench: { editor: { icons: boolean } } }>();
@@ -188,7 +188,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 			return createService(workspaceDir, globalSettingsFile).then(service => {
 				fs.writeFileSync(globalSettingsFile, '{ "testworkbench.editor.icons": false, "testworkbench.other.setting": true }');
 				// {{SQL CARBON EDIT}}
-				fs.writeFileSync(path.join(workspaceDir, '.carbon', 'settings.json'), '{ "testworkbench.editor.icons": true }');
+				fs.writeFileSync(path.join(workspaceDir, '.sqlops', 'settings.json'), '{ "testworkbench.editor.icons": true }');
 
 				service.reloadConfiguration().then(() => {
 					const config = service.getConfiguration<{ testworkbench: { editor: { icons: boolean }, other: { setting: string } } }>();
@@ -217,7 +217,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 				});
 
 				// {{SQL CARBON EDIT}}
-				const settingsFile = path.join(workspaceDir, '.carbon', 'settings.json');
+				const settingsFile = path.join(workspaceDir, '.sqlops', 'settings.json');
 				fs.writeFileSync(settingsFile, '{ "testworkbench.editor.icons": true }');
 
 				const event = new FileChangesEvent([{ resource: URI.file(settingsFile), type: FileChangeType.ADDED }]);
@@ -230,7 +230,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 		createWorkspace((workspaceDir, globalSettingsFile, cleanUp) => {
 			return createService(workspaceDir, globalSettingsFile).then(service => {
 				// {{SQL CARBON EDIT}}
-				const settingsFile = path.join(workspaceDir, '.carbon', 'settings.json');
+				const settingsFile = path.join(workspaceDir, '.sqlops', 'settings.json');
 				fs.writeFileSync(settingsFile, '{ "testworkbench.editor.icons": true }');
 
 				const target = sinon.stub();
@@ -252,7 +252,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 		createWorkspace((workspaceDir, globalSettingsFile, cleanUp) => {
 			return createService(workspaceDir, globalSettingsFile).then(service => {
 				// {{SQL CARBON EDIT}}
-				const settingsFile = path.join(workspaceDir, '.carbon', 'settings.json');
+				const settingsFile = path.join(workspaceDir, '.sqlops', 'settings.json');
 				fs.writeFileSync(settingsFile, '{ "testworkbench.editor.icons": true }');
 
 				service.reloadConfiguration().done(() => {
@@ -322,7 +322,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 					assert.ok(!res.workspace);
 
 					// {{SQL CARBON EDIT}}
-					const settingsFile = path.join(workspaceDir, '.carbon', 'settings.json');
+					const settingsFile = path.join(workspaceDir, '.sqlops', 'settings.json');
 					fs.writeFileSync(settingsFile, '{ "workspaceLookup.service.testSetting": 55 }');
 
 					return service.reloadConfiguration().then(() => {
@@ -382,7 +382,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 					assert.ok(!contains(keys.workspace, 'workspaceLookup.service.testSetting'));
 
 					// {{SQL CARBON EDIT}}
-					const settingsFile = path.join(workspaceDir, '.carbon', 'settings.json');
+					const settingsFile = path.join(workspaceDir, '.sqlops', 'settings.json');
 					fs.writeFileSync(settingsFile, '{ "workspaceLookup.service.testSetting": 55 }');
 
 					return service.reloadConfiguration().then(() => {
@@ -393,7 +393,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 						assert.ok(contains(keys.workspace, 'workspaceLookup.service.testSetting'));
 
 						// {{SQL CARBON EDIT}}
-						const settingsFile = path.join(workspaceDir, '.carbon', 'tasks.json');
+						const settingsFile = path.join(workspaceDir, '.sqlops', 'tasks.json');
 						fs.writeFileSync(settingsFile, '{ "workspaceLookup.service.taskTestSetting": 55 }');
 
 						return service.reloadConfiguration().then(() => {
@@ -444,7 +444,7 @@ suite('WorkspaceConfigurationService - Node', () => {
 					assert.equal(value.user, true);
 
 					// {{SQL CARBON EDIT}}
-					const settingsFile = path.join(workspaceDir, '.carbon', 'settings.json');
+					const settingsFile = path.join(workspaceDir, '.sqlops', 'settings.json');
 					fs.writeFileSync(settingsFile, '{ "workspaceLookup.service.testSetting": 55 }');
 
 					return service.reloadConfiguration().then(() => {

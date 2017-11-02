@@ -9,7 +9,7 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 export const CONFIG_DEFAULT_NAME = 'settings';
 
 // {{SQL CARBON EDIT}}
-export const WORKSPACE_CONFIG_FOLDER_DEFAULT_NAME = '.carbon';
+export const WORKSPACE_CONFIG_FOLDER_DEFAULT_NAME = '.sqlops';
 export const WORKSPACE_CONFIG_DEFAULT_PATH = `${WORKSPACE_CONFIG_FOLDER_DEFAULT_NAME}/${CONFIG_DEFAULT_NAME}.json`;
 
 export const IWorkspaceConfigurationService = createDecorator<IWorkspaceConfigurationService>('configurationService');

@@ -67,13 +67,13 @@
 		{
 			"type": "chrome",
 			"request": "attach",
-			"name": "Attach to Carbon",
+			"name": "Attach to sqlops",
 			"port": 9222
 		},
 		{
 			"type": "chrome",
 			"request": "launch",
-			"name": "Launch Carbon",
+			"name": "Launch sqlops",
 			"windows": {
 				"runtimeExecutable": "${workspaceRoot}/scripts/sql.bat"
 			},
@@ -95,12 +95,12 @@
 			"name": "Unit Tests",
 			"protocol": "inspector",
 			"program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-			"runtimeExecutable": "${workspaceRoot}/.build/electron/carbon.app/Contents/MacOS/Electron",
+			"runtimeExecutable": "${workspaceRoot}/.build/electron/sqlops.app/Contents/MacOS/Electron",
 			"windows": {
-				"runtimeExecutable": "${workspaceRoot}/.build/electron/carbon.exe"
+				"runtimeExecutable": "${workspaceRoot}/.build/electron/sqlops.exe"
 			},
 			"linux": {
-				"runtimeExecutable": "${workspaceRoot}/.build/electron/carbon"
+				"runtimeExecutable": "${workspaceRoot}/.build/electron/sqlops"
 			},
 			"stopOnEntry": false,
 			"args": [
@@ -118,9 +118,9 @@
 	],
 	"compounds": [
 		{
-			"name": "Debug Carbon Main and Renderer",
+			"name": "Debug sqlops Main and Renderer",
 			"configurations": [
-				"Launch Carbon",
+				"Launch sqlops",
 				"Attach to Main Process"
 			]
 		}

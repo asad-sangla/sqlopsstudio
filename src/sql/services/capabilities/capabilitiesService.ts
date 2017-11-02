@@ -15,7 +15,7 @@ import { Action } from 'vs/base/common/actions';
 import { Deferred } from 'sql/base/common/promise';
 
 export const SERVICE_ID = 'capabilitiesService';
-export const HOST_NAME = 'carbon';
+export const HOST_NAME = 'sqlops';
 export const HOST_VERSION = '1.0';
 
 export const ICapabilitiesService = createDecorator<ICapabilitiesService>(SERVICE_ID);

@@ -149,7 +149,7 @@ export interface CountInsight extends Insight {
 ## FAQ
 - **How to define insight**: In the initial version, customers can add insights to a file in their workspace / on their machine
 - **How to share widgets among team**: Initially supported locations:
-  - Workspace file (e.g. file under a .carbon folder). Can be shared via Github checkin
+  - Workspace file (e.g. file under a .sqlops folder). Can be shared via Github checkin
   - User settings file (not shared)
   - To collaborate via Gist etc., simple copy & paste the file into your workspace
   Future: should be packageable into an extension / extension pack in the future. Register the .json file in there and it “just works”.

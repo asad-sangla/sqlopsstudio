@@ -1,4 +1,4 @@
-- Carbon Version:
+- SQL Operations Studio Version:
 
 Steps to Reproduce:
 

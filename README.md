@@ -1,6 +1,6 @@
-# Carbon Database Management Tool
+# SQL Operations Studio
 
-Carbon is a multi-OS, multi-database management tool.
+SQL Operations Studio is a multi-OS, multi-database management tool.
 
 ## Contributing
 If you are interested in fixing issues and contributing directly to the code base,
@@ -17,4 +17,4 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-Licensed under the [MIT](LICENSE.txt) License.
+Licensed under the [Source EULA](LICENSE.txt).

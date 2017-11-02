@@ -47,7 +47,7 @@ function getDebPackageArch(arch) {
 
 function prepareDebPackage(arch) {
   // {{SQL CARBON EDIT}}
-	const binaryDir = '../carbon-linux-' + arch;
+	const binaryDir = '../sqlops-linux-' + arch;
 	const debArch = getDebPackageArch(arch);
 	const destination = '.build/linux/deb/' + debArch + '/' + product.applicationName + '-' + debArch;
 
@@ -125,7 +125,7 @@ function getRpmPackageArch(arch) {
 
 function prepareRpmPackage(arch) {
 	// {{SQL CARBON EDIT}}
-	const binaryDir = '../carbon-linux-' + arch;
+	const binaryDir = '../sqlops-linux-' + arch;
 	const rpmArch = getRpmPackageArch(arch);
 
 	return function () {
@@ -187,7 +187,7 @@ function getFlatpakArch(arch) {
 
 function prepareFlatpak(arch) {
   // {{SQL CARBON EDIT}}
-	const binaryDir = '../carbon-linux-' + arch;
+	const binaryDir = '../sqlops-linux-' + arch;
 	const flatpakArch = getFlatpakArch(arch);
 	const destination = '.build/linux/flatpak/' + flatpakArch;
 

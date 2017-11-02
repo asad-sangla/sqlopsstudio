@@ -1,6 +1,6 @@
 {
-  "name": "carbon",
-  "version": "0.20.0",
+  "name": "sqlops",
+  "version": "0.23.2",
   "electronVersion": "1.7.9",
   "distro": "8c3e97e3425cc9814496472ab73e076de2ba99ee",
   "author": {
@@ -158,10 +158,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/carbon.git"
+    "url": "https://github.com/Microsoft/sqlopsstudio.git"
   },
   "bugs": {
-    "url": "https://github.com/Microsoft/carbon/issues"
+    "url": "https://github.com/Microsoft/sqlopsstudio/issues"
   },
   "optionalDependencies": {
     "windows-process-tree": "0.1.3",

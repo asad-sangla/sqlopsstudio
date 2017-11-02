@@ -196,7 +196,7 @@ export class Constants implements IExtensionConstants {
     public readonly serviceName = 'SQLToolsService';
     public readonly serviceInitializingOutputChannelName = 'SqlToolsService Initialization';
     public readonly gettingStartedGuideLink = 'https://aka.ms/mssql-getting-started';
-    public readonly serviceCrashMessage = 'SQL Tools Service component exited unexpectedly. Please restart Carbon.';
+    public readonly serviceCrashMessage = 'SQL Tools Service component exited unexpectedly. Please restart SQL Operations Studio.';
     public readonly serviceCrashLink = 'https://github.com/Microsoft/vscode-mssql/wiki/SqlToolsService-Known-Issues';
     public readonly gettingDefinitionMessage = 'Getting definition ...';
     public readonly definitionRequestedStatus = 'DefinitionRequested';

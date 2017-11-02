@@ -261,9 +261,9 @@ export function getAppDataPath() {
 }
 export function getDefaultLogLocation() {
     var platform = process.platform;
-    let rootFolderName: string = '.carbon';
+    let rootFolderName: string = '.sqlops';
     if (platform === 'win32') {
-        rootFolderName = 'carbon';
+        rootFolderName = 'sqlops';
     }
 
     return path.join(getAppDataPath(), rootFolderName);

@@ -319,7 +319,7 @@ export class PreferencesService extends Disposable implements IPreferencesServic
 				const workspace = this.contextService.getWorkspace();
 				if (this.contextService.hasFolderWorkspace()) {
 					// {{SQL CARBON EDIT}}
-					return this.toResource(paths.join('.carbon', 'settings.json'), workspace.roots[0]);
+					return this.toResource(paths.join('.sqlops', 'settings.json'), workspace.roots[0]);
 				}
 				if (this.contextService.hasMultiFolderWorkspace()) {
 					return workspace.configuration;
@@ -328,7 +328,7 @@ export class PreferencesService extends Disposable implements IPreferencesServic
 			case ConfigurationTarget.FOLDER:
 				const root = this.contextService.getRoot(resource);
 				// {{SQL CARBON EDIT}}
-				return root ? this.toResource(paths.join('.carbon', 'settings.json'), root) : null;
+				return root ? this.toResource(paths.join('.sqlops', 'settings.json'), root) : null;
 		}
 		return null;
 	}

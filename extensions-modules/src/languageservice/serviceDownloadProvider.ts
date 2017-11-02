@@ -89,9 +89,9 @@ export default class ServiceDownloadProvider {
 		let installDirFromConfig : string;
 		installDirFromConfig = this._config.getInstallDirectory();
 		if (!installDirFromConfig || installDirFromConfig === '') {
-			let rootFolderName: string = '.carbon';
+			let rootFolderName: string = '.sqlops';
 			if (platform === Runtime.Windows_64 || platform === Runtime.Windows_86) {
-				rootFolderName = 'carbon';
+				rootFolderName = 'sqlops';
 			}
 			installDirFromConfig = path.join(this.getLocalUserFolderPath(platform), `/${rootFolderName}/${this._extensionConstants.installFolderName}/{#version#}/{#platform#}`);
 		}

@@ -239,7 +239,8 @@ export class CodeMenu {
 		let macApplicationMenuItem: Electron.MenuItem;
 		if (isMacintosh) {
 			const applicationMenu = new Menu();
-			macApplicationMenuItem = new MenuItem({ label: product.nameShort, submenu: applicationMenu });
+			// {{ SQL CARBON EDIT}}
+			macApplicationMenuItem = new MenuItem({ label: product.nameLong, submenu: applicationMenu });
 			this.setMacApplicationMenu(applicationMenu);
 		}
 
