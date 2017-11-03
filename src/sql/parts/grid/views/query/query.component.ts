@@ -13,7 +13,7 @@ import 'vs/css!sql/parts/grid/media/slickGrid';
 
 import {
 	ElementRef, QueryList, ChangeDetectorRef, OnInit, OnDestroy, Component, Inject,
-	ViewChildren, forwardRef, EventEmitter, Input
+	ViewChildren, forwardRef, EventEmitter, Input, ViewChild
 } from '@angular/core';
 import { IGridDataRow, SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
 import * as rangy from 'sql/base/node/rangy';
@@ -149,6 +149,8 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	@Input() public queryParameters: QueryComponentParams;
 
 	@ViewChildren('slickgrid') slickgrids: QueryList<SlickGrid>;
+	// tslint:disable-next-line:no-unused-variable
+	@ViewChild('resultsPane', { read: ElementRef }) private _resultsPane: ElementRef;
 
 	constructor(
 		@Inject(forwardRef(() => ElementRef)) el: ElementRef,
