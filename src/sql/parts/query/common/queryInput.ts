@@ -232,7 +232,6 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 
 		this._sql.close();
 		this._results.close();
-		super.close();
 	}
 
 	/**
