@@ -81,9 +81,9 @@
 	content: url("status_success.svg");
 }
 
-.vs .icon.cancelled,
-.vs-dark .icon.cancelled,
-.hc-black .icon.cancelled {
+.vs .icon.canceled,
+.vs-dark .icon.canceled,
+.hc-black .icon.canceled {
 	content: url("status_cancelled.svg");
 }
 
