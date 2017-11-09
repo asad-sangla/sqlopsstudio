@@ -140,7 +140,8 @@ export class InputBox extends Widget {
 
 		if (this.options.validationOptions) {
 			this.validation = this.options.validationOptions.validation;
-			this.showValidationMessage = this.options.validationOptions.showMessage || false;
+			// {{SQL CARBON EDIT}} Canidate for addition to vscode
+			this.showValidationMessage = this.options.validationOptions.showMessage || true;
 		}
 
 		this.element = dom.append(container, $('.monaco-inputbox.idle'));
@@ -376,7 +377,8 @@ export class InputBox extends Widget {
 	}
 
 	private _showMessage(): void {
-		if (!this.contextViewProvider || !this.message) {
+		// {{SQL CARBON EDIT}} Canidate for addition to vscode
+		if (!this.contextViewProvider || !this.message || !this.showValidationMessage) {
 			return;
 		}
 
