@@ -11,7 +11,6 @@ import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ModesRegistry } from 'vs/editor/common/modes/modesRegistry';
 
 import { DashboardInput } from './dashboardInput';
 import { DashboardModule } from './dashboard.module';
@@ -105,8 +104,3 @@ export class DashboardEditor extends BaseEditor {
 		super.dispose();
 	}
 }
-
-ModesRegistry.registerLanguage({
-	extensions: ['.dashboard'],
-	id: 'dashboard',
-});
