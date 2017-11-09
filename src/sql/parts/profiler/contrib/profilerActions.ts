@@ -8,7 +8,8 @@
 import { IProfilerService } from 'sql/parts/profiler/service/interfaces';
 import { IProfilerController } from 'sql/parts/profiler/editor/controller/interfaces';
 import { ProfilerInput } from 'sql/parts/profiler/editor/profilerInput';
-import { ITaskActionContext, TaskAction } from 'sql/workbench/common/actions';
+import { ITaskActionContext } from 'sql/workbench/common/actions';
+import { TaskAction } from 'sql/platform/tasks/taskRegistry';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';

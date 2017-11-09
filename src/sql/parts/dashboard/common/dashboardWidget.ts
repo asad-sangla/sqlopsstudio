@@ -2,9 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { InjectionToken } from '@angular/core';
+import { InjectionToken, OnDestroy } from '@angular/core';
 import { NgGridItemConfig } from 'angular2-grid';
 import { Action } from 'vs/base/common/actions';
+import { Disposable } from 'vs/base/common/lifecycle';
 
 export interface IDashboardWidget {
 	actions: Array<Action>;
@@ -26,13 +27,17 @@ export interface WidgetConfig {
 	border?: string;
 	fontSize?: string;
 	fontWeight?: string;
-	padding?:string;
+	padding?: string;
 }
 
-export abstract class DashboardWidget {
+export abstract class DashboardWidget extends Disposable implements OnDestroy {
 	protected _config: WidgetConfig;
 
 	get actions(): Array<Action> {
 		return [];
+	}
+
+	ngOnDestroy() {
+		this.dispose();
 	}
 }

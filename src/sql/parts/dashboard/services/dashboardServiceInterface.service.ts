@@ -195,7 +195,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		return this._storageService;
 	}
 
-	public get CapabilitiesService(): ICapabilitiesService {
+	public get capabilitiesService(): ICapabilitiesService {
 		return this._capabilitiesService;
 	}
 

@@ -17,22 +17,13 @@ import { IAdminService } from 'sql/parts/admin/common/adminService';
 import * as Constants from 'sql/common/constants';
 import { ObjectMetadata } from 'data';
 import { ScriptOperation } from 'sql/workbench/common/taskUtilities';
+import { TaskAction } from 'sql/platform/tasks/taskRegistry';
 
 import { TPromise } from 'vs/base/common/winjs.base';
 import { Action } from 'vs/base/common/actions';
 import { IWindowsService } from 'vs/platform/windows/common/windows';
 
 import * as nls from 'vs/nls';
-
-export class TaskAction extends Action {
-	constructor(id: string, label: string, private _icon: string) {
-		super(id, label);
-	}
-
-	get icon(): string {
-		return this._icon;
-	}
-}
 
 export interface BaseActionContext extends ITaskActionContext {
 	uri?: string;
