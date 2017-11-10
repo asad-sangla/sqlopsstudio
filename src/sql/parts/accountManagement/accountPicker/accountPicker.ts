@@ -62,13 +62,6 @@ export class AccountPicker extends Disposable {
 		this._addAccountStartEmitter = new Emitter<void>();
 		this._onAccountSelectionChangeEvent = new Emitter<data.Account>();
 
-		// Create an account list
-		let delegate = new AccountListDelegate(AccountPicker.ACCOUNTPICKERLIST_HEIGHT);
-		let accountRenderer = new AccountPickerListRenderer();
-		this._listContainer = DOM.$('div.account-list-container');
-		this._accountList = new List<data.Account>(this._listContainer, delegate, [accountRenderer]);
-		this._register(attachListStyler(this._accountList, this._themeService));
-
 		// Create the view model, wire up the events, and initialize with baseline data
 		this.viewModel = this._instantiationService.createInstance(AccountPickerViewModel, this._providerId);
 		this.viewModel.updateAccountListEvent(arg => {
@@ -76,8 +69,6 @@ export class AccountPicker extends Disposable {
 				this.updateAccountList(arg.accountList);
 			}
 		});
-
-		this.createAccountPickerComponent();
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
@@ -88,7 +79,18 @@ export class AccountPicker extends Disposable {
 		DOM.append(container, this._rootElement);
 	}
 
-	private createAccountPickerComponent() {
+	// PUBLIC METHODS //////////////////////////////////////////////////////
+	/**
+	 * Create account picker component
+	 */
+	public createAccountPickerComponent() {
+		// Create an account list
+		let delegate = new AccountListDelegate(AccountPicker.ACCOUNTPICKERLIST_HEIGHT);
+		let accountRenderer = new AccountPickerListRenderer();
+		this._listContainer = DOM.$('div.account-list-container');
+		this._accountList = new List<data.Account>(this._listContainer, delegate, [accountRenderer]);
+		this._register(attachListStyler(this._accountList, this._themeService));
+
 		this._rootElement = DOM.$('div.account-picker-container');
 
 		// Create a dropdown for account picker
