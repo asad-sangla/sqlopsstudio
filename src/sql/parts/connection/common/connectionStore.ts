@@ -48,12 +48,10 @@ export class ConnectionStore {
 		}
 		this._groupIdToFullNameMap = {};
 		this._groupFullNameToIdMap = {};
-
 		if (!this._connectionConfig) {
 			let cachedServerCapabilities = this.getCachedServerCapabilities();
 			this._connectionConfig = new ConnectionConfig(this._configurationEditService,
 				this._workspaceConfigurationService, this._capabilitiesService, cachedServerCapabilities);
-			this._connectionConfig.setCachedMetadata(cachedServerCapabilities);
 		}
 	}
 
@@ -112,17 +110,6 @@ export class ConnectionStore {
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Gets all connection profiles stored in the user settings
-	 * Profiles from workspace will be included if getWorkspaceProfiles is passed as true
-	 * Note: connections will not include password value
-	 *
-	 * @returns {IConnectionProfile[]}
-	 */
-	public getProfiles(getWorkspaceProfiles: boolean): IConnectionProfile[] {
-		return this.loadProfiles(getWorkspaceProfiles);
 	}
 
 	public addSavedPassword(credentialsItem: IConnectionProfile): Promise<{ profile: IConnectionProfile, savedCred: boolean }> {
@@ -314,7 +301,7 @@ export class ConnectionStore {
 	 * @returns {Promise<void>} a Promise that returns when the connection was saved
 	 */
 	public addActiveConnection(conn: IConnectionProfile): Promise<void> {
-		if(this.getActiveConnections().some(existingConn => existingConn.id === conn.id)) {
+		if (this.getActiveConnections().some(existingConn => existingConn.id === conn.id)) {
 			return Promise.resolve(undefined);
 		} else {
 			return this.addConnectionToMemento(conn, Constants.activeConnections, undefined, conn.savePassword).then(() => {
@@ -498,11 +485,6 @@ export class ConnectionStore {
 			}
 		}
 		return result;
-	}
-
-	private loadProfiles(loadWorkspaceProfiles: boolean): IConnectionProfile[] {
-		let connections: IConnectionProfile[] = this._connectionConfig.getConnections(loadWorkspaceProfiles);
-		return connections;
 	}
 
 	private getMaxRecentConnectionsCount(): number {

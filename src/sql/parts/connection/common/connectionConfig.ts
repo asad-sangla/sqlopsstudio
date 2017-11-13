@@ -30,7 +30,6 @@ export interface ISaveGroupResult {
 export class ConnectionConfig implements IConnectionConfig {
 
 	private _providerCapabilitiesMap: { [providerName: string]: data.DataProtocolServerCapabilities };
-	private _providerCachedCapabilitiesMap: { [providerName: string]: data.DataProtocolServerCapabilities };
 	/**
 	 * Constructor.
 	 */
@@ -38,14 +37,18 @@ export class ConnectionConfig implements IConnectionConfig {
 		private _configurationEditService: IConfigurationEditingService,
 		private _workspaceConfigurationService: IWorkspaceConfigurationService,
 		private _capabilitiesService: ICapabilitiesService,
-		private _cachedMetadata?: data.DataProtocolServerCapabilities[]
+		cachedMetadata?: data.DataProtocolServerCapabilities[]
 	) {
 		this._providerCapabilitiesMap = {};
-		this._providerCachedCapabilitiesMap = {};
+		this.setCachedMetadata(cachedMetadata);
 	}
 
-	public setCachedMetadata(cachedMetaData: data.DataProtocolServerCapabilities[]): void {
-		this._cachedMetadata = cachedMetaData;
+	public setCachedMetadata(cachedMetadata: data.DataProtocolServerCapabilities[]): void {
+		if (cachedMetadata) {
+			cachedMetadata.forEach(item => {
+				this.updateCapabilitiesCache(item.providerName, item);
+			});
+		}
 	}
 
 	/**
@@ -74,43 +77,44 @@ export class ConnectionConfig implements IConnectionConfig {
 		return allGroups;
 	}
 
+	private updateCapabilitiesCache(providerName: string, providerCapabilities: data.DataProtocolServerCapabilities): void {
+		if (providerName && providerCapabilities) {
+			this._providerCapabilitiesMap[providerName] = providerCapabilities;
+		}
+	}
+
+	private getCapabilitiesFromCache(providerName: string): data.DataProtocolServerCapabilities {
+		if (providerName in this._providerCapabilitiesMap) {
+			return this._providerCapabilitiesMap[providerName];
+		}
+		return undefined;
+	}
+
 	/**
 	* Returns the capabilities for given provider name. First tries to get it from capabilitiesService and if it's not registered yet,
 	* Gets the data from the metadata stored in the config
 	* @param providerName Provider Name
 	*/
 	public getCapabilities(providerName: string): data.DataProtocolServerCapabilities {
-		let result: data.DataProtocolServerCapabilities;
-
-		if (providerName in this._providerCapabilitiesMap) {
-			result = this._providerCapabilitiesMap[providerName];
+		let result: data.DataProtocolServerCapabilities = this.getCapabilitiesFromCache(providerName);
+		if (result) {
+			return result;
 		} else {
 			let capabilities = this._capabilitiesService.getCapabilities();
 			if (capabilities) {
 				let providerCapabilities = capabilities.find(c => c.providerName === providerName);
 				if (providerCapabilities) {
-					this._providerCapabilitiesMap[providerName] = providerCapabilities;
-					result = providerCapabilities;
+					this.updateCapabilitiesCache(providerName, providerCapabilities);
+					return providerCapabilities;
+				} else {
+					return undefined;
 				}
-			}
-		}
-
-		if (!result && this._cachedMetadata) {
-			if (providerName in this._providerCachedCapabilitiesMap) {
-				result = this._providerCachedCapabilitiesMap[providerName];
 			} else {
-				let metaDataFromConfig = this._cachedMetadata;
-				if (metaDataFromConfig) {
-					let providerCapabilities = metaDataFromConfig.find(m => m.providerName === providerName);
-					this._providerCachedCapabilitiesMap[providerName] = providerCapabilities;
-					result = providerCapabilities;
-				}
+				return undefined;
 			}
 		}
-
-		return result;
-
 	}
+
 	/**
 	 * Add a new connection to the connection config.
 	 */
@@ -124,7 +128,7 @@ export class ConnectionConfig implements IConnectionConfig {
 					}
 
 					let providerCapabilities = this.getCapabilities(profile.providerName);
-					let connectionProfile = this.getConnectionProfileInstance(profile, groupId);
+					let connectionProfile = this.getConnectionProfileInstance(profile, groupId, providerCapabilities);
 					let newProfile = ConnectionProfile.convertToProfileStore(providerCapabilities, connectionProfile);
 
 					// Remove the profile if already set
@@ -151,9 +155,8 @@ export class ConnectionConfig implements IConnectionConfig {
 		});
 	}
 
-	private getConnectionProfileInstance(profile: IConnectionProfile, groupId: string): ConnectionProfile {
+	private getConnectionProfileInstance(profile: IConnectionProfile, groupId: string, providerCapabilities: data.DataProtocolServerCapabilities): ConnectionProfile {
 		let connectionProfile = profile as ConnectionProfile;
-		let providerCapabilities = this.getCapabilities(profile.providerName);
 		if (connectionProfile === undefined) {
 			connectionProfile = new ConnectionProfile(providerCapabilities, profile);
 		}
@@ -221,7 +224,7 @@ export class ConnectionConfig implements IConnectionConfig {
 				profiles = <IConnectionProfileStore[]>configs.workspace;
 			}
 			if (profiles) {
-				if(this.fixConnectionIds(profiles)) {
+				if (this.fixConnectionIds(profiles)) {
 					this.writeConfiguration(Constants.connectionsArrayName, profiles, configTarget);
 				}
 			} else {
@@ -245,9 +248,9 @@ export class ConnectionConfig implements IConnectionConfig {
 				profile.id = generateUuid();
 				changed = true;
 			}
-		 	if (profile.id in idsCache) {
-					profile.id = generateUuid();
-					changed = true;
+			if (profile.id in idsCache) {
+				profile.id = generateUuid();
+				changed = true;
 			}
 			idsCache[profile.id] = true;
 		}
@@ -532,7 +535,7 @@ export class ConnectionConfig implements IConnectionConfig {
 				value: profiles
 			};
 			this._configurationEditService.writeConfiguration(target, configValue).then(result => {
-					this._workspaceConfigurationService.reloadConfiguration().then(() => {
+				this._workspaceConfigurationService.reloadConfiguration().then(() => {
 					resolve();
 				});
 			}, (error => {

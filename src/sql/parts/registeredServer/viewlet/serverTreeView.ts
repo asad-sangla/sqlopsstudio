@@ -18,6 +18,7 @@ import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUt
 import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeSelectionHandler';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
+import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
@@ -44,7 +45,8 @@ export class ServerTreeView {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
 		@IThemeService private _themeService: IThemeService,
-		@IErrorMessageService private _errorMessageService: IErrorMessageService
+		@IErrorMessageService private _errorMessageService: IErrorMessageService,
+		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 	) {
 		this._activeConnectionsFilterAction = this._instantiationService.createInstance(
 			ActiveConnectionsFilterAction,
@@ -63,7 +65,7 @@ export class ServerTreeView {
 	/**
 	 * Render the view body
 	 */
-	public renderBody(container: HTMLElement): void {
+	public renderBody(container: HTMLElement): Thenable<void> {
 		// Add div to display no connections found message and hide it by default
 		this.messages = $('div.title').appendTo(container);
 		$('span').style('padding-left', '10px').text('No connections found.').appendTo(this.messages);
@@ -111,12 +113,35 @@ export class ServerTreeView {
 				}
 			}));
 		}
-		self.refreshTree();
+		return new Promise<void>((resolve, reject) => {
+			self.refreshTree();
+			let root = <ConnectionProfileGroup>this._tree.getInput();
+			if (root && !root.hasValidConnections) {
+
+				this._treeSelectionHandler.onTreeActionStateChange(true);
+				if (this._capabilitiesService) {
+					this._capabilitiesService.onCapabilitiesReady().then(() => {
+						self.refreshTree();
+						this._treeSelectionHandler.onTreeActionStateChange(false);
+						resolve();
+
+					}, error => {
+						reject(error);
+					});
+				} else {
+					self.refreshTree();
+					resolve();
+				}
+			} else {
+
+				resolve();
+			}
+		});
 	}
 
 	private isObjectExplorerConnectionUri(uri: string): boolean {
 		let isBackupRestoreUri: boolean = uri.indexOf(Utils.ConnectionUriBackupIdAttributeName) >= 0 ||
-		uri.indexOf(Utils.ConnectionUriRestoreIdAttributeName) >= 0;
+			uri.indexOf(Utils.ConnectionUriRestoreIdAttributeName) >= 0;
 		return uri && uri.startsWith(ConnectionUtils.uriPrefixes.default) && !isBackupRestoreUri;
 	}
 
