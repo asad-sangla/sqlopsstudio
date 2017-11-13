@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Inject, forwardRef, ChangeDetectorRef, OnInit, ElementRef, ViewChild } from '@angular/core';
 
 import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from 'sql/parts/dashboard/common/dashboardWidget';
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -15,7 +15,6 @@ import { properties } from './propertiesJson';
 
 import { DatabaseInfo, ServerInfo } from 'data';
 
-import { IDisposable } from 'vs/base/common/lifecycle';
 import { EventType, addDisposableListener } from 'vs/base/browser/dom';
 import * as types from 'vs/base/common/types';
 import * as nls from 'vs/nls';
@@ -56,11 +55,10 @@ export interface DisplayProperty {
 	selector: 'properties-widget',
 	templateUrl: decodeURI(require.toUrl('sql/parts/dashboard/widgets/properties/propertiesWidget.component.html'))
 })
-export class PropertiesWidgetComponent extends DashboardWidget implements IDashboardWidget, OnInit, OnDestroy {
+export class PropertiesWidgetComponent extends DashboardWidget implements IDashboardWidget, OnInit {
 	private _connection: ConnectionManagementInfo;
 	private _databaseInfo: DatabaseInfo;
 	private _clipped: boolean;
-	private _disposables: Array<IDisposable> = [];
 	private properties: Array<DisplayProperty>;
 	private _hasInit = false;
 
@@ -83,12 +81,8 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 
 	ngOnInit() {
 		this._hasInit = true;
-		this._disposables.push(addDisposableListener(window, EventType.RESIZE, () => this.handleClipping()));
+		this._register(addDisposableListener(window, EventType.RESIZE, () => this.handleClipping()));
 		this._changeRef.detectChanges();
-	}
-
-	ngOnDestroy() {
-		this._disposables.forEach(i => i.dispose());
 	}
 
 	public refresh(): void {
@@ -97,7 +91,7 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 
 	private init(): void {
 		this._connection = this._bootstrap.connectionManagementService.connectionInfo;
-		this._disposables.push(toDisposableSubscription(this._bootstrap.adminService.databaseInfo.subscribe(data => {
+		this._register(toDisposableSubscription(this._bootstrap.adminService.databaseInfo.subscribe(data => {
 			this._databaseInfo = data;
 			this._changeRef.detectChanges();
 			this.parseProperties();

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import {
 	Component, Inject, ViewContainerRef, forwardRef, AfterContentInit,
-	ComponentFactoryResolver, ViewChild, OnDestroy, ChangeDetectorRef
+	ComponentFactoryResolver, ViewChild, ChangeDetectorRef
 } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
@@ -20,7 +20,6 @@ import { RunInsightQueryAction } from './actions';
 
 import { SimpleExecuteResult } from 'data';
 
-import { IDisposable } from 'vs/base/common/lifecycle';
 import { Action } from 'vs/base/common/actions';
 import * as types from 'vs/base/common/types';
 import * as pfs from 'vs/base/node/pfs';
@@ -38,10 +37,9 @@ const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribu
 				</div>`,
 	styles: [':host { width: 100%; height: 100%}']
 })
-export class InsightsWidget extends DashboardWidget implements IDashboardWidget, AfterContentInit, OnDestroy {
+export class InsightsWidget extends DashboardWidget implements IDashboardWidget, AfterContentInit {
 	private insightConfig: IInsightsConfig;
 	private queryObv: Observable<SimpleExecuteResult>;
-	private _disposables: Array<IDisposable> = [];
 	@ViewChild(ComponentHostDirective) private componentHost: ComponentHostDirective;
 
 	private _typeKey: string;
@@ -90,7 +88,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	ngAfterContentInit() {
 		this._init = true;
 		if (this.queryObv) {
-			this._disposables.push(toDisposableSubscription(this.queryObv.subscribe(
+			this._register(toDisposableSubscription(this.queryObv.subscribe(
 				result => {
 					this._updateChild(result);
 				},
@@ -99,10 +97,6 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 				}
 			)));
 		}
-	}
-
-	ngOnDestroy() {
-		this._disposables.forEach(i => i.dispose());
 	}
 
 	private showError(error: string): void {
