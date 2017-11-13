@@ -14,7 +14,7 @@ import { DashboardWidget, IDashboardWidget, WidgetConfig, WIDGET_CONFIG } from '
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { ITaskRegistry, Extensions, TaskAction } from 'sql/platform/tasks/taskRegistry';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ITaskActionContext } from 'sql/workbench/common/actions';
+import { BaseActionContext } from 'sql/workbench/common/actions';
 
 /* VS imports */
 import * as themeColors from 'vs/workbench/common/theme';
@@ -134,7 +134,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	}
 
 	public runTask(task: Action) {
-		let context: ITaskActionContext = {
+		let context: BaseActionContext = {
 			profile: this._profile
 		};
 		task.run(context);

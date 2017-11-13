@@ -11,7 +11,7 @@ import { createDecorator } from 'vs/platform/instantiation/common/instantiation'
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import data = require('data');
 import Event, { Emitter } from 'vs/base/common/event';
-import { Action } from 'vs/base/common/actions';
+import { IAction } from 'vs/base/common/actions';
 import { Deferred } from 'sql/base/common/promise';
 
 export const SERVICE_ID = 'capabilitiesService';
@@ -39,7 +39,7 @@ export interface ICapabilitiesService {
 	/**
 	 * Returns true if the feature is available for given connection
 	 */
-	isFeatureAvailable(action: Action, connectionManagementInfo: ConnectionManagementInfo): boolean;
+	isFeatureAvailable(action: IAction, connectionManagementInfo: ConnectionManagementInfo): boolean;
 
 	/**
 	 * Event raised when a provider is registered
@@ -127,7 +127,7 @@ export class CapabilitiesService implements ICapabilitiesService {
 	 * @param featureComponent a component which should have the feature name
 	 * @param connectionManagementInfo connectionManagementInfo
 	 */
-	public isFeatureAvailable(action: Action, connectionManagementInfo: ConnectionManagementInfo): boolean {
+	public isFeatureAvailable(action: IAction, connectionManagementInfo: ConnectionManagementInfo): boolean {
 		let isCloud = connectionManagementInfo && connectionManagementInfo.serverInfo && connectionManagementInfo.serverInfo.isCloud;
 		let isMssql = connectionManagementInfo.connectionProfile.providerName === 'MSSQL';
 		// TODO: The logic should from capabilities service.

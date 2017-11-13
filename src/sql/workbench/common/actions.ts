@@ -7,7 +7,6 @@ import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/co
 import * as TaskUtilities from './taskUtilities';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { IInsightsConfig } from 'sql/parts/dashboard/widgets/insights/interfaces';
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IDisasterRecoveryUiService, IRestoreDialogController } from 'sql/parts/disasterRecovery/common/interfaces';
@@ -25,18 +24,17 @@ import { IWindowsService } from 'vs/platform/windows/common/windows';
 
 import * as nls from 'vs/nls';
 
-export interface BaseActionContext extends ITaskActionContext {
-	uri?: string;
+export interface BaseActionContext {
 	object?: ObjectMetadata;
-	connInfo?: ConnectionManagementInfo;
-}
-
-export interface ITaskActionContext {
-	profile: IConnectionProfile;
+	profile?: IConnectionProfile;
 }
 
 export interface InsightActionContext extends BaseActionContext {
 	insight: IInsightsConfig;
+}
+
+export interface ManageActionContext extends BaseActionContext {
+	uri: string;
 }
 
 // --- actions
@@ -53,7 +51,7 @@ export class NewQueryAction extends TaskAction {
 		super(id, label, icon);
 	}
 
-	public run(actionContext: ITaskActionContext): TPromise<boolean> {
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.newQuery(
 				actionContext.profile,
@@ -89,7 +87,6 @@ export class ScriptSelectAction extends Action {
 			TaskUtilities.scriptSelect(
 				actionContext.profile,
 				actionContext.object,
-				actionContext.uri,
 				this._connectionManagementService,
 				this._queryEditorService,
 				this._scriptingService
@@ -155,7 +152,6 @@ export class ScriptCreateAction extends Action {
 			TaskUtilities.script(
 				actionContext.profile,
 				actionContext.object,
-				actionContext.uri,
 				this._connectionManagementService,
 				this._queryEditorService,
 				this._scriptingService,
@@ -192,7 +188,6 @@ export class ScriptDeleteAction extends Action {
 			TaskUtilities.script(
 				actionContext.profile,
 				actionContext.object,
-				actionContext.uri,
 				this._connectionManagementService,
 				this._queryEditorService,
 				this._scriptingService,
@@ -222,7 +217,7 @@ export class BackupAction extends TaskAction {
 		super(id, label, icon);
 	}
 
-	run(actionContext: ITaskActionContext): TPromise<boolean> {
+	run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.showBackup(
 				actionContext.profile,
@@ -251,7 +246,7 @@ export class RestoreAction extends TaskAction {
 		super(id, label, icon);
 	}
 
-	run(actionContext: ITaskActionContext): TPromise<boolean> {
+	run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.showRestore(
 				actionContext.profile,
@@ -280,7 +275,7 @@ export class ManageAction extends Action {
 		super(id, label);
 	}
 
-	run(actionContext: BaseActionContext): TPromise<boolean> {
+	run(actionContext: ManageActionContext): TPromise<boolean> {
 		let self = this;
 		return new TPromise<boolean>((resolve, reject) => {
 			self._connectionManagementService.connect(actionContext.profile, actionContext.uri, { showDashboard: true, saveTheConnection: false, params: undefined, showConnectionDialogOnError: false, showFirewallRuleOnError: true }).then(
@@ -329,7 +324,7 @@ export class NewDatabaseAction extends TaskAction {
 		super(id, label, icon);
 	}
 
-	run(actionContext: ITaskActionContext): TPromise<boolean> {
+	run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			TaskUtilities.showCreateDatabase(actionContext.profile, this._adminService, this._errorMessageService);
 		});
@@ -348,7 +343,7 @@ export class ConfigureDashboardAction extends TaskAction {
 		super(id, label, icon);
 	}
 
-	run(actionContext: ITaskActionContext): TPromise<boolean> {
+	run(actionContext: BaseActionContext): TPromise<boolean> {
 		return new TPromise<boolean>((resolve, reject) => {
 			this._windowsService.openExternal(ConfigureDashboardAction.configHelpUri).then((result) => {
 				resolve(result);

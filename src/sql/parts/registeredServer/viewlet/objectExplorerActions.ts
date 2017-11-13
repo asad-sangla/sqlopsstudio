@@ -166,7 +166,7 @@ export class OEScriptSelectAction extends ScriptSelectAction {
 		ownerUri = this._connectionManagementService.getFormattedUri(ownerUri, connectionProfile);
 		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
 
-		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
+		return super.run({ profile: connectionProfile, object: metadata }).then((result) => {
 			this._treeSelectionHandler.onTreeActionStateChange(false);
 			return result;
 		});
@@ -236,7 +236,7 @@ export class OEScriptCreateAction extends ScriptCreateAction {
 		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
 		ownerUri = this._connectionManagementService.getFormattedUri(ownerUri, connectionProfile);
 
-		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
+		return super.run({ profile: connectionProfile, object: metadata }).then((result) => {
 			this._treeSelectionHandler.onTreeActionStateChange(false);
 			return result;
 		});
@@ -273,7 +273,7 @@ export class OEScriptDeleteAction extends ScriptDeleteAction {
 		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
 		ownerUri = this._connectionManagementService.getFormattedUri(ownerUri, connectionProfile);
 
-		return super.run({ profile: connectionProfile, object: metadata, uri: ownerUri }).then((result) => {
+		return super.run({ profile: connectionProfile, object: metadata }).then((result) => {
 			this._treeSelectionHandler.onTreeActionStateChange(false);
 			return result;
 		});
