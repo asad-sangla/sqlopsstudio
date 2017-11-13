@@ -11,7 +11,7 @@ import Event, { Emitter } from 'vs/base/common/event';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
-import { attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
@@ -420,7 +420,6 @@ export class RestoreDialog extends Modal {
 			case ServiceOptionType.boolean:
 				propertyWidget = this.createCheckBoxHelper(container, option.description,
 					DialogHelper.getBooleanValueFromStringOrBoolean(option.defaultValue), () => this.onBooleanOptionChecked(optionName));
-				this._register(attachCheckboxStyler(propertyWidget, this._themeService));
 				break;
 			case ServiceOptionType.category:
 				propertyWidget = this.createSelectBoxHelper(container, option.description, option.categoryValues.map(c => c.displayName), DialogHelper.getCategoryDisplayName(option.categoryValues, option.defaultValue));
@@ -460,7 +459,11 @@ export class RestoreDialog extends Modal {
 	private createCheckBoxHelper(container: Builder, label: string, isChecked: boolean, onCheck: (viaKeyboard: boolean) => void): Checkbox {
 		let checkbox: Checkbox;
 		container.div({ class: 'dialog-input-section' }, (inputCellContainer) => {
-			checkbox = DialogHelper.createCheckBox(inputCellContainer, label, 'restore-checkbox', isChecked, onCheck);
+			checkbox = new Checkbox(inputCellContainer.getHTMLElement(), {
+				label: label,
+				checked: isChecked,
+				onChange: onCheck
+			});
 		});
 		return checkbox;
 	}
@@ -786,8 +789,7 @@ export class RestoreDialog extends Modal {
 					};
 				});
 
-				let checkboxSelectColumn = new CheckboxSelectColumn({ title: this._restoreLabel });
-				this._register(attachCheckboxStyler(checkboxSelectColumn, this._themeService));
+				let checkboxSelectColumn = new CheckboxSelectColumn({ title: this._restoreLabel, toolTip: this._restoreLabel, width: 15 });
 				this._restorePlanColumn.unshift(checkboxSelectColumn.getColumnDefinition());
 				this._restorePlanTable.columns = this._restorePlanColumn;
 				this._restorePlanTable.registerPlugin(checkboxSelectColumn);

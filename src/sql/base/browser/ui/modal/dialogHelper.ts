@@ -47,25 +47,6 @@ export function appendRowLink(container: Builder, label: string, labelClass: str
 	return new Builder(rowButton.getElement());
 }
 
-export function createCheckBox(container: Builder, label: string, checkboxClass: string, isChecked: boolean, onCheck?: (viaKeyboard: boolean) => void): Checkbox {
-	let checkbox = new Checkbox({
-		actionClassName: checkboxClass,
-		title: label,
-		isChecked: isChecked,
-		onChange: (viaKeyboard) => {
-			if (onCheck) {
-				onCheck(viaKeyboard);
-			}
-		}
-	});
-	container.getHTMLElement().appendChild(checkbox.domNode);
-	container.div({}, (labelContainer) => {
-		labelContainer.innerHtml(label);
-	});
-
-	return checkbox;
-}
-
 export function appendInputSelectBox(container: Builder, selectBox: SelectBox): SelectBox {
 	selectBox.render(container.getHTMLElement());
 	return selectBox;

@@ -23,7 +23,7 @@ import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { Button } from 'vs/base/browser/ui/button/button';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { attachButtonStyler, attachCheckboxStyler } from 'vs/platform/theme/common/styler';
+import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { localize } from 'vs/nls';
 import * as DOM from 'vs/base/browser/dom';
 import * as types from 'vs/base/common/types';
@@ -212,50 +212,39 @@ export class BackupComponent {
 		this.backupTypeSelectBox.render(this.backupTypeElement.nativeElement);
 
 		// Set copy-only check box
-		this.copyOnlyCheckBox = new Checkbox({
-			actionClassName: 'backup-checkbox',
-			title: this.copyOnlyLabel,
-			isChecked: false,
+		this.copyOnlyCheckBox = new Checkbox(this.copyOnlyElement.nativeElement, {
+			label: this.copyOnlyLabel,
+			checked: false,
 			onChange: (viaKeyboard) => { }
 		});
-
-		this.copyOnlyElement.nativeElement.appendChild(this.copyOnlyCheckBox.domNode);
 
 		// Encryption checkbox
-		this.encryptCheckBox = new Checkbox({
-			actionClassName: 'backup-checkbox',
-			title: 'Encryption',
-			isChecked: false,
+		this.encryptCheckBox = new Checkbox(this.encryptElement.nativeElement, {
+			label: this.encryptionLabel,
+			checked: false,
 			onChange: (viaKeyboard) => self.onChangeEncrypt()
 		});
-		this.encryptElement.nativeElement.appendChild(this.encryptCheckBox.domNode);
 
 		// Verify backup checkbox
-		this.verifyCheckBox = new Checkbox({
-			actionClassName: 'backup-checkbox',
-			title: 'Verify',
-			isChecked: false,
+		this.verifyCheckBox = new Checkbox(this.verifyElement.nativeElement, {
+			label: this.verifyContainerLabel,
+			checked: false,
 			onChange: (viaKeyboard) => { }
 		});
-		this.verifyElement.nativeElement.appendChild(this.verifyCheckBox.domNode);
 
 		// Perform checksum checkbox
-		this.checksumCheckBox = new Checkbox({
-			actionClassName: 'backup-checkbox',
-			title: 'Perform checksum',
-			isChecked: false,
+		this.checksumCheckBox = new Checkbox(this.checksumElement.nativeElement, {
+			label: this.checksumContainerLabel,
+			checked: false,
 			onChange: (viaKeyboard) => { }
 		});
-		this.checksumElement.nativeElement.appendChild(this.checksumCheckBox.domNode);
 
 		// Continue on error checkbox
-		this.continueOnErrorCheckBox = new Checkbox({
-			actionClassName: 'backup-checkbox',
-			title: 'Continue on error',
-			isChecked: false,
+		this.continueOnErrorCheckBox = new Checkbox(this.continueOnErrorElement.nativeElement, {
+			label: this.continueOnErrorContainerLabel,
+			checked: false,
 			onChange: (viaKeyboard) => { }
 		});
-		this.continueOnErrorElement.nativeElement.appendChild(this.continueOnErrorCheckBox.domNode);
 
 		// Set backup name
 		this.backupNameBox = new InputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
@@ -498,11 +487,6 @@ export class BackupComponent {
 		this._toDispose.push(attachInputBoxStyler(this.mediaNameBox, this._bootstrapService.themeService));
 		this._toDispose.push(attachInputBoxStyler(this.mediaDescriptionBox, this._bootstrapService.themeService));
 		this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
-		this._toDispose.push(attachCheckboxStyler(this.copyOnlyCheckBox, this._bootstrapService.themeService));
-		this._toDispose.push(attachCheckboxStyler(this.encryptCheckBox, this._bootstrapService.themeService));
-		this._toDispose.push(attachCheckboxStyler(this.verifyCheckBox, this._bootstrapService.themeService));
-		this._toDispose.push(attachCheckboxStyler(this.checksumCheckBox, this._bootstrapService.themeService));
-		this._toDispose.push(attachCheckboxStyler(this.continueOnErrorCheckBox, this._bootstrapService.themeService));
 
 		this._toDispose.push(this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged()));
 		this._toDispose.push(this.addButtonClickHandler(this.addPathButton, () => this.onAddClick()));
