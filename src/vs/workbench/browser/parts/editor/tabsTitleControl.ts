@@ -294,7 +294,8 @@ export class TabsTitleControl extends TitleControl {
 
 				// Label
 				const tabLabel = this.editorLabels[index];
-				tabLabel.setLabel({ name, description, resource: toResource(editor, { supportSideBySide: true }) }, { extraClasses: ['tab-label'], italic: !isPinned });
+				// {{SQL CARBON EDIT}} -- add title in options passed
+				tabLabel.setLabel({ name, description, resource: toResource(editor, { supportSideBySide: true }) }, { extraClasses: ['tab-label'], italic: !isPinned, title });
 
 				// Active state
 				if (isTabActive) {
