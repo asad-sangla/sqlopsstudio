@@ -337,10 +337,16 @@ export abstract class GridParentComponent {
 	}
 
 	openContextMenu(event, batchId, resultId, index): void {
-		let selection = this.slickgrids.toArray()[index].getSelectedRanges();
-
 		let slick: any = this.slickgrids.toArray()[index];
 		let grid = slick._grid;
+
+		let selection = this.slickgrids.toArray()[index].getSelectedRanges();
+
+		if (selection.length === 0) {
+			let cell = (grid as Slick.Grid<any>).getCellFromEvent(event);
+			selection = [new Slick.Range(cell.row, cell.cell - 1)];
+		}
+
 		let rowIndex = grid.getCellFromEvent(event).row;
 
 		let actionContext: IGridInfo = {
@@ -356,8 +362,6 @@ export abstract class GridParentComponent {
 			getAnchor: () => anchor,
 			getActions: () => this.actionProvider.getGridActions(),
 			getKeyBinding: (action) => this._keybindingFor(action),
-			onHide: (wasCancelled?: boolean) => {
-			},
 			getActionsContext: () => (actionContext)
 		});
 	}

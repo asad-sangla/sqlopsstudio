@@ -404,19 +404,6 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			}
 
 			self._cd.detectChanges();
-
-			if (self.firstRender) {
-				let setActive = () => {
-					if (self.firstRender && self.slickgrids.toArray().length > 0) {
-						self.slickgrids.toArray()[0].setActive();
-						self.firstRender = false;
-					}
-				};
-
-				setTimeout(() => {
-					setActive();
-				});
-			}
 		}, self.scrollTimeOutTime);
 	}
 
