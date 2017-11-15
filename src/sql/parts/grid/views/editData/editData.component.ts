@@ -71,7 +71,7 @@ export class EditDataComponent extends GridParentComponent implements OnInit, On
 		this._el.nativeElement.className = 'slickgridContainer';
 		let editDataParameters: EditDataComponentParams = this._bootstrapService.getBootstrapParams(this._el.nativeElement.tagName);
 		this.dataService = editDataParameters.dataService;
-		this.actionProvider = new EditDataGridActionProvider(this.dataService, this.onGridSelectAll(), this.onDeleteRow(), this.onRevertRow());
+		this.actionProvider = this._bootstrapService.instantiationService.createInstance(EditDataGridActionProvider, this.dataService, this.onGridSelectAll(), this.onDeleteRow(), this.onRevertRow());
 	}
 
 	/**

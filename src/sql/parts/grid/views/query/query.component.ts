@@ -20,15 +20,13 @@ import * as rangy from 'sql/base/node/rangy';
 
 import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
 import * as Services from 'sql/parts/grid/services/sharedServices';
-import { IGridIcon, IMessage, IRange, IGridDataSet } from 'sql/parts/grid/common/interfaces';
+import { IGridIcon, IMessage, IGridDataSet } from 'sql/parts/grid/common/interfaces';
 import { GridParentComponent } from 'sql/parts/grid/views/gridParentComponent';
 import { GridActionProvider } from 'sql/parts/grid/views/gridActions';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { QueryComponentParams } from 'sql/services/bootstrap/bootstrapParams';
-import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import { error } from 'sql/base/common/log';
 import { TabChild } from 'sql/base/browser/ui/panel/tab.component';
-
 
 import * as strings from 'vs/base/common/strings';
 import { clone } from 'vs/base/common/objects';
@@ -168,7 +166,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		const self = this;
 
 		this.dataService = this.queryParameters.dataService;
-		this.actionProvider = new GridActionProvider(this.dataService, this.onGridSelectAll());
+		this.actionProvider = this._bootstrapService.instantiationService.createInstance(GridActionProvider, this.dataService, this.onGridSelectAll());
 
 		this.baseInit();
 		this.setupResizeBind();
@@ -338,11 +336,11 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	/**
 	 * Perform copy and do other actions for context menu on the messages component
 	 */
-	handleMessagesContextClick(event: { type: string, selectedRange: IRange }): void {
+	handleMessagesContextClick(event: { type: string, selectedRange: rangy.IRange }): void {
 		switch (event.type) {
 			case 'copySelection':
 				let selectedText = event.selectedRange.text();
-				WorkbenchUtils.executeCopy(selectedText);
+				this._bootstrapService.clipboardService.writeText(selectedText);
 				break;
 			case 'selectall':
 				document.execCommand('selectAll');
@@ -355,7 +353,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	openMessagesContextMenu(event: any): void {
 		let self = this;
 		event.preventDefault();
-		let selectedRange: IRange = this.getSelectedRangeUnderMessages();
+		let selectedRange: rangy.IRange = this.getSelectedRangeUnderMessages();
 		let selectAllFunc = () => self.selectAllMessages();
 		let anchor = { x: event.x + 1, y: event.y };
 		this.contextMenuService.showContextMenu({

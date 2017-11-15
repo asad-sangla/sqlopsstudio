@@ -17,7 +17,7 @@ import { IGridDataRow, ISlickRange, SlickGrid, FieldType } from 'angular2-slickg
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import * as Constants from 'sql/parts/query/common/constants';
 import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
-import { IGridInfo, IRange, IGridDataSet, SaveFormat } from 'sql/parts/grid/common/interfaces';
+import { IGridInfo, IGridDataSet, SaveFormat } from 'sql/parts/grid/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import * as actions from 'sql/parts/grid/views/gridActions';
@@ -25,7 +25,6 @@ import * as Services from 'sql/parts/grid/services/sharedServices';
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import { ResultsVisibleContext, ResultsGridFocussedContext, ResultsMessagesFocussedContext } from 'sql/parts/query/common/queryContext';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
-import * as WorkbenchUtils from 'sql/workbench/common/sqlWorkbenchUtils';
 import * as rangy from 'sql/base/node/rangy';
 import { error } from 'sql/base/common/log';
 
@@ -228,7 +227,7 @@ export abstract class GridParentComponent {
 	private copySelection(): void {
 		let messageText = this.getMessageText();
 		if (messageText.length > 0) {
-			WorkbenchUtils.executeCopy(messageText);
+			this._bootstrapService.clipboardService.writeText(messageText);
 		} else {
 			let activeGrid = this.activeGrid;
 			let selection = this.slickgrids.toArray()[activeGrid].getSelectedRanges();
@@ -251,12 +250,12 @@ export abstract class GridParentComponent {
 			messageText = this.getMessageText();
 		}
 		if (messageText.length > 0) {
-			WorkbenchUtils.executeCopy(messageText);
+			this._bootstrapService.clipboardService.writeText(messageText);
 		}
 	}
 
 	private getMessageText(): string {
-		let range: IRange = this.getSelectedRangeUnderMessages();
+		let range: rangy.IRange = this.getSelectedRangeUnderMessages();
 		return range ? range.text() : '';
 	}
 
@@ -443,8 +442,8 @@ export abstract class GridParentComponent {
 		this._cd.detectChanges();
 	}
 
-	getSelectedRangeUnderMessages(): IRange {
-		let selectedRange: IRange = undefined;
+	getSelectedRangeUnderMessages(): rangy.IRange {
+		let selectedRange: rangy.IRange = undefined;
 		let msgEl = this.getMessagesElement();
 		if (msgEl) {
 			selectedRange = this.getSelectedRangeWithin(msgEl);
@@ -452,10 +451,10 @@ export abstract class GridParentComponent {
 		return selectedRange;
 	}
 
-	getSelectedRangeWithin(el): IRange {
+	getSelectedRangeWithin(el): rangy.IRange {
 		let selectedRange = undefined;
 		let sel = rangy.getSelection();
-		let elRange = <IRange>rangy.createRange();
+		let elRange = <rangy.IRange>rangy.createRange();
 		elRange.selectNodeContents(el);
 		if (sel.rangeCount) {
 			selectedRange = sel.getRangeAt(0).intersection(elRange);

@@ -7,17 +7,14 @@
 
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
-import QueryRunner from 'sql/parts/query/execution/queryRunner';
+import QueryRunner, { EventType as QREvents } from 'sql/parts/query/execution/queryRunner';
 import { DataService } from 'sql/parts/grid/services/dataService';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { QueryStatusbarItem } from 'sql/parts/query/execution/queryStatus';
 import { SqlFlavorStatusbarItem } from 'sql/parts/query/common/flavorStatus';
 
-import {
-	ISelectionData, ResultSetSubset, EditSubsetResult, ExecutionPlanOptions,
-	EditUpdateCellResult, EditSessionReadyParams, EditCreateRowResult, EditRevertCellResult
-} from 'data';
+import * as data from 'data';
 import { ISlickRange } from 'angular2-slickgrid';
 
 import * as nls from 'vs/nls';
@@ -41,7 +38,7 @@ class QueryInfo {
 	public queryRunner: QueryRunner;
 	public dataService: DataService;
 	public queryEventQueue: QueryEvent[];
-	public selection: Array<ISelectionData>;
+	public selection: Array<data.ISelectionData>;
 	public queryInput: QueryInput;
 
 	// Notes if the angular components have obtained the DataService. If not, all messages sent
@@ -65,12 +62,12 @@ export class QueryModelService implements IQueryModelService {
 	private _queryInfoMap: Map<string, QueryInfo>;
 	private _onRunQueryStart: Emitter<string>;
 	private _onRunQueryComplete: Emitter<string>;
-	private _onEditSessionReady: Emitter<EditSessionReadyParams>;
+	private _onEditSessionReady: Emitter<data.EditSessionReadyParams>;
 
 	// EVENTS /////////////////////////////////////////////////////////////
 	public get onRunQueryStart(): Event<string> { return this._onRunQueryStart.event; }
 	public get onRunQueryComplete(): Event<string> { return this._onRunQueryComplete.event; }
-	public get onEditSessionReady(): Event<EditSessionReadyParams> { return this._onEditSessionReady.event; }
+	public get onEditSessionReady(): Event<data.EditSessionReadyParams> { return this._onEditSessionReady.event; }
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
@@ -80,7 +77,7 @@ export class QueryModelService implements IQueryModelService {
 		this._queryInfoMap = new Map<string, QueryInfo>();
 		this._onRunQueryStart = new Emitter<string>();
 		this._onRunQueryComplete = new Emitter<string>();
-		this._onEditSessionReady = new Emitter<EditSessionReadyParams>();
+		this._onEditSessionReady = new Emitter<data.EditSessionReadyParams>();
 
 		// Register Statusbar items
 		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(new statusbar.StatusbarItemDescriptor(
@@ -140,13 +137,13 @@ export class QueryModelService implements IQueryModelService {
 	/**
 	 * Get more data rows from the current resultSets from the service layer
 	 */
-	public getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset> {
+	public getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<data.ResultSetSubset> {
 		return this._getQueryInfo(uri).queryRunner.getQueryRows(rowStart, numberOfRows, batchId, resultId).then(results => {
 			return results.resultSubset;
 		});
 	}
 
-	public getEditRows(uri: string, rowStart: number, numberOfRows: number): Thenable<EditSubsetResult> {
+	public getEditRows(uri: string, rowStart: number, numberOfRows: number): Thenable<data.EditSubsetResult> {
 		return this._queryInfoMap.get(uri).queryRunner.getEditRows(rowStart, numberOfRows).then(results => {
 			return results;
 		});
@@ -190,15 +187,15 @@ export class QueryModelService implements IQueryModelService {
 	/**
 	 * Run a query for the given URI with the given text selection
 	 */
-	public runQuery(uri: string, selection: ISelectionData,
-		title: string, queryInput: QueryInput, runOptions?: ExecutionPlanOptions): void {
+	public runQuery(uri: string, selection: data.ISelectionData,
+		title: string, queryInput: QueryInput, runOptions?: data.ExecutionPlanOptions): void {
 		this.doRunQuery(uri, selection, title, queryInput, false, runOptions);
 	}
 
 	/**
 	 * Run the current SQL statement for the given URI
 	 */
-	public runQueryStatement(uri: string, selection: ISelectionData,
+	public runQueryStatement(uri: string, selection: data.ISelectionData,
 		title: string, queryInput: QueryInput): void {
 		this.doRunQuery(uri, selection, title, queryInput, true);
 	}
@@ -206,9 +203,9 @@ export class QueryModelService implements IQueryModelService {
 	/**
 	 * Run Query implementation
 	 */
-	private doRunQuery(uri: string, selection: ISelectionData,
+	private doRunQuery(uri: string, selection: data.ISelectionData,
 		title: string, queryInput: QueryInput,
-		runCurrentStatement: boolean, runOptions?: ExecutionPlanOptions): void {
+		runCurrentStatement: boolean, runOptions?: data.ExecutionPlanOptions): void {
 		// Reuse existing query runner if it exists
 		let queryRunner: QueryRunner;
 		let info: QueryInfo;
@@ -242,36 +239,35 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	private initQueryRunner(uri: string, title: string, info: QueryInfo): QueryRunner {
-		let queryRunner: QueryRunner;
-		queryRunner = this._instantiationService.createInstance(QueryRunner, uri, title);
-		queryRunner.eventEmitter.on('resultSet', (resultSet) => {
-			this._fireQueryEvent(uri, 'resultSet', resultSet);
+		let queryRunner = this._instantiationService.createInstance(QueryRunner, uri, title);
+		queryRunner.addListener(QREvents.RESULT_SET, e => {
+			this._fireQueryEvent(uri, 'resultSet', e);
 		});
-		queryRunner.eventEmitter.on('batchStart', (batch) => {
+		queryRunner.addListener(QREvents.BATCH_START, b => {
 			let link = undefined;
-			if (batch.selection) {
+			if (b.selection) {
 				link = {
-					text: strings.format(LocalizedConstants.runQueryBatchStartLine, batch.selection.startLine + 1)
+					text: strings.format(LocalizedConstants.runQueryBatchStartLine, b.selection.startLine + 1)
 				};
 			}
 			let message = {
 				message: LocalizedConstants.runQueryBatchStartMessage,
-				batchId: batch.id,
+				batchId: b.id,
 				isError: false,
 				time: new Date().toLocaleTimeString(),
 				link: link
 			};
 			this._fireQueryEvent(uri, 'message', message);
-			info.selection.push(this._validateSelection(batch.selection));
+			info.selection.push(this._validateSelection(b.selection));
 		});
-		queryRunner.eventEmitter.on('message', (message) => {
-			this._fireQueryEvent(uri, 'message', message);
+		queryRunner.addListener(QREvents.MESSAGE, m => {
+			this._fireQueryEvent(uri, 'message', m);
 		});
-		queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
+		queryRunner.addListener(QREvents.COMPLETE, totalMilliseconds => {
 			this._onRunQueryComplete.fire(uri);
 			this._fireQueryEvent(uri, 'complete', totalMilliseconds);
 		});
-		queryRunner.eventEmitter.on('start', () => {
+		queryRunner.addListener(QREvents.START, () => {
 			this._onRunQueryStart.fire(uri);
 			this._fireQueryEvent(uri, 'start');
 		});
@@ -312,13 +308,12 @@ export class QueryModelService implements IQueryModelService {
 
 	}
 
-	public disposeQuery(ownerUri: string): Thenable<void> {
+	public disposeQuery(ownerUri: string): void {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
-			return queryRunner.dispose();
+			queryRunner.disposeQuery();
 		}
-		return TPromise.as(null);
 	}
 
 	// EDIT DATA METHODS /////////////////////////////////////////////////////
@@ -341,10 +336,10 @@ export class QueryModelService implements IQueryModelService {
 			// We do not have a query runner for this editor, so create a new one
 			// and map it to the results uri
 			queryRunner = this._instantiationService.createInstance(QueryRunner, ownerUri, ownerUri);
-			queryRunner.eventEmitter.on('resultSet', (resultSet) => {
+			queryRunner.addListener(QREvents.RESULT_SET, resultSet => {
 				this._fireQueryEvent(ownerUri, 'resultSet', resultSet);
 			});
-			queryRunner.eventEmitter.on('batchStart', (batch) => {
+			queryRunner.addListener(QREvents.BATCH_START, batch => {
 				let link = undefined;
 				if (batch.selection) {
 					link = {
@@ -361,20 +356,20 @@ export class QueryModelService implements IQueryModelService {
 				};
 				this._fireQueryEvent(ownerUri, 'message', message);
 			});
-			queryRunner.eventEmitter.on('message', (message) => {
+			queryRunner.addListener(QREvents.MESSAGE, message => {
 				this._fireQueryEvent(ownerUri, 'message', message);
 			});
-			queryRunner.eventEmitter.on('complete', (totalMilliseconds) => {
+			queryRunner.addListener(QREvents.COMPLETE, totalMilliseconds => {
 				this._onRunQueryComplete.fire(ownerUri);
 				this._fireQueryEvent(ownerUri, 'complete', totalMilliseconds);
 			});
-			queryRunner.eventEmitter.on('start', () => {
+			queryRunner.addListener(QREvents.START, () => {
 				this._onRunQueryStart.fire(ownerUri);
 				this._fireQueryEvent(ownerUri, 'start');
 			});
-			queryRunner.eventEmitter.on('editSessionReady', (ownerUri, success, message) => {
-				this._onEditSessionReady.fire({ ownerUri: ownerUri, success: success, message: message });
-				this._fireQueryEvent(ownerUri, 'editSessionReady');
+			queryRunner.addListener(QREvents.EDIT_SESSION_READY, e => {
+				this._onEditSessionReady.fire(e);
+				this._fireQueryEvent(e.ownerUri, 'editSessionReady');
 			});
 
 			info = new QueryInfo();
@@ -399,7 +394,7 @@ export class QueryModelService implements IQueryModelService {
 		return TPromise.as(null);
 	}
 
-	public updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<EditUpdateCellResult> {
+	public updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<data.EditUpdateCellResult> {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
@@ -423,7 +418,7 @@ export class QueryModelService implements IQueryModelService {
 		return TPromise.as(null);
 	}
 
-	public createRow(ownerUri: string): Thenable<EditCreateRowResult> {
+	public createRow(ownerUri: string): Thenable<data.EditCreateRowResult> {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
@@ -441,7 +436,7 @@ export class QueryModelService implements IQueryModelService {
 		return TPromise.as(null);
 	}
 
-	public revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<EditRevertCellResult> {
+	public revertCell(ownerUri: string, rowId: number, columnId: number): Thenable<data.EditRevertCellResult> {
 		// Get existing query runner
 		let queryRunner = this._getQueryRunner(ownerUri);
 		if (queryRunner) {
@@ -516,9 +511,9 @@ export class QueryModelService implements IQueryModelService {
 
 	// TODO remove this funciton and its usages when #821 in vscode-mssql is fixed and
 	// the SqlToolsService version is updated in this repo - coquagli 4/19/2017
-	private _validateSelection(selection: ISelectionData): ISelectionData {
+	private _validateSelection(selection: data.ISelectionData): data.ISelectionData {
 		if (!selection) {
-			selection = <ISelectionData>{};
+			selection = <data.ISelectionData>{};
 		}
 		selection.endColumn = selection ? Math.max(0, selection.endColumn) : 0;
 		selection.endLine = selection ? Math.max(0, selection.endLine) : 0;

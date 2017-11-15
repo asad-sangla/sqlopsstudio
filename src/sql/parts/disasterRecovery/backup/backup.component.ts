@@ -251,7 +251,7 @@ export class BackupComponent {
 		this.backupNameBox.focus();
 
 		// Set backup path list
-		this.pathListBox = new ListBox([], '', this._bootstrapService.contextViewService);
+		this.pathListBox = new ListBox([], '', this._bootstrapService.contextViewService, this._bootstrapService.clipboardService);
 		this.pathListBox.render(this.pathElement.nativeElement);
 
 		// Set backup path add/remove buttons

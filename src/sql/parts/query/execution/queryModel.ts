@@ -36,7 +36,7 @@ export interface IQueryModelService {
 	runQuery(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput, runOptions?: ExecutionPlanOptions): void;
 	runQueryStatement(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void;
 	cancelQuery(input: QueryRunner | string): void;
-	disposeQuery(uri: string): Thenable<void>;
+	disposeQuery(uri: string): void;
 	isRunningQuery(uri: string): boolean;
 
 	getDataService(uri: string): DataService;
