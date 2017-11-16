@@ -94,4 +94,7 @@ export class NodeType {
 	public static ExternalTable = 'ExternalTable';
 	public static ColumnMasterKey = 'ColumnMasterKey';
 	public static ColumnEncryptionKey = 'ColumnEncryptionKey';
+	public static Collation = 'Collation';
+	public static Type = 'Type';
+	public static Extension = 'Extension';
 }

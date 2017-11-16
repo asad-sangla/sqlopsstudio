@@ -75,6 +75,12 @@
 	    background: url("Certificate.svg") center center no-repeat;
 }
 
+.vs .icon.collations,
+.vs-dark .icon.collations,
+.hc-black .icon.collations {
+	    background: url("Collation.svg") center center no-repeat;
+}
+
 .vs .icon.column,
 .vs-dark .icon.column,
 .hc-black .icon.column {
@@ -151,6 +157,12 @@
 .vs-dark .icon.databasetrigger,
 .hc-black .icon.databasetrigger {
 	    background: url("DatabaseTrigger.svg") center center no-repeat;
+}
+
+.vs .icon.datatypes,
+.vs-dark .icon.datatypes,
+.hc-black .icon.datatypes {
+	    background: url("DataType.svg") center center no-repeat;
 }
 
 .vs .icon.defaulticon,
