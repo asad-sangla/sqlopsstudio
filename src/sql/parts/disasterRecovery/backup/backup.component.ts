@@ -26,6 +26,8 @@ import * as lifecycle from 'vs/base/common/lifecycle';
 import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { localize } from 'vs/nls';
 import * as DOM from 'vs/base/browser/dom';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
 import * as types from 'vs/base/common/types';
 
 export const BACKUP_SELECTOR: string = 'backup-component';
@@ -355,22 +357,21 @@ export class BackupComponent {
 		// Set script footer button
 		this.scriptButton = new Button(this.scriptButtonElement.nativeElement);
 		this.scriptButton.label = localize('script', 'Script');
-		this._toDispose.push(this.addButtonClickHandler(this.scriptButton, () => this.onScript()));
+		this.addButtonClickHandler(this.scriptButton, () => this.onScript());
 		this._toDispose.push(attachButtonStyler(this.scriptButton, this._bootstrapService.themeService));
 		this.scriptButton.enabled = false;
 
 		// Set backup footer button
 		this.backupButton = new Button(this.backupButtonElement.nativeElement);
 		this.backupButton.label = localize('backup', 'Backup');
-		this._toDispose.push(this.addButtonClickHandler(this.backupButton, () => this.onOk()));
-
+		this.addButtonClickHandler(this.backupButton, () => this.onOk());
 		this._toDispose.push(attachButtonStyler(this.backupButton, this._bootstrapService.themeService));
 		this.backupEnabled = false;
 
 		// Set cancel footer button
 		this.cancelButton = new Button(this.cancelButtonElement.nativeElement);
 		this.cancelButton.label = localize('cancel', 'Cancel');
-		this._toDispose.push(this.addButtonClickHandler(this.cancelButton, () => this.onCancel()));
+		this.addButtonClickHandler(this.cancelButton, () => this.onCancel());
 		this._toDispose.push(attachButtonStyler(this.cancelButton, this._bootstrapService.themeService));
 	}
 
@@ -489,8 +490,8 @@ export class BackupComponent {
 		this._toDispose.push(attachInputBoxStyler(this.backupRetainDaysBox, this._bootstrapService.themeService));
 
 		this._toDispose.push(this.backupTypeSelectBox.onDidSelect(selected => this.onBackupTypeChanged()));
-		this._toDispose.push(this.addButtonClickHandler(this.addPathButton, () => this.onAddClick()));
-		this._toDispose.push(this.addButtonClickHandler(this.removePathButton, () => this.onRemoveClick()));
+		this.addButtonClickHandler(this.addPathButton, () => this.onAddClick());
+		this.addButtonClickHandler(this.removePathButton, () => this.onRemoveClick());
 		this._toDispose.push(this.mediaNameBox.onDidChange(mediaName => {
 			this.mediaNameChanged(mediaName);
 		}));
@@ -511,15 +512,22 @@ export class BackupComponent {
 		footerHtmlElement.style.borderTopColor = ModalFooterStyle.borderTopColor;
 	}
 
-	private addButtonClickHandler(button: Button, handler: () => void): lifecycle.IDisposable {
+	private addButtonClickHandler(button: Button, handler: () => void) {
 		if (button && handler) {
-			return DOM.addDisposableListener(button.getElement(), DOM.EventType.CLICK, () => {
+			this._toDispose.push(DOM.addDisposableListener(button.getElement(), DOM.EventType.CLICK, () => {
 				if (button.enabled) {
 					handler();
 				}
-			});
-		} else {
-			return undefined;
+			}));
+
+			this._toDispose.push(DOM.addDisposableListener(button.getElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+				var event = new StandardKeyboardEvent(e);
+				if (button.enabled && event.keyCode === KeyCode.Enter) {
+					handler();
+					event.preventDefault();
+					event.stopPropagation();
+				}
+			}));
 		}
 	}
 

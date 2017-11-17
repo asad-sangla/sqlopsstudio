@@ -19,9 +19,11 @@ import { FileBrowserViewModel } from 'sql/parts/fileBrowser/fileBrowserViewModel
 
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { Builder } from 'vs/base/browser/builder';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { Button } from 'vs/base/browser/ui/button/button';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import Event, { Emitter } from 'vs/base/common/event';
+import { KeyCode } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -80,6 +82,16 @@ export class FileBrowserDialog extends Modal {
 			this._register(DOM.addDisposableListener(this.backButton.getElement(), DOM.EventType.CLICK, () => {
 				this.close();
 			}));
+
+			this._register(DOM.addDisposableListener(this.backButton.getElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+				var event = new StandardKeyboardEvent(e);
+				if (event.keyCode === KeyCode.Enter) {
+					this.close();
+					event.preventDefault();
+					event.stopPropagation();
+				}
+			}));
+
 			this._register(attachButtonStyler(this.backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND }));
 		}
 

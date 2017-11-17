@@ -6,8 +6,10 @@
 'use strict';
 import 'vs/css!./media/restoreDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { Button } from 'vs/base/browser/ui/button/button';
 import Event, { Emitter } from 'vs/base/common/event';
+import { KeyCode } from 'vs/base/common/keyCodes';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
@@ -565,10 +567,18 @@ export class RestoreDialog extends Modal {
 		}));
 
 		this._register(DOM.addDisposableListener(this._browseFileButton.getElement(), DOM.EventType.CLICK, () => {
-			if (this._browseFileButton.enabled) {
 				this.onFileBrowserRequested();
+		}));
+
+		this._register(DOM.addDisposableListener(this._browseFileButton.getElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			var event = new StandardKeyboardEvent(e);
+			if (event.keyCode === KeyCode.Enter) {
+				this.onFileBrowserRequested();
+				event.preventDefault();
+				event.stopPropagation();
 			}
 		}));
+
 
 		this._register(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
 			this.onSourceDatabaseChanged(selectedDatabase.selected);
