@@ -22,7 +22,7 @@
 			</div>
 			<div class="input-divider" #backupTypeContainer>
 			</div>
-			<div class="input-divider" #copyOnlyContainer>
+			<div class="input-divider check" #copyOnlyContainer>
 			</div>
 			<div class="dialog-label">
 				{{backupDeviceLabel}}
@@ -33,10 +33,10 @@
 			</div>
 			<table class="backup-path-table">
 				<tr>
-					<td>
+					<td style="padding-left: 0px; padding-right: 0px;">
 						<div class="backup-path-button" #addPathContainer></div>
 					</td>
-					<td style="padding-right:0px">
+					<td>
 						<div class="backup-path-button" #removePathContainer></div>
 					</td>
 				</tr>
@@ -67,7 +67,7 @@
 							{{encryptionLabel}}
 						</div>
 						<div class="indent">
-							<div class="option" #encryptCheckContainer>
+							<div class="option check" #encryptCheckContainer>
 							</div>
 							<div class="option" #encryptWarningContainer>
 								<div class="icon warning">
@@ -142,11 +142,11 @@
 							{{reliabilityLabel}}
 						</div>
 						<div class="indent">
-							<div class="option" #checksumContainer>
+							<div class="option check" #checksumContainer>
 							</div>
-							<div class="option" #verifyContainer>
+							<div class="option check" #verifyContainer>
 							</div>
-							<div class="option" #continueOnErrorContainer>
+							<div class="option check" #continueOnErrorContainer>
 							</div>
 						</div>
 
