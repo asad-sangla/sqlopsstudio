@@ -269,6 +269,24 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			}
 		});
 
+		this._profilerService.registerProvider(providerId, <data.ProfilerProvider>{
+			startSession(sessionId: string): Thenable<boolean> {
+				return self._proxy.$startSession(handle, sessionId);
+			},
+			stopSession(sessionId: string): Thenable<boolean> {
+				return self._proxy.$stopSession(handle, sessionId);
+			},
+			pauseSession(sessionId: string): Thenable<boolean> {
+				return TPromise.as(true);
+			},
+			connectSession(sessionId: string): Thenable<boolean> {
+				return TPromise.as(true);
+			},
+			disconnectSession(sessionId: string): Thenable<boolean> {
+				return TPromise.as(true);
+			}
+		});
+
 		return undefined;
 	}
 
@@ -340,6 +358,14 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	public $onFilePathsValidated(handle: number, response: data.FileBrowserValidatedParams): void {
 		this._fileBrowserService.onFilePathsValidated(handle, response);
 	}
+	
+	// Profiler handlers
+	public $onSessionEventsAvailable(handle: number, response: data.ProfilerSessionEvents): void {
+
+		this._profilerService.onMoreRows(response);
+		//this._profilerService.onMoreRows
+		//this._taskService.onNewTaskCreated(handle, taskInfo);
+	}
 
 	public $unregisterProvider(handle: number): TPromise<any> {
 		let capabilitiesRegistration = this._capabilitiesRegistrations[handle];
@@ -350,4 +376,6 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 
 		return undefined;
 	}
+
+
 }

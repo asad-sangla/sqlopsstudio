@@ -465,6 +465,8 @@ declare module 'data' {
 		taskServicesProvider: TaskServicesProvider;
 
 		fileBrowserProvider: FileBrowserProvider;
+		
+		profilerProvider: ProfilerProvider;
 	}
 
 	/**
@@ -1024,12 +1026,14 @@ declare module 'data' {
 		errorMessage: string;
 	}
 
-	export interface IProfilerProvider {
+	export interface ProfilerProvider {
 		startSession(sessionId: string): Thenable<boolean>;
 		stopSession(sessionId: string): Thenable<boolean>;
 		pauseSession(sessionId: string): Thenable<boolean>;
 		connectSession(sessionId: string): Thenable<boolean>;
 		disconnectSession(sessionId: string): Thenable<boolean>;
+
+		registerOnSessionEventsAvailable(handler: (response: ProfilerSessionEvents) => any);
 	}
 
 	export interface IProfilerTableRow {
@@ -1044,6 +1048,33 @@ declare module 'data' {
 		uri: string;
 		rowCount: number;
 		data: IProfilerTableRow;
+	}
+
+	/**
+	 * Profiler Event
+	 */
+	export interface ProfilerEvent {
+		/**
+		 * Event class name
+		 */
+		name: string;
+
+		/**
+		 * Event timestamp
+		 */
+		timestamp: string;
+
+		/**
+		 * Event values
+		 */
+		values: {};
+	}
+
+	export interface ProfilerSessionEvents
+	{
+		sessionId: string;
+
+		events: ProfilerEvent[];
 	}
 
 	// File browser interfaces  -----------------------------------------------------------------------

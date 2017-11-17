@@ -141,7 +141,7 @@ export class ProfilerEditor extends BaseEditor {
 
 	protected createEditor(parent: Builder): void {
 		// test backend
-		this._profilerService.registerProvider('default', this._instantiationService.createInstance(ProfilerTestBackend));
+		//this._profilerService.registerProvider('default', this._instantiationService.createInstance(ProfilerTestBackend));
 
 		this._container = document.createElement('div');
 		this._container.className = 'carbon-profiler';

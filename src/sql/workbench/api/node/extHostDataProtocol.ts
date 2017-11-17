@@ -538,4 +538,35 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 				: Promise.resolve(undefined);
 		});
 	}
+
+	/**
+	 * Profiler Provider methods
+	 */
+
+	/**
+	 * Start a profiler session
+	 */
+	public $startSession(handle: number, sessionId: string): Thenable<boolean>  {
+		return this._runWithProvider(handle, provider => {
+			return provider.profilerProvider ? provider.profilerProvider.startSession(sessionId)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
+	 * Stop a profiler session
+	 */
+	public $stopSession(handle: number, sessionId: string): Thenable<boolean>  {
+		return this._runWithProvider(handle, provider => {
+			return provider.profilerProvider ? provider.profilerProvider.stopSession(sessionId)
+				: Promise.resolve(undefined);
+		});
+	}
+
+	/**
+	 * Profiler session events available notification
+	 */
+	public $onSessionEventsAvailable(handle: number, response: data.ProfilerSessionEvents): void {
+		this._proxy.$onSessionEventsAvailable(handle, response);
+	}
 }

@@ -30,7 +30,8 @@ import {
 	ExpandNodeInfo, ObjectExplorerCloseSessionInfo, ObjectExplorerSession, ObjectExplorerExpandInfo,
 	TaskServicesProvider, ListTasksParams, ListTasksResponse, CancelTaskParams, TaskProgressInfo, TaskInfo,
 	AdminServicesProvider, DisasterRecoveryProvider, RestoreInfo, ExecutionPlanOptions,
-	RestoreConfigInfo, SerializationProvider, FileBrowserProvider, FileBrowserOpenedParams, FileBrowserExpandedParams, FileBrowserValidatedParams
+	SerializationProvider, FileBrowserProvider, FileBrowserOpenedParams, FileBrowserExpandedParams, FileBrowserValidatedParams,
+	RestoreConfigInfo, ProfilerProvider, ProfilerSessionEvents
 } from 'data';
 
 import {
@@ -63,7 +64,9 @@ import {
 	DefaultDatabaseInfoResponse, DefaultDatabaseInfoParams,
 	GetDatabaseInfoResponse, GetDatabaseInfoParams,
 	BackupConfigInfoResponse, FileBrowserOpenParams, FileBrowserCloseResponse,
-	FileBrowserCloseParams, FileBrowserExpandParams, FileBrowserValidateParams
+	FileBrowserCloseParams, FileBrowserExpandParams, FileBrowserValidateParams,
+	StartProfilingParams, StartProfilingResponse, StopProfilingParams, StopProfilingResponse,
+	ProfilerEventsAvailableParams
 } from 'dataprotocol-languageserver-types';
 
 
@@ -126,7 +129,8 @@ import {
 	RestoreRequest, RestorePlanRequest, CancelRestorePlanRequest, RestoreConfigInfoRequest,
 	ListTasksRequest, CancelTaskRequest, TaskStatusChangedNotification, TaskCreatedNotification,
 	LanguageFlavorChangedNotification, DidChangeLanguageFlavorParams, FileBrowserOpenRequest, FileBrowserOpenedNotification,
-	FileBrowserValidateRequest, FileBrowserValidatedNotification, FileBrowserExpandRequest, FileBrowserExpandedNotification, FileBrowserCloseRequest
+	FileBrowserValidateRequest, FileBrowserValidatedNotification, FileBrowserExpandRequest, FileBrowserExpandedNotification, FileBrowserCloseRequest,
+	StartProfilingRequest, StopProfilingRequest, ProfilerEventsAvailableNotification
 } from './protocol';
 
 import * as c2p from './codeConverter';
@@ -2215,12 +2219,61 @@ export class LanguageClient {
 			}
 		};
 
-		let serializationProvider: SerializationProvider = {
-			handle: 0,
-			saveAs(saveFormat: string, savePath: string, results: string, appendToFile: boolean): Thenable<SaveResultRequestResult> {
-				throw new Error('NotImplemented');
+		let profilerProvider: ProfilerProvider = {
+			startSession(sessionId: string): Thenable<boolean> {
+				let params: StartProfilingParams = {
+					ownerUri: sessionId,
+					options: { }
+				};
+
+				return self.sendRequest(StartProfilingRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(StartProfilingRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			stopSession(sessionId: string): Thenable<boolean> {
+				let params: StopProfilingParams = {
+					ownerUri: sessionId
+				};
+
+				return self.sendRequest(StopProfilingRequest.type, params, undefined).then(
+					(result) => {
+						return result;
+					},
+					(error) => {
+						self.logFailedRequest(StopProfilingRequest.type, error);
+						return Promise.reject(error);
+					}
+				);
+			},
+
+			pauseSession(sessionId: string): Thenable<boolean> {
+				return undefined;
+			},
+
+			connectSession(sessionId: string): Thenable<boolean> {
+				return undefined;
+			},
+
+			disconnectSession(sessionId: string): Thenable<boolean> {
+				return undefined;
+			},
+
+			registerOnSessionEventsAvailable(handler: (response: ProfilerSessionEvents) => any) {
+				self.onNotification(ProfilerEventsAvailableNotification.type, (params: ProfilerEventsAvailableParams) => {
+					handler(<ProfilerSessionEvents>{
+						sessionId: params.ownerUri,
+						events: params.events
+					});
+				});
 			}
-		}
+		};
 
 		this._providers.push(dataprotocol.registerProvider({
 			handle: -1,
@@ -2245,7 +2298,9 @@ export class LanguageClient {
 
 			taskServicesProvider: taskServicesProvider,
 
-			fileBrowserProvider: fileBrowserProvider
+			fileBrowserProvider: fileBrowserProvider,
+
+			profilerProvider: profilerProvider
 		}));
 
 		// Hook to the workspace-wide notifications that aren't routed to a specific provider

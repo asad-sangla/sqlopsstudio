@@ -41,6 +41,7 @@ const configureDashboardSchema: IJSONSchema = {
 registerTask('backup', '', backupSchema, Actions.BackupAction);
 registerTask('restore', '', restoreSchema, Actions.RestoreAction);
 registerTask('new-query', '', newQuerySchema, Actions.NewQueryAction);
+
 registerTask('configure-dashboard', '', configureDashboardSchema, Actions.ConfigureDashboardAction);
 
 // add product update and release notes contributions

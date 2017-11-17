@@ -288,6 +288,20 @@ export abstract class ExtHostDataProtocolShape {
 	 * Close file browser
 	 */
 	$closeFileBrowser(handle: number, ownerUri: string): Thenable<data.FileBrowserCloseResponse> { throw ni(); }
+
+	/**
+	 * Profiler Provider methods
+	 */
+
+	/**
+	 * Start a profiler session
+	 */
+	$startSession(handle: number, sessionId: string): Thenable<boolean>  { throw ni(); }
+
+	/**
+	 * Stop a profiler session
+	 */
+	$stopSession(handle: number, sessionId: string): Thenable<boolean>  { throw ni(); }
 }
 
 
@@ -356,6 +370,7 @@ export abstract class MainThreadDataProtocolShape {
 	$onFolderNodeExpanded(handle: number, response: data.FileBrowserExpandedParams): void { throw ni(); }
 	$onFilePathsValidated(handle: number, response: data.FileBrowserValidatedParams): void { throw ni(); }
 	$onScriptingComplete(handle: number, message: data.ScriptingCompleteResult): void { throw ni(); }
+	$onSessionEventsAvailable(handle: number, response: data.ProfilerSessionEvents): void { throw ni(); }
 
 	/**
 	 * Callback when a session has completed initialization
