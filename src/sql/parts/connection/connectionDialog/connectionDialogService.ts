@@ -7,7 +7,7 @@
 
 import {
 	IConnectionDialogService, IConnectionManagementService, IErrorMessageService,
-	ConnectionType, INewConnectionParams, IConnectionCompletionOptions
+	ConnectionType, INewConnectionParams, IConnectionCompletionOptions, IConnectionResult
 } from 'sql/parts/connection/common/connectionManagement';
 import { ConnectionDialogWidget, OnShowUIResponse } from 'sql/parts/connection/connectionDialog/connectionDialogWidget';
 import { ConnectionController } from 'sql/parts/connection/connectionDialog/connectionController';
@@ -27,7 +27,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import Severity from 'vs/base/common/severity';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 
-export interface IConnectionResult {
+export interface IConnectionValidateResult {
 	isValid: boolean;
 	connection: IConnectionProfile;
 }
@@ -42,7 +42,7 @@ export interface IConnectionComponentCallbacks {
 export interface IConnectionComponentController {
 	showUiComponent(container: HTMLElement): void;
 	initDialog(model: IConnectionProfile): void;
-	validateConnection(): IConnectionResult;
+	validateConnection(): IConnectionValidateResult;
 	fillInConnectionInputs(connectionInfo: IConnectionProfile): void;
 	handleOnConnecting(): void;
 	handleResetConnection(): void;
@@ -172,7 +172,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			} else if (connectionResult && connectionResult.errorHandled) {
 				this._connectionDialog.resetConnection();
 			} else {
-				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.errorMessage);
+				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.errorMessage, connectionResult.callStack);
 				this._connectionDialog.resetConnection();
 			}
 		}).catch(err => {
@@ -277,7 +277,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 		connectionManagementService: IConnectionManagementService,
 		params: INewConnectionParams,
 		model?: IConnectionProfile,
-		error?: string): Thenable<void> {
+		connectionResult?: IConnectionResult): Thenable<void> {
 
 		this._connectionManagementService = connectionManagementService;
 		this._params = params;
@@ -303,8 +303,8 @@ export class ConnectionDialogService implements IConnectionDialogService {
 				}
 
 				resolve(this.showDialogWithModel().then(() => {
-					if (error && error !== '') {
-						this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, error);
+					if (connectionResult && connectionResult.errorMessage) {
+						this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.errorMessage, connectionResult.callStack);
 					}
 				}));
 			}, err => reject(err));

@@ -261,7 +261,8 @@ export function replaceConnection(oldUri: string, newUri: string, connectionServ
 		let defaultResult: IConnectionResult = {
 			connected: false,
 			errorMessage: undefined,
-			errorCode: undefined
+			errorCode: undefined,
+			callStack: undefined
 		};
 		if (connectionService) {
 			let connectionProfile = connectionService.getConnectionProfile(oldUri);

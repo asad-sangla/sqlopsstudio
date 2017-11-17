@@ -196,7 +196,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			// show the Registered Server viewlet
 			let startupConfig = this._workspaceConfigurationService.getConfiguration('startup');
 			if (startupConfig) {
- 				let showServerViewlet = <boolean>startupConfig['alwaysShowServersView'];
+				let showServerViewlet = <boolean>startupConfig['alwaysShowServersView'];
 				if (showServerViewlet) {
 					// only show the Servers viewlet if there isn't another active viewlet
 					if (!this._viewletService.getActiveViewlet()) {
@@ -212,7 +212,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 	 * @param params Include the uri, type of connection
 	 * @param model the existing connection profile to create a new one from
 	 */
-	public showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, error?: string): Promise<void> {
+	public showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, connectionResult?: IConnectionResult): Promise<void> {
 		let self = this;
 		return new Promise<void>((resolve, reject) => {
 			if (!params) {
@@ -221,7 +221,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			if (!model && params.input && params.input.uri) {
 				model = this._connectionStatusManager.getConnectionProfile(params.input.uri);
 			}
-			self._connectionDialogService.showDialog(self, params, model, error).then(() => {
+			self._connectionDialogService.showDialog(self, params, model, connectionResult).then(() => {
 				resolve();
 			}, dialogError => {
 				warn('failed to open the connection dialog. error: ' + dialogError);
@@ -301,7 +301,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 				}
 				// If the password is required and still not loaded show the dialog
 				if (!foundPassword && this._connectionStore.isPasswordRequired(newConnection) && !newConnection.password) {
-					resolve(this.showConnectionDialogOnError(connection, owner, { connected: false, errorMessage: undefined, errorCode: undefined }, options));
+					resolve(this.showConnectionDialogOnError(connection, owner, { connected: false, errorMessage: undefined, callStack: undefined, errorCode: undefined }, options));
 				} else {
 					// Try to connect
 					this.connectWithOptions(newConnection, owner.uri, options, owner).then(connectionResult => {
@@ -340,7 +340,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 					runQueryOnCompletion: RunQueryOnConnectionMode.none,
 					showDashboard: options.showDashboard
 				};
-				this.showConnectionDialog(params, connection, connectionResult.errorMessage).then(() => {
+				this.showConnectionDialog(params, connection, connectionResult).then(() => {
 					resolve(connectionResult);
 				}).catch(err => {
 					reject(err);
@@ -892,7 +892,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 			self.tryAddActiveConnection(connection, activeConnection);
 			self.addTelemetryForConnection(connection);
 		} else {
-			connection.connectHandler(false, info.messages, info.errorNumber);
+			connection.connectHandler(false, info.errorMessage, info.errorNumber, info.messages);
 		}
 
 		if (this._connectionStatusManager.isDefaultTypeUri(info.ownerUri)) {
@@ -1004,18 +1004,18 @@ export class ConnectionManagementService implements IConnectionManagementService
 			this._capabilitiesService.onCapabilitiesReady().then(() => {
 				let connectionInfo = this._connectionStatusManager.addConnection(connection, uri);
 				// Setup the handler for the connection complete notification to call
-				connectionInfo.connectHandler = ((connectResult, errorMessage, errorCode) => {
+				connectionInfo.connectHandler = ((connectResult, errorMessage, errorCode, callStack) => {
 					let connectionMngInfo = this._connectionStatusManager.findConnection(uri);
 					if (connectionMngInfo && connectionMngInfo.deleted) {
 						this._connectionStatusManager.deleteConnection(uri);
-						resolve({ connected: connectResult, errorMessage: undefined, errorCode: undefined, errorHandled: true });
+						resolve({ connected: connectResult, errorMessage: undefined, errorCode: undefined, callStack: undefined, errorHandled: true });
 					} else {
 						if (errorMessage) {
 							// Connection to the server failed
 							this._connectionStatusManager.deleteConnection(uri);
-							resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
+							resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode, callStack: callStack });
 						} else {
-							resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode });
+							resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode, callStack: callStack });
 						}
 					}
 				});

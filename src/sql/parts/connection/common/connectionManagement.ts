@@ -57,6 +57,7 @@ export interface IConnectionResult {
 	connected: boolean;
 	errorMessage: string;
 	errorCode: number;
+	callStack: string;
 	errorHandled?: boolean;
 }
 
@@ -85,7 +86,7 @@ export interface IConnectionManagementService {
 	/**
 	 * Opens the connection dialog to create new connection
 	 */
-	showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, error?: string): Promise<void>;
+	showConnectionDialog(params?: INewConnectionParams, model?: IConnectionProfile, connectionResult?: IConnectionResult): Promise<void>;
 
 	/**
 	 * Opens the add server group dialog
@@ -253,7 +254,7 @@ export interface IConnectionManagementService {
 export const IConnectionDialogService = createDecorator<IConnectionDialogService>('connectionDialogService');
 export interface IConnectionDialogService {
 	_serviceBrand: any;
-	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model: IConnectionProfile, error?: string): Thenable<void>;
+	showDialog(connectionManagementService: IConnectionManagementService, params: INewConnectionParams, model: IConnectionProfile, connectionResult?: IConnectionResult): Thenable<void>;
 }
 
 export interface IServerGroupDialogCallbacks {
@@ -270,7 +271,7 @@ export interface IServerGroupController {
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');
 export interface IErrorMessageService {
 	_serviceBrand: any;
-	showDialog(severity: Severity, headerTitle: string, message: string): void;
+	showDialog(severity: Severity, headerTitle: string, message: string, messageDatails?: string): void;
 }
 
 export enum ServiceOptionType {

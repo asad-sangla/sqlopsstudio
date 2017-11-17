@@ -11,6 +11,7 @@ import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import { attachModalDialogStyler } from 'sql/common/theme/styler';
 
 import { Builder } from 'vs/base/browser/builder';
+import { Button } from 'vs/base/browser/ui/button/button';
 import Severity from 'vs/base/common/severity';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachButtonStyler } from 'vs/platform/theme/common/styler';
@@ -20,11 +21,15 @@ import Event, { Emitter } from 'vs/base/common/event';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
+import { localize } from 'vs/nls';
 
 export class ErrorMessageDialog extends Modal {
 	private _body: HTMLElement;
+	private _okButton: Button;
+	private _copyButton: Button;
 	private _severity: Severity;
 	private _message: string;
+	private _messageDatails: string;
 
 	private _onOk = new Emitter<void>();
 	public onOk: Event<void> = this._onOk.event;
@@ -47,12 +52,14 @@ export class ErrorMessageDialog extends Modal {
 
 	public render() {
 		super.render();
-		attachModalDialogStyler(this, this._themeService);
-		let copyButton = this.addFooterButton('Copy to Clipboard', () => this._clipboardService.writeText(this._message), 'left');
-		copyButton.icon = 'icon scriptToClipboard';
-		attachButtonStyler(copyButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
-		let okButton = this.addFooterButton('OK', () => this.ok());
-		attachButtonStyler(okButton, this._themeService);
+		this._register(attachModalDialogStyler(this, this._themeService));
+		let copyButtonLabel = localize('copyCallStack', 'Copy call stack');
+		this._copyButton = this.addFooterButton(copyButtonLabel, () => this._clipboardService.writeText(this._messageDatails), 'left');
+		this._copyButton.icon = 'icon scriptToClipboard';
+		this._copyButton.getElement().title = copyButtonLabel;
+		this._register(attachButtonStyler(this._copyButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND }));
+		this._okButton = this.addFooterButton('OK', () => this.ok());
+		this._register(attachButtonStyler(this._okButton, this._themeService));
 	}
 
 	protected layout(height?: number): void {
@@ -99,12 +106,19 @@ export class ErrorMessageDialog extends Modal {
 		this.hide();
 	}
 
-	public open(severity: Severity, headerTitle: string, message: string) {
+	public open(severity: Severity, headerTitle: string, message: string, messageDatails: string) {
 		this._severity = severity;
 		this._message = message;
 		this.title = headerTitle;
+		this._messageDatails = messageDatails;
+		if (this._messageDatails) {
+			this._copyButton.getElement().style.visibility = 'visible';
+		} else {
+			this._copyButton.getElement().style.visibility = 'hidden';
+		}
 		this.updateIconTitle();
 		this.updateDialogBody();
+		this._okButton.focus();
 		this.show();
 	}
 
