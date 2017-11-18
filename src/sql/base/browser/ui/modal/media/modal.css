@@ -154,8 +154,12 @@
 	width: 100px;
 }
 
-.vs-dark.monaco-shell .modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button {
-	outline-color: #8e8c8c;
+.vs.monaco-shell .modal.flyout-dialog a.monaco-button.monaco-text-button {
+	outline-color: #666666;
+}
+
+.vs-dark.monaco-shell .modal.flyout-dialog a.monaco-button.monaco-text-button {
+	outline-color: #eaeaea;
 }
 
 .modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button:focus {
