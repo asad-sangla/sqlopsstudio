@@ -60,9 +60,6 @@ export class QueryEditor extends BaseEditor {
 	// The height of the tabs above the editor
 	private readonly _tabHeight: number = 35;
 
-	// The height of the taskbar above the editor
-	private readonly _taskbarHeight: number = 28;
-
 	// The minimum width/height of the editors hosted in the QueryEditor
 	private readonly _minEditorSize: number = 220;
 
@@ -618,7 +615,7 @@ export class QueryEditor extends BaseEditor {
 				this._sash = this._register(new HorizontalFlexibleSash(parentElement, this._minEditorSize));
 			} else {
 				this._sash = this._register(new VerticalFlexibleSash(parentElement, this._minEditorSize));
-				this._sash.setEdge(this._taskbarHeight + this._tabHeight);
+				this._sash.setEdge(this.getTaskBarHeight() + this._tabHeight);
 			}
 			this._setSashDimension();
 
@@ -635,7 +632,7 @@ export class QueryEditor extends BaseEditor {
 		if (this._orientation === Orientation.HORIZONTAL) {
 			this._sash.setDimenesion(this._dimension);
 		} else {
-			this._sash.setDimenesion(new Dimension(this._dimension.width, this._dimension.height - this._taskbarHeight));
+			this._sash.setDimenesion(new Dimension(this._dimension.width, this._dimension.height - this.getTaskBarHeight()));
 		}
 
 	}
@@ -663,11 +660,16 @@ export class QueryEditor extends BaseEditor {
 		this._resizeGridContents();
 	}
 
+	private getTaskBarHeight(): number {
+		let taskBarElement = this.taskbar.getContainer().getHTMLElement();
+		return DOM.getContentHeight(taskBarElement);
+	}
+
 	private _doLayoutHorizontal(): void {
 		let splitPointTop: number = this._sash.getSplitPoint();
 		let parent: ClientRect = this.getContainer().getHTMLElement().getBoundingClientRect();
 
-		let sqlEditorHeight = splitPointTop - (parent.top + this._taskbarHeight);
+		let sqlEditorHeight = splitPointTop - (parent.top + this.getTaskBarHeight());
 
 		let titleBar = withElementById('workbench.parts.titlebar');
 		if (titleBar) {
@@ -695,21 +697,22 @@ export class QueryEditor extends BaseEditor {
 		let sqlEditorWidth = splitPointLeft;
 		let queryResultsEditorWidth = parent.width - splitPointLeft;
 
+		let taskbarHeight = this.getTaskBarHeight();
 		this._sqlEditorContainer.style.width = `${sqlEditorWidth}px`;
-		this._sqlEditorContainer.style.height = `${this._dimension.height - this._taskbarHeight}px`;
+		this._sqlEditorContainer.style.height = `${this._dimension.height - taskbarHeight}px`;
 		this._sqlEditorContainer.style.left = `0px`;
 
 		this._resultsEditorContainer.style.width = `${queryResultsEditorWidth}px`;
-		this._resultsEditorContainer.style.height = `${this._dimension.height - this._taskbarHeight}px`;
+		this._resultsEditorContainer.style.height = `${this._dimension.height - taskbarHeight}px`;
 		this._resultsEditorContainer.style.left = `${splitPointLeft}px`;
 
-		this._sqlEditor.layout(new Dimension(sqlEditorWidth, this._dimension.height - this._taskbarHeight));
-		this._resultsEditor.layout(new Dimension(queryResultsEditorWidth, this._dimension.height - this._taskbarHeight));
+		this._sqlEditor.layout(new Dimension(sqlEditorWidth, this._dimension.height - taskbarHeight));
+		this._resultsEditor.layout(new Dimension(queryResultsEditorWidth, this._dimension.height - taskbarHeight));
 	}
 
 	private _doLayoutSql() {
 		if (this._dimension) {
-			this._sqlEditor.layout(new Dimension(this._dimension.width, this._dimension.height - this._taskbarHeight));
+			this._sqlEditor.layout(new Dimension(this._dimension.width, this._dimension.height - this.getTaskBarHeight()));
 		}
 	}
 
