@@ -825,6 +825,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return new Promise<data.ListDatabasesResult>((resolve, reject) => {
 			let provider = this._providers[providerId];
 			provider.listDatabases(uri).then(result => {
+				if (result && result.databaseNames) {
+					result.databaseNames.sort();
+				}
 				resolve(result);
 			}, error => {
 				reject(error);
