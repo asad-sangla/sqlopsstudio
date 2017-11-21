@@ -7,7 +7,7 @@ import 'vs/css!./media/modal';
 import { IThemable } from 'vs/platform/theme/common/styler';
 import { Color } from 'vs/base/common/color';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
-import { KeyCode } from 'vs/base/common/keyCodes';
+import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 import { mixin } from 'vs/base/common/objects';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -64,6 +64,12 @@ export abstract class Modal extends Disposable implements IThemable {
 	private _errorMessage: Builder;
 	private _spinnerElement: HTMLElement;
 	private _errorIconElement: HTMLElement;
+
+	private _focusableElements: NodeListOf<Element>;
+	private _firstFocusableElement: HTMLElement;
+	private _lastFocusableElement: HTMLElement;
+	private _focusedElementBeforeOpen: HTMLElement;
+
 	private _dialogForeground: Color;
 	private _dialogBorder: Color;
 	private _dialogHeaderAndFooterBackground: Color;
@@ -245,12 +251,35 @@ export abstract class Modal extends Disposable implements IThemable {
 		this.hide();
 	}
 
+	private handleBackwardTab(e: KeyboardEvent) {
+		if (this._firstFocusableElement && this._lastFocusableElement && document.activeElement === this._firstFocusableElement) {
+			e.preventDefault();
+			this._lastFocusableElement.focus();
+		}
+	}
+
+	private handleForwardTab(e: KeyboardEvent) {
+		if (this._firstFocusableElement && this._lastFocusableElement && document.activeElement === this._lastFocusableElement) {
+			e.preventDefault();
+			this._firstFocusableElement.focus();
+		}
+	}
+
 	/**
 	 * Shows the modal and attaches key listeners
 	 */
 	protected show() {
 		this._modalShowingContext.get().push(this._staticKey);
 		this._builder.appendTo(withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement);
+
+		this._focusableElements = this._builder.getHTMLElement().querySelectorAll('a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex="0"]');
+		if (this._focusableElements && this._focusableElements.length > 0) {
+			this._firstFocusableElement = <HTMLElement>this._focusableElements[0];
+			this._lastFocusableElement = <HTMLElement>this._focusableElements[this._focusableElements.length - 1];
+		}
+
+		this._focusedElementBeforeOpen = <HTMLElement>document.activeElement;
+
 		this._keydownListener = DOM.addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let context = this._modalShowingContext.get();
 			if (context[context.length - 1] === this._staticKey) {
@@ -259,6 +288,10 @@ export abstract class Modal extends Disposable implements IThemable {
 					this.onAccept(event);
 				} else if (event.equals(KeyCode.Escape)) {
 					this.onClose(event);
+				} else if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
+					this.handleBackwardTab(e);
+				} else if (event.equals(KeyCode.Tab)) {
+					this.handleForwardTab(e);
 				}
 			}
 		});
@@ -282,6 +315,9 @@ export abstract class Modal extends Disposable implements IThemable {
 		this._footerButtons.forEach(button => button.applyStyles());
 		this._modalShowingContext.get().pop();
 		this._builder.offDOM();
+		if (this._focusedElementBeforeOpen) {
+			this._focusedElementBeforeOpen.focus();
+		}
 		this._keydownListener.dispose();
 		this._resizeListener.dispose();
 		TelemetryUtils.addTelemetry(this._telemetryService, TelemetryKeys.ModalDialogClosed, { name: this._name });
