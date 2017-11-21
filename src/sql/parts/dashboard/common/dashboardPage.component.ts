@@ -3,7 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Component, Inject, forwardRef, ViewChild, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import 'vs/css!./dashboardPage';
+
+import { Component, Inject, forwardRef, ViewChild, ElementRef, ViewChildren, QueryList, OnDestroy } from '@angular/core';
 import { NgGridConfig } from 'angular2-grid';
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
@@ -15,10 +17,14 @@ import { DashboardWidgetWrapper } from 'sql/parts/dashboard/common/dashboardWidg
 import { Registry } from 'vs/platform/registry/common/platform';
 import * as types from 'vs/base/common/types';
 import { Severity } from 'vs/platform/message/common/message';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { Disposable } from 'vs/base/common/lifecycle';
+import * as nls from 'vs/nls';
+import { ScrollableElement } from 'vs/base/browser/ui/scrollbar/scrollableElement';
+import { ScrollbarVisibility } from 'vs/base/common/scrollable';
+import { addDisposableListener, getContentHeight, EventType } from 'vs/base/browser/dom';
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
-import * as nls from 'vs/nls';
+import * as themeColors from 'vs/workbench/common/theme';
 
 /**
  * @returns whether the provided parameter is a JavaScript Array and each element in the array is a number.
@@ -29,12 +35,9 @@ function isNumberArray(value: any): value is number[] {
 
 @Component({
 	selector: 'dashboard-page',
-	templateUrl: decodeURI(require.toUrl('sql/parts/dashboard/common/dashboardPage.component.html')),
-	host: {
-		class: 'dashboard-page'
-	}
+	templateUrl: decodeURI(require.toUrl('sql/parts/dashboard/common/dashboardPage.component.html'))
 })
-export abstract class DashboardPage {
+export abstract class DashboardPage extends Disposable implements OnDestroy {
 
 	protected SKELETON_WIDTH = 5;
 	protected widgets: Array<WidgetConfig> = [];
@@ -60,10 +63,12 @@ export abstract class DashboardPage {
 		'prefer_new': false,        //  When adding new items, will use that items position ahead of existing items
 		'limit_to_screen': true,   //  When resizing the screen, with this true and auto_resize false, the grid will re-arrange to fit the screen size. Please note, at present this only works with cascade direction up.
 	};
-	private _themeDispose: IDisposable;
+	private _scrollableElement: ScrollableElement;
 
-	@ViewChild('propertyContainer', { read: ElementRef }) private propertyContainer: ElementRef;
 	@ViewChild('properties') private _properties: DashboardWidgetWrapper;
+	@ViewChild('scrollable', { read: ElementRef }) private _scrollable: ElementRef;
+	@ViewChild('scrollContainer', { read: ElementRef }) private _scrollContainer: ElementRef;
+	@ViewChild('propertiesContainer', { read: ElementRef }) private _propertiesContainer: ElementRef;
 	@ViewChildren(DashboardWidgetWrapper) private _widgets: QueryList<DashboardWidgetWrapper>;
 
 	// a set of config modifiers
@@ -78,8 +83,11 @@ export abstract class DashboardPage {
 	];
 
 	constructor(
-		@Inject(forwardRef(() => DashboardServiceInterface)) protected dashboardService: DashboardServiceInterface
-	) { }
+		@Inject(forwardRef(() => DashboardServiceInterface)) protected dashboardService: DashboardServiceInterface,
+		@Inject(forwardRef(() => ElementRef)) protected _el: ElementRef
+	) {
+		super();
+	}
 
 	protected init() {
 		if (!this.dashboardService.connectionManagementService.connectionInfo) {
@@ -96,19 +104,55 @@ export abstract class DashboardPage {
 		}
 	}
 
-	protected baseInit(): void {
-		let self = this;
-		self._themeDispose = self.dashboardService.themeService.onDidColorThemeChange((event: IColorTheme) => {
-			self.updateTheme(event);
+	ngAfterViewInit(): void {
+		this._register(this.dashboardService.themeService.onDidColorThemeChange(this.updateTheme, this));
+		this.updateTheme(this.dashboardService.themeService.getColorTheme());
+		let container = this._scrollContainer.nativeElement as HTMLElement;
+		let scrollable = this._scrollable.nativeElement as HTMLElement;
+		container.removeChild(scrollable);
+		this._scrollableElement = new ScrollableElement(scrollable, {
+			horizontal: ScrollbarVisibility.Hidden,
+			vertical: ScrollbarVisibility.Auto,
+			useShadows: false
 		});
-		self.updateTheme(self.dashboardService.themeService.getColorTheme());
+
+		this._scrollableElement.onScroll(e => {
+			scrollable.style.bottom = e.scrollTop + 'px';
+		});
+
+		container.appendChild(this._scrollableElement.getDomNode());
+		this._scrollableElement.setScrollDimensions({
+			scrollHeight: getContentHeight(scrollable),
+			height: getContentHeight(container)
+		});
+
+		this._register(addDisposableListener(window, EventType.RESIZE, () => {
+			this._scrollableElement.setScrollDimensions({
+				scrollHeight: getContentHeight(scrollable),
+				height: getContentHeight(container)
+			});
+		}));
+	}
+
+	private updateTheme(theme: IColorTheme): void {
+		let el = this._propertiesContainer.nativeElement as HTMLElement;
+		let border = theme.getColor(colors.contrastBorder, true);
+		let borderColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true);
+
+		if (border) {
+			el.style.borderColor = border.toString();
+			el.style.borderBottomWidth = '1px';
+			el.style.borderBottomStyle = 'solid';
+		} else if (borderColor) {
+			el.style.borderBottom = '1px solid ' + borderColor.toString();
+		} else {
+			el.style.border = 'none';
+		}
 
 	}
 
-	protected baseDestroy(): void {
-		if (this._themeDispose) {
-			this._themeDispose.dispose();
-		}
+	ngOnDestroy() {
+		this.dispose();
 	}
 
 	protected abstract propertiesWidget: WidgetConfig;
@@ -268,18 +312,6 @@ export abstract class DashboardPage {
 			});
 		} else {
 			return undefined;
-		}
-	}
-
-	private updateTheme(theme: IColorTheme): void {
-		let propsEl: HTMLElement = this.propertyContainer.nativeElement;
-		let widgetShadowColor = theme.getColor(colors.widgetShadow);
-		if (widgetShadowColor) {
-			// Box shadow on bottom only.
-			// The below settings fill the shadow across the whole page
-			propsEl.style.boxShadow = `-5px 5px 10px -5px ${widgetShadowColor}`;
-			propsEl.style.marginRight = '-10px';
-			propsEl.style.marginBottom = '5px';
 		}
 	}
 
