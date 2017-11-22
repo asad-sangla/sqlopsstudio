@@ -250,7 +250,8 @@ export class BackupComponent {
 
 		// Set backup name
 		this.backupNameBox = new InputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
-		this.backupNameBox.focus();
+		// Disable the name until the new value is populated
+		this.backupNameBox.disable();
 
 		// Set backup path list
 		this.pathListBox = new ListBox([], '', this._bootstrapService.contextViewService, this._bootstrapService.clipboardService);
@@ -259,9 +260,11 @@ export class BackupComponent {
 		// Set backup path add/remove buttons
 		this.addPathButton = new Button(this.addPathElement.nativeElement);
 		this.addPathButton.label = '+';
+		this.addPathButton.title = localize('addFile', 'Add a file');
 
 		this.removePathButton = new Button(this.removePathElement.nativeElement);
 		this.removePathButton.label = '-';
+		this.removePathButton.title = localize('removeFile', 'Remove files');
 
 		// Set compression
 		this.compressionSelectBox = new SelectBox(this.compressionOptions, this.compressionOptions[0]);
@@ -394,6 +397,7 @@ export class BackupComponent {
 			this.backupTypeSelectBox.setOptions(this.backupTypeOptions, 0);
 
 			this.setDefaultBackupName();
+			this.backupNameBox.enable();
 			this.backupNameBox.focus();
 
 			// Set backup path list
@@ -450,6 +454,7 @@ export class BackupComponent {
 		this.isFormatChecked = false;
 		this.isEncryptChecked = false;
 
+		this.backupNameBox.disable();
 		this.copyOnlyCheckBox.checked = false;
 		this.copyOnlyCheckBox.enable();
 		this.compressionSelectBox.setOptions(this.compressionOptions, 0);

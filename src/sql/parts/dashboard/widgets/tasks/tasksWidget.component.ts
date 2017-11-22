@@ -117,7 +117,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		let innerTile = $('div').append(icon).append(label);
 		let tile = $('div.task-tile').style('height', this._size + 'px').style('width', this._size + 'px');
 		tile.append(innerTile);
-		tile.on(DOM.EventType.CLICK, () => this.runTask(action));
+		this._register(DOM.addDisposableListener(tile.getHTMLElement(), DOM.EventType.CLICK, () => this.runTask(action)));
 		return tile.getHTMLElement();
 	}
 

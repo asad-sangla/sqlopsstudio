@@ -128,6 +128,11 @@ export class Button extends EventEmitter {
 		return this.$el.getHTMLElement();
 	}
 
+	// {{SQL CARBON EDIT}}
+	set title(value: string) {
+		this.$el.title(value);
+	}
+
 	set label(value: string) {
 		if (!this.$el.hasClass('monaco-text-button')) {
 			this.$el.addClass('monaco-text-button');
