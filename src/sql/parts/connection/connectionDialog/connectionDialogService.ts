@@ -172,13 +172,13 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			} else if (connectionResult && connectionResult.errorHandled) {
 				this._connectionDialog.resetConnection();
 			} else {
-				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.errorMessage, connectionResult.callStack);
 				this._connectionDialog.resetConnection();
+				this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, connectionResult.errorMessage, connectionResult.callStack);
 			}
 		}).catch(err => {
 			this._connecting = false;
-			this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, err);
 			this._connectionDialog.resetConnection();
+			this._errorMessageService.showDialog(Severity.Error, this._connectionErrorTitle, err);
 		});
 	}
 

@@ -154,11 +154,11 @@
 	width: 100px;
 }
 
-.vs.monaco-shell .modal.flyout-dialog a.monaco-button.monaco-text-button {
+.vs.monaco-shell .modal a.monaco-button.monaco-text-button {
 	outline-color: #666666;
 }
 
-.vs-dark.monaco-shell .modal.flyout-dialog a.monaco-button.monaco-text-button {
+.vs-dark.monaco-shell .modal a.monaco-button.monaco-text-button {
 	outline-color: #eaeaea;
 }
 

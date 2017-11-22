@@ -43,6 +43,7 @@ export class ConnectionWidget {
 	private _toDispose: lifecycle.IDisposable[];
 	private _optionsMaps: { [optionType: number]: data.ConnectionOption };
 	private _tableContainer: Builder;
+	private _focusedBeforeHandleOnConnection: HTMLElement;
 	private _providerName: string;
 	private _authTypeMap: { [providerName: string]: AuthenticationType[] } = {
 		[Constants.mssqlProviderName]: [new AuthenticationType('Integrated', false), new AuthenticationType('SqlLogin', true)],
@@ -349,6 +350,7 @@ export class ConnectionWidget {
 	}
 
 	public handleOnConnecting(): void {
+		this._focusedBeforeHandleOnConnection = <HTMLElement>document.activeElement;
 		this._advancedButton.enabled = false;
 
 		this._serverGroupSelectBox.disable();
@@ -378,6 +380,10 @@ export class ConnectionWidget {
 			this._userNameInputBox.enable();
 			this._passwordInputBox.enable();
 			this._rememberPasswordCheckBox.enabled = true;
+		}
+
+		if (this._focusedBeforeHandleOnConnection) {
+			this._focusedBeforeHandleOnConnection.focus();
 		}
 	}
 

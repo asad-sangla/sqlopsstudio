@@ -118,8 +118,8 @@ export class ErrorMessageDialog extends Modal {
 		}
 		this.updateIconTitle();
 		this.updateDialogBody();
-		this._okButton.focus();
 		this.show();
+		this._okButton.focus();
 	}
 
 	public dispose(): void {
