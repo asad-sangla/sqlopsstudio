@@ -38,7 +38,8 @@ import { IQuickOpenService, IFilePickOpenEntry } from 'vs/platform/quickOpen/com
 import { IHistoryService } from 'vs/workbench/services/history/common/history';
 import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
 // {{SQL CARBON EDIT}}
-import { Position, IResourceInput, IEditorInput, IUntitledResourceInput, IEditorOptions } from 'vs/platform/editor/common/editor';
+import { Position, IResourceInput, IEditorInput, IEditorOptions } from 'vs/platform/editor/common/editor';
+import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IInstantiationService, IConstructorSignature2, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import { IMessageService, IMessageWithAction, IConfirmation, Severity, CancelAction } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
@@ -1360,6 +1361,8 @@ export abstract class BaseSaveOneFileAction extends BaseSaveFileAction {
 		@ITextFileService private textFileService: ITextFileService,
 		@IEditorGroupService private editorGroupService: IEditorGroupService,
 		@IUntitledEditorService private untitledEditorService: IUntitledEditorService,
+		// {{SQL CARBON EDIT}}
+		@IQueryEditorService private queryEditorService: IQueryEditorService,
 		@IMessageService messageService: IMessageService
 	) {
 		super(id, label, messageService);
@@ -1437,7 +1440,11 @@ export abstract class BaseSaveOneFileAction extends BaseSaveFileAction {
 					return this.editorService.replaceEditors([{
 						toReplace: { resource: source },
 						replaceWith
-					}]).then(() => true);
+					}]).then(() => {
+						// {{SQL CARBON EDIT}}
+						this.queryEditorService.onSaveAsCompleted(source, target);
+						return true;
+					});
 				});
 			}
 

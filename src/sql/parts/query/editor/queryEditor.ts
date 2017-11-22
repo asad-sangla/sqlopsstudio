@@ -38,14 +38,12 @@ import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
 import * as queryContext from 'sql/parts/query/common/queryContext';
 import { Taskbar, ITaskbarContent } from 'sql/base/browser/ui/taskbar/taskbar';
-import { ITextFileService, TextFileModelChangeEvent } from 'vs/workbench/services/textfile/common/textfiles';
 import {
 	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
 	ConnectDatabaseAction, ToggleConnectDatabaseAction, EstimatedQueryPlanAction
 } from 'sql/parts/query/execution/queryActions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
-import * as TaskUtilities from 'sql/workbench/common/taskUtilities';
 import { IConnectionManagementService } from 'sql/parts/connection/common/connectionManagement';
 import { attachEditableDropdownStyler } from 'sql/common/theme/styler';
 
@@ -98,7 +96,6 @@ export class QueryEditor extends BaseEditor {
 		@IEditorDescriptorService private _editorDescriptorService: IEditorDescriptorService,
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ITextFileService private _textFileService: ITextFileService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
 		editorOrientation?: Orientation
 	) {
@@ -112,10 +109,6 @@ export class QueryEditor extends BaseEditor {
 
 		if (contextKeyService) {
 			this.queryEditorVisible = queryContext.QueryEditorVisibleContext.bindTo(contextKeyService);
-		}
-
-		if (this._textFileService && this._textFileService.models) {
-			this._textFileService.models.onModelSaved(event => this._onModelSaved(event));
 		}
 	}
 
@@ -139,18 +132,6 @@ export class QueryEditor extends BaseEditor {
 		return input
 			? input.getQueryResultsInputResource()
 			: undefined;
-	}
-
-	private _onModelSaved(event: TextFileModelChangeEvent): void {
-		if (event.resource.toString() !== this.uri) {
-			TaskUtilities.replaceConnection(this.uri, event.resource.toString(), this._connectionManagementService).then(result => {
-				if (result && result.connected) {
-					this.currentQueryInput.onConnectSuccess();
-				} else {
-					this.currentQueryInput.onConnectReject();
-				}
-			});
-		}
 	}
 
 	// PUBLIC METHODS ////////////////////////////////////////////////////////////

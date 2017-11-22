@@ -214,7 +214,6 @@ suite('SQL QueryEditor Tests', () => {
 			editorGroupService.object,
 			undefined,
 			undefined,
-			undefined,
 			undefined);
 		editor.create(parentBuilder);
 
