@@ -8,19 +8,20 @@ import { TPromise } from 'vs/base/common/winjs.base';
 
 export class RefreshWidgetAction extends Action {
 
-	public static ID = 'refreshWidget';
-	public static LABEL = nls.localize('refreshWidget', 'Refresh');
+	private static readonly ID = 'refreshWidget';
+	private static readonly LABEL = nls.localize('refreshWidget', 'Refresh');
+	private static readonly ICON = 'refresh';
 
 	constructor(
-		id: string, label: string,
-		private refreshFn: () => void
+		private refreshFn: () => void,
+		private context: any // this
 	) {
-		super(id, label);
+		super(RefreshWidgetAction.ID, RefreshWidgetAction.LABEL, RefreshWidgetAction.ICON);
 	}
 
 	run(): TPromise<boolean> {
 		try {
-			this.refreshFn();
+			this.refreshFn.apply(this.context);
 			return TPromise.as(true);
 		} catch (e) {
 			return TPromise.as(false);

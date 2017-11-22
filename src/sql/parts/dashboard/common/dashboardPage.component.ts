@@ -121,6 +121,7 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 		});
 
 		container.appendChild(this._scrollableElement.getDomNode());
+		let initalHeight = getContentHeight(scrollable);
 		this._scrollableElement.setScrollDimensions({
 			scrollHeight: getContentHeight(scrollable),
 			height: getContentHeight(container)
@@ -132,6 +133,17 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 				height: getContentHeight(container)
 			});
 		}));
+
+		// unforunately because of angular rendering behavior we need to do a double check to make sure nothing changed after this point
+		setTimeout(() => {
+			let currentheight = getContentHeight(scrollable);
+			if (initalHeight !== currentheight) {
+				this._scrollableElement.setScrollDimensions({
+					scrollHeight: getContentHeight(scrollable),
+					height: getContentHeight(container)
+				});
+			}
+		}, 100);
 	}
 
 	private updateTheme(theme: IColorTheme): void {

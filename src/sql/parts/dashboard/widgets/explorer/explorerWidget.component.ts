@@ -114,4 +114,8 @@ export class ExplorerWidget extends DashboardWidget implements IDashboardWidget,
 			)));
 		}
 	}
+
+	public refresh(): void {
+		this.init();
+	}
 }

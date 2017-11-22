@@ -145,17 +145,11 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		return false;
 	}
 
-	public get refresh(): () => void {
-		return this._refresh();
-	}
-
-	public _refresh(): () => void {
-		return () => {
-			this._runQuery().then(
-				result => this._updateChild(result),
-				error => this.showError(error)
-			);
-		};
+	public refresh(): void {
+		this._runQuery().then(
+			result => this._updateChild(result),
+			error => this.showError(error)
+		);
 	}
 
 	private _getStorageKey(): string {

@@ -13,7 +13,7 @@ import { ComponentHostDirective } from './componentHost.directive';
 import { WidgetConfig, WIDGET_CONFIG, IDashboardWidget } from './dashboardWidget';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { error } from 'sql/base/common/log';
-import * as ACTIONS from './actions';
+import { RefreshWidgetAction } from './actions';
 
 /* Widgets */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
@@ -105,7 +105,7 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 			this._component = componentRef.instance;
 			let actions = componentRef.instance.actions;
 			if (componentRef.instance.refresh) {
-				actions.push(this._bootstrap.instantiationService.createInstance(ACTIONS.RefreshWidgetAction, ACTIONS.RefreshWidgetAction.ID, ACTIONS.RefreshWidgetAction.LABEL, componentRef.instance.refresh));
+				actions.push(new RefreshWidgetAction(componentRef.instance.refresh, componentRef.instance));
 			}
 			if (actions !== undefined && actions.length > 0) {
 				this._actions = actions;
