@@ -154,15 +154,17 @@
 	width: 100px;
 }
 
-.vs.monaco-shell .modal a.monaco-button.monaco-text-button {
-	outline-color: #666666;
+.vs.monaco-shell .monaco-text-button:focus {
+	outline-color: #666666 !important;
+	outline-width: 1px;
 }
 
-.vs-dark.monaco-shell .modal a.monaco-button.monaco-text-button {
-	outline-color: #eaeaea;
+.vs-dark.monaco-shell .monaco-text-button:focus {
+	outline-color: #eaeaea !important;
+	outline-width: 1px;
 }
 
-.modal.flyout-dialog .footer-button a.monaco-button.monaco-text-button:focus {
+.vs .monaco-text-button:focus {
 	outline-width: 1px;
 }
 

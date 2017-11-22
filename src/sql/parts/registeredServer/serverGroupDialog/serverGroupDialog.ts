@@ -110,7 +110,7 @@ export class ServerGroupDialog extends Modal {
 			this.fillGroupColors(groupColorContainer.getHTMLElement());
 		});
 
-		this._bodyBuilder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+		this._register(DOM.addDisposableListener(this._bodyBuilder.getHTMLElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
 				this.preventDefaultKeyboardEvent(e);
@@ -122,7 +122,7 @@ export class ServerGroupDialog extends Modal {
 				this.preventDefaultKeyboardEvent(e);
 				this.focusNextColor(event.equals(KeyCode.RightArrow));
 			}
-		});
+		}));
 	}
 
 	private preventDefaultKeyboardEvent(e: KeyboardEvent) {
@@ -131,53 +131,36 @@ export class ServerGroupDialog extends Modal {
 	}
 
 	private isFocusOnColors(): boolean {
-
-		/*
-			//
-			// intentionally leaving this code in for future work on tab and keyboard support
-			// 7/28/2017: kenvh
-			//
-		this._colorCheckBoxesMap.forEach((checkbox: Checkbox, color: string) => {
-			if (document.activeElement === checkbox.getElement === false) {
-				checkbox.checked = true;
+		var result = false;
+		this._colorCheckBoxesMap.forEach(({ checkbox }) => {
+			if (document.activeElement === checkbox.domNode) {
+				result = true;
 			}
 		});
-		*/
 
-		return false;
+		return result;
 	}
 
 	private focusNext(): void {
-		/*
-			//
-			// intentionally leaving this code in for future work on tab and keyboard support
-			// 7/28/2017: kenvh
-			//
 		if (this._groupNameInputBox.hasFocus()) {
 			this._groupDescriptionInputBox.focus();
 		} else if (this._groupDescriptionInputBox.hasFocus()) {
-			this._colorCheckBoxesMap[this._viewModel.groupColor].checkbox.focus();
+			this._colorCheckBoxesMap[this._selectedColorOption].checkbox.focus();
 		} else if (this.isFocusOnColors()) {
-			this._addServerButton.focus();
+			this._addServerButton.enabled ? this._addServerButton.focus() : this._closeButton.focus();
 		} else if (document.activeElement === this._addServerButton.getElement()) {
 			this._closeButton.focus();
 		}
 		else if (document.activeElement === this._closeButton.getElement()) {
 			this._groupNameInputBox.focus();
 		}
-		*/
 	}
 
 	private focusPrevious(): void {
-		/*
-			//
-			// intentionally leaving this code in for future work on tab and keyboard support
-			// 7/28/2017: kenvh
-			//
 		if (document.activeElement === this._closeButton.getElement()) {
-			this._addServerButton.focus();
+			this._addServerButton.enabled ? this._addServerButton.focus() : this._colorCheckBoxesMap[this._selectedColorOption].checkbox.focus();
 		} else if (document.activeElement === this._addServerButton.getElement()) {
-			this._colorCheckBoxesMap[this._viewModel.groupColor].checkbox.focus();
+			this._colorCheckBoxesMap[this._selectedColorOption].checkbox.focus();
 		} else if (this.isFocusOnColors()) {
 			this._groupDescriptionInputBox.focus();
 		} else if (this._groupDescriptionInputBox.hasFocus()) {
@@ -185,25 +168,12 @@ export class ServerGroupDialog extends Modal {
 		} else if (this._groupNameInputBox.hasFocus()) {
 			this._closeButton.focus();
 		}
-		*/
 	}
 
 	private focusNextColor(moveRight: boolean): void {
-		/*
-			//
-			// intentionally leaving this code in for future work on tab and keyboard support
-			// 7/28/2017: kenvh
-			//
 		let focusIndex: number = -1;
-			this._colorCheckBoxesMap.forEach((checkbox: Checkbox, color: string) => {
-				if (document.activeElement === checkbox.domNode. === false) {
-					checkbox.checked = true;
-				}
-			});
-
-
-		for (let i = 0; i < this._colorCheckBoxesMap.size; i++) {
-			if (this._colorCheckBoxesMap.values[i].hasFocus()) {
+		for (let i = 0; i < this._colorCheckBoxesMap.length; i++) {
+			if (document.activeElement === this._colorCheckBoxesMap[i].checkbox.domNode) {
 				focusIndex = i;
 				break;
 			}
@@ -219,12 +189,13 @@ export class ServerGroupDialog extends Modal {
 
 			// check for wraps
 			if (focusIndex < 0) {
-				focusIndex = this._colorCheckBoxesMap.size - 1;
-			} else if (focusIndex >= this._colorCheckBoxesMap.size) {
+				focusIndex = this._colorCheckBoxesMap.length - 1;
+			} else if (focusIndex >= this._colorCheckBoxesMap.length) {
 				focusIndex = 0;
 			}
+
+			this._colorCheckBoxesMap[focusIndex].checkbox.focus();
 		}
-		*/
 	}
 
 	private onSelectGroupColor(colorToSelect: string): void {
