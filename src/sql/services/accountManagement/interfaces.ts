@@ -26,7 +26,8 @@ export interface IAccountManagementService {
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	openAccountListDialog(): Thenable<void>;
-	performOAuthAuthorization(url: string, silent: boolean): Thenable<string>;
+	beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void;
+	endAutoOAuthDeviceCode(): void;
 
 	// SERVICE MANAGEMENT METHODS /////////////////////////////////////////
 	registerProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): void;

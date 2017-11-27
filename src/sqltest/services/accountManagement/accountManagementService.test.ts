@@ -9,7 +9,6 @@ import * as assert from 'assert';
 import * as data from 'data';
 import * as TypeMoq from 'typemoq';
 import AccountStore from 'sql/services/accountManagement/accountStore';
-import { SqlOAuthTestService } from 'sqltest/stubs/sqlOauthServiceStub';
 import { AccountDialogController } from 'sql/parts/accountManagement/accountDialog/accountDialogController';
 import { AccountManagementService } from 'sql/services/accountManagement/accountManagementService';
 import { AccountAdditionResult, AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
@@ -468,7 +467,7 @@ function getTestState(): AccountManagementState {
 	let mockMemento = {};
 
 	// Create the account management service
-	let ams = new AccountManagementService(mockMemento, mockInstantiationService.object, null, new SqlOAuthTestService());
+	let ams = new AccountManagementService(mockMemento, mockInstantiationService.object, null, null, null);
 
 	// Wire up event handlers
 	let evUpdate = new EventVerifierSingle<UpdateAccountListEventParams>();

@@ -147,7 +147,7 @@ export interface AzureAccountSecurityToken {
 	/**
 	 * Date that the token expires on
 	 */
-	expiresOn: Date;
+	expiresOn: Date | string;
 
 	/**
 	 * Name of the resource the token is good for (ie, management.core.windows.net)

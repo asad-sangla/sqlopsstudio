@@ -18,10 +18,12 @@ import {
 	AzureAccountSecurityTokenCollection,
 	Tenant
 } from './interfaces';
+import TokenCache from './tokenCache';
 
 const localize = nls.loadMessageBundle();
 
 export class AzureAccountProvider implements data.AccountProvider {
+	// CONSTANTS ///////////////////////////////////////////////////////////
 	private static WorkSchoolAccountLogo: data.AccountContextualLogo = {
 		light: AzureAccountProvider.loadIcon('work_school_account.svg'),
 		dark: AzureAccountProvider.loadIcon('work_school_account_inverse.svg')
@@ -30,21 +32,21 @@ export class AzureAccountProvider implements data.AccountProvider {
 		light: AzureAccountProvider.loadIcon('microsoft_account.svg'),
 		dark: AzureAccountProvider.loadIcon('microsoft_account.svg')
 	};
+	private static AadCommonTenant: string = 'common';
 
+	// MEMBER VARIABLES ////////////////////////////////////////////////////
 	private _args: Arguments;
+	private _commonAuthorityUrl: string;
 	private _isInitialized: boolean;
-	private _tokenCache: adal.TokenCache;
 
-	public metadata: AzureAccountProviderMetadata;
-
-	constructor(metadata: AzureAccountProviderMetadata, tokenCache: adal.TokenCache) {
-		this.metadata = metadata;
+	constructor(private _metadata: AzureAccountProviderMetadata, private _tokenCache: TokenCache) {
 		this._args = {
-			host: metadata.settings.host,
-			clientId: metadata.settings.clientId
+			host: this._metadata.settings.host,
+			clientId: this._metadata.settings.clientId
 		};
 		this._isInitialized = false;
-		this._tokenCache = tokenCache;
+
+		this._commonAuthorityUrl = `${this._metadata.settings.host}/common`;
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
@@ -88,7 +90,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 
 	public refresh(account: AzureAccount): Thenable<AzureAccount> {
 		let self = this;
-		return this.doIfInitialized(() => self.signIn(account.properties.isMsAccount, account.key.accountId));
+		return this.doIfInitialized(() => self.signIn());
 	}
 
 	// PRIVATE METHODS /////////////////////////////////////////////////////
@@ -101,46 +103,6 @@ export class AzureAccountProvider implements data.AccountProvider {
 		}
 	}
 
-	private authenticate(tenantId: string, msa: boolean, userId: string, silent: boolean): Thenable<adal.TokenResponse> {
-		let authorityUrl = `${this.metadata.settings.host}/${tenantId}`;
-		// TODO: Rewrite using urijs
-		let authorizeUrl = `${authorityUrl}/oauth2/authorize`
-			+ `?client_id=${this.metadata.settings.clientId}`                                     // Specify the client ID
-			+ `&response_type=code`                                                               // Request the authorization code grant flow
-			+ (userId ? (msa ? '&domain_hint=live.com' : '&msafed=0') : '')                       // Optimize prompt given existing MSA or org ID
-			+ ((!userId && !silent) ? '&prompt=login' : '')                                       // Require login if not silent
-			+ (userId ? `&login_hint=${encodeURIComponent(userId)}` : '')                         // Show login hint if we have an existing user ID
-			+ (this.metadata.settings.siteId ? `&site_id=${this.metadata.settings.siteId}` : '')  // Site ID to use as brand on the prompt
-			+ '&display=popup'                                                                    // Causes a popup version of the UI to be shown
-			+ `&resource=${encodeURIComponent(this.metadata.settings.signInResourceId)}`          // Specify the resource for which an access token should be retrieved
-			+ `&redirect_uri=${encodeURIComponent(this.metadata.settings.redirectUri)}`;          // TODO: add locale parameter like in VSAccountProvider.TryAppendLocalParameter
-
-		// Get the authorization code. If this is the initial authentication (the user is unknown),
-		// do not silently prompt. If this is a subsequent authentication for an additional tenant,
-		// the browser cookie cache will be used to authenticate without prompting, so run the
-		// browser silently.
-		return data.accounts.performOAuthAuthorization(authorizeUrl, silent)
-			.then((code: string) => {
-				return new Promise((resolve, reject) => {
-					let context = new adal.AuthenticationContext(authorityUrl, null, this._tokenCache);
-					context.acquireTokenWithAuthorizationCode(
-						code,
-						this.metadata.settings.redirectUri,
-						this.metadata.settings.signInResourceId,
-						this.metadata.settings.clientId,
-						null,
-						(error, response) => {
-							if (error) {
-								reject(error);
-							} else {
-								resolve(<adal.TokenResponse> response);
-							}
-						}
-					);
-				});
-			});
-	}
-
 	private doIfInitialized<T>(op: () => Thenable<T>): Thenable<T> {
 		return this._isInitialized
 			? op()
@@ -150,33 +112,35 @@ export class AzureAccountProvider implements data.AccountProvider {
 	private getAccessTokens(account: AzureAccount): Thenable<AzureAccountSecurityTokenCollection> {
 		let self = this;
 
-		// TODO: Could we add some better typing here?
 		let accessTokenPromises: Thenable<void>[] = [];
 		let tokenCollection: AzureAccountSecurityTokenCollection = {};
 		for (let tenant of account.properties.tenants) {
 			let promise = new Promise<void>((resolve, reject) => {
 				// TODO: use urijs to generate this URI
-				let authorityUrl = `${self.metadata.settings.host}/${tenant.id}`;
+				let authorityUrl = `${self._metadata.settings.host}/${tenant.id}`;
 				let context = new adal.AuthenticationContext(authorityUrl, null, self._tokenCache);
 
 				// TODO: This is where we should mark the account as stale
 				context.acquireToken(
-					self.metadata.settings.armResource.id,
+					self._metadata.settings.armResource.id,
 					tenant.userId,
-					self.metadata.settings.clientId,
-					(error: adal.ErrorResponse, response: adal.SuccessResponse) => {
+					self._metadata.settings.clientId,
+					(error: Error, response: adal.TokenResponse | adal.ErrorResponse) => {
 						// Handle errors first
 						if (error) {
 							reject(error);
 							return;
 						}
 
+						// We know that the response was not an error
+						let tokenResponse = <adal.TokenResponse>response;
+
 						// Generate a token object and add it to the collection
 						tokenCollection[tenant.id] = {
-							expiresOn: response.expiresOn,
-							resource: response.resource,
-							token: response.accessToken,
-							tokenType: response.tokenType
+							expiresOn: tokenResponse.expiresOn,
+							resource: tokenResponse.resource,
+							token: tokenResponse.accessToken,
+							tokenType: tokenResponse.tokenType
 						};
 						resolve();
 					}
@@ -190,68 +154,81 @@ export class AzureAccountProvider implements data.AccountProvider {
 			.then(() => tokenCollection);
 	}
 
-	private getTenantDisplayName(msa: boolean, tenantId: string, userId: string): Thenable<string> {
+	private getDeviceLoginUserCode(): Thenable<adal.UserCodeInfo> {
 		let self = this;
-		if(msa) {
-			return Promise.resolve(localize('microsoftAccountDisplayName', 'Microsoft Account'));
-		}
 
-		return new Promise<string>((resolve, reject) => {
-			// Get an access token to the AAD graph resource
-			// TODO: Use urijs to generate this URI
-			let authorityUrl = `${self.metadata.settings.host}/${tenantId}`;
-			let context = new adal.AuthenticationContext(authorityUrl, null, self._tokenCache);
-			context.acquireToken(self.metadata.settings.graphResource.id, userId, self.metadata.settings.clientId, (error, response) => {
-				if (error) {
-					reject(error);
-					return;
-				}
-
-				request.get(
-					`${self.metadata.settings.graphResource.endpoint}/${tenantId}/tenantDetails?api-version=2013-04-05`,
-					{
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': `Bearer ${(<adal.TokenResponse>response).accessToken}`
-						},
-						json: true
-					},
-					(graphError, graphResponse, body: {error: any; value: any[];}) => {
-						if (graphError || body['odata.error']) {
-							reject(graphError || body['odata.error']);
-						} else if (body.value.length && body.value[0].displayName) {
-							resolve(body.value[0].displayName);
-						} else {
-							resolve(localize('azureWorkAccountDisplayName', 'Work or school account'));
-						}
+		// Create authentication context and acquire user code
+		return new Promise<adal.UserCodeInfo>((resolve, reject) => {
+			let context = new adal.AuthenticationContext(self._commonAuthorityUrl, null, self._tokenCache);
+			// TODO: How to localize?
+			context.acquireUserCode(self._metadata.settings.signInResourceId, self._metadata.settings.clientId, 'en-us',
+				(err, response) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(response);
 					}
-				);
+				}
+			);
+		});
+	}
+
+	private getDeviceLoginToken(deviceLogin: adal.UserCodeInfo): Thenable<adal.TokenResponse> {
+		let self = this;
+
+		// Create authentication context and use device login params to get authorization token
+		return new Promise<adal.TokenResponse>((resolve, reject) => {
+			data.accounts.beginAutoOAuthDeviceCode(deviceLogin.message, deviceLogin.userCode, deviceLogin.verificationUrl);
+
+			let context = new adal.AuthenticationContext(self._commonAuthorityUrl, null, this._tokenCache);
+			context.acquireTokenWithDeviceCode(self._metadata.settings.signInResourceId, self._metadata.settings.clientId, deviceLogin, (err, response) => {
+				data.accounts.endAutoOAuthDeviceCode();
+				if (err) {
+					reject(err);
+				} else {
+					resolve(<adal.TokenResponse>response);
+				}
 			});
 		});
 	}
 
-	private getTenants(msa: boolean, userId: string, tenantIds: string[], homeTenant: string): Thenable<Tenant[]> {
+	private getTenants(userId: string, homeTenant: string): Thenable<Tenant[]> {
 		let self = this;
 
-		// Lookup each tenant ID that was provided
-		let getTenantPromises: Thenable<Tenant>[] = [];
-		for (let tenantId of tenantIds) {
-			let promise = this.authenticate(tenantId, msa, userId, false)
-				.then((response) => self.getTenantDisplayName(msa, response.tenantId, response.userId))
-				.then((displayName) => {
-					return <Tenant>{
-						displayName: displayName,
-						id: tenantId,
-						userId: userId
-					};
+		// 1) Get a token we can use for looking up the tenant IDs
+		// 2) Send a request to the ARM endpoint (the root management API) to get the list of tenant IDs
+		// 3) For all the tenants
+		//    b) Get a token we can use for the AAD Graph API
+		//    a) Get the display name of the tenant
+		//    c) create a tenant object
+		// 4) Sort to make sure the "home tenant" is the first tenant on the list
+		return this.getToken(userId, AzureAccountProvider.AadCommonTenant, this._metadata.settings.armResource.id)
+			.then((armToken: adal.TokenResponse) => {
+				let tenantUri = `${self._metadata.settings.armResource.endpoint}/tenants?api-version=2015-01-01`;
+				return self.makeWebRequest(armToken, tenantUri);
+			})
+			.then((tenantResponse: any[]) => {
+				let promises: Thenable<Tenant>[] = tenantResponse.map(value => {
+					return self.getToken(userId, value.tenantId, self._metadata.settings.graphResource.id)
+						.then((graphToken: adal.TokenResponse) => {
+							let tenantDetailsUri = `${self._metadata.settings.graphResource.endpoint}/${value.tenantId}/tenantDetails?api-version=2013-04-05`;
+							return self.makeWebRequest(graphToken, tenantDetailsUri);
+						})
+						.then((tenantDetails: any) => {
+							return <Tenant>{
+								id: value.tenantId,
+								userId: userId,
+								displayName: tenantDetails.length && tenantDetails[0].displayName
+									? tenantDetails[0].displayName
+									: localize('azureWorkAccountDisplayName', 'Work or school account')
+							};
+						});
 				});
-			getTenantPromises.push(promise);
-		}
 
-		return Promise.all(getTenantPromises)
-			.then((tenants) => {
-				// Resort the tenants to make sure that the 'home' tenant is the first in the list
-				let homeTenantIndex = tenants.findIndex((tenant) => tenant.id === homeTenant);
+				return Promise.all(promises);
+			})
+			.then((tenants: Tenant[]) => {
+				let homeTenantIndex = tenants.findIndex(tenant => tenant.id === homeTenant);
 				if (homeTenantIndex >= 0) {
 					let homeTenant = tenants.splice(homeTenantIndex, 1);
 					tenants.unshift(homeTenant[0]);
@@ -260,112 +237,125 @@ export class AzureAccountProvider implements data.AccountProvider {
 			});
 	}
 
-	private getTenantIds(userId: string): Thenable<string[]> {
-		return new Promise((resolve, reject) => {
-			// Get an access token to the ARM resource
-			// TODO: Build this URL with urijs
-			let authorityUrl = `${this.metadata.settings.host}/common`;
-			let context = new adal.AuthenticationContext(authorityUrl, null, this._tokenCache);
-			context.acquireToken(this.metadata.settings.armResource.id, userId, this.metadata.settings.clientId, (error, response) => {
-				if (error) {
-					reject(error);
-					return;
-				}
+	/**
+	 * Retrieves a token for the given user ID for the specific tenant ID. If the token can, it
+	 * will be retrieved from the cache as per the ADAL API. AFAIK, the ADAL API will also utilize
+	 * the refresh token if there aren't any unexpired tokens to use.
+	 * @param {string} userId ID of the user to get a token for
+	 * @param {string} tenantId Tenant to get the token for
+	 * @param {string} resourceId ID of the resource the token will be good for
+	 * @returns {Thenable<TokenResponse>} Promise to return a token. Rejected if retrieving the token fails.
+	 */
+	private getToken(userId: string, tenantId: string, resourceId: string): Thenable<adal.TokenResponse> {
+		let self = this;
 
-				if (!!this.metadata.settings.adTenants && this.metadata.settings.adTenants.length > 0) {
-					resolve(this.metadata.settings.adTenants);
-				} else {
-					request.get(
-						`${this.metadata.settings.armResource.endpoint}/tenants?api-version=2015-01-01`,
-						{
-							headers: {
-								'Content-Type': 'application/json',
-								'Authorization': `Bearer ${(<adal.TokenResponse>response).accessToken}`
-							},
-							json: true
-						},
-						(armError, armResponse, body: {error: any; value: any[];}) => {
-							if (armError || body.error) {
-								reject(armError || body.error);
-							} else {
-								resolve(body.value.map(item => <string>item.tenantId));
-							}
-						}
-					);
+		return new Promise<adal.TokenResponse>((resolve, reject) => {
+			let authorityUrl = `${self._metadata.settings.host}/${tenantId}`;
+			let context = new adal.AuthenticationContext(authorityUrl, null, self._tokenCache);
+			context.acquireToken(resourceId, userId, self._metadata.settings.clientId,
+				(error: Error, response: adal.TokenResponse | adal.ErrorResponse) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve(<adal.TokenResponse>response);
+					}
 				}
-			});
+			);
 		});
 	}
 
-	private signIn(msa?: boolean, userId?: string): Thenable<AzureAccount> {
+	/**
+	 * Performs a web request using the provided bearer token
+	 * @param {TokenResponse} accessToken Bearer token for accessing the provided URI
+	 * @param {string} uri URI to access
+	 * @returns {Thenable<any>} Promise to return the deserialized body of the request. Rejected if error occurred.
+	 */
+	private makeWebRequest(accessToken: adal.TokenResponse, uri: string): Thenable<any> {
+		return new Promise<any>((resolve, reject) => {
+			// Setup parameters for the request
+			// NOTE: setting json true means the returned object will be deserialized
+			let params = {
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${accessToken.accessToken}`
+				},
+				json: true
+			};
+
+			// Setup the callback to resolve/reject this promise
+			let callback = (error, response, body: { error: any; value: any; }) => {
+				if (error || body.error) {
+					reject(error || body.error);
+				} else {
+					resolve(body.value);
+				}
+			};
+
+			// Make the request
+			request.get(uri, params, callback);
+		});
+	}
+
+	private signIn(): Thenable<AzureAccount> {
 		let self = this;
 
-		// Initial authentication is via the common/discovery tenant
-		return this.authenticate('common', msa, userId, false)
+		// 1) Get the user code for this login
+		// 2) Get an access token from the device code
+		// 3) Get the list of tenants
+		// 4) Generate the AzureAccount object and return it
+		let tokenResponse: adal.TokenResponse = null;
+		return this.getDeviceLoginUserCode()
+			.then((userCode: adal.UserCodeInfo) => self.getDeviceLoginToken(userCode))
 			.then((response: adal.TokenResponse) => {
-				let identityProvider = response.identityProvider;
+				tokenResponse = response;
+				return self.getTenants(tokenResponse.userId, tokenResponse.userId);
+			})
+			.then((tenants: Tenant[]) => {
+				// Figure out where we're getting the identity from
+				let identityProvider = tokenResponse.identityProvider;
 				if (identityProvider) {
 					identityProvider = identityProvider.toLowerCase();
 				}
 
 				// Determine if this is a microsoft account
-				msa = identityProvider && (
+				let msa = identityProvider && (
 					identityProvider.indexOf('live.com') !== -1 ||
 					identityProvider.indexOf('live-int.com') !== -1 ||
 					identityProvider.indexOf('f8cdef31-a31e-4b4a-93e4-5f571e91255a') !== -1 ||
 					identityProvider.indexOf('ea8a4392-515e-481f-879e-6571ff2a8a36') !== -1);
 
-				// Get the user information
-				userId = response.userId;
-				let displayName = (response.givenName && response.familyName)
-					? `${response.givenName} ${response.familyName}`
-					: userId;
+				// Calculate the display name for the user
+				let displayName = (tokenResponse.givenName && tokenResponse.familyName)
+					? `${tokenResponse.givenName} ${tokenResponse.familyName}`
+					: tokenResponse.userId;
 
-				// Get all the additional tenants
-				return this.getTenantIds(userId)
-					.then(tenantIds => self.getTenants(msa, userId, tenantIds, response.tenantId))
-					.then(tenants => {
-						return <AzureAccount>{
-							key: {
-								providerId: self.metadata.id,
-								accountId: userId
-							},
-							name: userId,
-							displayInfo: {
-								contextualLogo:	msa
-									? AzureAccountProvider.MicrosoftAccountLogo
-									: AzureAccountProvider.WorkSchoolAccountLogo,
-								contextualDisplayName: tenants[0].displayName,
-								displayName: displayName
-							},
-							properties: {
-								isMsAccount: msa,
-								tenants: tenants
-							},
-							isStale: false
-						};
-					});
+				// Calculate the home tenant display name to use for the contextual display name
+				let contextualDisplayName = msa
+					? localize('microsoftAccountDisplayName', 'Microsoft Account')
+					: tenants[0].displayName;
+
+				// Calculate the contextual logo for the account
+				let contextualLogo = msa
+					? AzureAccountProvider.MicrosoftAccountLogo
+					: AzureAccountProvider.WorkSchoolAccountLogo;
+
+				return <AzureAccount>{
+					key: {
+						providerId: self._metadata.id,
+						accountId: tokenResponse.userId
+					},
+					name: tokenResponse.userId,
+					displayInfo: {
+						contextualLogo: contextualLogo,
+						contextualDisplayName: contextualDisplayName,
+						displayName: displayName
+					},
+					properties: {
+						isMsAccount: msa,
+						tenants: tenants
+					},
+					isStale: false
+				};
 			});
 	}
 }
-
-// ADAL MONKEY PATCH ///////////////////////////////////////////////////////
-// Monkey patch the ADAL TokenRequest class to fix the fact that when you request a token from an
-// authorization code, it doesn't update the cache
-import * as TokenRequest from 'adal-node/lib/token-request';
-let getTokenWithAuthorizationCodeOriginal = TokenRequest.prototype.getTokenWithAuthorizationCode;
-TokenRequest.prototype.getTokenWithAuthorizationCode = function (
-	authorizationCode: string,
-	clientSecret: string,
-	callback: adal.AcquireTokenCallback
-) {
-	this._cacheDriver = this._createCacheDriver();
-	getTokenWithAuthorizationCodeOriginal.call(this, authorizationCode, clientSecret, (error: Error, response: adal.ErrorResponse|adal.TokenResponse) => {
-		if (error) {
-			callback(error, response);
-		} else {
-			this._userId = (<adal.TokenResponse> response).userId;
-			this._cacheDriver.add(response, () => callback(null, response));
-		}
-	});
-};

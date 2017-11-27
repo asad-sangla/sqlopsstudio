@@ -343,7 +343,8 @@ export abstract class MainThreadAccountManagementShape {
 	$registerAccountProvider(providerMetadata: data.AccountProviderMetadata, handle: number): Thenable<any> { throw ni(); }
 	$unregisterAccountProvider(handle: number): Thenable<any> { throw ni(); }
 
-	$performOAuthAuthorization(url: string, silent: boolean): Thenable<string> { throw ni(); }
+	$beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void { throw ni(); }
+	$endAutoOAuthDeviceCode(): void { throw ni(); }
 }
 
 export abstract class MainThreadResourceProviderShape {

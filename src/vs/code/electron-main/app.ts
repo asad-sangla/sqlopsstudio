@@ -57,9 +57,6 @@ import { IWorkspacesMainService } from 'vs/platform/workspaces/common/workspaces
 import { dirname, join } from 'path';
 import { touch } from 'vs/base/node/pfs';
 
-// {{SQL CARBON EDIT}}
-import { ProxyOAuthHandler } from 'sql/code/electron-main/oauth';
-
 export class CodeApplication {
 
 	private static APP_ICON_REFRESH_KEY = 'macOSAppIconRefresh';
@@ -276,11 +273,6 @@ export class CodeApplication {
 		// Setup Auth Handler
 		const authHandler = appInstantiationService.createInstance(ProxyAuthHandler);
 		this.toDispose.push(authHandler);
-
-		// {{SQL CARBON EDIT}}
-		// Setup OAuth Handler
-		const oauthHandler = appInstantiationService.createInstance(ProxyOAuthHandler);
-		this.toDispose.push(oauthHandler);
 
 		// Open Windows
 		appInstantiationService.invokeFunction(accessor => this.openFirstWindow(accessor));

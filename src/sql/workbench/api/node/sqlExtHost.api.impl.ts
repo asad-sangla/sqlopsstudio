@@ -51,12 +51,15 @@ export function createApiFactory(
 		dataFactory: function (extension: IExtensionDescription): typeof data {
 			// namespace: accounts
 			const accounts: typeof data.accounts = {
-				performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
-					return extHostAccountManagement.$performOAuthAuthorization(url, silent);
-				},
 				registerAccountProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): vscode.Disposable {
 					return extHostAccountManagement.$registerAccountProvider(providerMetadata, provider);
 				},
+				beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
+					return extHostAccountManagement.$beginAutoOAuthDeviceCode(message, userCode, uri);
+				},
+				endAutoOAuthDeviceCode(): void {
+					return extHostAccountManagement.$endAutoOAuthDeviceCode();
+				}
 			};
 
 			// namespace: credentials

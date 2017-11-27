@@ -48,8 +48,12 @@ export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 	}
 
 	// - EXTENSION HOST AVAILABLE METHODS //////////////////////////////////
-	public $performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
-		return this._proxy.$performOAuthAuthorization(url, silent);
+	public $beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
+		this._proxy.$beginAutoOAuthDeviceCode(message, userCode, uri);
+	}
+
+	public $endAutoOAuthDeviceCode(): void {
+		this._proxy.$endAutoOAuthDeviceCode();
 	}
 
 	public $registerAccountProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): Disposable {

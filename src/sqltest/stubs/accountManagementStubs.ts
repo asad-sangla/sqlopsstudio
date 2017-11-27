@@ -22,6 +22,14 @@ export class AccountManagementTestService implements IAccountManagementService {
 		return undefined;
 	}
 
+	beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
+		return undefined;
+	}
+
+	endAutoOAuthDeviceCode(): void {
+		return undefined;
+	}
+
 	getAccountProviderMetadata(): Thenable<data.AccountProviderMetadata[]> {
 		return undefined;
 	}
@@ -39,10 +47,6 @@ export class AccountManagementTestService implements IAccountManagementService {
 	}
 
 	openAccountListDialog(): TPromise<any> {
-		return undefined;
-	}
-
-	performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
 		return undefined;
 	}
 

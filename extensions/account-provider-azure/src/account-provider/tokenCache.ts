@@ -26,7 +26,7 @@ export default class TokenCache implements adal.TokenCache {
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
-	public add(entries: adal.TokenCacheEntry[], callback: (error?: Error) => void): void {
+	public add(entries: adal.TokenResponse[], callback: (error: Error, result: boolean) => void): void {
 		let self = this;
 
 		this.doOperation(() => {
@@ -34,8 +34,8 @@ export default class TokenCache implements adal.TokenCache {
 				.then(cache => self.addToCache(cache, entries))
 				.then(updatedCache => self.writeCache(updatedCache))
 				.then(
-					() => callback(null),
-					(err) => callback(err)
+					() => callback(null, false),
+					(err) => callback(err, true)
 				);
 		});
 	}
@@ -59,7 +59,7 @@ export default class TokenCache implements adal.TokenCache {
 		.then(() => {});
 	}
 
-	public find(query: adal.TokenCacheQuery, callback: (error: Error, results: adal.TokenCacheEntry[]) => void): void {
+	public find(query: any, callback: (error: Error, results: any[]) => void): void {
 		let self = this;
 
 		this.doOperation(() => {
@@ -76,7 +76,7 @@ export default class TokenCache implements adal.TokenCache {
 		});
 	}
 
-	public remove(entries: adal.TokenCacheEntry[], callback: (error?: Error) => void): void {
+	public remove(entries: adal.TokenResponse[], callback: (error: Error, result: null) => void): void {
 		let self = this;
 
 		this.doOperation(() => {
@@ -84,21 +84,21 @@ export default class TokenCache implements adal.TokenCache {
 				.then(cache => self.removeFromCache(cache, entries))
 				.then(updatedCache => self.writeCache(updatedCache))
 				.then(
-					() => callback(null),
-					(err) => callback(err)
+					() => callback(null, null),
+					(err) => callback(err, null)
 				);
 		});
 	}
 
 	// PRIVATE METHODS /////////////////////////////////////////////////////
-	private static findByKeyHelper(entry1: adal.TokenCacheEntry, entry2: adal.TokenCacheEntry): boolean {
+	private static findByKeyHelper(entry1: adal.TokenResponse, entry2: adal.TokenResponse): boolean {
 		return entry1._authority === entry2._authority
 			&& entry1._clientId === entry2._clientId
 			&& entry1.userId === entry2.userId
 			&& entry1.resource === entry2.resource;
 	}
 
-	private static findByPartial(entry: adal.TokenCacheEntry, query: object): boolean {
+	private static findByPartial(entry: adal.TokenResponse, query: object): boolean {
 		for (let key in query) {
 			if (entry[key] === undefined || entry[key] !== query[key]) {
 				return false;
@@ -123,12 +123,12 @@ export default class TokenCache implements adal.TokenCache {
 		this._activeOperation = activeOperation;
 	}
 
-	private addToCache(cache: adal.TokenCacheEntry[], entries: adal.TokenCacheEntry[]): adal.TokenCacheEntry[] {
+	private addToCache(cache: adal.TokenResponse[], entries: adal.TokenResponse[]): adal.TokenResponse[] {
 		// First remove entries from the db that are being updated
 		cache = this.removeFromCache(cache, entries);
 
 		// Then add the new entries to the cache
-		entries.forEach((entry: adal.TokenCacheEntry) => {
+		entries.forEach((entry: adal.TokenResponse) => {
 			cache.push(entry);
 		});
 
@@ -172,7 +172,7 @@ export default class TokenCache implements adal.TokenCache {
 			});
 	}
 
-	private readCache(): Thenable<adal.TokenCacheEntry[]> {
+	private readCache(): Thenable<adal.TokenResponse[]> {
 		let self = this;
 
 		// NOTE: File system operations are performed synchronously to avoid annoying nested callbacks
@@ -189,7 +189,14 @@ export default class TokenCache implements adal.TokenCache {
 					let cacheJson = decipher.update(cacheCipher, 'hex', 'binary');
 					cacheJson += decipher.final('binary');
 
-					return JSON.parse(cacheJson);
+					// Deserialize the JSON into the array of tokens
+					let cacheObj = <adal.TokenResponse[]>JSON.parse(cacheJson);
+					for (let objIndex in cacheObj) {
+						// Rehydrate Date objects since they will always serialize as a string
+						cacheObj[objIndex].expiresOn = new Date(<string>cacheObj[objIndex].expiresOn);
+					}
+
+					return cacheObj;
 				} catch(e) {
 					throw e;
 				}
@@ -201,8 +208,8 @@ export default class TokenCache implements adal.TokenCache {
 			});
 	}
 
-	private removeFromCache(cache: adal.TokenCacheEntry[], entries: adal.TokenCacheEntry[]): adal.TokenCacheEntry[] {
-		entries.forEach((entry: adal.TokenCacheEntry) => {
+	private removeFromCache(cache: adal.TokenResponse[], entries: adal.TokenResponse[]): adal.TokenResponse[] {
+		entries.forEach((entry: adal.TokenResponse) => {
 			// Check to see if the entry exists
 			let match = cache.findIndex(entry2 => TokenCache.findByKeyHelper(entry, entry2));
 			if (match >= 0) {
@@ -214,7 +221,7 @@ export default class TokenCache implements adal.TokenCache {
 		return cache;
 	}
 
-	private writeCache(cache: adal.TokenCacheEntry[]): Thenable<void> {
+	private writeCache(cache: adal.TokenResponse[]): Thenable<void> {
 		let self = this;
 		// NOTE: File system operations are being done synchronously to avoid annoying callback nesting
 		// 1) Get (or generate) the encryption key

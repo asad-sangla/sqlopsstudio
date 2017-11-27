@@ -1132,13 +1132,19 @@ declare module 'data' {
 		export function registerAccountProvider(providerMetadata: AccountProviderMetadata, provider: AccountProvider): vscode.Disposable;
 
 		/**
-		 * Performs OAuth via the account management service and returns the resulting authorization code
-		 * @param {string} url URL to load to begin OAuth
-		 * @param {boolean} silent Whether or not to show the browser, use false when doing initial
-		 *                  login, true when doing subsequent auth requests
-		 * @return {Thenable<string>} Promise to return the authorization code, rejects on failure
+		 * Launches a flyout dialog that will display the information on how to complete device
+		 * code OAuth login to the user. Only one flyout can be opened at once and each must be closed
+		 * by calling {@link endAutoOAuthDeviceCode}.
+		 * @param {string} message
+		 * @param {string} userCode
+		 * @param {string} uri
 		 */
-		export function performOAuthAuthorization(url: string, silent: boolean): Thenable<string>;
+		export function beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void;
+
+		/**
+		 * Closes the flyout dialog opened by {@link beginAutoOAuthDeviceCode}
+		 */
+		export function endAutoOAuthDeviceCode(): void;
 	}
 
 	// - ACCOUNT DATATYPES /////////////////////////////////////////////////

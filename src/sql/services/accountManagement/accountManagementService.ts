@@ -9,17 +9,21 @@ import * as data from 'data';
 import * as nls from 'vs/nls';
 import * as platform from 'vs/platform/registry/common/platform';
 import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
-import AccountStore from 'sql/services/accountManagement/accountStore';
+
 import Event, { Emitter } from 'vs/base/common/event';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IMessageService, IConfirmation } from 'vs/platform/message/common/message';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { Memento, Scope as MementoScope } from 'vs/workbench/common/memento';
-import { ISqlOAuthService } from 'sql/common/sqlOAuthService';
+
+import AccountStore from 'sql/services/accountManagement/accountStore';
 import { AccountDialogController } from 'sql/parts/accountManagement/accountDialog/accountDialogController';
 import { AccountListStatusbarItem } from 'sql/parts/accountManagement/accountListStatusbar/accountListStatusbarItem';
 import { AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
-import { warn } from 'sql/base/common/log';
+
+// TODO: Test code, Remove
+import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 
 export class AccountManagementService implements IAccountManagementService {
 	// CONSTANTS ///////////////////////////////////////////////////////////
@@ -31,8 +35,6 @@ export class AccountManagementService implements IAccountManagementService {
 	private _accountStore: AccountStore;
 	private _accountDialogController: AccountDialogController;
 	private _mementoContext: Memento;
-	private _oAuthCallbacks: { [eventId: string]: { resolve, reject } } = {};
-	private _oAuthEventId: number = 0;
 
 	// EVENT EMITTERS //////////////////////////////////////////////////////
 	private _addAccountProviderEmitter: Emitter<AccountProviderAddedEventParams>;
@@ -49,10 +51,9 @@ export class AccountManagementService implements IAccountManagementService {
 		private _mementoObj: object,
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IStorageService private _storageService: IStorageService,
-		@ISqlOAuthService private _oAuthService: ISqlOAuthService
+		@IClipboardService private _clipboardService: IClipboardService,
+		@IMessageService private _messageService: IMessageService	// TODO: Test code!
 	) {
-		let self = this;
-
 		// Create the account store
 		if (!this._mementoObj) {
 			this._mementoContext = new Memento(AccountManagementService.ACCOUNT_MEMENTO);
@@ -75,11 +76,6 @@ export class AccountManagementService implements IAccountManagementService {
 			);
 			(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(statusbarDescriptor);
 		}
-
-		// Register event handler for OAuth completion
-		this._oAuthService.registerOAuthCallback((event, args) => {
-			self.onOAuthResponse(args);
-		});
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
@@ -217,24 +213,34 @@ export class AccountManagementService implements IAccountManagementService {
 		});
 	}
 
-	/**
-	 * Opens a browser window to perform the OAuth authentication
-	 * @param {string} url URL to visit that will perform the OAuth authentication
-	 * @param {boolean} silent Whether or not to perform authentication silently using browser's cookies
-	 * @return {Thenable<string>} Promise to return a authentication token on successful authentication
-	 */
-	public performOAuthAuthorization(url: string, silent: boolean): Thenable<string> {
+	public beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
 		let self = this;
-		return new Promise<string>((resolve, reject) => {
-			// TODO: replace with uniqid
-			let eventId: string = `oauthEvent${self._oAuthEventId++}`;
-			self._oAuthCallbacks[eventId] = {
-				resolve: resolve,
-				reject: reject
-			};
 
-			self._oAuthService.performOAuthAuthorization(eventId, url, silent);
-		});
+		// TODO: If a oauth flyout is already open, return an error
+
+		// TODO: Temporary code for demoing, stubbing out functionality
+		// Create options
+		let confirm: IConfirmation = {
+			message: message,
+			primaryButton: nls.localize('accountManagementOAuthCopyOpen', 'Copy & Open'),
+			secondaryButton: nls.localize('acountManagementOAuthCancel', 'Cancel'),
+			type: 'question'
+		};
+
+		// Open the message
+		if(!this._messageService.confirm(confirm)) {
+			// Inform the caller that the user cancelled the OAuth
+			// TODO: Implement
+			return;
+		}
+
+		// Copy the user code to the clipboard and open a browser to the verification URI
+		self._clipboardService.writeText(userCode);
+		window.open(uri);
+	}
+
+	public endAutoOAuthDeviceCode(): void {
+		// TODO: Implement
 	}
 
 	// SERVICE MANAGEMENT METHODS //////////////////////////////////////////
@@ -331,31 +337,6 @@ export class AccountManagementService implements IAccountManagementService {
 			accountList: provider.accounts
 		};
 		this._updateAccountListEmitter.fire(eventArg);
-	}
-
-	private onOAuthResponse(args: object): void {
-		// Verify the arguments are correct
-		if (!args || args['eventId'] === undefined) {
-			warn('Received invalid OAuth event response args');
-			return;
-		}
-
-		// Find the event
-		let eventId: string = args['eventId'];
-		let eventCallbacks = this._oAuthCallbacks[eventId];
-		if (!eventCallbacks) {
-			warn('Received OAuth event response for non-existent eventId');
-			return;
-		}
-
-		// Parse the args
-		let error: string = args['error'];
-		let code: string = args['code'];
-		if (error) {
-			eventCallbacks.reject(error);
-		} else {
-			eventCallbacks.resolve(code);
-		}
 	}
 }
 
