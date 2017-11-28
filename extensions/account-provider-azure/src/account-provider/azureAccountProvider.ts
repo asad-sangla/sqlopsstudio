@@ -25,12 +25,12 @@ const localize = nls.loadMessageBundle();
 export class AzureAccountProvider implements data.AccountProvider {
 	// CONSTANTS ///////////////////////////////////////////////////////////
 	private static WorkSchoolAccountLogo: data.AccountContextualLogo = {
-		light: AzureAccountProvider.loadIcon('work_school_account.svg'),
-		dark: AzureAccountProvider.loadIcon('work_school_account_inverse.svg')
+		light: AzureAccountProvider.loadIcon('work_school_account_light.svg'),
+		dark: AzureAccountProvider.loadIcon('work_school_account_dark.svg')
 	};
 	private static MicrosoftAccountLogo: data.AccountContextualLogo = {
-		light: AzureAccountProvider.loadIcon('microsoft_account.svg'),
-		dark: AzureAccountProvider.loadIcon('microsoft_account.svg')
+		light: AzureAccountProvider.loadIcon('microsoft_account_light.svg'),
+		dark: AzureAccountProvider.loadIcon('microsoft_account_dark.svg')
 	};
 	private static AadCommonTenant: string = 'common';
 
