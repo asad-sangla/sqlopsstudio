@@ -38,6 +38,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import Event, { Emitter } from 'vs/base/common/event';
 import Severity from 'vs/base/common/severity';
 import * as nls from 'vs/nls';
+import { IConfigurationEditingService, ConfigurationTarget } from 'vs/workbench/services/configuration/common/configurationEditing';
 
 const DASHBOARD_SETTINGS = 'dashboard';
 
@@ -127,6 +128,7 @@ export class DashboardServiceInterface implements OnDestroy {
 	private _workspaceContextService: IWorkspaceContextService;
 	private _storageService: IStorageService;
 	private _capabilitiesService: ICapabilitiesService;
+	private _configurationEditingService: IConfigurationEditingService;
 
 	private _updatePage = new Emitter<void>();
 	public readonly onUpdatePage: Event<void> = this._updatePage.event;
@@ -145,6 +147,7 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._workspaceContextService = this._bootstrapService.workspaceContextService;
 		this._storageService = this._bootstrapService.storageService;
 		this._capabilitiesService = this._bootstrapService.capabilitiesService;
+		this._configurationEditingService = this._bootstrapService.configurationEditorService;
 	}
 
 	ngOnDestroy() {
@@ -153,6 +156,10 @@ export class DashboardServiceInterface implements OnDestroy {
 
 	public get messageService(): IMessageService {
 		return this._messageService;
+	}
+
+	public get configurationEditingService(): IConfigurationEditingService {
+		return this._configurationEditingService;
 	}
 
 	public get metadataService(): SingleConnectionMetadataService {
@@ -244,6 +251,10 @@ export class DashboardServiceInterface implements OnDestroy {
 	public getSettings(type: string): { widgets: Array<WidgetConfig>, properties: boolean | IPropertiesConfig[] } {
 		let config = this._configService.getConfiguration(DASHBOARD_SETTINGS);
 		return config[type];
+	}
+
+	public writeSettings(key, value) {
+		this._configurationEditingService.writeConfiguration(ConfigurationTarget.USER, { key: DASHBOARD_SETTINGS + '.' + key + '.widgets', value });
 	}
 
 	private handleDashboardEvent(event: AngularEventType): void {

@@ -81,6 +81,16 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 		}
 	}
 
+	public layout(): void {
+		if (this._component && this._component.layout) {
+			this._component.layout();
+		}
+	}
+
+	public get id(): string {
+		return this._config.id;
+	}
+
 	private loadWidget(): void {
 		if (Object.keys(this._config.widget).length !== 1) {
 			error('Exactly 1 widget must be defined per space');

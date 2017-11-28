@@ -11,11 +11,13 @@ export interface IDashboardWidget {
 	actions: Array<Action>;
 	actionsContext?: any;
 	refresh?: () => void;
+	layout?: () => void;
 }
 
 export const WIDGET_CONFIG = new InjectionToken<WidgetConfig>('widget_config');
 
 export interface WidgetConfig {
+	id?: string; // used to track the widget lifespan operations
 	name?: string;
 	icon?: string;
 	context: string;

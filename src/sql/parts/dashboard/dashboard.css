@@ -4,5 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 .dashboardEditor .header .monaco-action-bar .action-label {
-	padding: 6px;
+	padding: 8px;
+}
+
+.dashboardEditor .header .monaco-action-bar .action-item {
+	margin-right: 5px;
 }

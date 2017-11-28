@@ -172,3 +172,12 @@
 .vs .icon.configure-dashboard {
 	background: url('configdashboard.svg') center center no-repeat;
 }
+
+.hc-black .icon.edit,
+.vs-dark .icon.edit {
+	background: url('edit_inverse.svg') center center no-repeat;
+}
+
+.vs .icon.edit {
+	background: url('edit.svg') center center no-repeat;
+}

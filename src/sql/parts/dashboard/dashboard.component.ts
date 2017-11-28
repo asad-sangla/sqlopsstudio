@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 import { DashboardServiceInterface } from './services/dashboardServiceInterface.service';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as Utils from 'sql/parts/connection/common/utils';
-import { RefreshWidgetAction } from 'sql/parts/dashboard/common/actions';
+import { RefreshWidgetAction, EditDashboardAction } from 'sql/parts/dashboard/common/actions';
 
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
@@ -48,6 +48,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 			icon: true,
 			label: false,
 		});
+		this.actionbar.push(new EditDashboardAction(this.edit, this), {
+			icon: true,
+			label: false,
+		});
 		if (profile && (!profile.databaseName || Utils.isMaster(profile))) {
 			// Route to the server page as this is the default database
 			this._router.navigate(['server-dashboard']);
@@ -75,5 +79,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 		if (this._currentPage) {
 			this._currentPage.refresh();
 		}
+	}
+
+	edit(): void {
+		this._currentPage.enableEdit();
 	}
 }

@@ -6,13 +6,15 @@
 import 'vs/css!./dashboardPage';
 
 import { Component, Inject, forwardRef, ViewChild, ElementRef, ViewChildren, QueryList, OnDestroy } from '@angular/core';
-import { NgGridConfig } from 'angular2-grid';
+import { NgGridConfig, NgGrid, NgGridItem } from 'angular2-grid';
+import { Subscription } from 'rxjs/Subscription';
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { DashboardWidgetWrapper } from 'sql/parts/dashboard/common/dashboardWidgetWrapper.component';
+import * as objects from 'vs/base/common/objects';
 
 import { Registry } from 'vs/platform/registry/common/platform';
 import * as types from 'vs/base/common/types';
@@ -25,12 +27,58 @@ import { addDisposableListener, getContentHeight, EventType } from 'vs/base/brow
 import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 import * as themeColors from 'vs/workbench/common/theme';
+import { generateUuid } from 'vs/base/common/uuid';
 
 /**
  * @returns whether the provided parameter is a JavaScript Array and each element in the array is a number.
  */
 function isNumberArray(value: any): value is number[] {
 	return types.isArray(value) && (<any[]>value).every(elem => types.isNumber(elem));
+}
+
+/**
+ * Sorting function for dashboard widgets
+ * In order of priority;
+ * If neither have defined grid positions, they are equivalent
+ * If a has a defined grid position and b does not; a should come first
+ * If both have defined grid positions and have the same row; the one with the smaller col position should come first
+ * If both have defined grid positions but different rows (it doesn't really matter in this case) the lowers row should come first
+ */
+function configSorter(a, b): number {
+	if ((!a.gridItemConfig || !a.gridItemConfig.col)
+		&& (!b.gridItemConfig || !b.gridItemConfig.col)) {
+		return 0;
+	} else if (!a.gridItemConfig || !a.gridItemConfig.col) {
+		return 1;
+	} else if (!b.gridItemConfig || !b.gridItemConfig.col) {
+		return -1;
+	} else if (a.gridItemConfig.row === b.gridItemConfig.row) {
+		if (a.gridItemConfig.col < b.gridItemConfig.col) {
+			return -1;
+		}
+
+		if (a.gridItemConfig.col === b.gridItemConfig.col) {
+			return 0;
+		}
+
+		if (a.gridItemConfig.col > b.gridItemConfig.col) {
+			return 1;
+		}
+	} else {
+		if (a.gridItemConfig.row < b.gridItemConfig.row) {
+			return -1;
+		}
+
+		if (a.gridItemConfig.row === b.gridItemConfig.row) {
+			return 0;
+		}
+
+		if (a.gridItemConfig.row > b.gridItemConfig.row) {
+			return 1;
+		}
+	}
+
+	return void 0; // this should never be reached
 }
 
 @Component({
@@ -58,28 +106,35 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 		'min_height': 100,          //  The minimum height of an item. If greater than row_height, this will update the value of min_rows
 		'fix_to_grid': false,       //  Fix all item movements to the grid
 		'auto_style': true,         //  Automatically add required element styles at run-time
-		'auto_resize': false,       //  Automatically set col_width/row_height so that max_cols/max_rows fills the screen. Only has effect is max_cols or max_rows is set
+		'auto_resize': true,       //  Automatically set col_width/row_height so that max_cols/max_rows fills the screen. Only has effect is max_cols or max_rows is set
 		'maintain_ratio': false,    //  Attempts to maintain aspect ratio based on the colWidth/rowHeight values set in the config
 		'prefer_new': false,        //  When adding new items, will use that items position ahead of existing items
 		'limit_to_screen': true,   //  When resizing the screen, with this true and auto_resize false, the grid will re-arrange to fit the screen size. Please note, at present this only works with cascade direction up.
 	};
+	private _originalConfig: WidgetConfig[];
+	private _editDispose: Array<Subscription> = [];
 	private _scrollableElement: ScrollableElement;
 
 	@ViewChild('properties') private _properties: DashboardWidgetWrapper;
+	@ViewChild(NgGrid) private _grid: NgGrid;
 	@ViewChild('scrollable', { read: ElementRef }) private _scrollable: ElementRef;
 	@ViewChild('scrollContainer', { read: ElementRef }) private _scrollContainer: ElementRef;
 	@ViewChild('propertiesContainer', { read: ElementRef }) private _propertiesContainer: ElementRef;
 	@ViewChildren(DashboardWidgetWrapper) private _widgets: QueryList<DashboardWidgetWrapper>;
+	@ViewChildren(NgGridItem) private _items: QueryList<NgGridItem>;
 
 	// a set of config modifiers
 	private readonly _configModifiers: Array<(item: Array<WidgetConfig>) => Array<WidgetConfig>> = [
 		this.removeEmpty,
 		this.initExtensionConfigs,
-		this.validateGridConfig,
 		this.addProvider,
 		this.addEdition,
 		this.addContext,
 		this.filterWidgets
+	];
+
+	private readonly _gridModifiers: Array<(item: Array<WidgetConfig>) => Array<WidgetConfig>> = [
+		this.validateGridConfig
 	];
 
 	constructor(
@@ -94,10 +149,14 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 			this.dashboardService.messageService.show(Severity.Warning, nls.localize('missingConnectionInfo', 'No connection information could be found for this dashboard'));
 		} else {
 			let tempWidgets = this.dashboardService.getSettings(this.context).widgets;
+			this._originalConfig = objects.clone(tempWidgets);
 			let properties = this.getProperties();
 			this._configModifiers.forEach((cb) => {
 				tempWidgets = cb.apply(this, [tempWidgets]);
 				properties = properties ? cb.apply(this, [properties]) : undefined;
+			});
+			this._gridModifiers.forEach(cb => {
+				tempWidgets = cb.apply(this, [tempWidgets]);
 			});
 			this.widgets = tempWidgets;
 			this.propertiesWidget = properties ? properties[0] : undefined;
@@ -271,10 +330,14 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 	 * @param config Array of widgets to validate
 	 */
 	protected validateGridConfig(config: WidgetConfig[]): Array<WidgetConfig> {
-		return config.map((widget) => {
+		return config.map((widget, index) => {
 			if (widget.gridItemConfig === undefined) {
 				widget.gridItemConfig = {};
 			}
+			const id = generateUuid();
+			widget.gridItemConfig.payload = { id };
+			widget.id = id;
+			this._originalConfig[index].id = id;
 			return widget;
 		});
 	}
@@ -301,6 +364,12 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 							sizex: insightConfig.gridItemConfig.x,
 							sizey: insightConfig.gridItemConfig.y
 						};
+					}
+					if (config.gridItemConfig && !config.gridItemConfig.sizex && insightConfig.gridItemConfig && insightConfig.gridItemConfig.x) {
+						config.gridItemConfig.sizex = insightConfig.gridItemConfig.x;
+					}
+					if (config.gridItemConfig && !config.gridItemConfig.sizey && insightConfig.gridItemConfig && insightConfig.gridItemConfig.y) {
+						config.gridItemConfig.sizey = insightConfig.gridItemConfig.y;
 					}
 				}
 			}
@@ -339,6 +408,70 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 					item.refresh();
 				});
 			}
+		}
+	}
+
+	public enableEdit(): void {
+		if (this._grid.dragEnable) {
+			this._grid.disableDrag();
+			this._grid.disableResize();
+			this._editDispose.forEach(i => i.unsubscribe());
+			this._editDispose = [];
+		} else {
+			this._grid.enableResize();
+			this._grid.enableDrag();
+			this._editDispose.push(this._grid.onResizeStop.subscribe((e: NgGridItem) => {
+				this._scrollableElement.setScrollDimensions({
+					scrollHeight: getContentHeight(this._scrollable.nativeElement),
+					height: getContentHeight(this._scrollContainer.nativeElement)
+				});
+				let event = e.getEventOutput();
+				let config = this._originalConfig.find(i => i.id === event.payload.id);
+
+				if (!config.gridItemConfig) {
+					config.gridItemConfig = {};
+				}
+				config.gridItemConfig.sizex = e.sizex;
+				config.gridItemConfig.sizey = e.sizey;
+
+				let writeableConfig = objects.clone(this._originalConfig);
+
+				writeableConfig.forEach(i => {
+					delete i.id;
+				});
+
+				let component = this._widgets.find(i => i.id === event.payload.id);
+
+				component.layout();
+
+				this.dashboardService.writeSettings(this.context, writeableConfig);
+			}));
+			this._editDispose.push(this._grid.onDragStop.subscribe((e: NgGridItem) => {
+				this._scrollableElement.setScrollDimensions({
+					scrollHeight: getContentHeight(this._scrollable.nativeElement),
+					height: getContentHeight(this._scrollContainer.nativeElement)
+				});
+				let event = e.getEventOutput();
+				this._items.forEach(i => {
+					let config = this._originalConfig.find(j => j.id === i.getEventOutput().payload.id);
+					if ((config.gridItemConfig && config.gridItemConfig.col) || config.id === event.payload.id) {
+						if (!config.gridItemConfig) {
+							config.gridItemConfig = {};
+						}
+						config.gridItemConfig.col = i.col;
+						config.gridItemConfig.row = i.row;
+					}
+				});
+				this._originalConfig.sort(configSorter);
+
+				let writeableConfig = objects.clone(this._originalConfig);
+
+				writeableConfig.forEach(i => {
+					delete i.id;
+				});
+
+				this.dashboardService.writeSettings(this.context, writeableConfig);
+			}));
 		}
 	}
 }

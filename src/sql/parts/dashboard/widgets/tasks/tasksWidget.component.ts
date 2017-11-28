@@ -27,7 +27,7 @@ import * as nls from 'vs/nls';
 import * as types from 'vs/base/common/types';
 import { ScrollableElement } from 'vs/base/browser/ui/scrollbar/scrollableElement';
 import { ScrollbarVisibility } from 'vs/base/common/scrollable';
-import { $ } from 'vs/base/browser/builder';
+import { $, Builder } from 'vs/base/browser/builder';
 import * as DOM from 'vs/base/browser/dom';
 
 interface IConfig {
@@ -43,6 +43,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 	private _tasks: Array<TaskAction> = [];
 	private _profile: IConnectionProfile;
 	private _scrollableElement: ScrollableElement;
+	private $container: Builder;
 
 	@ViewChild('container', { read: ElementRef }) private _container: ElementRef;
 
@@ -82,16 +83,13 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 
 	ngOnInit() {
 		this._register(registerThemingParticipant(this.registerThemeing));
-		let height = DOM.getContentHeight(this._container.nativeElement);
-		let tilesHeight = Math.floor(height / this._size);
-		let width = (this._size + 18) * Math.ceil(this._tasks.length / tilesHeight);
-		let container = $('.tile-container').style('height', height + 'px').style('width', width + 'px');
+		this._computeContainer();
 
 		this._tasks.map(a => {
-			container.append(this._createTile(a));
+			this.$container.append(this._createTile(a));
 		});
 
-		this._scrollableElement = this._register(new ScrollableElement(container.getHTMLElement(), {
+		this._scrollableElement = this._register(new ScrollableElement(this.$container.getHTMLElement(), {
 			horizontal: ScrollbarVisibility.Auto,
 			vertical: ScrollbarVisibility.Hidden,
 			scrollYToX: true,
@@ -99,7 +97,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		}));
 
 		this._scrollableElement.onScroll(e => {
-			container.getHTMLElement().style.right = e.scrollLeft + 'px';
+			this.$container.getHTMLElement().style.right = e.scrollLeft + 'px';
 		});
 
 		(this._container.nativeElement as HTMLElement).appendChild(this._scrollableElement.getDomNode());
@@ -107,8 +105,18 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		// Update scrollbar
 		this._scrollableElement.setScrollDimensions({
 			width: DOM.getContentWidth(this._container.nativeElement),
-			scrollWidth: DOM.getContentWidth(container.getHTMLElement()) + 18 // right padding
+			scrollWidth: DOM.getContentWidth(this.$container.getHTMLElement()) + 18 // right padding
 		});
+	}
+
+	private _computeContainer(): void {
+		let height = DOM.getContentHeight(this._container.nativeElement);
+		let tilesHeight = Math.floor(height / (this._size + 10));
+		let width = (this._size + 18) * Math.ceil(this._tasks.length / tilesHeight);
+		if (!this.$container) {
+			this.$container = $('.tile-container');
+		}
+		this.$container.style('height', height + 'px').style('width', width + 'px');
 	}
 
 	private _createTile(action: TaskAction): HTMLElement {
@@ -138,5 +146,14 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 			profile: this._profile
 		};
 		task.run(context);
+	}
+
+	public layout(): void {
+		this._computeContainer();
+		// Update scrollbar
+		this._scrollableElement.setScrollDimensions({
+			width: DOM.getContentWidth(this._container.nativeElement),
+			scrollWidth: DOM.getContentWidth(this.$container.getHTMLElement()) + 18 // right padding
+		});
 	}
 }

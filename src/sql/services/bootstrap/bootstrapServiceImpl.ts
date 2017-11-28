@@ -41,6 +41,7 @@ import { IAccountManagementService } from 'sql/services/accountManagement/interf
 import { IWindowsService, IWindowService } from 'vs/platform/windows/common/windows';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
 
 export class BootstrapService implements IBootstrapService {
 
@@ -91,7 +92,8 @@ export class BootstrapService implements IBootstrapService {
 		@ITelemetryService public telemetryService: ITelemetryService,
 		@IStorageService public storageService: IStorageService,
 		@IClipboardService public clipboardService: IClipboardService,
-		@ICapabilitiesService public capabilitiesService: ICapabilitiesService
+		@ICapabilitiesService public capabilitiesService: ICapabilitiesService,
+		@IConfigurationEditingService public configurationEditorService: IConfigurationEditingService
 	) {
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();
