@@ -28,14 +28,20 @@ import { Registry } from 'vs/platform/registry/common/platform';
 
 const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribution);
 
+interface IStorageResult {
+	date: string;
+	results: SimpleExecuteResult;
+}
+
 @Component({
 	selector: 'insights-widget',
 	template: `
 				<div *ngIf="error" style="text-align: center; padding-top: 20px">{{error}}</div>
+				<div *ngIf="lastUpdated" style="font-style: italic; font-size: 80%; margin-left: 5px">{{lastUpdated}}</div>
 				<div style="margin: 10px; width: calc(100% - 20px); height: calc(100% - 20px)">
 					<ng-template component-host></ng-template>
 				</div>`,
-	styles: [':host { width: 100%; height: 100%}']
+	styles: [':host { width: 100%; height: 100% }']
 })
 export class InsightsWidget extends DashboardWidget implements IDashboardWidget, AfterContentInit {
 	private insightConfig: IInsightsConfig;
@@ -46,6 +52,7 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 	private _init: boolean = false;
 
 	public error: string;
+	public lastUpdated: string;
 
 	constructor(
 		@Inject(forwardRef(() => ComponentFactoryResolver)) private _componentFactoryResolver: ComponentFactoryResolver,
@@ -122,7 +129,11 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 
 	private _storeResult(result: SimpleExecuteResult): SimpleExecuteResult {
 		if (this.insightConfig.cacheId) {
-			this.dashboardService.storageService.store(this._getStorageKey(), JSON.stringify(result));
+			let store: IStorageResult = {
+				date: new Date().toString(),
+				results: result
+			};
+			this.dashboardService.storageService.store(this._getStorageKey(), JSON.stringify(store));
 		}
 		return result;
 	}
@@ -131,8 +142,12 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 		if (this.insightConfig.cacheId) {
 			let storage = this.dashboardService.storageService.get(this._getStorageKey());
 			if (storage) {
+				let storedResult: IStorageResult = JSON.parse(storage);
+				let date = new Date(storedResult.date);
+				this.lastUpdated = nls.localize('insights.lastUpdated', "Last Updated: {0} {1}", date.toLocaleTimeString(), date.toLocaleDateString());
 				if (this._init) {
-					this._updateChild(JSON.parse(storage));
+					this._updateChild(storedResult.results);
+					this._cd.detectChanges();
 				} else {
 					this.queryObv = Observable.fromPromise(Promise.resolve<SimpleExecuteResult>(JSON.parse(storage)));
 				}

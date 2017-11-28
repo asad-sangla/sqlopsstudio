@@ -16,7 +16,7 @@ export const insightsSchema: IJSONSchema = {
 	type: 'object',
 	description: nls.localize('insightWidgetDescription', 'Adds a widget that can query a server or database and display the results in multiple ways - as a chart, summarized count, and more'),
 	properties: {
-		id: {
+		cacheId: {
 			type: 'string',
 			description: nls.localize('insightIdDescription', 'Unique Identifier used for cacheing the results of the insight.')
 		},
