@@ -14,8 +14,6 @@ import { IAction, Action } from 'vs/base/common/actions';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-import { IRange } from 'sql/base/node/rangy';
-
 export const GRID_SAVECSV_ID = 'grid.saveAsCsv';
 export const GRID_SAVEJSON_ID = 'grid.saveAsJson';
 export const GRID_SAVEEXCEL_ID = 'grid.saveAsExcel';
@@ -163,9 +161,8 @@ export class CopyMessagesAction extends Action {
 		super(id, label);
 	}
 
-	public run(selectedRange: IRange): TPromise<boolean> {
-		let selectedText = selectedRange.text();
-		this.clipboardService.writeText(selectedText);
+	public run(selectedRange: Selection): TPromise<boolean> {
+		this.clipboardService.writeText(selectedRange.toString());
 		return TPromise.as(true);
 	}
 }

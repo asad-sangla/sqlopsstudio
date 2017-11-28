@@ -205,8 +205,6 @@ function main() {
 				'pretty-data',
 				'html-query-plan',
 				'ng2-charts/ng2-charts',
-				'rangy',
-				'rangy/lib/rangy-textrange',
 				'rxjs/Observable',
 				'rxjs/Subject',
 				'rxjs/Observer'

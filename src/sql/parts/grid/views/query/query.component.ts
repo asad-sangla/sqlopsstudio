@@ -16,7 +16,6 @@ import {
 	ViewChildren, forwardRef, EventEmitter, Input, ViewChild
 } from '@angular/core';
 import { IGridDataRow, SlickGrid, VirtualizedCollection } from 'angular2-slickgrid';
-import * as rangy from 'sql/base/node/rangy';
 
 import * as LocalizedConstants from 'sql/parts/query/common/localizedConstants';
 import * as Services from 'sql/parts/grid/services/sharedServices';
@@ -333,27 +332,10 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 		self.onScroll(0);
 	}
 
-	/**
-	 * Perform copy and do other actions for context menu on the messages component
-	 */
-	handleMessagesContextClick(event: { type: string, selectedRange: rangy.IRange }): void {
-		switch (event.type) {
-			case 'copySelection':
-				let selectedText = event.selectedRange.text();
-				this._bootstrapService.clipboardService.writeText(selectedText);
-				break;
-			case 'selectall':
-				document.execCommand('selectAll');
-				break;
-			default:
-				break;
-		}
-	}
-
 	openMessagesContextMenu(event: any): void {
 		let self = this;
 		event.preventDefault();
-		let selectedRange: rangy.IRange = this.getSelectedRangeUnderMessages();
+		let selectedRange = this.getSelectedRangeUnderMessages();
 		let selectAllFunc = () => self.selectAllMessages();
 		let anchor = { x: event.x + 1, y: event.y };
 		this.contextMenuService.showContextMenu({
@@ -523,7 +505,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 
 		// Deselect any text since we are navigating to a new grid
 		// Do this even if not switching grids, since this covers clicking on the grid after message selection
-		rangy.getSelection().removeAllRanges();
+		window.getSelection().removeAllRanges();
 
 		// check if you are actually trying to change navigation
 		if (this.activeGrid === targetIndex) {

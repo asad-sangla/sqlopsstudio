@@ -25,7 +25,6 @@ import * as Services from 'sql/parts/grid/services/sharedServices';
 import * as GridContentEvents from 'sql/parts/grid/common/gridContentEvents';
 import { ResultsVisibleContext, ResultsGridFocussedContext, ResultsMessagesFocussedContext } from 'sql/parts/query/common/queryContext';
 import { IBootstrapService } from 'sql/services/bootstrap/bootstrapService';
-import * as rangy from 'sql/base/node/rangy';
 import { error } from 'sql/base/common/log';
 
 import { IAction } from 'vs/base/common/actions';
@@ -255,8 +254,12 @@ export abstract class GridParentComponent {
 	}
 
 	private getMessageText(): string {
-		let range: rangy.IRange = this.getSelectedRangeUnderMessages();
-		return range ? range.text() : '';
+		if (document.activeElement === this.getMessagesElement()) {
+			if (window.getSelection()) {
+				return window.getSelection().toString();
+			}
+		}
+		return '';
 	}
 
 	private initShortcutsBase(): void {
@@ -442,25 +445,12 @@ export abstract class GridParentComponent {
 		this._cd.detectChanges();
 	}
 
-	getSelectedRangeUnderMessages(): rangy.IRange {
-		let selectedRange: rangy.IRange = undefined;
-		let msgEl = this.getMessagesElement();
-		if (msgEl) {
-			selectedRange = this.getSelectedRangeWithin(msgEl);
+	getSelectedRangeUnderMessages(): Selection {
+		if (document.activeElement === this.getMessagesElement()) {
+			return window.getSelection();
+		} else {
+			return undefined;
 		}
-		return selectedRange;
-	}
-
-	getSelectedRangeWithin(el): rangy.IRange {
-		let selectedRange = undefined;
-		let sel = rangy.getSelection();
-		let elRange = <rangy.IRange>rangy.createRange();
-		elRange.selectNodeContents(el);
-		if (sel.rangeCount) {
-			selectedRange = sel.getRangeAt(0).intersection(elRange);
-		}
-		elRange.detach();
-		return selectedRange;
 	}
 
 	selectAllMessages(): void {
@@ -468,11 +458,12 @@ export abstract class GridParentComponent {
 		this.selectElementContents(msgEl);
 	}
 
-	selectElementContents(el): void {
-		let range = rangy.createRange();
+	selectElementContents(el: HTMLElement): void {
+		let range = document.createRange();
 		range.selectNodeContents(el);
-		let sel = rangy.getSelection();
-		sel.setSingleRange(range);
+		let sel = window.getSelection();
+		sel.removeAllRanges();
+		sel.addRange(range);
 	}
 
 	/**
