@@ -14,9 +14,9 @@ import { TPromise } from 'vs/base/common/winjs.base';
 export class AccountManagementTestService implements IAccountManagementService {
 	_serviceBrand: any;
 
-	public get addAccountProviderEvent(): Event<AccountProviderAddedEventParams> {return () => {return undefined;};}
-	public get removeAccountProviderEvent(): Event<data.AccountProviderMetadata> {return () => {return undefined;};}
-	public get updateAccountListEvent(): Event<UpdateAccountListEventParams> {return () => {return undefined;};}
+	public get addAccountProviderEvent(): Event<AccountProviderAddedEventParams> { return () => { return undefined; }; }
+	public get removeAccountProviderEvent(): Event<data.AccountProviderMetadata> { return () => { return undefined; }; }
+	public get updateAccountListEvent(): Event<UpdateAccountListEventParams> { return () => { return undefined; }; }
 
 	addAccount(providerId: string): Thenable<data.Account> {
 		return undefined;
@@ -27,6 +27,10 @@ export class AccountManagementTestService implements IAccountManagementService {
 	}
 
 	endAutoOAuthDeviceCode(): void {
+		return undefined;
+	}
+
+	copyUserCodeAndOpenBrowser(userCode: string, uri: string): void {
 		return undefined;
 	}
 

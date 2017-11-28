@@ -7,7 +7,7 @@
 
 import * as data from 'data';
 import Event from 'vs/base/common/event';
-import { AccountAdditionResult, AccountProviderAddedEventParams, UpdateAccountListEventParams } from  'sql/services/accountManagement/eventTypes';
+import { AccountAdditionResult, AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
 export const SERVICE_ID = 'accountManagementService';
@@ -28,6 +28,7 @@ export interface IAccountManagementService {
 	openAccountListDialog(): Thenable<void>;
 	beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void;
 	endAutoOAuthDeviceCode(): void;
+	copyUserCodeAndOpenBrowser(userCode: string, uri: string): void;
 
 	// SERVICE MANAGEMENT METHODS /////////////////////////////////////////
 	registerProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): void;

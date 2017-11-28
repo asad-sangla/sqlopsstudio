@@ -67,7 +67,7 @@ export class AccountDialog extends Modal {
 		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		super(
-			localize('linkedAccounts', 'Linked Accounts'),
+			localize('linkedAccounts', 'Linked accounts'),
 			TelemetryKeys.Accounts,
 			partService,
 			telemetryService,
@@ -81,7 +81,7 @@ export class AccountDialog extends Modal {
 		this._actionRunner = new ActionRunner();
 
 		// Setup the event emitters
-		this._onAddAccountErrorEmitter = new  Emitter<string>();
+		this._onAddAccountErrorEmitter = new Emitter<string>();
 		this._onCloseEmitter = new Emitter<void>();
 
 		// Create the view model and wire up the events

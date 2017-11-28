@@ -12,17 +12,15 @@ import * as statusbar from 'vs/workbench/browser/parts/statusbar/statusbar';
 
 import Event, { Emitter } from 'vs/base/common/event';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IMessageService, IConfirmation } from 'vs/platform/message/common/message';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { Memento, Scope as MementoScope } from 'vs/workbench/common/memento';
 
 import AccountStore from 'sql/services/accountManagement/accountStore';
 import { AccountDialogController } from 'sql/parts/accountManagement/accountDialog/accountDialogController';
+import { AutoOAuthDialogController } from 'sql/parts/accountManagement/autoOAuthDialog/autoOAuthDialogController';
 import { AccountListStatusbarItem } from 'sql/parts/accountManagement/accountListStatusbar/accountListStatusbarItem';
 import { AccountProviderAddedEventParams, UpdateAccountListEventParams } from 'sql/services/accountManagement/eventTypes';
 import { IAccountManagementService } from 'sql/services/accountManagement/interfaces';
-
-// TODO: Test code, Remove
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 
 export class AccountManagementService implements IAccountManagementService {
@@ -34,6 +32,7 @@ export class AccountManagementService implements IAccountManagementService {
 	public _serviceBrand: any;
 	private _accountStore: AccountStore;
 	private _accountDialogController: AccountDialogController;
+	private _autoOAuthDialogController: AutoOAuthDialogController;
 	private _mementoContext: Memento;
 
 	// EVENT EMITTERS //////////////////////////////////////////////////////
@@ -52,7 +51,6 @@ export class AccountManagementService implements IAccountManagementService {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IStorageService private _storageService: IStorageService,
 		@IClipboardService private _clipboardService: IClipboardService,
-		@IMessageService private _messageService: IMessageService	// TODO: Test code!
 	) {
 		// Create the account store
 		if (!this._mementoObj) {
@@ -207,40 +205,44 @@ export class AccountManagementService implements IAccountManagementService {
 
 				self._accountDialogController.openAccountDialog();
 				resolve();
-			} catch(e) {
+			} catch (e) {
 				reject(e);
 			}
 		});
 	}
 
-	public beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
-		let self = this;
-
-		// TODO: If a oauth flyout is already open, return an error
-
-		// TODO: Temporary code for demoing, stubbing out functionality
-		// Create options
-		let confirm: IConfirmation = {
-			message: message,
-			primaryButton: nls.localize('accountManagementOAuthCopyOpen', 'Copy & Open'),
-			secondaryButton: nls.localize('acountManagementOAuthCancel', 'Cancel'),
-			type: 'question'
-		};
-
-		// Open the message
-		if(!this._messageService.confirm(confirm)) {
-			// Inform the caller that the user cancelled the OAuth
-			// TODO: Implement
-			return;
+	private get autoOAuthDialogController(): AutoOAuthDialogController {
+		// If the add account dialog hasn't been defined, create a new one
+		if (!this._autoOAuthDialogController) {
+			this._autoOAuthDialogController = this._instantiationService.createInstance(AutoOAuthDialogController);
 		}
-
-		// Copy the user code to the clipboard and open a browser to the verification URI
-		self._clipboardService.writeText(userCode);
-		window.open(uri);
+		return this._autoOAuthDialogController;
 	}
 
+	/**
+	 * Begin auto OAuth device code open add account dialog
+	 * @return {TPromise<any>}	Promise that finishes when the account list dialog opens
+	 */
+	public beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
+		// TODO: If a oauth flyout is already open, return an error
+		// TODO: The title should come from extension
+		let title = nls.localize('addAzureAccount', 'Add Azure account');
+		this.autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
+	}
+
+	/**
+	 * End auto OAuth Devide code closes add account dialog
+	 */
 	public endAutoOAuthDeviceCode(): void {
-		// TODO: Implement
+		this.autoOAuthDialogController.closeAutoOAuthDialog();
+	}
+
+	/**
+	 * Copy the user code to the clipboard and open a browser to the verification URI
+	 */
+	public copyUserCodeAndOpenBrowser(userCode: string, uri: string): void {
+		this._clipboardService.writeText(userCode);
+		window.open(uri);
 	}
 
 	// SERVICE MANAGEMENT METHODS //////////////////////////////////////////

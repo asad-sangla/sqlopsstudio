@@ -18,7 +18,7 @@ const publicAzureSettings = {
 		id: 'azurePublicCloud',
 		settings: <Settings>{
 			host: 'https://login.microsoftonline.com',
-			clientId: 'TBD',
+			clientId: 'e52434c1-5f93-425b-bcd0-97fecbf68f22',
 			signInResourceId: 'https://management.core.windows.net/',
 			graphResource: {
 				id: 'https://graph.windows.net/',

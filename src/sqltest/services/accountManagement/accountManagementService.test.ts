@@ -34,7 +34,7 @@ const account: data.Account = {
 	},
 	displayInfo: {
 		displayName: 'Test Account 1',
-		contextualLogo: {light: '', dark: ''},
+		contextualLogo: { light: '', dark: '' },
 		contextualDisplayName: 'Azure Account'
 	},
 	isStale: false,
@@ -96,8 +96,8 @@ suite('Account Management Service Tests:', () => {
 				assert.equal(result, account);
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -142,8 +142,8 @@ suite('Account Management Service Tests:', () => {
 				assert.equal(result, account);
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -155,8 +155,8 @@ suite('Account Management Service Tests:', () => {
 		// Then: It should be rejected
 		ams.addAccount('doesNotExist')
 			.then(
-				() => done('Promise resolved when it should have rejected'),
-				() => done()
+			() => done('Promise resolved when it should have rejected'),
+			() => done()
 			);
 
 	});
@@ -179,8 +179,8 @@ suite('Account Management Service Tests:', () => {
 				assert.equal(result[0], noAccountProvider);
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -196,8 +196,8 @@ suite('Account Management Service Tests:', () => {
 				assert.equal(result.length, 0);
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -209,8 +209,8 @@ suite('Account Management Service Tests:', () => {
 		// Then: It should be rejected
 		ams.getAccountsForProvider('doesNotExist')
 			.then(
-				() => done('Promise resolved when it should have rejected'),
-				() => done()
+			() => done('Promise resolved when it should have rejected'),
+			() => done()
 			);
 	});
 
@@ -231,8 +231,8 @@ suite('Account Management Service Tests:', () => {
 				assert.equal(result.length, 0);
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -252,8 +252,8 @@ suite('Account Management Service Tests:', () => {
 				assert.equal(result, accountList);
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -275,7 +275,7 @@ suite('Account Management Service Tests:', () => {
 
 		// If: I remove an account that exists
 		state.accountManagementService.removeAccount(account.key)
-			.then( result => {
+			.then(result => {
 				// Then:
 				// ... I should have gotten true back
 				assert.ok(result);
@@ -294,8 +294,8 @@ suite('Account Management Service Tests:', () => {
 				});
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -316,7 +316,7 @@ suite('Account Management Service Tests:', () => {
 		};
 
 		// If: I remove an account that doesn't exist
-		let accountKey = {providerId: noAccountProvider.id, accountId: 'foobar'};
+		let accountKey = { providerId: noAccountProvider.id, accountId: 'foobar' };
 		state.accountManagementService.removeAccount(accountKey)
 			.then(result => {
 				// Then:
@@ -333,8 +333,8 @@ suite('Account Management Service Tests:', () => {
 				state.eventVerifierUpdate.assertNotFired();
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -360,8 +360,8 @@ suite('Account Management Service Tests:', () => {
 				mockDialogController.verify(x => x.openAccountDialog(), TypeMoq.Times.once());
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -388,13 +388,13 @@ suite('Account Management Service Tests:', () => {
 				mockDialogController.verify(x => x.openAccountDialog(), TypeMoq.Times.exactly(2));
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
 	// test('Perform oauth - success', done => {
-		// TODO: implement this test properly once we remove direct IPC calls (see https://github.com/Microsoft/carbon/issues/2091)
+	// TODO: implement this test properly once we remove direct IPC calls (see https://github.com/Microsoft/carbon/issues/2091)
 	// });
 
 	test('Register provider - success', done => {
@@ -425,8 +425,8 @@ suite('Account Management Service Tests:', () => {
 				});
 			})
 			.then(
-				() => done(),
-				err => done(err)
+			() => done(),
+			err => done(err)
 			);
 	});
 
@@ -438,14 +438,14 @@ suite('Account Management Service Tests:', () => {
 		// ... Register a provider to remove
 		let mockProvider = getMockAccountProvider();
 		mocks.accountManagementService.registerProvider(noAccountProvider, mockProvider.object)
-		.then((success) => {
-			// If: I remove an account provider
-			mocks.accountManagementService.unregisterProvider(noAccountProvider);
+			.then((success) => {
+				// If: I remove an account provider
+				mocks.accountManagementService.unregisterProvider(noAccountProvider);
 
 				// Then: The provider removed event should have fired
 				mocks.eventVerifierProviderRemoved.assertFired(noAccountProvider);
-		}, error => {
-		}).then(() => done(), err => done(err));
+			}, error => {
+			}).then(() => done(), err => done(err));
 
 	});
 });
@@ -467,7 +467,7 @@ function getTestState(): AccountManagementState {
 	let mockMemento = {};
 
 	// Create the account management service
-	let ams = new AccountManagementService(mockMemento, mockInstantiationService.object, null, null, null);
+	let ams = new AccountManagementService(mockMemento, mockInstantiationService.object, null, null);
 
 	// Wire up event handlers
 	let evUpdate = new EventVerifierSingle<UpdateAccountListEventParams>();
