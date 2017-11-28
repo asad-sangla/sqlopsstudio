@@ -1340,7 +1340,7 @@ export namespace MetadataQueryRequest {
 // ------------------------------- < Scripting Events > ------------------------------------
 
 export namespace ScriptingRequest {
-	export const type: RequestType<ScriptingParams, ScriptingResult, void> = { get method(): string { return 'scripting/script'; } };
+	export const type: RequestType<ScriptingParams, ScriptingResult, void> = { get method(): string { return 'scripting/scriptas'; } };
 }
 
 // ------------------------------- < Scripting Complete Event > ------------------------------------

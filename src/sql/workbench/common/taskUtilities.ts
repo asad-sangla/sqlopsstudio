@@ -195,12 +195,8 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 			scriptingService.script(connectionResult, metadata, operation, paramDetails).then(result => {
 				if (result) {
 					let script: string = result.script;
-					let startPos: number = 0;
-					if (connectionProfile.providerName === 'MSSQL') {
-						startPos = getStartPos(script, operation, metadata.metadataTypeName);
-					}
-					if (startPos >= 0) {
-						script = script.substring(startPos);
+
+					if (script) {
 						queryEditorService.newSqlEditor(script, connectionProfile.providerName).then(() => {
 							resolve();
 						}).catch(editorError => {
@@ -210,13 +206,15 @@ export function script(connectionProfile: IConnectionProfile, metadata: data.Obj
 					else {
 						let scriptNotFoundMsg = nls.localize('scriptNotFoundForObject', 'No script was returned when scripting as {0} on object {1}',
 							GetScriptOperationName(operation), metadata.metadataTypeName);
+						let messageDetail = '';
 						let operationResult = scriptingService.getOperationFailedResult(result.operationId);
 						if (operationResult && operationResult.hasError && operationResult.errorMessage) {
 							scriptNotFoundMsg = operationResult.errorMessage;
+							messageDetail = operationResult.errorDetails;
 						}
 						if (errorMessageService) {
 							let title = nls.localize('scriptingFailed', 'Scripting Failed');
-							errorMessageService.showDialog(Severity.Error, title, scriptNotFoundMsg);
+							errorMessageService.showDialog(Severity.Error, title, scriptNotFoundMsg, messageDetail);
 						}
 						reject(scriptNotFoundMsg);
 					}

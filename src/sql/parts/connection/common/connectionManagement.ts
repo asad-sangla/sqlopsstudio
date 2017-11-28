@@ -271,7 +271,7 @@ export interface IServerGroupController {
 export const IErrorMessageService = createDecorator<IErrorMessageService>('errorMessageService');
 export interface IErrorMessageService {
 	_serviceBrand: any;
-	showDialog(severity: Severity, headerTitle: string, message: string, messageDatails?: string): void;
+	showDialog(severity: Severity, headerTitle: string, message: string, messageDetails?: string): void;
 }
 
 export enum ServiceOptionType {

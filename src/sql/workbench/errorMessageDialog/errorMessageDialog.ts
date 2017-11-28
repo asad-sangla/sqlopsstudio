@@ -106,11 +106,11 @@ export class ErrorMessageDialog extends Modal {
 		this.hide();
 	}
 
-	public open(severity: Severity, headerTitle: string, message: string, messageDatails: string) {
+	public open(severity: Severity, headerTitle: string, message: string, messageDetails: string) {
 		this._severity = severity;
 		this._message = message;
 		this.title = headerTitle;
-		this._messageDatails = messageDatails;
+		this._messageDatails = messageDetails;
 		if (this._messageDatails) {
 			this._copyButton.getElement().style.visibility = 'visible';
 		} else {
