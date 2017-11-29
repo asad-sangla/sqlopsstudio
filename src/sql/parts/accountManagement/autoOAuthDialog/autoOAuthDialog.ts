@@ -31,10 +31,14 @@ export class AutoOAuthDialog extends Modal {
 
 	// EVENTING ////////////////////////////////////////////////////////////
 	private _onHandleAddAccount = new Emitter<void>();
-	public onHandleAddAccount: Event<void> = this._onHandleAddAccount.event;
+	public get onHandleAddAccount(): Event<void> { return this._onHandleAddAccount.event; }
 
 	private _onCancel = new Emitter<void>();
-	public onCancel: Event<void> = this._onCancel.event;
+	public get onCancel(): Event<void> { return this._onCancel.event; }
+
+
+	private _onCloseEvent = new Emitter<void>();
+	public get onCloseEvent(): Event<void> { return this._onCloseEvent.event; }
 
 	constructor(
 		@IPartService partService: IPartService,
@@ -63,7 +67,6 @@ export class AutoOAuthDialog extends Modal {
 		this.backButton.addListener('click', () => this.cancel());
 		this._register(attachButtonStyler(this.backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND }));
 
-		this._copyAndOpenButton = this.addFooterButton(localize('CopyAndOpen', 'Copy & Open'), () => this.addAccount());
 		this._closeButton = this.addFooterButton(localize('cancel', 'Cancel'), () => this.cancel());
 		this.registerListeners();
 		this._userCodeInputBox.disable();
@@ -86,9 +89,18 @@ export class AutoOAuthDialog extends Modal {
 			this._websiteInputBox = this.createInputBoxHelper(addAccountContainer, localize('website', 'Website'));
 		});
 
+		let copyAndOpenSection;
+		$().div({ class: 'auto-oauth-copyAndOpen-section new-section' }, (copyAndOpenContainer) => {
+			copyAndOpenSection = copyAndOpenContainer.getHTMLElement();
+			this._copyAndOpenButton = new Button(copyAndOpenContainer);
+			this._copyAndOpenButton.label = localize('CopyAndOpen', 'Copy & Open');
+			this._copyAndOpenButton.addListener('click', () => this.addAccount());
+		});
+
 		new Builder(container).div({ class: 'auto-oauth-dialog' }, (builder) => {
 			builder.append(this._descriptionElement);
 			builder.append(addAccountSection);
+			builder.append(copyAndOpenSection);
 		});
 	}
 
@@ -126,16 +138,23 @@ export class AutoOAuthDialog extends Modal {
 	}
 
 	private addAccount() {
-		this.showSpinner();
-		this._onHandleAddAccount.fire();
+		if (this._copyAndOpenButton.enabled) {
+			this._copyAndOpenButton.enabled = false;
+			this.showSpinner();
+			this._onHandleAddAccount.fire();
+		}
 	}
 
 	public cancel() {
 		this._onCancel.fire();
+
+		// Todo: this.close should be removed once the cancel operation is implemented
 		this.close();
 	}
 
 	public close() {
+		this._copyAndOpenButton.enabled = true;
+		this._onCloseEvent.fire();
 		this.hideSpinner();
 		this.hide();
 	}

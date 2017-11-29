@@ -224,7 +224,6 @@ export class AccountManagementService implements IAccountManagementService {
 	 * @return {TPromise<any>}	Promise that finishes when the account list dialog opens
 	 */
 	public beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
-		// TODO: If a oauth flyout is already open, return an error
 		// TODO: The title should come from extension
 		let title = nls.localize('addAzureAccount', 'Add Azure account');
 		this.autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
