@@ -76,6 +76,26 @@ export default class TokenCache implements adal.TokenCache {
 		});
 	}
 
+	/**
+	 * Wrapper to make callback-based find method into a thenable method
+	 * @param query Partial object to use to look up tokens. Ideally should be partial of adal.TokenResponse
+	 * @returns {Thenable<any[]>} Promise to return the matching adal.TokenResponse objects.
+	 *     Rejected if an error was sent in the callback
+	 */
+	public findThenable(query: any): Thenable<any[]> {
+		let self = this;
+
+		return new Promise<any[]>((resolve, reject) => {
+			self.find(query, (error: Error, results: any[]) => {
+				if (error) {
+					reject(error);
+				} else {
+					resolve(results);
+				}
+			});
+		});
+	}
+
 	public remove(entries: adal.TokenResponse[], callback: (error: Error, result: null) => void): void {
 		let self = this;
 
@@ -87,6 +107,26 @@ export default class TokenCache implements adal.TokenCache {
 					() => callback(null, null),
 					(err) => callback(err, null)
 				);
+		});
+	}
+
+	/**
+	 * Wrapper to make callback-based remove method into a thenable method
+	 * @param {TokenResponse[]} entries Array of entries to remove from the token cache
+	 * @returns {Thenable<void>} Promise to remove the given tokens from the token cache
+	 *     Rejected if an error was sent in the callback
+	 */
+	public removeThenable(entries: adal.TokenResponse[]): Thenable<void> {
+		let self = this;
+
+		return new Promise<void>((resolve, reject) => {
+			self.remove(entries, (error: Error, result: null) => {
+				if (error) {
+					reject(error);
+				} else {
+					resolve();
+				}
+			});
 		});
 	}
 

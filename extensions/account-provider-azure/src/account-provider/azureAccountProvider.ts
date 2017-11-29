@@ -50,10 +50,27 @@ export class AzureAccountProvider implements data.AccountProvider {
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
+	/**
+	 * Clears all tokens that belong to the given account from the token cache
+	 * @param {"data".AccountKey} accountKey Key identifying the account to delete tokens for
+	 * @returns {Thenable<void>} Promise to clear requested tokens from the token cache
+	 */
 	public clear(accountKey: data.AccountKey): Thenable<void> {
-		throw new Error('Not implemented');
+		let self = this;
+
+		// Put together a query to look up any tokens associated with the account key
+		let query = <adal.TokenResponse>{ userId: accountKey.accountId };
+
+		// 1) Look up the tokens associated with the query
+		// 2) Remove them
+		return this._tokenCache.findThenable(query)
+			.then(results => { return self._tokenCache.removeThenable(results); });
 	}
 
+	/**
+	 * Clears the entire token cache. Invoked by command palette action.
+	 * @returns {Thenable<void>} Promise to clear the token cache
+	 */
 	public clearTokenCache(): Thenable<void> {
 		return this._tokenCache.clear();
 	}
