@@ -133,6 +133,7 @@ import 'sql/parts/query/common/query.contribution';
 import 'sql/parts/profiler/contrib/profiler.contribution';
 import 'sql/parts/profiler/contrib/profilerActions.contribution';
 import 'sql/parts/registeredServer/serverGroupDialog/serverGroup.contribution';
+import 'sql/parts/accountManagement/common/accountManagement.contribution';
 /* Insights */
 import 'sql/parts/dashboard/widgets/insights/views/charts/types/barChart.contribution';
 import 'sql/parts/dashboard/widgets/insights/views/charts/types/doughnutChart.contribution';
