@@ -46,6 +46,14 @@ export class DropdownList extends Dropdown {
 				this._action.run();
 				this.hide();
 			}));
+			this.toDispose.push(DOM.addDisposableListener(button.getElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+				let event = new StandardKeyboardEvent(e);
+				if (event.equals(KeyCode.Enter)) {
+					e.stopPropagation();
+					this._action.run();
+					this.hide();
+				}
+			}));
 			attachButtonStyler(button, this._themeService);
 		}
 

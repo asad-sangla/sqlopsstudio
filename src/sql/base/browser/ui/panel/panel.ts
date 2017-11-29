@@ -10,6 +10,8 @@ import { Dimension, Builder } from 'vs/base/browser/builder';
 import { addDisposableListener, EventType } from 'vs/base/browser/dom';
 import { IAction, IActionRunner, Action, IActionChangeEvent, ActionRunner } from 'vs/base/common/actions';
 import { IActionOptions, ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
 import './panelStyles';
 
 export interface IPanelStyles {
@@ -90,11 +92,18 @@ export class TabbedPanel implements IThemable {
 	private _createTab(tab: IInternalPanelTab): void {
 		let tabElement = document.createElement('div');
 		tabElement.className = 'tab';
+		tabElement.setAttribute('tabindex', '0');
 		let tabLabel = document.createElement('a');
 		tabLabel.className = 'tabLabel';
 		tabLabel.innerText = tab.title;
 		tabElement.appendChild(tabLabel);
 		addDisposableListener(tabElement, EventType.CLICK, (e) => this.showTab(tab.identifier));
+		addDisposableListener(tabElement, EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Enter)) {
+				this.showTab(tab.identifier);
+			}
+		});
 		this._tabList.appendChild(tabElement);
 		tab.header = tabElement;
 		tab.label = tabLabel;

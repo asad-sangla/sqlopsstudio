@@ -567,7 +567,7 @@ export class RestoreDialog extends Modal {
 		}));
 
 		this._register(DOM.addDisposableListener(this._browseFileButton.getElement(), DOM.EventType.CLICK, () => {
-				this.onFileBrowserRequested();
+			this.onFileBrowserRequested();
 		}));
 
 		this._register(DOM.addDisposableListener(this._browseFileButton.getElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
@@ -700,7 +700,7 @@ export class RestoreDialog extends Modal {
 		this._ownerUri = ownerUri;
 
 		this.show();
-		this._filePathInputBox.focus();
+		this._restoreFromSelectBox.focus();
 	}
 
 	protected layout(height?: number): void {
