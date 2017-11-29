@@ -35,10 +35,10 @@ export class DatabaseDashboardPage extends DashboardPage implements OnInit {
 	constructor(
 		@Inject(forwardRef(() => IBreadcrumbService)) private _breadcrumbService: IBreadcrumbService,
 		@Inject(forwardRef(() => DashboardServiceInterface)) dashboardService: DashboardServiceInterface,
-		@Inject(forwardRef(() => ChangeDetectorRef)) private _cd: ChangeDetectorRef,
+		@Inject(forwardRef(() => ChangeDetectorRef)) _cd: ChangeDetectorRef,
 		@Inject(forwardRef(() => ElementRef)) el: ElementRef
 	) {
-		super(dashboardService, el);
+		super(dashboardService, el, _cd);
 		this._register(dashboardService.onUpdatePage(() => {
 			this.refresh(true);
 			this._cd.detectChanges();

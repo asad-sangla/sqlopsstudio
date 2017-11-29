@@ -5,9 +5,8 @@
 
 import 'vs/css!./dashboardPage';
 
-import { Component, Inject, forwardRef, ViewChild, ElementRef, ViewChildren, QueryList, OnDestroy } from '@angular/core';
+import { Component, Inject, forwardRef, ViewChild, ElementRef, ViewChildren, QueryList, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { NgGridConfig, NgGrid, NgGridItem } from 'angular2-grid';
-import { Subscription } from 'rxjs/Subscription';
 
 import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
@@ -19,7 +18,7 @@ import * as objects from 'vs/base/common/objects';
 import { Registry } from 'vs/platform/registry/common/platform';
 import * as types from 'vs/base/common/types';
 import { Severity } from 'vs/platform/message/common/message';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 import * as nls from 'vs/nls';
 import { ScrollableElement } from 'vs/base/browser/ui/scrollbar/scrollableElement';
 import { ScrollbarVisibility } from 'vs/base/common/scrollable';
@@ -28,6 +27,7 @@ import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeS
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 import * as themeColors from 'vs/workbench/common/theme';
 import { generateUuid } from 'vs/base/common/uuid';
+import { subscriptionToDisposable } from 'sql/base/common/lifecycle';
 
 /**
  * @returns whether the provided parameter is a JavaScript Array and each element in the array is a number.
@@ -106,13 +106,13 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 		'min_height': 100,          //  The minimum height of an item. If greater than row_height, this will update the value of min_rows
 		'fix_to_grid': false,       //  Fix all item movements to the grid
 		'auto_style': true,         //  Automatically add required element styles at run-time
-		'auto_resize': true,       //  Automatically set col_width/row_height so that max_cols/max_rows fills the screen. Only has effect is max_cols or max_rows is set
+		'auto_resize': false,       //  Automatically set col_width/row_height so that max_cols/max_rows fills the screen. Only has effect is max_cols or max_rows is set
 		'maintain_ratio': false,    //  Attempts to maintain aspect ratio based on the colWidth/rowHeight values set in the config
 		'prefer_new': false,        //  When adding new items, will use that items position ahead of existing items
 		'limit_to_screen': true,   //  When resizing the screen, with this true and auto_resize false, the grid will re-arrange to fit the screen size. Please note, at present this only works with cascade direction up.
 	};
 	private _originalConfig: WidgetConfig[];
-	private _editDispose: Array<Subscription> = [];
+	private _editDispose: Array<IDisposable> = [];
 	private _scrollableElement: ScrollableElement;
 
 	@ViewChild('properties') private _properties: DashboardWidgetWrapper;
@@ -139,7 +139,8 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 
 	constructor(
 		@Inject(forwardRef(() => DashboardServiceInterface)) protected dashboardService: DashboardServiceInterface,
-		@Inject(forwardRef(() => ElementRef)) protected _el: ElementRef
+		@Inject(forwardRef(() => ElementRef)) protected _el: ElementRef,
+		@Inject(forwardRef(() => ChangeDetectorRef)) protected _cd: ChangeDetectorRef
 	) {
 		super();
 	}
@@ -415,12 +416,27 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 		if (this._grid.dragEnable) {
 			this._grid.disableDrag();
 			this._grid.disableResize();
-			this._editDispose.forEach(i => i.unsubscribe());
+			this._editDispose.forEach(i => i.dispose());
+			this._widgets.forEach(i => {
+				if (i.id) {
+					i.disableEdit();
+				}
+			});
 			this._editDispose = [];
 		} else {
 			this._grid.enableResize();
 			this._grid.enableDrag();
-			this._editDispose.push(this._grid.onResizeStop.subscribe((e: NgGridItem) => {
+			this._editDispose.push(this.dashboardService.onDeleteWidget(e => {
+				let index = this.widgets.findIndex(i => i.id === e);
+				this.widgets.splice(index, 1);
+
+				index = this._originalConfig.findIndex(i => i.id === e);
+				this._originalConfig.splice(index, 1);
+
+				this._rewriteConfig();
+				this._cd.detectChanges();
+			}));
+			this._editDispose.push(subscriptionToDisposable(this._grid.onResizeStop.subscribe((e: NgGridItem) => {
 				this._scrollableElement.setScrollDimensions({
 					scrollHeight: getContentHeight(this._scrollable.nativeElement),
 					height: getContentHeight(this._scrollContainer.nativeElement)
@@ -434,19 +450,12 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 				config.gridItemConfig.sizex = e.sizex;
 				config.gridItemConfig.sizey = e.sizey;
 
-				let writeableConfig = objects.clone(this._originalConfig);
-
-				writeableConfig.forEach(i => {
-					delete i.id;
-				});
-
 				let component = this._widgets.find(i => i.id === event.payload.id);
 
 				component.layout();
-
-				this.dashboardService.writeSettings(this.context, writeableConfig);
-			}));
-			this._editDispose.push(this._grid.onDragStop.subscribe((e: NgGridItem) => {
+				this._rewriteConfig();
+			})));
+			this._editDispose.push(subscriptionToDisposable(this._grid.onDragStop.subscribe((e: NgGridItem) => {
 				this._scrollableElement.setScrollDimensions({
 					scrollHeight: getContentHeight(this._scrollable.nativeElement),
 					height: getContentHeight(this._scrollContainer.nativeElement)
@@ -464,14 +473,23 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 				});
 				this._originalConfig.sort(configSorter);
 
-				let writeableConfig = objects.clone(this._originalConfig);
-
-				writeableConfig.forEach(i => {
-					delete i.id;
-				});
-
-				this.dashboardService.writeSettings(this.context, writeableConfig);
-			}));
+				this._rewriteConfig();
+			})));
+			this._widgets.forEach(i => {
+				if (i.id) {
+					i.enableEdit();
+				}
+			});
 		}
+	}
+
+	private _rewriteConfig(): void {
+		let writeableConfig = objects.clone(this._originalConfig);
+
+		writeableConfig.forEach(i => {
+			delete i.id;
+		});
+
+		this.dashboardService.writeSettings(this.context, writeableConfig);
 	}
 }

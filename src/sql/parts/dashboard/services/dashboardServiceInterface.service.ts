@@ -22,7 +22,7 @@ import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
 import { IPropertiesConfig } from 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
-import { AngularEventType } from 'sql/services/angularEventing/angularEventingService';
+import { AngularEventType, IAngularEvent } from 'sql/services/angularEventing/angularEventingService';
 
 import { ProviderMetadata, DatabaseInfo, SimpleExecuteResult } from 'data';
 
@@ -132,6 +132,9 @@ export class DashboardServiceInterface implements OnDestroy {
 
 	private _updatePage = new Emitter<void>();
 	public readonly onUpdatePage: Event<void> = this._updatePage.event;
+
+	private _onDeleteWidget = new Emitter<string>();
+	public readonly onDeleteWidget: Event<string> = this._onDeleteWidget.event;
 
 	constructor(
 		@Inject(BOOTSTRAP_SERVICE_ID) private _bootstrapService: IBootstrapService,
@@ -257,8 +260,8 @@ export class DashboardServiceInterface implements OnDestroy {
 		this._configurationEditingService.writeConfiguration(ConfigurationTarget.USER, { key: DASHBOARD_SETTINGS + '.' + key + '.widgets', value });
 	}
 
-	private handleDashboardEvent(event: AngularEventType): void {
-		switch (event) {
+	private handleDashboardEvent(event: IAngularEvent): void {
+		switch (event.event) {
 			case AngularEventType.NAV_DATABASE:
 				this.connectionManagementService.changeDatabase(this.connectionManagementService.connectionInfo.connectionProfile.databaseName).then(
 					result => {
@@ -280,6 +283,8 @@ export class DashboardServiceInterface implements OnDestroy {
 			case AngularEventType.NAV_SERVER:
 				this._router.navigate(['server-dashboard']);
 				break;
+			case AngularEventType.DELETE_WIDGET:
+				this._onDeleteWidget.fire(event.payload.id);
 		}
 	}
 }

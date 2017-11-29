@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import 'vs/css!sql/media/icons/common-icons';
+import 'vs/css!./dashboardWidgetWrapper';
 
 import {
 	Component, Input, Inject, forwardRef, ComponentFactoryResolver, AfterContentInit, ViewChild,
@@ -13,7 +14,7 @@ import { ComponentHostDirective } from './componentHost.directive';
 import { WidgetConfig, WIDGET_CONFIG, IDashboardWidget } from './dashboardWidget';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { error } from 'sql/base/common/log';
-import { RefreshWidgetAction } from './actions';
+import { RefreshWidgetAction, ToggleMoreWidgetAction, DeleteWidgetAction } from './actions';
 
 /* Widgets */
 import { PropertiesWidgetComponent } from 'sql/parts/dashboard/widgets/properties/propertiesWidget.component';
@@ -28,8 +29,8 @@ import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeS
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 import * as themeColors from 'vs/workbench/common/theme';
 import { Action } from 'vs/base/common/actions';
-import { TPromise } from 'vs/base/common/winjs.base';
 import { Registry } from 'vs/platform/registry/common/platform';
+import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
 
 const componentMap: { [x: string]: Type<IDashboardWidget> } = {
 	'properties-widget': PropertiesWidgetComponent,
@@ -47,8 +48,10 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 	private _themeDispose: IDisposable;
 	private _actions: Array<Action>;
 	private _component: IDashboardWidget;
+	private _actionbar: ActionBar;
 
 	@ViewChild('header', { read: ElementRef }) private header: ElementRef;
+	@ViewChild('actionbar', { read: ElementRef }) private _actionbarRef: ElementRef;
 	@ViewChild(ComponentHostDirective) componentHost: ComponentHostDirective;
 
 	constructor(
@@ -69,6 +72,11 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 	ngAfterContentInit() {
 		this.updateTheme(this._bootstrap.themeService.getColorTheme());
 		this.loadWidget();
+		this._changeref.detectChanges();
+		this._actionbar = new ActionBar(this._actionbarRef.nativeElement);
+		if (this._actions) {
+			this._actionbar.push(this._bootstrap.instantiationService.createInstance(ToggleMoreWidgetAction, this._actions, this._component.actionsContext), { icon: true, label: false });
+		}
 	}
 
 	ngOnDestroy() {
@@ -89,6 +97,14 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 
 	public get id(): string {
 		return this._config.id;
+	}
+
+	public enableEdit(): void {
+		this._actionbar.push(this._bootstrap.instantiationService.createInstance(DeleteWidgetAction, this._config.id, this._bootstrap.getUnderlyingUri()), { icon: true, label: false });
+	}
+
+	public disableEdit(): void {
+		this._actionbar.pull(this._actionbar.length() - 1);
 	}
 
 	private loadWidget(): void {
@@ -156,16 +172,6 @@ export class DashboardWidgetWrapper implements AfterContentInit, OnInit, OnDestr
 			this._config.widget['insights-widget'] = insightConfig;
 		}
 		return selector;
-	}
-
-	//tslint:disable-next-line
-	private onActionsClick(e: any) {
-		let anchor = { x: e.pageX + 1, y: e.pageY };
-		this._bootstrap.contextMenuService.showContextMenu({
-			getAnchor: () => anchor,
-			getActions: () => TPromise.as(this._actions),
-			getActionsContext: () => this._component.actionsContext
-		});
 	}
 
 	private updateTheme(theme: IColorTheme): void {
