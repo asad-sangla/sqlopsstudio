@@ -220,6 +220,14 @@ export class ConnectionWidget {
 		this._toDispose.push(this._serverNameInputBox.onDidChange(serverName => {
 			this.serverNameChanged(serverName);
 		}));
+
+		this._toDispose.push(this._userNameInputBox.onDidChange(userName => {
+			this.setConnectButton();
+		}));
+
+		this._toDispose.push(this._authTypeSelectBox.onDidSelect(authType => {
+			this.setConnectButton();
+		}))
 	}
 
 	private onGroupSelected(selectedGroup: string) {
@@ -230,6 +238,13 @@ export class ConnectionWidget {
 		} else {
 			this._previousGroupOption = selectedGroup;
 		}
+	}
+
+	private setConnectButton() : void {
+		let authDisplayName: string = this.getAuthTypeDisplayName(this.authenticationType);
+		let authType: AuthenticationType = this.getMatchingAuthType(authDisplayName);
+		authType.showUsernameAndPassword ? this._callbacks.onSetConnectButton(!!this.serverName && !!this.userName) :
+						   this._callbacks.onSetConnectButton(!!this.serverName);
 	}
 
 	private onAuthTypeSelected(selectedAuthType: string) {
@@ -252,7 +267,7 @@ export class ConnectionWidget {
 	}
 
 	private serverNameChanged(serverName: string) {
-		this._callbacks.onSetConnectButton(!!serverName);
+		this.setConnectButton();
 		if (serverName.toLocaleLowerCase().includes('database.windows.net')) {
 			this._callbacks.onSetAzureTimeOut();
 		}
@@ -291,7 +306,6 @@ export class ConnectionWidget {
 	public fillInConnectionInputs(connectionInfo: IConnectionProfile) {
 		if (connectionInfo) {
 			this._serverNameInputBox.value = this.getModelValue(connectionInfo.serverName);
-			this._callbacks.onSetConnectButton(!!connectionInfo.serverName);
 			this._databaseNameInputBox.value = this.getModelValue(connectionInfo.databaseName);
 			this._userNameInputBox.value = this.getModelValue(connectionInfo.userName);
 			this._passwordInputBox.value = this.getModelValue(connectionInfo.password);
@@ -323,7 +337,12 @@ export class ConnectionWidget {
 
 			if (this._authTypeSelectBox) {
 				this.onAuthTypeSelected(this._authTypeSelectBox.value);
+
 			}
+			// Disable connect button if -
+			// 1. Authentication type is SQL Login and no username is provided
+			// 2. No server name is provided
+			this.setConnectButton();
 		}
 	}
 
