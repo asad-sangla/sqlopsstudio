@@ -11,7 +11,7 @@ import { InstantiationService } from 'vs/platform/instantiation/common/instantia
 import { AutoOAuthDialog } from 'sql/parts/accountManagement/autoOAuthDialog/autoOAuthDialog';
 import { AutoOAuthDialogController } from 'sql/parts/accountManagement/autoOAuthDialog/autoOAuthDialogController';
 import { AccountManagementTestService } from 'sqltest/stubs/accountManagementStubs';
-import { ErrorMessageServiceStub } from 'sqltest/stubs/ErrorMessageServiceStub';
+import { ErrorMessageServiceStub } from 'sqltest/stubs/errorMessageServiceStub';
 import { ContextKeyServiceStub } from 'sqltest/stubs/contextKeyServiceStub';
 
 // TESTS ///////////////////////////////////////////////////////////////////
