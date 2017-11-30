@@ -56,6 +56,7 @@ class TreeController extends DefaultController {
 export class ConnectionDialogWidget extends Modal {
 	private _bodyBuilder: Builder;
 	private _recentConnectionBuilder: Builder;
+	private _noRecentConnectionBuilder: Builder;
 	private _dividerBuilder: Builder;
 	private _connectButton: Button;
 	private _closeButton: Button;
@@ -101,6 +102,7 @@ export class ConnectionDialogWidget extends Modal {
 
 		this._bodyBuilder.div({ class: 'connection-recent', id: 'recentConnection' }, (builder) => {
 			this._recentConnectionBuilder = new Builder(builder.getHTMLElement());
+			this._noRecentConnectionBuilder = new Builder(builder.getHTMLElement());
 			this.createRecentConnections();
 			this._recentConnectionBuilder.hide();
 		});
@@ -225,6 +227,16 @@ export class ConnectionDialogWidget extends Modal {
 				});
 			});
 		});
+		this._noRecentConnectionBuilder.div({ class: 'connection-recent-content' }, (noRecentConnectionContainer) => {
+			let recentHistoryLabel = localize('recentHistory', 'Recent history');
+			noRecentConnectionContainer.div({ class: 'connection-history-label' }, (recentTitle) => {
+				recentTitle.innerHtml(recentHistoryLabel);
+			});
+			let noRecentHistoryLabel = localize('noRecentConnections', 'No Recent Connections');
+			noRecentConnectionContainer.div({ class: 'connection-history-label' }, (noRecentTitle) => {
+				noRecentTitle.innerHtml(noRecentHistoryLabel);
+			});
+		});
 	}
 
 	private onRecentConnectionClick(event: any, element: IConnectionProfile) {
@@ -246,14 +258,15 @@ export class ConnectionDialogWidget extends Modal {
 	public open(recentConnections: boolean) {
 		this.show();
 		if (recentConnections) {
+			this._noRecentConnectionBuilder.hide();
 			this._recentConnectionBuilder.show();
-			TreeUpdateUtils.structuralTreeUpdate(this._recentConnectionTree, 'recent', this._connectionManagementService);
-			// call layout with view height
-			this.layout();
 		} else {
 			this._recentConnectionBuilder.hide();
+			this._noRecentConnectionBuilder.show();
 		}
-
+		TreeUpdateUtils.structuralTreeUpdate(this._recentConnectionTree, 'recent', this._connectionManagementService);
+		// call layout with view height
+		this.layout();
 		this.initDialog();
 	}
 
