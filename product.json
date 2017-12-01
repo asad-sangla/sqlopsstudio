@@ -7,7 +7,7 @@
     "licenseName": "Microsoft EULA",
 	"licenseUrl": "https://github.com/Microsoft/sqlopsstudio/blob/master/LICENSE.txt",
 	"win32DirName": "SQL Operations Studio",
-	"win32NameVersion": "sqlops",
+	"win32NameVersion": "SQL Operations Studio",
 	"win32RegValueName": "sqlops",
 	"win32AppId": "{{E34003BB-9E10-4501-8C11-1234AA83F23F}",
 	"win32x64AppId": "{{EA457B21-9E10-494C-ACAB-1234DE069978}",
