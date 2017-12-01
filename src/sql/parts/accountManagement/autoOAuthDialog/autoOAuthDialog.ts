@@ -6,9 +6,8 @@
 'use strict';
 import 'vs/css!./media/autoOAuthDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
-import { Button } from 'vs/base/browser/ui/button/button';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { attachInputBoxStyler, attachButtonStyler } from 'vs/platform/theme/common/styler';
+import { attachInputBoxStyler } from 'vs/platform/theme/common/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
@@ -16,9 +15,10 @@ import { localize } from 'vs/nls';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 
+import { Button } from 'sql/base/browser/ui/button/button';
 import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
-import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { attachModalDialogStyler, attachButtonStyler } from 'sql/common/theme/styler';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 

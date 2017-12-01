@@ -6,15 +6,14 @@
 'use strict';
 import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!./media/errorMessageDialog';
+import { Button } from 'sql/base/browser/ui/button/button';
 import { Modal } from 'sql/base/browser/ui/modal/modal';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
-import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { attachButtonStyler, attachModalDialogStyler } from 'sql/common/theme/styler';
 
 import { Builder } from 'vs/base/browser/builder';
-import { Button } from 'vs/base/browser/ui/button/button';
 import Severity from 'vs/base/common/severity';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import Event, { Emitter } from 'vs/base/common/event';

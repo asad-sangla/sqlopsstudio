@@ -12,12 +12,12 @@ import { mixin } from 'vs/base/common/objects';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { Builder, $, withElementById } from 'vs/base/browser/builder';
-import { Button } from 'vs/base/browser/ui/button/button';
 import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { generateUuid } from 'vs/base/common/uuid';
 import { IContextKeyService, RawContextKey, IContextKey } from 'vs/platform/contextkey/common/contextkey';
 
+import { Button } from 'sql/base/browser/ui/button/button';
 import * as TelemetryUtils from 'sql/common/telemetryUtilities';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 

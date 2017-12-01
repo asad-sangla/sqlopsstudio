@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import 'vs/css!./media/connectionDialog';
 
-import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { Button } from 'sql/base/browser/ui/button/button';
+import { attachModalDialogStyler, attachButtonStyler } from 'sql/common/theme/styler';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Modal } from 'sql/base/browser/ui/modal/modal';
@@ -23,7 +24,6 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import { ITree } from 'vs/base/parts/tree/browser/tree';
 import Event, { Emitter } from 'vs/base/common/event';
 import { Builder, $ } from 'vs/base/browser/builder';
-import { Button } from 'vs/base/browser/ui/button/button';
 import { DefaultController, ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
 import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
@@ -156,8 +156,8 @@ export class ConnectionDialogWidget extends Modal {
 	private registerListeners(): void {
 		// Theme styler
 		this._register(styler.attachSelectBoxStyler(this._providerTypeSelectBox, this._themeService));
-		this._register(styler.attachButtonStyler(this._connectButton, this._themeService));
-		this._register(styler.attachButtonStyler(this._closeButton, this._themeService));
+		this._register(attachButtonStyler(this._connectButton, this._themeService));
+		this._register(attachButtonStyler(this._closeButton, this._themeService));
 
 		this._register(this._providerTypeSelectBox.onDidSelect(selectedProviderType => {
 			this.onProviderTypeSelected(selectedProviderType.selected);

@@ -31,8 +31,8 @@ const defaultOptions: IButtonStyles = {
 };
 
 export class Button extends EventEmitter {
-
-	private $el: Builder;
+	// {{SQL CARBON EDIT}} -- changed access modifier to protected
+	protected $el: Builder;
 	private options: IButtonOptions;
 
 	private buttonBackground: Color;
@@ -126,11 +126,6 @@ export class Button extends EventEmitter {
 
 	getElement(): HTMLElement {
 		return this.$el.getHTMLElement();
-	}
-
-	// {{SQL CARBON EDIT}}
-	set title(value: string) {
-		this.$el.title(value);
 	}
 
 	set label(value: string) {

@@ -154,16 +154,6 @@
 	width: 100px;
 }
 
-.vs.monaco-shell .monaco-text-button:focus {
-	outline-color: #666666 !important;
-	outline-width: 1px;
-}
-
-.vs-dark.monaco-shell .monaco-text-button:focus {
-	outline-color: #eaeaea !important;
-	outline-width: 1px;
-}
-
 .vs .monaco-text-button:focus {
 	outline-width: 1px;
 }

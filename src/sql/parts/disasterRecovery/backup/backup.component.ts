@@ -6,13 +6,14 @@
 import 'vs/css!sql/parts/disasterRecovery/backup/media/backupDialog';
 
 import { ElementRef, Component, Inject, forwardRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
-import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
-import { ListBox } from 'sql/base/browser/ui/listBox/listBox';
+import { Button } from 'sql/base/browser/ui/button/button';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
+import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
+import { ListBox } from 'sql/base/browser/ui/listBox/listBox';
 import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { ModalFooterStyle } from 'sql/base/browser/ui/modal/modal';
-import { attachListBoxStyler, attachInputBoxStyler, attachSelectBoxStyler } from 'sql/common/theme/styler';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
+import { attachButtonStyler, attachListBoxStyler, attachInputBoxStyler, attachSelectBoxStyler } from 'sql/common/theme/styler';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as BackupConstants from 'sql/parts/disasterRecovery/backup/constants';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
@@ -21,9 +22,7 @@ import { FileBrowserDialog } from 'sql/parts/fileBrowser/fileBrowserDialog';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
-import { Button } from 'vs/base/browser/ui/button/button';
 import * as lifecycle from 'vs/base/common/lifecycle';
-import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { localize } from 'vs/nls';
 import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';

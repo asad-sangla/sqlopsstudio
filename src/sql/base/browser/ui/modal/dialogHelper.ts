@@ -5,12 +5,12 @@
 
 'use strict';
 
-import { Builder } from 'vs/base/browser/builder';
-import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
-import { Button } from 'vs/base/browser/ui/button/button';
-import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import * as data from 'data';
+import { Builder } from 'vs/base/browser/builder';
 import * as types from 'vs/base/common/types';
+import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
+import { Button } from 'sql/base/browser/ui/button/button';
+import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 
 export function appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
 	let cellContainer: Builder;

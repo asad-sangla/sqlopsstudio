@@ -7,11 +7,12 @@
 
 import 'vs/css!sql/media/icons/common-icons';
 import 'vs/css!./media/fileBrowserDialog';
+import { Button } from 'sql/base/browser/ui/button/button';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { Modal } from 'sql/base/browser/ui/modal/modal';
-import { attachModalDialogStyler } from 'sql/common/theme/styler';
+import { attachModalDialogStyler, attachButtonStyler } from 'sql/common/theme/styler';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import { FileNode } from 'sql/parts/fileBrowser/common/fileNode';
 import { FileBrowserTreeView } from 'sql/parts/fileBrowser/fileBrowserTreeView';
@@ -20,7 +21,6 @@ import { FileBrowserViewModel } from 'sql/parts/fileBrowser/fileBrowserViewModel
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { Builder } from 'vs/base/browser/builder';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { Button } from 'vs/base/browser/ui/button/button';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import Event, { Emitter } from 'vs/base/common/event';
 import { KeyCode } from 'vs/base/common/keyCodes';
@@ -28,7 +28,7 @@ import { localize } from 'vs/nls';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { attachInputBoxStyler, attachButtonStyler, attachSelectBoxStyler } from 'vs/platform/theme/common/styler';
+import { attachInputBoxStyler, attachSelectBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';

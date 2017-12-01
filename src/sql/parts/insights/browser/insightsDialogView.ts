@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import 'vs/css!sql/parts/insights/browser/media/insightsDialog';
 
+import { Button } from 'sql/base/browser/ui/button/button';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Modal } from 'sql/base/browser/ui/modal/modal';
 import { IInsightsConfigDetails } from 'sql/parts/dashboard/widgets/insights/interfaces';
-import { attachModalDialogStyler, attachTableStyler } from 'sql/common/theme/styler';
+import { attachButtonStyler, attachModalDialogStyler, attachTableStyler } from 'sql/common/theme/styler';
 import { ITaskRegistry, Extensions as TaskExtensions } from 'sql/platform/tasks/taskRegistry';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
@@ -24,7 +25,6 @@ import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
 import { SplitView, ViewSizing } from 'vs/base/browser/ui/splitview/splitview';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
-import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IListService } from 'vs/platform/list/browser/listService';
 import * as nls from 'vs/nls';
@@ -35,7 +35,6 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as types from 'vs/base/common/types';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { Button } from 'vs/base/browser/ui/button/button';
 
 /* Regex that matches the form `${value}` */
 export const insertValueRegex: RegExp = /\${(.*?)\}/;

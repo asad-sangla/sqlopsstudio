@@ -20,7 +20,7 @@ import { IObjectExplorerService } from 'sql/parts/registeredServer/common/object
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as Utils from 'sql/parts/connection/common/utils';
-import { Button } from 'vs/base/browser/ui/button/button';
+import { Button } from 'sql/base/browser/ui/button/button';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { attachListStyler } from 'vs/platform/theme/common/styler';
 import { ITree } from 'vs/base/parts/tree/browser/tree';

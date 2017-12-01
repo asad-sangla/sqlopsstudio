@@ -7,7 +7,7 @@
 
 import 'vs/css!./media/sqlConnection';
 import { Builder, $ } from 'vs/base/browser/builder';
-import { Button } from 'vs/base/browser/ui/button/button';
+import { Button } from 'sql/base/browser/ui/button/button';
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
@@ -21,7 +21,7 @@ import * as Constants from 'sql/parts/connection/common/constants';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import * as styler from 'vs/platform/theme/common/styler';
-import { attachInputBoxStyler } from 'sql/common/theme/styler';
+import { attachInputBoxStyler, attachButtonStyler } from 'sql/common/theme/styler';
 import * as DOM from 'vs/base/browser/dom';
 import data = require('data');
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
@@ -203,7 +203,7 @@ export class ConnectionWidget {
 		this._toDispose.push(attachInputBoxStyler(this._userNameInputBox, this._themeService));
 		this._toDispose.push(attachInputBoxStyler(this._passwordInputBox, this._themeService));
 		this._toDispose.push(styler.attachSelectBoxStyler(this._serverGroupSelectBox, this._themeService));
-		this._toDispose.push(styler.attachButtonStyler(this._advancedButton, this._themeService));
+		this._toDispose.push(attachButtonStyler(this._advancedButton, this._themeService));
 
 		if (this._authTypeSelectBox) {
 			// Theme styler
