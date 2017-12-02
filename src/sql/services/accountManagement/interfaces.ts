@@ -18,6 +18,7 @@ export interface IAccountManagementService {
 	_serviceBrand: any;
 
 	// ACCOUNT MANAGEMENT METHODS //////////////////////////////////////////
+	accountUpdated(account: data.Account): Thenable<void>;
 	addAccount(providerId: string): Thenable<data.Account>;
 	getAccountProviderMetadata(): Thenable<data.AccountProviderMetadata[]>;
 	getAccountsForProvider(providerId: string): Thenable<data.Account[]>;

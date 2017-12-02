@@ -55,6 +55,81 @@ suite('Account Management Service Tests:', () => {
 		assert.ok(ams.updateAccountListEvent);
 	});
 
+	test('Account Updated - account added', done => {
+		// Setup:
+		// ... Create account management service and to mock up the store
+		let state = getTestState();
+		state.mockAccountStore.setup(x => x.addOrUpdate(TypeMoq.It.isAny()))
+			.returns(account => Promise.resolve(<AccountAdditionResult>{
+				accountModified: false,
+				accountAdded: true,
+				changedAccount: account
+			}));
+		state.mockAccountStore.setup(x => x.remove(TypeMoq.It.isAny()))
+			.returns(() => Promise.resolve(true));
+
+		// ... Register a account provider with the management service
+		let mockProvider = TypeMoq.Mock.ofType<data.AccountProvider>(AccountProviderStub);
+		mockProvider.setup(x => x.clear(TypeMoq.It.isAny())).returns(() => Promise.resolve());
+		state.accountManagementService._providers[hasAccountProvider.id] = {
+			accounts: [account],
+			provider: mockProvider.object,
+			metadata: hasAccountProvider
+		};
+
+		// If: I update an account that doesn't exist
+		state.accountManagementService.accountUpdated(account)
+			.then(() => {
+				// Then: Make sure the mocked methods are called
+				state.mockAccountStore.verify(x => x.addOrUpdate(TypeMoq.It.isAny()), TypeMoq.Times.once());
+				state.mockAccountStore.verify(x => x.remove(TypeMoq.It.isAny()), TypeMoq.Times.once());
+			})
+			.then(
+				() => done(),
+				err => done(err)
+			);
+	});
+
+	test('Account Updated - account modified', done => {
+		// Setup:
+		// ... Create account management service and to mock up the store
+		let state = getTestState();
+		state.mockAccountStore.setup(x => x.addOrUpdate(TypeMoq.It.isAny()))
+			.returns(account => Promise.resolve(<AccountAdditionResult> {
+				accountModified: true,
+				accountAdded: false,
+				changedAccount: account
+			}));
+
+		// ... Register a account provider with the management service
+		let mockProvider = TypeMoq.Mock.ofType<data.AccountProvider>(AccountProviderStub);
+		mockProvider.setup(x => x.clear(TypeMoq.It.isAny())).returns(() => Promise.resolve());
+		state.accountManagementService._providers[hasAccountProvider.id] = {
+			accounts: [account],
+			provider: mockProvider.object,
+			metadata: hasAccountProvider
+		};
+
+		// If: I update an account that exists
+		state.accountManagementService.accountUpdated(account)
+			.then(() => {
+				// Then:
+				// ... The mocked method was called
+				state.mockAccountStore.verify(x => x.addOrUpdate(TypeMoq.It.isAny()), TypeMoq.Times.once());
+
+				// ... The account list was updated
+				state.eventVerifierUpdate.assertFiredWithVerify((params: UpdateAccountListEventParams) => {
+					assert.equal(params.providerId, hasAccountProvider.id);
+					assert.ok(Array.isArray(params.accountList));
+					assert.equal(params.accountList.length, 1);
+				});
+			})
+			.then(
+				() => done(),
+				err => done(err)
+			);
+	});
+
 	test('Add account - provider exists, account does not exist', done => {
 		// Setup:
 		// ... Create account management service with a provider

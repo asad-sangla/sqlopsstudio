@@ -465,7 +465,7 @@ declare module 'data' {
 		taskServicesProvider: TaskServicesProvider;
 
 		fileBrowserProvider: FileBrowserProvider;
-		
+
 		profilerProvider: ProfilerProvider;
 	}
 
@@ -1145,6 +1145,13 @@ declare module 'data' {
 		 * Closes the flyout dialog opened by {@link beginAutoOAuthDeviceCode}
 		 */
 		export function endAutoOAuthDeviceCode(): void;
+
+		/**
+		 * Notifies the account management service that an account has updated (usually due to the
+		 * account going stale).
+		 * @param {Account} updatedAccount Account object with updated properties
+		 */
+		export function accountUpdated(updatedAccount: Account): void;
 	}
 
 	// - ACCOUNT DATATYPES /////////////////////////////////////////////////

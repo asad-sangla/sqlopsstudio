@@ -11,6 +11,7 @@ import * as adal from 'adal-node';
 import * as data from 'data';
 import * as request from 'request';
 import * as nls from 'vscode-nls';
+import * as url from 'url';
 import {
 	Arguments,
 	AzureAccount,
@@ -46,7 +47,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 		};
 		this._isInitialized = false;
 
-		this._commonAuthorityUrl = `${this._metadata.settings.host}/common`;
+		this._commonAuthorityUrl = url.resolve(this._metadata.settings.host, AzureAccountProvider.AadCommonTenant);
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
@@ -83,21 +84,39 @@ export class AzureAccountProvider implements data.AccountProvider {
 	public initialize(restoredAccounts: data.Account[]): Thenable<data.Account[]> {
 		let self = this;
 
-		return new Promise<data.Account[]>(resolve => {
-			// Rehydrate the accounts
-			restoredAccounts.forEach((account) => {
-				// Set the icon for the account
-				account.displayInfo.contextualLogo = account.properties.isMsAccount
-					? AzureAccountProvider.MicrosoftAccountLogo
-					: AzureAccountProvider.WorkSchoolAccountLogo;
+		let rehydrationTasks: Thenable<data.Account>[] = [];
+		for (let account of restoredAccounts) {
+			// Purge any invalid accounts
+			if (!account) {
+				continue;
+			}
 
-				// TODO: Set stale status based on whether we can authenticate or not
+			// Refresh the contextual logo based on whether the account is a MS account
+			account.displayInfo.contextualLogo = account.properties.isMsAccount
+				? AzureAccountProvider.MicrosoftAccountLogo
+				: AzureAccountProvider.WorkSchoolAccountLogo;
+
+			// Attempt to get fresh tokens. If this fails then the account is stale.
+			// NOTE: Based on ADAL implementation, getting tokens should use the refresh token if necessary
+			let task = this.getAccessTokens(account)
+				.then(
+					() => {
+						return account;
+					},
+					() => {
+						account.isStale = true;
+						return account;
+					}
+				);
+			rehydrationTasks.push(task);
+		}
+
+		// Collect the rehydration tasks and mark the provider as initialized
+		return Promise.all(rehydrationTasks)
+			.then(accounts => {
+				self._isInitialized = true;
+				return accounts;
 			});
-
-			self._isInitialized = true;
-
-			resolve(restoredAccounts);
-		});
 	}
 
 	public prompt(): Thenable<AzureAccount> {
@@ -133,11 +152,9 @@ export class AzureAccountProvider implements data.AccountProvider {
 		let tokenCollection: AzureAccountSecurityTokenCollection = {};
 		for (let tenant of account.properties.tenants) {
 			let promise = new Promise<void>((resolve, reject) => {
-				// TODO: use urijs to generate this URI
-				let authorityUrl = `${self._metadata.settings.host}/${tenant.id}`;
+				let authorityUrl = url.resolve(self._metadata.settings.host, tenant.id);
 				let context = new adal.AuthenticationContext(authorityUrl, null, self._tokenCache);
 
-				// TODO: This is where we should mark the account as stale
 				context.acquireToken(
 					self._metadata.settings.armResource.id,
 					tenant.userId,
@@ -145,6 +162,10 @@ export class AzureAccountProvider implements data.AccountProvider {
 					(error: Error, response: adal.TokenResponse | adal.ErrorResponse) => {
 						// Handle errors first
 						if (error) {
+							// TODO: We'll assume for now that the account is stale, though that might not be accurate
+							account.isStale = true;
+							data.accounts.accountUpdated(account);
+
 							reject(error);
 							return;
 						}
@@ -221,14 +242,15 @@ export class AzureAccountProvider implements data.AccountProvider {
 		// 4) Sort to make sure the "home tenant" is the first tenant on the list
 		return this.getToken(userId, AzureAccountProvider.AadCommonTenant, this._metadata.settings.armResource.id)
 			.then((armToken: adal.TokenResponse) => {
-				let tenantUri = `${self._metadata.settings.armResource.endpoint}/tenants?api-version=2015-01-01`;
+				let tenantUri = url.resolve(self._metadata.settings.armResource.endpoint, 'tenants?api-version=2015-01-01');
 				return self.makeWebRequest(armToken, tenantUri);
 			})
 			.then((tenantResponse: any[]) => {
 				let promises: Thenable<Tenant>[] = tenantResponse.map(value => {
 					return self.getToken(userId, value.tenantId, self._metadata.settings.graphResource.id)
 						.then((graphToken: adal.TokenResponse) => {
-							let tenantDetailsUri = `${self._metadata.settings.graphResource.endpoint}/${value.tenantId}/tenantDetails?api-version=2013-04-05`;
+							let tenantDetailsUri = url.resolve(self._metadata.settings.graphResource.endpoint, value.tenantId + '/');
+							tenantDetailsUri = url.resolve(tenantDetailsUri, 'tenantDetails?api-version=2013-04-05');
 							return self.makeWebRequest(graphToken, tenantDetailsUri);
 						})
 						.then((tenantDetails: any) => {
@@ -267,7 +289,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 		let self = this;
 
 		return new Promise<adal.TokenResponse>((resolve, reject) => {
-			let authorityUrl = `${self._metadata.settings.host}/${tenantId}`;
+			let authorityUrl = url.resolve(self._metadata.settings.host, tenantId);
 			let context = new adal.AuthenticationContext(authorityUrl, null, self._tokenCache);
 			context.acquireToken(resourceId, userId, self._metadata.settings.clientId,
 				(error: Error, response: adal.TokenResponse | adal.ErrorResponse) => {

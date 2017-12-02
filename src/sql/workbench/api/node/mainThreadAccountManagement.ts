@@ -44,6 +44,10 @@ export class MainThreadAccountManagement extends MainThreadAccountManagementShap
 		return this._accountManagementService.endAutoOAuthDeviceCode();
 	}
 
+	$accountUpdated(updatedAccount: data.Account): void {
+		this._accountManagementService.accountUpdated(updatedAccount);
+	}
+
 	public $registerAccountProvider(providerMetadata: data.AccountProviderMetadata, handle: number): Thenable<any> {
 		let self = this;
 

@@ -18,6 +18,10 @@ export class AccountManagementTestService implements IAccountManagementService {
 	public get removeAccountProviderEvent(): Event<data.AccountProviderMetadata> { return () => { return undefined; }; }
 	public get updateAccountListEvent(): Event<UpdateAccountListEventParams> { return () => { return undefined; }; }
 
+	accountUpdated(account: data.Account): Thenable<void> {
+		return undefined;
+	}
+
 	addAccount(providerId: string): Thenable<data.Account> {
 		return undefined;
 	}

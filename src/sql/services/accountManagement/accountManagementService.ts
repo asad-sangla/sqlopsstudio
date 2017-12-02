@@ -78,6 +78,43 @@ export class AccountManagementService implements IAccountManagementService {
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
 	/**
+	 * Called from an account provider (via extension host -> main thread interop) when an
+	 * account's properties have been updated (usually when the account goes stale).
+	 * @param {AccountKey} accountKey Key that uniquely identifies the updated account
+	 * @param {Account} updatedAccount Account with the updated properties
+	 */
+	public accountUpdated(updatedAccount: data.Account): Thenable<void> {
+		let self = this;
+
+		// 1) Update the account in the store
+		// 2a) If the account was added, then the account provider incorrectly called this method.
+		//     Remove the account
+		// 2b) If the account was modified, then update it in the local cache and notify any
+		//     listeners that the account provider's list changed
+		// 3) Handle any errors
+		return this.doWithProvider(updatedAccount.key.providerId, provider => {
+			return self._accountStore.addOrUpdate(updatedAccount)
+				.then(result => {
+					if (result.accountAdded) {
+						self._accountStore.remove(updatedAccount.key);
+						return Promise.reject('Called with a new account!');
+					}
+					if (result.accountModified) {
+						self.spliceModifiedAccount(provider, result.changedAccount);
+						self.fireAccountListUpdate(provider, false);
+					}
+					return Promise.resolve();
+				});
+		}).then(
+			() => {},
+			reason => {
+				console.warn(`Account update handler encountered error: ${reason}`);
+			}
+		);
+
+	}
+
+	/**
 	 * Asks the requested provider to prompt for an account
 	 * @param {string} providerId ID of the provider to ask to prompt for an account
 	 * @return {Thenable<Account>} Promise to return an account
@@ -94,13 +131,7 @@ export class AccountManagementService implements IAccountManagementService {
 						provider.accounts.push(result.changedAccount);
 					}
 					if (result.accountModified) {
-						// Find the updated account and splice the updated on in
-						let indexToRemove: number = provider.accounts.findIndex(account => {
-							return account.key.accountId === result.changedAccount.key.accountId;
-						});
-						if (indexToRemove >= 0) {
-							provider.accounts.splice(indexToRemove, 1, result.changedAccount);
-						}
+						self.spliceModifiedAccount(provider, result.changedAccount);
 					}
 
 					self.fireAccountListUpdate(provider, result.accountAdded);
@@ -338,6 +369,16 @@ export class AccountManagementService implements IAccountManagementService {
 			accountList: provider.accounts
 		};
 		this._updateAccountListEmitter.fire(eventArg);
+	}
+
+	private spliceModifiedAccount(provider: AccountProviderWithMetadata, modifiedAccount: data.Account) {
+		// Find the updated account and splice the updated one in
+		let indexToRemove: number = provider.accounts.findIndex(account => {
+			return account.key.accountId === modifiedAccount.key.accountId;
+		});
+		if (indexToRemove >= 0) {
+			provider.accounts.splice(indexToRemove, 1, modifiedAccount);
+		}
 	}
 }
 

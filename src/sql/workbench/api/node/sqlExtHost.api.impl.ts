@@ -59,6 +59,9 @@ export function createApiFactory(
 				},
 				endAutoOAuthDeviceCode(): void {
 					return extHostAccountManagement.$endAutoOAuthDeviceCode();
+				},
+				accountUpdated(updatedAccount: data.Account): void {
+					return extHostAccountManagement.$accountUpdated(updatedAccount);
 				}
 			};
 
@@ -163,7 +166,7 @@ export function createApiFactory(
 					provider.scriptingProvider.registerOnScriptingComplete((response: data.ScriptingCompleteResult) => {
 						extHostDataProvider.$onScriptingComplete(provider.handle, response);
 					});
-					
+
 					// Profiler callbacks
 					provider.profilerProvider.registerOnSessionEventsAvailable((response: data.ProfilerSessionEvents) => {
 						extHostDataProvider.$onSessionEventsAvailable(provider.handle, response);

@@ -345,6 +345,8 @@ export abstract class MainThreadAccountManagementShape {
 
 	$beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void { throw ni(); }
 	$endAutoOAuthDeviceCode(): void { throw ni(); }
+
+	$accountUpdated(updatedAccount: data.Account): void { throw ni(); }
 }
 
 export abstract class MainThreadResourceProviderShape {

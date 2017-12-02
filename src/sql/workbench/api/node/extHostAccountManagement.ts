@@ -56,6 +56,10 @@ export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 		this._proxy.$endAutoOAuthDeviceCode();
 	}
 
+	public $accountUpdated(updatedAccount: data.Account): void {
+		this._proxy.$accountUpdated(updatedAccount);
+	}
+
 	public $registerAccountProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): Disposable {
 		let self = this;
 
