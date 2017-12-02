@@ -65,7 +65,7 @@ export class DashboardEditor extends BaseEditor {
 
 		super.setInput(input, options);
 
-		$(parentElement).empty();
+		$(parentElement).clearChildren();
 
 		if (!input.hasBootstrapped) {
 			let container = DOM.$<HTMLElement>('.dashboardEditor');

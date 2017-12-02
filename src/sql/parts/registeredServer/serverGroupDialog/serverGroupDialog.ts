@@ -110,7 +110,7 @@ export class ServerGroupDialog extends Modal {
 			this.fillGroupColors(groupColorContainer.getHTMLElement());
 		});
 
-		this._register(DOM.addDisposableListener(this._bodyBuilder.getHTMLElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+		this._bodyBuilder.on(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
 				this.preventDefaultKeyboardEvent(e);
@@ -122,7 +122,7 @@ export class ServerGroupDialog extends Modal {
 				this.preventDefaultKeyboardEvent(e);
 				this.focusNextColor(event.equals(KeyCode.RightArrow));
 			}
-		}));
+		});
 	}
 
 	private preventDefaultKeyboardEvent(e: KeyboardEvent) {

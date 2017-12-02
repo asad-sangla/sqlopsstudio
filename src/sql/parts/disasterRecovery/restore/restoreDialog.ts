@@ -39,6 +39,7 @@ import { Dropdown } from 'sql/base/browser/ui/editableDropdown/dropdown';
 import { TabbedPanel, PanelTabIdentifier } from 'sql/base/browser/ui/panel/panel';
 import * as DOM from 'vs/base/browser/dom';
 import * as data from 'data';
+import * as strings from 'vs/base/common/strings';
 
 interface FileListElement {
 	logicalFileName: string;
@@ -565,19 +566,18 @@ export class RestoreDialog extends Modal {
 			this.onFilePathLoseFocus(params);
 		}));
 
-		this._register(DOM.addDisposableListener(this._browseFileButton.getElement(), DOM.EventType.CLICK, () => {
+		this._browseFileButton.addListener(DOM.EventType.CLICK, () => {
 			this.onFileBrowserRequested();
-		}));
+		});
 
-		this._register(DOM.addDisposableListener(this._browseFileButton.getElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+		this._browseFileButton.addListener(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			var event = new StandardKeyboardEvent(e);
 			if (event.keyCode === KeyCode.Enter) {
 				this.onFileBrowserRequested();
 				event.preventDefault();
 				event.stopPropagation();
 			}
-		}));
-
+		});
 
 		this._register(this._sourceDatabaseSelectBox.onDidSelect(selectedDatabase => {
 			this.onSourceDatabaseChanged(selectedDatabase.selected);
@@ -599,7 +599,7 @@ export class RestoreDialog extends Modal {
 
 	private onFileBrowsed(filepath: string) {
 		var oldFilePath = this._filePathInputBox.value;
-		if (DialogHelper.isNullOrWhiteSpace(this._filePathInputBox.value)) {
+		if (strings.isFalsyOrWhitespace(this._filePathInputBox.value)) {
 			this._filePathInputBox.value = filepath;
 		} else {
 			this._filePathInputBox.value = this._filePathInputBox.value + ', ' + filepath;

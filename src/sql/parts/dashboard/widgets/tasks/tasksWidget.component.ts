@@ -115,6 +115,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		let width = (this._size + 18) * Math.ceil(this._tasks.length / tilesHeight);
 		if (!this.$container) {
 			this.$container = $('.tile-container');
+			this._register(this.$container);
 		}
 		this.$container.style('height', height + 'px').style('width', width + 'px');
 	}
@@ -125,7 +126,7 @@ export class TasksWidget extends DashboardWidget implements IDashboardWidget, On
 		let innerTile = $('div').append(icon).append(label);
 		let tile = $('div.task-tile').style('height', this._size + 'px').style('width', this._size + 'px');
 		tile.append(innerTile);
-		this._register(DOM.addDisposableListener(tile.getHTMLElement(), DOM.EventType.CLICK, () => this.runTask(action)));
+		tile.on(DOM.EventType.CLICK, () => this.runTask(action));
 		return tile.getHTMLElement();
 	}
 

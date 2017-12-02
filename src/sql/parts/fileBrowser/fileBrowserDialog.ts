@@ -29,11 +29,11 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { attachInputBoxStyler, attachSelectBoxStyler } from 'vs/platform/theme/common/styler';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
+import * as strings from 'vs/base/common/strings';
 
 export class FileBrowserDialog extends Modal {
 	private _viewModel: FileBrowserViewModel;
@@ -79,18 +79,18 @@ export class FileBrowserDialog extends Modal {
 
 		if (this.backButton) {
 
-			this._register(DOM.addDisposableListener(this.backButton.getElement(), DOM.EventType.CLICK, () => {
+			this.backButton.addListener(DOM.EventType.CLICK, () => {
 				this.close();
-			}));
+			});
 
-			this._register(DOM.addDisposableListener(this.backButton.getElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			this.backButton.addListener(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 				var event = new StandardKeyboardEvent(e);
 				if (event.keyCode === KeyCode.Enter) {
 					this.close();
 					event.preventDefault();
 					event.stopPropagation();
 				}
-			}));
+			});
 
 			this._register(attachButtonStyler(this.backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND }));
 		}
@@ -153,7 +153,7 @@ export class FileBrowserDialog extends Modal {
 	}
 
 	private enableOkButton() {
-		if (DialogHelper.isNullOrWhiteSpace(this._selectedFilePath) || this._isFolderSelected === true) {
+		if (strings.isFalsyOrWhitespace(this._selectedFilePath) || this._isFolderSelected === true) {
 			this._okButton.enabled = false;
 		} else {
 			this._okButton.enabled = true;
@@ -187,7 +187,7 @@ export class FileBrowserDialog extends Modal {
 	}
 
 	private onFilePathBlur(param) {
-		if (!DialogHelper.isNullOrWhiteSpace(param.value)) {
+		if (!strings.isFalsyOrWhitespace(param.value)) {
 			this._viewModel.validateFilePaths([param.value]);
 		}
 	}
@@ -199,7 +199,7 @@ export class FileBrowserDialog extends Modal {
 
 	private handleOnValidate(succeeded: boolean, errorMessage: string) {
 		if (succeeded === false) {
-			if (DialogHelper.isNullOrWhiteSpace(errorMessage)) {
+			if (strings.isFalsyOrWhitespace(errorMessage)) {
 				errorMessage = 'The provided path is invalid.';
 			}
 			this._filePathInputBox.showMessage({ type: MessageType.ERROR, content: errorMessage });

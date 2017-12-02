@@ -18,9 +18,9 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as BackupConstants from 'sql/parts/disasterRecovery/backup/constants';
 import { IDisasterRecoveryService, IDisasterRecoveryUiService, TaskExecutionMode } from 'sql/parts/disasterRecovery/common/interfaces';
 import FileValidationConstants = require('sql/parts/fileBrowser/common/fileValidationServiceConstants');
-import { FileBrowserDialog } from 'sql/parts/fileBrowser/fileBrowserDialog';
 import { DashboardComponentParams } from 'sql/services/bootstrap/bootstrapParams';
 import { IBootstrapService, BOOTSTRAP_SERVICE_ID } from 'sql/services/bootstrap/bootstrapService';
+
 import { MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import * as lifecycle from 'vs/base/common/lifecycle';
 import { localize } from 'vs/nls';
@@ -28,6 +28,7 @@ import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import * as types from 'vs/base/common/types';
+import * as strings from 'vs/base/common/strings';
 
 export const BACKUP_SELECTOR: string = 'backup-component';
 
@@ -149,8 +150,6 @@ export class BackupComponent {
 	private recoveryModel: string;
 	private backupEncryptors;
 	private containsBackupToUrl: boolean;
-	private fileBrowserDialog: FileBrowserDialog;
-	private errorMessage: string;
 
 	// UI element disable flag
 	private disableFileComponent: boolean;
@@ -518,20 +517,20 @@ export class BackupComponent {
 
 	private addButtonClickHandler(button: Button, handler: () => void) {
 		if (button && handler) {
-			this._toDispose.push(DOM.addDisposableListener(button.getElement(), DOM.EventType.CLICK, () => {
+			button.addListener(DOM.EventType.CLICK, () => {
 				if (button.enabled) {
 					handler();
 				}
-			}));
+			});
 
-			this._toDispose.push(DOM.addDisposableListener(button.getElement(), DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			button.addListener(DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 				var event = new StandardKeyboardEvent(e);
 				if (button.enabled && event.keyCode === KeyCode.Enter) {
 					handler();
 					event.preventDefault();
 					event.stopPropagation();
 				}
-			}));
+			});
 		}
 	}
 
@@ -583,7 +582,7 @@ export class BackupComponent {
 		this.isFormatChecked = !this.isFormatChecked;
 		this.enableMediaInput(this.isFormatChecked);
 		if (this.isFormatChecked) {
-			if (DialogHelper.isNullOrWhiteSpace(this.mediaNameBox.value)) {
+			if (strings.isFalsyOrWhitespace(this.mediaNameBox.value)) {
 				this.backupEnabled = false;
 				this.backupButton.enabled = false;
 				this.mediaNameBox.showMessage({ type: MessageType.ERROR, content: this.mediaNameRequiredError });
@@ -904,7 +903,7 @@ export class BackupComponent {
 			continueAfterError: this.continueOnErrorCheckBox.checked,
 			logTruncation: this.isTruncateChecked,
 			tailLogBackup: this.isTaillogChecked,
-			retainDays: DialogHelper.isNullOrWhiteSpace(this.backupRetainDaysBox.value) ? 0 : this.backupRetainDaysBox.value,
+			retainDays: strings.isFalsyOrWhitespace(this.backupRetainDaysBox.value) ? 0 : this.backupRetainDaysBox.value,
 			compressionOption: this.compressionOptions.indexOf(this.compressionSelectBox.value),
 			verifyBackupRequired: this.verifyCheckBox.checked,
 			encryptionAlgorithm: (this.encryptCheckBox.checked ? this.encryptionAlgorithms.indexOf(this.algorithmSelectBox.value) : 0),

@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 'use strict';
-
-import * as data from 'data';
-import { Builder } from 'vs/base/browser/builder';
-import * as types from 'vs/base/common/types';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { Button } from 'sql/base/browser/ui/button/button';
-import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
+
+import { Builder } from 'vs/base/browser/builder';
+import * as types from 'vs/base/common/types';
+
+import * as data from 'data';
 
 export function appendRow(container: Builder, label: string, labelClass: string, cellContainerClass: string): Builder {
 	let cellContainer: Builder;
@@ -50,11 +50,6 @@ export function appendRowLink(container: Builder, label: string, labelClass: str
 export function appendInputSelectBox(container: Builder, selectBox: SelectBox): SelectBox {
 	selectBox.render(container.getHTMLElement());
 	return selectBox;
-}
-
-export function isNullOrWhiteSpace(value: string): boolean {
-	// returns true if the string is null or contains white space/tab chars only
-	return !value || value.trim().length === 0;
 }
 
 export function getBooleanValueFromStringOrBoolean(value: any): boolean {
