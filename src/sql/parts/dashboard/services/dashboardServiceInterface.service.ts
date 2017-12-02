@@ -17,9 +17,7 @@ import { ConnectionManagementInfo } from 'sql/parts/connection/common/connection
 import { IAdminService } from 'sql/parts/admin/common/adminService';
 import { IQueryManagementService } from 'sql/parts/query/common/queryManagement';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
-import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { IInsightsDialogService } from 'sql/parts/insights/common/interfaces';
-import { IPropertiesConfig } from 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { AngularEventType, IAngularEvent } from 'sql/services/angularEventing/angularEventingService';
@@ -31,7 +29,7 @@ import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/work
 import { IContextMenuService, IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IDisposable } from 'vs/base/common/lifecycle';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IConfigurationService, IConfigurationValue } from 'vs/platform/configuration/common/configuration';
 import { IMessageService } from 'vs/platform/message/common/message';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IStorageService } from 'vs/platform/storage/common/storage';
@@ -251,13 +249,13 @@ export class DashboardServiceInterface implements OnDestroy {
 	 * Get settings for given string
 	 * @param type string of setting to get from dashboard settings; i.e dashboard.{type}
 	 */
-	public getSettings(type: string): { widgets: Array<WidgetConfig>, properties: boolean | IPropertiesConfig[] } {
-		let config = this._configService.getConfiguration(DASHBOARD_SETTINGS);
-		return config[type];
+	public getSettings<T>(type: string): IConfigurationValue<T> {
+		let config = this._configService.lookup<T>([DASHBOARD_SETTINGS, type].join('.'));
+		return config;
 	}
 
-	public writeSettings(key, value) {
-		this._configurationEditingService.writeConfiguration(ConfigurationTarget.USER, { key: DASHBOARD_SETTINGS + '.' + key + '.widgets', value });
+	public writeSettings(key: string, value: any, target: ConfigurationTarget) {
+		this._configurationEditingService.writeConfiguration(target, { key: DASHBOARD_SETTINGS + '.' + key + '.widgets', value });
 	}
 
 	private handleDashboardEvent(event: IAngularEvent): void {

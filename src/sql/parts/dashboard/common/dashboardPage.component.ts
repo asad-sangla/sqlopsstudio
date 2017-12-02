@@ -13,7 +13,8 @@ import { WidgetConfig } from 'sql/parts/dashboard/common/dashboardWidget';
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
 import { DashboardWidgetWrapper } from 'sql/parts/dashboard/common/dashboardWidgetWrapper.component';
-import * as objects from 'vs/base/common/objects';
+import { subscriptionToDisposable } from 'sql/base/common/lifecycle';
+import { IPropertiesConfig } from 'sql/parts/dashboard/pages/serverDashboardPage.contribution';
 
 import { Registry } from 'vs/platform/registry/common/platform';
 import * as types from 'vs/base/common/types';
@@ -27,7 +28,9 @@ import { IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeS
 import * as colors from 'vs/platform/theme/common/colorRegistry';
 import * as themeColors from 'vs/workbench/common/theme';
 import { generateUuid } from 'vs/base/common/uuid';
-import { subscriptionToDisposable } from 'sql/base/common/lifecycle';
+import { ConfigurationSource } from 'vs/platform/configuration/common/configuration';
+import * as objects from 'vs/base/common/objects';
+import { ConfigurationTarget } from 'vs/workbench/services/configuration/common/configurationEditing';
 
 /**
  * @returns whether the provided parameter is a JavaScript Array and each element in the array is a number.
@@ -115,6 +118,9 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 	private _editDispose: Array<IDisposable> = [];
 	private _scrollableElement: ScrollableElement;
 
+	private _widgetConfigLocation: ConfigurationSource;
+	private _propertiesConfigLocation: ConfigurationSource;
+
 	@ViewChild('properties') private _properties: DashboardWidgetWrapper;
 	@ViewChild(NgGrid) private _grid: NgGrid;
 	@ViewChild('scrollable', { read: ElementRef }) private _scrollable: ElementRef;
@@ -149,17 +155,24 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 		if (!this.dashboardService.connectionManagementService.connectionInfo) {
 			this.dashboardService.messageService.show(Severity.Warning, nls.localize('missingConnectionInfo', 'No connection information could be found for this dashboard'));
 		} else {
-			let tempWidgets = this.dashboardService.getSettings(this.context).widgets;
-			this._originalConfig = objects.clone(tempWidgets);
+			let tempWidgets = this.dashboardService.getSettings<Array<WidgetConfig>>([this.context, 'widgets'].join('.'));
+			if (tempWidgets.workspace) {
+				this._widgetConfigLocation = ConfigurationSource.Workspace;
+			} else if (tempWidgets.user) {
+				this._widgetConfigLocation = ConfigurationSource.User;
+			} else {
+				this._widgetConfigLocation = ConfigurationSource.Default;
+			}
+			this._originalConfig = objects.clone(tempWidgets.value);
 			let properties = this.getProperties();
 			this._configModifiers.forEach((cb) => {
-				tempWidgets = cb.apply(this, [tempWidgets]);
+				tempWidgets.value = cb.apply(this, [tempWidgets.value]);
 				properties = properties ? cb.apply(this, [properties]) : undefined;
 			});
 			this._gridModifiers.forEach(cb => {
-				tempWidgets = cb.apply(this, [tempWidgets]);
+				tempWidgets.value = cb.apply(this, [tempWidgets.value]);
 			});
-			this.widgets = tempWidgets;
+			this.widgets = tempWidgets.value;
 			this.propertiesWidget = properties ? properties[0] : undefined;
 		}
 	}
@@ -379,13 +392,20 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 	}
 
 	private getProperties(): Array<WidgetConfig> {
-		let properties = this.dashboardService.getSettings(this.context).properties;
-		if (types.isUndefinedOrNull(properties)) {
+		let properties = this.dashboardService.getSettings<IPropertiesConfig[]>([this.context, 'properties'].join('.'));
+		if (properties.workspace) {
+			this._propertiesConfigLocation = ConfigurationSource.Workspace;
+		} else if (properties.user) {
+			this._propertiesConfigLocation = ConfigurationSource.User;
+		} else {
+			this._propertiesConfigLocation = ConfigurationSource.Default;
+		}
+		if (types.isUndefinedOrNull(properties.value)) {
 			return [this.propertiesWidget];
-		} else if (types.isBoolean(properties)) {
+		} else if (types.isBoolean(properties.value)) {
 			return properties ? [this.propertiesWidget] : [];
-		} else if (types.isArray(properties)) {
-			return properties.map((item) => {
+		} else if (types.isArray(properties.value)) {
+			return properties.value.map((item) => {
 				let retVal = Object.assign({}, this.propertiesWidget);
 				retVal.edition = item.edition;
 				retVal.provider = item.provider;
@@ -489,7 +509,13 @@ export abstract class DashboardPage extends Disposable implements OnDestroy {
 		writeableConfig.forEach(i => {
 			delete i.id;
 		});
+		let target: ConfigurationTarget;
+		if (this._widgetConfigLocation === ConfigurationSource.Workspace) {
+			target = ConfigurationTarget.WORKSPACE;
+		} else {
+			target = ConfigurationTarget.USER;
+		}
 
-		this.dashboardService.writeSettings(this.context, writeableConfig);
+		this.dashboardService.writeSettings(this.context, writeableConfig, target);
 	}
 }
