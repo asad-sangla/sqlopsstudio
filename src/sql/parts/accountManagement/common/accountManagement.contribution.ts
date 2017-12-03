@@ -6,7 +6,7 @@
 'use strict';
 
 import { Registry } from 'vs/platform/registry/common/platform';
-import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
+import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actions';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 
 import { ManageLinkedAccountAction } from 'sql/parts/accountManagement/accountListStatusbar/accountListStatusbarItem';

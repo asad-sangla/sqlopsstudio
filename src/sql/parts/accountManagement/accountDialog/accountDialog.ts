@@ -8,7 +8,7 @@
 import 'vs/css!./media/accountDialog';
 import 'vs/css!sql/parts/accountManagement/common/media/accountActions';
 import * as DOM from 'vs/base/browser/dom';
-import { SplitView } from 'vs/base/browser/ui/splitview/splitview';
+import { SplitView } from 'sql/base/browser/ui/splitview/splitview';
 import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IListService } from 'vs/platform/list/browser/listService';
 import { IPartService } from 'vs/workbench/services/part/common/partService';

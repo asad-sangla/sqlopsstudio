@@ -9,9 +9,9 @@ import * as Utils from './utils';
 import { IConnectionProfile, IConnectionProfileStore } from './interfaces';
 import { IConnectionConfig } from './iconnectionConfig';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
-import { IConfigurationEditingService, ConfigurationTarget, IConfigurationValue } from 'vs/workbench/services/configuration/common/configurationEditing';
+import { ConfigurationEditingService, IConfigurationValue, IConfigurationValue as TConfigurationValue } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
-import { IConfigurationValue as TConfigurationValue } from 'vs/platform/configuration/common/configuration';
+import { ConfigurationTarget } from 'vs/platform/configuration/common/configuration';
 import { ConnectionProfile } from './connectionProfile';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as data from 'data';
@@ -34,7 +34,7 @@ export class ConnectionConfig implements IConnectionConfig {
 	 * Constructor.
 	 */
 	public constructor(
-		private _configurationEditService: IConfigurationEditingService,
+		private _configurationEditService: ConfigurationEditingService,
 		private _workspaceConfigurationService: IWorkspaceConfigurationService,
 		private _capabilitiesService: ICapabilitiesService,
 		cachedMetadata?: data.DataProtocolServerCapabilities[]
@@ -57,11 +57,10 @@ export class ConnectionConfig implements IConnectionConfig {
 	public getAllGroups(): IConnectionProfileGroup[] {
 
 		let allGroups: IConnectionProfileGroup[] = [];
-		let userGroups = this.getConfiguration(Constants.connectionGroupsArrayName).user as IConnectionProfileGroup[];
-		let workspaceGroups = this.getConfiguration(Constants.connectionGroupsArrayName).workspace as IConnectionProfileGroup[];
+		let userGroups = this.getConfiguration(Constants.connectionGroupsArrayName) as IConnectionProfileGroup[];
+		let workspaceGroups = []; // this.getConfiguration(Constants.connectionGroupsArrayName).workspace as IConnectionProfileGroup[];
 
 		if (userGroups) {
-
 			if (workspaceGroups) {
 				userGroups = userGroups.filter(x => workspaceGroups.find(f => this.isSameGroupName(f, x)) === undefined);
 				allGroups = allGroups.concat(workspaceGroups);
@@ -122,7 +121,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		return new Promise<IConnectionProfile>((resolve, reject) => {
 			if (profile.saveProfile) {
 				this.addGroupFromProfile(profile).then(groupId => {
-					let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
+					let profiles = this._workspaceConfigurationService.getValue<IConnectionProfileStore[]>(Constants.connectionsArrayName);
 					if (!profiles) {
 						profiles = [];
 					}
@@ -173,7 +172,7 @@ export class ConnectionConfig implements IConnectionConfig {
 			if (profile.groupId && profile.groupId !== Utils.defaultGroupId) {
 				resolve(profile.groupId);
 			} else {
-				let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+				let groups = this._workspaceConfigurationService.getValue<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName);
 				let result = this.saveGroup(groups, profile.groupFullName, undefined, undefined);
 				groups = result.groups;
 
@@ -195,7 +194,7 @@ export class ConnectionConfig implements IConnectionConfig {
 			if (profileGroup.id) {
 				resolve(profileGroup.id);
 			} else {
-				let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+				let groups = this._workspaceConfigurationService.getValue<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName);
 				let sameNameGroup = groups ? groups.find(group => group.name === profileGroup.name) : undefined;
 				if (sameNameGroup) {
 					let errMessage: string = nls.localize('invalidServerName', "A server group with the same name already exists.");
@@ -219,10 +218,11 @@ export class ConnectionConfig implements IConnectionConfig {
 		let profiles: IConnectionProfileStore[];
 		if (configs) {
 			if (configTarget === ConfigurationTarget.USER) {
-				profiles = <IConnectionProfileStore[]>configs.user;
-			} else if (configTarget === ConfigurationTarget.WORKSPACE) {
-				profiles = <IConnectionProfileStore[]>configs.workspace;
+				profiles = <IConnectionProfileStore[]>configs;
 			}
+			// else if (configTarget === ConfigurationTarget.WORKSPACE) {
+			// 	profiles = <IConnectionProfileStore[]>configs.workspace;
+			// }
 			if (profiles) {
 				if (this.fixConnectionIds(profiles)) {
 					this.writeConfiguration(Constants.connectionsArrayName, profiles, configTarget);
@@ -301,7 +301,7 @@ export class ConnectionConfig implements IConnectionConfig {
 	 */
 	public deleteConnection(profile: ConnectionProfile): Promise<void> {
 		// Get all connections in the settings
-		let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
+		let profiles = this._workspaceConfigurationService.getValue<IConnectionProfileStore[]>(Constants.connectionsArrayName);
 		// Remove the profile from the connections
 		profiles = profiles.filter(value => {
 			let providerCapabilities = this.getCapabilities(value.providerName);
@@ -323,7 +323,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		// Add selected group to subgroups list
 		subgroups.push(group);
 		// Get all connections in the settings
-		let profiles = this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user;
+		let profiles = this._workspaceConfigurationService.getValue<IConnectionProfileStore[]>(Constants.connectionsArrayName);
 		// Remove the profiles from the connections
 		profiles = profiles.filter(value => {
 			let providerCapabilities = this.getCapabilities(value.providerName);
@@ -332,7 +332,7 @@ export class ConnectionConfig implements IConnectionConfig {
 		});
 
 		// Get all groups in the settings
-		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+		let groups = this._workspaceConfigurationService.getValue<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName);
 		// Remove subgroups in the settings
 		groups = groups.filter((grp) => {
 			return !subgroups.some((item) => item.id === grp.id);
@@ -350,7 +350,7 @@ export class ConnectionConfig implements IConnectionConfig {
 	 * Moves the source group under the target group.
 	 */
 	public changeGroupIdForConnectionGroup(source: ConnectionProfileGroup, target: ConnectionProfileGroup): Promise<void> {
-		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+		let groups = this._workspaceConfigurationService.getValue<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName);
 		groups = groups.map(g => {
 			if (g.id === source.id) {
 				g.parentId = target.id;
@@ -375,8 +375,8 @@ export class ConnectionConfig implements IConnectionConfig {
 	 */
 	private changeGroupIdForConnectionInSettings(profile: ConnectionProfile, newGroupID: string, target: ConfigurationTarget = ConfigurationTarget.USER): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			let profiles = target === ConfigurationTarget.USER ? this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).user :
-				this._workspaceConfigurationService.lookup<IConnectionProfileStore[]>(Constants.connectionsArrayName).workspace;
+			let profiles = target === ConfigurationTarget.USER ? this._workspaceConfigurationService.getValue<IConnectionProfileStore[]>(Constants.connectionsArrayName) :
+				this._workspaceConfigurationService.getValue<IConnectionProfileStore[]>(Constants.connectionsArrayName);
 			if (profiles) {
 				let providerCapabilities = this.getCapabilities(profile.providerName);
 				if (profile.parent && profile.parent.id === Constants.unsavedGroupId) {
@@ -432,7 +432,7 @@ export class ConnectionConfig implements IConnectionConfig {
 	}
 
 	public editGroup(source: ConnectionProfileGroup): Promise<void> {
-		let groups = this._workspaceConfigurationService.lookup<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName).user;
+		let groups = this._workspaceConfigurationService.getValue<IConnectionProfileGroup[]>(Constants.connectionGroupsArrayName);
 		let sameNameGroup = groups ? groups.find(group => group.name === source.name && group.id !== source.id) : undefined;
 		if (sameNameGroup) {
 			let errMessage: string = nls.localize('invalidServerName', "A server group with the same name already exists.");
@@ -513,10 +513,9 @@ export class ConnectionConfig implements IConnectionConfig {
 	 * @param parsedSettingsFile an object representing the parsed contents of the settings file.
 	 * @returns the set of connection profiles found in the parsed settings file.
 	 */
-	private getConfiguration(key: string): TConfigurationValue<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]> {
-		let configs: TConfigurationValue<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>;
-
-		configs = this._workspaceConfigurationService.lookup<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(key);
+	private getConfiguration(key: string): any {
+		let configs: any;
+		configs = this._workspaceConfigurationService.getValue<IConnectionProfileStore[] | IConnectionProfileGroup[] | data.DataProtocolServerCapabilities[]>(key);
 		return configs;
 	}
 

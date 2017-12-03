@@ -23,7 +23,7 @@ import { CopyInsightDialogSelectionAction } from 'sql/parts/insights/common/insi
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
-import { SplitView, ViewSizing } from 'vs/base/browser/ui/splitview/splitview';
+import { SplitView, ViewSizing } from 'sql/base/browser/ui/splitview/splitview';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IListService } from 'vs/platform/list/browser/listService';

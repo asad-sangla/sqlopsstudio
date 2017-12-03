@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IExtensionGalleryService, IExtensionTipsService } from 'vs/platform/extensionManagement/common/extensionManagement';
-import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/common/editor';
+import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/browser/editor';
 import { IExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/common/extensions';
 import { IConfigurationRegistry, Extensions as ConfigExtensions } from 'vs/platform/configuration/common/configurationRegistry';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
@@ -15,10 +15,10 @@ import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
 import { ClearRecentConnectionsAction } from 'sql/parts/connection/common/connectionActions';
 
 import { ExtensionGalleryService } from 'vs/platform/extensionManagement/node/extensionGalleryService';
-import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
+import { EditorDescriptor } from 'vs/workbench/browser/editor';
 import { ExtensionTipsService } from 'vs/workbench/parts/extensions/electron-browser/extensionTipsService';
 import { ExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/node/extensionsWorkbenchService';
-import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
+import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actions';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
@@ -31,10 +31,9 @@ registerSingleton(IExtensionsWorkbenchService, ExtensionsWorkbenchService);
 
 // Connection Dashboard registration
 const dashboardEditorDescriptor = new EditorDescriptor(
+	DashboardEditor,
 	DashboardEditor.ID,
-	'Dashboard',
-	'sql/parts/dashboard/dashboardEditor',
-	'DashboardEditor'
+	'Dashboard'
 );
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)

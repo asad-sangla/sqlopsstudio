@@ -26,7 +26,7 @@ import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/theme
 import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import * as styler from 'vs/platform/theme/common/styler';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
-import { SplitView, CollapsibleState } from 'vs/base/browser/ui/splitview/splitview';
+import { SplitView, CollapsibleState } from 'sql/base/browser/ui/splitview/splitview';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Widget } from 'vs/base/browser/ui/widget';
 

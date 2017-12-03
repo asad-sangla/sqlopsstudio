@@ -153,7 +153,6 @@ suite('SQL ConnectionManagementService tests', () => {
 			undefined,
 			undefined,
 			undefined,
-			undefined,
 			workspaceConfigurationServiceMock.object,
 			undefined,
 			capabilitiesService,
@@ -161,6 +160,7 @@ suite('SQL ConnectionManagementService tests', () => {
 			editorGroupService.object,
 			undefined,
 			resourceProviderStubMock.object,
+			undefined,
 			undefined,
 			undefined
 		);

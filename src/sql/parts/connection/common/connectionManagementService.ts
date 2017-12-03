@@ -43,7 +43,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
-import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
+import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { IQuickOpenService } from 'vs/platform/quickOpen/common/quickOpen';
 import Event, { Emitter } from 'vs/base/common/event';
@@ -78,6 +78,8 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 	private _connectionGlobalStatus: ConnectionGlobalStatus;
 
+	private _configurationEditService: ConfigurationEditingService;
+
 	constructor(
 		private _connectionMemento: Memento,
 		private _connectionStore: ConnectionStore,
@@ -89,7 +91,6 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
 		@IStorageService private _storageService: IStorageService,
 		@ITelemetryService private _telemetryService: ITelemetryService,
-		@IConfigurationEditingService private _configurationEditService: IConfigurationEditingService,
 		@IWorkspaceConfigurationService private _workspaceConfigurationService: IWorkspaceConfigurationService,
 		@ICredentialsService private _credentialsService: ICredentialsService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
@@ -98,15 +99,20 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IStatusbarService private _statusBarService: IStatusbarService,
 		@IResourceProviderService private _resourceProviderService: IResourceProviderService,
 		@IViewletService private _viewletService: IViewletService,
-		@IAngularEventingService private _angularEventing: IAngularEventingService
+		@IAngularEventingService private _angularEventing: IAngularEventingService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
+		if (instantiationService) {
+			this._configurationEditService = instantiationService.createInstance(ConfigurationEditingService);
+		}
+
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
 		if (!this._connectionMemento) {
 			this._connectionMemento = new Memento('ConnectionManagement');
 		}
 		if (!this._connectionStore) {
 			this._connectionStore = new ConnectionStore(_storageService, this._connectionMemento,
-				_configurationEditService, this._workspaceConfigurationService, this._credentialsService, this._capabilitiesService);
+				this._configurationEditService, this._workspaceConfigurationService, this._credentialsService, this._capabilitiesService);
 		}
 
 		this._connectionStatusManager = new ConnectionStatusManager(this._capabilitiesService);

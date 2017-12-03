@@ -10,7 +10,8 @@ import * as DOM from 'vs/base/browser/dom';
 import { Builder, Dimension, withElementById } from 'vs/base/browser/builder';
 
 import { EditorInput, EditorOptions } from 'vs/workbench/common/editor';
-import { BaseEditor, EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
+import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
+import { EditorDescriptor } from 'vs/workbench/browser/editor';
 import { IEditorControl, Position, IEditor } from 'vs/platform/editor/common/editor';
 import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from 'sql/parts/query/views/flexibleSash';
 import { Orientation } from 'vs/base/browser/ui/sash/sash';
@@ -96,16 +97,11 @@ export class QueryEditor extends BaseEditor {
 		@IEditorDescriptorService private _editorDescriptorService: IEditorDescriptorService,
 		@IEditorGroupService private _editorGroupService: IEditorGroupService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		editorOrientation?: Orientation
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
 	) {
 		super(QueryEditor.ID, _telemetryService, themeService);
 
-		if (editorOrientation) {
-			this._orientation = editorOrientation;
-		} else {
-			this._orientation = Orientation.HORIZONTAL;
-		}
+		this._orientation = Orientation.HORIZONTAL;
 
 		if (contextKeyService) {
 			this.queryEditorVisible = queryContext.QueryEditorVisibleContext.bindTo(contextKeyService);
@@ -526,12 +522,11 @@ export class QueryEditor extends BaseEditor {
 		if (!descriptor) {
 			return TPromise.wrapError(new Error(strings.format('Can not find a registered editor for the input {0}', editorInput)));
 		}
-		return this._instantiationService.createInstance(<EditorDescriptor>descriptor)
-			.then((editor: BaseEditor) => {
-				editor.create(new Builder(container));
-				editor.setVisible(this.isVisible(), this.position);
-				return editor;
-			});
+
+		let editor = descriptor.instantiate(this._instantiationService);
+		editor.create(new Builder(container));
+		editor.setVisible(this.isVisible(), this.position);
+		return TPromise.as(editor);
 	}
 
 	/**

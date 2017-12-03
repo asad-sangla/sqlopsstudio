@@ -8,7 +8,7 @@ import objects = require('vs/base/common/objects');
 
 import {
 	ICollapsibleViewOptions, AbstractCollapsibleView, ViewSizing, CollapsibleState
-} from 'vs/base/browser/ui/splitview/splitview';
+} from 'sql/base/browser/ui/splitview/splitview';
 
 export interface IFixedCollapsibleViewOptions extends ICollapsibleViewOptions {
 	expandedBodySize?: number;

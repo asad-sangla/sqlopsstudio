@@ -82,6 +82,7 @@ export class ServerTreeView {
 		}
 
 		this._tree = TreeCreationUtils.createRegisteredServersTree(container, this._instantiationService);
+		//this._tree.setInput(undefined);
 		this._toDispose.push(this._tree.addListener('selection', (event) => this.onSelected(event)));
 
 		// Theme styler

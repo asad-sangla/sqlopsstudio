@@ -25,6 +25,7 @@ import * as types from 'vs/base/common/types';
 import * as pfs from 'vs/base/node/pfs';
 import * as nls from 'vs/nls';
 import { Registry } from 'vs/platform/registry/common/platform';
+import { WorkbenchState } from 'vs/platform/workspace/common/workspace';
 
 const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribution);
 
@@ -242,7 +243,15 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 			let match = filePath.match(insertValueRegex);
 			if (match && match.length > 0 && match[1] === 'workspaceRoot') {
 				filePath = filePath.replace(match[0], '');
-				filePath = this.dashboardService.workspaceContextService.toResource(filePath).fsPath;
+
+				//filePath = this.dashboardService.workspaceContextService.toResource(filePath).fsPath;
+				switch (this.dashboardService.workspaceContextService.getWorkbenchState()) {
+					case WorkbenchState.FOLDER:
+						filePath = this.dashboardService.workspaceContextService.getWorkspace().folders[0].toResource(filePath).fsPath;
+						break;
+					//case WorkbenchState.WORKSPACE:
+				}
+
 			}
 			promises.push(new Promise((resolve, reject) => {
 				pfs.readFile(filePath).then(

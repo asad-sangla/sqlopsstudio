@@ -6,10 +6,9 @@
 'use strict';
 
 import { Registry } from 'vs/platform/registry/common/platform';
-import { EditorDescriptor } from 'vs/workbench/browser/parts/editor/baseEditor';
-import { IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/common/editor';
+import { EditorDescriptor, IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/browser/editor';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actionRegistry';
+import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actions';
 import { IConfigurationRegistry, Extensions as ConfigExtensions } from 'vs/platform/configuration/common/configurationRegistry';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
@@ -38,10 +37,9 @@ export const ResultsMessagesFocusCondition = ContextKeyExpr.and(ContextKeyExpr.h
 
 // Editor
 const queryResultsEditorDescriptor = new EditorDescriptor(
+	QueryResultsEditor,
 	QueryResultsEditor.ID,
-	'QueryResults',
-	'sql/parts/query/editor/queryResultsEditor',
-	'QueryResultsEditor'
+	'QueryResults'
 );
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
@@ -49,10 +47,9 @@ Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 
 // Editor
 const queryEditorDescriptor = new EditorDescriptor(
+	QueryEditor,
 	QueryEditor.ID,
-	'Query',
-	'sql/parts/query/editor/queryEditor',
-	'QueryEditor'
+	'Query'
 );
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
@@ -60,22 +57,20 @@ Registry.as<IEditorRegistry>(EditorExtensions.Editors)
 
 // Query Plan editor registration
 
-const createLoginEditorDescriptor = new EditorDescriptor(
+const queryPlanEditorDescriptor = new EditorDescriptor(
+	QueryPlanEditor,
 	QueryPlanEditor.ID,
-	'QueryPlan',
-	'sql/parts/queryPlan/queryPlanEditor',
-	'QueryPlanEditor'
+	'QueryPlan'
 );
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)
-	.registerEditor(createLoginEditorDescriptor, [new SyncDescriptor(QueryPlanInput)]);
+	.registerEditor(queryPlanEditorDescriptor, [new SyncDescriptor(QueryPlanInput)]);
 
 // Editor
 const editDataEditorDescriptor = new EditorDescriptor(
+	EditDataEditor,
 	EditDataEditor.ID,
-	'EditData',
-	'sql/parts/editData/editor/editDataEditor',
-	'EditDataEditor'
+	'EditData'
 );
 
 Registry.as<IEditorRegistry>(EditorExtensions.Editors)

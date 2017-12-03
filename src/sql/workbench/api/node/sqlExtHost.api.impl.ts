@@ -5,7 +5,7 @@
 'use strict';
 
 import * as extHostApi from 'vs/workbench/api/node/extHost.api.impl';
-import { TrieMap } from 'vs/base/common/map';
+import { TrieMap } from 'sql/base/common/map';
 import { TPromise } from 'vs/base/common/winjs.base';
 import { IInitData } from 'vs/workbench/api/node/extHost.protocol';
 import { ExtHostExtensionService } from 'vs/workbench/api/node/extHostExtensionService';
@@ -23,6 +23,8 @@ import { ExtHostSerializationProvider } from 'sql/workbench/api/node/extHostSeri
 import { ExtHostResourceProvider } from 'sql/workbench/api/node/extHostResourceProvider';
 import { ExtHostThreadService } from 'vs/workbench/services/thread/node/extHostThreadService';
 import * as sqlExtHostTypes from 'sql/workbench/api/node/sqlExtHostTypes';
+import { ExtHostWorkspace } from 'vs/workbench/api/node/extHostWorkspace';
+import { ExtHostConfiguration } from 'vs/workbench/api/node/extHostConfiguration';
 
 export interface ISqlExtensionApiFactory {
 	vsCodeFactory(extension: IExtensionDescription): typeof vscode;
@@ -35,9 +37,13 @@ export interface ISqlExtensionApiFactory {
 export function createApiFactory(
 	initData: IInitData,
 	threadService: ExtHostThreadService,
+	extHostWorkspace: ExtHostWorkspace,
+	extHostConfiguration: ExtHostConfiguration,
 	extensionService: ExtHostExtensionService
+
+
 ): ISqlExtensionApiFactory {
-	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extensionService);
+	let vsCodeFactory = extHostApi.createApiFactory(initData, threadService, extHostWorkspace, extHostConfiguration, extensionService);
 
 	// Addressable instances
 	const extHostAccountManagement = threadService.set(SqlExtHostContext.ExtHostAccountManagement, new ExtHostAccountManagement(threadService));

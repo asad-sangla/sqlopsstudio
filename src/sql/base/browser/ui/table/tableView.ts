@@ -5,8 +5,7 @@
 
 import { Table } from './table';
 import { TableDataView } from './tableDataView';
-
-import { View, Orientation, AbstractCollapsibleView, HeaderView, IViewOptions, ICollapsibleViewOptions } from 'vs/base/browser/ui/splitview/splitview';
+import { View, Orientation, AbstractCollapsibleView, HeaderView, ICollapsibleViewOptions, IViewOptions } from 'sql/base/browser/ui/splitview/splitview';
 import { $ } from 'vs/base/browser/builder';
 
 export class TableBasicView<T> extends View {

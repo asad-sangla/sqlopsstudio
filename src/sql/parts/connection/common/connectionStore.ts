@@ -15,10 +15,11 @@ import { ConnectionConfig } from './connectionConfig';
 import { Memento, Scope as MementoScope } from 'vs/workbench/common/memento';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { ConnectionProfileGroup, IConnectionProfileGroup } from './connectionProfileGroup';
-import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
+import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 import { IWorkspaceConfigurationService } from 'vs/workbench/services/configuration/common/configuration';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
 import * as data from 'data';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 const MAX_CONNECTIONS_DEFAULT = 25;
 
@@ -36,13 +37,12 @@ export class ConnectionStore {
 	constructor(
 		private _storageService: IStorageService,
 		private _context: Memento,
-		private _configurationEditService: IConfigurationEditingService,
+		private _configurationEditService: ConfigurationEditingService,
 		private _workspaceConfigurationService: IWorkspaceConfigurationService,
 		private _credentialService: ICredentialsService,
 		private _capabilitiesService: ICapabilitiesService,
 		private _connectionConfig?: IConnectionConfig
 	) {
-
 		if (_context) {
 			this._memento = this._context.getMemento(this._storageService, MementoScope.GLOBAL);
 		}

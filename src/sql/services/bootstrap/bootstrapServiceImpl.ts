@@ -41,7 +41,7 @@ import { IAccountManagementService } from 'sql/services/accountManagement/interf
 import { IWindowsService, IWindowService } from 'vs/platform/windows/common/windows';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IStorageService } from 'vs/platform/storage/common/storage';
-import { IConfigurationEditingService } from 'vs/workbench/services/configuration/common/configurationEditing';
+import { ConfigurationEditingService } from 'vs/workbench/services/configuration/node/configurationEditingService';
 
 export class BootstrapService implements IBootstrapService {
 
@@ -55,6 +55,8 @@ export class BootstrapService implements IBootstrapService {
 
 	// Maps selectors (as opposed to uniqueSelectors) to the next available uniqueSelector ID number
 	private _selectorCountMap: Map<string, number>;
+
+	public configurationEditorService: ConfigurationEditingService;
 
 	constructor(
 		@IConnectionManagementService public connectionManagementService: IConnectionManagementService,
@@ -92,9 +94,9 @@ export class BootstrapService implements IBootstrapService {
 		@ITelemetryService public telemetryService: ITelemetryService,
 		@IStorageService public storageService: IStorageService,
 		@IClipboardService public clipboardService: IClipboardService,
-		@ICapabilitiesService public capabilitiesService: ICapabilitiesService,
-		@IConfigurationEditingService public configurationEditorService: IConfigurationEditingService
+		@ICapabilitiesService public capabilitiesService: ICapabilitiesService
 	) {
+		this.configurationEditorService = this.instantiationService.createInstance(ConfigurationEditingService);
 		this._bootstrapParameterMap = new Map<string, BootstrapParams>();
 		this._selectorQueueMap = new Map<string, string[]>();
 		this._selectorCountMap = new Map<string, number>();
