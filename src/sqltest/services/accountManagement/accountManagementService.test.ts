@@ -34,7 +34,7 @@ const account: data.Account = {
 	},
 	displayInfo: {
 		displayName: 'Test Account 1',
-		contextualLogo: { light: '', dark: '' },
+		accountType: 'test',
 		contextualDisplayName: 'Azure Account'
 	},
 	isStale: false,

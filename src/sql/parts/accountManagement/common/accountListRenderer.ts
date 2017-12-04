@@ -66,9 +66,7 @@ export class AccountPickerListRenderer implements IRenderer<data.Account, Accoun
 
 	public renderElement(account: data.Account, index: number, templateData: AccountListTemplate): void {
 		// Set the account icon
-		templateData.icon.classList.add('account-logo');
-		templateData.icon.style.background = `url('data:${account.displayInfo.contextualLogo.light}')`;
-		// TODO: Pick between the light and dark logo
+		templateData.icon.classList.add('account-logo', account.displayInfo.accountType);
 
 		templateData.contextualDisplayName.innerText = account.displayInfo.contextualDisplayName;
 		templateData.displayName.innerText = account.displayInfo.displayName;

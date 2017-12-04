@@ -1154,22 +1154,6 @@ declare module 'data' {
 		export function accountUpdated(updatedAccount: Account): void;
 	}
 
-	// - ACCOUNT DATATYPES /////////////////////////////////////////////////
-	/**
-	 * Image to display for an account
-	 */
-	export interface AccountContextualLogo {
-		/**
-		 * Image to display on light theme
-		 */
-		light: string;
-
-		/**
-		 * Image to display on dark theme
-		 */
-		dark: string;
-	}
-
 	/**
 	 * Represents display information for an account.
 	 */
@@ -1180,10 +1164,9 @@ declare module 'data' {
 		contextualDisplayName: string;
 
 		/**
-		 * Contents of the logo to display alongside the account. Indicates the context of the
 		 * account provider (eg, Work/School vs Microsoft Account)
 		 */
-		contextualLogo: AccountContextualLogo;
+		accountType: string;
 
 		/**
 		 * A display name that identifies the account, such as "user@contoso.com".

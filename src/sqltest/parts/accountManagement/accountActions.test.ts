@@ -19,7 +19,7 @@ let testAccount = <data.Account>{
 		accountId: 'testAccount'
 	},
 	displayInfo: {
-		contextualLogo: { light: '', dark: '' },
+		accountType: 'test',
 		displayName: 'Test Account',
 		contextualDisplayName: 'Azure Account'
 	},

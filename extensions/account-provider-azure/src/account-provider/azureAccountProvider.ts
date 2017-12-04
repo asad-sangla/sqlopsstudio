@@ -25,14 +25,8 @@ const localize = nls.loadMessageBundle();
 
 export class AzureAccountProvider implements data.AccountProvider {
 	// CONSTANTS ///////////////////////////////////////////////////////////
-	private static WorkSchoolAccountLogo: data.AccountContextualLogo = {
-		light: AzureAccountProvider.loadIcon('work_school_account_light.svg'),
-		dark: AzureAccountProvider.loadIcon('work_school_account_dark.svg')
-	};
-	private static MicrosoftAccountLogo: data.AccountContextualLogo = {
-		light: AzureAccountProvider.loadIcon('microsoft_account_light.svg'),
-		dark: AzureAccountProvider.loadIcon('microsoft_account_dark.svg')
-	};
+	private static WorkSchoolAccountType: string = 'work_school';
+	private static MicrosoftAccountType: string = 'microsoft';
 	private static AadCommonTenant: string = 'common';
 
 	// MEMBER VARIABLES ////////////////////////////////////////////////////
@@ -92,9 +86,9 @@ export class AzureAccountProvider implements data.AccountProvider {
 			}
 
 			// Refresh the contextual logo based on whether the account is a MS account
-			account.displayInfo.contextualLogo = account.properties.isMsAccount
-				? AzureAccountProvider.MicrosoftAccountLogo
-				: AzureAccountProvider.WorkSchoolAccountLogo;
+			account.displayInfo.accountType = account.properties.isMsAccount
+				? AzureAccountProvider.MicrosoftAccountType
+				: AzureAccountProvider.WorkSchoolAccountType;
 
 			// Attempt to get fresh tokens. If this fails then the account is stale.
 			// NOTE: Based on ADAL implementation, getting tokens should use the refresh token if necessary
@@ -130,15 +124,6 @@ export class AzureAccountProvider implements data.AccountProvider {
 	}
 
 	// PRIVATE METHODS /////////////////////////////////////////////////////
-	private static loadIcon(iconName: string) {
-		let filePath = path.join(__dirname, 'media', iconName);
-		try {
-			return 'image/svg+xml,' + fs.readFileSync(filePath);
-		} catch(e) {
-			return '';
-		}
-	}
-
 	private doIfInitialized<T>(op: () => Thenable<T>): Thenable<T> {
 		return this._isInitialized
 			? op()
@@ -373,10 +358,10 @@ export class AzureAccountProvider implements data.AccountProvider {
 					? localize('microsoftAccountDisplayName', 'Microsoft Account')
 					: tenants[0].displayName;
 
-				// Calculate the contextual logo for the account
-				let contextualLogo = msa
-					? AzureAccountProvider.MicrosoftAccountLogo
-					: AzureAccountProvider.WorkSchoolAccountLogo;
+				// Calculate the account type
+				let accountType = msa
+					? AzureAccountProvider.MicrosoftAccountType
+					: AzureAccountProvider.WorkSchoolAccountType;
 
 				return <AzureAccount>{
 					key: {
@@ -385,7 +370,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 					},
 					name: tokenResponse.userId,
 					displayInfo: {
-						contextualLogo: contextualLogo,
+						accountType: accountType,
 						contextualDisplayName: contextualDisplayName,
 						displayName: displayName
 					},

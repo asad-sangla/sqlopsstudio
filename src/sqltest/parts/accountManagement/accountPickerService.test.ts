@@ -70,7 +70,7 @@ suite('Account picker service tests', () => {
 			name: 'Account 1',
 			displayInfo: {
 				contextualDisplayName: 'Microsoft Account',
-				contextualLogo: null,
+				accountType: 'microsoft',
 				displayName: 'Account 1'
 			},
 			properties: [],

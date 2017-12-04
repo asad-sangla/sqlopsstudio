@@ -35,7 +35,7 @@ suite('Firewall rule dialog controller tests', () => {
 			key: { providerId: 'azure', accountId: 'account1' },
 			displayInfo: {
 				contextualDisplayName: 'Microsoft Account',
-				contextualLogo: null,
+				accountType: 'microsoft',
 				displayName: 'Account 1'
 			},
 			properties: [],

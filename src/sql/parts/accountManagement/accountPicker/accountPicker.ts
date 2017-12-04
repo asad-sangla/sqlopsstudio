@@ -172,9 +172,9 @@ export class AccountPicker extends Disposable {
 			const badgeContent = DOM.append(badge, DOM.$('div.badge-content'));
 			const label = DOM.append(row, DOM.$('div.label'));
 
-			icon.className = 'icon';
 			// Set the account icon
-			icon.style.background = `url('data:${account.displayInfo.contextualLogo.light}')`;
+			icon.classList.add('icon', account.displayInfo.accountType);
+
 			// TODO: Pick between the light and dark logo
 			label.innerText = account.displayInfo.displayName + ' (' + account.displayInfo.contextualDisplayName + ')';
 

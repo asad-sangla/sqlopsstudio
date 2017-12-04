@@ -30,7 +30,7 @@ suite('Account picker view model tests', () => {
 			name: 'Account 1',
 			displayInfo: {
 				contextualDisplayName: 'Microsoft Account',
-				contextualLogo: null,
+				accountType: 'microsoft',
 				displayName: 'Account 1'
 			},
 			properties: [],
@@ -41,7 +41,7 @@ suite('Account picker view model tests', () => {
 			name: 'Account 2',
 			displayInfo: {
 				contextualDisplayName: 'Work/School Account',
-				contextualLogo: null,
+				accountType: 'microsoft',
 				displayName: 'Account 2'
 			},
 			properties: [],
