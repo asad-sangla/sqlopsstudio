@@ -112,7 +112,9 @@ export class AccountListRenderer extends AccountPickerListRenderer {
 
 		let actionOptions: IActionOptions = { icon: true, label: false };
 		if (account.isStale) {
-			templateData.actions.push(new RefreshAccountAction(RefreshAccountAction.ID, RefreshAccountAction.LABEL), actionOptions);
+			let refreshAction = this._instantiationService.createInstance(RefreshAccountAction);
+			refreshAction.account = account;
+			templateData.actions.push(refreshAction, actionOptions);
 		} else {
 			templateData.actions.push(new ApplyFilterAction(ApplyFilterAction.ID, ApplyFilterAction.LABEL), actionOptions);
 		}

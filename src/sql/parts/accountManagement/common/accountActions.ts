@@ -36,8 +36,6 @@ export class AddAccountAction extends Action {
 
 	constructor(
 		private _providerId: string,
-		@IMessageService private _messageService: IMessageService,
-		@IErrorMessageService private _errorMessageService: IErrorMessageService,
 		@IAccountManagementService private _accountManagementService: IAccountManagementService
 	) {
 		super(AddAccountAction.ID, AddAccountAction.LABEL);
@@ -144,15 +142,31 @@ export class ApplyFilterAction extends Action {
 export class RefreshAccountAction extends Action {
 	public static ID = 'account.refresh';
 	public static LABEL = localize('refreshAccount', 'Reenter your credentials');
+	public account: data.Account;
 
 	constructor(
-		id: string,
-		label: string
+		@IAccountManagementService private _accountManagementService: IAccountManagementService
 	) {
-		super(id, label, 'refresh-account-action icon refresh');
+		super(RefreshAccountAction.ID, RefreshAccountAction.LABEL, 'refresh-account-action icon refresh');
 	}
 	public run(): TPromise<boolean> {
-		// Todo: refresh the account
-		return TPromise.as(true);
+		let self = this;
+		return new TPromise((resolve, reject) => {
+			if (self.account) {
+				self._accountManagementService.refreshAccount(self.account)
+					.then(
+						() => {
+							resolve(true);
+						},
+						err => {
+							error(`Error while refreshing account: ${err}`);
+							reject(err);
+						}
+				);
+			} else {
+				let errorMessage = localize('NoAccountToRefresh', 'There is no account to refresh');
+				reject(errorMessage);
+			}
+		});
 	}
 }

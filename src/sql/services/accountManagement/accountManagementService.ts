@@ -106,11 +106,11 @@ export class AccountManagementService implements IAccountManagementService {
 					return Promise.resolve();
 				});
 		}).then(
-			() => {},
+			() => { },
 			reason => {
 				console.warn(`Account update handler encountered error: ${reason}`);
 			}
-		);
+			);
 
 	}
 
@@ -132,6 +132,38 @@ export class AccountManagementService implements IAccountManagementService {
 					}
 					if (result.accountModified) {
 						self.spliceModifiedAccount(provider, result.changedAccount);
+					}
+
+					self.fireAccountListUpdate(provider, result.accountAdded);
+					return result.changedAccount;
+				});
+		});
+	}
+
+	/**
+	 * Asks the requested provider to refresh an account
+	 * @param {Account} account account to refresh
+	 * @return {Thenable<Account>} Promise to return an account
+	 */
+	public refreshAccount(account: data.Account): Thenable<data.Account> {
+		let self = this;
+
+		return this.doWithProvider(account.key.providerId, (provider) => {
+			return provider.provider.refresh(account)
+				.then(account => self._accountStore.addOrUpdate(account))
+				.then(result => {
+					if (result.accountAdded) {
+						// Add the account to the list
+						provider.accounts.push(result.changedAccount);
+					}
+					if (result.accountModified) {
+						// Find the updated account and splice the updated on in
+						let indexToRemove: number = provider.accounts.findIndex(account => {
+							return account.key.accountId === result.changedAccount.key.accountId;
+						});
+						if (indexToRemove >= 0) {
+							provider.accounts.splice(indexToRemove, 1, result.changedAccount);
+						}
 					}
 
 					self.fireAccountListUpdate(provider, result.accountAdded);

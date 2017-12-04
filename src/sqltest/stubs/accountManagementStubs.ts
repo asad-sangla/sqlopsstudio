@@ -54,6 +54,10 @@ export class AccountManagementTestService implements IAccountManagementService {
 		return undefined;
 	}
 
+	refreshAccount(account: data.Account): Thenable<data.Account> {
+		return undefined;
+	}
+
 	openAccountListDialog(): TPromise<any> {
 		return undefined;
 	}

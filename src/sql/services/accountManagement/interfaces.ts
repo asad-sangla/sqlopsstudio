@@ -24,6 +24,7 @@ export interface IAccountManagementService {
 	getAccountsForProvider(providerId: string): Thenable<data.Account[]>;
 	getSecurityToken(account: data.Account): Thenable<{}>;
 	removeAccount(accountKey: data.AccountKey): Thenable<boolean>;
+	refreshAccount(account: data.Account): Thenable<data.Account>;
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	openAccountListDialog(): Thenable<void>;

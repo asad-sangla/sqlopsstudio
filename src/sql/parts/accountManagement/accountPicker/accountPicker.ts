@@ -34,6 +34,7 @@ export class AccountPicker extends Disposable {
 	private _refreshContainer: HTMLElement;
 	private _listContainer: HTMLElement;
 	private _dropdown: DropdownList;
+	private _refreshAccountAction: RefreshAccountAction;
 
 	// EVENTING ////////////////////////////////////////////////////////////
 	private _addAccountCompleteEmitter: Emitter<void>;
@@ -118,7 +119,8 @@ export class AccountPicker extends Disposable {
 		this._refreshContainer = DOM.append(this._rootElement, DOM.$('div.refresh-container'));
 		DOM.append(this._refreshContainer, DOM.$('div.icon warning'));
 		let actionBar = new ActionBar(this._refreshContainer, { animated: false });
-		actionBar.push(new RefreshAccountAction(RefreshAccountAction.ID, RefreshAccountAction.LABEL), { icon: false, label: true });
+		this._refreshAccountAction = this._instantiationService.createInstance(RefreshAccountAction);
+		actionBar.push(this._refreshAccountAction, { icon: false, label: true });
 
 		if (this._accountList.length > 0) {
 			this._accountList.setSelection([0]);
@@ -148,10 +150,12 @@ export class AccountPicker extends Disposable {
 	private onAccountSelectionChange(account: data.Account) {
 		this.viewModel.selectedAccount = account;
 		if (account && account.isStale) {
+			this._refreshAccountAction.account = account;
 			new Builder(this._refreshContainer).show();
 		} else {
 			new Builder(this._refreshContainer).hide();
 		}
+
 		this._onAccountSelectionChangeEvent.fire(account);
 	}
 
