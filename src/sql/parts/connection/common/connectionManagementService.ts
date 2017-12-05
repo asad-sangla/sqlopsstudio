@@ -900,12 +900,12 @@ export class ConnectionManagementService implements IConnectionManagementService
 			let activeConnection = connection.connectionProfile;
 			self.tryAddActiveConnection(connection, activeConnection);
 			self.addTelemetryForConnection(connection);
+
+			if (self._connectionStatusManager.isDefaultTypeUri(info.ownerUri)) {
+				self._connectionGlobalStatus.setStatusToConnected(info.connectionSummary);
+			}
 		} else {
 			connection.connectHandler(false, info.errorMessage, info.errorNumber, info.messages);
-		}
-
-		if (this._connectionStatusManager.isDefaultTypeUri(info.ownerUri)) {
-			this._connectionGlobalStatus.setStatusToConnected(info.connectionSummary);
 		}
 	}
 
