@@ -26,6 +26,7 @@ import * as DOM from 'vs/base/browser/dom';
 import data = require('data');
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { localize } from 'vs/nls';
+import { OS, OperatingSystem } from 'vs/base/common/platform';
 
 export class ConnectionWidget {
 	private _builder: Builder;
@@ -46,7 +47,7 @@ export class ConnectionWidget {
 	private _focusedBeforeHandleOnConnection: HTMLElement;
 	private _providerName: string;
 	private _authTypeMap: { [providerName: string]: AuthenticationType[] } = {
-		[Constants.mssqlProviderName]: [new AuthenticationType('Integrated', false), new AuthenticationType('SqlLogin', true)],
+		[Constants.mssqlProviderName]: [new AuthenticationType(Constants.integrated, false), new AuthenticationType(Constants.sqlLogin, true)],
 		[Constants.pgsqlProviderName]: []
 	};
 	private _saveProfile: boolean;
@@ -86,6 +87,11 @@ export class ConnectionWidget {
 		}
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
+		if (OS === OperatingSystem.Windows) {
+			authTypeOption.defaultValue = this.getAuthTypeDisplayName(Constants.integrated);
+		} else {
+			authTypeOption.defaultValue = this.getAuthTypeDisplayName(Constants.sqlLogin);
+		}
 		this._authTypeSelectBox = authTypeOption ? new SelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue) : undefined;
 		this._providerName = providerName;
 	}

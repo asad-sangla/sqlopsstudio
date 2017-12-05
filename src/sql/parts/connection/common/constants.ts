@@ -26,3 +26,8 @@ export const pgsqlProviderName = 'PGSQL';
 export const applicationName = 'sqlops';
 
 export const defaultEngine = 'defaultEngine';
+
+/* authentication types */
+export const sqlLogin = 'SqlLogin';
+export const integrated = 'Integrated';
+
