@@ -301,9 +301,26 @@ export class QueryEditor extends BaseEditor {
 		this._createEditor(<QueryResultsInput>input.results, this._resultsEditorContainer)
 			.then(result => {
 				this._onResultsEditorCreated(<QueryResultsEditor>result, input.results, this.options);
-				this._setResultsEditorVisible();
-				this._doLayout();
+				this.resultsEditorVisibility = true;
+				this.hideQueryResultsView = false;
+				this._doLayout(true);
 			});
+	}
+
+	private hideQueryResultsView = false;
+
+	/**
+	 * Toggle the visibility of the view state of results
+	 */
+	public toggleResultsEditorVisibility(): void {
+		let input = <QueryInput>this.input;
+		let hideResults = this.hideQueryResultsView;
+		this.hideQueryResultsView = !this.hideQueryResultsView;
+		if (!input.results) {
+			return;
+		}
+		this.resultsEditorVisibility = hideResults;
+		this._doLayout();
 	}
 
 	/**
@@ -618,7 +635,7 @@ export class QueryEditor extends BaseEditor {
 	 * the IFlexibleSash could be horizontal or vertical. The same logic is used for horizontal
 	 * and vertical sashes.
 	 */
-	private _doLayout(): void {
+	private _doLayout(skipResizeGridContent: boolean = false): void {
 		if (!this._isResultsEditorVisible() && this._sqlEditor) {
 			this._doLayoutSql();
 			return;
@@ -633,7 +650,9 @@ export class QueryEditor extends BaseEditor {
 			this._doLayoutVertical();
 		}
 
-		this._resizeGridContents();
+		if (!skipResizeGridContent) {
+			this._resizeGridContents();
+		}
 	}
 
 	private getTaskBarHeight(): number {
@@ -687,6 +706,12 @@ export class QueryEditor extends BaseEditor {
 	}
 
 	private _doLayoutSql() {
+		if ( this._resultsEditorContainer) {
+			this._resultsEditorContainer.style.width = '0px';
+			this._resultsEditorContainer.style.height = '0px';
+			this._resultsEditorContainer.style.left = '0px';
+		}
+
 		if (this._dimension) {
 			this._sqlEditor.layout(new Dimension(this._dimension.width, this._dimension.height - this.getTaskBarHeight()));
 		}
@@ -728,6 +753,7 @@ export class QueryEditor extends BaseEditor {
 				this._resultsEditorContainer.parentElement.removeChild(this._resultsEditorContainer);
 			}
 			this._resultsEditorContainer = null;
+			this.hideQueryResultsView = false;
 		}
 	}
 
@@ -745,9 +771,9 @@ export class QueryEditor extends BaseEditor {
 		return input.results.visible;
 	}
 
-	private _setResultsEditorVisible(): void {
+	set resultsEditorVisibility(isVisible: boolean) {
 		let input: QueryInput = <QueryInput>this.input;
-		input.results.setVisibleTrue();
+		input.results.visible = isVisible;
 	}
 
 	/**

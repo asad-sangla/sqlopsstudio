@@ -115,3 +115,30 @@ export class RefreshIntellisenseKeyboardAction extends Action {
 		return TPromise.as(null);
 	}
 }
+
+
+/**
+ * Hide the query results
+ */
+export class ToggleQueryResultsKeyboardAction extends Action {
+	public static ID = 'toggleQueryResultsKeyboardAction';
+	public static LABEL = nls.localize('toggleQueryResultsKeyboardAction', 'Toggle Query Results');
+
+	constructor(
+		id: string,
+		label: string,
+		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService
+	) {
+		super(id, label);
+		this.enabled = true;
+	}
+
+	public run(): TPromise<void> {
+		let editor = this._editorService.getActiveEditor();
+		if (editor && editor instanceof QueryEditor) {
+			let queryEditor: QueryEditor = editor;
+			queryEditor.toggleResultsEditorVisibility();
+		}
+		return TPromise.as(null);
+	}
+}

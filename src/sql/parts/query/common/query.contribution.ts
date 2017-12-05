@@ -22,7 +22,7 @@ import * as queryContext from 'sql/parts/query/common/queryContext';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
-import { RunQueryKeyboardAction, RunCurrentQueryKeyboardAction, CancelQueryKeyboardAction, RefreshIntellisenseKeyboardAction } from 'sql/parts/query/execution/keyboardQueryActions';
+import { RunQueryKeyboardAction, RunCurrentQueryKeyboardAction, CancelQueryKeyboardAction, RefreshIntellisenseKeyboardAction, ToggleQueryResultsKeyboardAction } from 'sql/parts/query/execution/keyboardQueryActions';
 import * as gridActions from 'sql/parts/grid/views/gridActions';
 import * as gridCommands from 'sql/parts/grid/views/gridCommands';
 import { QueryPlanEditor } from 'sql/parts/queryPlan/queryPlanEditor';
@@ -118,6 +118,14 @@ actionRegistry.registerWorkbenchAction(
 		RefreshIntellisenseKeyboardAction.LABEL
 	);
 
+actionRegistry.registerWorkbenchAction(
+		new SyncActionDescriptor(
+			ToggleQueryResultsKeyboardAction,
+			ToggleQueryResultsKeyboardAction.ID,
+			ToggleQueryResultsKeyboardAction.LABEL
+		),
+		ToggleQueryResultsKeyboardAction.LABEL
+	);
 // Grid actions
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
