@@ -97,21 +97,25 @@ export class RemoveAccountAction extends Action {
 			type: 'question'
 		};
 
-		if (!this._messageService.confirm(confirm)) {
-			return TPromise.as(false);
-		}
+		let confirmPromise = this._messageService.confirm(confirm);
 
-		return new TPromise((resolve, reject) => {
-			self._accountManagementService.removeAccount(self._account.key)
-				.then(
-					(result) => { resolve(result); },
-					(err) => {
-						// Must handle here as this is an independent action
-						self._errorMessageService.showDialog(Severity.Error,
-							localize('removeAccountFailed', 'Failed to remove account'), err);
-						resolve(false);
-					}
-				);
+		return confirmPromise.then(confirmation => {
+			if (!confirmation.confirmed) {
+				return TPromise.as(false);
+			} else {
+				return new TPromise((resolve, reject) => {
+					self._accountManagementService.removeAccount(self._account.key)
+						.then(
+							(result) => { resolve(result); },
+							(err) => {
+								// Must handle here as this is an independent action
+								self._errorMessageService.showDialog(Severity.Error,
+									localize('removeAccountFailed', 'Failed to remove account'), err);
+								resolve(false);
+							}
+						);
+				});
+			}
 		});
 	}
 }

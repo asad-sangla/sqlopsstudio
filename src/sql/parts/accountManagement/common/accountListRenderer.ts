@@ -13,7 +13,7 @@ import { ActionBar, IActionOptions } from 'vs/base/browser/ui/actionbar/actionba
 import { localize } from 'vs/nls';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-import { RemoveAccountAction, ApplyFilterAction, RefreshAccountAction } from 'sql/parts/accountManagement/common/accountActions';
+import { RemoveAccountAction, RefreshAccountAction } from 'sql/parts/accountManagement/common/accountActions';
 
 import * as data from 'data';
 
@@ -116,7 +116,8 @@ export class AccountListRenderer extends AccountPickerListRenderer {
 			refreshAction.account = account;
 			templateData.actions.push(refreshAction, actionOptions);
 		} else {
-			templateData.actions.push(new ApplyFilterAction(ApplyFilterAction.ID, ApplyFilterAction.LABEL), actionOptions);
+			// Todo: Will show filter action when API/GUI for filtering is implemented (#3022, #3024)
+			// templateData.actions.push(new ApplyFilterAction(ApplyFilterAction.ID, ApplyFilterAction.LABEL), actionOptions);
 		}
 
 		let removeAction = this._instantiationService.createInstance(RemoveAccountAction, account);
