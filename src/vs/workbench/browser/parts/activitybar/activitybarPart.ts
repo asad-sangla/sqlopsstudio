@@ -21,7 +21,7 @@ import { IBadge } from 'vs/workbench/services/activity/common/activity';
 import { IPartService, Position as SideBarPosition } from 'vs/workbench/services/part/common/partService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IExtensionService } from 'vs/platform/extensions/common/extensions';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
 import { dispose, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
@@ -31,6 +31,7 @@ import { ACTIVITY_BAR_BACKGROUND, ACTIVITY_BAR_BORDER, ACTIVITY_BAR_FOREGROUND, 
 import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import { CompositeBar } from 'vs/workbench/browser/parts/compositebar/compositeBar';
 import { ToggleCompositePinnedAction } from 'vs/workbench/browser/parts/compositebar/compositeBarActions';
+import { ViewletDescriptor } from 'vs/workbench/browser/viewlet';
 
 export class ActivitybarPart extends Part {
 
@@ -68,7 +69,7 @@ export class ActivitybarPart extends Part {
 			icon: true,
 			storageId: ActivitybarPart.PINNED_VIEWLETS,
 			orientation: ActionsOrientation.VERTICAL,
-			composites: this.viewletService.getViewlets(),
+			composites: this.getViewlets(), // {{SQL CARBON EDIT}}
 			openComposite: (compositeId: string) => this.viewletService.openViewlet(compositeId, true),
 			getActivityAction: (compositeId: string) => this.instantiationService.createInstance(ViewletActivityAction, this.viewletService.getViewlet(compositeId)),
 			getCompositePinnedAction: (compositeId: string) => new ToggleCompositePinnedAction(this.viewletService.getViewlet(compositeId), this.compositeBar),
@@ -79,6 +80,18 @@ export class ActivitybarPart extends Part {
 			overflowActionSize: 50
 		});
 		this.registerListeners();
+	}
+
+	// {{SQL CARBON EDIT}}
+	private getViewlets(): ViewletDescriptor[] {
+		const pinnedViewlets = JSON.parse(this.storageService.get(ActivitybarPart.PINNED_VIEWLETS, StorageScope.GLOBAL, null)) as string[];
+		const allViewLets = this.viewletService.getViewlets();
+
+		if (!pinnedViewlets) {
+			return allViewLets.filter(viewlet => viewlet.id !== 'workbench.view.extensions') ;
+		}
+
+		return allViewLets;
 	}
 
 	private registerListeners(): void {
