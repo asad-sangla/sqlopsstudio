@@ -77,7 +77,8 @@ export enum ScriptOperation {
 	Create = 1,
 	Insert = 2,
 	Update = 3,
-	Delete = 4
+	Delete = 4,
+	Execute = 5
 }
 
 export function GetScriptOperationName(operation: ScriptOperation) {

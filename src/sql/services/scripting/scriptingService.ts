@@ -68,7 +68,7 @@ export class ScriptingService implements IScriptingService {
 					case (ScriptOperation.Delete):
 						return provider.scriptAsDelete(connectionUri, metadata, paramDetails);
 					default:
-						return Promise.resolve(undefined);
+						return provider.scriptAsOperation(connectionUri, operation, metadata, paramDetails);
 				}
 			}
 		}

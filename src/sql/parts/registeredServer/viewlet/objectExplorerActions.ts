@@ -11,7 +11,7 @@ import { ITree } from 'vs/base/parts/tree/browser/tree';
 import { IConnectionManagementService, IConnectionCompletionOptions, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
 import { TreeNode } from 'sql/parts/registeredServer/common/treeNode';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
-import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction, ScriptDeleteAction } from 'sql/workbench/common/actions';
+import { NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction, ScriptExecuteAction, ScriptDeleteAction } from 'sql/workbench/common/actions';
 import { NodeType } from 'sql/parts/registeredServer/common/nodeType';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeSelectionHandler';
@@ -19,6 +19,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IScriptingService } from 'sql/services/scripting/scriptingService';
 import { IQueryEditorService } from 'sql/parts/query/common/queryEditorService';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
+import * as Constants from 'sql/parts/connection/common/constants';
 
 export class ObjectExplorerActionsContext {
 	public treeNode: TreeNode;
@@ -243,6 +244,43 @@ export class OEScriptCreateAction extends ScriptCreateAction {
 	}
 }
 
+export class OEScriptExecuteAction extends ScriptExecuteAction {
+	public static ID = 'objectExplorer.' + ScriptExecuteAction.ID;
+	private _objectExplorerTreeNode: TreeNode;
+	private _container: HTMLElement;
+	private _treeSelectionHandler: TreeSelectionHandler;
+
+	constructor(
+		id: string, label: string,
+		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
+		@IScriptingService protected _scriptingService: IScriptingService,
+		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IErrorMessageService protected _errorMessageService: IErrorMessageService
+	) {
+		super(id, label, _queryEditorService, _connectionManagementService, _scriptingService, _errorMessageService);
+	}
+
+	public run(actionContext: any): TPromise<boolean> {
+		this._treeSelectionHandler = this._instantiationService.createInstance(TreeSelectionHandler);
+		if (actionContext instanceof ObjectExplorerActionsContext) {
+			//set objectExplorerTreeNode for context menu clicks
+			this._objectExplorerTreeNode = actionContext.treeNode;
+			this._container = actionContext.container;
+		}
+		this._treeSelectionHandler.onTreeActionStateChange(true);
+		var connectionProfile = TreeUpdateUtils.getConnectionProfile(<TreeNode>this._objectExplorerTreeNode);
+		var metadata = (<TreeNode>this._objectExplorerTreeNode).metadata;
+		var ownerUri = this._connectionManagementService.getConnectionId(connectionProfile);
+		ownerUri = this._connectionManagementService.getFormattedUri(ownerUri, connectionProfile);
+
+		return super.run({ profile: connectionProfile, object: metadata }).then((result) => {
+			this._treeSelectionHandler.onTreeActionStateChange(false);
+			return result;
+		});
+	}
+}
+
 export class OEScriptDeleteAction extends ScriptDeleteAction {
 	public static ID = 'objectExplorer.' + ScriptDeleteAction.ID;
 	private _objectExplorerTreeNode: TreeNode;
@@ -351,14 +389,25 @@ export class ObjectExplorerActionUtilities {
 		}
 	}
 
-	public static getScriptMap(): Map<NodeType, any[]> {
+	public static getScriptMap(treeNode: TreeNode): Map<NodeType, any[]> {
 		var scriptMap = new Map<NodeType, any[]>();
+
+		var isMssqlProvider: boolean = true;
+		if (treeNode) {
+			var connectionProfile = treeNode.getConnectionProfile();
+			if (connectionProfile) {
+				isMssqlProvider = connectionProfile.providerName === Constants.mssqlProviderName;
+			}
+		}
+
 		var basicScripting = [OEScriptCreateAction, OEScriptDeleteAction];
+		var storedProcedureScripting = isMssqlProvider ? [OEScriptCreateAction, OEScriptDeleteAction, OEScriptExecuteAction] :
+		basicScripting;
 		scriptMap.set(NodeType.AggregateFunction, basicScripting);
 		scriptMap.set(NodeType.PartitionFunction, basicScripting);
 		scriptMap.set(NodeType.ScalarValuedFunction, basicScripting);
 		scriptMap.set(NodeType.Schema, basicScripting);
-		scriptMap.set(NodeType.StoredProcedure, basicScripting);
+		scriptMap.set(NodeType.StoredProcedure, storedProcedureScripting);
 		scriptMap.set(NodeType.Table, [OEScriptSelectAction, OEEditDataAction, OEScriptCreateAction, OEScriptDeleteAction]);
 		scriptMap.set(NodeType.TableValuedFunction, basicScripting);
 		scriptMap.set(NodeType.User, basicScripting);

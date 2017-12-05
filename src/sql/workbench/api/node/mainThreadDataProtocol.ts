@@ -215,6 +215,9 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 			},
 			scriptAsDelete(connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
 				return self._proxy.$scriptAsDelete(handle, connectionUri, metadata, paramDetails);
+			},
+			scriptAsOperation(connectionUri: string, operation: data.ScriptOperation, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
+				return self._proxy.$scriptAsOperation(handle, connectionUri, operation, metadata, paramDetails);
 			}
 		});
 
@@ -358,7 +361,7 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 	public $onFilePathsValidated(handle: number, response: data.FileBrowserValidatedParams): void {
 		this._fileBrowserService.onFilePathsValidated(handle, response);
 	}
-	
+
 	// Profiler handlers
 	public $onSessionEventsAvailable(handle: number, response: data.ProfilerSessionEvents): void {
 

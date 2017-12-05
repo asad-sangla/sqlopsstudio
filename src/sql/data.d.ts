@@ -397,6 +397,15 @@ declare module 'data' {
 		getViewInfo(connectionUri: string, metadata: ObjectMetadata): Thenable<ColumnMetadata[]>;
 	}
 
+	export enum ScriptOperation {
+		Select = 0,
+		Create = 1,
+		Insert = 2,
+		Update = 3,
+		Delete = 4,
+		Execute = 5
+	}
+
 	export interface ScriptingResult {
 		operationId: string;
 		script: string;
@@ -419,6 +428,8 @@ declare module 'data' {
 		scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
 
 		scriptAsDelete(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
+
+		scriptAsOperation(connectionUri: string, operation: ScriptOperation, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
 
 		registerOnScriptingComplete(handler: (scriptingCompleteResult: ScriptingCompleteResult) => any);
 	}

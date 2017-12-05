@@ -113,7 +113,7 @@ export class ServerTreeActionProvider extends ContributableActionProvider {
 			}
 		}
 		actions.push(this._instantiationService.createInstance(OENewQueryAction, OENewQueryAction.ID, OENewQueryAction.LABEL, OENewQueryAction.ICON));
-		let scriptMap: Map<NodeType, any[]> = ObjectExplorerActionUtilities.getScriptMap();
+		let scriptMap: Map<NodeType, any[]> = ObjectExplorerActionUtilities.getScriptMap(treeNode);
 		let supportedActions = scriptMap.get(treeNode.nodeTypeId);
 		let self = this;
 

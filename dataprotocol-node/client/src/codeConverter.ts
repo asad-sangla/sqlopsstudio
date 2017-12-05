@@ -380,7 +380,7 @@ export function createConverter(uriConverter?: URIConverter): Converter {
 		let targetDatabaseEngineType = paramDetails.targetDatabaseEngineType;
 		let scriptCompatibilityOption = paramDetails.scriptCompatibilityOption;
 		let options: ls.ScriptOptions = {
-			scriptCreateDrop: (operation === ls.ScriptOperation.Delete) ? "ScriptDrop" : 
+			scriptCreateDrop: (operation === ls.ScriptOperation.Delete) ? "ScriptDrop" :
 							  (operation === ls.ScriptOperation.Select) ? "ScriptSelect" : "ScriptCreate",
 			typeOfDataToScript: "SchemaOnly",
 			scriptStatistics: "ScriptStatsNone",

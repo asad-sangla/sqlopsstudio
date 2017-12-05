@@ -374,6 +374,13 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		});
 	}
 
+	public $scriptAsOperation(handle: number, connectionUri: string, operation: data.ScriptOperation, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
+		return this._runWithProvider(handle, provider => {
+			return provider.scriptingProvider ? provider.scriptingProvider.scriptAsOperation(connectionUri, operation, metadata, paramDetails)
+				: Promise.resolve(undefined);
+		});
+	}
+
 	public $onScriptingComplete(handle: number, scriptingCompleteResult: data.ScriptingCompleteResult): void {
 		this._proxy.$onScriptingComplete(handle, scriptingCompleteResult);
 	}

@@ -2089,6 +2089,17 @@ export class LanguageClient {
 					);
 			},
 
+			scriptAsOperation(connectionUri: string, operation: ScriptOperation, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult> {
+				return self.sendRequest(ScriptingRequest.type,
+					self._c2p.asScriptingParams(connectionUri, operation, metadata, paramDetails), undefined).then(
+					self._p2c.asScriptingResult,
+					(error) => {
+						self.logFailedRequest(ScriptingRequest.type, error);
+						return Promise.resolve(undefined);
+					}
+					);
+			},
+
 			registerOnScriptingComplete(handler: (scriptingCompleteResult: ScriptingCompleteResult) => any) {
 				self.onConnectionReadyNotification(ScriptingCompleteNotification.type, (params: ScriptingCompleteResult) => {
 					handler({
