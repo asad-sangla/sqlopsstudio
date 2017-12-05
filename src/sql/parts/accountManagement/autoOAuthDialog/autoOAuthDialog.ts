@@ -147,9 +147,6 @@ export class AutoOAuthDialog extends Modal {
 
 	public cancel() {
 		this._onCancel.fire();
-
-		// Todo: this.close should be removed once the cancel operation is implemented
-		this.close();
 	}
 
 	public close() {

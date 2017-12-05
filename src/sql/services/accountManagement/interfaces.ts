@@ -19,7 +19,7 @@ export interface IAccountManagementService {
 
 	// ACCOUNT MANAGEMENT METHODS //////////////////////////////////////////
 	accountUpdated(account: data.Account): Thenable<void>;
-	addAccount(providerId: string): Thenable<data.Account>;
+	addAccount(providerId: string): Thenable<void>;
 	getAccountProviderMetadata(): Thenable<data.AccountProviderMetadata[]>;
 	getAccountsForProvider(providerId: string): Thenable<data.Account[]>;
 	getSecurityToken(account: data.Account): Thenable<{}>;
@@ -28,8 +28,9 @@ export interface IAccountManagementService {
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	openAccountListDialog(): Thenable<void>;
-	beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void;
+	beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void>;
 	endAutoOAuthDeviceCode(): void;
+	cancelAutoOAuthDeviceCode(providerId: string): void;
 	copyUserCodeAndOpenBrowser(userCode: string, uri: string): void;
 
 	// SERVICE MANAGEMENT METHODS /////////////////////////////////////////

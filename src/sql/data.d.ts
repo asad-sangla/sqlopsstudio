@@ -1135,11 +1135,12 @@ declare module 'data' {
 		 * Launches a flyout dialog that will display the information on how to complete device
 		 * code OAuth login to the user. Only one flyout can be opened at once and each must be closed
 		 * by calling {@link endAutoOAuthDeviceCode}.
+		 * @param {string} providerId	ID of the provider that's requesting the flyout be opened
 		 * @param {string} message
 		 * @param {string} userCode
 		 * @param {string} uri
 		 */
-		export function beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void;
+		export function beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void>;
 
 		/**
 		 * Closes the flyout dialog opened by {@link beginAutoOAuthDeviceCode}
@@ -1221,6 +1222,18 @@ declare module 'data' {
 
 	// - ACCOUNT PROVIDER //////////////////////////////////////////////////
 	/**
+	 * Error to be used when the user has cancelled the prompt or refresh methods. When
+	 * AccountProvider.refresh or AccountProvider.prompt are rejected with this error, the error
+	 * will not be reported to the user.
+	 */
+	export interface UserCancelledSignInError extends Error {
+		/**
+		 * Type guard for differentiating user cancelled sign in errors from other errors
+		 */
+		userCancelledSignIn: boolean;
+	}
+
+	/**
 	 * Represents a provider of accounts.
 	 */
 	export interface AccountProviderMetadata {
@@ -1282,6 +1295,13 @@ declare module 'data' {
 		 * @param accountKey - Key that uniquely identifies the account to clear
 		 */
 		clear(accountKey: AccountKey): Thenable<void>;
+
+		/**
+		 * Called from the account management service when the user has cancelled an auto OAuth
+		 * authorization process. Implementations should use this to cancel any polling process
+		 * and call the end OAuth method.
+		 */
+		autoOAuthCancelled(): Thenable<void>;
 	}
 
 	// Resource provider interfaces  -----------------------------------------------------------------------

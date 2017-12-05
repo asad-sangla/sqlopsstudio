@@ -76,11 +76,18 @@ export class AccountManagementService implements IAccountManagementService {
 		}
 	}
 
+	private get autoOAuthDialogController(): AutoOAuthDialogController {
+		// If the add account dialog hasn't been defined, create a new one
+		if (!this._autoOAuthDialogController) {
+			this._autoOAuthDialogController = this._instantiationService.createInstance(AutoOAuthDialogController);
+		}
+		return this._autoOAuthDialogController;
+	}
+
 	// PUBLIC METHODS //////////////////////////////////////////////////////
 	/**
 	 * Called from an account provider (via extension host -> main thread interop) when an
 	 * account's properties have been updated (usually when the account goes stale).
-	 * @param {AccountKey} accountKey Key that uniquely identifies the updated account
 	 * @param {Account} updatedAccount Account with the updated properties
 	 */
 	public accountUpdated(updatedAccount: data.Account): Thenable<void> {
@@ -119,7 +126,7 @@ export class AccountManagementService implements IAccountManagementService {
 	 * @param {string} providerId ID of the provider to ask to prompt for an account
 	 * @return {Thenable<Account>} Promise to return an account
 	 */
-	public addAccount(providerId: string): Thenable<data.Account> {
+	public addAccount(providerId: string): Thenable<void> {
 		let self = this;
 
 		return this.doWithProvider(providerId, (provider) => {
@@ -135,7 +142,13 @@ export class AccountManagementService implements IAccountManagementService {
 					}
 
 					self.fireAccountListUpdate(provider, result.accountAdded);
-					return result.changedAccount;
+				})
+				.then(null, err => {
+					// On error, check to see if the error is because the user cancelled. If so, just ignore
+					if ('userCancelledSignIn' in err) {
+						return Promise.resolve();
+					}
+					return Promise.reject(err);
 				});
 		});
 	}
@@ -274,22 +287,17 @@ export class AccountManagementService implements IAccountManagementService {
 		});
 	}
 
-	private get autoOAuthDialogController(): AutoOAuthDialogController {
-		// If the add account dialog hasn't been defined, create a new one
-		if (!this._autoOAuthDialogController) {
-			this._autoOAuthDialogController = this._instantiationService.createInstance(AutoOAuthDialogController);
-		}
-		return this._autoOAuthDialogController;
-	}
-
 	/**
 	 * Begin auto OAuth device code open add account dialog
 	 * @return {TPromise<any>}	Promise that finishes when the account list dialog opens
 	 */
-	public beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
-		// TODO: The title should come from extension
-		let title = nls.localize('addAzureAccount', 'Add Azure account');
-		this.autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
+	public beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void> {
+		let self = this;
+
+		return this.doWithProvider(providerId, provider => {
+			let title = nls.localize('addAzureAccount', 'Add {0} account', provider.metadata.displayName);
+			return self.autoOAuthDialogController.openAutoOAuthDialog(providerId, title, message, userCode, uri);
+		});
 	}
 
 	/**
@@ -297,6 +305,18 @@ export class AccountManagementService implements IAccountManagementService {
 	 */
 	public endAutoOAuthDeviceCode(): void {
 		this.autoOAuthDialogController.closeAutoOAuthDialog();
+	}
+
+	/**
+	 * Called from the UI when a user cancels the auto OAuth dialog
+	 */
+	public cancelAutoOAuthDeviceCode(providerId: string): void {
+		this.doWithProvider(providerId, provider => provider.provider.autoOAuthCancelled())
+			.then(	// Swallow errors
+				null,
+				err => { console.warn(`Error when cancelling auto OAuth: ${err}`); }
+			)
+			.then(() => this.autoOAuthDialogController.closeAutoOAuthDialog());
 	}
 
 	/**

@@ -36,8 +36,8 @@ export class MainThreadAccountManagement extends MainThreadAccountManagementShap
 		this._toDispose = [];
 	}
 
-	public $beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
-		return this._accountManagementService.beginAutoOAuthDeviceCode(message, userCode, uri);
+	public $beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void> {
+		return this._accountManagementService.beginAutoOAuthDeviceCode(providerId, message, userCode, uri);
 	}
 
 	public $endAutoOAuthDeviceCode(): void {
@@ -53,6 +53,9 @@ export class MainThreadAccountManagement extends MainThreadAccountManagementShap
 
 		// Create the account provider that interfaces with the extension via the proxy and register it
 		let accountProvider: data.AccountProvider = {
+			autoOAuthCancelled(): Thenable<void> {
+				return self._proxy.$autoOAuthCancelled(handle);
+			},
 			clear(accountKey: data.AccountKey): Thenable<void> {
 				return self._proxy.$clear(handle, accountKey);
 			},

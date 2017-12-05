@@ -22,11 +22,15 @@ export class AccountManagementTestService implements IAccountManagementService {
 		return undefined;
 	}
 
-	addAccount(providerId: string): Thenable<data.Account> {
+	addAccount(providerId: string): Thenable<void> {
 		return undefined;
 	}
 
-	beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
+	beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): Thenable<void> {
+		return undefined;
+	}
+
+	cancelAutoOAuthDeviceCode(providerId: string): void {
 		return undefined;
 	}
 
@@ -76,6 +80,10 @@ export class AccountManagementTestService implements IAccountManagementService {
 }
 
 export class AccountProviderStub implements data.AccountProvider {
+	autoOAuthCancelled(): Thenable<void> {
+		return Promise.resolve();
+	}
+
 	clear(account: data.AccountKey): Thenable<void> {
 		return Promise.resolve();
 	}

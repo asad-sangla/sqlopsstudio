@@ -151,7 +151,7 @@ suite('Account Management Service Tests:', () => {
 
 		// If: I ask to add an account
 		return state.accountManagementService.addAccount(hasAccountProvider.id)
-			.then(result => {
+			.then(() => {
 				// Then:
 				// ... The provider should have been prompted
 				mockProvider.verify(x => x.prompt(), TypeMoq.Times.once());
@@ -166,9 +166,6 @@ suite('Account Management Service Tests:', () => {
 					assert.equal(param.accountList.length, 1);
 					assert.equal(param.accountList[0], account);
 				});
-
-				// ... The returned account should be the new one
-				assert.equal(result, account);
 			})
 			.then(
 			() => done(),
@@ -197,7 +194,7 @@ suite('Account Management Service Tests:', () => {
 
 		// If: I ask to add an account
 		return state.accountManagementService.addAccount(hasAccountProvider.id)
-			.then(result => {
+			.then(() => {
 				// Then:
 				// ... The provider should have been prompted
 				mockProvider.verify(x => x.prompt(), TypeMoq.Times.once());
@@ -212,9 +209,6 @@ suite('Account Management Service Tests:', () => {
 					assert.equal(param.accountList.length, 1);
 					assert.equal(param.accountList[0], account);
 				});
-
-				// ... The returned account should be the new one
-				assert.equal(result, account);
 			})
 			.then(
 			() => done(),
@@ -234,6 +228,36 @@ suite('Account Management Service Tests:', () => {
 			() => done()
 			);
 
+	});
+
+	test('Add account - provider exists, provider fails', done => {
+		// Setup: Create account management service with a provider
+		let state = getTestState();
+		let mockProvider = getFailingMockAccountProvider(false);
+		state.accountManagementService.registerProvider(noAccountProvider, mockProvider.object);
+
+		// If: I ask to add an account and the user cancels
+		// Then: Nothing should have happened and the promise should be resolved
+		return state.accountManagementService.addAccount(noAccountProvider.id)
+			.then(
+				() => done('Add account promise resolved when it should have rejected'),
+				() => done()
+			);
+	});
+
+	test('Add account - provider exists, user cancelled', done => {
+		// Setup: Create account management service with a provider
+		let state = getTestState();
+		let mockProvider = getFailingMockAccountProvider(true);
+		state.accountManagementService.registerProvider(noAccountProvider, mockProvider.object);
+
+		// If: I ask to add an account and the user cancels
+		// Then: Nothing should have happened and the promise should be resolved
+		return state.accountManagementService.addAccount(noAccountProvider.id)
+			.then(
+				() => done(),
+				err => done(err)
+			);
 	});
 
 	test('Get account provider metadata - providers exist', done => {
@@ -569,6 +593,27 @@ function getMockAccountProvider(): TypeMoq.Mock<data.AccountProvider> {
 	mockProvider.setup(x => x.initialize(TypeMoq.It.isAny())).returns(param => Promise.resolve(param));
 	mockProvider.setup(x => x.prompt()).returns(() => Promise.resolve(account));
 
+	return mockProvider;
+}
+
+function getFailingMockAccountProvider(cancel: boolean): TypeMoq.Mock<data.AccountProvider> {
+	let mockProvider = TypeMoq.Mock.ofType<data.AccountProvider>(AccountProviderStub);
+	mockProvider.setup(x => x.clear(TypeMoq.It.isAny()))
+		.returns(() => Promise.resolve());
+	mockProvider.setup(x => x.initialize(TypeMoq.It.isAny()))
+		.returns(param => Promise.resolve(param));
+	mockProvider.setup(x => x.prompt())
+		.returns(() => {
+			return cancel
+				? Promise.reject(<data.UserCancelledSignInError>{userCancelledSignIn: true}).then()
+				: Promise.reject(new Error()).then();
+		});
+	mockProvider.setup(x => x.refresh(TypeMoq.It.isAny()))
+		.returns(() => {
+			return cancel
+				? Promise.reject(<data.UserCancelledSignInError>{userCancelledSignIn: true}).then()
+				: Promise.reject(new Error()).then();
+		});
 	return mockProvider;
 }
 

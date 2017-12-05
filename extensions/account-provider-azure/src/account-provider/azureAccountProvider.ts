@@ -5,8 +5,6 @@
 
 'use strict';
 
-import * as fs from 'fs';
-import * as path from 'path';
 import * as adal from 'adal-node';
 import * as data from 'data';
 import * as request from 'request';
@@ -31,7 +29,9 @@ export class AzureAccountProvider implements data.AccountProvider {
 
 	// MEMBER VARIABLES ////////////////////////////////////////////////////
 	private _args: Arguments;
+	private _autoOAuthCancelled: boolean;
 	private _commonAuthorityUrl: string;
+	private _inProgressAutoOAuth: InProgressAutoOAuth;
 	private _isInitialized: boolean;
 
 	constructor(private _metadata: AzureAccountProviderMetadata, private _tokenCache: TokenCache) {
@@ -39,27 +39,25 @@ export class AzureAccountProvider implements data.AccountProvider {
 			host: this._metadata.settings.host,
 			clientId: this._metadata.settings.clientId
 		};
+		this._autoOAuthCancelled = false;
+		this._inProgressAutoOAuth = null;
 		this._isInitialized = false;
 
 		this._commonAuthorityUrl = url.resolve(this._metadata.settings.host, AzureAccountProvider.AadCommonTenant);
 	}
 
 	// PUBLIC METHODS //////////////////////////////////////////////////////
+	public autoOAuthCancelled(): Thenable<void> {
+		return this.doIfInitialized(() => this.cancelAutoOAuth());
+	}
+
 	/**
 	 * Clears all tokens that belong to the given account from the token cache
 	 * @param {"data".AccountKey} accountKey Key identifying the account to delete tokens for
 	 * @returns {Thenable<void>} Promise to clear requested tokens from the token cache
 	 */
 	public clear(accountKey: data.AccountKey): Thenable<void> {
-		let self = this;
-
-		// Put together a query to look up any tokens associated with the account key
-		let query = <adal.TokenResponse>{ userId: accountKey.accountId };
-
-		// 1) Look up the tokens associated with the query
-		// 2) Remove them
-		return this._tokenCache.findThenable(query)
-			.then(results => { return self._tokenCache.removeThenable(results); });
+		return this.doIfInitialized(() => this.clearAccountTokens(accountKey));
 	}
 
 	/**
@@ -71,8 +69,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 	}
 
 	public getSecurityToken(account: AzureAccount): Thenable<AzureAccountSecurityTokenCollection> {
-		let self = this;
-		return this.doIfInitialized(() => self.getAccessTokens(account));
+		return this.doIfInitialized(() => this.getAccessTokens(account));
 	}
 
 	public initialize(restoredAccounts: data.Account[]): Thenable<data.Account[]> {
@@ -114,16 +111,49 @@ export class AzureAccountProvider implements data.AccountProvider {
 	}
 
 	public prompt(): Thenable<AzureAccount> {
-		let self = this;
-		return this.doIfInitialized(() => self.signIn());
+		return this.doIfInitialized(() => this.signIn());
 	}
 
 	public refresh(account: AzureAccount): Thenable<AzureAccount> {
-		let self = this;
-		return this.doIfInitialized(() => self.signIn());
+		return this.doIfInitialized(() => this.signIn());
 	}
 
 	// PRIVATE METHODS /////////////////////////////////////////////////////
+	private cancelAutoOAuth(): Thenable<void> {
+		let self = this;
+
+		if (!this._inProgressAutoOAuth) {
+			console.warn('Attempted to cancel auto OAuth when auto OAuth is not in progress!');
+			return Promise.resolve();
+		}
+
+		// Indicate oauth was cancelled by the user
+		let inProgress = self._inProgressAutoOAuth;
+		self._autoOAuthCancelled = true;
+		self._inProgressAutoOAuth = null;
+
+		// Use the auth context that was originally used to open the polling request, and cancel the polling
+		let context = inProgress.context;
+		context.cancelRequestToGetTokenWithDeviceCode(inProgress.userCodeInfo, err => {
+			// Callback is only called in failure scenarios.
+			if (err) {
+				console.warn(`Error while cancelling auto OAuth: ${err}`);
+			}
+		});
+
+		return Promise.resolve();
+	}
+
+	private clearAccountTokens(accountKey: data.AccountKey): Thenable<void> {
+		// Put together a query to look up any tokens associated with the account key
+		let query = <adal.TokenResponse>{ userId: accountKey.accountId };
+
+		// 1) Look up the tokens associated with the query
+		// 2) Remove them
+		return this._tokenCache.findThenable(query)
+			.then(results => this._tokenCache.removeThenable(results));
+	}
+
 	private doIfInitialized<T>(op: () => Thenable<T>): Thenable<T> {
 		return this._isInitialized
 			? op()
@@ -177,11 +207,11 @@ export class AzureAccountProvider implements data.AccountProvider {
 			.then(() => tokenCollection);
 	}
 
-	private getDeviceLoginUserCode(): Thenable<adal.UserCodeInfo> {
+	private getDeviceLoginUserCode(): Thenable<InProgressAutoOAuth> {
 		let self = this;
 
 		// Create authentication context and acquire user code
-		return new Promise<adal.UserCodeInfo>((resolve, reject) => {
+		return new Promise<InProgressAutoOAuth>((resolve, reject) => {
 			let context = new adal.AuthenticationContext(self._commonAuthorityUrl, null, self._tokenCache);
 			// TODO: How to localize?
 			context.acquireUserCode(self._metadata.settings.signInResourceId, self._metadata.settings.clientId, 'en-us',
@@ -189,30 +219,48 @@ export class AzureAccountProvider implements data.AccountProvider {
 					if (err) {
 						reject(err);
 					} else {
-						resolve(response);
+						let result: InProgressAutoOAuth = {
+							context: context,
+							userCodeInfo: response
+						};
+
+						resolve(result);
 					}
 				}
 			);
 		});
 	}
 
-	private getDeviceLoginToken(deviceLogin: adal.UserCodeInfo): Thenable<adal.TokenResponse> {
+	private getDeviceLoginToken(oAuth: InProgressAutoOAuth): Thenable<adal.TokenResponse> {
 		let self = this;
 
-		// Create authentication context and use device login params to get authorization token
-		return new Promise<adal.TokenResponse>((resolve, reject) => {
-			data.accounts.beginAutoOAuthDeviceCode(deviceLogin.message, deviceLogin.userCode, deviceLogin.verificationUrl);
+		// 1) Open the auto OAuth dialog
+		// 2) Begin the acquiring token polling
+		// 3) When that completes via callback, close the auto oauth
+		return data.accounts.beginAutoOAuthDeviceCode(self._metadata.id, oAuth.userCodeInfo.message, oAuth.userCodeInfo.userCode, oAuth.userCodeInfo.verificationUrl)
+			.then(() => {
+				return new Promise<adal.TokenResponse>((resolve, reject) => {
+					let context = oAuth.context;
+					context.acquireTokenWithDeviceCode(self._metadata.settings.signInResourceId, self._metadata.settings.clientId, oAuth.userCodeInfo,
+						(err, response) => {
+							if (err) {
+								if (self._autoOAuthCancelled) {
+									// Auto OAuth was cancelled by the user, indicate this with the error we return
+									reject(<data.UserCancelledSignInError>{userCancelledSignIn: true});
+								} else {
+									// Auto OAuth failed for some other reason
+									data.accounts.endAutoOAuthDeviceCode();
+									reject(err);
+								}
+							} else {
+								data.accounts.endAutoOAuthDeviceCode();
+								resolve(<adal.TokenResponse>response);
+							}
 
-			let context = new adal.AuthenticationContext(self._commonAuthorityUrl, null, this._tokenCache);
-			context.acquireTokenWithDeviceCode(self._metadata.settings.signInResourceId, self._metadata.settings.clientId, deviceLogin, (err, response) => {
-				data.accounts.endAutoOAuthDeviceCode();
-				if (err) {
-					reject(err);
-				} else {
-					resolve(<adal.TokenResponse>response);
-				}
+						}
+					);
+				});
 			});
-		});
 	}
 
 	private getTenants(userId: string, homeTenant: string): Thenable<Tenant[]> {
@@ -329,9 +377,15 @@ export class AzureAccountProvider implements data.AccountProvider {
 		// 4) Generate the AzureAccount object and return it
 		let tokenResponse: adal.TokenResponse = null;
 		return this.getDeviceLoginUserCode()
-			.then((userCode: adal.UserCodeInfo) => self.getDeviceLoginToken(userCode))
+			.then((result: InProgressAutoOAuth) => {
+				self._autoOAuthCancelled = false;
+				self._inProgressAutoOAuth = result;
+				return self.getDeviceLoginToken(self._inProgressAutoOAuth);
+			})
 			.then((response: adal.TokenResponse) => {
 				tokenResponse = response;
+				self._autoOAuthCancelled = false;
+				self._inProgressAutoOAuth = null;
 				return self.getTenants(tokenResponse.userId, tokenResponse.userId);
 			})
 			.then((tenants: Tenant[]) => {
@@ -382,4 +436,9 @@ export class AzureAccountProvider implements data.AccountProvider {
 				};
 			});
 	}
+}
+
+interface InProgressAutoOAuth {
+	context: adal.AuthenticationContext;
+	userCodeInfo: adal.UserCodeInfo;
 }

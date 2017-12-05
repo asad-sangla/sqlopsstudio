@@ -26,6 +26,12 @@ suite('auto OAuth dialog controller tests', () => {
 	let mockOnAddAccountEvent: Emitter<void>;
 	let mockOnCloseEvent: Emitter<void>;
 
+	let providerId = 'azure';
+	let title = 'Add Account';
+	let message = 'This is the dialog description';
+	let userCode = 'abcde';
+	let uri = 'uri';
+
 	setup(() => {
 		mockOnCancelEvent = new Emitter<void>();
 		mockOnAddAccountEvent = new Emitter<void>();
@@ -66,19 +72,16 @@ suite('auto OAuth dialog controller tests', () => {
 	});
 
 	test('Open auto OAuth when the flyout is already open, return an error', () => {
-		let title = 'Add Account';
-		let message = 'This is the dialog description';
-		let userCode = 'abcde';
-		let uri = 'uri';
+
 		// If: Open auto OAuth dialog first time
-		autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
+		autoOAuthDialogController.openAutoOAuthDialog(providerId, title, message, userCode, uri);
 
 		// Then: It should open the flyout successfully
 		mockAutoOAuthDialog.verify(x => x.open(title, message, userCode, uri), TypeMoq.Times.once());
 		mockErrorMessageService.verify(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.never());
 
 		// If: a oauth flyout is already open
-		autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
+		autoOAuthDialogController.openAutoOAuthDialog(providerId, title, message, userCode, uri);
 
 		// Then: An error dialog should have been opened
 		mockErrorMessageService.verify(x => x.showDialog(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.once());
@@ -90,7 +93,7 @@ suite('auto OAuth dialog controller tests', () => {
 		let userCode = 'abcde';
 		let uri = 'uri';
 
-		autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
+		autoOAuthDialogController.openAutoOAuthDialog(providerId, title, message, userCode, uri);
 
 		// If: closeAutoOAuthDialog is called
 		autoOAuthDialogController.closeAutoOAuthDialog();
@@ -105,11 +108,11 @@ suite('auto OAuth dialog controller tests', () => {
 		let userCode = 'abcde';
 		let uri = 'uri';
 
-		autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
+		autoOAuthDialogController.openAutoOAuthDialog(providerId, title, message, userCode, uri);
 		autoOAuthDialogController.closeAutoOAuthDialog();
 
 		// If: Open the flyout second time
-		autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
+		autoOAuthDialogController.openAutoOAuthDialog(providerId, title, message, userCode, uri);
 
 		// Then: It should open the flyout twice successfully
 		mockAutoOAuthDialog.verify(x => x.open(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()), TypeMoq.Times.exactly(2));
@@ -122,7 +125,7 @@ suite('auto OAuth dialog controller tests', () => {
 		let userCode = 'abcde';
 		let uri = 'uri';
 
-		autoOAuthDialogController.openAutoOAuthDialog(title, message, userCode, uri);
+		autoOAuthDialogController.openAutoOAuthDialog(providerId, title, message, userCode, uri);
 
 		// If: the 'copy & open' button in auto Oauth dialog is selected
 		mockOnAddAccountEvent.fire();
@@ -130,5 +133,7 @@ suite('auto OAuth dialog controller tests', () => {
 		// Then: copyUserCodeAndOpenBrowser should get called
 		mockAccountManagementService.verify(x => x.copyUserCodeAndOpenBrowser(userCode, uri), TypeMoq.Times.once());
 	});
+
+	// TODO: Test for cancel button
 
 });

@@ -47,9 +47,13 @@ export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 		return this._withProvider(handle, (provider: data.AccountProvider) => provider.refresh(account));
 	}
 
+	public $autoOAuthCancelled(handle: number): Thenable<void> {
+		return this._withProvider(handle, (provider: data.AccountProvider) => provider.autoOAuthCancelled());
+	}
+
 	// - EXTENSION HOST AVAILABLE METHODS //////////////////////////////////
-	public $beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void {
-		this._proxy.$beginAutoOAuthDeviceCode(message, userCode, uri);
+	public $beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void> {
+		return this._proxy.$beginAutoOAuthDeviceCode(providerId, message, userCode, uri);
 	}
 
 	public $endAutoOAuthDeviceCode(): void {

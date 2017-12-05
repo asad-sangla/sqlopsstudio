@@ -15,6 +15,7 @@ import * as data from 'data';
 import { TPromise } from 'vs/base/common/winjs.base';
 
 export abstract class ExtHostAccountManagementShape {
+	$autoOAuthCancelled(handle: number): Thenable<void> { throw ni(); }
 	$clear(handle: number, accountKey: data.AccountKey): Thenable<void> { throw ni(); }
 	$getSecurityToken(handle: number, account: data.Account): Thenable<{}> { throw ni(); }
 	$initialize(handle: number, restoredAccounts: data.Account[]): Thenable<data.Account[]> { throw ni(); }
@@ -343,7 +344,7 @@ export abstract class MainThreadAccountManagementShape {
 	$registerAccountProvider(providerMetadata: data.AccountProviderMetadata, handle: number): Thenable<any> { throw ni(); }
 	$unregisterAccountProvider(handle: number): Thenable<any> { throw ni(); }
 
-	$beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): void { throw ni(); }
+	$beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void> { throw ni(); }
 	$endAutoOAuthDeviceCode(): void { throw ni(); }
 
 	$accountUpdated(updatedAccount: data.Account): void { throw ni(); }
