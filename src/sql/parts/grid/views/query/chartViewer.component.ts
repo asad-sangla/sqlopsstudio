@@ -332,7 +332,7 @@ export class ChartViewerComponent implements OnInit, OnDestroy, IChartViewAction
 			this.componentHost.viewContainerRef.clear();
 			let componentRef = this.componentHost.viewContainerRef.createComponent(componentFactory);
 			this._chartComponent = <ChartInsight>componentRef.instance;
-			this._chartComponent.config = this._chartConfig;
+			this._chartComponent.setConfig(this._chartConfig);
 			this._chartComponent.data = this._executeResult;
 			this._chartComponent.options = mixin(this._chartComponent.options, { animation: { duration: 0 } });
 			if (this._chartComponent.init) {

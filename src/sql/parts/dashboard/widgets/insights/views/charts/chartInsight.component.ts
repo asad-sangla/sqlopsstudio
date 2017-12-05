@@ -187,7 +187,7 @@ export abstract class ChartInsight extends Disposable implements IInsightsView {
 		unmemoize(this, 'colors');
 	}
 
-	@Input() set config(config: IChartConfig) {
+	public setConfig(config: IChartConfig) {
 		this.clearMemoize();
 		this._config = mixin(config, this._defaultConfig, false);
 		this.legendPosition = this._config.legendPosition;
