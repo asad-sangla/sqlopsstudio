@@ -1,6 +1,6 @@
 # Project "CARBON" Private Preview: May 30, 2017
 
-## Known Issues 
+## Known Issues
 
 Project "Carbon" embraces 'open source' nature and shares feature previews from its early shape. The source code will be published as a public open source project soon. Currently implemented "Carbon" features are roughly in two engineering states.
 
@@ -18,7 +18,6 @@ Project "Carbon" embraces 'open source' nature and shares feature previews from 
 ||Backup dialog||
 ||Shell menus||
 ||Error messages||
-||Any features related to PostgreSQL support||
 |Alpha / Beta|Connection dialog|Including add / remove connections to Servers viewlet|
 ||Server Groups||
 ||Object Explorer|Including its folder structure and supported object types and supported actions e.g. SCRIPT AS|
@@ -31,7 +30,7 @@ Project "Carbon" embraces 'open source' nature and shares feature previews from 
 
 * MANAGE page layout: new design and implementation are in process.
 
-* Dialog UI layout: Fly-out dialog based UI implementation is in process. 
+* Dialog UI layout: Fly-out dialog based UI implementation is in process.
 
 * UI styles for UI controls: Applying UI style gides to UI controls is in process.
 
@@ -48,6 +47,6 @@ Project "Carbon" embraces 'open source' nature and shares feature previews from 
 
 * OE may not display all object types - Key object types such as Tables, Views, Functions and SPs are implemented and other types implementation is in process.
 
-* SELECT TOP 1000 OE action on table may fail. 
+* SELECT TOP 1000 OE action on table may fail.
 
 * SCRIPT CREATE OE action on a database object may fail.

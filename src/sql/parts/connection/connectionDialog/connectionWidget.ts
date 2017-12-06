@@ -47,8 +47,7 @@ export class ConnectionWidget {
 	private _focusedBeforeHandleOnConnection: HTMLElement;
 	private _providerName: string;
 	private _authTypeMap: { [providerName: string]: AuthenticationType[] } = {
-		[Constants.mssqlProviderName]: [new AuthenticationType(Constants.integrated, false), new AuthenticationType(Constants.sqlLogin, true)],
-		[Constants.pgsqlProviderName]: []
+		[Constants.mssqlProviderName]: [new AuthenticationType(Constants.integrated, false), new AuthenticationType(Constants.sqlLogin, true)]
 	};
 	private _saveProfile: boolean;
 	public DefaultServerGroup: IConnectionProfileGroup = {
@@ -87,12 +86,14 @@ export class ConnectionWidget {
 		}
 
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		if (OS === OperatingSystem.Windows) {
-			authTypeOption.defaultValue = this.getAuthTypeDisplayName(Constants.integrated);
-		} else {
-			authTypeOption.defaultValue = this.getAuthTypeDisplayName(Constants.sqlLogin);
+		if(authTypeOption) {
+			if (OS === OperatingSystem.Windows) {
+				authTypeOption.defaultValue = this.getAuthTypeDisplayName(Constants.integrated);
+			} else {
+				authTypeOption.defaultValue = this.getAuthTypeDisplayName(Constants.sqlLogin);
+			}
+			this._authTypeSelectBox = new SelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue);
 		}
-		this._authTypeSelectBox = authTypeOption ? new SelectBox(authTypeOption.categoryValues.map(c => c.displayName), authTypeOption.defaultValue) : undefined;
 		this._providerName = providerName;
 	}
 
@@ -216,6 +217,7 @@ export class ConnectionWidget {
 			this._toDispose.push(styler.attachSelectBoxStyler(this._authTypeSelectBox, this._themeService));
 			this._toDispose.push(this._authTypeSelectBox.onDidSelect(selectedAuthType => {
 				this.onAuthTypeSelected(selectedAuthType.selected);
+				this.setConnectButton();
 			}));
 		}
 
@@ -230,10 +232,6 @@ export class ConnectionWidget {
 		this._toDispose.push(this._userNameInputBox.onDidChange(userName => {
 			this.setConnectButton();
 		}));
-
-		this._toDispose.push(this._authTypeSelectBox.onDidSelect(authType => {
-			this.setConnectButton();
-		}))
 	}
 
 	private onGroupSelected(selectedGroup: string) {
@@ -249,8 +247,13 @@ export class ConnectionWidget {
 	private setConnectButton() : void {
 		let authDisplayName: string = this.getAuthTypeDisplayName(this.authenticationType);
 		let authType: AuthenticationType = this.getMatchingAuthType(authDisplayName);
-		authType.showUsernameAndPassword ? this._callbacks.onSetConnectButton(!!this.serverName && !!this.userName) :
+		let showUsernameAndPassword: boolean = true;
+		if(authType) {
+			showUsernameAndPassword = authType.showUsernameAndPassword;
+		}
+		showUsernameAndPassword ? this._callbacks.onSetConnectButton(!!this.serverName && !!this.userName) :
 						   this._callbacks.onSetConnectButton(!!this.serverName);
+
 	}
 
 	private onAuthTypeSelected(selectedAuthType: string) {
@@ -355,11 +358,14 @@ export class ConnectionWidget {
 	private getAuthTypeDisplayName(authTypeName: string) {
 		var displayName: string;
 		var authTypeOption = this._optionsMaps[ConnectionOptionSpecialType.authType];
-		authTypeOption.categoryValues.forEach(c => {
-			if (c.name === authTypeName) {
-				displayName = c.displayName;
-			}
-		});
+
+		if(authTypeOption) {
+			authTypeOption.categoryValues.forEach(c => {
+				if (c.name === authTypeName) {
+					displayName = c.displayName;
+				}
+			});
+		}
 		return displayName;
 	}
 
@@ -499,7 +505,8 @@ export class ConnectionWidget {
 	}
 
 	private getMatchingAuthType(displayName: string): AuthenticationType {
-		return this._authTypeMap[this._providerName].find(authType => this.getAuthTypeDisplayName(authType.name) === displayName);
+		const authType = this._authTypeMap[this._providerName];
+		return authType ? authType.find(authType => this.getAuthTypeDisplayName(authType.name) === displayName) : undefined;
 	}
 }
 

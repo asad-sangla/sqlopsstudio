@@ -104,25 +104,5 @@ export const properties: Array<ProviderProperties> = [
 				]
 			}
 		]
-	},
-	{
-		provider: 'PGSQL',
-		flavors: [
-			{
-				flavor: 'any',
-				databaseProperties: [
-					{
-						displayName: nls.localize('owner', 'Owner'),
-						value: 'owner'
-					}
-				],
-				serverProperties: [
-					{
-						displayName: nls.localize('version', 'Version'),
-						value: 'serverVersion'
-					}
-				]
-			}
-		]
 	}
 ];

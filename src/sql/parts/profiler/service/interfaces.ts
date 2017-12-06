@@ -33,7 +33,7 @@ export interface IProfilerSession {
 export interface IProfilerService {
 	_serviceBrand: any;
 	/**
-	 * Registers a backend provider for profiler session. ex: mssql, pgsql
+	 * Registers a backend provider for profiler session. ex: mssql
 	 */
 	registerProvider(providerId: string, provider: data.ProfilerProvider): void;
 	/**

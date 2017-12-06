@@ -16,7 +16,7 @@ declare module 'data' {
 		/**
 		 * An [event](#Event) which fires when the specific flavor of a language used in DMP
 		 * connections has changed. And example is for a SQL connection, the flavor changes
-		 * to MSSQL or PGSQL
+		 * to MSSQL
 		 */
 		export const onDidChangeLanguageFlavor: vscode.Event<DidChangeLanguageFlavorParams>;
 	}

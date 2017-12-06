@@ -385,7 +385,7 @@ Carbon ships monthly releases and supports auto-update when a new release is ava
 
 # SQL Tools Docs Page
 ## Download Carbon
-Carbon is a lightweight but powerful multi-database management tool. It is available for Windows, macOS, and Linux. Carbon provides tools to configure, monitor, and manages instances of SQL Server and PostgreSQL from wherever you deploy it. Carbon provides tools to deploy, monitor, and upgrade the data-tier components, such as databases and data warehouses used by your applications, and to build queries and scripts.
+Carbon is a lightweight but powerful multi-database management tool. It is available for Windows, macOS, and Linux. Carbon provides tools to configure, monitor, and manages instances of SQL Server from wherever you deploy it. Carbon provides tools to deploy, monitor, and upgrade the data-tier components, such as databases and data warehouses used by your applications, and to build queries and scripts.
 
 We are excited to announce the public preview release of Carbon.
 

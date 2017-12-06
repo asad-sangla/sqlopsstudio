@@ -21,7 +21,6 @@ export const capabilitiesOptions = 'OPTIONS_METADATA';
 export const configMaxRecentConnections = 'maxRecentConnections';
 
 export const mssqlProviderName = 'MSSQL';
-export const pgsqlProviderName = 'PGSQL';
 
 export const applicationName = 'sqlops';
 

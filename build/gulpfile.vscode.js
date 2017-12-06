@@ -642,9 +642,4 @@ gulp.task('install-sqltoolsservice', () => {
     return installService(extObj);
 });
 
-gulp.task('install-pgsqlservice', () => {
-	var pgsqlExt = require('../extensions/pgsql/client/out/models/constants');
-	var extObj = new pgsqlExt.Constants();
-	return installService(extObj);
-});
 

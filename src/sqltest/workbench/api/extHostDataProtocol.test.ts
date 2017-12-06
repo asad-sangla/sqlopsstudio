@@ -107,24 +107,4 @@ suite('ExtHostDataProtocol', function () {
 	});
 
 	// --- outline
-
-	test('DataProvider, language flavor changed', function () {
-		// assert.equal(DocumentSymbolProviderRegistry.all(model).length, 0);
-		// let expectedParams = <data.DidChangeLanguageFlavorParams> {
-		// 	uri: 'myuri',
-		// 	language: 'sql',
-		// 	flavor: 'pgsql'
-		// };
-		// let actualParams: data.DidChangeLanguageFlavorParams = undefined;
-		// extHost.onDidChangeLanguageFlavor((e => {
-		// 	actualParams = e;
-		// }));
-
-		// extHost.$languageFlavorChanged(expectedParams);
-
-		// assert.ok(actualParams !== undefined);
-		// assert.equal(actualParams.uri, expectedParams.uri);
-		// assert.equal(actualParams.flavor, expectedParams.flavor);
-		// assert.equal(actualParams.language, expectedParams.language);
-	});
 });

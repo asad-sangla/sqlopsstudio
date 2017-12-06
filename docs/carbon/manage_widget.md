@@ -131,7 +131,7 @@ Here is the basic format for any Insight definition. Note: this is expected to c
 export interface Insight {
     id: string;
     type: string;           // e.g. [ Count | Chart | Timeline]
-    provider: string;       // e.g. MSSQL, PGSQL
+    provider: string;       // e.g. MSSQL
     platforms: string[];    // e.g. [SQL2016, SQL 217, Azure SQL DB]
     actionId: string;       // Optional actionID to launch from the details flyout
     icon?: enum;             // Allow the user to choose one of a preset number of icons?

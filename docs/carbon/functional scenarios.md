@@ -32,10 +32,7 @@ Carbon is a super duper handy dandy trusty musty database server and database ma
 
 * manage scope
 	* single mssql server
-	* single postgresql server (extensible to other vendors)
 	* group of multiple mssql servers
-	* group of multiple postgresql servers
-	* group of multiple mssql and postgresql servers
 
 **Manage databases**
 * manage actions
@@ -49,11 +46,8 @@ Carbon is a super duper handy dandy trusty musty database server and database ma
 * manage scope
 	* single mssql database
 	* single azure sql database
-	* single postgresql database (extensible to other vendors)
 	* group of multiple mssql databases
 	* group of multiple azure sql databases (open question - elastic pool)
-	* group of multiple postgresql databases
-	* group of multiple mssql, azure sql and postgresql databases
 
 **Manage data**
 * manage actions
@@ -111,7 +105,7 @@ Carbon is a super duper handy dandy trusty musty database server and database ma
 
 * I CAN run a task on multiple servers simultaneously.
 
-#### I CAN manage multiple types of databases such as sql server on any platform, postgresql etc.
+#### I CAN manage multiple types of databases such as sql server on any platform.
 
 #### I CAN manage resources as a single or multiple groups.
 

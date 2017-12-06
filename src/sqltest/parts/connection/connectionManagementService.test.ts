@@ -42,7 +42,6 @@ suite('SQL ConnectionManagementService tests', () => {
 	let editorGroupService: TypeMoq.Mock<EditorGroupTestService>;
 	let connectionStatusManager: ConnectionStatusManager;
 	let mssqlConnectionProvider: TypeMoq.Mock<ConnectionProviderStub>;
-	let pgConnectionProvider: TypeMoq.Mock<ConnectionProviderStub>;
 	let workspaceConfigurationServiceMock: TypeMoq.Mock<WorkspaceConfigurationTestService>;
 	let resourceProviderStubMock: TypeMoq.Mock<ResourceProviderStub>;
 
@@ -84,7 +83,6 @@ suite('SQL ConnectionManagementService tests', () => {
 		editorGroupService = TypeMoq.Mock.ofType(EditorGroupTestService);
 		connectionStatusManager = new ConnectionStatusManager(capabilitiesService);
 		mssqlConnectionProvider = TypeMoq.Mock.ofType(ConnectionProviderStub);
-		pgConnectionProvider = TypeMoq.Mock.ofType(ConnectionProviderStub);
 		let resourceProviderStub = new ResourceProviderStub();
 		resourceProviderStubMock = TypeMoq.Mock.ofInstance(resourceProviderStub);
 
@@ -108,7 +106,6 @@ suite('SQL ConnectionManagementService tests', () => {
 		connectionStore.setup(x => x.isPasswordRequired(TypeMoq.It.isAny())).returns(() => true);
 
 		mssqlConnectionProvider.setup(x => x.connect(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => undefined);
-		pgConnectionProvider.setup(x => x.connect(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => undefined);
 
 		// Setup resource provider
 		handleFirewallRuleResult = {
@@ -138,7 +135,6 @@ suite('SQL ConnectionManagementService tests', () => {
 		connectionManagementService = createConnectionManagementService();
 
 		connectionManagementService.registerProvider('MSSQL', mssqlConnectionProvider.object);
-		connectionManagementService.registerProvider('PGSQL', pgConnectionProvider.object);
 	});
 
 	function createConnectionManagementService(): ConnectionManagementService {
@@ -741,29 +737,6 @@ suite('SQL ConnectionManagementService tests', () => {
 		}).catch(err => {
 			done(err);
 		});
-	});
-
-	test('ensureDefaultLanguageFlavor should change to default provider if not connected ', done => {
-		// Given pgsql is the default provider
-		let pgsqlProvider = 'PGSQL';
-		configResult[Constants.defaultEngine] = pgsqlProvider;
-		let uri: string = 'Editor Uri';
-		let language = 'sql';
-		let called = false;
-		connectionManagementService.onLanguageFlavorChanged((changeParams: data.DidChangeLanguageFlavorParams) => {
-			called = true;
-			assert.equal(changeParams.uri, uri);
-			assert.equal(changeParams.language, language);
-			assert.equal(changeParams.flavor, pgsqlProvider);
-		});
-
-		try {
-			connectionManagementService.ensureDefaultLanguageFlavor(uri);
-			assert.ok(called, 'expected onLanguageFlavorChanged event to be sent');
-			done();
-		} catch (err) {
-			done(err);
-		}
 	});
 
 	test('getConnectionId returns the URI associated with a connection that has had its database filled in', done => {

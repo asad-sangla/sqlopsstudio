@@ -14,7 +14,6 @@ Quickly go over the state of art of Project "Carbon"
 ||Backup dialog||
 ||Shell menus||
 ||Error messages||
-||Any features related to PostgreSQL support||
 |Alpha / Beta|Connection dialog|Including add / remove connections to Servers viewlet|
 ||Server Groups||
 ||Object Explorer|Including its folder structure and supported object types and supported actions e.g. SCRIPT AS|
@@ -56,11 +55,11 @@ Quickly go over the state of art of Project "Carbon"
 * Download settings.json from email (I will send it) and save it in the previewdemo folder.
 
     * note that settings.json contains MS internal server information and it will not be shared in the previewdemo git repo since it is public.
-	
+
 * Apply user snippet by download / git clone https://github.com/erickangMSFT/sql-snippets and run
 
 	* apply_snippet.sh
-	
+
 * To make caron launchable from commanline, run following (macOS only) after moving carbon.app to Application folder
 	* ln -s /Applications/carbon.app/Contents/Resources/app/bin/code carbon
 
@@ -274,7 +273,7 @@ FROM HumanResources.vEmployees
 
 * One way is to go to OE, go to Audit folder and create a new audit then got to Server audit folder and create new server audit spec and go to a database, then create new database audit spec and repeat it for many other audit specs... too complex.
 
-* In MANAGE with Insight concept in carbon, you can get the compliance insight directly from MANAGE page and related Action. 
+* In MANAGE with Insight concept in carbon, you can get the compliance insight directly from MANAGE page and related Action.
 
 * Let's simulate it.
 
