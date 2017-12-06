@@ -1081,8 +1081,7 @@ declare module 'data' {
 		values: {};
 	}
 
-	export interface ProfilerSessionEvents
-	{
+	export interface ProfilerSessionEvents {
 		sessionId: string;
 
 		events: ProfilerEvent[];
@@ -1147,11 +1146,12 @@ declare module 'data' {
 		 * code OAuth login to the user. Only one flyout can be opened at once and each must be closed
 		 * by calling {@link endAutoOAuthDeviceCode}.
 		 * @param {string} providerId	ID of the provider that's requesting the flyout be opened
+		 * @param {string} title
 		 * @param {string} message
 		 * @param {string} userCode
 		 * @param {string} uri
 		 */
-		export function beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void>;
+		export function beginAutoOAuthDeviceCode(providerId: string, title: string, message: string, userCode: string, uri: string): Thenable<void>;
 
 		/**
 		 * Closes the flyout dialog opened by {@link beginAutoOAuthDeviceCode}

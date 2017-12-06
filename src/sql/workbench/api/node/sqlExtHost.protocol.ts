@@ -298,12 +298,12 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Start a profiler session
 	 */
-	$startSession(handle: number, sessionId: string): Thenable<boolean>  { throw ni(); }
+	$startSession(handle: number, sessionId: string): Thenable<boolean> { throw ni(); }
 
 	/**
 	 * Stop a profiler session
 	 */
-	$stopSession(handle: number, sessionId: string): Thenable<boolean>  { throw ni(); }
+	$stopSession(handle: number, sessionId: string): Thenable<boolean> { throw ni(); }
 }
 
 
@@ -345,7 +345,7 @@ export abstract class MainThreadAccountManagementShape {
 	$registerAccountProvider(providerMetadata: data.AccountProviderMetadata, handle: number): Thenable<any> { throw ni(); }
 	$unregisterAccountProvider(handle: number): Thenable<any> { throw ni(); }
 
-	$beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void> { throw ni(); }
+	$beginAutoOAuthDeviceCode(providerId: string, title: string, message: string, userCode: string, uri: string): Thenable<void> { throw ni(); }
 	$endAutoOAuthDeviceCode(): void { throw ni(); }
 
 	$accountUpdated(updatedAccount: data.Account): void { throw ni(); }

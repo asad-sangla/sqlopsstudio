@@ -9,6 +9,7 @@ import * as adal from 'adal-node';
 import * as data from 'data';
 import * as request from 'request';
 import * as nls from 'vscode-nls';
+import * as vscode from 'vscode';
 import * as url from 'url';
 import {
 	Arguments,
@@ -91,13 +92,13 @@ export class AzureAccountProvider implements data.AccountProvider {
 			// NOTE: Based on ADAL implementation, getting tokens should use the refresh token if necessary
 			let task = this.getAccessTokens(account)
 				.then(
-					() => {
-						return account;
-					},
-					() => {
-						account.isStale = true;
-						return account;
-					}
+				() => {
+					return account;
+				},
+				() => {
+					account.isStale = true;
+					return account;
+				}
 				);
 			rehydrationTasks.push(task);
 		}
@@ -111,11 +112,11 @@ export class AzureAccountProvider implements data.AccountProvider {
 	}
 
 	public prompt(): Thenable<AzureAccount> {
-		return this.doIfInitialized(() => this.signIn());
+		return this.doIfInitialized(() => this.signIn(true));
 	}
 
 	public refresh(account: AzureAccount): Thenable<AzureAccount> {
-		return this.doIfInitialized(() => this.signIn());
+		return this.doIfInitialized(() => this.signIn(false));
 	}
 
 	// PRIVATE METHODS /////////////////////////////////////////////////////
@@ -213,8 +214,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 		// Create authentication context and acquire user code
 		return new Promise<InProgressAutoOAuth>((resolve, reject) => {
 			let context = new adal.AuthenticationContext(self._commonAuthorityUrl, null, self._tokenCache);
-			// TODO: How to localize?
-			context.acquireUserCode(self._metadata.settings.signInResourceId, self._metadata.settings.clientId, 'en-us',
+			context.acquireUserCode(self._metadata.settings.signInResourceId, self._metadata.settings.clientId, vscode.env.language,
 				(err, response) => {
 					if (err) {
 						reject(err);
@@ -231,13 +231,16 @@ export class AzureAccountProvider implements data.AccountProvider {
 		});
 	}
 
-	private getDeviceLoginToken(oAuth: InProgressAutoOAuth): Thenable<adal.TokenResponse> {
+	private getDeviceLoginToken(oAuth: InProgressAutoOAuth, isAddAccount: boolean): Thenable<adal.TokenResponse> {
 		let self = this;
 
 		// 1) Open the auto OAuth dialog
 		// 2) Begin the acquiring token polling
 		// 3) When that completes via callback, close the auto oauth
-		return data.accounts.beginAutoOAuthDeviceCode(self._metadata.id, oAuth.userCodeInfo.message, oAuth.userCodeInfo.userCode, oAuth.userCodeInfo.verificationUrl)
+		let title = isAddAccount ?
+			localize('addAccount', 'Add {0} account', self._metadata.displayName) :
+			localize('refreshAccount', 'Refresh {0} account', self._metadata.displayName);
+		return data.accounts.beginAutoOAuthDeviceCode(self._metadata.id, title, oAuth.userCodeInfo.message, oAuth.userCodeInfo.userCode, oAuth.userCodeInfo.verificationUrl)
 			.then(() => {
 				return new Promise<adal.TokenResponse>((resolve, reject) => {
 					let context = oAuth.context;
@@ -246,7 +249,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 							if (err) {
 								if (self._autoOAuthCancelled) {
 									// Auto OAuth was cancelled by the user, indicate this with the error we return
-									reject(<data.UserCancelledSignInError>{userCancelledSignIn: true});
+									reject(<data.UserCancelledSignInError>{ userCancelledSignIn: true });
 								} else {
 									// Auto OAuth failed for some other reason
 									data.accounts.endAutoOAuthDeviceCode();
@@ -368,7 +371,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 		});
 	}
 
-	private signIn(): Thenable<AzureAccount> {
+	private signIn(isAddAccount: boolean): Thenable<AzureAccount> {
 		let self = this;
 
 		// 1) Get the user code for this login
@@ -380,7 +383,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 			.then((result: InProgressAutoOAuth) => {
 				self._autoOAuthCancelled = false;
 				self._inProgressAutoOAuth = result;
-				return self.getDeviceLoginToken(self._inProgressAutoOAuth);
+				return self.getDeviceLoginToken(self._inProgressAutoOAuth, isAddAccount);
 			})
 			.then((response: adal.TokenResponse) => {
 				tokenResponse = response;

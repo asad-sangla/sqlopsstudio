@@ -28,7 +28,7 @@ export interface IAccountManagementService {
 
 	// UI METHODS //////////////////////////////////////////////////////////
 	openAccountListDialog(): Thenable<void>;
-	beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void>;
+	beginAutoOAuthDeviceCode(providerId: string, title: string, message: string, userCode: string, uri: string): Thenable<void>;
 	endAutoOAuthDeviceCode(): void;
 	cancelAutoOAuthDeviceCode(providerId: string): void;
 	copyUserCodeAndOpenBrowser(userCode: string, uri: string): void;

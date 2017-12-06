@@ -60,8 +60,8 @@ export function createApiFactory(
 				registerAccountProvider(providerMetadata: data.AccountProviderMetadata, provider: data.AccountProvider): vscode.Disposable {
 					return extHostAccountManagement.$registerAccountProvider(providerMetadata, provider);
 				},
-				beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void> {
-					return extHostAccountManagement.$beginAutoOAuthDeviceCode(providerId, message, userCode, uri);
+				beginAutoOAuthDeviceCode(providerId: string, title: string, message: string, userCode: string, uri: string): Thenable<void> {
+					return extHostAccountManagement.$beginAutoOAuthDeviceCode(providerId, title, message, userCode, uri);
 				},
 				endAutoOAuthDeviceCode(): void {
 					return extHostAccountManagement.$endAutoOAuthDeviceCode();

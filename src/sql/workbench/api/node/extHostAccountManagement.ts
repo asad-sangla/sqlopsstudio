@@ -6,9 +6,9 @@
 'use strict';
 
 import * as data from 'data';
-import {TPromise} from 'vs/base/common/winjs.base';
-import {IThreadService} from 'vs/workbench/services/thread/common/threadService';
-import {Disposable} from 'vs/workbench/api/node/extHostTypes';
+import { TPromise } from 'vs/base/common/winjs.base';
+import { IThreadService } from 'vs/workbench/services/thread/common/threadService';
+import { Disposable } from 'vs/workbench/api/node/extHostTypes';
 import {
 	ExtHostAccountManagementShape,
 	MainThreadAccountManagementShape,
@@ -18,7 +18,7 @@ import {
 export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 	private _handlePool: number = 0;
 	private _proxy: MainThreadAccountManagementShape;
-	private _providers: {[handle: number]: AccountProviderWithMetadata} = {};
+	private _providers: { [handle: number]: AccountProviderWithMetadata } = {};
 
 	constructor(threadService: IThreadService) {
 		super();
@@ -52,8 +52,8 @@ export class ExtHostAccountManagement extends ExtHostAccountManagementShape {
 	}
 
 	// - EXTENSION HOST AVAILABLE METHODS //////////////////////////////////
-	public $beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void> {
-		return this._proxy.$beginAutoOAuthDeviceCode(providerId, message, userCode, uri);
+	public $beginAutoOAuthDeviceCode(providerId: string, title: string, message: string, userCode: string, uri: string): Thenable<void> {
+		return this._proxy.$beginAutoOAuthDeviceCode(providerId, title, message, userCode, uri);
 	}
 
 	public $endAutoOAuthDeviceCode(): void {

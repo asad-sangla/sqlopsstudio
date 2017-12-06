@@ -26,7 +26,7 @@ export class AccountManagementTestService implements IAccountManagementService {
 		return undefined;
 	}
 
-	beginAutoOAuthDeviceCode(message: string, userCode: string, uri: string): Thenable<void> {
+	beginAutoOAuthDeviceCode(title: string, message: string, userCode: string, uri: string): Thenable<void> {
 		return undefined;
 	}
 

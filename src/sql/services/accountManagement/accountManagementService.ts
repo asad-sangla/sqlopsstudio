@@ -291,11 +291,10 @@ export class AccountManagementService implements IAccountManagementService {
 	 * Begin auto OAuth device code open add account dialog
 	 * @return {TPromise<any>}	Promise that finishes when the account list dialog opens
 	 */
-	public beginAutoOAuthDeviceCode(providerId: string, message: string, userCode: string, uri: string): Thenable<void> {
+	public beginAutoOAuthDeviceCode(providerId: string, title: string, message: string, userCode: string, uri: string): Thenable<void> {
 		let self = this;
 
 		return this.doWithProvider(providerId, provider => {
-			let title = nls.localize('addAzureAccount', 'Add {0} account', provider.metadata.displayName);
 			return self.autoOAuthDialogController.openAutoOAuthDialog(providerId, title, message, userCode, uri);
 		});
 	}
