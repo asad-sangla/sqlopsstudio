@@ -30,8 +30,10 @@ import { SplitView, CollapsibleState } from 'sql/base/browser/ui/splitview/split
 import { Builder, $ } from 'vs/base/browser/builder';
 import { Widget } from 'vs/base/browser/ui/widget';
 
-class CategoryView extends FixedCollapsibleView {
+export class CategoryView extends FixedCollapsibleView {
 	private _treecontainer: HTMLElement;
+	private _collapsed: CollapsibleState;
+
 	constructor(private viewTitle: string, private _bodyContainer: HTMLElement, collapsed: boolean, initialBodySize: number, headerSize: number) {
 		super(
 			initialBodySize,
@@ -41,6 +43,7 @@ class CategoryView extends FixedCollapsibleView {
 				initialState: collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED,
 				ariaHeaderLabel: viewTitle
 			});
+		this._collapsed = collapsed ? CollapsibleState.COLLAPSED : CollapsibleState.EXPANDED;
 	}
 
 	public renderHeader(container: HTMLElement): void {
@@ -52,6 +55,7 @@ class CategoryView extends FixedCollapsibleView {
 		this._treecontainer = document.createElement('div');
 		container.appendChild(this._treecontainer);
 		this._treecontainer.appendChild(this._bodyContainer);
+		this.changeState(this._collapsed);
 	}
 
 	public layoutBody(size: number): void {

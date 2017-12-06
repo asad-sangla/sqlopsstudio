@@ -10,9 +10,10 @@ import { Button } from 'sql/base/browser/ui/button/button';
 import { Checkbox } from 'sql/base/browser/ui/checkbox/checkbox';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { ListBox } from 'sql/base/browser/ui/listBox/listBox';
-import * as DialogHelper from 'sql/base/browser/ui/modal/dialogHelper';
 import { ModalFooterStyle } from 'sql/base/browser/ui/modal/modal';
+import { CategoryView } from 'sql/base/browser/ui/modal/optionsDialog';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
+import { SplitView } from 'sql/base/browser/ui/splitview/splitview';
 import { attachButtonStyler, attachListBoxStyler, attachInputBoxStyler, attachSelectBoxStyler } from 'sql/common/theme/styler';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import * as BackupConstants from 'sql/parts/disasterRecovery/backup/constants';
@@ -89,8 +90,6 @@ export class BackupComponent {
 	@ViewChild('encryptorContainer', { read: ElementRef }) encryptorElement;
 	@ViewChild('mediaName', { read: ElementRef }) mediaNameElement;
 	@ViewChild('mediaDescription', { read: ElementRef }) mediaDescriptionElement;
-	@ViewChild('advancedBody', { read: ElementRef }) advancedBodyElement;
-	@ViewChild('advancedHeader', { read: ElementRef }) advancedHeaderElement;
 	@ViewChild('recoveryModelContainer', { read: ElementRef }) recoveryModelElement;
 	@ViewChild('backupDaysContainer', { read: ElementRef }) backupDaysElement;
 	@ViewChild('backupButtonContainer', { read: ElementRef }) backupButtonElement;
@@ -107,6 +106,8 @@ export class BackupComponent {
 	@ViewChild('inProgressContainer', { read: ElementRef }) inProgressElement;
 	@ViewChild('modalFooterContainer', { read: ElementRef }) modalFooterElement;
 	@ViewChild('scriptButtonContainer', { read: ElementRef }) scriptButtonElement;
+	@ViewChild('advancedOptionContainer', { read: ElementRef }) advancedOptionElement;
+	@ViewChild('advancedOptionBodyContainer', { read: ElementRef }) advancedOptionBodyElement;
 
 	// tslint:disable:no-unused-variable
 	private readonly backupNameLabel: string = localize('backup.backupName', 'Backup name');
@@ -143,6 +144,7 @@ export class BackupComponent {
 	private _disasterRecoveryUiService: IDisasterRecoveryUiService;
 	private _uri: string;
 	private _toDispose: lifecycle.IDisposable[] = [];
+	private _advancedHeaderSize = 32;
 
 	private connection: IConnectionProfile;
 	private databaseName: string;
@@ -203,7 +205,6 @@ export class BackupComponent {
 
 	ngOnInit() {
 		let self = this;
-
 		this.addFooterButtons();
 
 		this.recoveryBox = new InputBox(this.recoveryModelElement.nativeElement, this._bootstrapService.contextViewService, { placeholder: this.recoveryModel });
@@ -248,8 +249,6 @@ export class BackupComponent {
 
 		// Set backup name
 		this.backupNameBox = new InputBox(this.backupNameElement.nativeElement, this._bootstrapService.contextViewService);
-		// Disable the name until the new value is populated
-		this.backupNameBox.disable();
 
 		// Set backup path list
 		this.pathListBox = new ListBox([], '', this._bootstrapService.contextViewService, this._bootstrapService.clipboardService);
@@ -304,13 +303,24 @@ export class BackupComponent {
 				}
 			});
 
-		// disable elements
+		// Disable elements
 		this.recoveryBox.disable();
 		this.mediaNameBox.disable();
 		this.mediaDescriptionBox.disable();
 
 		this.registerListeners();
 		this.updateTheme();
+	}
+
+	ngAfterViewInit() {
+		// Set category view for advanced options. This should be defined in ngAfterViewInit so that it correctly calculates the text height after data binding.
+		var splitview = new SplitView(this.advancedOptionElement.nativeElement);
+		var advancedBodySize =  DOM.getTotalHeight(this.advancedOptionBodyElement.nativeElement);
+		var categoryView = new CategoryView(this.advancedConfigurationLabel, this.advancedOptionBodyElement.nativeElement, true, advancedBodySize, this._advancedHeaderSize);
+		splitview.addView(categoryView);
+		splitview.layout(advancedBodySize + this._advancedHeaderSize);
+
+		this._disasterRecoveryUiService.onShowBackupDialog();
 	}
 
 	private onGetBackupConfigInfo(param: DashboardComponentParams) {
@@ -377,6 +387,7 @@ export class BackupComponent {
 	}
 
 	private initialize(isMetadataPopulated: boolean): void {
+
 		this.databaseName = this.connection.databaseName;
 		this.selectedBackupComponent = BackupConstants.labelDatabase;
 		this.backupPathTypePairs = {};
@@ -395,7 +406,6 @@ export class BackupComponent {
 			this.backupTypeSelectBox.setOptions(this.backupTypeOptions, 0);
 
 			this.setDefaultBackupName();
-			this.backupNameBox.enable();
 			this.backupNameBox.focus();
 
 			// Set backup path list
@@ -452,7 +462,6 @@ export class BackupComponent {
 		this.isFormatChecked = false;
 		this.isEncryptChecked = false;
 
-		this.backupNameBox.disable();
 		this.copyOnlyCheckBox.checked = false;
 		this.copyOnlyCheckBox.enable();
 		this.compressionSelectBox.setOptions(this.compressionOptions, 0);
@@ -468,7 +477,6 @@ export class BackupComponent {
 		this.backupRetainDaysBox.value = '0';
 		this.algorithmSelectBox.setOptions(this.encryptionAlgorithms, 0);
 		this.selectedInitOption = this.existingMediaOptions[0];
-		this.collapseAdvancedOptions();
 		this.containsBackupToUrl = false;
 		this.pathListBox.setValidation(true);
 
@@ -598,31 +606,6 @@ export class BackupComponent {
 		this.scriptButton.enabled = value;
 	}
 
-	private onAdvancedClick(): void {
-		if (this.advancedHeaderElement.nativeElement.style['aria-expanded']) {
-			// collapse
-			this.collapseAdvancedOptions();
-		} else {
-			// expand
-			this.expandAdvancedOptions();
-		}
-
-		this.detectChange();
-	}
-
-	private collapseAdvancedOptions() {
-		this.advancedHeaderElement.nativeElement.className = 'header collapsible collapsed';
-		this.advancedBodyElement.nativeElement.style = 'display: none';
-		this.advancedHeaderElement.nativeElement.style['aria-expanded'] = false;
-	}
-
-
-	private expandAdvancedOptions() {
-		this.advancedHeaderElement.nativeElement.className = 'header collapsible';
-		this.advancedBodyElement.nativeElement.style = 'display: inline';
-		this.advancedHeaderElement.nativeElement.style['aria-expanded'] = true;
-	}
-
 	private onBackupTypeChanged(): void {
 		if (this.getSelectedBackupType() === BackupConstants.labelDifferential) {
 			this.copyOnlyCheckBox.checked = false;
@@ -735,8 +718,8 @@ export class BackupComponent {
 	}
 
 	private setDefaultBackupName(): void {
-		let utc = new Date().toJSON().slice(0, 19);
-		if (this.backupNameBox) {
+		if (this.backupNameBox && (!this.backupNameBox.value || this.backupNameBox.value.trim().length === 0)) {
+			let utc = new Date().toJSON().slice(0, 19);
 			this.backupNameBox.value = this.databaseName + '-' + this.getSelectedBackupType() + '-' + utc;
 		}
 	}

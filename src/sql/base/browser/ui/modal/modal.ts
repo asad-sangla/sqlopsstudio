@@ -266,12 +266,9 @@ export abstract class Modal extends Disposable implements IThemable {
 	}
 
 	/**
-	 * Shows the modal and attaches key listeners
+	 * Set focusable elements in the modal dialog
 	 */
-	protected show() {
-		this._modalShowingContext.get().push(this._staticKey);
-		this._builder.appendTo(withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement);
-
+	public setFocusableElements() {
 		this._focusableElements = this._builder.getHTMLElement().querySelectorAll('a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex="0"]');
 		if (this._focusableElements && this._focusableElements.length > 0) {
 			this._firstFocusableElement = <HTMLElement>this._focusableElements[0];
@@ -279,6 +276,16 @@ export abstract class Modal extends Disposable implements IThemable {
 		}
 
 		this._focusedElementBeforeOpen = <HTMLElement>document.activeElement;
+	}
+
+	/**
+	 * Shows the modal and attaches key listeners
+	 */
+	protected show() {
+		this._modalShowingContext.get().push(this._staticKey);
+		this._builder.appendTo(withElementById(this._partService.getWorkbenchElementId()).getHTMLElement().parentElement);
+
+		this.setFocusableElements();
 
 		this._keydownListener = DOM.addDisposableListener(document, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			let context = this._modalShowingContext.get();

@@ -34,5 +34,14 @@ export abstract class FixedCollapsibleView extends AbstractCollapsibleView {
 	protected changeState(state: CollapsibleState): void {
 		super.changeState(state);
 		this.setFixed(this.fixedSize);
+
+		if (this.body) {
+			if (state == CollapsibleState.COLLAPSED) {
+				// make sure the body goes out of the tabindex world by hiding it
+				$(this.body).hide();
+			} else {
+				$(this.body).show();
+			}
+		}
 	}
 }
