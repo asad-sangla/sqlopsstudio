@@ -137,6 +137,42 @@ export class ScriptExecuteAction extends Action {
 	}
 }
 
+export class ScriptAlterAction extends Action {
+	public static ID = 'scriptAlter';
+	public static LABEL = nls.localize('scriptAlter', 'Script As Alter');
+
+	constructor(
+		id: string, label: string,
+		@IQueryEditorService protected _queryEditorService: IQueryEditorService,
+		@IConnectionManagementService protected _connectionManagementService: IConnectionManagementService,
+		@IScriptingService protected _scriptingService: IScriptingService,
+		@IErrorMessageService protected _errorMessageService: IErrorMessageService
+	) {
+		super(id, label);
+	}
+
+	public run(actionContext: BaseActionContext): TPromise<boolean> {
+		return new TPromise<boolean>((resolve, reject) => {
+			TaskUtilities.script(
+				actionContext.profile,
+				actionContext.object,
+				this._connectionManagementService,
+				this._queryEditorService,
+				this._scriptingService,
+				ScriptOperation.Alter,
+				this._errorMessageService
+			).then(
+				result => {
+					resolve(true);
+				},
+				error => {
+					resolve(false);
+				}
+				);
+		});
+	}
+}
+
 export class EditDataAction extends Action {
 	public static ID = 'editData';
 	public static LABEL = nls.localize('editData', 'Edit Data');

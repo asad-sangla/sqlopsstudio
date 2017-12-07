@@ -403,7 +403,8 @@ declare module 'data' {
 		Insert = 2,
 		Update = 3,
 		Delete = 4,
-		Execute = 5
+		Execute = 5,
+		Alter = 6
 	}
 
 	export interface ScriptingResult {
@@ -419,15 +420,6 @@ declare module 'data' {
 	}
 
 	export interface ScriptingProvider {
-		scriptAsSelect(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
-
-		scriptAsCreate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
-
-		scriptAsInsert(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
-
-		scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
-
-		scriptAsDelete(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
 
 		scriptAsOperation(connectionUri: string, operation: ScriptOperation, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult>;
 

@@ -60,16 +60,7 @@ export class ScriptingService implements IScriptingService {
 		if (providerId) {
 			let provider = this._providers[providerId];
 			if (provider) {
-				switch (operation) {
-					case (ScriptOperation.Select):
-						return provider.scriptAsSelect(connectionUri, metadata, paramDetails);
-					case (ScriptOperation.Create):
-						return provider.scriptAsCreate(connectionUri, metadata, paramDetails);
-					case (ScriptOperation.Delete):
-						return provider.scriptAsDelete(connectionUri, metadata, paramDetails);
-					default:
-						return provider.scriptAsOperation(connectionUri, operation, metadata, paramDetails);
-				}
+				return provider.scriptAsOperation(connectionUri, operation, metadata, paramDetails)
 			}
 		}
 		return Promise.resolve(undefined);

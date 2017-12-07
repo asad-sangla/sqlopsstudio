@@ -104,11 +104,6 @@ export abstract class ExtHostDataProtocolShape {
 	/**
 	 * Scripting methods
 	 */
-	$scriptAsSelect(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
-	$scriptAsCreate(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
-	$scriptAsUpdate(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
-	$scriptAsInsert(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
-	$scriptAsDelete(handle: number, connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
 	$scriptAsOperation(handle: number, connectionUri: string, operation: data.ScriptOperation, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> { throw ni(); }
 
 	/**

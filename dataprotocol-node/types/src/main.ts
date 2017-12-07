@@ -722,7 +722,8 @@ export enum ScriptOperation {
 	Insert = 2,
 	Update = 3,
 	Delete = 4,
-	Execute = 5
+	Execute = 5,
+	Alter = 6
 }
 
 export interface ScriptOptions {

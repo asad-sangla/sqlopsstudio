@@ -201,21 +201,6 @@ export class MainThreadDataProtocol extends MainThreadDataProtocolShape {
 		});
 
 		this._scriptingService.registerProvider(providerId, <data.ScriptingProvider>{
-			scriptAsSelect(connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
-				return self._proxy.$scriptAsSelect(handle, connectionUri, metadata, paramDetails);
-			},
-			scriptAsCreate(connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
-				return self._proxy.$scriptAsCreate(handle, connectionUri, metadata, paramDetails);
-			},
-			scriptAsInsert(connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
-				return self._proxy.$scriptAsInsert(handle, connectionUri, metadata, paramDetails);
-			},
-			scriptAsUpdate(connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
-				return self._proxy.$scriptAsUpdate(handle, connectionUri, metadata, paramDetails);
-			},
-			scriptAsDelete(connectionUri: string, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
-				return self._proxy.$scriptAsDelete(handle, connectionUri, metadata, paramDetails);
-			},
 			scriptAsOperation(connectionUri: string, operation: data.ScriptOperation, metadata: data.ObjectMetadata, paramDetails: data.ScriptingParamDetails): Thenable<data.ScriptingResult> {
 				return self._proxy.$scriptAsOperation(handle, connectionUri, operation, metadata, paramDetails);
 			}

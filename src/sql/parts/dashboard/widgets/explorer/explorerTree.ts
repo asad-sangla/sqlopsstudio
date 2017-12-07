@@ -9,7 +9,7 @@ import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { MetadataType } from 'sql/parts/connection/common/connectionManagement';
 import { SingleConnectionManagementService } from 'sql/parts/dashboard/services/dashboardServiceInterface.service';
 import {
-	NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction, ScriptExecuteAction,
+	NewQueryAction, ScriptSelectAction, EditDataAction, ScriptCreateAction, ScriptExecuteAction, ScriptAlterAction,
 	BackupAction, ManageActionContext, BaseActionContext, ManageAction, RestoreAction
 } from 'sql/workbench/common/actions';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
@@ -363,6 +363,11 @@ function GetExplorerActions(element: TreeResource, instantiationService: IInstan
 
 		if (element.metadataType === MetadataType.SProc && info.connectionProfile.providerName === Constants.mssqlProviderName) {
 			actions.push(instantiationService.createInstance(ScriptExecuteAction, ScriptExecuteAction.ID, ScriptExecuteAction.LABEL));
+		}
+
+		if ((element.metadataType === MetadataType.SProc || element.metadataType === MetadataType.Function || element.metadataType === MetadataType.View)
+			&& info.connectionProfile.providerName === Constants.mssqlProviderName) {
+			actions.push(instantiationService.createInstance(ScriptAlterAction, ScriptAlterAction.ID, ScriptAlterAction.LABEL));
 		}
 	} else {
 		actions.push(instantiationService.createInstance(NewQueryAction, NewQueryAction.ID, NewQueryAction.LABEL, NewQueryAction.ICON));

@@ -2031,60 +2031,6 @@ export class LanguageClient {
 
 
 		let scriptingProvider: ScriptingProvider = {
-			scriptAsSelect(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult> {
-				return self.sendRequest(ScriptingRequest.type,
-					self._c2p.asScriptingParams(connectionUri, ScriptOperation.Select, metadata, paramDetails), undefined).then(
-					self._p2c.asScriptingResult,
-					(error) => {
-						self.logFailedRequest(ScriptingRequest.type, error);
-						return Promise.resolve(undefined);
-					}
-					);
-			},
-
-			scriptAsCreate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult> {
-				return self.sendRequest(ScriptingRequest.type,
-					self._c2p.asScriptingParams(connectionUri, ScriptOperation.Create, metadata, paramDetails), undefined).then(
-					self._p2c.asScriptingResult,
-					(error) => {
-						self.logFailedRequest(ScriptingRequest.type, error);
-						return Promise.resolve(undefined);
-					}
-					);
-			},
-
-			scriptAsInsert(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult> {
-				return self.sendRequest(ScriptingRequest.type,
-					self._c2p.asScriptingParams(connectionUri, ScriptOperation.Insert, metadata, paramDetails), undefined).then(
-					self._p2c.asScriptingResult,
-					(error) => {
-						self.logFailedRequest(ScriptingRequest.type, error);
-						return Promise.resolve(undefined);
-					}
-					);
-			},
-
-			scriptAsUpdate(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult> {
-				return self.sendRequest(ScriptingRequest.type,
-					self._c2p.asScriptingParams(connectionUri, ScriptOperation.Update, metadata, paramDetails), undefined).then(
-					self._p2c.asScriptingResult,
-					(error) => {
-						self.logFailedRequest(ScriptingRequest.type, error);
-						return Promise.resolve(undefined);
-					}
-					);
-			},
-
-			scriptAsDelete(connectionUri: string, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult> {
-				return self.sendRequest(ScriptingRequest.type,
-					self._c2p.asScriptingParams(connectionUri, ScriptOperation.Delete, metadata, paramDetails), undefined).then(
-					self._p2c.asScriptingResult,
-					(error) => {
-						self.logFailedRequest(ScriptingRequest.type, error);
-						return Promise.resolve(undefined);
-					}
-					);
-			},
 
 			scriptAsOperation(connectionUri: string, operation: ScriptOperation, metadata: ObjectMetadata, paramDetails: ScriptingParamDetails): Thenable<ScriptingResult> {
 				return self.sendRequest(ScriptingRequest.type,
