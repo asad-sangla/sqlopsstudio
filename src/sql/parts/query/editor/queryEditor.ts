@@ -455,6 +455,10 @@ export class QueryEditor extends BaseEditor {
 	 */
 	private _updateInput(oldInput: QueryInput, newInput: QueryInput, options?: EditorOptions): TPromise<void> {
 
+		if (this._sqlEditor) {
+			this._sqlEditor.clearInput();
+		}
+
 		if (oldInput) {
 			this._disposeEditors();
 		}
