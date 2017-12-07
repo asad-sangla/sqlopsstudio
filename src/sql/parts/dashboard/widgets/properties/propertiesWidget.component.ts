@@ -10,14 +10,14 @@ import { DashboardServiceInterface } from 'sql/parts/dashboard/services/dashboar
 import { ConnectionManagementInfo } from 'sql/parts/connection/common/connectionManagementInfo';
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { error } from 'sql/base/common/log';
-
-import { properties } from './propertiesJson';
+import { IDashboardRegistry, Extensions as DashboardExtensions } from 'sql/platform/dashboard/common/dashboardRegistry';
 
 import { DatabaseInfo, ServerInfo } from 'data';
 
 import { EventType, addDisposableListener } from 'vs/base/browser/dom';
 import * as types from 'vs/base/common/types';
 import * as nls from 'vs/nls';
+import { Registry } from 'vs/platform/registry/common/platform';
 
 export interface PropertiesConfig {
 	properties: Array<Property>;
@@ -45,6 +45,8 @@ export interface Property {
 	ignore?: Array<string>;
 	default?: string;
 }
+
+const dashboardRegistry = Registry.as<IDashboardRegistry>(DashboardExtensions.DashboardContributions);
 
 export interface DisplayProperty {
 	displayName: string;
@@ -122,28 +124,12 @@ export class PropertiesWidgetComponent extends DashboardWidget implements IDashb
 			let config = <PropertiesConfig>this._config.widget['properties-widget'];
 			propertyArray = config.properties;
 		} else {
-			let propertiesConfig: Array<ProviderProperties> = properties;
-			// ensure we have a properties file
-			if (!Array.isArray(propertiesConfig)) {
-				this.consoleError('Could not load properties JSON');
+			let providerProperties = dashboardRegistry.getProperties(provider as string);
+
+			if (!providerProperties) {
+				this.consoleError('No property definitions found for provider', provider);
 				return;
 			}
-
-			// filter the properties provided based on provider name
-			let providerPropertiesArray = propertiesConfig.filter((item) => {
-				return item.provider === provider;
-			});
-
-			// Error handling on provider
-			if (providerPropertiesArray.length === 0) {
-				this.consoleError('Could not locate properties for provider: ', provider);
-				return;
-			} else if (providerPropertiesArray.length > 1) {
-				this.consoleError('Found multiple property definitions for provider ', provider);
-				return;
-			}
-
-			let providerProperties = providerPropertiesArray[0];
 
 			let flavor: FlavorProperties;
 
