@@ -853,9 +853,9 @@ export class ConnectionManagementService implements IConnectionManagementService
 	/**
 	 * Add a connection to the active connections list.
 	 */
-	private tryAddActiveConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile): void {
+	private tryAddActiveConnection(connectionManagementInfo: ConnectionManagementInfo, newConnection: IConnectionProfile, isConnectionToDefaultDb: boolean): void {
 		if (newConnection) {
-			this._connectionStore.addActiveConnection(newConnection)
+			this._connectionStore.addActiveConnection(newConnection, isConnectionToDefaultDb)
 				.then(() => {
 					connectionManagementInfo.connectHandler(true);
 				}, err => {
@@ -889,6 +889,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		let connection = this._connectionStatusManager.onConnectionComplete(info);
 
 		if (info.connectionId) {
+			let isConnectionToDefaultDb = false;
+			if (connection.connectionProfile && (!connection.connectionProfile.databaseName || connection.connectionProfile.databaseName.trim() === '')) {
+				isConnectionToDefaultDb = true;
+			}
 			if (info.connectionSummary && info.connectionSummary.databaseName) {
 				this._connectionStatusManager.updateDatabaseName(info);
 			}
@@ -897,7 +901,7 @@ export class ConnectionManagementService implements IConnectionManagementService
 
 			connection.connectHandler(true);
 			let activeConnection = connection.connectionProfile;
-			self.tryAddActiveConnection(connection, activeConnection);
+			self.tryAddActiveConnection(connection, activeConnection, isConnectionToDefaultDb);
 			self.addTelemetryForConnection(connection);
 
 			if (self._connectionStatusManager.isDefaultTypeUri(info.ownerUri)) {

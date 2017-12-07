@@ -300,12 +300,15 @@ export class ConnectionStore {
 	 * @param {IConnectionCredentials} conn the connection to add
 	 * @returns {Promise<void>} a Promise that returns when the connection was saved
 	 */
-	public addActiveConnection(conn: IConnectionProfile): Promise<void> {
+	public addActiveConnection(conn: IConnectionProfile, isConnectionToDefaultDb: boolean = false): Promise<void> {
 		if (this.getActiveConnections().some(existingConn => existingConn.id === conn.id)) {
 			return Promise.resolve(undefined);
 		} else {
 			return this.addConnectionToMemento(conn, Constants.activeConnections, undefined, conn.savePassword).then(() => {
 				let maxConnections = this.getMaxRecentConnectionsCount();
+				if (isConnectionToDefaultDb) {
+					conn.databaseName = '';
+				}
 				return this.addConnectionToMemento(conn, Constants.recentConnections, maxConnections);
 			});
 		}
