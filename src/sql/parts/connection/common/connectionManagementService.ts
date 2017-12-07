@@ -99,11 +99,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		@IStatusbarService private _statusBarService: IStatusbarService,
 		@IResourceProviderService private _resourceProviderService: IResourceProviderService,
 		@IViewletService private _viewletService: IViewletService,
-		@IAngularEventingService private _angularEventing: IAngularEventingService,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IAngularEventingService private _angularEventing: IAngularEventingService
 	) {
-		if (instantiationService) {
-			this._configurationEditService = instantiationService.createInstance(ConfigurationEditingService);
+		if (this._instantiationService) {
+			this._configurationEditService = this._instantiationService.createInstance(ConfigurationEditingService);
 		}
 
 		// _connectionMemento and _connectionStore are in constructor to enable this class to be more testable
