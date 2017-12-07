@@ -65,7 +65,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private _providerTypes: string[];
 	private _currentProviderType: string = 'Microsoft SQL Server';
 	private _connecting: boolean = false;
-	private _connectionErrorTitle = localize('connectionError', 'Connection Error');
+	private _connectionErrorTitle = localize('connectionError', 'Connection error');
 
 	constructor(
 		@IPartService private _partService: IPartService,

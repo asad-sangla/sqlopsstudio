@@ -74,7 +74,7 @@ export class FileBrowserService implements IFileBrowserService {
 			this._onAddFileTree.fire({ rootNode: fileTree.rootNode, selectedNode: fileTree.selectedNode, expandedNodes: fileTree.expandedNodes });
 		} else {
 			let genericErrorMessage = localize('fileBrowserErrorMessage', 'An error occured while loading the file browser.');
-			let errorDialogTitle = localize('fileBrowserErrorDialogTitle', 'File Browser Error');
+			let errorDialogTitle = localize('fileBrowserErrorDialogTitle', 'File browser error');
 			let errorMessage = strings.isFalsyOrWhitespace(fileBrowserOpenedParams.message) ? genericErrorMessage : fileBrowserOpenedParams.message;
 			this._errorMessageService.showDialog(Severity.Error, errorDialogTitle, errorMessage);
 		}

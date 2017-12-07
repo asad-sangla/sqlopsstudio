@@ -52,7 +52,7 @@ export class ErrorMessageDialog extends Modal {
 	public render() {
 		super.render();
 		this._register(attachModalDialogStyler(this, this._themeService));
-		let copyButtonLabel = localize('copyCallStack', 'Copy call stack');
+		let copyButtonLabel = localize('copyDetails', 'Copy details');
 		this._copyButton = this.addFooterButton(copyButtonLabel, () => this._clipboardService.writeText(this._messageDatails), 'left');
 		this._copyButton.icon = 'icon scriptToClipboard';
 		this._copyButton.getElement().title = copyButtonLabel;

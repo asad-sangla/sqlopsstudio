@@ -44,18 +44,18 @@ export class InsightsDialogController {
 			}
 			if (types.isStringArray(input.query)) {
 				return this.createQuery(input.query.join(' '), connectionProfile).catch(e => {
-					this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights Error"), e);
+					this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights error"), e);
 				}).then(() => undefined);
 			} else if (types.isString(input.query)) {
 				return this.createQuery(input.query, connectionProfile).catch(e => {
-					this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights Error"), e);
+					this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights error"), e);
 				}).then(() => undefined);
 			} else if (types.isString(input.queryFile)) {
 				return new Promise((resolve, reject) => {
 					pfs.readFile(input.queryFile).then(
 						buffer => {
 							this.createQuery(buffer.toString(), connectionProfile).catch(e => {
-								this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights Error"), e);
+								this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights error"), e);
 							}).then(() => resolve());
 						},
 						error => {
@@ -117,12 +117,12 @@ export class InsightsDialogController {
 	private addQueryEventListeners(queryRunner: QueryRunner): void {
 		queryRunner.addListener(QREvents.COMPLETE, () => {
 			this.queryComplete().catch(error => {
-				this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights Error"), error);
+				this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights error"), error);
 			});
 		});
 		queryRunner.addListener(QREvents.MESSAGE, message => {
 			if (message.isError) {
-				this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights Error"), message.message);
+				this._errorMessageService.showDialog(Severity.Error, nls.localize("insightsError", "Insights error"), message.message);
 			}
 		});
 	}

@@ -99,9 +99,9 @@
 .vs .icon.scriptToClipboard,
 .vs-dark .icon.scriptToClipboard,
 .hc-black .icon.scriptToClipboard {
-	content: url('script_to_clipboard.svg');
-	width: auto !important;
-	height: 25px;
+	background-image: url('script_to_clipboard.svg');
+	background-repeat: no-repeat;
+	background-position: 2px center;
 }
 
 .vs .icon.close {

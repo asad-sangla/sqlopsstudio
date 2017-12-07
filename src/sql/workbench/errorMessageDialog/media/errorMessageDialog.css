@@ -20,3 +20,7 @@
 	-webkit-user-select: text;
 	user-select: text;
 }
+
+.modal .footer-button a.monaco-button.monaco-text-button.icon.scriptToClipboard {
+	width: 120px;
+}
