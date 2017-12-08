@@ -344,7 +344,7 @@ export abstract class GridParentComponent {
 
 		let selection = this.slickgrids.toArray()[index].getSelectedRanges();
 
-		if (selection.length === 0) {
+		if (selection && selection.length === 0) {
 			let cell = (grid as Slick.Grid<any>).getCellFromEvent(event);
 			selection = [new Slick.Range(cell.row, cell.cell - 1)];
 		}
