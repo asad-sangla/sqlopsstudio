@@ -37,6 +37,7 @@ export class ConnectionWidget {
 	private _databaseNameInputBox: InputBox;
 	private _userNameInputBox: InputBox;
 	private _passwordInputBox: InputBox;
+	private _password: string;
 	private _rememberPasswordCheckBox: Checkbox;
 	private _advancedButton: Button;
 	private _callbacks: IConnectionComponentCallbacks;
@@ -143,6 +144,7 @@ export class ConnectionWidget {
 		let passwordBuilder = DialogHelper.appendRow(this._tableContainer, passwordOption.displayName, 'connection-label', 'connection-input');
 		this._passwordInputBox = new InputBox(passwordBuilder.getHTMLElement(), this._contextViewService);
 		this._passwordInputBox.inputElement.type = 'password';
+		this._password = '';
 
 		let rememberPasswordLabel = localize('rememberPassword', 'Remember password');
 		this._rememberPasswordCheckBox = this.appendCheckbox(this._tableContainer, rememberPasswordLabel, 'connection-checkbox', 'connection-input', false);
@@ -232,6 +234,10 @@ export class ConnectionWidget {
 		this._toDispose.push(this._userNameInputBox.onDidChange(userName => {
 			this.setConnectButton();
 		}));
+
+		this._toDispose.push(this._passwordInputBox.onDidChange(passwordInput => {
+			this._password = passwordInput;
+		}));
 	}
 
 	private onGroupSelected(selectedGroup: string) {
@@ -252,8 +258,7 @@ export class ConnectionWidget {
 			showUsernameAndPassword = authType.showUsernameAndPassword;
 		}
 		showUsernameAndPassword ? this._callbacks.onSetConnectButton(!!this.serverName && !!this.userName) :
-						   this._callbacks.onSetConnectButton(!!this.serverName);
-
+			this._callbacks.onSetConnectButton(!!this.serverName);
 	}
 
 	private onAuthTypeSelected(selectedAuthType: string) {
@@ -265,6 +270,7 @@ export class ConnectionWidget {
 			this._passwordInputBox.hideMessage();
 			this._userNameInputBox.value = '';
 			this._passwordInputBox.value = '';
+			this._password = '';
 
 			this._rememberPasswordCheckBox.checked = false;
 			this._rememberPasswordCheckBox.enabled = false;
@@ -317,7 +323,8 @@ export class ConnectionWidget {
 			this._serverNameInputBox.value = this.getModelValue(connectionInfo.serverName);
 			this._databaseNameInputBox.value = this.getModelValue(connectionInfo.databaseName);
 			this._userNameInputBox.value = this.getModelValue(connectionInfo.userName);
-			this._passwordInputBox.value = this.getModelValue(connectionInfo.password);
+			this._passwordInputBox.value = connectionInfo.password ? Constants.passwordChars : '';
+			this._password = this.getModelValue(connectionInfo.password);
 			this._saveProfile = connectionInfo.saveProfile;
 			let groupName: string;
 			if (this._saveProfile) {
@@ -431,7 +438,7 @@ export class ConnectionWidget {
 	}
 
 	public get password(): string {
-		return this._passwordInputBox.value;
+		return this._password;
 	}
 
 	public get authenticationType(): string {
