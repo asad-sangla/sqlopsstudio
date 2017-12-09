@@ -49,7 +49,7 @@ export class AutoOAuthDialog extends Modal {
 	) {
 		super(
 			'',
-			TelemetryKeys.Accounts,
+			TelemetryKeys.AutoOAuth,
 			partService,
 			telemetryService,
 			contextKeyService,
