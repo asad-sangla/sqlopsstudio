@@ -18,7 +18,7 @@ const publicAzureSettings = {
 		id: 'azurePublicCloud',
 		settings: <Settings>{
 			host: 'https://login.microsoftonline.com/',
-			clientId: 'e52434c1-5f93-425b-bcd0-97fecbf68f22',
+			clientId: 'a69788c6-1d43-44ed-9ca3-b83e194da255',
 			signInResourceId: 'https://management.core.windows.net/',
 			graphResource: {
 				id: 'https://graph.windows.net/',
@@ -99,4 +99,5 @@ const germanyAzureSettings = {
 	}
 };
 
-export default [publicAzureSettings/*, chinaAzureSettings, germanyAzureSettings, usGovAzureSettings*/];
+// TODO: Enable China, Germany, and US Gov clouds: (#3031)
+export default [publicAzureSettings, /*chinaAzureSettings, germanyAzureSettings, usGovAzureSettings*/];

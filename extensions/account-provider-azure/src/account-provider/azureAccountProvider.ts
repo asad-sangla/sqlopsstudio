@@ -360,7 +360,7 @@ export class AzureAccountProvider implements data.AccountProvider {
 			// Setup the callback to resolve/reject this promise
 			let callback = (error, response, body: { error: any; value: any; }) => {
 				if (error || body.error) {
-					reject(error || body.error);
+					reject(error || JSON.stringify(body.error));
 				} else {
 					resolve(body.value);
 				}
