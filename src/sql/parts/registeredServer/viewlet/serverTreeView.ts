@@ -6,25 +6,27 @@
 import 'vs/css!./media/serverTreeActions';
 import * as errors from 'vs/base/common/errors';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import * as builder from 'vs/base/browser/builder';
+import Severity from 'vs/base/common/severity';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { attachListStyler } from 'vs/platform/theme/common/styler';
+import { ITree } from 'vs/base/parts/tree/browser/tree';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { localize } from 'vs/nls';
+
 import { ConnectionProfileGroup } from 'sql/parts/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import * as ConnectionUtils from 'sql/parts/connection/common/utils';
 import { ActiveConnectionsFilterAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { IConnectionManagementService, IErrorMessageService } from 'sql/parts/connection/common/connectionManagement';
-import * as builder from 'vs/base/browser/builder';
-import Severity from 'vs/base/common/severity';
 import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreationUtils';
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { TreeSelectionHandler } from 'sql/parts/registeredServer/viewlet/treeSelectionHandler';
 import { IObjectExplorerService } from 'sql/parts/registeredServer/common/objectExplorerService';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { ICapabilitiesService } from 'sql/services/capabilities/capabilitiesService';
-import * as Utils from 'sql/parts/connection/common/utils';
 import { Button } from 'sql/base/browser/ui/button/button';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { attachListStyler } from 'vs/platform/theme/common/styler';
-import { ITree } from 'vs/base/parts/tree/browser/tree';
-import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { attachButtonStyler } from 'sql/common/theme/styler';
 
 const $ = builder.$;
 
@@ -75,10 +77,11 @@ export class ServerTreeView {
 			this._activeConnectionsFilterAction.enabled = false;
 			this._buttonSection = $('div.button-section').appendTo(container);
 			var connectButton = new Button(this._buttonSection);
-			connectButton.label = 'Add Connection';
-			connectButton.addListener('click', () => {
+			connectButton.label = localize('addConnection', 'Add Connection');
+			this._toDispose.push(attachButtonStyler(connectButton, this._themeService));
+			this._toDispose.push(connectButton.addListener('click', () => {
 				this._connectionManagementService.showConnectionDialog();
-			});
+			}));
 		}
 
 		this._tree = TreeCreationUtils.createRegisteredServersTree(container, this._instantiationService);
@@ -141,8 +144,8 @@ export class ServerTreeView {
 	}
 
 	private isObjectExplorerConnectionUri(uri: string): boolean {
-		let isBackupRestoreUri: boolean = uri.indexOf(Utils.ConnectionUriBackupIdAttributeName) >= 0 ||
-			uri.indexOf(Utils.ConnectionUriRestoreIdAttributeName) >= 0;
+		let isBackupRestoreUri: boolean = uri.indexOf(ConnectionUtils.ConnectionUriBackupIdAttributeName) >= 0 ||
+			uri.indexOf(ConnectionUtils.ConnectionUriRestoreIdAttributeName) >= 0;
 		return uri && uri.startsWith(ConnectionUtils.uriPrefixes.default) && !isBackupRestoreUri;
 	}
 
