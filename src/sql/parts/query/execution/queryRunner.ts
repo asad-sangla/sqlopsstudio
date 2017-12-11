@@ -158,10 +158,16 @@ export default class QueryRunner {
 
 	private handleFailureRunQueryResult(error: any) {
 		// Attempting to launch the query failed, show the error message
-		// TODO issue #228 add statusview callbacks here
-		this._isExecuting = false;
-
-		this._messageService.show(Severity.Error, nls.localize('query.ExecutionFailedError', 'Execution failed: {0}', error));
+		const eol = this.getEolString();
+		let message = nls.localize('query.ExecutionFailedError', 'Execution failed due to an unexpected error: {0}\t{1}', eol, error);
+		this.handleMessage(<data.QueryExecuteMessageParams> {
+			ownerUri: this.uri,
+			message: {
+				isError: true,
+				message: message
+			}
+		});
+		this.handleQueryComplete(<data.QueryExecuteCompleteNotificationResult> { ownerUri: this.uri });
 	}
 
 	/**
@@ -398,7 +404,7 @@ export default class QueryRunner {
 	copyResults(selection: ISlickRange[], batchId: number, resultId: number, includeHeaders?: boolean): void {
 		const self = this;
 		let copyString = '';
-		const { eol } = this._workspaceConfigurationService.getConfiguration<{ eol: string }>('files');
+		const eol = this.getEolString();
 
 		// create a mapping of the ranges to get promises
 		let tasks = selection.map((range, i) => {
@@ -437,6 +443,11 @@ export default class QueryRunner {
 				this._clipboardService.writeText(copyString);
 			});
 		}
+	}
+
+	private getEolString(): string {
+		const { eol } = this._workspaceConfigurationService.getConfiguration<{ eol: string }>('files');
+		return eol;
 	}
 
 	private shouldIncludeHeaders(includeHeaders: boolean): boolean {

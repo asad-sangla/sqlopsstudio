@@ -158,6 +158,11 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 		this.showQueryResultsEditor();
 	}
 
+	public runQueryString(text: string): void {
+		this._queryModelService.runQueryString(this.uri, text, this.uri, this);
+		this.showQueryResultsEditor();
+	}
+
 	public onConnectStart(): void {
 		this._runQueryEnabled = false;
 		this._cancelQueryEnabled = false;

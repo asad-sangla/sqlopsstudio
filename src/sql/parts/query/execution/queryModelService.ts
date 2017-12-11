@@ -25,6 +25,9 @@ import { IMessageService, Severity } from 'vs/platform/message/common/message';
 import Event, { Emitter } from 'vs/base/common/event';
 import { TPromise } from 'vs/base/common/winjs.base';
 import * as strings from 'vs/base/common/strings';
+import * as types from 'vs/base/common/types';
+
+const selectionSnippetMaxLen = 100;
 
 interface QueryEvent {
 	type: string;
@@ -40,6 +43,7 @@ class QueryInfo {
 	public queryEventQueue: QueryEvent[];
 	public selection: Array<data.ISelectionData>;
 	public queryInput: QueryInput;
+	public selectionSnippet: string;
 
 	// Notes if the angular components have obtained the DataService. If not, all messages sent
 	// via the data service will be lost.
@@ -201,9 +205,17 @@ export class QueryModelService implements IQueryModelService {
 	}
 
 	/**
+	 * Run the current SQL statement for the given URI
+	 */
+	public runQueryString(uri: string, selection: string,
+		title: string, queryInput: QueryInput): void {
+		this.doRunQuery(uri, selection, title, queryInput, true);
+	}
+
+	/**
 	 * Run Query implementation
 	 */
-	private doRunQuery(uri: string, selection: data.ISelectionData,
+	private doRunQuery(uri: string, selection: data.ISelectionData | string,
 		title: string, queryInput: QueryInput,
 		runCurrentStatement: boolean, runOptions?: data.ExecutionPlanOptions): void {
 		// Reuse existing query runner if it exists
@@ -222,36 +234,53 @@ export class QueryModelService implements IQueryModelService {
 			// If the query is not in progress, we can reuse the query runner
 			queryRunner = existingRunner;
 			info.selection = [];
+			info.selectionSnippet = undefined;
 		} else {
 			// We do not have a query runner for this editor, so create a new one
 			// and map it to the results uri
-			info = new QueryInfo();
-			queryRunner = this.initQueryRunner(uri, title, info);
+			info = this.initQueryRunner(uri, title);
+			queryRunner = info.queryRunner;
 		}
 
-		this._getQueryInfo(uri).queryInput = queryInput;
+		info.queryInput = queryInput;
 
-		if (runCurrentStatement) {
+		if (types.isString(selection)) {
+			// Run the query string in this case
+			if (selection.length < selectionSnippetMaxLen) {
+				info.selectionSnippet = selection;
+			} else {
+				info.selectionSnippet = selection.substring(0, selectionSnippetMaxLen - 3) + '...';
+			}
+			queryRunner.runQuery(selection, runOptions);
+		} else if (runCurrentStatement) {
 			queryRunner.runQueryStatement(selection);
 		} else {
 			queryRunner.runQuery(selection, runOptions);
 		}
 	}
 
-	private initQueryRunner(uri: string, title: string, info: QueryInfo): QueryRunner {
+	private initQueryRunner(uri: string, title: string): QueryInfo {
 		let queryRunner = this._instantiationService.createInstance(QueryRunner, uri, title);
+		let info = new QueryInfo();
 		queryRunner.addListener(QREvents.RESULT_SET, e => {
 			this._fireQueryEvent(uri, 'resultSet', e);
 		});
 		queryRunner.addListener(QREvents.BATCH_START, b => {
 			let link = undefined;
+			let messageText = LocalizedConstants.runQueryBatchStartMessage;
 			if (b.selection) {
-				link = {
-					text: strings.format(LocalizedConstants.runQueryBatchStartLine, b.selection.startLine + 1)
-				};
+				if (info.selectionSnippet) {
+					// This indicates it's a query string. Do not include line information since it'll be inaccurate, but show some of the
+					// executed query text
+					messageText = nls.localize('runQueryStringBatchStartMessage', 'Started executing query "{0}"', info.selectionSnippet);
+				} else {
+					link = {
+						text: strings.format(LocalizedConstants.runQueryBatchStartLine, b.selection.startLine + 1)
+					};
+				}
 			}
 			let message = {
-				message: LocalizedConstants.runQueryBatchStartMessage,
+				message: messageText,
 				batchId: b.id,
 				isError: false,
 				time: new Date().toLocaleTimeString(),
@@ -272,11 +301,10 @@ export class QueryModelService implements IQueryModelService {
 			this._fireQueryEvent(uri, 'start');
 		});
 
-		info = new QueryInfo();
 		info.queryRunner = queryRunner;
 		info.dataService = this._instantiationService.createInstance(DataService, uri);
 		this._queryInfoMap.set(uri, info);
-		return queryRunner;
+		return info;
 	}
 
 	public cancelQuery(input: QueryRunner | string): void {

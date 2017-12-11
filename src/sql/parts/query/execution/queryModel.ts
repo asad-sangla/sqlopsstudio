@@ -35,6 +35,7 @@ export interface IQueryModelService {
 	getQueryRows(uri: string, rowStart: number, numberOfRows: number, batchId: number, resultId: number): Thenable<ResultSetSubset>;
 	runQuery(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput, runOptions?: ExecutionPlanOptions): void;
 	runQueryStatement(uri: string, selection: ISelectionData, title: string, queryInput: QueryInput): void;
+	runQueryString(uri: string, selection: string, title: string, queryInput: QueryInput);
 	cancelQuery(input: QueryRunner | string): void;
 	disposeQuery(uri: string): void;
 	isRunningQuery(uri: string): boolean;

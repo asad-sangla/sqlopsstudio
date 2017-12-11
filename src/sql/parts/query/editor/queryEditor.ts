@@ -365,6 +365,23 @@ export class QueryEditor extends BaseEditor {
 		return true;
 	}
 
+	public getSelectionText(): string {
+		if (this._sqlEditor && this._sqlEditor.getControl()) {
+			let control = this._sqlEditor.getControl();
+			let codeEditor: CodeEditor = <CodeEditor>control;
+			let vscodeSelection = control.getSelection();
+
+			if (codeEditor && vscodeSelection) {
+				let model = codeEditor.getModel();
+				let value = model.getValueInRange(vscodeSelection);
+				if (value !== undefined && value.length > 0) {
+					return value;
+				}
+			}
+		}
+		return '';
+	}
+
 	/**
 	 * Calls the run method of this editor's RunQueryAction
 	 */

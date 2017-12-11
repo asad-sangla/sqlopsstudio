@@ -14,6 +14,7 @@ import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
 import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
 import { KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry';
 import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 import { QueryEditor } from 'sql/parts/query/editor/queryEditor';
 import { QueryResultsEditor } from 'sql/parts/query/editor/queryResultsEditor';
@@ -22,12 +23,16 @@ import * as queryContext from 'sql/parts/query/common/queryContext';
 import { QueryInput } from 'sql/parts/query/common/queryInput';
 import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
-import { RunQueryKeyboardAction, RunCurrentQueryKeyboardAction, CancelQueryKeyboardAction, RefreshIntellisenseKeyboardAction, ToggleQueryResultsKeyboardAction } from 'sql/parts/query/execution/keyboardQueryActions';
+import {
+	RunQueryKeyboardAction, RunCurrentQueryKeyboardAction, CancelQueryKeyboardAction, RefreshIntellisenseKeyboardAction, ToggleQueryResultsKeyboardAction,
+	RunQueryShortcutAction
+} from 'sql/parts/query/execution/keyboardQueryActions';
 import * as gridActions from 'sql/parts/grid/views/gridActions';
 import * as gridCommands from 'sql/parts/grid/views/gridCommands';
 import { QueryPlanEditor } from 'sql/parts/queryPlan/queryPlanEditor';
 import { QueryPlanInput } from 'sql/parts/queryPlan/queryPlanInput';
 import { localize } from 'vs/nls';
+import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 
 const gridCommandsWeightBonus = 100; // give our commands a little bit more weight over other default list/tree commands
 
@@ -201,64 +206,98 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 });
 
 // Intellisense and other configuration options
+let registryProperties = {
+	'sql.messagesDefaultOpen': {
+		'type': 'boolean',
+		'description': localize('sql.messagesDefaultOpen', 'True for the messages pane to be open by default; false for closed'),
+		'default': true
+	},
+	'sql.saveAsCsv.includeHeaders': {
+		'type': 'boolean',
+		'description': localize('sql.saveAsCsv.includeHeaders', '[Optional] When true, column headers are included when saving results as CSV'),
+		'default': true
+	},
+	'sql.copyIncludeHeaders': {
+		'type': 'boolean',
+		'description': localize('sql.copyIncludeHeaders', '[Optional] Configuration options for copying results from the Results View'),
+		'default': false
+	},
+	'sql.copyRemoveNewLine': {
+		'type': 'boolean',
+		'description': localize('sql.copyRemoveNewLine', '[Optional] Configuration options for copying multi-line results from the Results View'),
+		'default': true
+	},
+	'sql.showBatchTime': {
+		'type': 'boolean',
+		'description': localize('sql.showBatchTime', '[Optional] Should execution time be shown for individual batches'),
+		'default': false
+	},
+	'sql.intelliSense.enableIntelliSense': {
+		'type': 'boolean',
+		'default': true,
+		'description': localize('sql.intelliSense.enableIntelliSense', 'Should IntelliSense be enabled')
+	},
+	'sql.intelliSense.enableErrorChecking': {
+		'type': 'boolean',
+		'default': true,
+		'description': localize('sql.intelliSense.enableErrorChecking', 'Should IntelliSense error checking be enabled')
+	},
+	'sql.intelliSense.enableSuggestions': {
+		'type': 'boolean',
+		'default': true,
+		'description': localize('sql.intelliSense.enableSuggestions', 'Should IntelliSense suggestions be enabled')
+	},
+	'sql.intelliSense.enableQuickInfo': {
+		'type': 'boolean',
+		'default': true,
+		'description': localize('sql.intelliSense.enableQuickInfo', 'Should IntelliSense quick info be enabled')
+	},
+	'sql.intelliSense.lowerCaseSuggestions': {
+		'type': 'boolean',
+		'default': false,
+		'description': localize('sql.intelliSense.lowerCaseSuggestions', 'Should IntelliSense suggestions be lowercase')
+	}
+};
 
+// Setup keybindings
+let initialShortcuts = [
+	{ name: 'sp_help', primary: KeyMod.Alt + KeyCode.F2 },
+	// Note: using Ctrl+Shift+N since Ctrl+N is used for "open editor at index" by default. This means it's different from SSMS
+	{ name: 'sp_who', primary: KeyMod.WinCtrl + KeyMod.Shift + KeyCode.KEY_1 },
+	{ name: 'sp_lock', primary: KeyMod.WinCtrl + KeyMod.Shift + KeyCode.KEY_2 }
+];
+
+for (let i = 0; i < 9; i++) {
+	const queryIndex = i + 1;
+	let settingKey = `sql.query.shortcut${queryIndex}`;
+	let defaultVal = i < initialShortcuts.length ? initialShortcuts[i].name : '';
+	let defaultPrimary =  i < initialShortcuts.length ? initialShortcuts[i].primary : null;
+
+	KeybindingsRegistry.registerCommandAndKeybindingRule({
+		id: `workbench.action.query.shortcut${queryIndex}`,
+		weight: KeybindingsRegistry.WEIGHT.workbenchContrib(),
+		when: QueryEditorVisibleCondition,
+		primary: defaultPrimary,
+		handler: accessor => {
+			accessor.get(IInstantiationService).createInstance(RunQueryShortcutAction).run(queryIndex);
+		}
+	});
+	registryProperties[settingKey] = {
+		'type': 'string',
+		'default': defaultVal,
+		'description': localize('queryShortcutDescription',
+			'Set keybinding workbench.action.query.shortcut{0} to run the shortcut text as a procedure call. Any selected text in the query editor will be passed as a parameter',
+			queryIndex)
+	};
+}
+
+// Register the query-related configuration options
 let configurationRegistry = <IConfigurationRegistry>Registry.as(ConfigExtensions.Configuration);
 configurationRegistry.registerConfiguration({
 	'id': 'sqlEditor',
 	'title': 'SQL Editor',
 	'type': 'object',
-	'properties': {
-		'sql.messagesDefaultOpen': {
-			'type': 'boolean',
-			'description': localize('sql.messagesDefaultOpen', 'True for the messages pane to be open by default; false for closed'),
-			'default': true
-		},
-		'sql.saveAsCsv.includeHeaders': {
-			'type': 'boolean',
-			'description': localize('sql.saveAsCsv.includeHeaders', '[Optional] When true, column headers are included when saving results as CSV'),
-			'default': true
-		},
-		'sql.copyIncludeHeaders': {
-			'type': 'boolean',
-			'description': localize('sql.copyIncludeHeaders', '[Optional] Configuration options for copying results from the Results View'),
-			'default': false
-		},
-		'sql.copyRemoveNewLine': {
-			'type': 'boolean',
-			'description': localize('sql.copyRemoveNewLine', '[Optional] Configuration options for copying multi-line results from the Results View'),
-			'default': true
-		},
-		'sql.showBatchTime': {
-			'type': 'boolean',
-			'description': localize('sql.showBatchTime', '[Optional] Should execution time be shown for individual batches'),
-			'default': false
-		},
-		'sql.intelliSense.enableIntelliSense': {
-			'type': 'boolean',
-			'default': true,
-			'description': localize('sql.intelliSense.enableIntelliSense', 'Should IntelliSense be enabled')
-		},
-		'sql.intelliSense.enableErrorChecking': {
-			'type': 'boolean',
-			'default': true,
-			'description': localize('sql.intelliSense.enableErrorChecking', 'Should IntelliSense error checking be enabled')
-		},
-		'sql.intelliSense.enableSuggestions': {
-			'type': 'boolean',
-			'default': true,
-			'description': localize('sql.intelliSense.enableSuggestions', 'Should IntelliSense suggestions be enabled')
-		},
-		'sql.intelliSense.enableQuickInfo': {
-			'type': 'boolean',
-			'default': true,
-			'description': localize('sql.intelliSense.enableQuickInfo', 'Should IntelliSense quick info be enabled')
-		},
-		'sql.intelliSense.lowerCaseSuggestions': {
-			'type': 'boolean',
-			'default': false,
-			'description': localize('sql.intelliSense.lowerCaseSuggestions', 'Should IntelliSense suggestions be lowercase')
-		}
-	}
+	'properties': registryProperties
 });
 
 
