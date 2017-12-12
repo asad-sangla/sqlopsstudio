@@ -6,6 +6,8 @@ import { mixin } from 'vs/base/common/objects';
 import * as nls from 'vs/nls';
 import { ICheckboxStyles } from 'vs/base/browser/ui/checkbox/checkbox';
 import * as strings from 'vs/base/common/strings';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
 
 export interface ICheckboxSelectColumnOptions extends Slick.PluginOptions, ICheckboxStyles {
 	columnId?: string;
@@ -90,6 +92,16 @@ export class CheckboxSelectColumn<T> implements Slick.Plugin<T> {
 				}
 				e.preventDefault();
 				e.stopImmediatePropagation();
+			}
+		} else {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyCode.Enter)) {
+				// clicking on a row select checkbox
+				if (this._grid.getColumns()[args.cell].id === this._options.columnId) {
+					this.toggleRowSelection(args.row);
+					e.stopPropagation();
+					e.stopImmediatePropagation();
+				}
 			}
 		}
 	}

@@ -35,6 +35,8 @@ import { TPromise } from 'vs/base/common/winjs.base';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as types from 'vs/base/common/types';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 
 /* Regex that matches the form `${value}` */
 export const insertValueRegex: RegExp = /\${(.*?)\}/;
@@ -80,6 +82,7 @@ export class InsightsDialogView extends Modal {
 	private _insight: IInsightsConfigDetails;
 	private _splitView: SplitView;
 	private _container: HTMLElement;
+	private _closeButton: Button;
 	private _topTable: Table<ListResource>;
 	private _topTableData: TableDataView<ListResource>;
 	private _bottomTable: Table<ListResource>;
@@ -212,12 +215,45 @@ export class InsightsDialogView extends Modal {
 
 		this._register(attachTableStyler(this._topTable, this._themeService));
 		this._register(attachTableStyler(this._bottomTable, this._themeService));
+
+		this._topTable.grid.onKeyDown.subscribe((e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
+				topTableView.focus();
+				e.stopImmediatePropagation();
+			} else if (event.equals(KeyCode.Tab)) {
+				bottomTableView.focus();
+				e.stopImmediatePropagation();
+			}
+		});
+
+		this._bottomTable.grid.onKeyDown.subscribe((e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
+				bottomTableView.focus();
+				e.stopImmediatePropagation();
+			} else if (event.equals(KeyCode.Tab)) {
+				let buttonFound = false;
+				for (let index = 0; index < this._taskButtonDisposables.length; index++) {
+					let element = this._taskButtonDisposables[index];
+					if (element instanceof Button && element.enabled) {
+						buttonFound = true;
+						element.focus();
+						break;
+					}
+				}
+				if (!buttonFound) {
+					this._closeButton.focus();
+				}
+				e.stopImmediatePropagation();
+			}
+		});
 	}
 
 	public render() {
 		super.render();
-		let button = this.addFooterButton('Close', () => this.close());
-		this._register(attachButtonStyler(button, this._themeService));
+		this._closeButton = this.addFooterButton('Close', () => this.close());
+		this._register(attachButtonStyler(this._closeButton, this._themeService));
 		this._register(attachModalDialogStyler(this, this._themeService));
 	}
 
@@ -273,6 +309,9 @@ export class InsightsDialogView extends Modal {
 			}
 		}
 		this.layout();
+
+		// Select and focus the top row
+		this._topTable.grid.gotoCell(0, 1);
 	}
 
 	public reset(): void {

@@ -97,6 +97,7 @@ export class TabbedPanel extends Disposable implements IThemable {
 			let event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter)) {
 				this.showTab(tab.identifier);
+				e.stopImmediatePropagation();
 			}
 		});
 		this.$tabList.append(tabElement);

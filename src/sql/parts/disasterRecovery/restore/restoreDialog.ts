@@ -8,7 +8,7 @@ import 'vs/css!./media/restoreDialog';
 import { Builder, $ } from 'vs/base/browser/builder';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import Event, { Emitter } from 'vs/base/common/event';
-import { KeyCode } from 'vs/base/common/keyCodes';
+import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { MessageType, IInputOptions } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
@@ -392,6 +392,44 @@ export class RestoreDialog extends Modal {
 				this._restoreFromSelectBox.hideMessage();
 			}
 		});
+
+		this._restorePlanTable.grid.onKeyDown.subscribe((e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
+				this._destinationRestoreToInputBox.isEnabled() ? this._destinationRestoreToInputBox.focus() : this._databaseDropdown.focus();
+				e.stopImmediatePropagation();
+			} else if (event.equals(KeyCode.Tab)) {
+				this.focusOnFirstEnabledFooterButton();
+				e.stopImmediatePropagation();
+			}
+		});
+
+		this._fileListTable.grid.onKeyDown.subscribe((e: KeyboardEvent) => {
+			let event = new StandardKeyboardEvent(e);
+			if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
+				if ((<InputBox>this._optionsMap[this._relocatedLogFileFolderOption]).isEnabled()) {
+					(<InputBox>this._optionsMap[this._relocatedLogFileFolderOption]).focus();
+				} else if ((<InputBox>this._optionsMap[this._relocatedDataFileFolderOption]).isEnabled()) {
+					(<InputBox>this._optionsMap[this._relocatedDataFileFolderOption]).focus();
+				} else {
+					(<Checkbox>this._optionsMap[this._relocateDatabaseFilesOption]).focus();
+				}
+				e.stopImmediatePropagation();
+			} else if (event.equals(KeyCode.Tab)) {
+				this.focusOnFirstEnabledFooterButton();
+				e.stopImmediatePropagation();
+			}
+		});
+	}
+
+	private focusOnFirstEnabledFooterButton() {
+		if (this._scriptButton.enabled) {
+			this._scriptButton.focus();
+		} else if (this._restoreButton.enabled) {
+			this._restoreButton.focus();
+		} else {
+			this._closeButton.focus();
+		}
 	}
 
 	private databaseSelected(dbName: string): void {
@@ -782,6 +820,10 @@ export class RestoreDialog extends Modal {
 			}
 
 			this._fileListData.push(data);
+
+			// Select the first row for the table by default
+			this._fileListTable.setSelectedRows([0]);
+			this._fileListTable.setActiveCell(0, 0);
 		}
 	}
 
@@ -820,6 +862,7 @@ export class RestoreDialog extends Modal {
 			}
 			this._restorePlanData.push(data);
 			this._restorePlanTable.setSelectedRows(selectedRow);
+			this._restorePlanTable.setActiveCell(selectedRow[0], 0);
 		}
 	}
 }

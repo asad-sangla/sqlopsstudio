@@ -72,6 +72,10 @@ export class Checkbox extends Widget {
 		return this._el.checked;
 	}
 
+	public focus(): void {
+		this._el.focus();
+	}
+
 	public disable(): void {
 		this.enabled = false;
 	}
