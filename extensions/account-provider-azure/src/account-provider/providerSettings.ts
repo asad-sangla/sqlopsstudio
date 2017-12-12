@@ -5,18 +5,17 @@
 
 'use strict';
 
-import * as data from 'data';
 import * as nls from 'vscode-nls';
-import { Settings } from './interfaces';
+import { ProviderSettings } from './interfaces';
 
 const localize = nls.loadMessageBundle();
 
-const publicAzureSettings = {
-	configKey: 'accounts.azure.enablePublicCloud',
-	metadata: <data.AccountProviderMetadata> {
+const publicAzureSettings: ProviderSettings = {
+	configKey: 'enablePublicCloud',
+	metadata: {
 		displayName: localize('publicCloudDisplayName', 'Azure'),
 		id: 'azurePublicCloud',
-		settings: <Settings>{
+		settings: {
 			host: 'https://login.microsoftonline.com/',
 			clientId: 'a69788c6-1d43-44ed-9ca3-b83e194da255',
 			signInResourceId: 'https://management.core.windows.net/',
@@ -33,12 +32,12 @@ const publicAzureSettings = {
 	}
 };
 
-const usGovAzureSettings = {
-	configKey: 'accounts.azure.enableUsGovCloud',
-	metadata: <data.AccountProviderMetadata> {
+const usGovAzureSettings: ProviderSettings = {
+	configKey: 'enableUsGovCloud',
+	metadata: {
 		displayName: localize('usGovCloudDisplayName', 'Azure (US Government)'),
 		id: 'usGovAzureCloud',
-		settings: <Settings> {
+		settings: {
 			host: 'https://login.microsoftonline.com/',
 			clientId: 'TBD',
 			signInResourceId: 'https://management.core.usgovcloudapi.net/',
@@ -55,12 +54,12 @@ const usGovAzureSettings = {
 	}
 };
 
-const chinaAzureSettings = {
-	configKey: 'accounts.azure.enableChinaCloud',
-	metadata: <data.AccountProviderMetadata> {
+const chinaAzureSettings: ProviderSettings = {
+	configKey: 'enableChinaCloud',
+	metadata: {
 		displayName: localize('chinaCloudDisplayName', 'Azure (China)'),
 		id: 'chinaAzureCloud',
-		settings: <Settings> {
+		settings: {
 			host: 'https://login.chinacloudapi.cn/',
 			clientId: 'TBD',
 			signInResourceId: 'https://management.core.chinacloudapi.cn/',
@@ -77,12 +76,12 @@ const chinaAzureSettings = {
 	}
 };
 
-const germanyAzureSettings = {
-	configKey: 'accounts.azure.enableGermanyCloud',
-	metadata: <data.AccountProviderMetadata> {
+const germanyAzureSettings: ProviderSettings = {
+	configKey: 'enableGermanyCloud',
+	metadata: {
 		displayName: localize('germanyCloud', 'Azure (Germany)'),
 		id: 'germanyAzureCloud',
-		settings: <Settings> {
+		settings: {
 			host: 'https://login.microsoftazure.de/',
 			clientId: 'TBD',
 			signInResourceId: 'https://management.core.cloudapi.de/',
@@ -100,4 +99,4 @@ const germanyAzureSettings = {
 };
 
 // TODO: Enable China, Germany, and US Gov clouds: (#3031)
-export default [publicAzureSettings, /*chinaAzureSettings, germanyAzureSettings, usGovAzureSettings*/];
+export default <ProviderSettings[]>[publicAzureSettings, /*chinaAzureSettings, germanyAzureSettings, usGovAzureSettings*/];

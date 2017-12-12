@@ -29,6 +29,17 @@
         "category": "Azure Accounts"
       }
     ],
+    "configuration": {
+      "type": "object",
+      "title": "Azure Account Configuration",
+      "properties": {
+        "accounts.azure.enablePublicCloud": {
+          "type": "boolean",
+          "default": true,
+          "description": "%config.enablePublicCloudDescription%"
+        }
+      }
+    },
     "account-type": [
       {
         "id": "microsoft",

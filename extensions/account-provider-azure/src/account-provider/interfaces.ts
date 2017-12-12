@@ -101,7 +101,22 @@ export interface Settings {
 }
 
 /**
- *
+ * Mapping of configuration key with the metadata to instantiate the account provider
+ */
+export interface ProviderSettings {
+	/**
+	 * Key for configuration regarding whether the account provider is enabled
+	 */
+	configKey: string;
+
+	/**
+	 * Metadata for the provider
+	 */
+	metadata: AzureAccountProviderMetadata;
+}
+
+/**
+ * Extension of account provider metadata to override settings type for Azure account providers
  */
 export interface AzureAccountProviderMetadata extends data.AccountProviderMetadata {
 	/**
