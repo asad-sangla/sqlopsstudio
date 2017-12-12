@@ -693,7 +693,7 @@ export class QueryEditor extends BaseEditor {
 		}
 
 		let queryResultsEditorHeight = parent.bottom - splitPointTop;
-
+		this._resultsEditorContainer.hidden = false;
 		this._sqlEditorContainer.style.height = `${sqlEditorHeight}px`;
 		this._sqlEditorContainer.style.width = `${this._dimension.width}px`;
 		this._sqlEditorContainer.style.top = `${this._editorTopOffset}px`;
@@ -718,6 +718,7 @@ export class QueryEditor extends BaseEditor {
 		this._sqlEditorContainer.style.height = `${this._dimension.height - taskbarHeight}px`;
 		this._sqlEditorContainer.style.left = `0px`;
 
+		this._resultsEditorContainer.hidden = false;
 		this._resultsEditorContainer.style.width = `${queryResultsEditorWidth}px`;
 		this._resultsEditorContainer.style.height = `${this._dimension.height - taskbarHeight}px`;
 		this._resultsEditorContainer.style.left = `${splitPointLeft}px`;
@@ -731,6 +732,7 @@ export class QueryEditor extends BaseEditor {
 			this._resultsEditorContainer.style.width = '0px';
 			this._resultsEditorContainer.style.height = '0px';
 			this._resultsEditorContainer.style.left = '0px';
+			this._resultsEditorContainer.hidden = true;
 		}
 
 		if (this._dimension) {
