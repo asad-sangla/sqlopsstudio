@@ -141,7 +141,7 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 	public getEncoding(): string { return this._sql.getEncoding(); }
 	public suggestFileName(): string { return this._sql.suggestFileName(); }
 	public getName(): string { return this._sql.getName(); }
-	public hasAssociatedFilePath(): boolean { return this._sql.hasAssociatedFilePath; }
+	public get hasAssociatedFilePath(): boolean { return this._sql.hasAssociatedFilePath; }
 
 	public setEncoding(encoding: string, mode: EncodingMode /* ignored, we only have Encode */): void {
 		this._sql.setEncoding(encoding, mode);
