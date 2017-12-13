@@ -480,8 +480,8 @@ export interface RestoreDatabaseFileInfo {
 }
 
 export interface FileBrowserOpenParams {
-    ownerUri: string;
-    expandPath: string;
+	ownerUri: string;
+	expandPath: string;
 	fileFilters: string[];
 	changeFilter: boolean;
 }
@@ -507,8 +507,8 @@ export interface FileBrowserOpenedParams {
 }
 
 export interface FileBrowserExpandParams {
-    ownerUri: string;
-    expandPath: string;
+	ownerUri: string;
+	expandPath: string;
 }
 
 export interface FileBrowserExpandedParams {
@@ -520,9 +520,9 @@ export interface FileBrowserExpandedParams {
 }
 
 export interface FileBrowserValidateParams {
-    ownerUri: string;
-    serviceType: string;
-    selectedFiles: string[];
+	ownerUri: string;
+	serviceType: string;
+	selectedFiles: string[];
 }
 
 export interface FileBrowserValidatedParams {
@@ -531,7 +531,7 @@ export interface FileBrowserValidatedParams {
 }
 
 export interface FileBrowserCloseParams {
-    ownerUri: string;
+	ownerUri: string;
 }
 
 export interface FileBrowserCloseResponse {
