@@ -61,6 +61,7 @@ export class RestoreDialog extends Modal {
 	private _backupFileTitle: string;
 	private _ownerUri: string;
 	private _databaseDropdown: Dropdown;
+	private _isBackupFileCheckboxChanged: boolean;
 
 	// General options
 	private _filePathInputBox: InputBox;
@@ -583,7 +584,7 @@ export class RestoreDialog extends Modal {
 
 		if (!isSame) {
 			this.viewModel.selectedBackupSets = selectedFiles;
-			this.validateRestore(false);
+			this.validateRestore(false, true);
 		}
 	}
 
@@ -684,7 +685,8 @@ export class RestoreDialog extends Modal {
 		return this._restoreFromSelectBox.value === this._databaseTitle;
 	}
 
-	public validateRestore(overwriteTargetDatabase: boolean = false): void {
+	public validateRestore(overwriteTargetDatabase: boolean = false, isBackupFileCheckboxChanged: boolean = false): void {
+		this._isBackupFileCheckboxChanged = isBackupFileCheckboxChanged;
 		this.showSpinner();
 		this._restoreButton.enabled = false;
 		this._scriptButton.enabled = false;
@@ -728,6 +730,7 @@ export class RestoreDialog extends Modal {
 		this.onRestoreFromChanged(this._databaseTitle);
 		this._sourceDatabaseSelectBox.select(0);
 		this._panel.showTab(this._generalTabId);
+		this._isBackupFileCheckboxChanged = false;
 		this.removeErrorMessage();
 		this.resetRestoreContent();
 	}
@@ -828,41 +831,51 @@ export class RestoreDialog extends Modal {
 	}
 
 	private updateBackupSetsToRestore(backupSetsToRestore: data.DatabaseFileInfo[]) {
-		this._restorePlanData.clear();
-		if (backupSetsToRestore && backupSetsToRestore.length > 0) {
-			if (!this._restorePlanColumn) {
-				let firstRow = backupSetsToRestore[0];
-				this._restorePlanColumn = firstRow.properties.map(item => {
-					return {
-						id: item.propertyName,
-						name: item.propertyDisplayName,
-						field: item.propertyName
-					};
-				});
-
-				let checkboxSelectColumn = new CheckboxSelectColumn({ title: this._restoreLabel, toolTip: this._restoreLabel, width: 15 });
-				this._restorePlanColumn.unshift(checkboxSelectColumn.getColumnDefinition());
-				this._restorePlanTable.columns = this._restorePlanColumn;
-				this._restorePlanTable.registerPlugin(checkboxSelectColumn);
-				this._restorePlanTable.autosizeColumns();
-			}
-
-			let data = [];
+		if (this._isBackupFileCheckboxChanged) {
 			let selectedRow = [];
 			for (let i = 0; i < backupSetsToRestore.length; i++) {
-				let backupFile = backupSetsToRestore[i];
-				let newData = {};
-				for (let j = 0; j < backupFile.properties.length; j++) {
-					newData[backupFile.properties[j].propertyName] = backupFile.properties[j].propertyValueDisplayName;
-				}
-				data.push(newData);
-				if (backupFile.isSelected) {
+				if (backupSetsToRestore[i].isSelected) {
 					selectedRow.push(i);
 				}
 			}
-			this._restorePlanData.push(data);
 			this._restorePlanTable.setSelectedRows(selectedRow);
-			this._restorePlanTable.setActiveCell(selectedRow[0], 0);
+		} else {
+			this._restorePlanData.clear();
+			if (backupSetsToRestore && backupSetsToRestore.length > 0) {
+				if (!this._restorePlanColumn) {
+					let firstRow = backupSetsToRestore[0];
+					this._restorePlanColumn = firstRow.properties.map(item => {
+						return {
+							id: item.propertyName,
+							name: item.propertyDisplayName,
+							field: item.propertyName
+						};
+					});
+
+					let checkboxSelectColumn = new CheckboxSelectColumn({ title: this._restoreLabel, toolTip: this._restoreLabel, width: 15 });
+					this._restorePlanColumn.unshift(checkboxSelectColumn.getColumnDefinition());
+					this._restorePlanTable.columns = this._restorePlanColumn;
+					this._restorePlanTable.registerPlugin(checkboxSelectColumn);
+					this._restorePlanTable.autosizeColumns();
+				}
+
+				let data = [];
+				let selectedRow = [];
+				for (let i = 0; i < backupSetsToRestore.length; i++) {
+					let backupFile = backupSetsToRestore[i];
+					let newData = {};
+					for (let j = 0; j < backupFile.properties.length; j++) {
+						newData[backupFile.properties[j].propertyName] = backupFile.properties[j].propertyValueDisplayName;
+					}
+					data.push(newData);
+					if (backupFile.isSelected) {
+						selectedRow.push(i);
+					}
+				}
+				this._restorePlanData.push(data);
+				this._restorePlanTable.setSelectedRows(selectedRow);
+				this._restorePlanTable.setActiveCell(selectedRow[0], 0);
+			}
 		}
 	}
 }
