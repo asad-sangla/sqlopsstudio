@@ -65,15 +65,12 @@ export class AccountManagementService implements IAccountManagementService {
 		this._updateAccountListEmitter = new Emitter<UpdateAccountListEventParams>();
 
 		// Register status bar item
-		// FEATURE FLAG TOGGLE
-		if (process.env['VSCODE_DEV']) {
-			let statusbarDescriptor = new statusbar.StatusbarItemDescriptor(
-				AccountListStatusbarItem,
-				statusbar.StatusbarAlignment.LEFT,
-				15000 /* Highest Priority */
-			);
-			(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(statusbarDescriptor);
-		}
+		let statusbarDescriptor = new statusbar.StatusbarItemDescriptor(
+			AccountListStatusbarItem,
+			statusbar.StatusbarAlignment.LEFT,
+			15000 /* Highest Priority */
+		);
+		(<statusbar.IStatusbarRegistry>platform.Registry.as(statusbar.Extensions.Statusbar)).registerStatusbarItem(statusbarDescriptor);
 	}
 
 	private get autoOAuthDialogController(): AutoOAuthDialogController {
