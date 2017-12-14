@@ -12,6 +12,7 @@ import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { DashboardEditor } from 'sql/parts/dashboard/dashboardEditor';
 import { DashboardInput } from 'sql/parts/dashboard/dashboardInput';
+import { AddServerGroupAction, AddServerAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 import { ClearRecentConnectionsAction } from 'sql/parts/connection/common/connectionActions';
 
 import { ExtensionGalleryService } from 'vs/platform/extensionManagement/node/extensionGalleryService';
@@ -20,9 +21,7 @@ import { ExtensionTipsService } from 'vs/workbench/parts/extensions/electron-bro
 import { ExtensionsWorkbenchService } from 'vs/workbench/parts/extensions/node/extensionsWorkbenchService';
 import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actions';
 import { SyncActionDescriptor } from 'vs/platform/actions/common/actions';
-import { KeyMod, KeyCode, KeyChord } from 'vs/base/common/keyCodes';
 import { localize } from 'vs/nls';
-import { AddServerGroupAction, AddServerAction } from 'sql/parts/registeredServer/viewlet/connectionTreeAction';
 
 // Singletons
 registerSingleton(IExtensionGalleryService, ExtensionGalleryService);
@@ -50,7 +49,6 @@ actionRegistry.registerWorkbenchAction(
 	),
 	ClearRecentConnectionsAction.LABEL
 );
-
 actionRegistry.registerWorkbenchAction(
 	new SyncActionDescriptor(
 		AddServerGroupAction,

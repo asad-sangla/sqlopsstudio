@@ -648,6 +648,10 @@ export class ConnectionManagementService implements IConnectionManagementService
 		return this._connectionStore.clearRecentlyUsed();
 	}
 
+	public clearRecentConnection(connectionProfile: IConnectionProfile) : void {
+		this._connectionStore.removeConnectionToMemento(connectionProfile, Constants.recentConnections);
+	}
+
 	public getActiveConnections(): ConnectionProfile[] {
 		return this._connectionStore.getActiveConnections();
 	}

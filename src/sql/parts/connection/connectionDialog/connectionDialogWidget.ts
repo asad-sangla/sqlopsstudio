@@ -4,8 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import 'vs/css!./media/connectionDialog';
 
+import nls = require('vs/nls');
 import { Button } from 'sql/base/browser/ui/button/button';
 import { attachModalDialogStyler, attachButtonStyler } from 'sql/common/theme/styler';
+import { TPromise } from 'vs/base/common/winjs.base';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { IConnectionProfile } from 'sql/parts/connection/common/interfaces';
 import { Modal } from 'sql/base/browser/ui/modal/modal';
@@ -15,42 +17,27 @@ import { TreeCreationUtils } from 'sql/parts/registeredServer/viewlet/treeCreati
 import { TreeUpdateUtils } from 'sql/parts/registeredServer/viewlet/treeUpdateUtils';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IWorkbenchThemeService, IColorTheme } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
 import * as styler from 'vs/platform/theme/common/styler';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
-import { ITree } from 'vs/base/parts/tree/browser/tree';
 import Event, { Emitter } from 'vs/base/common/event';
 import { Builder, $ } from 'vs/base/browser/builder';
-import { DefaultController, ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
-import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
 import { localize } from 'vs/nls';
 import * as DOM from 'vs/base/browser/dom';
+import { ITree } from 'vs/base/parts/tree/browser/tree';
+import { RecentConnectionTreeController, RecentConnectionActionsProvider } from 'sql/parts/connection/connectionDialog/recentConnectionTreeController';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IMessageService, IConfirmation } from 'vs/platform/message/common/message';
 
 export interface OnShowUIResponse {
 	selectedProviderType: string;
 	container: HTMLElement;
-}
-
-class TreeController extends DefaultController {
-	constructor(private clickcb: (element: any, eventish: ICancelableEvent, origin: string) => void) {
-		super();
-	}
-
-	protected onLeftClick(tree: ITree, element: any, eventish: ICancelableEvent, origin: string = 'mouse'): boolean {
-		this.clickcb(element, eventish, origin);
-		return super.onLeftClick(tree, element, eventish, origin);
-	}
-
-	protected onEnter(tree: ITree, event: IKeyboardEvent): boolean {
-		super.onEnter(tree, event);
-		this.clickcb(tree.getSelection()[0], event, 'keyboard');
-		return true;
-	}
 }
 
 export class ConnectionDialogWidget extends Modal {
@@ -91,7 +78,9 @@ export class ConnectionDialogWidget extends Modal {
 		@IWorkbenchThemeService private _themeService: IWorkbenchThemeService,
 		@IPartService _partService: IPartService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextMenuService private _contextMenuService: IContextMenuService,
+		@IMessageService private _messageService: IMessageService
 	) {
 		super(localize('connection', 'Connection'), TelemetryKeys.Connection, _partService, telemetryService, contextKeyService, { hasSpinner: true, hasErrors: true });
 	}
@@ -202,13 +191,37 @@ export class ConnectionDialogWidget extends Modal {
 		this.hide();
 	}
 
-	private createRecentConnections() {
+	private clearRecentConnectionList(): TPromise<boolean> {
+
+		let confirm: IConfirmation = {
+			message: nls.localize('clearRecentConnectionMessage', 'Are you sure you want to delete all the connections from the list?'),
+			primaryButton: localize('yes', 'Yes'),
+			secondaryButton: localize('no', 'No'),
+			type: 'question'
+		};
+
+		return this._messageService.confirm(confirm).then(confirmation => {
+			if (!confirmation.confirmed) {
+				return TPromise.as(false);
+			} else {
+				this._connectionManagementService.clearRecentConnectionsList();
+				this.open(false);
+				return TPromise.as(true);
+			}
+		});
+	}
+
+	private createRecentConnectionList(): void {
 		this._recentConnectionBuilder.div({ class: 'connection-recent-content' }, (recentConnectionContainer) => {
 			let recentHistoryLabel = localize('recentHistory', 'Recent history');
-			recentConnectionContainer.div({ class: 'connection-history-label' }, (recentTitle) => {
-				recentTitle.innerHtml(recentHistoryLabel);
+			recentConnectionContainer.div({ class: 'recent-titles-container'}, (container) => {
+				container.div({ class: 'connection-history-label' }, (recentTitle) => {
+					recentTitle.innerHtml(recentHistoryLabel);
+				});
+				container.div({ class: 'search-action clear-search-results'}, (clearSearchIcon) => {
+					clearSearchIcon.on('click', () => this.clearRecentConnectionList());
+				});
 			});
-
 			recentConnectionContainer.div({ class: 'server-explorer-viewlet' }, (divContainer: Builder) => {
 				divContainer.div({ class: 'explorer-servers' }, (treeContainer: Builder) => {
 					let leftClick = (element: any, eventish: ICancelableEvent, origin: string) => {
@@ -216,9 +229,16 @@ export class ConnectionDialogWidget extends Modal {
 						if (element instanceof ConnectionProfile) {
 							this.onRecentConnectionClick({ payload: { origin: origin, originalEvent: eventish } }, element);
 						}
-
 					};
-					let controller = new TreeController(leftClick);
+					let actionProvider = this._instantiationService.createInstance(RecentConnectionActionsProvider, this._instantiationService, this._connectionManagementService,
+						this._messageService);
+					let controller = new RecentConnectionTreeController(leftClick, actionProvider, this._connectionManagementService, this._contextMenuService);
+					actionProvider.onRecentConnectionRemoved(() => {
+						this.open(this._connectionManagementService.getRecentConnections().length > 0);
+					});
+					controller.onRecentConnectionRemoved(() => {
+						this.open(this._connectionManagementService.getRecentConnections().length > 0);
+					})
 					this._recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer.getHTMLElement(), this._instantiationService, controller);
 
 					// Theme styler
@@ -227,13 +247,17 @@ export class ConnectionDialogWidget extends Modal {
 				});
 			});
 		});
+	}
+
+	private createRecentConnections() {
+		this.createRecentConnectionList();
 		this._noRecentConnectionBuilder.div({ class: 'connection-recent-content' }, (noRecentConnectionContainer) => {
 			let recentHistoryLabel = localize('recentHistory', 'Recent history');
 			noRecentConnectionContainer.div({ class: 'connection-history-label' }, (recentTitle) => {
 				recentTitle.innerHtml(recentHistoryLabel);
 			});
 			let noRecentHistoryLabel = localize('noRecentConnections', 'No Recent Connections');
-			noRecentConnectionContainer.div({ class: 'connection-history-label' }, (noRecentTitle) => {
+			noRecentConnectionContainer.div({ class: 'no-recent-connections' }, (noRecentTitle) => {
 				noRecentTitle.innerHtml(noRecentHistoryLabel);
 			});
 		});
