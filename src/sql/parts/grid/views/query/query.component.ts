@@ -139,6 +139,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 	private complete = false;
 	private sentPlans: Map<number, string> = new Map<number, string>();
 	private hasQueryPlan: boolean = false;
+	private queryPlanResultSetId: number = 0;
 	public queryExecutionStatus: EventEmitter<string> = new EventEmitter<string>();
 	public queryPlanAvailable: EventEmitter<string> = new EventEmitter<string>();
 	public showChartRequested: EventEmitter<IGridDataSet> = new EventEmitter<IGridDataSet>();
@@ -262,8 +263,8 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 					}
 
 					// if this is a query plan resultset we haven't processed yet then forward to subscribers
-					if (self.hasQueryPlan && !self.sentPlans[resultSet.batchId]) {
-						self.sentPlans[resultSet.batchId] = rows.rows[0][0].displayValue;
+					if (self.hasQueryPlan && resultSet.id === self.queryPlanResultSetId && !self.sentPlans[resultSet.id]) {
+						self.sentPlans[resultSet.id] = rows.rows[0][0].displayValue;
 						self.queryPlanAvailable.emit(rows.rows[0][0].displayValue);
 					}
 					resolve(gridData);
@@ -319,6 +320,7 @@ export class QueryComponent extends GridParentComponent implements OnInit, OnDes
 			let column = resultSet.columnInfo[i];
 			if (column.columnName === 'Microsoft SQL Server 2005 XML Showplan') {
 				this.hasQueryPlan = true;
+				this.queryPlanResultSetId = resultSet.id;
 				break;
 			}
 		}

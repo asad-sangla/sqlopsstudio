@@ -104,6 +104,29 @@ export class RunCurrentQueryKeyboardAction extends Action {
 	}
 }
 
+export class RunCurrentQueryWithActualPlanKeyboardAction extends Action {
+	public static ID = 'runCurrentQueryWithActualPlanKeyboardAction';
+	public static LABEL = nls.localize('runCurrentQueryWithActualPlanKeyboardAction', 'Run Current Query with Actual Plan');
+
+	constructor(
+		id: string,
+		label: string,
+		@IWorkbenchEditorService private _editorService: IWorkbenchEditorService
+	) {
+		super(id, label);
+		this.enabled = true;
+	}
+
+	public run(): TPromise<void> {
+		let editor = this._editorService.getActiveEditor();
+		if (editor && editor instanceof QueryEditor) {
+			let queryEditor: QueryEditor = editor;
+			queryEditor.runCurrentQueryWithActualPlan();
+		}
+		return TPromise.as(null);
+	}
+}
+
 /**
  * Locates the active editor and calls cancelQuery() on the editor if it is a QueryEditor.
  */

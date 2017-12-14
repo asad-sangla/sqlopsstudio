@@ -237,6 +237,46 @@ export class EstimatedQueryPlanAction extends QueryTaskbarAction {
 	}
 }
 
+export class ActualQueryPlanAction extends QueryTaskbarAction {
+	public static EnabledClass = 'actualQueryPlan';
+	public static ID = 'actualQueryPlanAction';
+
+	constructor(
+		editor: QueryEditor,
+		@IQueryModelService private _queryModelService: IQueryModelService,
+		@IConnectionManagementService connectionManagementService: IConnectionManagementService
+	) {
+		super(connectionManagementService, editor, ActualQueryPlanAction.ID, ActualQueryPlanAction.EnabledClass);
+		this.label = nls.localize('actualQueryPlan', "Actual");
+	}
+
+	public run(): TPromise<void> {
+		if (!this.editor.isSelectionEmpty()) {
+			if (this.isConnected(this.editor)) {
+				// If we are already connected, run the query
+				this.runQuery(this.editor);
+			} else {
+				// If we are not already connected, prompt for connection and run the query if the
+				// connection succeeds. "runQueryOnCompletion=true" will cause the query to run after connection
+				this.connectEditor(this.editor, RunQueryOnConnectionMode.actualQueryPlan, this.editor.getSelection());
+			}
+		}
+		return TPromise.as(null);
+	}
+
+	public runQuery(editor: QueryEditor) {
+		if (!editor) {
+			editor = this.editor;
+		}
+
+		if (this.isConnected(editor)) {
+			editor.currentQueryInput.runQuery(editor.getSelection(), {
+				displayActualQueryPlan: true
+			});
+		}
+	}
+}
+
 /**
  * Action class that disconnects the connection associated with the current query file.
  */

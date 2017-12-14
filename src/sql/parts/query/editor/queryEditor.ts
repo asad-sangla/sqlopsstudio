@@ -11,7 +11,6 @@ import { Builder, Dimension, withElementById } from 'vs/base/browser/builder';
 
 import { EditorInput, EditorOptions } from 'vs/workbench/common/editor';
 import { BaseEditor } from 'vs/workbench/browser/parts/editor/baseEditor';
-import { EditorDescriptor } from 'vs/workbench/browser/editor';
 import { IEditorControl, Position, IEditor } from 'vs/platform/editor/common/editor';
 import { VerticalFlexibleSash, HorizontalFlexibleSash, IFlexibleSash } from 'sql/parts/query/views/flexibleSash';
 import { Orientation } from 'vs/base/browser/ui/sash/sash';
@@ -41,7 +40,8 @@ import * as queryContext from 'sql/parts/query/common/queryContext';
 import { Taskbar, ITaskbarContent } from 'sql/base/browser/ui/taskbar/taskbar';
 import {
 	RunQueryAction, CancelQueryAction, ListDatabasesAction, ListDatabasesActionItem,
-	ConnectDatabaseAction, ToggleConnectDatabaseAction, EstimatedQueryPlanAction
+	ConnectDatabaseAction, ToggleConnectDatabaseAction, EstimatedQueryPlanAction,
+	ActualQueryPlanAction
 } from 'sql/parts/query/execution/queryActions';
 import { IQueryModelService } from 'sql/parts/query/execution/queryModel';
 import { IEditorDescriptorService } from 'sql/parts/query/editor/editorDescriptorService';
@@ -86,6 +86,7 @@ export class QueryEditor extends BaseEditor {
 	private _changeConnectionAction: ConnectDatabaseAction;
 	private _listDatabasesAction: ListDatabasesAction;
 	private _estimatedQueryPlanAction: EstimatedQueryPlanAction;
+	private _actualQueryPlanAction: ActualQueryPlanAction;
 
 	constructor(
 		@ITelemetryService _telemetryService: ITelemetryService,
@@ -397,6 +398,13 @@ export class QueryEditor extends BaseEditor {
 	}
 
 	/**
+	 * Calls the runCurrentQueryWithActualPlan method of this editor's ActualQueryPlanAction
+	 */
+	public runCurrentQueryWithActualPlan(): void {
+		this._actualQueryPlanAction.run();
+	}
+
+	/**
 	 * Calls the run method of this editor's CancelQueryAction
 	 */
 	public cancelQuery(): void {
@@ -426,6 +434,7 @@ export class QueryEditor extends BaseEditor {
 		this._changeConnectionAction = this._instantiationService.createInstance(ConnectDatabaseAction, this, true);
 		this._listDatabasesAction = this._instantiationService.createInstance(ListDatabasesAction, this);
 		this._estimatedQueryPlanAction = this._instantiationService.createInstance(EstimatedQueryPlanAction, this);
+		this._actualQueryPlanAction = this._instantiationService.createInstance(ActualQueryPlanAction, this);
 
 		// Create HTML Elements for the taskbar
 		let separator = Taskbar.createTaskbarSeparator();

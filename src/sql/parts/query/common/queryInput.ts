@@ -194,6 +194,8 @@ export class QueryInput extends EditorInput implements IEncodingSupport, IConnec
 				this.runQuery(selection);
 			} else if (params.runQueryOnCompletion === RunQueryOnConnectionMode.estimatedQueryPlan) {
 				this.runQuery(selection, { displayEstimatedQueryPlan: true });
+			} else if (params.runQueryOnCompletion === RunQueryOnConnectionMode.actualQueryPlan) {
+				this.runQuery(selection, { displayActualQueryPlan: true });
 			}
 		}
 		this._updateTaskbar.fire();

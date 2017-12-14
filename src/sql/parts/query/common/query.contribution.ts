@@ -25,14 +25,13 @@ import { EditDataEditor } from 'sql/parts/editData/editor/editDataEditor';
 import { EditDataInput } from 'sql/parts/editData/common/editDataInput';
 import {
 	RunQueryKeyboardAction, RunCurrentQueryKeyboardAction, CancelQueryKeyboardAction, RefreshIntellisenseKeyboardAction, ToggleQueryResultsKeyboardAction,
-	RunQueryShortcutAction
+	RunQueryShortcutAction, RunCurrentQueryWithActualPlanKeyboardAction
 } from 'sql/parts/query/execution/keyboardQueryActions';
 import * as gridActions from 'sql/parts/grid/views/gridActions';
 import * as gridCommands from 'sql/parts/grid/views/gridCommands';
 import { QueryPlanEditor } from 'sql/parts/queryPlan/queryPlanEditor';
 import { QueryPlanInput } from 'sql/parts/queryPlan/queryPlanInput';
 import { localize } from 'vs/nls';
-import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 
 const gridCommandsWeightBonus = 100; // give our commands a little bit more weight over other default list/tree commands
 
@@ -103,6 +102,15 @@ actionRegistry.registerWorkbenchAction(
 		),
 		RunCurrentQueryKeyboardAction.LABEL
 	);
+
+actionRegistry.registerWorkbenchAction(
+	new SyncActionDescriptor(
+		RunCurrentQueryWithActualPlanKeyboardAction,
+		RunCurrentQueryWithActualPlanKeyboardAction.ID,
+		RunCurrentQueryWithActualPlanKeyboardAction.LABEL
+	),
+	RunCurrentQueryWithActualPlanKeyboardAction.LABEL
+);
 
 actionRegistry.registerWorkbenchAction(
 		new SyncActionDescriptor(

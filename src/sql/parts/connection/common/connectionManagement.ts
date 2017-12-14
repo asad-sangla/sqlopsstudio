@@ -298,7 +298,8 @@ export enum RunQueryOnConnectionMode {
 	none = 0,
 	executeQuery = 1,
 	executeCurrentQuery = 2,
-	estimatedQueryPlan = 3
+	estimatedQueryPlan = 3,
+	actualQueryPlan = 4
 }
 
 export interface INewConnectionParams {
