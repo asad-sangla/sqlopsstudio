@@ -148,10 +148,12 @@ export abstract class ChartInsight extends Disposable implements IInsightsView {
 	}
 
 	protected updateTheme(e: IColorTheme): void {
+		let foregroundColor = e.getColor(colors.editorForeground);
+		let foreground = foregroundColor ? foregroundColor.toString() : null;
 		let options = {
 			legend: {
 				labels: {
-					fontColor: e.getColor(colors.editorForeground)
+					fontColor: foreground
 				}
 			}
 		};

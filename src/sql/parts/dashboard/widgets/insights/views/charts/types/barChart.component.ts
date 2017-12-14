@@ -116,28 +116,32 @@ export default class BarChart extends ChartInsight {
 
 	protected updateTheme(e: IColorTheme): void {
 		super.updateTheme(e);
+		let foregroundColor = e.getColor(colors.editorForeground);
+		let foreground = foregroundColor ? foregroundColor.toString() : null;
+		let gridLinesColor = e.getColor(editorLineNumbers);
+		let gridLines = gridLinesColor ? gridLinesColor.toString() : null;
 		let options = {
 			scales: {
 				xAxes: [{
 					scaleLabel: {
-						fontColor: e.getColor(colors.editorForeground)
+						fontColor: foreground
 					},
 					ticks: {
-						fontColor: e.getColor(colors.editorForeground)
+						fontColor: foreground
 					},
 					gridLines: {
-						color: e.getColor(editorLineNumbers)
+						color: gridLines
 					}
 				}],
 				yAxes: [{
 					scaleLabel: {
-						fontColor: e.getColor(colors.editorForeground)
+						fontColor: foreground
 					},
 					ticks: {
-						fontColor: e.getColor(colors.editorForeground)
+						fontColor: foreground
 					},
 					gridLines: {
-						color: e.getColor(editorLineNumbers)
+						color: gridLines
 					}
 				}]
 			}

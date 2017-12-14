@@ -1,4 +1,5 @@
 {
+	"$schema": "vscode://schemas/color-theme",
 	"name": "SQL Operations Studio-light-theme",
 	"type": "light",
 	"colors": {
@@ -77,8 +78,7 @@
 	"tokenColors": [
 		{
 			"settings": {
-				"foreground": "#212121ff",
-				"background": "#fffffeff"
+				"foreground": "#212121ff"
 			}
 		},
 		{

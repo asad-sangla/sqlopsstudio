@@ -39,7 +39,7 @@ import { FileIconThemeStore } from 'vs/workbench/services/themes/electron-browse
 import { FileIconThemeData } from 'vs/workbench/services/themes/electron-browser/fileIconThemeData';
 
 // implementation
-  // {{SQL CARBON EDIT}}
+// {{SQL CARBON EDIT}}
 const DEFAULT_THEME_ID = 'vs sql-theme-carbon-themes-light_carbon-json';
 const DEFAULT_THEME_SETTING_VALUE = 'Default Light SQL Operations Studio';
 
@@ -60,9 +60,10 @@ const themingRegistry = Registry.as<IThemingRegistry>(ThemingExtensions.ThemingC
 function validateThemeId(theme: string): string {
 	// migrations
 	switch (theme) {
-		case VS_LIGHT_THEME: return `vs ${defaultThemeExtensionId}-themes-light_vs-json`;
-		case VS_DARK_THEME: return `vs-dark ${defaultThemeExtensionId}-themes-dark_vs-json`;
-		case VS_HC_THEME: return `hc-black ${defaultThemeExtensionId}-themes-hc_black-json`;
+		// {{SQL CARBON EDIT}}
+		case VS_LIGHT_THEME: return `vs ${defaultThemeExtensionId}-themes-light_carbon-json`;
+		case VS_DARK_THEME: return `vs-dark ${defaultThemeExtensionId}-themes-dark_carbon-json`;
+		case VS_HC_THEME: return `hc-black vscode-theme-defaults-themes-hc_black-json`;
 		case `vs ${oldDefaultThemeExtensionId}-themes-light_plus-tmTheme`: return `vs ${defaultThemeExtensionId}-themes-light_plus-json`;
 		case `vs-dark ${oldDefaultThemeExtensionId}-themes-dark_plus-tmTheme`: return `vs-dark ${defaultThemeExtensionId}-themes-dark_plus-json`;
 	}
