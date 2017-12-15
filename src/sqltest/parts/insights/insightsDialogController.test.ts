@@ -47,7 +47,8 @@ suite('Insights Dialog Controller Tests', () => {
 			undefined,
 			undefined,
 			instMoq.object,
-			connMoq.object
+			connMoq.object,
+			undefined
 		);
 
 		let profile: IConnectionProfile = {

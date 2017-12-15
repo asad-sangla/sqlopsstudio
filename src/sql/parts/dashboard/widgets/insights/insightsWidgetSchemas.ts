@@ -4,13 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IInsightRegistry, Extensions as InsightExtensions } from 'sql/platform/dashboard/common/insightRegistry';
-import { ITaskRegistry, Extensions as TaskExtensions } from 'sql/platform/tasks/taskRegistry';
 import { IJSONSchema } from 'vs/base/common/jsonSchema';
 import { Registry } from 'vs/platform/registry/common/platform';
 import * as nls from 'vs/nls';
 
 const insightRegistry = Registry.as<IInsightRegistry>(InsightExtensions.InsightContribution);
-const taskRegistry = Registry.as<ITaskRegistry>(TaskExtensions.TaskContribution);
 
 export const insightsSchema: IJSONSchema = {
 	type: 'object',
@@ -87,8 +85,11 @@ export const insightsSchema: IJSONSchema = {
 					type: 'object',
 					properties: {
 						types: {
-							type: 'object',
-							properties: taskRegistry.taskSchemas
+							description: nls.localize('actionTypes', "Which actions to use"),
+							type: 'array',
+							items: {
+								type: 'string'
+							}
 						},
 						database: {
 							type: 'string',

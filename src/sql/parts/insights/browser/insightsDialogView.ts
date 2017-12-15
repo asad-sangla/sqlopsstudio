@@ -12,18 +12,18 @@ import { attachButtonStyler, attachModalDialogStyler, attachTableStyler } from '
 import { ITaskRegistry, Extensions as TaskExtensions } from 'sql/platform/tasks/taskRegistry';
 import { ConnectionProfile } from 'sql/parts/connection/common/connectionProfile';
 import * as TelemetryKeys from 'sql/common/telemetryKeys';
-import { IInsightsDialogModel, ListResource, IInsightDialogActionContext } from 'sql/parts/insights/common/interfaces';
+import { IInsightsDialogModel, ListResource, IInsightDialogActionContext, insertValueRegex } from 'sql/parts/insights/common/interfaces';
 import { TableCollapsibleView } from 'sql/base/browser/ui/table/tableView';
 import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { RowSelectionModel } from 'sql/base/browser/ui/table/plugins/rowSelectionModel.plugin';
 import { error } from 'sql/base/common/log';
 import { Table } from 'sql/base/browser/ui/table/table';
 import { CopyInsightDialogSelectionAction } from 'sql/parts/insights/common/insightDialogActions';
+import { SplitView, ViewSizing } from 'sql/base/browser/ui/splitview/splitview';
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IPartService } from 'vs/workbench/services/part/common/partService';
 import * as DOM from 'vs/base/browser/dom';
-import { SplitView, ViewSizing } from 'sql/base/browser/ui/splitview/splitview';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IListService } from 'vs/platform/list/browser/listService';
@@ -37,9 +37,6 @@ import * as types from 'vs/base/common/types';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-
-/* Regex that matches the form `${value}` */
-export const insertValueRegex: RegExp = /\${(.*?)\}/;
 
 const labelDisplay = nls.localize("item", "Item");
 const valueDisplay = nls.localize("value", "Value");

@@ -38,3 +38,6 @@ export interface IInsightsDialogService {
 export interface IInsightDialogActionContext extends BaseActionContext {
 	cellData: string;
 }
+
+/* Regex that matches the form `${value}` */
+export const insertValueRegex: RegExp = /\${(.*?)\}/;

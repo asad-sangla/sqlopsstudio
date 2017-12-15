@@ -15,7 +15,7 @@ import { InsightAction, InsightActionContext } from 'sql/workbench/common/action
 import { toDisposableSubscription } from 'sql/parts/common/rxjsUtils';
 import { IInsightsConfig, IInsightsView } from './interfaces';
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/common/insightRegistry';
-import { insertValueRegex } from 'sql/parts/insights/browser/insightsDialogView';
+import { insertValueRegex } from 'sql/parts/insights/common/interfaces';
 import { RunInsightQueryAction } from './actions';
 
 import { SimpleExecuteResult } from 'data';
@@ -252,7 +252,20 @@ export class InsightsWidget extends DashboardWidget implements IDashboardWidget,
 					case WorkbenchState.FOLDER:
 						filePath = this.dashboardService.workspaceContextService.getWorkspace().folders[0].toResource(filePath).fsPath;
 						break;
-					//case WorkbenchState.WORKSPACE:
+					case WorkbenchState.WORKSPACE:
+						let filePathArray = filePath.split('/');
+						// filter out empty sections
+						filePathArray = filePathArray.filter(i => !!i);
+						let folder = this.dashboardService.workspaceContextService.getWorkspace().folders.find(i => i.name === filePathArray[0]);
+						if (!folder) {
+							return Promise.reject<void[]>(new Error(`Could not find workspace folder ${filePathArray[0]}`));
+						}
+						// remove the folder name from the filepath
+						filePathArray.shift();
+						// rejoin the filepath after doing the work to find the right folder
+						filePath = '/' + filePathArray.join('/');
+						filePath = folder.toResource(filePath).fsPath;
+						break;
 				}
 
 			}
