@@ -10,7 +10,7 @@ import { Constants } from '../models/constants';
 import { Serialization } from '../serialize/serialization';
 import { AzureResourceProvider } from '../resourceProvider/resourceProvider';
 import { CredentialStore } from '../credentialstore/credentialstore';
-import {IExtensionConstants, Telemetry, SharedConstants, SqlToolsServiceClient, VscodeWrapper, Utils, PlatformInformation} from 'extensions-modules';
+import { IExtensionConstants, Telemetry, Constants as SharedConstants, SqlToolsServiceClient, VscodeWrapper, Utils, PlatformInformation } from 'extensions-modules';
 import { LanguageClient } from 'dataprotocol-client';
 
 /**
@@ -88,7 +88,6 @@ export default class MainController implements vscode.Disposable {
      * Initializes the extension
      */
     public initialize(): Promise<boolean> {
-        const self = this;
 
         // initialize language service client
         return new Promise<boolean>( (resolve, reject) => {
@@ -104,7 +103,6 @@ export default class MainController implements vscode.Disposable {
                     );
 
                     self.createSerializationClient().then(serializationClient => {
-                        let serialization = new Serialization(self._client, serializationClient);
                         // Serialization
                         let serializationProvider: data.SerializationProvider = {
                             handle: 0,

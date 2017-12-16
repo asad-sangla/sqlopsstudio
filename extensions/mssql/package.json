@@ -9,7 +9,7 @@
   "activationEvents": [
     "*"
   ],
-  "main": "./client/out/mssqlMain",
+  "main": "./client/out/main",
   "extensionDependencies": [
     "vscode.sql"
   ],
@@ -199,8 +199,7 @@
     }
   },
   "dependencies": {
-    "dataprotocol-client": "file:../../dataprotocol-node/client",
-    "extensions-modules": "file:../../extensions-modules"
+    "dataprotocol-client": "file:../../dataprotocol-node/client"
   },
   "devDependencies": {
     "vscode": "1.0.1"

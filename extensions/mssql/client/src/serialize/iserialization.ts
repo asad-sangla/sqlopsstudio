@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { SaveResultsInfo } from '../models/contracts';
 import * as data from 'data';
 
 /**

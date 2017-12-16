@@ -7,6 +7,6 @@
 
 import * as nls from 'vscode-nls';
 
-let localize = nls.loadMessageBundle();
+const localize = nls.loadMessageBundle();
 
 export const extensionName = localize('extensionName', 'Azure Accounts');

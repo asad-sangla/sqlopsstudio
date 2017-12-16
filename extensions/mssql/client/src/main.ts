@@ -7,7 +7,7 @@
 import vscode = require('vscode');
 import MainController from './controllers/mainController';
 
-let controller: MainController = undefined;
+export let controller: MainController;
 
 export function activate(context: vscode.ExtensionContext) {
 	controller = new MainController(context);
@@ -20,11 +20,4 @@ export function deactivate(): void {
     if (controller) {
         controller.deactivate();
     }
-}
-
-/**
- * Exposed for testing purposes
- */
-export function getController(): MainController {
-    return controller;
 }

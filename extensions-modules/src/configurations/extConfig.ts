@@ -5,10 +5,10 @@
 
 'use strict';
 
-import Config from  './config';
+import Config from './config';
 import { workspace, WorkspaceConfiguration } from 'vscode';
-import {IConfig} from '../languageservice/interfaces';
-import * as Constants from '../models/constants';
+import { IConfig } from '../languageservice/interfaces';
+import { Constants } from '../models/constants';
 
 /*
 * ExtConfig class handles getting values from workspace config or config.json.

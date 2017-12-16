@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "adal-node": "0.1.25",
-    "extensions-modules": "file:../../extensions-modules",
     "request": "2.63.0",
     "vscode-nls": "2.0.2"
   },

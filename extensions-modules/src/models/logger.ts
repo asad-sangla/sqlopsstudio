@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as os from 'os';
-import {ILogger} from './interfaces';
-import * as Utils from './utils';
-import {IExtensionConstants} from './contracts/contracts';
+import { ILogger } from './interfaces';
+import { Utils } from './utils';
+import { IExtensionConstants } from './contracts/contracts';
+
 /*
 * Logger class handles logging messages using the Util functions.
 */
