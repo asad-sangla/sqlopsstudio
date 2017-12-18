@@ -15,28 +15,21 @@
   ],
   "scripts": {
     "compile": "gulp compile-extension:mssql-client",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "postinstall": "node ./node_modules/vscode/bin/install",
+		"update-grammar": "node ../../build/npm/update-grammar.js Microsoft/vscode-mssql syntaxes/SQL.plist ./syntaxes/sql.tmLanguage.json"
   },
   "contributes": {
-    "languages": [
-      {
-        "id": "sql",
-        "extensions": [
-          ".sql"
-        ],
-        "aliases": [
-          "SQL"
-        ],
-        "configuration": "./syntaxes/sql.configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "sql",
-        "scopeName": "source.sql",
-        "path": "./syntaxes/SQL.plist"
-      }
-    ],
+		"languages": [{
+			"id": "sql",
+			"extensions": [ ".sql", ".dsql" ],
+			"aliases": [ "SQL" ],
+			"configuration": "./language-configuration.json"
+		}],
+		"grammars": [{
+			"language": "sql",
+			"scopeName": "source.sql",
+			"path": "./syntaxes/sql.tmLanguage.json"
+		}],
     "outputChannels": [
       "MSSQL"
     ],
